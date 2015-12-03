@@ -1,0 +1,70 @@
+#!/bin/sh
+
+# Isar-Core Build Environment Setup Script
+#
+# Copyright (C) 2006-2011 Linux Foundation
+# Copyright (C) 2016 ilbers GmbH
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+# It is assumed ISARROOT is already defined when this is called
+if [ -z "$ISARROOT" ]; then
+    echo >&2 "Error: ISARROOT is not defined!"
+    return 1
+fi
+
+if [ -z "$BDIR" ]; then
+    if [ -z "$1" ]; then
+        BDIR="build"
+    else
+        BDIR="$1"
+        if [ "$BDIR" = "/" ]; then
+            echo >&2 "Error: / is not supported as a build directory."
+            return 1
+        fi
+
+        # Remove any possible trailing slashes. This is used to work around
+        # buggy readlink in Ubuntu 10.04 that doesn't ignore trailing slashes
+        # and hence "readlink -f new_dir_to_be_created/" returns empty.
+        BDIR=$(echo $BDIR | sed -re 's|/+$||')
+
+        BDIR=$(readlink -f "$BDIR")
+        if [ -z "$BDIR" ]; then
+            PARENTDIR=$(dirname "$1")
+            echo >&2 "Error: the directory $PARENTDIR does not exist?"
+            return 1
+        fi
+    fi
+    if [ -n "$2" ]; then
+        BITBAKEDIR="$2"
+    fi
+fi
+if [ "${BDIR#/}" != "$BDIR" ]; then
+    BUILDDIR="$BDIR"
+else
+    BUILDDIR="$(pwd)/$BDIR"
+fi
+unset BDIR
+
+export BUILDDIR
+
+PATH=$ISARROOT/bitbake/bin:$ISARROOT/scripts:$PATH
+export PATH
+
+BBPATH="${BASEDIR}/meta-zynq/"
+export BBPATH
+
+BB_ENV_EXTRAWHITE="BASEDIR BUILDDIR"
+export BB_ENV_EXTRAWHITE

@@ -1,0 +1,28 @@
+* Way to manage dependencies for multi-devroot.
+
+* Get rid of sudo.
+
+* Bitbake parallel jobs vs. DEB_BUILD_OPTIONS=parallel=n.
+
+* Add option to build package from source or to pull binary deb from apt
+  (BUILD_FROM_SRC, bump pkg ver).
+
+* Add basic OE classes for fetch, unpack etc.
+
+* Integrate Debian package building.
+
+* Create apt repos?
+
+* Dependency mgmt (debian vs. bitbake dependencies).
+
+* Bitbake: If a lib has changed, an app using it won't be rebuilt.
+
+* Repo or git subproject... for the right bitbake version?
+
+* Kconfig.
+
+* Optional cross-building support (performance?).
+
+* Override Debian repo with a local one.
+
+* runqemu.

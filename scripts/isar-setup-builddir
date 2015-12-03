@@ -1,0 +1,133 @@
+#!/bin/sh
+
+# Isar Build Environment Setup Script
+#
+# Copyright (C) 2006-2011 Linux Foundation
+# Copyright (C) 2016 ilbers GmbH
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+if [ -z "$BUILDDIR" ]; then
+    echo >&2 "Error: The build directory (BUILDDIR) must be set!"
+    exit 1
+fi
+
+mkdir -p "$BUILDDIR/conf"
+
+if [ ! -d "$BUILDDIR" ]; then
+    echo >&2 "Error: The builddir ($BUILDDIR) does not exist!"
+    exit 1
+fi
+
+if [ ! -w "$BUILDDIR" ]; then
+    echo >&2 "Error: Cannot write to $BUILDDIR, perhaps try sourcing with a writable path? i.e. . oe-init-build-env ~/my-build"
+    exit 1
+fi
+
+# Attempting removal of sticky,setuid bits from BUILDDIR, BUILDDIR/conf
+chmod -st "$BUILDDIR" 2>/dev/null || echo "WARNING: unable to chmod $BUILDDIR"
+chmod -st "$BUILDDIR/conf" 2>/dev/null || echo "WARNING: unable to chmod $BUILDDIR/conf"
+
+cd "$BUILDDIR"
+
+if [ -f "$BUILDDIR/conf/templateconf.cfg" ]; then
+    TEMPLATECONF=$(cat "$BUILDDIR/conf/templateconf.cfg")
+fi
+
+. $ISARROOT/.templateconf
+
+if [ ! -f "$BUILDDIR/conf/templateconf.cfg" ]; then
+    echo "$TEMPLATECONF" >"$BUILDDIR/conf/templateconf.cfg"
+fi
+
+#
+# $TEMPLATECONF can point to a directory for the template local.conf & bblayers.conf
+#
+if [ -n "$TEMPLATECONF" ]; then
+    if [ ! -d "$TEMPLATECONF" ]; then
+        # Allow TEMPLATECONF=meta-xyz/conf as a shortcut
+        if [ -d "$ISARROOT/$TEMPLATECONF" ]; then
+            TEMPLATECONF="$ISARROOT/$TEMPLATECONF"
+        fi
+        if [ ! -d "$TEMPLATECONF" ]; then
+            echo >&2 "Error: '$TEMPLATECONF' must be a directory containing local.conf & bblayers.conf"
+            exit 1
+        fi
+    fi
+    ISARCORELAYERCONF="$TEMPLATECONF/bblayers.conf.sample"
+    ISARCORELOCALCONF="$TEMPLATECONF/local.conf.sample"
+    ISARCORENOTESCONF="$TEMPLATECONF/conf-notes.txt"
+fi
+
+unset SHOWYPDOC
+if [ -z "$ISARCORELOCALCONF" ]; then
+    ISARCORELOCALCONF="$ISARROOT/meta/conf/local.conf.sample"
+fi
+if [ ! -r "$BUILDDIR/conf/local.conf" ]; then
+    cat <<EOM
+You had no conf/local.conf file. This configuration file has therefore been
+created for you with some default values. You may wish to edit it to, for
+example, select a different MACHINE (target hardware). See conf/local.conf
+for more information as common configuration options are commented.
+
+EOM
+    cp -f $ISARCORELOCALCONF "$BUILDDIR/conf/local.conf"
+    SHOWYPDOC=yes
+fi
+
+if [ -z "$ISARCORELAYERCONF" ]; then
+    ISARCORELAYERCONF="$ISARROOT/meta/conf/bblayers.conf.sample"
+fi
+if [ ! -r "$BUILDDIR/conf/bblayers.conf" ]; then
+    cat <<EOM
+You had no conf/bblayers.conf file. This configuration file has therefore been
+created for you with some default values. To add additional metadata layers
+into your configuration please add entries to conf/bblayers.conf.
+
+EOM
+
+    # Put the abosolute path to the layers in bblayers.conf so we can run
+    # bitbake without the init script after the first run
+    sed -e "s|##ISARROOT##|$ISARROOT|g" \
+        $ISARCORELAYERCONF > "$BUILDDIR/conf/bblayers.conf"
+    SHOWYPDOC=yes
+fi
+
+if [ ! -f "$BUILDDIR/conf/bitbake.conf" ]; then
+    cp "$ISARROOT/meta-isar/conf/bitbake.conf.sample" \
+       "$BUILDDIR/conf/bitbake.conf"
+fi
+
+# Ending the first-time run message. Show the no documentation banner.
+if [ ! -z "$SHOWYPDOC" ]; then
+    cat <<EOM
+For more information about isar, contact the developers at:
+    https://lists.debian.org/debian-embedded/
+
+EOM
+    unset SHOWYPDOC
+fi
+
+cat <<EOM
+### Shell environment set up for builds. ###
+
+You can now run 'bitbake <target>'
+
+EOM
+if [ -z "$ISARCORENOTESCONF" ]; then
+    ISARCORENOTESCONF="$ISARROOT/meta/conf/conf-notes.txt"
+fi
+[ ! -r "$ISARCORENOTESCONF" ] || cat $ISARCORENOTESCONF
+unset ISARCORENOTESCONF

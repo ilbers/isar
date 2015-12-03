@@ -1,0 +1,60 @@
+#!/bin/sh
+
+# Isar Build Environment Setup Script
+#
+# Copyright (C) 2006-2011 Linux Foundation
+# Copyright (C) 2016 ilbers GmbH
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+#
+# Normally this is called as '. ./isar-init-build-env <builddir>'
+#
+# This works in most shells (not dash), but not all of them pass the arguments
+# when being sourced.  To workaround the shell limitation use "set <builddir>"
+# prior to sourcing this script.
+#
+if [ -n "$BASH_SOURCE" ]; then
+    THIS_SCRIPT=$BASH_SOURCE
+elif [ -n "$ZSH_NAME" ]; then
+    THIS_SCRIPT=$0
+else
+    THIS_SCRIPT="$(pwd)/isar-init-build-env"
+fi
+if [ -n "$BBSERVER" ]; then
+    unset BBSERVER
+fi
+
+if [ -z "$ZSH_NAME" ] && [ "$0" = "$THIS_SCRIPT" ]; then
+    echo "Error: This script needs to be sourced. Please run as '. $THIS_SCRIPT'"
+    exit 1
+fi
+
+if [ -z "$ISARROOT" ]; then
+    ISARROOT=$(dirname "$THIS_SCRIPT")
+    ISARROOT=$(readlink -f "$ISARROOT")
+fi
+unset THIS_SCRIPT
+
+ISARROOT=`readlink -f "$ISARROOT"`
+export ISARROOT
+. $ISARROOT/scripts/isar-buildenv-internal $1 && \
+    TEMPLATECONF="$TEMPLATECONF" $ISARROOT/scripts/isar-setup-builddir || {
+    unset ISARROOT
+    return 1
+}
+unset ISARROOT
+
+[ -z "$BUILDDIR" ] || cd "$BUILDDIR"
