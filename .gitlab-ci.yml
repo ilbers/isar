@@ -1,0 +1,7 @@
+all:
+  stage: build
+  script:
+    - ./scripts/ci_build.sh
+  artifacts:
+    paths:
+    - images/isar-image-base.ext4.img.gz
