@@ -6,7 +6,6 @@ BBPATH = "${TOPDIR}"
 BBFILES ?= ""
 
 BBLAYERS ?= " \
-  ##ISARROOT##/meta \
   ##ISARROOT##/meta-isar \
   "
 BBLAYERS_NON_REMOVABLE ?= " \
