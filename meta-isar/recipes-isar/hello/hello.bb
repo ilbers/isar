@@ -9,27 +9,9 @@ LIC_FILES_CHKSUM = "file://${LAYERDIR_isar}/licenses/COPYING.GPLv2;md5=751419260
 
 PV = "1.0"
 
-SRC_URI = "\
-    file://hello.c  \
-    file://Makefile \
-"
+SRC_URI = "git://github.com/ilbers/hello.git"
+SRCREV = "ad7065ecc4840cc436bfcdac427386dbba4ea719"
+
+SRC_DIR = "git"
 
 inherit dpkg
-
-S = "${WORKDIR}"
-
-DEPLOYDIR = "${WORKDIR}/../devroot/deploy"
-
-do_build() {
-    sudo install -m 644 ${THISDIR}/hello/hello.c ${BUILDROOT}
-    sudo install -m 644  ${THISDIR}/hello/Makefile ${BUILDROOT}
-
-    sudo chroot ${BUILDROOTDIR} /usr/bin/make -C /home/builder/${PN}
-}
-
-addtask do_install after do_build
-
-do_install() {
-    install -d ${DEPLOYDIR}
-    install -m 755 ${BUILDROOT}/hello ${DEPLOYDIR}
-}
