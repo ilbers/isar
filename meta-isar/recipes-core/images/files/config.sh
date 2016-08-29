@@ -38,5 +38,4 @@ export LC_ALL=C LANGUAGE=C LANG=C
 dpkg --configure -a
 mount proc -t proc /proc
 dpkg --configure -a
-apt-get update
 umount /proc

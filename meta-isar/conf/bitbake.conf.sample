@@ -25,6 +25,7 @@ DEPLOY_DIR = "${TMPDIR}/deploy"
 DEPLOY_DIR_DEB = "${TMPDIR}/deploy/deb"
 DEPLOY_DIR_IMAGE = "${DEPLOY_DIR}/images"
 DL_DIR = "${TMPDIR}/downloads"
+SSTATE_DIR ?= "${TMPDIR}/sstate-cache"
 FILESDIR = "${@bb.which(bb.data.getVar('FILESPATH', d, 1), '.')}"
 FILESPATH = "${FILE_DIRNAME}/${PF}:${FILE_DIRNAME}/${P}:${FILE_DIRNAME}/${PN}:${FILE_DIRNAME}/files:${FILE_DIRNAME}"
 FILE_DIRNAME = "${@os.path.dirname(bb.data.getVar('FILE', d))}"
@@ -61,3 +62,5 @@ CACHE = "${TMPDIR}/cache"
 
 # Setup our default hash policy
 BB_SIGNATURE_HANDLER ?= "noop"
+
+include conf/local.conf

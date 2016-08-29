@@ -41,6 +41,7 @@ do_build() {
 }
 
 do_install() {
-    install -D -m 755 ${BUILDROOT}/*.deb ${DEPLOY_DIR_DEB}
+    install -d ${DEPLOY_DIR_DEB}
+    install -m 755 ${BUILDROOT}/*.deb ${DEPLOY_DIR_DEB}/
 }
 addtask do_install after do_build
