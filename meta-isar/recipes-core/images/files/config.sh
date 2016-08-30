@@ -1,4 +1,7 @@
 #!/bin/sh
+#
+# This software is a part of ISAR.
+# Copyright (C) 2015-2016 ilbers GmbH
 
 cat >> /etc/default/locale << EOF
 LANG=en_US.UTF-8
@@ -39,3 +42,22 @@ dpkg --configure -a
 mount proc -t proc /proc
 dpkg --configure -a
 umount /proc
+
+echo "root:root" |chpasswd
+
+cat > /etc/fstab << "EOF"
+# Begin /etc/fstab
+
+/dev/mmcblk0	/		ext4		defaults		1	1
+proc		/proc		proc		nosuid,noexec,nodev	0	0
+sysfs		/sys		sysfs		nosuid,noexec,nodev	0	0
+devpts		/dev/pts	devpts		gid=5,mode=620		0	0
+tmpfs		/run		tmpfs		defaults		0	0
+devtmpfs	/dev		devtmpfs	mode=0755,nosuid	0	0
+
+# End /etc/fstab
+EOF
+
+mknod /dev/console c 5 1
+
+echo isar > /etc/hostname

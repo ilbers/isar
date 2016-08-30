@@ -1,5 +1,6 @@
 # Root filesystem for packages building
 #
+# This software is a part of ISAR.
 # Copyright (C) 2015-2016 ilbers GmbH
 
 DESCRIPTION = "Multistrap development filesystem"

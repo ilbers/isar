@@ -1,2 +1,2 @@
 Common targets are:
-    core-image-base
+    isar-image-base

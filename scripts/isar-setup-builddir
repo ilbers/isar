@@ -127,7 +127,7 @@ You can now run 'bitbake <target>'
 
 EOM
 if [ -z "$ISARCORENOTESCONF" ]; then
-    ISARCORENOTESCONF="$ISARROOT/meta/conf/conf-notes.txt"
+    ISARCORENOTESCONF="$ISARROOT/meta-isar/conf/conf-notes.txt"
 fi
 [ ! -r "$ISARCORENOTESCONF" ] || cat $ISARCORENOTESCONF
 unset ISARCORENOTESCONF

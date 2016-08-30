@@ -1,0 +1,35 @@
+#!/bin/bash
+#
+# This software is a part of ISAR.
+# Copyright (C) 2015-2016 ilbers GmbH
+
+KERNEL="$1/tmp/deploy/images/vmlinuz-3.2.0-4-vexpress"
+INITRD="$1/tmp/deploy/images/initrd.img-3.2.0-4-vexpress"
+ROOTFS="$1/tmp/deploy/images/isar-image-base.ext4.img"
+
+start_qemuarm() {
+	qemu-system-arm                    \
+	    -m 1024M -M vexpress-a9        \
+	    -kernel $KERNEL                \
+	    -initrd $INITRD                \
+	    -append "root=/dev/mmcblk0 rw" \
+	    -sd $ROOTFS
+}
+
+show_help() {
+	echo "This script runs ISAR image in QEMU emulator."
+	echo
+	echo "Usage:"
+	echo "    start-isar-qemuarm [params] BUILD_DIR"
+	echo "BUILD_DIR is your ISAR build folder."
+	echo
+	echo "Parameters:"
+	echo "    --help        display this message and exit."
+}
+
+if [[ -z "$1" || "$1" == "--help" ]]; then
+	show_help
+	exit 0
+fi
+
+start_qemuarm $1

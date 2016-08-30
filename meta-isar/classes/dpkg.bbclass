@@ -1,3 +1,6 @@
+# This software is a part of ISAR.
+# Copyright (C) 2015-2016 ilbers GmbH
+
 DEPENDS += "buildroot"
 do_unpack[deptask] = "do_build"
 
@@ -20,7 +23,7 @@ python do_fetch() {
 addtask fetch before do_build
 
 do_unpack[dirs] = "${BUILDROOT}"
-S = "${BUILDROOT}"
+S ?= "${BUILDROOT}"
 python do_unpack() {
 	src_uri = (d.getVar('SRC_URI', True) or "").split()
 	if len(src_uri) == 0:

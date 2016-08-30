@@ -1,4 +1,7 @@
 #!/bin/bash
+#
+# This software is a part of ISAR.
+# Copyright (C) 2015-2016 ilbers GmbH
 
 # Go to build directory
 cd $1

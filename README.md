@@ -3,6 +3,8 @@ isar - Integration System for Automated Root filesystem generation
 Isar is a set of scripts for building software packages and repeatable
 generation of Debian-based root filesystems with customizations.
 
+Copyright (c) 2016 ilbers GmbH
+
 # Build
 
 1. Install and configure sudo (see TODO):
@@ -20,18 +22,24 @@ generation of Debian-based root filesystems with customizations.
 1. Initialize the build directory, e.g.:
 
         $ cd isar
-        $ . isar-init-build-env ../build
+        $ . isar-init-build-env build
 
 1. Build the root filesystem image:
 
-        $ bitbake core-image-base
+        $ bitbake isar-image-base
 
 Created image is in
 
-    tmp/deploy/images/core-image-base-zynq.sdimg
+    tmp/deploy/images/isar-image-base.ext4.img
 
 # Test
 
-Test the image with qemu:
+Test the image with QEMU:
 
-    start_armhf_vm
+        $ cd scripts
+        $ ./start-isar-qemuarm ../build
+
+Check test application:
+
+        $ hello
+        Hello, world!

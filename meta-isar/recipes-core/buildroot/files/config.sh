@@ -1,4 +1,7 @@
 #!/bin/sh
+#
+# This software is a part of ISAR.
+# Copyright (C) 2015-2016 ilbers GmbH
 
 cat >> /etc/default/locale << EOF
 LANG=en_US.UTF-8
