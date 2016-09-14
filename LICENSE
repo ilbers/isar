@@ -1,8 +1,8 @@
 Different components of isar are under different licenses (a mix of MIT and
 GPLv2). Please see:
 
-meta/COPYING.GPLv2 (GPLv2)
-meta/COPYING.MIT (MIT)
+meta/licenses/COPYING.GPLv2 (GPLv2)
+meta/licenses/COPYING.MIT (MIT)
 
 All metadata is MIT licensed unless otherwise stated. Source code
 included in tree for individual recipes is under the LICENSE stated in
