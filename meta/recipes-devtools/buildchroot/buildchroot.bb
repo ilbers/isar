@@ -1,33 +1,35 @@
-# Multistrap development root filesystem
+# Root filesystem for packages building
 #
+# This software is a part of ISAR.
 # Copyright (C) 2015-2016 ilbers GmbH
 
-DESCRIPTION = "Multistrap development root"
+DESCRIPTION = "Multistrap development filesystem"
 
 LICENSE = "gpl-2.0"
-LIC_FILES_CHKSUM = "file://LICENSE;md5=b234ee4d69f5fce4486a80fdaf4a4263"
+LIC_FILES_CHKSUM = "file://${LAYERDIR_isar}/licenses/COPYING.GPLv2;md5=751419260aa954499f7abaabaa882bbe"
 
 PV = "1.0"
 
-SRC_URI = "\
-    file://hooks/completion_chroot.sh \
-    file://multistrap.conf            \
-    file://setup.sh                   \
-    file://configscript.sh            \
-    file://LICENSE                    \
-"
-
-DEVROOT = "${WORKDIR}/../devroot/rootfs"
+DEBIAN_DISTRO ?= "wheezy"
+DEBIAN_TOOLS ?= "\
+                 gcc make build-essential debhelper autotools-dev dpkg locales docbook-to-man apt \
+                "
 
 do_build() {
-    #copy config files
-    install -d ${DEVROOT}
-    install -d ${WORKDIR}/hooks
-    install -m 644 ${THISDIR}/${PN}/multistrap.conf ${WORKDIR}
-    install -m 755 ${THISDIR}/${PN}/setup.sh ${WORKDIR}
-    install -m 755 ${THISDIR}/${PN}/configscript.sh ${WORKDIR}
-    install -m 755 ${THISDIR}/${PN}/hooks/* ${WORKDIR}/hooks
+    # Copy config files
+    install -m 644 ${THISDIR}/files/multistrap.conf.in ${WORKDIR}/multistrap.conf
+    install -m 755 ${THISDIR}/files/configscript.sh ${WORKDIR}
+    install -m 755 ${THISDIR}/files/setup.sh ${WORKDIR}
 
-    sudo multistrap -a armhf -d "${DEVROOT}" -f "${WORKDIR}/multistrap.conf" || true
-    sudo install -m 755 /usr/bin/qemu-arm-static ${DEVROOT}/usr/bin
+    # Adjust multistrap config
+    echo "suite=${DEBIAN_DISTRO}" >> ${WORKDIR}/multistrap.conf
+    echo "packages=${DEBIAN_TOOLS}" >> ${WORKDIR}/multistrap.conf
+    sed -i '/^configscript=/ s#$#./tmp/work/${PF}/configscript.sh#' ${WORKDIR}/multistrap.conf
+    sed -i '/^setupscript=/ s#$#./tmp/work/${PF}/setup.sh#' ${WORKDIR}/multistrap.conf
+
+    # Create root filesystem
+    sudo multistrap -a armhf -d "${BUILDROOTDIR}" -f "${WORKDIR}/multistrap.conf" || true
+
+    # Configure root filesystem
+    sudo chroot ${BUILDROOTDIR} /configscript.sh
 }

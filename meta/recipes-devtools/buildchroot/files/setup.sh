@@ -1,12 +1,11 @@
 #!/bin/sh
 #
+# This software is a part of ISAR.
+# Copyright (C) 2015-2016 ilbers GmbH
+#
 # Based on multistrap/examples/chroot.sh
 
 set -e
-
-echo "Configuring rootfs..."
-
-HOSTNAME="devroot"
 
 # The script is called with the following arguments:
 # $1 = $DIR  - the top directory of the bootstrapped system
@@ -16,42 +15,54 @@ HOSTNAME="devroot"
 
 TARGET=$1
 
-# upstart support
-if [ -x "$TARGET/sbin/initctl" ]; then
-        echo "initctl: Trying to prevent daemons from starting in $TARGET"
-        mv "$TARGET/sbin/start-stop-daemon" \
-            "$TARGET/sbin/start-stop-daemon.REAL"
-        echo \
-"#!/bin/sh
+# Prevent daemons from starting in buildchroot
+if [ -x "$TARGET/sbin/start-stop-daemon" ]; then
+    echo "initctl: Trying to prevent daemons from starting in $TARGET"
+
+    # Disable start-stop-daemon
+    mv $TARGET/sbin/start-stop-daemon $TARGET/sbin/start-stop-daemon.REAL
+    cat > $TARGET/sbin/start-stop-daemon << EOF
+#!/bin/sh
 echo
-echo \"Warning: Fake start-stop-daemon called, doing nothing\"" \
-            >"$TARGET/sbin/start-stop-daemon"
-        chmod 755 "$TARGET/sbin/start-stop-daemon"
-fi
-if [ -x "$TARGET/sbin/initctl" ]; then
-        echo "initctl: Trying to prevent daemons from starting in $TARGET"
-        mv "$TARGET/sbin/initctl" "$TARGET/sbin/initctl.REAL"
-        echo \
-"#!/bin/sh
-echo
-echo \"Warning: Fake initctl called, doing nothing\"" > "$TARGET/sbin/initctl"
-        chmod 755 "$TARGET/sbin/initctl"
+echo Warning: Fake start-stop-daemon called, doing nothing
+EOF
+    chmod 755 $TARGET/sbin/start-stop-daemon
 fi
 
-# sysvinit support - exit value of 101 is essential.
+if [ -x "$TARGET/sbin/initctl" ]; then
+    echo "start-stop-daemon: Trying to prevent daemons from starting in $TARGET"
+
+    # Disable initctl
+    mv "$TARGET/sbin/initctl" "$TARGET/sbin/initctl.REAL"
+    cat > $TARGET/sbin/initctl << EOF
+#!/bin/sh
+echo
+echo "Warning: Fake initctl called, doing nothing"
+EOF
+    chmod 755 $TARGET/sbin/initctl
+fi
+
+# Define sysvinit policy 101 to prevent daemons from starting in buildchroot
 if [ -x "$TARGET/sbin/init" -a ! -f "$TARGET/usr/sbin/policy-rc.d" ]; then
-        echo "sysvinit: Using policy-rc.d to prevent daemons from starting" \
-            "in $TARGET"
-        mkdir -p $TARGET/usr/sbin/
-        cat > $TARGET/usr/sbin/policy-rc.d << EOF
+    echo "sysvinit: Using policy-rc.d to prevent daemons from starting in $TARGET"
+
+    cat > $TARGET/usr/sbin/policy-rc.d << EOF
 #!/bin/sh
 echo "sysvinit: All runlevel operations denied by policy" >&2
 exit 101
 EOF
-        chmod a+x $TARGET/usr/sbin/policy-rc.d
+    chmod a+x $TARGET/usr/sbin/policy-rc.d
 fi
 
-
+# Install QEMU emulator to execute ARM binaries
 sudo cp /usr/bin/qemu-arm-static ${TARGET}/usr/bin
 
-echo ${HOSTNAME} >${TARGET}/etc/hostname
+# Set hostname
+echo "isar" > $TARGET/etc/hostname
+
+# Create packages build folder
+sudo install -d $TARGET/home/builder
+sudo chmod -R a+rw $TARGET/home/builder
+
+# Install host networking settings
+sudo cp /etc/resolv.conf $TARGET/etc
