@@ -1,46 +1,18 @@
 # Sample application
 #
+# This software is a part of ISAR.
 # Copyright (C) 2015-2016 ilbers GmbH
 
-inherit zynq-image
-
-DESCRIPTION = "Multistrap Root Filesystem"
+DESCRIPTION = "Sample application for ISAR"
 
 LICENSE = "gpl-2.0"
-LIC_FILES_CHKSUM = "file://LICENSE;md5=b234ee4d69f5fce4486a80fdaf4a4263"
+LIC_FILES_CHKSUM = "file://${LAYERDIR_isar}/licenses/COPYING.GPLv2;md5=751419260aa954499f7abaabaa882bbe"
 
 PV = "1.0"
 
-DEPENDS += "multi-devroot"
+SRC_URI = "git://github.com/ilbers/hello.git"
+SRCREV = "ad7065ecc4840cc436bfcdac427386dbba4ea719"
 
-SRC_URI = "\
-    file://hello.c \
-    file://LICENSE        \
-    file://Makefile       \
-"
+SRC_DIR = "git"
 
-S = "${WORKDIR}"
-
-DEVROOT = "${WORKDIR}/../devroot/rootfs"
-BUILDROOT = "${DEVROOT}/home/builder/${PN}"
-DEPLOYDIR = "${WORKDIR}/../devroot/deploy"
-
-do_build() {
-    # TODO: Integrate Debian package building
-    mkdir -p ${PKG_DIR}
-
-    sudo install -d ${BUILDROOT}
-    sudo install -m 644 ${THISDIR}/hello/hello.c ${BUILDROOT}
-    sudo install -m 644  ${THISDIR}/hello/Makefile ${BUILDROOT}
-
-    sudo chroot ${DEVROOT} /usr/bin/make -C /home/builder/${PN}
-}
-
-addtask do_install after do_build
-
-do_install() {
-    install -d ${DEPLOYDIR}
-    install -m 755 ${BUILDROOT}/hello ${DEPLOYDIR}
-}
-
-do_build[deptask] = "do_build"
+inherit dpkg
