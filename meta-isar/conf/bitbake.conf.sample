@@ -62,3 +62,6 @@ CACHE = "${TMPDIR}/cache"
 
 # Setup our default hash policy
 BB_SIGNATURE_HANDLER ?= "noop"
+
+include conf/local.conf
+include conf/machine/${MACHINE}.conf
