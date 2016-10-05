@@ -1,2 +1,1 @@
-Common targets are:
-    core-image-base
+No targets defined, please check your configuration.

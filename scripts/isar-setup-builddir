@@ -106,7 +106,7 @@ EOM
 fi
 
 if [ ! -f "$BUILDDIR/conf/bitbake.conf" ]; then
-    cp "$ISARROOT/meta-isar/conf/bitbake.conf.sample" \
+    cp "$ISARROOT/meta/conf/bitbake.conf.sample" \
        "$BUILDDIR/conf/bitbake.conf"
 fi
 
