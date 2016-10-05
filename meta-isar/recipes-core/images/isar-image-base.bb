@@ -36,6 +36,7 @@ do_rootfs() {
     sed -i 's|##DISTRO##|${DISTRO}|' ${WORKDIR}/multistrap.conf
     sed -i 's|##DISTRO_APT_SOURCE##|${DISTRO_APT_SOURCE}|' ${WORKDIR}/multistrap.conf
     sed -i 's|##DISTRO_SUITE##|${DISTRO_SUITE}|' ${WORKDIR}/multistrap.conf
+    sed -i 's|##DISTRO_COMPONENTS##|${DISTRO_COMPONENTS}|' ${WORKDIR}/multistrap.conf
     sed -i 's|##CONFIG_SCRIPT##|../configscript.sh|' ${WORKDIR}/multistrap.conf
     sed -i 's|##SETUP_SCRIPT##|../setup.sh|' ${WORKDIR}/multistrap.conf
 
