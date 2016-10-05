@@ -59,6 +59,9 @@ devtmpfs	/dev		devtmpfs	mode=0755,nosuid	0	0
 # End /etc/fstab
 EOF
 
+# Enable tty
+echo "T0:23:respawn:/sbin/getty -L $1 9600 vt100" >> /etc/inittab
+
 # Undo setup script changes
 if [ -x "$TARGET/sbin/start-stop-daemon.REAL" ]; then
     mv -f $TARGET/sbin/start-stop-daemon.REAL $TARGET/sbin/start-stop-daemon

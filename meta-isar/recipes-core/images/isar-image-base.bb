@@ -36,7 +36,7 @@ do_rootfs() {
     sudo multistrap -a armhf -d "${S}" -f "${WORKDIR}/multistrap.conf" || true
 
     # Configure root filesystem
-    sudo chroot ${S} /configscript.sh
+    sudo chroot ${S} /configscript.sh ${MACHINE_SERIAL}
     sudo rm ${S}/configscript.sh
 }
 
