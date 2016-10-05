@@ -24,11 +24,11 @@ generation of Debian-based root filesystems with customizations.
 
 1. Build the root filesystem image:
 
-        $ bitbake core-image-base
+        $ bitbake isar-image-base
 
 Created image is in
 
-    tmp/deploy/images/core-image-base-zynq.sdimg
+    tmp/deploy/images/isar-image-base.ext4.img
 
 # Test
 
