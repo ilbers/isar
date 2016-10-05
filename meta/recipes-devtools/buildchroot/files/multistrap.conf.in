@@ -4,10 +4,12 @@
 [General]
 noauth=true
 unpack=true
-bootstrap=Debian
-aptsources=Debian
-setupscript=
-configscript=
+bootstrap=##DISTRO##
+aptsources=##DISTRO##
+configscript=##CONFIG_SCRIPT##
+setupscript=##SETUP_SCRIPT##
 
-[Debian]
-source=http://httpredir.debian.org/debian
+[##DISTRO##]
+source=##DISTRO_APT_SOURCE##
+suite=##DISTRO_SUITE##
+packages=##BUILDCHROOT_PREINSTALL##
