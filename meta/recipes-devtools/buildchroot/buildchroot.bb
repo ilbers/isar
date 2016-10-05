@@ -30,6 +30,9 @@ do_build() {
     # Create root filesystem
     sudo multistrap -a armhf -d "${BUILDROOTDIR}" -f "${WORKDIR}/multistrap.conf" || true
 
+    # Install package builder script
+    sudo install -m 755 ${THISDIR}/files/build.sh ${BUILDROOTDIR}
+
     # Configure root filesystem
     sudo chroot ${BUILDROOTDIR} /configscript.sh
 }
