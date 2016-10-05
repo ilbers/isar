@@ -13,8 +13,13 @@ PV = "1.0"
 IMAGE_INSTALL ?= ""
 DEPENDS += "${IMAGE_INSTALL}"
 
-DEBIAN_DISTRO ?= "wheezy"
-DEBIAN_PACKAGES ?= ""
+DISTRO ?= "debian-wheezy"
+DISTRO_SUITE ?= "wheezy"
+DISTRO_ARCH ?= "armhf"
+DISTRO_CONFIG_SCRIPT ?= "debian-configscript.sh"
+
+IMAGE_PREINSTALL += "apt \
+                     dbus"
 
 S = "${WORKDIR}/rootfs"
 
@@ -23,17 +28,19 @@ inherit image
 do_rootfs() {
     # Copy config file
     install -m 644 ${THISDIR}/files/multistrap.conf.in ${WORKDIR}/multistrap.conf
-    install -m 755 ${THISDIR}/files/configscript.sh ${WORKDIR}
+    install -m 755 ${THISDIR}/files/${DISTRO_CONFIG_SCRIPT} ${WORKDIR}/configscript.sh
     install -m 755 ${THISDIR}/files/setup.sh ${WORKDIR}
 
     # Adjust multistrap config
-    echo "suite=${DEBIAN_DISTRO}" >> ${WORKDIR}/multistrap.conf
-    echo "packages=${DEBIAN_PACKAGES}" >> ${WORKDIR}/multistrap.conf
-    sed -i '/^configscript=/ s#$#../configscript.sh#' ${WORKDIR}/multistrap.conf
-    sed -i '/^setupscript=/ s#$#../setup.sh#' ${WORKDIR}/multistrap.conf
+    sed -i 's|##IMAGE_PREINSTALL##|${IMAGE_PREINSTALL}|' ${WORKDIR}/multistrap.conf
+    sed -i 's|##DISTRO##|${DISTRO}|' ${WORKDIR}/multistrap.conf
+    sed -i 's|##DISTRO_APT_SOURCE##|${DISTRO_APT_SOURCE}|' ${WORKDIR}/multistrap.conf
+    sed -i 's|##DISTRO_SUITE##|${DISTRO_SUITE}|' ${WORKDIR}/multistrap.conf
+    sed -i 's|##CONFIG_SCRIPT##|../configscript.sh|' ${WORKDIR}/multistrap.conf
+    sed -i 's|##SETUP_SCRIPT##|../setup.sh|' ${WORKDIR}/multistrap.conf
 
     # Create root filesystem
-    sudo multistrap -a armhf -d "${S}" -f "${WORKDIR}/multistrap.conf" || true
+    sudo multistrap -a ${DISTRO_ARCH} -d "${S}" -f "${WORKDIR}/multistrap.conf" || true
 
     # Configure root filesystem
     sudo chroot ${S} /configscript.sh ${MACHINE_SERIAL}
