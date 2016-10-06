@@ -3,18 +3,27 @@
 # Alexander Smirnov <asmirnov@ilbers.de>
 # Copyright (c) 2016 ilbers GmbH
 
-#!/bin/bash
+#!/bin/sh
+
+# Export $PATH to use 'parted' tool
+export PATH=$PATH:/sbin
 
 WORKSPACE=`pwd`
 
 . isar-init-build-env build
-bitbake isar-image-base
+bitbake multiconfig:qemuarm:isar-image-base multiconfig:rpi:isar-image-base
 
 cd $WORKSPACE
 mkdir images
 cd images
-cp ../build/tmp/deploy/images/isar-image-base.ext4.img .
-gzip -9 isar-image-base.ext4.img
+
+# Get QEMU image
+cp ../build/tmp/deploy/images/isar-image-base-qemuarm.ext4.img .
+gzip -9 isar-image-base-qemuarm.ext4.img
+
+# Get RPi SD card image
+cp ../build/tmp/deploy/images/isar-image-base.rpi-sdimg .
+gzip -9 isar-image-base.rpi-sdimg
 
 cd ..
 sudo rm -rf build
