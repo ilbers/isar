@@ -3,6 +3,11 @@ isar - Integration System for Automated Root filesystem generation
 Isar is a set of scripts for building software packages and repeatable
 generation of Debian-based root filesystems with customizations.
 
+The 'meta-isar' layer provides support for two machines: QEMU and
+Raspberry Pi.
+
+Tested with: RPi 1b, QEMU 1.1.2+dfsg-6a+deb7u12.
+
 # Build
 
 1. Install and configure sudo (see TODO):
@@ -22,6 +27,14 @@ generation of Debian-based root filesystems with customizations.
         $ cd isar
         $ . isar-init-build-env ../build
 
+By default isar builds image for QEMU machine. To build for Raspberry Pi,
+edit your config:
+
+        # vim conf/local.conf
+
+And replace "qemuarm" to "rpi" in MACHINE section.
+
+
 1. Build the root filesystem image:
 
         $ bitbake isar-image-base
@@ -32,6 +45,6 @@ Created image is in
 
 # Test
 
-Test the image with qemu:
+To test the QEMU image, run the following command:
 
-    start_armhf_vm
+        $ start_armhf_vm
