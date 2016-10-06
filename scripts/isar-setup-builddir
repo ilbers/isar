@@ -69,6 +69,7 @@ if [ -n "$TEMPLATECONF" ]; then
     ISARCORELAYERCONF="$TEMPLATECONF/bblayers.conf.sample"
     ISARCORELOCALCONF="$TEMPLATECONF/local.conf.sample"
     ISARCORENOTESCONF="$TEMPLATECONF/conf-notes.txt"
+    ISARMULTICONF="$TEMPLATECONF/multiconfig"
 fi
 
 unset SHOWYPDOC
@@ -131,3 +132,7 @@ if [ -z "$ISARCORENOTESCONF" ]; then
 fi
 [ ! -r "$ISARCORENOTESCONF" ] || cat $ISARCORENOTESCONF
 unset ISARCORENOTESCONF
+
+if [ -d "$ISARMULTICONF" ]; then
+    cp -r "$ISARMULTICONF" $BUILDDIR/conf
+fi

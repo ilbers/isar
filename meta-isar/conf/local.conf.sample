@@ -21,6 +21,15 @@
 MACHINE ??= "qemuarm"
 
 #
+# Multiple Configuration Selection
+#
+# If you want to use multiple configuration files for the build, list them in the
+# following option.
+#
+# This sets the default multiple configurations used:
+BBMULTICONFIG = "qemuarm rpi"
+
+#
 # Where to place downloads
 #
 # During a first build the system will download many different source code tarballs

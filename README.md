@@ -37,11 +37,17 @@ And replace "qemuarm" to "rpi" in MACHINE section.
 
 1. Build the root filesystem image:
 
-        $ bitbake isar-image-base
+Build image for QEMU:
 
-Created image is in
+        $ bitbake  multiconfig:qemuarm:isar-image-base
 
-    tmp/deploy/images/isar-image-base-qemuarm.ext4.img
+Build image for RPi:
+
+        $ bitbake  multiconfig:rpi:isar-image-base
+
+Created images are:
+
+        tmp/deploy/images/isar-image-base-*
 
 # Test
 
