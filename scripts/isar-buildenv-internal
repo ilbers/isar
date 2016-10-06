@@ -63,7 +63,7 @@ export BUILDDIR
 PATH=$ISARROOT/bitbake/bin:$ISARROOT/scripts:$PATH
 export PATH
 
-BBPATH="${BASEDIR}/meta-zynq/"
+BBPATH="${BUILDDIR}"
 export BBPATH
 
 BB_ENV_EXTRAWHITE="BASEDIR BUILDDIR"
