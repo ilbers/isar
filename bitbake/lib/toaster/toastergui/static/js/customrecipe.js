@@ -89,7 +89,21 @@ function customRecipePageInit(ctx) {
     var depsList = modal.find("#package-reverse-dep-list");
     var deps = pkgData.reverse_dependencies;
 
+    var depsCount = deps.length;
+    var vDepends = "depends";
+    var vPackage = "package";
+    var vThis = "this";
+    if (depsCount > 1) {
+      vDepends = "depend";
+      vPackage = "packages";
+      vThis = "these";
+    }
     modal.find(".package-to-rm-name").text(targetPkg.name);
+    modal.find(".reverse-deps-count").text(depsCount);
+    modal.find(".reverse-deps-count-plus1").text((depsCount+1) + " packages");
+    modal.find(".reverse-deps-depends").text(vDepends);
+    modal.find(".reverse-deps-package").text(vPackage);
+    modal.find(".reverse-deps-this").text(vThis);
 
     depsList.text("");
 
@@ -102,6 +116,8 @@ function customRecipePageInit(ctx) {
 
     modal.find("#package-reverse-deps-total-size").text(
       pkgData.reverse_dependencies_size_formatted);
+
+    targetPkg.depsRemoved = deps;
 
     rmdPkgReverseDepsModalBtn.data(targetPkg);
     modal.modal('show');
@@ -121,6 +137,10 @@ function customRecipePageInit(ctx) {
     var btnCell = $("#package-btn-cell-" + targetPkg.id);
     var inlineNotify = btnCell.children(".inline-notification");
 
+    var i;
+    var dep;
+    var depBtnCell;
+
     if (targetPkg.directive === 'add') {
       method = 'PUT';
       /* If the package had dependencies also notify that they were added */
@@ -132,15 +152,15 @@ function customRecipePageInit(ctx) {
         msg += " packages to " + ctx.recipe.name + ": ";
         msg += "<strong>" + targetPkg.name + "</strong> and its dependencies";
 
-        for (var i in targetPkg.depsAdded){
-          var dep = targetPkg.depsAdded[i];
+        for (i in targetPkg.depsAdded){
+          dep = targetPkg.depsAdded[i];
 
           msg += " <strong>" + dep.name + "</strong>";
 
           /* Add any cells currently in view to the list of cells which get
-           * an inline notification inside them and which change add/rm state
+           * an list-inline notification inside them and which change add/rm state
            */
-          var depBtnCell = $("#package-btn-cell-" + dep.pk);
+          depBtnCell = $("#package-btn-cell-" + dep.pk);
           btnCell = btnCell.add(depBtnCell);
 
           inlineNotify = inlineNotify.add(
@@ -159,9 +179,49 @@ function customRecipePageInit(ctx) {
 
     } else if (targetPkg.directive === 'remove') {
       method = 'DELETE';
-      msg += "removed 1 package from "+ctx.recipe.name+":";
-      msg += ' <strong>' + targetPkg.name + '<strong>';
-      inlineNotify.text("1 package removed");
+      var numPackageString = "1 package ";
+      var revDepList = "";
+      if (targetPkg.hasOwnProperty('depsRemoved') &&
+              targetPkg.depsRemoved.length > 0) {
+        var depsRemovedLength = targetPkg.depsRemoved.length;
+        var ending = "y: ";
+        var maxRevDepsDisplayed  = 5;
+        var d = 0;
+        if (depsRemovedLength > 1) {
+            ending = "ies: ";
+        }
+        numPackageString = (depsRemovedLength + 1) + " packages";
+        revDepList = " and its " + depsRemovedLength + " reverse dependenc" + ending;
+        for (i in targetPkg.depsRemoved){
+          /* include up to maxRevDepsDisplayed rev deps on the page notification */
+          var notShownCount = depsRemovedLength - maxRevDepsDisplayed;
+          dep = targetPkg.depsRemoved[i];
+          if (d < maxRevDepsDisplayed) {
+            if (d > 0) {
+                revDepList += ", ";
+            }
+            revDepList += dep.name;
+            d++;
+            if ((d === maxRevDepsDisplayed) && (notShownCount > 0)) {
+                revDepList += " and " + notShownCount + " more";
+            }
+          }
+
+          /* Add any cells currently in view to the list of cells which get
+           * an list-inline notification inside them and which change add/rm state
+           */
+          depBtnCell = $("#package-btn-cell-" + dep.pk);
+          btnCell = btnCell.add(depBtnCell);
+
+          inlineNotify = inlineNotify.add(
+            depBtnCell.children(".inline-notification"));
+        }
+      }
+      msg+= "removed " + numPackageString + " from " + ctx.recipe.name + ":";
+      msg += " <strong>" + targetPkg.name + "</strong>";
+      msg += revDepList;
+
+      inlineNotify.text(numPackageString + " removed");
     } else {
       throw("Unknown package directive: should be add or remove");
     }
@@ -205,13 +265,52 @@ function customRecipePageInit(ctx) {
     });
   }
 
+  $("#no-results-show-all-packages").click(function(){
+    $(".no-results-search-input").val("");
+  });
+
+  $("#no-results-remove-search-btn").click(function(){
+      $(".no-results-search-input").val("");
+      $(this).hide();
+  });
+
   /* Trigger a build of your custom image */
   $(".build-custom-image").click(function(){
-    libtoaster.startABuild(libtoaster.ctx.projectBuildsUrl,
-      libtoaster.ctx.projectId,
-      ctx.recipe.name,
+    libtoaster.startABuild(null, ctx.recipe.name,
       function(){
         window.location.replace(libtoaster.ctx.projectBuildsUrl);
     });
   });
+
+  $("#delete-custom-recipe-confirmed").click(function(e){
+    e.preventDefault();
+    libtoaster.disableAjaxLoadingTimer();
+    $(this).find('[data-role="submit-state"]').hide();
+    $(this).find('[data-role="loading-state"]').show();
+    $(this).attr("disabled", "disabled");
+
+    $.ajax({
+        type: 'DELETE',
+        url: ctx.recipe.xhrCustomRecipeUrl,
+        headers: { 'X-CSRFToken' : $.cookie('csrftoken')},
+        success: function (data) {
+          if (data.error !== "ok") {
+            console.warn(data.error);
+          } else {
+            var msg = $('<span>You have deleted <strong>1</strong> custom image: <strong id="deleted-custom-image-name"></strong></span>');
+            msg.find("#deleted-custom-image-name").text(ctx.recipe.name);
+
+            libtoaster.setNotification("custom-image-recipe-deleted",
+                                       msg.html());
+
+            window.location.replace(data.gotoUrl);
+          }
+        },
+        error: function (data) {
+          console.warn(data);
+        }
+    });
+  });
+
+
 }

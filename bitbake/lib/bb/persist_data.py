@@ -92,9 +92,9 @@ class SQLTable(collections.MutableMapping):
         self._execute("DELETE from %s where key=?;" % self.table, [key])
 
     def __setitem__(self, key, value):
-        if not isinstance(key, basestring):
+        if not isinstance(key, str):
             raise TypeError('Only string keys are supported')
-        elif not isinstance(value, basestring):
+        elif not isinstance(value, str):
             raise TypeError('Only string values are supported')
 
         data = self._execute("SELECT * from %s where key=?;" %
@@ -178,7 +178,7 @@ class PersistData(object):
         """
         Return a list of key + value pairs for a domain
         """
-        return self.data[domain].items()
+        return list(self.data[domain].items())
 
     def getValue(self, domain, key):
         """
@@ -201,6 +201,7 @@ class PersistData(object):
 def connect(database):
     connection = sqlite3.connect(database, timeout=5, isolation_level=None)
     connection.execute("pragma synchronous = off;")
+    connection.text_factory = str
     return connection
 
 def persist(domain, d):

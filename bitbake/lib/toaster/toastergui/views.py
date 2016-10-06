@@ -19,40 +19,36 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-# pylint: disable=method-hidden
-# Gives E:848, 4: An attribute defined in json.encoder line 162 hides this method (method-hidden)
-# which is an invalid warning
 
-import operator,re
+import re
 
-from django.db.models import F, Q, Sum, Count, Max
-from django.db import IntegrityError, Error
+from django.db.models import F, Q, Sum
+from django.db import IntegrityError
 from django.shortcuts import render, redirect, get_object_or_404
-from orm.models import Build, Target, Task, Layer, Layer_Version, Recipe, LogMessage, Variable
-from orm.models import Task_Dependency, Recipe_Dependency, Package, Package_File, Package_Dependency
-from orm.models import Target_Installed_Package, Target_File, Target_Image_File, BuildArtifact, CustomImagePackage
+from orm.models import Build, Target, Task, Layer, Layer_Version, Recipe
+from orm.models import LogMessage, Variable, Package_Dependency, Package
+from orm.models import Task_Dependency, Package_File
+from orm.models import Target_Installed_Package, Target_File
+from orm.models import TargetKernelFile, TargetSDKFile, Target_Image_File
 from orm.models import BitbakeVersion, CustomImageRecipe
-from bldcontrol import bbcontroller
-from django.views.decorators.cache import cache_control
+
 from django.core.urlresolvers import reverse, resolve
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.http import HttpResponseBadRequest, HttpResponseNotFound
+from django.http import HttpResponseNotFound
 from django.utils import timezone
-from django.utils.html import escape
 from datetime import timedelta, datetime
-from django.utils import formats
 from toastergui.templatetags.projecttags import json as jsonfilter
 from decimal import Decimal
 import json
+import os
 from os.path import dirname
-from functools import wraps
-import itertools
 import mimetypes
 
 import logging
 
 logger = logging.getLogger("toaster")
+
 
 class MimeTypeFinder(object):
     # setting this to False enables additional non-standard mimetypes
@@ -159,7 +155,7 @@ def _lv_to_dict(prj, x = None):
     return {"id": x.pk,
             "name": x.layer.name,
             "tooltip": "%s | %s" % (x.layer.vcs_url,x.get_vcs_reference()),
-            "detail": "(%s" % x.layer.vcs_url + (")" if x.up_branch == None else " | "+x.get_vcs_reference()+")"),
+            "detail": "(%s" % x.layer.vcs_url + (")" if x.release == None else " | "+x.get_vcs_reference()+")"),
             "giturl": x.layer.vcs_url,
             "layerdetailurl" : reverse('layerdetails', args=(prj.id,x.pk)),
             "revision" : x.get_vcs_reference(),
@@ -199,16 +195,19 @@ def _verify_parameters(g, mandatory_parameters):
     return None
 
 def _redirect_parameters(view, g, mandatory_parameters, *args, **kwargs):
-    import urllib
+    try:
+        from urllib import unquote, urlencode
+    except ImportError:
+        from urllib.parse import unquote, urlencode
     url = reverse(view, kwargs=kwargs)
     params = {}
     for i in g:
         params[i] = g[i]
     for i in mandatory_parameters:
         if not i in params:
-            params[i] = urllib.unquote(str(mandatory_parameters[i]))
+            params[i] = unquote(str(mandatory_parameters[i]))
 
-    return redirect(url + "?%s" % urllib.urlencode(params), permanent = False, **kwargs)
+    return redirect(url + "?%s" % urlencode(params), permanent = False, **kwargs)
 
 class RedirectException(Exception):
     def __init__(self, view, g, mandatory_parameters, *args, **kwargs):
@@ -228,10 +227,18 @@ OR_VALUE_SEPARATOR = "|"
 DESCENDING = "-"
 
 def __get_q_for_val(name, value):
-    if "OR" in value:
-        return reduce(operator.or_, map(lambda x: __get_q_for_val(name, x), [ x for x in value.split("OR") ]))
+    if "OR" in value or "AND" in value:
+        result = None
+        for x in value.split("OR"):
+             x = __get_q_for_val(name, x)
+             result = result | x if result else x
+        return result
     if "AND" in value:
-        return reduce(operator.and_, map(lambda x: __get_q_for_val(name, x), [ x for x in value.split("AND") ]))
+        result = None
+        for x in value.split("AND"):
+            x = __get_q_for_val(name, x)
+            result = result & x if result else x
+        return result
     if value.startswith("NOT"):
         value = value[3:]
         if value == 'None':
@@ -250,14 +257,18 @@ def _get_filtering_query(filter_string):
     and_keys = search_terms[0].split(AND_VALUE_SEPARATOR)
     and_values = search_terms[1].split(AND_VALUE_SEPARATOR)
 
-    and_query = []
+    and_query = None
     for kv in zip(and_keys, and_values):
         or_keys = kv[0].split(OR_VALUE_SEPARATOR)
         or_values = kv[1].split(OR_VALUE_SEPARATOR)
-        querydict = dict(zip(or_keys, or_values))
-        and_query.append(reduce(operator.or_, map(lambda x: __get_q_for_val(x, querydict[x]), [k for k in querydict])))
+        query = None
+        for key, val in zip(or_keys, or_values):
+            x = __get_q_for_val(key, val)
+            query = query | x if query else x
 
-    return reduce(operator.and_, [k for k in and_query])
+        and_query = and_query & query if and_query else query
+
+    return and_query
 
 def _get_toggle_order(request, orderkey, toggle_reverse = False):
     if toggle_reverse:
@@ -294,21 +305,24 @@ def _validate_input(field_input, model):
         # Check we are looking for a valid field
         valid_fields = model._meta.get_all_field_names()
         for field in field_input_list[0].split(AND_VALUE_SEPARATOR):
-            if not reduce(lambda x, y: x or y, [ field.startswith(x) for x in valid_fields ]):
-                return None, (field, [ x for x in valid_fields ])
+            if True in [field.startswith(x) for x in valid_fields]:
+                break
+        else:
+           return None, (field, valid_fields)
 
     return field_input, invalid
 
 # uses search_allowed_fields in orm/models.py to create a search query
 # for these fields with the supplied input text
 def _get_search_results(search_term, queryset, model):
-    search_objects = []
+    search_object = None
     for st in search_term.split(" "):
-        q_map = map(lambda x: Q(**{x+'__icontains': st}),
-                model.search_allowed_fields)
+        queries = None
+        for field in model.search_allowed_fields:
+            query = Q(**{field + '__icontains': st})
+            queries = queries | query if queries else query
 
-        search_objects.append(reduce(operator.or_, q_map))
-    search_object = reduce(operator.and_, search_objects)
+        search_object = search_object & queries if search_object else queries
     queryset = queryset.filter(search_object)
 
     return queryset
@@ -451,46 +465,58 @@ def builddashboard( request, build_id ):
     recipeCount = Recipe.objects.filter( layer_version__id__in = layerVersionId ).count( );
     tgts = Target.objects.filter( build_id = build_id ).order_by( 'target' );
 
-    ##
     # set up custom target list with computed package and image data
-    #
-
-    targets = [ ]
+    targets = []
     ntargets = 0
-    hasImages = False
-    targetHasNoImages = False
+
+    # True if at least one target for this build has an SDK artifact
+    # or image file
+    has_artifacts = False
+
     for t in tgts:
-        elem = { }
-        elem[ 'target' ] = t
-        if t.is_image:
-            hasImages = True
+        elem = {}
+        elem['target'] = t
+
+        target_has_images = False
+        image_files = []
+
         npkg = 0
         pkgsz = 0
         package = None
         for package in Package.objects.filter(id__in = [x.package_id for x in t.target_installed_package_set.all()]):
             pkgsz = pkgsz + package.size
-            if ( package.installed_name ):
+            if package.installed_name:
                 npkg = npkg + 1
-        elem[ 'npkg' ] = npkg
-        elem[ 'pkgsz' ] = pkgsz
-        ti = Target_Image_File.objects.filter( target_id = t.id )
-        imageFiles = [ ]
+        elem['npkg'] = npkg
+        elem['pkgsz'] = pkgsz
+        ti = Target_Image_File.objects.filter(target_id = t.id)
         for i in ti:
-            ndx = i.file_name.rfind( '/' )
-            if ( ndx < 0 ):
+            ndx = i.file_name.rfind('/')
+            if ndx < 0:
                 ndx = 0;
-            f = i.file_name[ ndx + 1: ]
-            imageFiles.append({
+            f = i.file_name[ndx + 1:]
+            image_files.append({
                 'id': i.id,
                 'path': f,
                 'size': i.file_size,
                 'suffix': i.suffix
             })
-        if t.is_image and (len(imageFiles) <= 0 or len(t.license_manifest_path) <= 0):
-            targetHasNoImages = True
-        elem[ 'imageFiles' ] = imageFiles
-        elem[ 'targetHasNoImages' ] = targetHasNoImages
-        targets.append( elem )
+        if len(image_files) > 0:
+            target_has_images = True
+        elem['targetHasImages'] = target_has_images
+
+        elem['imageFiles'] = image_files
+        elem['target_kernel_artifacts'] = t.targetkernelfile_set.all()
+
+        target_sdk_files = t.targetsdkfile_set.all()
+        target_sdk_artifacts_count = target_sdk_files.count()
+        elem['target_sdk_artifacts_count'] = target_sdk_artifacts_count
+        elem['target_sdk_artifacts'] = target_sdk_files
+
+        if target_has_images or target_sdk_artifacts_count > 0:
+            has_artifacts = True
+
+        targets.append(elem)
 
     ##
     # how many packages in this build - ignore anonymous ones
@@ -506,7 +532,8 @@ def builddashboard( request, build_id ):
 
     context = {
             'build'           : build,
-            'hasImages'       : hasImages,
+            'project'         : build.project,
+            'hasArtifacts'    : has_artifacts,
             'ntargets'        : ntargets,
             'targets'         : targets,
             'recipecount'     : recipeCount,
@@ -576,6 +603,7 @@ def task( request, build_id, task_id ):
             'log_body'        : log_body,
             'showing_matches' : False,
             'uri_list'        : uri_list,
+            'task_in_tasks_table_pg':  int(task_object.order / 25) + 1
     }
     if request.GET.get( 'show_matches', "" ):
         context[ 'showing_matches' ] = True
@@ -660,174 +688,6 @@ def recipe_packages(request, build_id, recipe_id):
     _set_parameters_values(pagesize, orderby, request)
     return response
 
-def target_common( request, build_id, target_id, variant ):
-    template = "target.html"
-    (pagesize, orderby) = _get_parameters_values(request, 25, 'name:+')
-    mandatory_parameters = { 'count': pagesize,  'page' : 1, 'orderby': orderby }
-    retval = _verify_parameters( request.GET, mandatory_parameters )
-    if retval:
-        return _redirect_parameters(
-                    variant, request.GET, mandatory_parameters,
-                    build_id = build_id, target_id = target_id )
-    ( filter_string, search_term, ordering_string ) = _search_tuple( request, Package )
-
-    # FUTURE:  get rid of nested sub-queries replacing with ManyToMany field
-    queryset = Package.objects.filter(
-                    size__gte = 0,
-                    id__in = Target_Installed_Package.objects.filter(
-                        target_id=target_id ).values( 'package_id' ))
-    packages_sum =  queryset.aggregate( Sum( 'installed_size' ))
-    queryset = _get_queryset(
-            Package, queryset, filter_string, search_term, ordering_string, 'name' )
-    queryset = queryset.select_related("recipe", "recipe__layer_version", "recipe__layer_version__layer")
-    packages = _build_page_range( Paginator(queryset, pagesize), request.GET.get( 'page', 1 ))
-
-
-
-    build = Build.objects.get( pk = build_id )
-
-    # bring in package dependencies
-    for p in packages.object_list:
-        p.runtime_dependencies = p.package_dependencies_source.filter(
-            target_id = target_id, dep_type=Package_Dependency.TYPE_TRDEPENDS ).select_related("depends_on")
-        p.reverse_runtime_dependencies = p.package_dependencies_target.filter(
-            target_id = target_id, dep_type=Package_Dependency.TYPE_TRDEPENDS ).select_related("package")
-    tc_package = {
-        'name'       : 'Package',
-        'qhelp'      : 'Packaged output resulting from building a recipe included in this image',
-        'orderfield' : _get_toggle_order( request, "name" ),
-        'ordericon'  : _get_toggle_order_icon( request, "name" ),
-        }
-    tc_packageVersion = {
-        'name'       : 'Package version',
-        'qhelp'      : 'The package version and revision',
-        }
-    tc_size = {
-        'name'       : 'Size',
-        'qhelp'      : 'The size of the package',
-        'orderfield' : _get_toggle_order( request, "size", True ),
-        'ordericon'  : _get_toggle_order_icon( request, "size" ),
-        'orderkey'   : 'size',
-        'clclass'    : 'size',
-        'dclass'     : 'span2',
-        }
-    if ( variant == 'target' ):
-        tc_size[ "hidden" ] = 0
-    else:
-        tc_size[ "hidden" ] = 1
-    tc_sizePercentage = {
-        'name'       : 'Size over total (%)',
-        'qhelp'      : 'Proportion of the overall size represented by this package',
-        'clclass'    : 'size_over_total',
-        'hidden'     : 1,
-        }
-    tc_license = {
-        'name'       : 'License',
-        'qhelp'      : 'The license under which the package is distributed. Separate license names u\
-sing | (pipe) means there is a choice between licenses. Separate license names using & (ampersand) m\
-eans multiple licenses exist that cover different parts of the source',
-        'orderfield' : _get_toggle_order( request, "license" ),
-        'ordericon'  : _get_toggle_order_icon( request, "license" ),
-        'orderkey'   : 'license',
-        'clclass'    : 'license',
-        }
-    if ( variant == 'target' ):
-        tc_license[ "hidden" ] = 1
-    else:
-        tc_license[ "hidden" ] = 0
-    tc_dependencies = {
-        'name'       : 'Dependencies',
-        'qhelp'      : "Package runtime dependencies (other packages)",
-        'clclass'    : 'depends',
-        }
-    if ( variant == 'target' ):
-        tc_dependencies[ "hidden" ] = 0
-    else:
-        tc_dependencies[ "hidden" ] = 1
-    tc_rdependencies = {
-        'name'       : 'Reverse dependencies',
-        'qhelp'      : 'Package run-time reverse dependencies (i.e. which other packages depend on this package',
-        'clclass'    : 'brought_in_by',
-        }
-    if ( variant == 'target' ):
-        tc_rdependencies[ "hidden" ] = 0
-    else:
-        tc_rdependencies[ "hidden" ] = 1
-    tc_recipe = {
-        'name'       : 'Recipe',
-        'qhelp'      : 'The name of the recipe building the package',
-        'orderfield' : _get_toggle_order( request, "recipe__name" ),
-        'ordericon'  : _get_toggle_order_icon( request, "recipe__name" ),
-        'orderkey'   : "recipe__name",
-        'clclass'    : 'recipe_name',
-        'hidden'     : 0,
-        }
-    tc_recipeVersion = {
-        'name'       : 'Recipe version',
-        'qhelp'      : 'Version and revision of the recipe building the package',
-        'clclass'    : 'recipe_version',
-        'hidden'     : 1,
-        }
-    tc_layer = {
-        'name'       : 'Layer',
-        'qhelp'      : 'The name of the layer providing the recipe that builds the package',
-        'orderfield' : _get_toggle_order( request, "recipe__layer_version__layer__name" ),
-        'ordericon'  : _get_toggle_order_icon( request, "recipe__layer_version__layer__name" ),
-        'orderkey'   : "recipe__layer_version__layer__name",
-        'clclass'    : 'layer_name',
-        'hidden'     : 1,
-        }
-    tc_layerBranch = {
-        'name'       : 'Layer branch',
-        'qhelp'      : 'The Git branch of the layer providing the recipe that builds the package',
-        'orderfield' : _get_toggle_order( request, "recipe__layer_version__branch" ),
-        'ordericon'  : _get_toggle_order_icon( request, "recipe__layer_version__branch" ),
-        'orderkey'   : "recipe__layer_version__branch",
-        'clclass'    : 'layer_branch',
-        'hidden'     : 1,
-        }
-    tc_layerCommit = {
-        'name'       : 'Layer commit',
-        'qhelp'      : 'The Git commit of the layer providing the recipe that builds the package',
-        'clclass'    : 'layer_commit',
-        'hidden'     : 1,
-        }
-
-    context = {
-        'objectname': variant,
-        'build'                : build,
-        'target'               : Target.objects.filter( pk = target_id )[ 0 ],
-        'objects'              : packages,
-        'packages_sum'         : packages_sum[ 'installed_size__sum' ],
-        'object_search_display': "packages included",
-        'default_orderby'      : orderby,
-        'tablecols'            : [
-                    tc_package,
-                    tc_packageVersion,
-                    tc_license,
-                    tc_size,
-                    tc_sizePercentage,
-                    tc_dependencies,
-                    tc_rdependencies,
-                    tc_recipe,
-                    tc_recipeVersion,
-                    tc_layer,
-                    tc_layerBranch,
-                    tc_layerCommit,
-                ]
-        }
-
-
-    response = render(request, template, context)
-    _set_parameters_values(pagesize, orderby, request)
-    return response
-
-def target( request, build_id, target_id ):
-    return( target_common( request, build_id, target_id, "target" ))
-
-def targetpkg( request, build_id, target_id ):
-    return( target_common( request, build_id, target_id, "targetpkg" ))
-
 from django.core.serializers.json import DjangoJSONEncoder
 from django.http import HttpResponse
 def xhr_dirinfo(request, build_id, target_id):
@@ -907,8 +767,8 @@ def _get_dir_entries(build_id, target_id, start):
             response.append(entry)
 
         except Exception as e:
-            print "Exception ", e
-            traceback.print_exc(e)
+            print("Exception ", e)
+            traceback.print_exc()
 
     # sort by directories first, then by name
     rsorted = sorted(response, key=lambda entry :  entry['name'])
@@ -936,7 +796,10 @@ def dirinfo(request, build_id, target_id, file_path=None):
             if head != sep:
                 dir_list.insert(0, head)
 
-    context = { 'build': Build.objects.get(pk=build_id),
+    build = Build.objects.get(pk=build_id)
+
+    context = { 'build': build,
+                'project': build.project,
                 'target': Target.objects.get(pk=target_id),
                 'packages_sum': packages_sum['installed_size__sum'],
                 'objects': objects,
@@ -946,18 +809,29 @@ def dirinfo(request, build_id, target_id, file_path=None):
     return render(request, template, context)
 
 def _find_task_dep(task_object):
-    return map(lambda x: x.depends_on, Task_Dependency.objects.filter(task=task_object).filter(depends_on__order__gt = 0).exclude(depends_on__outcome = Task.OUTCOME_NA).select_related("depends_on"))
-
+    tdeps = Task_Dependency.objects.filter(task=task_object).filter(depends_on__order__gt=0)
+    tdeps = tdeps.exclude(depends_on__outcome=Task.OUTCOME_NA).select_related("depends_on")
+    return [x.depends_on for x in tdeps]
 
 def _find_task_revdep(task_object):
-    tp = []
-    tp = map(lambda t: t.task, Task_Dependency.objects.filter(depends_on=task_object).filter(task__order__gt=0).exclude(task__outcome = Task.OUTCOME_NA).select_related("task", "task__recipe", "task__build"))
-    return tp
+    tdeps = Task_Dependency.objects.filter(depends_on=task_object).filter(task__order__gt=0)
+    tdeps = tdeps.exclude(task__outcome = Task.OUTCOME_NA).select_related("task", "task__recipe", "task__build")
+
+    # exclude self-dependencies to prevent infinite dependency loop
+    # in generateCoveredList2()
+    tdeps = tdeps.exclude(task=task_object)
+
+    return [tdep.task for tdep in tdeps]
 
 def _find_task_revdep_list(tasklist):
-    tp = []
-    tp = map(lambda t: t.task, Task_Dependency.objects.filter(depends_on__in=tasklist).filter(task__order__gt=0).exclude(task__outcome = Task.OUTCOME_NA).select_related("task", "task__recipe", "task__build"))
-    return tp
+    tdeps = Task_Dependency.objects.filter(depends_on__in=tasklist).filter(task__order__gt=0)
+    tdeps = tdeps.exclude(task__outcome=Task.OUTCOME_NA).select_related("task", "task__recipe", "task__build")
+
+    # exclude self-dependencies to prevent infinite dependency loop
+    # in generateCoveredList2()
+    tdeps = tdeps.exclude(task=F('depends_on'))
+
+    return [tdep.task for tdep in tdeps]
 
 def _find_task_provider(task_object):
     task_revdeps = _find_task_revdep(task_object)
@@ -970,393 +844,6 @@ def _find_task_provider(task_object):
             return trc
     return None
 
-def tasks_common(request, build_id, variant, task_anchor):
-# This class is shared between these pages
-#
-# Column    tasks  buildtime  diskio  cpuusage
-# --------- ------ ---------- ------- ---------
-# Cache      def
-# CPU                                   min -
-# Disk                         min -
-# Executed   def     def       def      def
-# Log
-# Order      def +
-# Outcome    def     def       def      def
-# Recipe     min     min       min      min
-# Version
-# Task       min     min       min      min
-# Time               min -
-#
-# 'min':on always, 'def':on by default, else hidden
-# '+' default column sort up, '-' default column sort down
-
-    anchor = request.GET.get('anchor', '')
-    if not anchor:
-        anchor=task_anchor
-
-    # default ordering depends on variant
-    if   'buildtime' == variant:
-        title_variant='Time'
-        object_search_display="time data"
-        filter_search_display="tasks"
-        (pagesize, orderby) = _get_parameters_values(request, 25, 'elapsed_time:-')
-    elif 'diskio'    == variant:
-        title_variant='Disk I/O'
-        object_search_display="disk I/O data"
-        filter_search_display="tasks"
-        (pagesize, orderby) = _get_parameters_values(request, 25, 'disk_io:-')
-    elif 'cputime'  == variant:
-        title_variant='CPU time'
-        object_search_display="CPU time data"
-        filter_search_display="tasks"
-        (pagesize, orderby) = _get_parameters_values(request, 25, 'cpu_time_system:-')
-    else :
-        title_variant='Tasks'
-        object_search_display="tasks"
-        filter_search_display="tasks"
-        (pagesize, orderby) = _get_parameters_values(request, 25, 'order:+')
-
-
-    mandatory_parameters = { 'count': pagesize,  'page' : 1, 'orderby': orderby }
-
-    template = 'tasks.html'
-    retval = _verify_parameters( request.GET, mandatory_parameters )
-    if retval:
-        if task_anchor:
-            mandatory_parameters['anchor']=task_anchor
-        return _redirect_parameters( variant, request.GET, mandatory_parameters, build_id = build_id)
-    (filter_string, search_term, ordering_string) = _search_tuple(request, Task)
-    queryset_all = Task.objects.filter(build=build_id).exclude(order__isnull=True).exclude(outcome=Task.OUTCOME_NA)
-    queryset_all = queryset_all.select_related("recipe", "build")
-
-    queryset_with_search = _get_queryset(Task, queryset_all, None , search_term, ordering_string, 'order')
-
-    if ordering_string.startswith('outcome'):
-        queryset = _get_queryset(Task, queryset_all, filter_string, search_term, 'order:+', 'order')
-        queryset = sorted(queryset, key=lambda ur: (ur.outcome_text), reverse=ordering_string.endswith('-'))
-    elif ordering_string.startswith('sstate_result'):
-        queryset = _get_queryset(Task, queryset_all, filter_string, search_term, 'order:+', 'order')
-        queryset = sorted(queryset, key=lambda ur: (ur.sstate_text), reverse=ordering_string.endswith('-'))
-    else:
-        queryset = _get_queryset(Task, queryset_all, filter_string, search_term, ordering_string, 'order')
-
-
-    # compute the anchor's page
-    if anchor:
-        request.GET = request.GET.copy()
-        del request.GET['anchor']
-        i=0
-        a=int(anchor)
-        count_per_page=int(pagesize)
-        for task_object in queryset.iterator():
-            if a == task_object.order:
-                new_page= (i / count_per_page ) + 1
-                request.GET.__setitem__('page', new_page)
-                mandatory_parameters['page']=new_page
-                return _redirect_parameters( variant, request.GET, mandatory_parameters, build_id = build_id)
-            i += 1
-
-    task_objects = _build_page_range(Paginator(queryset, pagesize),request.GET.get('page', 1))
-
-    # define (and modify by variants) the 'tablecols' members
-    tc_order={
-        'name':'Order',
-        'qhelp':'The running sequence of each task in the build',
-        'clclass': 'order', 'hidden' : 1,
-        'orderkey' : 'order',
-        'orderfield':_get_toggle_order(request, "order"),
-        'ordericon':_get_toggle_order_icon(request, "order")}
-    if 'tasks' == variant:
-        tc_order['hidden']='0'
-        del tc_order['clclass']
-
-    tc_recipe={
-        'name':'Recipe',
-        'qhelp':'The name of the recipe to which each task applies',
-        'orderkey' : 'recipe__name',
-        'orderfield': _get_toggle_order(request, "recipe__name"),
-        'ordericon':_get_toggle_order_icon(request, "recipe__name"),
-    }
-    tc_recipe_version={
-        'name':'Recipe version',
-        'qhelp':'The version of the recipe to which each task applies',
-        'clclass': 'recipe_version', 'hidden' : 1,
-    }
-    tc_task={
-        'name':'Task',
-        'qhelp':'The name of the task',
-        'orderfield': _get_toggle_order(request, "task_name"),
-        'ordericon':_get_toggle_order_icon(request, "task_name"),
-        'orderkey' : 'task_name',
-    }
-    tc_executed={
-        'name':'Executed',
-        'qhelp':"This value tells you if a task had to run (executed) in order to generate the task output, or if the output was provided by another task and therefore the task didn't need to run (not executed)",
-        'clclass': 'executed', 'hidden' : 0,
-        'orderfield': _get_toggle_order(request, "task_executed"),
-        'ordericon':_get_toggle_order_icon(request, "task_executed"),
-        'orderkey' : 'task_executed',
-        'filter' : {
-                   'class' : 'executed',
-                   'label': 'Show:',
-                   'options' : [
-                               ('Executed Tasks', 'task_executed:1', queryset_with_search.filter(task_executed=1).count()),
-                               ('Not Executed Tasks', 'task_executed:0', queryset_with_search.filter(task_executed=0).count()),
-                               ]
-                   }
-
-    }
-    tc_outcome={
-        'name':'Outcome',
-        'qhelp':"This column tells you if 'executed' tasks succeeded or failed. The column also tells you why 'not executed' tasks did not need to run",
-        'clclass': 'outcome', 'hidden' : 0,
-        'orderfield': _get_toggle_order(request, "outcome"),
-        'ordericon':_get_toggle_order_icon(request, "outcome"),
-        'orderkey' : 'outcome',
-        'filter' : {
-                   'class' : 'outcome',
-                   'label': 'Show:',
-                   'options' : [
-                               ('Succeeded Tasks', 'outcome:%d'%Task.OUTCOME_SUCCESS, queryset_with_search.filter(outcome=Task.OUTCOME_SUCCESS).count(), "'Succeeded' tasks are those that ran and completed during the build" ),
-                               ('Failed Tasks', 'outcome:%d'%Task.OUTCOME_FAILED, queryset_with_search.filter(outcome=Task.OUTCOME_FAILED).count(), "'Failed' tasks are those that ran but did not complete during the build"),
-                               ('Cached Tasks', 'outcome:%d'%Task.OUTCOME_CACHED, queryset_with_search.filter(outcome=Task.OUTCOME_CACHED).count(), 'Cached tasks restore output from the <code>sstate-cache</code> directory or mirrors'),
-                               ('Prebuilt Tasks', 'outcome:%d'%Task.OUTCOME_PREBUILT, queryset_with_search.filter(outcome=Task.OUTCOME_PREBUILT).count(),'Prebuilt tasks didn\'t need to run because their output was reused from a previous build'),
-                               ('Covered Tasks', 'outcome:%d'%Task.OUTCOME_COVERED, queryset_with_search.filter(outcome=Task.OUTCOME_COVERED).count(), 'Covered tasks didn\'t need to run because their output is provided by another task in this build'),
-                               ('Empty Tasks', 'outcome:%d'%Task.OUTCOME_EMPTY, queryset_with_search.filter(outcome=Task.OUTCOME_EMPTY).count(), 'Empty tasks have no executable content'),
-                               ]
-                   }
-
-    }
-
-    tc_cache={
-        'name':'Cache attempt',
-        'qhelp':'This column tells you if a task tried to restore output from the <code>sstate-cache</code> directory or mirrors, and reports the result: Succeeded, Failed or File not in cache',
-        'clclass': 'cache_attempt', 'hidden' : 0,
-        'orderfield': _get_toggle_order(request, "sstate_result"),
-        'ordericon':_get_toggle_order_icon(request, "sstate_result"),
-        'orderkey' : 'sstate_result',
-        'filter' : {
-                   'class' : 'cache_attempt',
-                   'label': 'Show:',
-                   'options' : [
-                               ('Tasks with cache attempts', 'sstate_result__gt:%d'%Task.SSTATE_NA, queryset_with_search.filter(sstate_result__gt=Task.SSTATE_NA).count(), 'Show all tasks that tried to restore ouput from the <code>sstate-cache</code> directory or mirrors'),
-                               ("Tasks with 'File not in cache' attempts", 'sstate_result:%d'%Task.SSTATE_MISS,  queryset_with_search.filter(sstate_result=Task.SSTATE_MISS).count(), 'Show tasks that tried to restore output, but did not find it in the <code>sstate-cache</code> directory or mirrors'),
-                               ("Tasks with 'Failed' cache attempts", 'sstate_result:%d'%Task.SSTATE_FAILED,  queryset_with_search.filter(sstate_result=Task.SSTATE_FAILED).count(), 'Show tasks that found the required output in the <code>sstate-cache</code> directory or mirrors, but could not restore it'),
-                               ("Tasks with 'Succeeded' cache attempts", 'sstate_result:%d'%Task.SSTATE_RESTORED,  queryset_with_search.filter(sstate_result=Task.SSTATE_RESTORED).count(), 'Show tasks that successfully restored the required output from the <code>sstate-cache</code> directory or mirrors'),
-                               ]
-                   }
-
-    }
-    #if   'tasks' == variant: tc_cache['hidden']='0';
-    tc_time={
-        'name':'Time (secs)',
-        'qhelp':'How long it took the task to finish in seconds',
-        'orderfield': _get_toggle_order(request, "elapsed_time", True),
-        'ordericon':_get_toggle_order_icon(request, "elapsed_time"),
-        'orderkey' : 'elapsed_time',
-        'clclass': 'time_taken', 'hidden' : 1,
-    }
-    if 'buildtime' == variant:
-        tc_time['hidden']='0'
-        del tc_time['clclass']
-        tc_cache['hidden']='1'
-
-    tc_cpu_time_system={
-        'name':'System CPU time (secs)',
-        'qhelp':'Total amount of time spent executing in kernel mode, in ' +
-                'seconds. Note that this time can be greater than the task ' +
-                'time due to parallel execution.',
-        'orderfield': _get_toggle_order(request, "cpu_time_system", True),
-        'ordericon':_get_toggle_order_icon(request, "cpu_time_system"),
-        'orderkey' : 'cpu_time_system',
-        'clclass': 'cpu_time_system', 'hidden' : 1,
-    }
-
-    tc_cpu_time_user={
-        'name':'User CPU time (secs)',
-        'qhelp':'Total amount of time spent executing in user mode, in seconds. ' +
-                'Note that this time can be greater than the task time due to ' +
-                'parallel execution.',
-        'orderfield': _get_toggle_order(request, "cpu_time_user", True),
-        'ordericon':_get_toggle_order_icon(request, "cpu_time_user"),
-        'orderkey' : 'cpu_time_user',
-        'clclass': 'cpu_time_user', 'hidden' : 1,
-    }
-
-    if 'cputime' == variant:
-        tc_cpu_time_system['hidden']='0'
-        tc_cpu_time_user['hidden']='0'
-        del tc_cpu_time_system['clclass']
-        del tc_cpu_time_user['clclass']
-        tc_cache['hidden']='1'
-
-    tc_diskio={
-        'name':'Disk I/O (bytes)',
-        'qhelp':'Number of bytes written to and read from the disk during the task',
-        'orderfield': _get_toggle_order(request, "disk_io", True),
-        'ordericon':_get_toggle_order_icon(request, "disk_io"),
-        'orderkey' : 'disk_io',
-        'clclass': 'disk_io', 'hidden' : 1,
-    }
-    if 'diskio' == variant:
-        tc_diskio['hidden']='0'
-        del tc_diskio['clclass']
-        tc_cache['hidden']='1'
-
-    build = Build.objects.get(pk=build_id)
-
-    context = { 'objectname': variant,
-                'object_search_display': object_search_display,
-                'filter_search_display': filter_search_display,
-                'mainheading': title_variant,
-                'build': build,
-                'objects': task_objects,
-                'default_orderby' : orderby,
-                'search_term': search_term,
-                'total_count': queryset_with_search.count(),
-                'tablecols':[
-                    tc_order,
-                    tc_recipe,
-                    tc_recipe_version,
-                    tc_task,
-                    tc_executed,
-                    tc_outcome,
-                    tc_cache,
-                    tc_time,
-                    tc_cpu_time_system,
-                    tc_cpu_time_user,
-                    tc_diskio,
-                ]}
-
-
-    response = render(request, template, context)
-    _set_parameters_values(pagesize, orderby, request)
-    return response
-
-def tasks(request, build_id):
-    return tasks_common(request, build_id, 'tasks', '')
-
-def tasks_task(request, build_id, task_id):
-    return tasks_common(request, build_id, 'tasks', task_id)
-
-def buildtime(request, build_id):
-    return tasks_common(request, build_id, 'buildtime', '')
-
-def diskio(request, build_id):
-    return tasks_common(request, build_id, 'diskio', '')
-
-def cputime(request, build_id):
-    return tasks_common(request, build_id, 'cputime', '')
-
-def recipes(request, build_id):
-    template = 'recipes.html'
-    (pagesize, orderby) = _get_parameters_values(request, 100, 'name:+')
-    mandatory_parameters = { 'count': pagesize,  'page' : 1, 'orderby' : orderby }
-    retval = _verify_parameters( request.GET, mandatory_parameters )
-    if retval:
-        return _redirect_parameters( 'recipes', request.GET, mandatory_parameters, build_id = build_id)
-    (filter_string, search_term, ordering_string) = _search_tuple(request, Recipe)
-    queryset = Recipe.objects.filter(layer_version__id__in=Layer_Version.objects.filter(build=build_id)).select_related("layer_version", "layer_version__layer")
-    queryset = _get_queryset(Recipe, queryset, filter_string, search_term, ordering_string, 'name')
-
-    recipes = _build_page_range(Paginator(queryset, pagesize),request.GET.get('page', 1))
-
-    # prefetch the forward and reverse recipe dependencies
-    deps = { }
-    revs = { }
-    queryset_dependency=Recipe_Dependency.objects.filter(recipe__layer_version__build_id = build_id).select_related("depends_on", "recipe")
-    for recipe in recipes:
-        deplist = [ ]
-        for recipe_dep in [x for x in queryset_dependency if x.recipe_id == recipe.id]:
-            deplist.append(recipe_dep)
-        deps[recipe.id] = deplist
-        revlist = [ ]
-        for recipe_dep in [x for x in queryset_dependency if x.depends_on_id == recipe.id]:
-            revlist.append(recipe_dep)
-        revs[recipe.id] = revlist
-
-    build = Build.objects.get(pk=build_id)
-
-    context = {
-        'objectname': 'recipes',
-        'build': build,
-        'objects': recipes,
-        'default_orderby' : 'name:+',
-        'recipe_deps' : deps,
-        'recipe_revs' : revs,
-        'tablecols':[
-            {
-                'name':'Recipe',
-                'qhelp':'Information about a single piece of software, including where to download the source, configuration options, how to compile the source files and how to package the compiled output',
-                'orderfield': _get_toggle_order(request, "name"),
-                'ordericon':_get_toggle_order_icon(request, "name"),
-            },
-            {
-                'name':'Recipe version',
-                'qhelp':'The recipe version and revision',
-            },
-            {
-                'name':'Dependencies',
-                'qhelp':'Recipe build-time dependencies (i.e. other recipes)',
-                'clclass': 'depends_on', 'hidden': 1,
-            },
-            {
-                'name':'Reverse dependencies',
-                'qhelp':'Recipe build-time reverse dependencies (i.e. the recipes that depend on this recipe)',
-                'clclass': 'depends_by', 'hidden': 1,
-            },
-            {
-                'name':'Recipe file',
-                'qhelp':'Path to the recipe .bb file',
-                'orderfield': _get_toggle_order(request, "file_path"),
-                'ordericon':_get_toggle_order_icon(request, "file_path"),
-                'orderkey' : 'file_path',
-                'clclass': 'recipe_file', 'hidden': 0,
-            },
-            {
-                'name':'Section',
-                'qhelp':'The section in which recipes should be categorized',
-                'orderfield': _get_toggle_order(request, "section"),
-                'ordericon':_get_toggle_order_icon(request, "section"),
-                'orderkey' : 'section',
-                'clclass': 'recipe_section', 'hidden': 0,
-            },
-            {
-                'name':'License',
-                'qhelp':'The list of source licenses for the recipe. Multiple license names separated by the pipe character indicates a choice between licenses. Multiple license names separated by the ampersand character indicates multiple licenses exist that cover different parts of the source',
-                'orderfield': _get_toggle_order(request, "license"),
-                'ordericon':_get_toggle_order_icon(request, "license"),
-                'orderkey' : 'license',
-                'clclass': 'recipe_license', 'hidden': 0,
-            },
-            {
-                'name':'Layer',
-                'qhelp':'The name of the layer providing the recipe',
-                'orderfield': _get_toggle_order(request, "layer_version__layer__name"),
-                'ordericon':_get_toggle_order_icon(request, "layer_version__layer__name"),
-                'orderkey' : 'layer_version__layer__name',
-                'clclass': 'layer_version__layer__name', 'hidden': 0,
-            },
-            {
-                'name':'Layer branch',
-                'qhelp':'The Git branch of the layer providing the recipe',
-                'orderfield': _get_toggle_order(request, "layer_version__branch"),
-                'ordericon':_get_toggle_order_icon(request, "layer_version__branch"),
-                'orderkey' : 'layer_version__branch',
-                'clclass': 'layer_version__branch', 'hidden': 1,
-            },
-            {
-                'name':'Layer commit',
-                'qhelp':'The Git commit of the layer providing the recipe',
-                'clclass': 'layer_version__layer__commit', 'hidden': 1,
-            },
-            ]
-        }
-
-    response = render(request, template, context)
-    _set_parameters_values(pagesize, orderby, request)
-    return response
-
 def configuration(request, build_id):
     template = 'configuration.html'
 
@@ -1364,10 +851,12 @@ def configuration(request, build_id):
                  'MACHINE', 'DISTRO', 'DISTRO_VERSION', 'TUNE_FEATURES', 'TARGET_FPU')
     context = dict(Variable.objects.filter(build=build_id, variable_name__in=var_names)\
                                            .values_list('variable_name', 'variable_value'))
+    build = Build.objects.get(pk=build_id)
     context.update({'objectname': 'configuration',
                     'object_search_display':'variables',
                     'filter_search_display':'variables',
-                    'build': Build.objects.get(pk=build_id),
+                    'build': build,
+                    'project': build.project,
                     'targets': Target.objects.filter(build=build_id)})
     return render(request, template, context)
 
@@ -1404,12 +893,15 @@ def configvars(request, build_id):
         file_filter += '/bitbake.conf'
     build_dir=re.sub("/tmp/log/.*","",Build.objects.get(pk=build_id).cooker_log_path)
 
+    build = Build.objects.get(pk=build_id)
+
     context = {
                 'objectname': 'configvars',
                 'object_search_display':'BitBake variables',
                 'filter_search_display':'variables',
                 'file_filter': file_filter,
-                'build': Build.objects.get(pk=build_id),
+                'build': build,
+                'project': build.project,
                 'objects' : variables,
                 'total_count':queryset_with_search.count(),
                 'default_orderby' : 'variable_name:+',
@@ -1423,7 +915,6 @@ def configvars(request, build_id):
                 },
                 {'name': 'Value',
                  'qhelp': "The value assigned to the variable",
-                 'dclass': "span4",
                 },
                 {'name': 'Set in file',
                  'qhelp': "The last configuration file that touched the variable value",
@@ -1460,99 +951,15 @@ def configvars(request, build_id):
     _set_parameters_values(pagesize, orderby, request)
     return response
 
-def bpackage(request, build_id):
-    template = 'bpackage.html'
-    (pagesize, orderby) = _get_parameters_values(request, 100, 'name:+')
-    mandatory_parameters = { 'count' : pagesize,  'page' : 1, 'orderby' : orderby }
-    retval = _verify_parameters( request.GET, mandatory_parameters )
-    if retval:
-        return _redirect_parameters( 'packages', request.GET, mandatory_parameters, build_id = build_id)
-    (filter_string, search_term, ordering_string) = _search_tuple(request, Package)
-    queryset = Package.objects.filter(build = build_id).filter(size__gte=0)
-    queryset = _get_queryset(Package, queryset, filter_string, search_term, ordering_string, 'name')
-
-    packages = _build_page_range(Paginator(queryset, pagesize),request.GET.get('page', 1))
-
-    build = Build.objects.get( pk = build_id )
-
-    context = {
-        'objectname': 'packages built',
-        'build': build,
-        'objects' : packages,
-        'default_orderby' : 'name:+',
-        'tablecols':[
-            {
-                'name':'Package',
-                'qhelp':'Packaged output resulting from building a recipe',
-                'orderfield': _get_toggle_order(request, "name"),
-                'ordericon':_get_toggle_order_icon(request, "name"),
-            },
-            {
-                'name':'Package version',
-                'qhelp':'The package version and revision',
-            },
-            {
-                'name':'Size',
-                'qhelp':'The size of the package',
-                'orderfield': _get_toggle_order(request, "size", True),
-                'ordericon':_get_toggle_order_icon(request, "size"),
-                'orderkey' : 'size',
-                'clclass': 'size', 'hidden': 0,
-                'dclass' : 'span2',
-            },
-            {
-                'name':'License',
-                'qhelp':'The license under which the package is distributed. Multiple license names separated by the pipe character indicates a choice between licenses. Multiple license names separated by the ampersand character indicates multiple licenses exist that cover different parts of the source',
-                'orderfield': _get_toggle_order(request, "license"),
-                'ordericon':_get_toggle_order_icon(request, "license"),
-                'orderkey' : 'license',
-                'clclass': 'license', 'hidden': 1,
-            },
-            {
-                'name':'Recipe',
-                'qhelp':'The name of the recipe building the package',
-                'orderfield': _get_toggle_order(request, "recipe__name"),
-                'ordericon':_get_toggle_order_icon(request, "recipe__name"),
-                'orderkey' : 'recipe__name',
-                'clclass': 'recipe__name', 'hidden': 0,
-            },
-            {
-                'name':'Recipe version',
-                'qhelp':'Version and revision of the recipe building the package',
-                'clclass': 'recipe__version', 'hidden': 1,
-            },
-            {
-                'name':'Layer',
-                'qhelp':'The name of the layer providing the recipe that builds the package',
-                'orderfield': _get_toggle_order(request, "recipe__layer_version__layer__name"),
-                'ordericon':_get_toggle_order_icon(request, "recipe__layer_version__layer__name"),
-                'orderkey' : 'recipe__layer_version__layer__name',
-                'clclass': 'recipe__layer_version__layer__name', 'hidden': 1,
-            },
-            {
-                'name':'Layer branch',
-                'qhelp':'The Git branch of the layer providing the recipe that builds the package',
-                'orderfield': _get_toggle_order(request, "recipe__layer_version__branch"),
-                'ordericon':_get_toggle_order_icon(request, "recipe__layer_version__branch"),
-                'orderkey' : 'recipe__layer_version__branch',
-                'clclass': 'recipe__layer_version__branch', 'hidden': 1,
-            },
-            {
-                'name':'Layer commit',
-                'qhelp':'The Git commit of the layer providing the recipe that builds the package',
-                'clclass': 'recipe__layer_version__layer__commit', 'hidden': 1,
-            },
-            ]
-        }
-
-    response = render(request, template, context)
-    _set_parameters_values(pagesize, orderby, request)
-    return response
-
 def bfile(request, build_id, package_id):
     template = 'bfile.html'
     files = Package_File.objects.filter(package = package_id)
-    context = {'build': Build.objects.get(pk=build_id), 'objects' : files}
+    build = Build.objects.get(pk=build_id)
+    context = {
+        'build': build,
+        'project': build.project,
+        'objects' : files
+    }
     return render(request, template, context)
 
 
@@ -1875,6 +1282,7 @@ def managedcontextprocessor(request):
 import toastermain.settings
 
 from orm.models import Project, ProjectLayer, ProjectTarget, ProjectVariable
+from bldcontrol.models import  BuildEnvironment
 
 # we have a set of functions if we're in managed mode, or
 # a default "page not available" simple functions for interactive mode
@@ -1884,7 +1292,7 @@ if True:
     from django.contrib.auth import authenticate, login
     from django.contrib.auth.decorators import login_required
 
-    from orm.models import Branch, LayerSource, ToasterSetting, Release, Machine, LayerVersionDependency
+    from orm.models import LayerSource, ToasterSetting, Release, Machine, LayerVersionDependency
     from bldcontrol.models import BuildRequest
 
     import traceback
@@ -1917,10 +1325,10 @@ if True:
                 if ptype == "build":
                     mandatory_fields.append('projectversion')
                 # make sure we have values for all mandatory_fields
-                if reduce( lambda x, y: x or y, map(lambda x: len(request.POST.get(x, '')) == 0, mandatory_fields)):
-                # set alert for missing fields
-                    raise BadParameterException("Fields missing: " +
-            ", ".join([x for x in mandatory_fields if len(request.POST.get(x, '')) == 0 ]))
+                missing = [field for field in mandatory_fields if len(request.POST.get(field, '')) == 0]
+                if missing:
+                    # set alert for missing fields
+                    raise BadParameterException("Fields missing: %s" % ", ".join(missing))
 
                 if not request.user.is_authenticated():
                     user = authenticate(username = request.POST.get('username', '_anonuser'), password = 'nopass')
@@ -1943,7 +1351,8 @@ if True:
 
             except (IntegrityError, BadParameterException) as e:
                 # fill in page with previously submitted values
-                map(lambda x: context.__setitem__(x, request.POST.get(x, "-- missing")), mandatory_fields)
+                for field in mandatory_fields:
+                    context.__setitem__(field, request.POST.get(field, "-- missing"))
                 if isinstance(e, IntegrityError) and "username" in str(e):
                     context['alert'] = "Your chosen username is already used"
                 else:
@@ -1952,128 +1361,11 @@ if True:
 
         raise Exception("Invalid HTTP method for this page")
 
-
-
     # Shows the edit project page
-    @_template_renderer('project.html')
     def project(request, pid):
-        prj = Project.objects.get(id = pid)
-
-        try:
-            puser = User.objects.get(id = prj.user_id)
-        except User.DoesNotExist:
-            puser = None
-
-        # execute POST requests
-        if request.method == "POST":
-            # add layers
-            if 'layerAdd' in request.POST and len(request.POST['layerAdd']) > 0:
-                for lc in Layer_Version.objects.filter(pk__in=[i for i in request.POST['layerAdd'].split(",") if len(i) > 0]):
-                    ProjectLayer.objects.get_or_create(project = prj, layercommit = lc)
-
-            # remove layers
-            if 'layerDel' in request.POST and len(request.POST['layerDel']) > 0:
-                for t in request.POST['layerDel'].strip().split(" "):
-                    pt = ProjectLayer.objects.filter(project = prj, layercommit_id = int(t)).delete()
-
-            if 'projectName' in request.POST:
-                prj.name = request.POST['projectName']
-                prj.save();
-
-            if 'projectVersion' in request.POST:
-                # If the release is the current project then return now
-                if prj.release.pk == int(request.POST.get('projectVersion',-1)):
-                    return {}
-
-                prj.release = Release.objects.get(pk = request.POST['projectVersion'])
-                # we need to change the bitbake version
-                prj.bitbake_version = prj.release.bitbake_version
-                prj.save()
-                # we need to change the layers
-                for project in prj.projectlayer_set.all():
-                    # find and add a similarly-named layer on the new branch
-                    try:
-                        layer_versions = prj.get_all_compatible_layer_versions()
-                        layer_versions = layer_versions.filter(layer__name = project.layercommit.layer.name)
-                        ProjectLayer.objects.get_or_create(project = prj, layercommit = layer_versions.first())
-                    except IndexError:
-                        pass
-                    finally:
-                        # get rid of the old entry
-                        project.delete()
-
-            if 'machineName' in request.POST:
-                machinevar = prj.projectvariable_set.get(name="MACHINE")
-                machinevar.value=request.POST['machineName']
-                machinevar.save()
-
-
-        # we use implicit knowledge of the current user's project to filter layer information, e.g.
-        pid = prj.id
-
-        from collections import Counter
-        freqtargets = []
-        try:
-            freqtargets += map(lambda x: x.target, reduce(lambda x, y: x + y,   map(lambda x: list(x.target_set.all()), Build.objects.filter(project = prj, outcome__lt = Build.IN_PROGRESS))))
-            freqtargets += map(lambda x: x.target, reduce(lambda x, y: x + y,   map(lambda x: list(x.brtarget_set.all()), BuildRequest.objects.filter(project = prj, state = BuildRequest.REQ_FAILED))))
-        except TypeError:
-            pass
-        freqtargets = Counter(freqtargets)
-        freqtargets = sorted(freqtargets, key = lambda x: freqtargets[x], reverse=True)
-
-        context = {
-            "project" : prj,
-            "lvs_nos" : Layer_Version.objects.all().count(),
-            "completedbuilds": Build.objects.exclude(outcome = Build.IN_PROGRESS).filter(project_id = pid),
-            "prj" : {"name": prj.name, },
-            "buildrequests" : prj.build_set.filter(outcome=Build.IN_PROGRESS),
-            "builds" : Build.get_recent(prj),
-            "layers" :  map(lambda x: {
-                        "id": x.layercommit.pk,
-                        "orderid": x.pk,
-                        "name" : x.layercommit.layer.name,
-                        "vcs_url": x.layercommit.layer.vcs_url,
-                        "vcs_reference" : x.layercommit.get_vcs_reference(),
-                        "url": x.layercommit.layer.layer_index_url,
-                        "layerdetailurl": x.layercommit.get_detailspage_url(prj.pk),
-                # This branch name is actually the release
-                        "branch" : { "name" : x.layercommit.get_vcs_reference(), "layersource" : x.layercommit.up_branch.layer_source.name if x.layercommit.up_branch != None else None}},
-                    prj.projectlayer_set.all().order_by("id")),
-            "targets" : map(lambda x: {"target" : x.target, "task" : x.task, "pk": x.pk}, prj.projecttarget_set.all()),
-            "variables": map(lambda x: (x.name, x.value), prj.projectvariable_set.all()),
-            "freqtargets": freqtargets[:5],
-            "releases": map(lambda x: {"id": x.pk, "name": x.name, "description":x.description}, Release.objects.all()),
-            "project_html": 1,
-            "recipesTypeAheadUrl": reverse('xhr_recipestypeahead', args=(prj.pk,)),
-            "projectBuildsUrl": reverse('projectbuilds', args=(prj.pk,)),
-        }
-
-        if prj.release is not None:
-            context['release'] = { "id": prj.release.pk, "name": prj.release.name, "description": prj.release.description}
-
-
-        try:
-            context["machine"] = {"name": prj.projectvariable_set.get(name="MACHINE").value}
-        except ProjectVariable.DoesNotExist:
-            context["machine"] = None
-        try:
-            context["distro"] = prj.projectvariable_set.get(name="DISTRO").value
-        except ProjectVariable.DoesNotExist:
-            context["distro"] = "-- not set yet"
-
-        return context
-
-    def xhr_response(fun):
-        """
-        Decorator for REST methods.
-        calls jsonfilter on the returned dictionary and returns result
-        as HttpResponse object of content_type application/json
-        """
-        @wraps(fun)
-        def wrapper(*args, **kwds):
-            return HttpResponse(jsonfilter(fun(*args, **kwds)),
-                                content_type="application/json")
-        return wrapper
+        project = Project.objects.get(pk=pid)
+        context = {"project": project}
+        return render(request, "project.html", context)
 
     def jsunittests(request):
         """ Provides a page for the js unit tests """
@@ -2082,13 +1374,23 @@ if True:
 
         name = "_js_unit_test_prj_"
 
-        # If there is an existing project by this name delete it. We don't want
-        # Lots of duplicates cluttering up the projects.
+        # If there is an existing project by this name delete it.
+        # We don't want Lots of duplicates cluttering up the projects.
         Project.objects.filter(name=name).delete()
 
-        new_project = Project.objects.create_project(name=name, release=release)
+        new_project = Project.objects.create_project(name=name,
+                                                     release=release)
+        # Add a layer
+        layer = new_project.get_all_compatible_layer_versions().first()
 
-        context = { 'project' : new_project }
+        ProjectLayer.objects.get_or_create(layercommit=layer,
+                                           project=new_project)
+
+        # make sure we have a machine set for this project
+        ProjectVariable.objects.get_or_create(project=new_project,
+                                              name="MACHINE",
+                                              value="qemux86")
+        context = {'project': new_project}
         return render(request, "js-unit-tests.html", context)
 
     from django.views.decorators.csrf import csrf_exempt
@@ -2123,8 +1425,7 @@ if True:
                     retval.append(project)
 
             return response({"error":"ok",
-                             "rows" : map( _lv_to_dict(prj),
-                                          map(lambda x: x.layercommit, retval ))
+                             "rows": [_lv_to_dict(prj) for y in [x.layercommit for x in retval]]
                             })
 
         except Exception as e:
@@ -2133,11 +1434,16 @@ if True:
     def xhr_configvaredit(request, pid):
         try:
             prj = Project.objects.get(id = pid)
+            # There are cases where user can add variables which hold values
+            # like http://, file:/// etc. In such case a simple split(":")
+            # would fail. One example is SSTATE_MIRRORS variable. So we use
+            # max_split var to handle them.
+            max_split = 1
             # add conf variables
             if 'configvarAdd' in request.POST:
                 t=request.POST['configvarAdd'].strip()
                 if ":" in t:
-                    variable, value = t.split(":")
+                    variable, value = t.split(":", max_split)
                 else:
                     variable = t
                     value = ""
@@ -2147,7 +1453,7 @@ if True:
             if 'configvarChange' in request.POST:
                 t=request.POST['configvarChange'].strip()
                 if ":" in t:
-                    variable, value = t.split(":")
+                    variable, value = t.split(":", max_split)
                 else:
                     variable = t
                     value = ""
@@ -2170,10 +1476,14 @@ if True:
 
             return_data = {
                 "error": "ok",
-                'configvars'   : map(lambda x: (x.name, x.value, x.pk), configvars_query),
+                'configvars': [(x.name, x.value, x.pk) for x in configvars_query]
                }
             try:
                 return_data['distro'] = ProjectVariable.objects.get(project = prj, name = "DISTRO").value,
+            except ProjectVariable.DoesNotExist:
+                pass
+            try:
+                return_data['dl_dir'] = ProjectVariable.objects.get(project = prj, name = "DL_DIR").value,
             except ProjectVariable.DoesNotExist:
                 pass
             try:
@@ -2188,6 +1498,10 @@ if True:
                 return_data['package_classes'] = ProjectVariable.objects.get(project = prj, name = "PACKAGE_CLASSES").value,
             except ProjectVariable.DoesNotExist:
                 pass
+            try:
+                return_data['sstate_dir'] = ProjectVariable.objects.get(project = prj, name = "SSTATE_DIR").value,
+            except ProjectVariable.DoesNotExist:
+                pass
 
             return HttpResponse(json.dumps( return_data ), content_type = "application/json")
 
@@ -2196,10 +1510,10 @@ if True:
 
 
     def xhr_importlayer(request):
-        if (not request.POST.has_key('vcs_url') or
-            not request.POST.has_key('name') or
-            not request.POST.has_key('git_ref') or
-            not request.POST.has_key('project_id')):
+        if ('vcs_url' not in request.POST or
+            'name' not in request.POST or
+            'git_ref' not in request.POST or
+            'project_id' not in request.POST):
           return HttpResponse(jsonfilter({"error": "Missing parameters; requires vcs_url, name, git_ref and project_id"}), content_type = "application/json")
 
         layers_added = [];
@@ -2214,18 +1528,12 @@ if True:
         prj = Project.objects.get(pk=request.POST['project_id'])
 
         # Strip trailing/leading whitespace from all values
-        # put into a new dict because POST one is immutable
+        # put into a new dict because POST one is immutable.
         post_data = dict()
-        for key,val in request.POST.iteritems():
+        for key,val in request.POST.items():
           post_data[key] = val.strip()
 
 
-        # We need to know what release the current project is so that we
-        # can set the imported layer's up_branch_id
-        prj_branch_name = Release.objects.get(pk=prj.release_id).branch_name
-        up_branch, branch_created = Branch.objects.get_or_create(name=prj_branch_name, layer_source_id=LayerSource.TYPE_IMPORTED)
-
-        layer_source = LayerSource.objects.get(sourcetype=LayerSource.TYPE_IMPORTED)
         try:
             layer, layer_created = Layer.objects.get_or_create(name=post_data['name'])
         except MultipleObjectsReturned:
@@ -2233,8 +1541,8 @@ if True:
 
         if layer:
             if layer_created:
-                layer.layer_source = layer_source
-                layer.vcs_url = post_data['vcs_url']
+                layer.vcs_url = post_data.get('vcs_url')
+                layer.local_source_dir = post_data.get('local_source_dir')
                 layer.up_date = timezone.now()
                 layer.save()
             else:
@@ -2244,18 +1552,30 @@ if True:
                 if layer.vcs_url != post_data['vcs_url']:
                     return HttpResponse(jsonfilter({"error": "hint-layer-exists-with-different-url" , "current_url" : layer.vcs_url, "current_id": layer.id }), content_type = "application/json")
 
-
-            layer_version, version_created = Layer_Version.objects.get_or_create(layer_source=layer_source, layer=layer, project=prj, up_branch_id=up_branch.id,branch=post_data['git_ref'],  commit=post_data['git_ref'], dirpath=post_data['dir_path'])
+            layer_version, version_created = \
+                Layer_Version.objects.get_or_create(
+                        layer_source=LayerSource.TYPE_IMPORTED,
+                        layer=layer, project=prj,
+                        release=prj.release,
+                        branch=post_data['git_ref'],
+                        commit=post_data['git_ref'],
+                        dirpath=post_data['dir_path'])
 
             if layer_version:
                 if not version_created:
-                    return HttpResponse(jsonfilter({"error": "hint-layer-version-exists", "existing_layer_version": layer_version.id }), content_type = "application/json")
+                    return HttpResponse(jsonfilter({"error":
+                                                    "hint-layer-version-exists",
+                                                    "existing_layer_version":
+                                                    layer_version.id }),
+                                        content_type = "application/json")
+
+                layer_version.layer_source = LayerSource.TYPE_IMPORTED
 
                 layer_version.up_date = timezone.now()
                 layer_version.save()
 
                 # Add the dependencies specified for this new layer
-                if (post_data.has_key("layer_deps") and
+                if ('layer_deps' in post_data and
                     version_created and
                     len(post_data["layer_deps"]) > 0):
                     for layer_dep_id in post_data["layer_deps"].split(","):
@@ -2304,228 +1624,6 @@ if True:
 
         return HttpResponse(jsonfilter(json_response), content_type = "application/json")
 
-    def xhr_updatelayer(request):
-
-        def error_response(error):
-            return HttpResponse(jsonfilter({"error": error}), content_type = "application/json")
-
-        if not request.POST.has_key("layer_version_id"):
-            return error_response("Please specify a layer version id")
-        try:
-            layer_version_id = request.POST["layer_version_id"]
-            layer_version = Layer_Version.objects.get(id=layer_version_id)
-        except Layer_Version.DoesNotExist:
-            return error_response("Cannot find layer to update")
-
-
-        if request.POST.has_key("vcs_url"):
-            layer_version.layer.vcs_url = request.POST["vcs_url"]
-        if request.POST.has_key("dirpath"):
-            layer_version.dirpath = request.POST["dirpath"]
-        if request.POST.has_key("commit"):
-            layer_version.commit = request.POST["commit"]
-        if request.POST.has_key("up_branch"):
-            layer_version.up_branch_id = int(request.POST["up_branch"])
-
-        if request.POST.has_key("add_dep"):
-            lvd = LayerVersionDependency(layer_version=layer_version, depends_on_id=request.POST["add_dep"])
-            lvd.save()
-
-        if request.POST.has_key("rm_dep"):
-            rm_dep = LayerVersionDependency.objects.get(layer_version=layer_version, depends_on_id=request.POST["rm_dep"])
-            rm_dep.delete()
-
-        if request.POST.has_key("summary"):
-            layer_version.layer.summary = request.POST["summary"]
-        if request.POST.has_key("description"):
-            layer_version.layer.description = request.POST["description"]
-
-        try:
-            layer_version.layer.save()
-            layer_version.save()
-        except Exception as e:
-            return error_response("Could not update layer version entry: %s" % e)
-
-        return HttpResponse(jsonfilter({"error": "ok",}), content_type = "application/json")
-
-    @xhr_response
-    def xhr_customrecipe(request):
-        """
-        Custom image recipe REST API
-
-        Entry point: /xhr_customrecipe/
-        Method: POST
-
-        Args:
-            name: name of custom recipe to create
-            project: target project id of orm.models.Project
-            base: base recipe id of orm.models.Recipe
-
-        Returns:
-            {"error": "ok",
-             "url": <url of the created recipe>}
-            or
-            {"error": <error message>}
-        """
-        # check if request has all required parameters
-        for param in ('name', 'project', 'base'):
-            if param not in request.POST:
-                return {"error": "Missing parameter '%s'" % param}
-
-        # get project and baserecipe objects
-        params = {}
-        for name, model in [("project", Project),
-                            ("base", Recipe)]:
-            value = request.POST[name]
-            try:
-                params[name] = model.objects.get(id=value)
-            except model.DoesNotExist:
-                return {"error": "Invalid %s id %s" % (name, value)}
-
-        # create custom recipe
-        try:
-
-            # Only allowed chars in name are a-z, 0-9 and -
-            if re.search(r'[^a-z|0-9|-]', request.POST["name"]):
-                return {"error": "invalid-name"}
-
-            # Are there any recipes with the name already?
-            for existing_recipe in Recipe.objects.filter(
-                name=request.POST["name"]):
-                try:
-                    ci = CustomImageRecipe.objects.get(pk=existing_recipe.pk)
-                    if ci.project == params["project"]:
-                        return {"error": "already-exists" }
-                    else:
-                        # It is a CustomImageRecipe but not in our project
-                        # this is fine so
-                        continue
-                except:
-                    # It isn't a CustomImageRecipe so is a recipe from
-                    # another source.
-                    return {"error": "already-exists" }
-
-            # create layer 'Custom layer' and verion if needed
-            layer = Layer.objects.get_or_create(
-                name="toaster-custom-images",
-                summary="Layer for custom recipes",
-                vcs_url="file:///toaster_created_layer")[0]
-
-            # Check if we have a layer version already
-            # We don't use get_or_create here because the dirpath will change
-            # and is a required field
-            lver = Layer_Version.objects.filter(Q(project=params['project']) &
-                                                Q(layer=layer) &
-                                                Q(build=None)).last()
-            if lver == None:
-                lver, created = Layer_Version.objects.get_or_create(
-                    project=params['project'],
-                    layer=layer,
-                    dirpath="toaster_created_layer")
-
-            # Add a dependency on our layer to the base recipe's layer
-            LayerVersionDependency.objects.get_or_create(
-                layer_version=lver,
-                depends_on=params["base"].layer_version)
-
-            # Add it to our current project if needed
-            ProjectLayer.objects.get_or_create(project=params['project'],
-                                               layercommit=lver,
-                                               optional=False)
-
-            # Create the actual recipe
-            recipe, created = CustomImageRecipe.objects.get_or_create(
-                name=request.POST["name"],
-                base_recipe=params["base"],
-                project=params["project"],
-                layer_version=lver,
-                is_image=True)
-
-            # If we created the object then setup these fields. They may get
-            # overwritten later on and cause the get_or_create to create a
-            # duplicate if they've changed.
-            if created:
-                recipe.file_path = request.POST["name"]
-                recipe.license = "MIT"
-                recipe.version = "0.1"
-                recipe.save()
-
-        except Error as err:
-            return {"error": "Can't create custom recipe: %s" % err}
-
-        # Find the package list from the last build of this recipe/target
-        target = Target.objects.filter(Q(build__outcome=Build.SUCCEEDED) &
-                                       Q(build__project=params['project']) &
-                                       (Q(target=params['base'].name) |
-                                        Q(target=recipe.name))).last()
-        if target:
-            # Copy in every package
-            # We don't want these packages to be linked to anything because
-            # that underlying data may change e.g. delete a build
-            for tpackage in target.target_installed_package_set.all():
-                try:
-                    built_package = tpackage.package
-                    # The package had no recipe information so is a ghost
-                    # package skip it
-                    if built_package.recipe == None:
-                        continue;
-
-                    config_package = CustomImagePackage.objects.get(
-                        name=built_package.name)
-
-                    recipe.includes_set.add(config_package)
-                except Exception as e:
-                    logger.warning("Error adding package %s %s" %
-                                   (tpackage.package.name, e))
-                    pass
-
-        return {"error": "ok",
-                "packages" : recipe.get_all_packages().count(),
-                "url": reverse('customrecipe', args=(params['project'].pk,
-                                                     recipe.id))}
-
-    @xhr_response
-    def xhr_customrecipe_id(request, recipe_id):
-        """
-        Set of ReST API processors working with recipe id.
-
-        Entry point: /xhr_customrecipe/<recipe_id>
-
-        Methods:
-            GET - Get details of custom image recipe
-            DELETE - Delete custom image recipe
-
-        Returns:
-            GET:
-            {"error": "ok",
-             "info": dictionary of field name -> value pairs
-                     of the CustomImageRecipe model}
-            DELETE:
-            {"error": "ok"}
-            or
-            {"error": <error message>}
-        """
-        try:
-            custom_recipe = CustomImageRecipe.objects.get(id=recipe_id)
-        except CustomImageRecipe.DoesNotExist:
-            return {"error": "Custom recipe with id=%s "
-                             "not found" % recipe_id}
-
-        if request.method == 'GET':
-            info = {"id" : custom_recipe.id,
-                    "name" : custom_recipe.name,
-                    "base_recipe_id": custom_recipe.base_recipe.id,
-                    "project_id": custom_recipe.project.id,
-                   }
-
-            return {"error": "ok", "info": info}
-
-        elif request.method == 'DELETE':
-            custom_recipe.delete()
-            return {"error": "ok"}
-        else:
-            return {"error": "Method %s is not supported" % request.method}
-
     def customrecipe_download(request, pid, recipe_id):
         recipe = get_object_or_404(CustomImageRecipe, pk=recipe_id)
 
@@ -2538,163 +1636,6 @@ if True:
 
         return response
 
-
-    @xhr_response
-    def xhr_customrecipe_packages(request, recipe_id, package_id):
-        """
-        ReST API to add/remove packages to/from custom recipe.
-
-        Entry point: /xhr_customrecipe/<recipe_id>/packages/<package_id>
-
-        Methods:
-            PUT - Add package to the recipe
-            DELETE - Delete package from the recipe
-            GET - Get package information
-
-        Returns:
-            {"error": "ok"}
-            or
-            {"error": <error message>}
-        """
-        try:
-            recipe = CustomImageRecipe.objects.get(id=recipe_id)
-        except CustomImageRecipe.DoesNotExist:
-            return {"error": "Custom recipe with id=%s "
-                             "not found" % recipe_id}
-
-        if package_id:
-            try:
-                package = CustomImagePackage.objects.get(id=package_id)
-            except Package.DoesNotExist:
-                return {"error": "Package with id=%s "
-                        "not found" % package_id}
-
-        if request.method == 'GET':
-            # If no package_id then list the current packages
-            if not package_id:
-                total_size = 0
-                packages = recipe.get_all_packages().values("id",
-                                                            "name",
-                                                            "version",
-                                                            "size")
-                for package in packages:
-                    package['size_formatted'] = \
-                            filtered_filesizeformat(package['size'])
-                    total_size += package['size']
-
-                return {"error": "ok",
-                        "packages" : list(packages),
-                        "total" : len(packages),
-                        "total_size" : total_size,
-                        "total_size_formatted" :
-                        filtered_filesizeformat(total_size)
-                       }
-            else:
-                all_current_packages = recipe.get_all_packages()
-
-                # Dependencies for package which aren't satisfied by the
-                # current packages in the custom image recipe
-                deps = package.package_dependencies_source.annotate(
-                    name=F('depends_on__name'),
-                    pk=F('depends_on__pk'),
-                    size=F('depends_on__size'),
-                ).values("name", "pk", "size").filter(
-                    # There are two depends types we don't know why
-                    (Q(dep_type=Package_Dependency.TYPE_TRDEPENDS) |
-                    Q(dep_type=Package_Dependency.TYPE_RDEPENDS)) &
-                    ~Q(pk__in=all_current_packages)
-                )
-
-                # Reverse dependencies which are needed by packages that are
-                # in the image
-                reverse_deps = package.package_dependencies_target.annotate(
-                    name=F('package__name'),
-                    pk=F('package__pk'),
-                    size=F('package__size'),
-                ).values("name", "pk", "size").exclude(
-                    ~Q(pk__in=all_current_packages)
-                )
-
-                total_size_deps = 0
-                total_size_reverse_deps = 0
-
-                for dep in deps:
-                    dep['size_formatted'] = \
-                            filtered_filesizeformat(dep['size'])
-                    total_size_deps += dep['size']
-
-                for dep in reverse_deps:
-                    dep['size_formatted'] = \
-                            filtered_filesizeformat(dep['size'])
-                    total_size_reverse_deps += dep['size']
-
-
-                return {"error": "ok",
-                        "id": package.pk,
-                        "name": package.name,
-                        "version": package.version,
-                        "unsatisfied_dependencies": list(deps),
-                        "unsatisfied_dependencies_size": total_size_deps,
-                        "unsatisfied_dependencies_size_formatted":
-                        filtered_filesizeformat(total_size_deps),
-                        "reverse_dependencies": list(reverse_deps),
-                        "reverse_dependencies_size": total_size_reverse_deps,
-                        "reverse_dependencies_size_formatted":
-                        filtered_filesizeformat(total_size_reverse_deps)}
-
-        included_packages = recipe.includes_set.values_list('pk', flat=True)
-
-        if request.method == 'PUT':
-            # If we're adding back a package which used to be included in this
-            # image all we need to do is remove it from the excludes
-            if package.pk in included_packages:
-                try:
-                   recipe.excludes_set.remove(package)
-                   return {"error": "ok"}
-                except Package.DoesNotExist:
-                   return {"error":
-                           "Package %s not found in excludes but was in "
-                           "included list" % package.name}
-
-            else:
-                recipe.appends_set.add(package)
-                # Add the dependencies we think will be added to the recipe
-                # as a result of appending this package.
-                # TODO this should recurse down the entire deps tree
-                for dep in package.package_dependencies_source.all_depends():
-                    try:
-                        cust_package = CustomImagePackage.objects.get(
-                                           name=dep.depends_on.name)
-
-                        recipe.includes_set.add(cust_package)
-                        try:
-                            # when adding the pre-requisite package make sure it's not in the
-                            #   excluded list from a prior removal.
-                            recipe.excludes_set.remove(cust_package)
-                        except Package.DoesNotExist:
-                            #   Don't care if the package had never been excluded
-                            pass
-                    except:
-                        logger.warning("Could not add package's suggested"
-                                       "dependencies to the list")
-
-            return {"error": "ok"}
-
-        elif request.method == 'DELETE':
-            try:
-                # If we're deleting a package which is included we need to
-                # Add it to the excludes list.
-                if package.pk in included_packages:
-                    recipe.excludes_set.add(package)
-                else:
-                    recipe.appends_set.remove(package)
-                return {"error": "ok"}
-            except CustomImageRecipe.DoesNotExist:
-                return {"error": "Tried to remove package that wasn't present"}
-
-        else:
-            return {"error": "Method %s is not supported" % request.method}
-
     def importlayer(request, pid):
         template = "importlayer.html"
         context = {
@@ -2702,20 +1643,33 @@ if True:
         }
         return render(request, template, context)
 
+    # TODO merge with api pseudo api here is used for deps modal
     @_template_renderer('layerdetails.html')
     def layerdetails(request, pid, layerid):
         project = Project.objects.get(pk=pid)
         layer_version = Layer_Version.objects.get(pk=layerid)
 
-        context = {'project' : project,
-            'layerversion' : layer_version,
-            'layerdeps' : {"list": [{"id": dep.id,
-                "name": dep.layer.name,
-                "layerdetailurl": reverse('layerdetails', args=(pid, dep.pk)),
-                "vcs_url": dep.layer.vcs_url,
-                "vcs_reference": dep.get_vcs_reference()} \
-                for dep in layer_version.get_alldeps(project.id)]},
-            'projectlayers': map(lambda prjlayer: prjlayer.layercommit.id, ProjectLayer.objects.filter(project=project))
+        project_layers = ProjectLayer.objects.filter(
+            project=project).values_list("layercommit_id",
+                                         flat=True)
+
+        context = {
+            'project': project,
+            'layer_source': LayerSource.types_dict(),
+            'layerversion': layer_version,
+            'layerdeps': {
+                "list": [
+                    {
+                        "id": dep.id,
+                        "name": dep.layer.name,
+                        "layerdetailurl": reverse('layerdetails',
+                                                  args=(pid, dep.pk)),
+                        "vcs_url": dep.layer.vcs_url,
+                        "vcs_reference": dep.get_vcs_reference()
+                    }
+                    for dep in layer_version.get_alldeps(project.id)]
+            },
+            'projectlayers': list(project_layers)
         }
 
         return context
@@ -2728,9 +1682,9 @@ if True:
         }
 
         vars_blacklist  = {
-            'DL_DR','PARALLEL_MAKE','BB_NUMBER_THREADS','SSTATE_DIR',
+            'PARALLEL_MAKE','BB_NUMBER_THREADS',
             'BB_DISKMON_DIRS','BB_NUMBER_THREADS','CVS_PROXY_HOST','CVS_PROXY_PORT',
-            'DL_DIR','PARALLEL_MAKE','SSTATE_DIR','SSTATE_DIR','SSTATE_MIRRORS','TMPDIR',
+            'PARALLEL_MAKE','TMPDIR',
             'all_proxy','ftp_proxy','http_proxy ','https_proxy'
             }
 
@@ -2768,6 +1722,19 @@ if True:
         except ProjectVariable.DoesNotExist:
             pass
         try:
+            if ProjectVariable.objects.get(project = prj, name = "DL_DIR").value == "${TOPDIR}/../downloads":
+                be = BuildEnvironment.objects.get(pk = str(1))
+                dl_dir = os.path.join(dirname(be.builddir), "downloads")
+                context['dl_dir'] =  dl_dir
+                pv, created = ProjectVariable.objects.get_or_create(project = prj, name = "DL_DIR")
+                pv.value = dl_dir
+                pv.save()
+            else:
+                context['dl_dir'] = ProjectVariable.objects.get(project = prj, name = "DL_DIR").value
+            context['dl_dir_defined'] = "1"
+        except (ProjectVariable.DoesNotExist, BuildEnvironment.DoesNotExist):
+            pass
+        try:
             context['fstypes'] =  ProjectVariable.objects.get(project = prj, name = "IMAGE_FSTYPES").value
             context['fstypes_defined'] = "1"
         except ProjectVariable.DoesNotExist:
@@ -2781,6 +1748,19 @@ if True:
             context['package_classes'] =  ProjectVariable.objects.get(project = prj, name = "PACKAGE_CLASSES").value
             context['package_classes_defined'] = "1"
         except ProjectVariable.DoesNotExist:
+            pass
+        try:
+            if ProjectVariable.objects.get(project = prj, name = "SSTATE_DIR").value == "${TOPDIR}/../sstate-cache":
+                be = BuildEnvironment.objects.get(pk = str(1))
+                sstate_dir = os.path.join(dirname(be.builddir), "sstate-cache")
+                context['sstate_dir'] = sstate_dir
+                pv, created = ProjectVariable.objects.get_or_create(project = prj, name = "SSTATE_DIR")
+                pv.value = sstate_dir
+                pv.save()
+            else:
+                context['sstate_dir'] = ProjectVariable.objects.get(project = prj, name = "SSTATE_DIR").value
+            context['sstate_dir_defined'] = "1"
+        except (ProjectVariable.DoesNotExist, BuildEnvironment.DoesNotExist):
             pass
 
         return context
@@ -2801,11 +1781,19 @@ if True:
         elif artifact_type == "imagefile":
             file_name = Target_Image_File.objects.get(target__build = build, pk = artifact_id).file_name
 
-        elif artifact_type == "buildartifact":
-            file_name = BuildArtifact.objects.get(build = build, pk = artifact_id).file_name
+        elif artifact_type == "targetkernelartifact":
+            target = TargetKernelFile.objects.get(pk=artifact_id)
+            file_name = target.file_name
+
+        elif artifact_type == "targetsdkartifact":
+            target = TargetSDKFile.objects.get(pk=artifact_id)
+            file_name = target.file_name
 
         elif artifact_type == "licensemanifest":
             file_name = Target.objects.get(build = build, pk = artifact_id).license_manifest_path
+
+        elif artifact_type == "packagemanifest":
+            file_name = Target.objects.get(build = build, pk = artifact_id).package_manifest_path
 
         elif artifact_type == "tasklogfile":
             file_name = Task.objects.get(build = build, pk = artifact_id).logfile
@@ -2832,7 +1820,7 @@ if True:
             )
 
             if file_name and response_file_name:
-                fsock = open(file_name, "r")
+                fsock = open(file_name, "rb")
                 content_type = MimeTypeFinder.get_mimetype(file_name)
 
                 response = HttpResponse(fsock, content_type = content_type)
@@ -2843,5 +1831,5 @@ if True:
                 return response
             else:
                 return render(request, "unavailable_artifact.html")
-        except ObjectDoesNotExist, IOError:
+        except (ObjectDoesNotExist, IOError):
             return render(request, "unavailable_artifact.html")

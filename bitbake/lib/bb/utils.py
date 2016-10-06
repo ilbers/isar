@@ -27,6 +27,8 @@ import bb
 import bb.msg
 import multiprocessing
 import fcntl
+import imp
+import itertools
 import subprocess
 import glob
 import fnmatch
@@ -34,12 +36,15 @@ import traceback
 import errno
 import signal
 import ast
-from commands import getstatusoutput
+import collections
+import copy
+from subprocess import getstatusoutput
 from contextlib import contextmanager
 from ctypes import cdll
 
-
 logger = logging.getLogger("BitBake.Util")
+python_extensions = [e for e, _, _ in imp.get_suffixes()]
+
 
 def clean_context():
     return {
@@ -71,7 +76,7 @@ def explode_version(s):
             r.append((0, int(m.group(1))))
             s = m.group(2)
             continue
-        if s[0] in string.letters:
+        if s[0] in string.ascii_letters:
             m = alpha_regexp.match(s)
             r.append((1, m.group(1)))
             s = m.group(2)
@@ -188,7 +193,7 @@ def explode_dep_versions2(s):
     "DEPEND1 (optional version) DEPEND2 (optional version) ..."
     and return a dictionary of dependencies and versions.
     """
-    r = {}
+    r = collections.OrderedDict()
     l = s.replace(",", "").split()
     lastdep = None
     lastcmp = ""
@@ -245,6 +250,7 @@ def explode_dep_versions2(s):
         if not (i in r and r[i]):
             r[lastdep] = []
 
+    r = collections.OrderedDict(sorted(r.items(), key=lambda x: x[0]))
     return r
 
 def explode_dep_versions(s):
@@ -369,10 +375,16 @@ def _print_exception(t, value, tb, realfile, text, context):
             level = level + 1
 
         error.append("Exception: %s" % ''.join(exception))
+
+        # If the exception is from spwaning a task, let's be helpful and display
+        # the output (which hopefully includes stderr).
+        if isinstance(value, subprocess.CalledProcessError):
+            error.append("Subprocess output:")
+            error.append(value.output.decode("utf-8", errors="ignore"))
     finally:
         logger.error("\n".join(error))
 
-def better_exec(code, context, text = None, realfile = "<code>"):
+def better_exec(code, context, text = None, realfile = "<code>", pythonexception=False):
     """
     Similiar to better_compile, better_exec will
     print the lines that are responsible for the
@@ -389,6 +401,8 @@ def better_exec(code, context, text = None, realfile = "<code>"):
         # Error already shown so passthrough, no need for traceback
         raise
     except Exception as e:
+        if pythonexception:
+            raise
         (t, value, tb) = sys.exc_info()
         try:
             _print_exception(t, value, tb, realfile, text, context)
@@ -401,8 +415,13 @@ def better_exec(code, context, text = None, realfile = "<code>"):
 def simple_exec(code, context):
     exec(code, get_context(), context)
 
-def better_eval(source, locals):
-    return eval(source, get_context(), locals)
+def better_eval(source, locals, extraglobals = None):
+    ctx = get_context()
+    if extraglobals:
+        ctx = copy.copy(ctx)
+        for g in extraglobals:
+            ctx[g] = extraglobals[g]
+    return eval(source, ctx, locals)
 
 @contextmanager
 def fileslocked(files):
@@ -561,6 +580,8 @@ def preserved_envvars_exported():
         'SHELL',
         'TERM',
         'USER',
+        'LC_ALL',
+        'BBSERVER',
     ]
 
 def preserved_envvars():
@@ -580,13 +601,18 @@ def filter_environment(good_vars):
     """
 
     removed_vars = {}
-    for key in os.environ.keys():
+    for key in list(os.environ):
         if key in good_vars:
             continue
 
         removed_vars[key] = os.environ[key]
-        os.unsetenv(key)
         del os.environ[key]
+
+    # If we spawn a python process, we need to have a UTF-8 locale, else python's file
+    # access methods will use ascii. You can't change that mode once the interpreter is
+    # started so we have to ensure a locale is set. Ideally we'd use C.UTF-8 but not all
+    # distros support that and we need to set something.
+    os.environ["LC_ALL"] = "en_US.UTF-8"
 
     if removed_vars:
         logger.debug(1, "Removed the following variables from the environment: %s", ", ".join(removed_vars.keys()))
@@ -627,7 +653,7 @@ def empty_environment():
     """
     Remove all variables from the environment.
     """
-    for s in os.environ.keys():
+    for s in list(os.environ.keys()):
         os.unsetenv(s)
         del os.environ[s]
 
@@ -816,7 +842,7 @@ def copyfile(src, dest, newmtime = None, sstat = None):
         if not sstat:
             sstat = os.lstat(src)
     except Exception as e:
-        logger.warn("copyfile: stat of %s failed (%s)" % (src, e))
+        logger.warning("copyfile: stat of %s failed (%s)" % (src, e))
         return False
 
     destexists = 1
@@ -843,7 +869,7 @@ def copyfile(src, dest, newmtime = None, sstat = None):
             #os.lchown(dest,sstat[stat.ST_UID],sstat[stat.ST_GID])
             return os.lstat(dest)
         except Exception as e:
-            logger.warn("copyfile: failed to create symlink %s to %s (%s)" % (dest, target, e))
+            logger.warning("copyfile: failed to create symlink %s to %s (%s)" % (dest, target, e))
             return False
 
     if stat.S_ISREG(sstat[stat.ST_MODE]):
@@ -858,7 +884,7 @@ def copyfile(src, dest, newmtime = None, sstat = None):
             shutil.copyfile(src, dest + "#new")
             os.rename(dest + "#new", dest)
         except Exception as e:
-            logger.warn("copyfile: copy %s to %s failed (%s)" % (src, dest, e))
+            logger.warning("copyfile: copy %s to %s failed (%s)" % (src, dest, e))
             return False
         finally:
             if srcchown:
@@ -869,13 +895,13 @@ def copyfile(src, dest, newmtime = None, sstat = None):
         #we don't yet handle special, so we need to fall back to /bin/mv
         a = getstatusoutput("/bin/cp -f " + "'" + src + "' '" + dest + "'")
         if a[0] != 0:
-            logger.warn("copyfile: failed to copy special file %s to %s (%s)" % (src, dest, a))
+            logger.warning("copyfile: failed to copy special file %s to %s (%s)" % (src, dest, a))
             return False # failure
     try:
         os.lchown(dest, sstat[stat.ST_UID], sstat[stat.ST_GID])
         os.chmod(dest, stat.S_IMODE(sstat[stat.ST_MODE])) # Sticky is reset on chown
     except Exception as e:
-        logger.warn("copyfile: failed to chown/chmod %s (%s)" % (dest, e))
+        logger.warning("copyfile: failed to chown/chmod %s (%s)" % (dest, e))
         return False
 
     if newmtime:
@@ -922,15 +948,33 @@ def to_boolean(string, default=None):
         raise ValueError("Invalid value for to_boolean: %s" % string)
 
 def contains(variable, checkvalues, truevalue, falsevalue, d):
+    """Check if a variable contains all the values specified.
+
+    Arguments:
+
+    variable -- the variable name. This will be fetched and expanded (using
+    d.getVar(variable, True)) and then split into a set().
+
+    checkvalues -- if this is a string it is split on whitespace into a set(),
+    otherwise coerced directly into a set().
+
+    truevalue -- the value to return if checkvalues is a subset of variable.
+
+    falsevalue -- the value to return if variable is empty or if checkvalues is
+    not a subset of variable.
+
+    d -- the data store.
+    """
+
     val = d.getVar(variable, True)
     if not val:
         return falsevalue
     val = set(val.split())
-    if isinstance(checkvalues, basestring):
+    if isinstance(checkvalues, str):
         checkvalues = set(checkvalues.split())
     else:
         checkvalues = set(checkvalues)
-    if checkvalues.issubset(val): 
+    if checkvalues.issubset(val):
         return truevalue
     return falsevalue
 
@@ -939,7 +983,7 @@ def contains_any(variable, checkvalues, truevalue, falsevalue, d):
     if not val:
         return falsevalue
     val = set(val.split())
-    if isinstance(checkvalues, basestring):
+    if isinstance(checkvalues, str):
         checkvalues = set(checkvalues.split())
     else:
         checkvalues = set(checkvalues)
@@ -1008,7 +1052,7 @@ def exec_flat_python_func(func, *args, **kwargs):
         aidx += 1
     # Handle keyword arguments
     context.update(kwargs)
-    funcargs.extend(['%s=%s' % (arg, arg) for arg in kwargs.iterkeys()])
+    funcargs.extend(['%s=%s' % (arg, arg) for arg in kwargs.keys()])
     code = 'retval = %s(%s)' % (func, ', '.join(funcargs))
     comp = bb.utils.better_compile(code, '<string>', '<string>')
     bb.utils.better_exec(comp, context, code, '<string>')
@@ -1037,7 +1081,7 @@ def edit_metadata(meta_lines, variables, varfunc, match_overrides=False):
                 newlines: list of lines up to this point. You can use
                     this to prepend lines before this variable setting
                     if you wish.
-            and should return a three-element tuple:
+            and should return a four-element tuple:
                 newvalue: new value to substitute in, or None to drop
                     the variable setting entirely. (If the removal
                     results in two consecutive blank lines, one of the
@@ -1051,6 +1095,8 @@ def edit_metadata(meta_lines, variables, varfunc, match_overrides=False):
                     multi-line value to continue on the same line as
                     the assignment, False to indent before the first
                     element.
+            To clarify, if you wish not to change the value, then you
+            would return like this: return origvalue, None, 0, True
         match_overrides: True to match items with _overrides on the end,
             False otherwise
     Returns a tuple:
@@ -1095,7 +1141,7 @@ def edit_metadata(meta_lines, variables, varfunc, match_overrides=False):
             else:
                 varset_new = varset_start
 
-            if isinstance(indent, (int, long)):
+            if isinstance(indent, int):
                 if indent == -1:
                     indentspc = ' ' * (len(varset_new) + 2)
                 else:
@@ -1156,14 +1202,14 @@ def edit_metadata(meta_lines, variables, varfunc, match_overrides=False):
                 if in_var.endswith('()'):
                     if full_value.count('{') - full_value.count('}') >= 0:
                         continue
-                full_value = full_value[:-1]
+                    full_value = full_value[:-1]
                 if handle_var_end():
                     updated = True
                     checkspc = True
                 in_var = None
         else:
             skip = False
-            for (varname, var_re) in var_res.iteritems():
+            for (varname, var_re) in var_res.items():
                 res = var_re.match(line)
                 if res:
                     isfunc = varname.endswith('()')
@@ -1341,7 +1387,7 @@ def get_file_layer(filename, d):
         # Use longest path so we handle nested layers
         matchlen = 0
         match = None
-        for collection, regex in collection_res.iteritems():
+        for collection, regex in collection_res.items():
             if len(regex) > matchlen and re.match(regex, path):
                 matchlen = len(regex)
                 match = collection
@@ -1407,9 +1453,8 @@ def set_process_name(name):
     # This is nice to have for debugging, not essential
     try:
         libc = cdll.LoadLibrary('libc.so.6')
-        buff = create_string_buffer(len(name)+1)
-        buff.value = name
-        libc.prctl(15, byref(buff), 0, 0, 0)
+        buf = create_string_buffer(bytes(name, 'utf-8'))
+        libc.prctl(15, byref(buf), 0, 0, 0)
     except:
         pass
 
@@ -1418,7 +1463,8 @@ def export_proxies(d):
     import os
 
     variables = ['http_proxy', 'HTTP_PROXY', 'https_proxy', 'HTTPS_PROXY',
-                    'ftp_proxy', 'FTP_PROXY', 'no_proxy', 'NO_PROXY']
+                    'ftp_proxy', 'FTP_PROXY', 'no_proxy', 'NO_PROXY',
+                    'GIT_PROXY_COMMAND']
     exported = False
 
     for v in variables:
@@ -1431,3 +1477,29 @@ def export_proxies(d):
                 exported = True
 
     return exported
+
+
+def load_plugins(logger, plugins, pluginpath):
+    def load_plugin(name):
+        logger.debug('Loading plugin %s' % name)
+        fp, pathname, description = imp.find_module(name, [pluginpath])
+        try:
+            return imp.load_module(name, fp, pathname, description)
+        finally:
+            if fp:
+                fp.close()
+
+    logger.debug('Loading plugins from %s...' % pluginpath)
+
+    expanded = (glob.glob(os.path.join(pluginpath, '*' + ext))
+                for ext in python_extensions)
+    files = itertools.chain.from_iterable(expanded)
+    names = set(os.path.splitext(os.path.basename(fn))[0] for fn in files)
+    for name in names:
+        if name != '__init__':
+            plugin = load_plugin(name)
+            if hasattr(plugin, 'plugin_init'):
+                obj = plugin.plugin_init(plugins)
+                plugins.append(obj or plugin)
+            else:
+                plugins.append(plugin)

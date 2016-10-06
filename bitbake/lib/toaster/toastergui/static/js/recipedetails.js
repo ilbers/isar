@@ -9,7 +9,8 @@ function recipeDetailsPageInit(ctx){
     if (imgCustomModal.length === 0)
       throw("Modal new-custom-image not found");
 
-    imgCustomModal.data('recipe', $(this).data('recipe'));
+    var recipe = {id: $(this).data('recipe'), name: null}
+    newCustomImageModalSetRecipes([recipe]);
     imgCustomModal.modal('show');
   });
 
@@ -42,9 +43,7 @@ function recipeDetailsPageInit(ctx){
 
   /* Trigger a build of your custom image */
   $(".build-recipe-btn").click(function(){
-    libtoaster.startABuild(libtoaster.ctx.projectBuildsUrl,
-      libtoaster.ctx.projectId,
-      ctx.recipe.name,
+    libtoaster.startABuild(null, ctx.recipe.name,
       function(){
         window.location.replace(libtoaster.ctx.projectBuildsUrl);
     });

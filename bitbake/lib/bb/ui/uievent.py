@@ -24,8 +24,8 @@ server and queue them for the UI to process. This process must be used to avoid
 client/server deadlocks.
 """
 
-import socket, threading, pickle
-from SimpleXMLRPCServer import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
+import socket, threading, pickle, collections
+from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 
 class BBUIEventQueue:
     def __init__(self, BBServer, clientinfo=("localhost, 0")):
@@ -51,7 +51,13 @@ class BBUIEventQueue:
         # giving up
 
         for count_tries in range(5):
-            self.EventHandle, error = self.BBServer.registerEventHandler(self.host, self.port)
+            ret = self.BBServer.registerEventHandler(self.host, self.port)
+
+            if isinstance(ret, collections.Iterable):
+                self.EventHandle, error = ret
+            else:
+                self.EventHandle = ret
+                error = ""
 
             if self.EventHandle != None:
                 break
@@ -110,7 +116,7 @@ class BBUIEventQueue:
                 self.server.handle_request()
             except Exception as e:
                 import traceback
-                logger.error("BBUIEventQueue.startCallbackHandler: Exception while trying to handle request: %s\n%s" % (e, traceback.format_exc(e)))
+                logger.error("BBUIEventQueue.startCallbackHandler: Exception while trying to handle request: %s\n%s" % (e, traceback.format_exc()))
 
         self.server.server_close()
 
@@ -131,7 +137,7 @@ class UIXMLRPCServer (SimpleXMLRPCServer):
         SimpleXMLRPCServer.__init__( self,
                                     interface,
                                     requestHandler=SimpleXMLRPCRequestHandler,
-                                    logRequests=False, allow_none=True)
+                                    logRequests=False, allow_none=True, use_builtin_types=True)
 
     def get_request(self):
         while not self.quit:

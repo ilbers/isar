@@ -1,9 +1,11 @@
 from __future__ import unicode_literals
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.utils.encoding import force_bytes
+from django.utils.encoding import force_text
 from orm.models import Project, ProjectLayer, ProjectVariable, ProjectTarget, Build, Layer_Version
 
+import logging
+logger = logging.getLogger("toaster")
 # a BuildEnvironment is the equivalent of the "build/" directory on the localhost
 class BuildEnvironment(models.Model):
     SERVER_STOPPED = 0
@@ -61,18 +63,20 @@ class BuildRequest(models.Model):
     REQ_CREATED = 0
     REQ_QUEUED = 1
     REQ_INPROGRESS = 2
-    REQ_COMPLETED = 3
-    REQ_FAILED = 4
-    REQ_DELETED = 5
-    REQ_ARCHIVE = 6
+    REQ_FAILED = 3
+    REQ_DELETED = 4
+    REQ_CANCELLING = 5
+    REQ_COMPLETED = 6
+    REQ_ARCHIVE = 7
 
     REQUEST_STATE = (
         (REQ_CREATED, "created"),
         (REQ_QUEUED, "queued"),
         (REQ_INPROGRESS, "in progress"),
-        (REQ_COMPLETED, "completed"),
         (REQ_FAILED, "failed"),
         (REQ_DELETED, "deleted"),
+        (REQ_CANCELLING, "cancelling"),
+        (REQ_COMPLETED, "completed"),
         (REQ_ARCHIVE, "archive"),
     )
 
@@ -85,6 +89,27 @@ class BuildRequest(models.Model):
     created     = models.DateTimeField(auto_now_add = True)
     updated     = models.DateTimeField(auto_now = True)
 
+    def __init__(self, *args, **kwargs):
+        super(BuildRequest, self).__init__(*args, **kwargs)
+        # Save the old state in case it's about to be modified
+        self.old_state = self.state
+
+    def save(self, *args, **kwargs):
+        # Check that the state we're trying to set is not going backwards
+        # e.g. from REQ_FAILED to REQ_INPROGRESS
+        if self.old_state != self.state and self.old_state > self.state:
+            logger.warning("Invalid state change requested: "
+                           "Cannot go from %s to %s - ignoring request" %
+                           (BuildRequest.REQUEST_STATE[self.old_state][1],
+                            BuildRequest.REQUEST_STATE[self.state][1])
+                          )
+            # Set property back to the old value
+            self.state = self.old_state
+            return
+
+        super(BuildRequest, self).save(*args, **kwargs)
+
+
     def get_duration(self):
         return (self.updated - self.created).total_seconds()
 
@@ -96,17 +121,19 @@ class BuildRequest(models.Model):
         return self.brvariable_set.get(name="MACHINE").value
 
     def __str__(self):
-        return force_bytes('%s %s' % (self.project, self.get_state_display()))
+        return force_text('%s %s' % (self.project, self.get_state_display()))
 
 # These tables specify the settings for running an actual build.
 # They MUST be kept in sync with the tables in orm.models.Project*
 
+
 class BRLayer(models.Model):
-    req         = models.ForeignKey(BuildRequest)
-    name        = models.CharField(max_length = 100)
-    giturl      = models.CharField(max_length = 254)
-    commit      = models.CharField(max_length = 254)
-    dirpath     = models.CharField(max_length = 254)
+    req = models.ForeignKey(BuildRequest)
+    name = models.CharField(max_length=100)
+    giturl = models.CharField(max_length=254, null=True)
+    local_source_dir = models.CharField(max_length=254, null=True)
+    commit = models.CharField(max_length=254, null=True)
+    dirpath = models.CharField(max_length=254, null=True)
     layer_version = models.ForeignKey(Layer_Version, null=True)
 
 class BRBitbake(models.Model):

@@ -55,13 +55,12 @@ function layerBtnsInit() {
     });
   });
 
-  $(".build-recipe-btn").unbind('click');
-  $(".build-recipe-btn").click(function(e){
+  $("td .build-recipe-btn").unbind('click');
+  $("td .build-recipe-btn").click(function(e){
     e.preventDefault();
     var recipe = $(this).data('recipe-name');
 
-    libtoaster.startABuild(libtoaster.ctx.projectBuildsUrl,
-      libtoaster.ctx.projectId, recipe,
+    libtoaster.startABuild(null, recipe,
       function(){
         /* Success */
         window.location.replace(libtoaster.ctx.projectBuildsUrl);
@@ -77,7 +76,8 @@ function layerBtnsInit() {
     if (imgCustomModal.length == 0)
       throw("Modal new-custom-image not found");
 
-    imgCustomModal.data('recipe', $(this).data('recipe'));
+    var recipe = {id: $(this).data('recipe'), name: null}
+    newCustomImageModalSetRecipes([recipe]);
     imgCustomModal.modal('show');
   });
 }
