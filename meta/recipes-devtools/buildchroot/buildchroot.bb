@@ -27,6 +27,10 @@ BUILDCHROOT_PREINSTALL ?= "gcc \
                            apt \
                            automake"
 
+WORKDIR = "${TMPDIR}/work/${PF}/${MACHINE}"
+
+do_build[stamp-extra-info] = "${MACHINE}"
+
 do_build() {
     # Copy config files
     install -m 644 ${THISDIR}/files/multistrap.conf.in ${WORKDIR}/multistrap.conf
@@ -39,15 +43,15 @@ do_build() {
     sed -i 's|##DISTRO_APT_SOURCE##|${DISTRO_APT_SOURCE}|' ${WORKDIR}/multistrap.conf
     sed -i 's|##DISTRO_SUITE##|${DISTRO_SUITE}|' ${WORKDIR}/multistrap.conf
     sed -i 's|##DISTRO_COMPONENTS##|${DISTRO_COMPONENTS}|' ${WORKDIR}/multistrap.conf
-    sed -i 's|##CONFIG_SCRIPT##|./tmp/work/${PF}/configscript.sh|' ${WORKDIR}/multistrap.conf
-    sed -i 's|##SETUP_SCRIPT##|./tmp/work/${PF}/setup.sh|' ${WORKDIR}/multistrap.conf
+    sed -i 's|##CONFIG_SCRIPT##|./tmp/work/${PF}/${MACHINE}/configscript.sh|' ${WORKDIR}/multistrap.conf
+    sed -i 's|##SETUP_SCRIPT##|./tmp/work/${PF}/${MACHINE}/setup.sh|' ${WORKDIR}/multistrap.conf
 
     # Create root filesystem
-    sudo multistrap -a ${DISTRO_ARCH} -d "${BUILDROOTDIR}" -f "${WORKDIR}/multistrap.conf" || true
+    sudo multistrap -a ${DISTRO_ARCH} -d "${BUILDCHROOT_DIR}" -f "${WORKDIR}/multistrap.conf" || true
 
     # Install package builder script
-    sudo install -m 755 ${THISDIR}/files/build.sh ${BUILDROOTDIR}
+    sudo install -m 755 ${THISDIR}/files/build.sh ${BUILDCHROOT_DIR}
 
     # Configure root filesystem
-    sudo chroot ${BUILDROOTDIR} /configscript.sh
+    sudo chroot ${BUILDCHROOT_DIR} /configscript.sh
 }

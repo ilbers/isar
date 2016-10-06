@@ -8,7 +8,7 @@ do_unpack[deptask] = "do_build"
 # Each package should have its own unique build folder, so use
 # recipe name as identifier
 PP = "/home/builder/${PN}"
-BUILDROOT = "${BUILDROOTDIR}/${PP}"
+BUILDROOT = "${BUILDCHROOT_DIR}/${PP}"
 
 addtask fetch
 do_fetch[dirs] = "${DL_DIR}"
@@ -29,6 +29,7 @@ python do_fetch() {
 addtask fetch before do_build
 
 do_unpack[dirs] = "${BUILDROOT}"
+do_unpack[stamp-extra-info] = "${MACHINE}"
 S ?= "${BUILDROOT}"
 
 # Unpack package and put it into working directory in buildchroot
@@ -48,10 +49,14 @@ python do_unpack() {
 
 addtask unpack after do_fetch before do_build
 
+do_build[stamp-extra-info] = "${MACHINE}"
+
 # Build package from sources using build script
 do_build() {
-    sudo chroot ${BUILDROOTDIR} /build.sh ${PP}/${SRC_DIR}
+    sudo chroot ${BUILDCHROOT_DIR} /build.sh ${PP}/${SRC_DIR}
 }
+
+do_install[stamp-extra-info] = "${MACHINE}"
 
 # Install package to dedicated deploy directory
 do_install() {

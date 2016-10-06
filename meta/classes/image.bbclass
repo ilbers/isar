@@ -9,6 +9,8 @@ IMAGE_TYPE    ?= "ext4-img"
 
 inherit ${IMAGE_TYPE}
 
+do_populate[stamp-extra-info] = "${MACHINE}"
+
 # Install Debian packages, that were built from sources
 do_populate() {
     if [ -n "${IMAGE_INSTALL}" ]; then
