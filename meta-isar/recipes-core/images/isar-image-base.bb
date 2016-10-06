@@ -22,7 +22,10 @@ DISTRO_CONFIG_SCRIPT ?= "debian-configscript.sh"
 IMAGE_PREINSTALL += "apt \
                      dbus"
 
+WORKDIR = "${TMPDIR}/work/${PN}/${MACHINE}"
 S = "${WORKDIR}/rootfs"
+
+do_rootfs[stamp-extra-info] = "${MACHINE}"
 
 do_rootfs() {
     # Copy config file

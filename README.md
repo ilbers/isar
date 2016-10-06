@@ -28,7 +28,7 @@ generation of Debian-based root filesystems with customizations.
 
 Created image is in
 
-    tmp/deploy/images/isar-image-base.ext4.img
+    tmp/deploy/images/isar-image-base-qemuarm.ext4.img
 
 # Test
 

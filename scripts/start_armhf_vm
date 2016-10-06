@@ -5,7 +5,7 @@
 
 KERNEL="tmp/deploy/images/vmlinuz-3.2.0-4-vexpress"
 INITRD="tmp/deploy/images/initrd.img-3.2.0-4-vexpress"
-ROOTFS="tmp/deploy/images/isar-image-base.ext4.img"
+ROOTFS="tmp/deploy/images/isar-image-base-qemuarm.ext4.img"
 
 start_qemuarm() {
     qemu-system-arm                                    \
