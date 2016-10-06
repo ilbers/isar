@@ -59,6 +59,11 @@ devtmpfs	/dev		devtmpfs	mode=0755,nosuid	0	0
 # End /etc/fstab
 EOF
 
+# Create console device
+if [ ! -e /dev/console ]; then
+     mknod /dev/console c 5 1
+fi
+
 # Enable tty
 echo "T0:23:respawn:/sbin/getty -L $1 9600 vt100" >> /etc/inittab
 
