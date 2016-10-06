@@ -10,7 +10,8 @@ LIC_FILES_CHKSUM = "file://${LAYERDIR_isar}/licenses/COPYING.GPLv2;md5=751419260
 
 PV = "1.0"
 
-IMAGE_INSTALL ?= ""
+inherit image
+
 DEPENDS += "${IMAGE_INSTALL}"
 
 DISTRO ?= "debian-wheezy"
@@ -22,8 +23,6 @@ IMAGE_PREINSTALL += "apt \
                      dbus"
 
 S = "${WORKDIR}/rootfs"
-
-inherit image
 
 do_rootfs() {
     # Copy config file
