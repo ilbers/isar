@@ -14,11 +14,6 @@ inherit image
 
 DEPENDS += "${IMAGE_INSTALL}"
 
-DISTRO ?= "debian-wheezy"
-DISTRO_SUITE ?= "wheezy"
-DISTRO_ARCH ?= "armhf"
-DISTRO_CONFIG_SCRIPT ?= "debian-configscript.sh"
-
 IMAGE_PREINSTALL += "apt \
                      dbus"
 

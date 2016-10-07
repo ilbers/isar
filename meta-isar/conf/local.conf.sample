@@ -21,6 +21,15 @@
 MACHINE ??= "qemuarm"
 
 #
+# Multistrap Configuration Selection
+#
+# You need to select a specific multistrap configuration which will used for both:
+# generation of buildchroot environment and target root filesystem.
+#
+# This sets the default multistrap configuration:
+DISTRO ??= "debian-wheezy"
+
+#
 # Multiple Configuration Selection
 #
 # If you want to use multiple configuration files for the build, list them in the

@@ -10,12 +10,6 @@ LIC_FILES_CHKSUM = "file://${LAYERDIR_isar}/licenses/COPYING.GPLv2;md5=751419260
 
 PV = "1.0"
 
-DISTRO ?= "debian-wheezy"
-DISTRO_SUITE ?= "wheezy"
-DISTRO_ARCH ?= "armhf"
-DISTRO_COMPONENTS ?= "main contrib non-free"
-DISTRO_APT_SOURCE ?= "http://httpredir.debian.org/debian"
-
 BUILDCHROOT_PREINSTALL ?= "gcc \
                            make \
                            build-essential \
@@ -27,9 +21,9 @@ BUILDCHROOT_PREINSTALL ?= "gcc \
                            apt \
                            automake"
 
-WORKDIR = "${TMPDIR}/work/${PF}/${MACHINE}"
+WORKDIR = "${TMPDIR}/work/${PF}/${DISTRO}"
 
-do_build[stamp-extra-info] = "${MACHINE}"
+do_build[stamp-extra-info] = "${DISTRO}"
 
 do_build() {
     # Copy config files
@@ -43,8 +37,8 @@ do_build() {
     sed -i 's|##DISTRO_APT_SOURCE##|${DISTRO_APT_SOURCE}|' ${WORKDIR}/multistrap.conf
     sed -i 's|##DISTRO_SUITE##|${DISTRO_SUITE}|' ${WORKDIR}/multistrap.conf
     sed -i 's|##DISTRO_COMPONENTS##|${DISTRO_COMPONENTS}|' ${WORKDIR}/multistrap.conf
-    sed -i 's|##CONFIG_SCRIPT##|./tmp/work/${PF}/${MACHINE}/configscript.sh|' ${WORKDIR}/multistrap.conf
-    sed -i 's|##SETUP_SCRIPT##|./tmp/work/${PF}/${MACHINE}/setup.sh|' ${WORKDIR}/multistrap.conf
+    sed -i 's|##CONFIG_SCRIPT##|./tmp/work/${PF}/${DISTRO}/configscript.sh|' ${WORKDIR}/multistrap.conf
+    sed -i 's|##SETUP_SCRIPT##|./tmp/work/${PF}/${DISTRO}/setup.sh|' ${WORKDIR}/multistrap.conf
 
     # Multistrap config use relative paths, so ensure that we are in the right folder
     cd ${TOPDIR}
