@@ -13,6 +13,7 @@ PV = "1.0"
 DISTRO ?= "debian-wheezy"
 DISTRO_SUITE ?= "wheezy"
 DISTRO_ARCH ?= "armhf"
+DISTRO_COMPONENTS ?= "main contrib non-free"
 DISTRO_APT_SOURCE ?= "http://httpredir.debian.org/debian"
 
 BUILDCHROOT_PREINSTALL ?= "gcc \
@@ -37,6 +38,7 @@ do_build() {
     sed -i 's|##DISTRO##|${DISTRO}|' ${WORKDIR}/multistrap.conf
     sed -i 's|##DISTRO_APT_SOURCE##|${DISTRO_APT_SOURCE}|' ${WORKDIR}/multistrap.conf
     sed -i 's|##DISTRO_SUITE##|${DISTRO_SUITE}|' ${WORKDIR}/multistrap.conf
+    sed -i 's|##DISTRO_COMPONENTS##|${DISTRO_COMPONENTS}|' ${WORKDIR}/multistrap.conf
     sed -i 's|##CONFIG_SCRIPT##|./tmp/work/${PF}/configscript.sh|' ${WORKDIR}/multistrap.conf
     sed -i 's|##SETUP_SCRIPT##|./tmp/work/${PF}/setup.sh|' ${WORKDIR}/multistrap.conf
 
