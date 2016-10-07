@@ -11,7 +11,7 @@ export PATH=$PATH:/sbin
 WORKSPACE=`pwd`
 
 . isar-init-build-env build
-bitbake multiconfig:qemuarm:isar-image-base multiconfig:rpi:isar-image-base
+bitbake multiconfig:qemuarm:isar-image-base multiconfig:rpi:isar-image-base multiconfig:qemuarm:isar-image-debug multiconfig:rpi:isar-image-debug
 
 cd $WORKSPACE
 mkdir images
