@@ -46,6 +46,9 @@ do_build() {
     sed -i 's|##CONFIG_SCRIPT##|./tmp/work/${PF}/${MACHINE}/configscript.sh|' ${WORKDIR}/multistrap.conf
     sed -i 's|##SETUP_SCRIPT##|./tmp/work/${PF}/${MACHINE}/setup.sh|' ${WORKDIR}/multistrap.conf
 
+    # Multistrap config use relative paths, so ensure that we are in the right folder
+    cd ${TOPDIR}
+
     # Create root filesystem
     sudo multistrap -a ${DISTRO_ARCH} -d "${BUILDCHROOT_DIR}" -f "${WORKDIR}/multistrap.conf" || true
 
