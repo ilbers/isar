@@ -5,6 +5,10 @@
 
 set -e
 
+readonly MACHINE_SERIAL="$1"
+readonly BAUDRATE_TTY="$2"
+readonly ROOTFS_DEV="$3"
+
 cat >> /etc/default/locale << EOF
 LANG=en_US.UTF-8
 LANGUAGE=en_US.UTF-8
@@ -47,9 +51,9 @@ umount /proc
 
 echo "root:root" | chpasswd
 
-cat > /etc/fstab << "EOF"
+cat > /etc/fstab << EOF
 # Begin /etc/fstab
-/dev/mmcblk0	/		ext4		defaults		1	1
+/dev/$ROOTFS_DEV	/		ext4		defaults		1	1
 proc		/proc		proc		nosuid,noexec,nodev	0	0
 sysfs		/sys		sysfs		nosuid,noexec,nodev	0	0
 devpts		/dev/pts	devpts		gid=5,mode=620		0	0
@@ -65,7 +69,7 @@ if [ ! -e /dev/console ]; then
 fi
 
 # Enable tty
-echo "T0:23:respawn:/sbin/getty -L $1 9600 vt100" >> /etc/inittab
+printf 'T0:123:respawn:/sbin/getty -L %s %d vt100\n' $MACHINE_SERIAL $BAUDRATE_TTY >> /etc/inittab
 
 # Undo setup script changes
 if [ -x "$TARGET/sbin/start-stop-daemon.REAL" ]; then
