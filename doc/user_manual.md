@@ -149,14 +149,9 @@ Isar can generate various image types, e.g. an ext4 filesystem or a complete SD 
 ## General Isar Configuration
 
 Isar uses the following configuration files:
- - conf/local.conf
- - conf/bblayers.conf
- 
-`local.conf` defines the boards (machines) to generate images for. `bitbake` includes the respective configuration files for the chosen machines:
- - conf/multiconfig/${MACHINE}.conf
 
-The machine config file defines which distro has to be used for the current machine. `bitbake` includes the respective distro configuration file:
- - conf/distro/${DISTRO}.conf
+ - `conf/bblayers.conf`
+ - `conf/local.conf`
 
 ### bblayers.conf
 
@@ -164,11 +159,35 @@ This file contains the list of meta layers, where `bitbake` will search for reci
  - `meta` - Core Isar layer which contains basic functionality.
  - `meta-isar` - Product template layer. It demonstrates Isar's features. Also this layer can be used to create your projects.
 
-### local.conf
+### `local.conf`
 
-This file contains variables that will be exported to `bitbake` environment and will be processed in recipes. The default Isar configuration uses the following variables:
+This file contains variables that will be exported to the BitBake environment
+and may be referenced in recipes.
 
- - `BBMULTICONFIG` - The list of the machines to include the respective configuration files. If this option is omitted, user has to manually define the pair `MACHINE`/`DISTRO` for specific target.
+Among other things, `local.conf` defines the configurations to generate the
+images for.
+
+If BitBake is called with image targets (e.g., `isar-image-base`), the
+following variables define the default configuration to build for:
+
+ - `MACHINE` - The board to build for (e.g., `qemuarm`, `rpi`). BitBake looks
+   for conf/multiconfig/${MACHINE}.conf in every layer.
+
+ - `DISTRO` - The distro to use (e.g., `debian-wheezy`, `raspbian-jessie`).
+   BitBake looks for conf/distro/${DISTRO}.conf in every layer.
+
+ - `DISTRO_ARCH` - The Debian architecture to build for (e.g., `armhf`).
+
+If BitBake is called with multiconfig targets (e.g.,
+`multiconfig:qemuarm:isar-image-base`), the following variable defines all
+supported configurations:
+
+ - `BBMULTICONFIG` - The list of the complete configuration definition files.
+   BitBake looks for conf/multiconfig/<CONFIG>.conf in every layer. Every
+   configuration must define `MACHINE`, `DISTRO` and `DISTRO_ARCH`.
+
+Some other variables include:
+
  - `IMAGE_INSTALL` - The list of custom packages to build and install to target image, please refer to relative chapter for more information.
  - `BB_NUMBER_THREADS` - The number of `bitbake` jobs that can be run in parallel. Please set this option according your host CPU cores number.
 
@@ -209,7 +228,6 @@ Isar can generate various images types for specific machine. The `IMAGE_TYPE` va
 
 The distro is defined by the set of the following variables:
  - `DISTRO_SUITE` - Repository suite like stable, jessie, wheezy etc.
- - `DISTRO_ARCH` - Machine CPU architecture.
  - `DISTRO_COMPONENTS` - Repository components like main, contrib, non-free etc.
  - `DISTRO_APT_SOURCE` - Repository URL.
  - `DISTRO_CONFIG_SCRIPT` - Target filesystem finalization script. This script is called after `multistrap` has unpacked the base system packages. It is designed to finalize filesystem, for example to add `fstab` according to machine hardware configuration. The script should be placed to `files` folder in image recipe folder.
@@ -217,7 +235,6 @@ The distro is defined by the set of the following variables:
 Below is an example for Raspbian Jessie:
 ```
 DISTRO_SUITE = "jessie"
-DISTRO_ARCH = "armhf"
 DISTRO_COMPONENTS = "main contrib non-free firmware"
 DISTRO_APT_SOURCE = "http://archive.raspbian.org/raspbian"
 DISTRO_CONFIG_SCRIPT = "raspbian-configscript.sh"
