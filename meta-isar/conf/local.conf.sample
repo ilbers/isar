@@ -37,7 +37,7 @@ DISTRO_ARCH ??= "armhf"
 # following option.
 #
 # This sets the default multiple configurations used:
-BBMULTICONFIG = "qemuarm-wheezy qemuarm-jessie rpi-jessie"
+BBMULTICONFIG = "qemuarm-wheezy qemuarm-jessie qemui386-jessie rpi-jessie"
 
 #
 # Where to place downloads
