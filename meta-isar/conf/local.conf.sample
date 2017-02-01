@@ -27,7 +27,7 @@ MACHINE ??= "qemuarm"
 # generation of buildchroot environment and target root filesystem.
 #
 # This sets the default multistrap configuration:
-DISTRO ??= "debian-wheezy"
+DISTRO ??= "debian-jessie"
 DISTRO_ARCH ??= "armhf"
 
 #
@@ -37,7 +37,7 @@ DISTRO_ARCH ??= "armhf"
 # following option.
 #
 # This sets the default multiple configurations used:
-BBMULTICONFIG = "qemuarm rpi"
+BBMULTICONFIG = "qemuarm-wheezy qemuarm-jessie rpi-jessie"
 
 #
 # Where to place downloads

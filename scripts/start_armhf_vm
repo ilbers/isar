@@ -3,18 +3,22 @@
 # This software is a part of ISAR.
 # Copyright (C) 2015-2016 ilbers GmbH
 
-KERNEL="tmp/deploy/images/vmlinuz-3.2.0-4-vexpress"
-INITRD="tmp/deploy/images/initrd.img-3.2.0-4-vexpress"
-ROOTFS="tmp/deploy/images/isar-image-base-qemuarm.ext4.img"
+ES_OK=0
+ES_BUG=3
+
+# TODO: Get the target from the command line or from the build environment
+DISTRO=jessie
 
 start_qemuarm() {
-    qemu-system-arm                                    \
-        -m 1024M -M vexpress-a9                        \
-        -nographic                                     \
-        -kernel $KERNEL                                \
-        -initrd $INITRD                                \
-        -append "console=ttyAMA0 root=/dev/mmcblk0 rw" \
-        -sd $ROOTFS
+    qemu-system-arm \
+	-m 1024M \
+	-M $QMACH \
+	$QCPU \
+	-nographic \
+	-kernel $KERNEL \
+	-initrd $INITRD \
+	-append "console=ttyAMA0 root=/dev/$ROOTFS_DEV rw" \
+	$QFLAGS
 }
 
 show_help() {
@@ -40,4 +44,33 @@ else
     BUILD_DIR=$1
 fi
 
+# TODO: Get the parameters from the build environment
+case $DISTRO in
+    wheezy)
+	KERNEL="tmp/deploy/images/vmlinuz-3.2.0-4-vexpress"
+	INITRD="tmp/deploy/images/initrd.img-3.2.0-4-vexpress"
+	ROOTFS="tmp/deploy/images/isar-image-base-qemuarm-debian-wheezy.ext4.img"
+	QMACH=vexpress-a9
+	QCPU=
+	ROOTFS_DEV=mmcblk0
+	QFLAGS="-sd $ROOTFS"
+	;;
+    jessie)
+	KERNEL="tmp/deploy/images/vmlinuz-3.16.0-4-armmp"
+	INITRD="tmp/deploy/images/initrd.img-3.16.0-4-armmp"
+	ROOTFS="tmp/deploy/images/isar-image-base-qemuarm-debian-jessie.ext4.img"
+	QMACH=virt
+	QCPU="-cpu cortex-a15"
+	ROOTFS_DEV=vda
+	QFLAGS="-drive file=$ROOTFS,if=none,format=raw,id=hd0 \
+	    -device virtio-blk-device,drive=hd0"
+	;;
+    *)
+	echo "$0: $DISTRO: ERROR: Unsupported distro" >&2
+	exit $ES_BUG
+	;;
+esac
+
 start_qemuarm $BUILD_DIR
+
+exit $ES_OK

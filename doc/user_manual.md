@@ -31,10 +31,12 @@ Isar provides:
 
 ## Getting Started
 
-For demonstration purposes, Isar provides support for two machines:
+For demonstration purposes, Isar provides support for the following
+configurations:
 
- - QEMU ARM
- - Raspberry Pi 1 Model B
+ - QEMU ARM with Debian Wheezy
+ - QEMU ARM with Debian Jessie
+ - Raspberry Pi 1 Model B with Raspbian Jessie
 
 The steps below describe how to build the images provided by default.
 
@@ -86,18 +88,55 @@ To initialize the `isar` build directory run the following commands:
 ```
 `../build` is the build directory. You may use a different name here.
 
-### Build Images
+### Building Target Images for One Configuration
 
-The following command will produce `isar-image-base` images for both machines:
+To build target images ("targets" in BitBake terms) for one configuration,
+define the default configuration in `conf/local.conf` in the build directory,
+e.g.:
+
 ```
-$ bitbake multiconfig:qemuarm:isar-image-base multiconfig:rpi:isar-image-base
+MACHINE ??= "qemuarm"
+DISTRO ??= "debian-jessie"
+DISTRO_ARCH ??= "armhf"
 ```
+
+Then, call `bitbake` with image names, e.g.:
+
+```
+bitbake isar-image-base isar-image-debug
+```
+
+The following images are created:
+
+```
+tmp/deploy/images/isar-image-base-qemuarm-debian-jessie.ext4.img
+tmp/deploy/images/isar-image-debug-qemuarm-debian-jessie.ext4.img
+```
+
+### Building Target Images for Multiple Configurations
+
+Alternatively, BitBake supports building images for multiple configurations in
+a single call. List all configurations in `conf/local.conf`:
+
+```
+BBMULTICONFIG = "qemuarm-wheezy qemuarm-jessie rpi-jessie"
+```
+
+The following command will produce `isar-image-base` images for all targets:
+
+```
+$ bitbake multiconfig:qemuarm-wheezy:isar-image-base \
+    multiconfig:qemuarm-jessie:isar-image-base \
+    multiconfig:rpi-jessie:isar-image-base
+```
+
 Created images are:
+
 ```
-tmp/deploy/images/isar-image-base-qemuarm.ext4.img
+tmp/deploy/images/isar-image-base-qemuarm-debian-wheezy.ext4.img
+tmp/deploy/images/isar-image-base-qemuarm-debian-jessie.ext4.img
 tmp/deploy/images/isar-image-base.rpi-sdimg
 ```
-To build just for one target, pass only its name to `bitbake`.
 
 ---
 
