@@ -90,7 +90,8 @@ $ bitbake multiconfig:qemuarm:isar-image-base multiconfig:rpi:isar-image-base
 ```
 Created images are:
 ```
- tmp/deploy/images/isar-image-base-*
+tmp/deploy/images/isar-image-base-qemuarm.ext4.img
+tmp/deploy/images/isar-image-base.rpi-sdimg
 ```
 To build just for one target, pass only its name to `bitbake`.
 

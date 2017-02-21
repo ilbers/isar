@@ -3,35 +3,13 @@ isar - Integration System for Automated Root filesystem generation
 Isar is a set of scripts for building software packages and repeatable
 generation of Debian-based root filesystems with customizations.
 
+# Download
+
+https://github.com/ilbers/isar/
+
 # Build
 
-1. Install and configure sudo (see TODO):
-
-        # apt-get install sudo
-        # visudo
-
-   In the editor, allow the current user to run sudo without a password, e.g.:
-
-        <user>  ALL=NOPASSWD: ALL
-
-   Replace <user> with your user name. Use the tab character between <user> and
-   parameters.
-
-1. Initialize the build directory, e.g.:
-
-        $ cd isar
-        $ . isar-init-build-env ../build
-
-1. Build the root filesystem image:
-
-   Build isar base images for QEMU and RPi:
-
-        $ bitbake multiconfig:qemuarm:isar-image-base multiconfig:rpi:isar-image-base
-
-   Created images are:
-
-        tmp/deploy/images/isar-image-base-qemuarm.ext4.img
-        tmp/deploy/images/isar-image-base.rpi-sdimg
+See doc/user_manual.md.
 
 # Try
 
@@ -46,6 +24,16 @@ section "WRITING AN IMAGE TO THE SD CARD":
 
     https://www.raspberrypi.org/documentation/installation/installing-images/README.md
 
+# Support
+
+Mailing lists:
+
+* Using Isar: https://groups.google.com/d/forum/isar-users
+
+* Collaboration: https://lists.debian.org/debian-embedded/
+
+Commercial support: info@ilbers.de
+
 # Release Information
 
 Built on:
@@ -53,4 +41,4 @@ Built on:
 
 Tested on:
 * QEMU 1.1.2+dfsg-6a+deb7u12
-* Raspberry Pi 1 Model B
+* Raspberry Pi 1 Model B rev 2
