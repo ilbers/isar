@@ -29,8 +29,12 @@ section "WRITING AN IMAGE TO THE SD CARD":
 Mailing lists:
 
 * Using Isar: https://groups.google.com/d/forum/isar-users
+  * Subscribe: isar-users+subscribe@googlegroups.com
+  * Unsubscribe: isar-users+unsubscribe@googlegroups.com
 
 * Collaboration: https://lists.debian.org/debian-embedded/
+  * Subscribe: debian-embedded-request@lists.debian.org, Subject: subscribe
+  * Unsubscribe: debian-embedded-request@lists.debian.org, Subject: unsubscribe
 
 Commercial support: info@ilbers.de
 
