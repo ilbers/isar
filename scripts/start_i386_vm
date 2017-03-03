@@ -12,10 +12,10 @@ start_qemu_i386() {
 
     qemu-system-i386 \
         -nographic -m 1024M -M pc \
-        -append 'console=ttyS0 root=/dev/mmcblk0 rw' \
+        -append 'console=ttyS0 root=/dev/sda rw' \
         -kernel "${PATH_KERNEL}" \
         -initrd "${PATH_INITRD}" \
-        -sd "${PATH_ROOTFS}"
+        -hda "${PATH_ROOTFS}"
 }
 
 show_help() {
