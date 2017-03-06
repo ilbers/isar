@@ -16,7 +16,7 @@ start_qemu() {
     root1=`echo $QEMU_ROOTFS_DEV \
         | sed 's,##ROOTFS_IMAGE##,$IMAGE_DIR/'"$ROOTFS_IMAGE"','`
     echo -e "IMAGE_DIR=$IMAGE_DIR; \\\\\n\
-qemu-system-$ARCH \\\\\n\
+qemu-system-$QEMU_ARCH \\\\\n\
     -m 1024M \\\\\n\
     -M $QEMU_MACHINE \\\\\n\
     $QCPU\\\\\n\
@@ -28,7 +28,7 @@ qemu-system-$ARCH \\\\\n\
 
     root2=`echo $QEMU_ROOTFS_DEV \
         | sed 's,##ROOTFS_IMAGE##,'$IMAGE_DIR/$ROOTFS_IMAGE','`
-    qemu-system-$ARCH \
+    qemu-system-$QEMU_ARCH \
 	-m 1024M \
 	-M $QEMU_MACHINE \
 	$QCPU \
