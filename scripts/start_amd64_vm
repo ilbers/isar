@@ -1,0 +1,38 @@
+#/bin/sh
+#
+# This software is a part of ISAR.
+	# Copyright (C) 2017 Siemens AG
+
+start_qemu_amd64() {
+    eval "$(grep '^[A-Z]' "$(dirname "$0")/../meta-isar/conf/machine/qemu-amd64.conf" | sed 's/[[:space:]]*=[[:space:]]/=/')"
+
+    readonly PATH_KERNEL="${1}/tmp/deploy/images/${KERNEL_IMAGE}"
+    readonly PATH_INITRD="${1}/tmp/deploy/images/${INITRD_IMAGE}"
+    readonly PATH_ROOTFS="${1}/tmp/deploy/images/isar-image-base-qemu-amd64.ext4.img"
+
+    qemu-system-x86_64 \
+        -nographic -m 1024M -M pc \
+        -append 'console=ttyS0 root=/dev/sda rw' \
+        -kernel "${PATH_KERNEL}" \
+        -initrd "${PATH_INITRD}" \
+        -hda "${PATH_ROOTFS}"
+}
+
+show_help() {
+    echo "This script runs ISAR image in QEMU emulator."
+    echo
+    echo "Usage:"
+    echo "    ${0##*/} [params] [BUILD_DIR]"
+    echo "BUILD_DIR is your ISAR build folder. If not set, current folder"
+    echo "is used."
+    echo
+    echo "Parameters:"
+    echo "    --help        display this message and exit."
+}
+
+if [ $# -eq 1 ] && [ "$1" = "--help" ]; then
+    show_help
+    exit 0
+fi
+
+start_qemu_amd64 "${1:-$PWD}"
