@@ -37,7 +37,7 @@ DISTRO_ARCH ??= "armhf"
 # following option.
 #
 # This sets the default multiple configurations used:
-BBMULTICONFIG = "qemuarm qemu-i386 rpi"
+BBMULTICONFIG = "qemuarm qemu-i386 qemu-amd64 rpi"
 
 #
 # Where to place downloads
