@@ -19,6 +19,7 @@ IMAGE_PREINSTALL += "apt \
 
 WORKDIR = "${TMPDIR}/work/${PN}/${MACHINE}"
 S = "${WORKDIR}/rootfs"
+IMAGE_ROOTFS = "${S}"
 
 do_rootfs[stamp-extra-info] = "${MACHINE}"
 
