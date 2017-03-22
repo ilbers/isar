@@ -40,8 +40,11 @@ DISTRO_ARCH ??= "armhf"
 BBMULTICONFIG = " \
     qemuarm-wheezy \
     qemuarm-jessie \
+    qemuarm-stretch \
     qemui386-jessie \
+    qemui386-stretch \
     qemuamd64-jessie \
+    qemuamd64-stretch \
     rpi-jessie \
 "
 

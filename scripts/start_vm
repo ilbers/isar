@@ -10,7 +10,7 @@ ES_BUG=3
 
 # TODO: Get the target from the command line or from the build environment
 ARCH=arm
-DISTRO=jessie
+DISTRO=stretch
 
 start_qemu() {
     root1=`echo $QEMU_ROOTFS_DEV \

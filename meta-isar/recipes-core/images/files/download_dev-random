@@ -1,0 +1,24 @@
+#!/bin/sh
+#
+# This software is a part of ISAR.
+# Copyright (C) 2017 ilbers GmbH
+
+set -e
+
+readonly ROOTFS="$1"
+
+if [ ! -c ${ROOTFS}/dev/random ]; then
+    rm -f ${ROOTFS}/dev/random
+    mknod "${ROOTFS}/dev/random" c 1 8
+    chmod 666 "${ROOTFS}/dev/random"
+    chown 0:0 "${ROOTFS}/dev/random"
+fi
+
+if [ ! -c ${ROOTFS}/dev/urandom ]; then
+    rm -f ${ROOTFS}/dev/urandom
+    mknod "${ROOTFS}/dev/urandom" c 1 9
+    chmod 666 "${ROOTFS}/dev/urandom"
+    chown 0:0 "${ROOTFS}/dev/urandom"
+fi
+
+exit 0
