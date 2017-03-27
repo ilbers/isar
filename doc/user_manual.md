@@ -46,6 +46,7 @@ mtools
 multistrap
 parted
 python3
+reprepro
 qemu
 qemu-user-static
 sudo
@@ -366,4 +367,3 @@ This approach prevents duplication of the license files in different packages.
  - `SRC_REV` - Source code revision to fetch. Please check the BitBake user manual for supported download formats.
 
 The last line in the example above adds recipe to the Isar work chain.
-

@@ -8,6 +8,7 @@ BBFILES ?= ""
 BBLAYERS ?= " \
   ##ISARROOT##/meta \
   ##ISARROOT##/meta-isar \
+  ##ISARROOT##/meta-isar-bin \
   "
 BBLAYERS_NON_REMOVABLE ?= " \
   ##ISARROOT##/meta \

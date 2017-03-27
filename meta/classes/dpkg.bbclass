@@ -60,8 +60,50 @@ do_install[stamp-extra-info] = "${MACHINE}"
 
 # Install package to dedicated deploy directory
 do_install() {
-    install -d ${DEPLOY_DIR_DEB}
-    install -m 755 ${BUILDROOT}/*.deb ${DEPLOY_DIR_DEB}/
+    readonly DIR_CACHE="${APTCACHEDIR}/${DISTRO_NAME}"
+
+    if [ ! -e "${DIR_CACHE}/conf/distributions" ]; then
+        mkdir -p "${DIR_CACHE}/conf"
+        cat <<EOF >"${DIR_CACHE}/conf/distributions"
+Codename: isar
+Architectures: i386 armhf source
+Components: main
+EOF
+    fi
+
+    find "${BUILDROOT}" -type f -name \*.deb -exec \
+        reprepro -b "${DIR_CACHE}" -C main includedeb isar '{}' +
 }
 
 addtask do_install after do_build
+
+python __anonymous () {
+    PN = d.getVar("PN", True)
+    PV = d.getVar("PV", True)
+    DISTRO_ARCH = d.getVar("DISTRO_ARCH", True)
+    APTCACHEDIR = d.getVar("APTCACHEDIR", True)
+    DISTRO_NAME = d.getVar("DISTRO_NAME", True)
+    path_cache = os.path.join(APTCACHEDIR, DISTRO_NAME)
+    path_distributions = os.path.join(path_cache, "conf", "distributions")
+
+    if not os.path.exists(path_distributions):
+        return
+
+    import subprocess
+    try:
+        package_version = subprocess.check_output([
+            "reprepro", "-b", path_cache,
+            "-C", "main",
+            "-A", DISTRO_ARCH,
+            "--list-format", "${version}",
+            "list", "isar", PN,
+        ])
+        package_version = package_version.decode("utf-8")
+        if package_version == PV:
+            d.setVarFlag("do_fetch", "noexec", "1")
+            d.setVarFlag("do_unpack", "noexec", "1")
+            d.setVarFlag("do_build", "noexec", "1")
+            d.setVarFlag("do_install", "noexec", "1")
+    except CalledProcessError as e:
+        log.msg.error("Unable to check for a candidate for package {0} (errorcode: {1})".format(PN, e.returncode))
+}
