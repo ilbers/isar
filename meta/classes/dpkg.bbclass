@@ -89,6 +89,10 @@ python __anonymous () {
     if not os.path.exists(path_distributions):
         return
 
+    pd = bb.persist_data.persist("APTCACHE_PACKAGES", d)
+    if PN in pd and pd[PN] == PV:
+        return
+
     import subprocess
     try:
         package_version = subprocess.check_output([
@@ -104,6 +108,7 @@ python __anonymous () {
             d.setVarFlag("do_unpack", "noexec", "1")
             d.setVarFlag("do_build", "noexec", "1")
             d.setVarFlag("do_install", "noexec", "1")
-    except CalledProcessError as e:
+            pd[PN] = PV
+    except subprocess.CalledProcessError as e:
         log.msg.error("Unable to check for a candidate for package {0} (errorcode: {1})".format(PN, e.returncode))
 }
