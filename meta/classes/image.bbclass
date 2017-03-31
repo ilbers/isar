@@ -16,15 +16,28 @@ do_populate() {
     readonly DIR_CACHE="${APTCACHEDIR}/${DISTRO_NAME}"
 
     if [ -n "${IMAGE_INSTALL}" ]; then
-        sudo mkdir -p "${S}/${APTCACHEMNT}"
-        sudo mount -o bind "${DIR_CACHE}" "${S}/${APTCACHEMNT}"
+        if [ "${APTCACHE_ENABLED}" != "0" ]; then
+            sudo mkdir -p "${S}/${APTCACHEMNT}"
+            sudo mount -o bind "${DIR_CACHE}" "${S}/${APTCACHEMNT}"
 
-        sudo chroot "${S}" apt-get update -y
-        for package in ${IMAGE_INSTALL}; do
-            sudo chroot "${S}" apt-get install -t isar -y --allow-unauthenticated "${package}"
-        done
+            sudo chroot "${S}" apt-get update -y
+            for package in ${IMAGE_INSTALL}; do
+                sudo chroot "${S}" apt-get install -t isar -y --allow-unauthenticated "${package}"
+            done
 
-        sudo umount "${S}/${APTCACHEMNT}"
+            sudo umount "${S}/${APTCACHEMNT}"
+        else
+            sudo mkdir -p ${S}/deb
+
+            for p in ${IMAGE_INSTALL}; do
+                find "${DEPLOY_DIR_DEB}" -type f -name '*.deb' -exec \
+                    sudo cp '{}' "${S}/deb/" \;
+            done
+
+            sudo chroot ${S} /usr/bin/dpkg -i -R /deb
+
+            sudo rm -rf ${S}/deb
+        fi
     fi
 }
 

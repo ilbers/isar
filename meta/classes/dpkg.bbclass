@@ -62,22 +62,31 @@ do_install[stamp-extra-info] = "${MACHINE}"
 do_install() {
     readonly DIR_CACHE="${APTCACHEDIR}/${DISTRO_NAME}"
 
-    if [ ! -e "${DIR_CACHE}/conf/distributions" ]; then
-        mkdir -p "${DIR_CACHE}/conf"
-        cat <<EOF >"${DIR_CACHE}/conf/distributions"
+    if [ "${APTCACHE_ENABLED}" != "0" ]; then
+        if [ ! -e "${DIR_CACHE}/conf/distributions" ]; then
+            mkdir -p "${DIR_CACHE}/conf"
+            cat <<EOF >"${DIR_CACHE}/conf/distributions"
 Codename: isar
 Architectures: i386 armhf source
 Components: main
 EOF
-    fi
+        fi
 
-    find "${BUILDROOT}" -type f -name \*.deb -exec \
-        reprepro -b "${DIR_CACHE}" -C main includedeb isar '{}' +
+        find "${BUILDROOT}" -type f -name \*.deb -exec \
+            reprepro -b "${DIR_CACHE}" -C main includedeb isar '{}' +
+    else
+        install -d "${DEPLOY_DIR_DEB}"
+        find "${BUILDROOT}" -type f -name '*.deb' -exec \
+            install -m 755 '{}' "${DEPLOY_DIR_DEB}/" \;
+    fi
 }
 
 addtask do_install after do_build
 
 python __anonymous () {
+    if d.getVar("APTCACHE_ENABLED", True) == "0":
+        return
+
     PN = d.getVar("PN", True)
     PV = d.getVar("PV", True)
     DISTRO_ARCH = d.getVar("DISTRO_ARCH", True)
