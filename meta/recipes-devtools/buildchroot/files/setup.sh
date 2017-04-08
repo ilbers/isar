@@ -66,3 +66,6 @@ sudo chmod -R a+rw $TARGET/home/builder
 
 # Install host networking settings
 sudo cp /etc/resolv.conf $TARGET/etc
+
+# Pass proxy settings in apt config
+sudo sh -c "apt-config dump | grep 'Acquire::.*::proxy' > $TARGET/etc/apt/apt.conf.d/01proxy"
