@@ -36,7 +36,7 @@ from wic import WicError
 from wic.filemap import sparse_copy
 from wic.ksparser import KickStart, KickStartError
 from wic.pluginbase import PluginMgr, ImagerPlugin
-from wic.utils.misc import get_bitbake_var, exec_cmd, exec_native_cmd
+from wic.utils.misc import get_bitbake_var, exec_cmd
 
 logger = logging.getLogger('wic')
 
@@ -52,7 +52,7 @@ class DirectPlugin(ImagerPlugin):
     name = 'direct'
 
     def __init__(self, wks_file, rootfs_dir, bootimg_dir, kernel_dir,
-                 native_sysroot, oe_builddir, options):
+                 oe_builddir, options):
         try:
             self.ks = KickStart(wks_file)
         except KickStartError as err:
@@ -62,7 +62,6 @@ class DirectPlugin(ImagerPlugin):
         self.rootfs_dir = dict(rdir.split('=') for rdir in rootfs_dir.split(' '))
         self.bootimg_dir = bootimg_dir
         self.kernel_dir = kernel_dir
-        self.native_sysroot = native_sysroot
         self.oe_builddir = oe_builddir
 
         self.outdir = options.outdir
@@ -85,7 +84,7 @@ class DirectPlugin(ImagerPlugin):
 
         image_path = self._full_path(self.workdir, self.parts[0].disk, "direct")
         self._image = PartitionedImage(image_path, self.ptable_format,
-                                       self.parts, self.native_sysroot)
+                                       self.parts)
 
     def do_create(self):
         """
@@ -199,14 +198,13 @@ class DirectPlugin(ImagerPlugin):
             plugin = PluginMgr.get_plugins('source')[source_plugin]
             plugin.do_install_disk(self._image, disk_name, self, self.workdir,
                                    self.oe_builddir, self.bootimg_dir,
-                                   self.kernel_dir, self.native_sysroot)
+                                   self.kernel_dir)
 
         full_path = self._image.path
         # Generate .bmap
         if self.bmap:
             logger.debug("Generating bmap file for %s", disk_name)
-            exec_native_cmd("bmaptool create %s -o %s.bmap" % (full_path, full_path),
-                            self.native_sysroot)
+            exec_cmd("bmaptool create %s -o %s.bmap" % (full_path, full_path))
         # Compress the image
         if self.compressor:
             logger.debug("Compressing disk %s with %s", disk_name, self.compressor)
@@ -237,7 +235,6 @@ class DirectPlugin(ImagerPlugin):
 
         msg += '  BOOTIMG_DIR:                  %s\n' % self.bootimg_dir
         msg += '  KERNEL_DIR:                   %s\n' % self.kernel_dir
-        msg += '  NATIVE_SYSROOT:               %s\n' % self.native_sysroot
 
         logger.info(msg)
 
@@ -287,7 +284,7 @@ class PartitionedImage():
     Partitioned image in a file.
     """
 
-    def __init__(self, path, ptable_format, partitions, native_sysroot=None):
+    def __init__(self, path, ptable_format, partitions):
         self.path = path  # Path to the image file
         self.numpart = 0  # Number of allocated partitions
         self.realpart = 0 # Number of partitions in the partition table
@@ -302,7 +299,6 @@ class PartitionedImage():
         self.partimages = []
         # Size of a sector used in calculations
         self.sector_size = SECTOR_SIZE
-        self.native_sysroot = native_sysroot
 
         # calculate the real partition number, accounting for partitions not
         # in the partition table and logical partitions
@@ -332,7 +328,7 @@ class PartitionedImage():
             # sizes before we can add them and do the layout.
             part.prepare(imager, imager.workdir, imager.oe_builddir,
                          imager.rootfs_dir, imager.bootimg_dir,
-                         imager.kernel_dir, imager.native_sysroot)
+                         imager.kernel_dir)
 
             # Converting kB to sectors for parted
             part.size_sec = part.disk_size * 1024 // self.sector_size
@@ -443,7 +439,7 @@ class PartitionedImage():
             cmd += " %s" % fstype
         cmd += " %d %d" % (start, end)
 
-        return exec_native_cmd(cmd, self.native_sysroot)
+        return exec_cmd(cmd)
 
     def create(self):
         logger.debug("Creating sparse file %s", self.path)
@@ -451,8 +447,8 @@ class PartitionedImage():
             os.ftruncate(sparse.fileno(), self.min_size)
 
         logger.debug("Initializing partition table for %s", self.path)
-        exec_native_cmd("parted -s %s mklabel %s" %
-                        (self.path, self.ptable_format), self.native_sysroot)
+        exec_cmd("parted -s %s mklabel %s" %
+                 (self.path, self.ptable_format))
 
         logger.debug("Set disk identifier %x", self.identifier)
         with open(self.path, 'r+b') as img:
@@ -508,35 +504,30 @@ class PartitionedImage():
             if part.part_type:
                 logger.debug("partition %d: set type UID to %s",
                              part.num, part.part_type)
-                exec_native_cmd("sgdisk --typecode=%d:%s %s" % \
-                                         (part.num, part.part_type,
-                                          self.path), self.native_sysroot)
+                exec_cmd("sgdisk --typecode=%d:%s %s" % \
+                         (part.num, part.part_type, self.path))
 
             if part.uuid and self.ptable_format == "gpt":
                 logger.debug("partition %d: set UUID to %s",
                              part.num, part.uuid)
-                exec_native_cmd("sgdisk --partition-guid=%d:%s %s" % \
-                                (part.num, part.uuid, self.path),
-                                self.native_sysroot)
+                exec_cmd("sgdisk --partition-guid=%d:%s %s" % \
+                         (part.num, part.uuid, self.path))
 
             if part.label and self.ptable_format == "gpt":
                 logger.debug("partition %d: set name to %s",
                              part.num, part.label)
-                exec_native_cmd("parted -s %s name %d %s" % \
-                                (self.path, part.num, part.label),
-                                self.native_sysroot)
+                exec_cmd("parted -s %s name %d %s" % \
+                         (self.path, part.num, part.label))
 
             if part.active:
                 flag_name = "legacy_boot" if self.ptable_format == 'gpt' else "boot"
                 logger.debug("Set '%s' flag for partition '%s' on disk '%s'",
                              flag_name, part.num, self.path)
-                exec_native_cmd("parted -s %s set %d %s on" % \
-                                (self.path, part.num, flag_name),
-                                self.native_sysroot)
+                exec_cmd("parted -s %s set %d %s on" % \
+                         (self.path, part.num, flag_name))
             if part.system_id:
-                exec_native_cmd("sfdisk --part-type %s %s %s" % \
-                                (self.path, part.num, part.system_id),
-                                self.native_sysroot)
+                exec_cmd("sfdisk --part-type %s %s %s" % \
+                         (self.path, part.num, part.system_id))
 
     def cleanup(self):
         # remove partition images

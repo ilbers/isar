@@ -123,9 +123,6 @@ def wic_create_subcommand(args, usage_str):
     parser.add_option("-k", "--kernel-dir", dest="kernel_dir",
                       help="path to the dir containing the kernel to use "
                            "in the .wks bootimg")
-    parser.add_option("-n", "--native-sysroot", dest="native_sysroot",
-                      help="path to the native sysroot containing the tools "
-                           "to use to build the image")
     parser.add_option("-s", "--skip-build-check", dest="build_check",
                       action="store_false", default=True, help="skip the build check")
     parser.add_option("-f", "--build-rootfs", action="store_true", help="build rootfs")
@@ -152,8 +149,7 @@ def wic_create_subcommand(args, usage_str):
         missed = []
         for val, opt in [(options.rootfs_dir, 'rootfs-dir'),
                          (options.bootimg_dir, 'bootimg-dir'),
-                         (options.kernel_dir, 'kernel-dir'),
-                         (options.native_sysroot, 'native-sysroot')]:
+                         (options.kernel_dir, 'kernel-dir')]:
             if not val:
                 missed.append(opt)
         if missed:
@@ -188,23 +184,10 @@ def wic_create_subcommand(args, usage_str):
         rootfs_dir = get_bitbake_var("IMAGE_ROOTFS", options.image_name)
         kernel_dir = get_bitbake_var("DEPLOY_DIR_IMAGE", options.image_name)
         bootimg_dir = get_bitbake_var("STAGING_DATADIR", options.image_name)
-        native_sysroot = get_bitbake_var("RECIPE_SYSROOT_NATIVE",
-                                         options.image_name) #, cache=False)
     else:
         if options.build_rootfs:
             raise WicError("Image name is not specified, exiting. "
                            "(Use -e/--image-name to specify it)")
-        native_sysroot = options.native_sysroot
-
-    if not native_sysroot or not os.path.isdir(native_sysroot):
-        logger.info("Building wic-tools...\n")
-        if bitbake_main(BitBakeConfigParameters("bitbake wic-tools".split()),
-                        cookerdata.CookerConfiguration()):
-            raise WicError("bitbake wic-tools failed")
-        native_sysroot = get_bitbake_var("RECIPE_SYSROOT_NATIVE", "wic-tools")
-        if not native_sysroot:
-            raise WicError("Unable to find the location of the native "
-                           "tools sysroot to use")
 
     wks_file = args[0]
 
@@ -221,23 +204,18 @@ def wic_create_subcommand(args, usage_str):
             rootfs_dir = options.rootfs_dir['ROOTFS_DIR']
         bootimg_dir = options.bootimg_dir
         kernel_dir = options.kernel_dir
-        native_sysroot = options.native_sysroot
         if rootfs_dir and not os.path.isdir(rootfs_dir):
             raise WicError("--rootfs-dir (-r) not found, exiting")
         if not os.path.isdir(bootimg_dir):
             raise WicError("--bootimg-dir (-b) not found, exiting")
         if not os.path.isdir(kernel_dir):
             raise WicError("--kernel-dir (-k) not found, exiting")
-        if not os.path.isdir(native_sysroot):
-            raise WicError("--native-sysroot (-n) not found, exiting")
     else:
         not_found = not_found_dir = ""
         if not os.path.isdir(rootfs_dir):
             (not_found, not_found_dir) = ("rootfs-dir", rootfs_dir)
         elif not os.path.isdir(kernel_dir):
             (not_found, not_found_dir) = ("kernel-dir", kernel_dir)
-        elif not os.path.isdir(native_sysroot):
-            (not_found, not_found_dir) = ("native-sysroot", native_sysroot)
         if not_found:
             if not not_found_dir:
                 not_found_dir = "Completely missing artifact - wrong image (.wks) used?"
@@ -255,8 +233,7 @@ def wic_create_subcommand(args, usage_str):
     rootfs_dir = rootfs_dir_to_args(krootfs_dir)
 
     logger.info("Creating image(s)...\n")
-    engine.wic_create(wks_file, rootfs_dir, bootimg_dir, kernel_dir,
-                      native_sysroot, options)
+    engine.wic_create(wks_file, rootfs_dir, bootimg_dir, kernel_dir, options)
 
 
 def wic_list_subcommand(args, usage_str):

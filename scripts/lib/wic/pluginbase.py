@@ -92,7 +92,7 @@ class SourcePlugin(metaclass=PluginMeta):
 
     @classmethod
     def do_install_disk(cls, disk, disk_name, creator, workdir, oe_builddir,
-                        bootimg_dir, kernel_dir, native_sysroot):
+                        bootimg_dir, kernel_dir):
         """
         Called after all partitions have been prepared and assembled into a
         disk image.  This provides a hook to allow finalization of a
@@ -102,8 +102,7 @@ class SourcePlugin(metaclass=PluginMeta):
 
     @classmethod
     def do_stage_partition(cls, part, source_params, creator, cr_workdir,
-                           oe_builddir, bootimg_dir, kernel_dir,
-                           native_sysroot):
+                           oe_builddir, bootimg_dir, kernel_dir):
         """
         Special content staging hook called before do_prepare_partition(),
         normally empty.
@@ -119,8 +118,7 @@ class SourcePlugin(metaclass=PluginMeta):
 
     @classmethod
     def do_configure_partition(cls, part, source_params, creator, cr_workdir,
-                               oe_builddir, bootimg_dir, kernel_dir,
-                               native_sysroot):
+                               oe_builddir, bootimg_dir, kernel_dir):
         """
         Called before do_prepare_partition(), typically used to create
         custom configuration files for a partition, for example
@@ -130,8 +128,7 @@ class SourcePlugin(metaclass=PluginMeta):
 
     @classmethod
     def do_prepare_partition(cls, part, source_params, creator, cr_workdir,
-                             oe_builddir, bootimg_dir, kernel_dir, rootfs_dir,
-                             native_sysroot):
+                             oe_builddir, bootimg_dir, kernel_dir, rootfs_dir):
         """
         Called to do the actual content population for a partition i.e. it
         'prepares' the partition to be incorporated into the image.

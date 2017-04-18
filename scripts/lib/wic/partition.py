@@ -29,7 +29,7 @@ import os
 import tempfile
 
 from wic import WicError
-from wic.utils.misc import exec_cmd, exec_native_cmd, get_bitbake_var
+from wic.utils.misc import exec_cmd, get_bitbake_var
 from wic.pluginbase import PluginMgr
 
 logger = logging.getLogger('wic')
@@ -125,7 +125,7 @@ class Partition():
         return self.fixed_size if self.fixed_size else self.size
 
     def prepare(self, creator, cr_workdir, oe_builddir, rootfs_dir,
-                bootimg_dir, kernel_dir, native_sysroot):
+                bootimg_dir, kernel_dir):
         """
         Prepare content for individual partitions, depending on
         partition command parameters.
@@ -137,8 +137,7 @@ class Partition():
                                "partition." % self.mountpoint)
 
             if self.fstype == "swap":
-                self.prepare_swap_partition(cr_workdir, oe_builddir,
-                                            native_sysroot)
+                self.prepare_swap_partition(cr_workdir, oe_builddir)
                 self.source_file = "%s/fs.%s" % (cr_workdir, self.fstype)
             else:
                 if self.fstype == 'squashfs':
@@ -152,7 +151,7 @@ class Partition():
 
                 prefix = "ext" if self.fstype.startswith("ext") else self.fstype
                 method = getattr(self, "prepare_empty_partition_" + prefix)
-                method(rootfs, oe_builddir, native_sysroot)
+                method(rootfs, oe_builddir)
                 self.source_file = rootfs
             return
 
@@ -175,13 +174,13 @@ class Partition():
         plugin = PluginMgr.get_plugins('source')[self.source]
         plugin.do_configure_partition(self, srcparams_dict, creator,
                                       cr_workdir, oe_builddir, bootimg_dir,
-                                      kernel_dir, native_sysroot)
+                                      kernel_dir)
         plugin.do_stage_partition(self, srcparams_dict, creator,
                                   cr_workdir, oe_builddir, bootimg_dir,
-                                  kernel_dir, native_sysroot)
+                                  kernel_dir)
         plugin.do_prepare_partition(self, srcparams_dict, creator,
                                     cr_workdir, oe_builddir, bootimg_dir,
-                                    kernel_dir, rootfs_dir, native_sysroot)
+                                    kernel_dir, rootfs_dir)
 
         # further processing required Partition.size to be an integer, make
         # sure that it is one
@@ -195,8 +194,7 @@ class Partition():
                            "larger (%d kB) than its allowed size %d kB" %
                            (self.mountpoint, self.size, self.fixed_size))
 
-    def prepare_rootfs(self, cr_workdir, oe_builddir, rootfs_dir,
-                       native_sysroot):
+    def prepare_rootfs(self, cr_workdir, oe_builddir, rootfs_dir):
         """
         Prepare content for a rootfs partition i.e. create a partition
         and fill it from a /rootfs dir.
@@ -235,7 +233,7 @@ class Partition():
 
         prefix = "ext" if self.fstype.startswith("ext") else self.fstype
         method = getattr(self, "prepare_rootfs_" + prefix)
-        method(rootfs, oe_builddir, rootfs_dir, native_sysroot, pseudo)
+        method(rootfs, oe_builddir, rootfs_dir)
         self.source_file = rootfs
 
         # get the rootfs size in the right units for kickstart (kB)
@@ -243,8 +241,7 @@ class Partition():
         out = exec_cmd(du_cmd)
         self.size = int(out.split()[0])
 
-    def prepare_rootfs_ext(self, rootfs, oe_builddir, rootfs_dir,
-                           native_sysroot, pseudo):
+    def prepare_rootfs_ext(self, rootfs, oe_builddir, rootfs_dir):
         """
         Prepare content for an ext2/3/4 rootfs partition.
         """
@@ -265,13 +262,12 @@ class Partition():
 
         mkfs_cmd = "mkfs.%s -F %s %s %s -d %s" % \
             (self.fstype, extra_imagecmd, rootfs, label_str, rootfs_dir)
-        exec_native_cmd(mkfs_cmd, native_sysroot, pseudo=pseudo)
+        exec_cmd(mkfs_cmd)
 
         mkfs_cmd = "fsck.%s -pvfD %s" % (self.fstype, rootfs)
         exec_native_cmd(mkfs_cmd, native_sysroot, pseudo=pseudo)
 
-    def prepare_rootfs_btrfs(self, rootfs, oe_builddir, rootfs_dir,
-                             native_sysroot, pseudo):
+    def prepare_rootfs_btrfs(self, rootfs, oe_builddir, rootfs_dir):
         """
         Prepare content for a btrfs rootfs partition.
 
@@ -292,10 +288,9 @@ class Partition():
 
         mkfs_cmd = "mkfs.%s -b %d -r %s %s %s" % \
             (self.fstype, rootfs_size * 1024, rootfs_dir, label_str, rootfs)
-        exec_native_cmd(mkfs_cmd, native_sysroot, pseudo=pseudo)
+        exec_cmd(mkfs_cmd)
 
-    def prepare_rootfs_msdos(self, rootfs, oe_builddir, rootfs_dir,
-                             native_sysroot, pseudo):
+    def prepare_rootfs_msdos(self, rootfs, oe_builddir, rootfs_dir):
         """
         Prepare content for a msdos/vfat rootfs partition.
         """
@@ -315,7 +310,7 @@ class Partition():
 
         dosfs_cmd = "mkdosfs %s -S 512 %s -C %s %d" % (label_str, size_str,
                                                        rootfs, rootfs_size)
-        exec_native_cmd(dosfs_cmd, native_sysroot)
+        exec_cmd(dosfs_cmd)
 
         mcopy_cmd = "mcopy -i %s -s %s/* ::/" % (rootfs, rootfs_dir)
         exec_native_cmd(mcopy_cmd, native_sysroot)
@@ -325,17 +320,15 @@ class Partition():
 
     prepare_rootfs_vfat = prepare_rootfs_msdos
 
-    def prepare_rootfs_squashfs(self, rootfs, oe_builddir, rootfs_dir,
-                                native_sysroot, pseudo):
+    def prepare_rootfs_squashfs(self, rootfs, oe_builddir, rootfs_dir):
         """
         Prepare content for a squashfs rootfs partition.
         """
         squashfs_cmd = "mksquashfs %s %s -noappend" % \
                        (rootfs_dir, rootfs)
-        exec_native_cmd(squashfs_cmd, native_sysroot, pseudo=pseudo)
+        exec_cmd(squashfs_cmd)
 
-    def prepare_empty_partition_ext(self, rootfs, oe_builddir,
-                                    native_sysroot):
+    def prepare_empty_partition_ext(self, rootfs, oe_builddir):
         """
         Prepare an empty ext2/3/4 partition.
         """
@@ -351,10 +344,9 @@ class Partition():
 
         mkfs_cmd = "mkfs.%s -F %s %s %s" % \
             (self.fstype, extra_imagecmd, label_str, rootfs)
-        exec_native_cmd(mkfs_cmd, native_sysroot)
+        exec_cmd(mkfs_cmd)
 
-    def prepare_empty_partition_btrfs(self, rootfs, oe_builddir,
-                                      native_sysroot):
+    def prepare_empty_partition_btrfs(self, rootfs, oe_builddir):
         """
         Prepare an empty btrfs partition.
         """
@@ -368,10 +360,9 @@ class Partition():
 
         mkfs_cmd = "mkfs.%s -b %d %s %s" % \
             (self.fstype, self.size * 1024, label_str, rootfs)
-        exec_native_cmd(mkfs_cmd, native_sysroot)
+        exec_cmd(mkfs_cmd)
 
-    def prepare_empty_partition_msdos(self, rootfs, oe_builddir,
-                                      native_sysroot):
+    def prepare_empty_partition_msdos(self, rootfs, oe_builddir):
         """
         Prepare an empty vfat partition.
         """
@@ -387,14 +378,14 @@ class Partition():
 
         dosfs_cmd = "mkdosfs %s -S 512 %s -C %s %d" % (label_str, size_str,
                                                        rootfs, blocks)
-        exec_native_cmd(dosfs_cmd, native_sysroot)
+        exec_cmd(dosfs_cmd)
 
         chmod_cmd = "chmod 644 %s" % rootfs
         exec_cmd(chmod_cmd)
 
     prepare_empty_partition_vfat = prepare_empty_partition_msdos
 
-    def prepare_swap_partition(self, cr_workdir, oe_builddir, native_sysroot):
+    def prepare_swap_partition(self, cr_workdir, oe_builddir):
         """
         Prepare a swap partition.
         """
@@ -408,4 +399,4 @@ class Partition():
         if self.label:
             label_str = "-L %s" % self.label
         mkswap_cmd = "mkswap %s -U %s %s" % (label_str, str(uuid.uuid1()), path)
-        exec_native_cmd(mkswap_cmd, native_sysroot)
+        exec_cmd(mkswap_cmd)

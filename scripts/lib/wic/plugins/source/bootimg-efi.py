@@ -31,8 +31,7 @@ import shutil
 from wic import WicError
 from wic.engine import get_custom_config
 from wic.pluginbase import SourcePlugin
-from wic.utils.misc import (exec_cmd, exec_native_cmd, get_bitbake_var,
-                            BOOTDD_EXTRA_SPACE)
+from wic.utils.misc import (exec_cmd, get_bitbake_var, BOOTDD_EXTRA_SPACE)
 
 logger = logging.getLogger('wic')
 
@@ -155,8 +154,7 @@ class BootimgEFIPlugin(SourcePlugin):
 
     @classmethod
     def do_configure_partition(cls, part, source_params, creator, cr_workdir,
-                               oe_builddir, bootimg_dir, kernel_dir,
-                               native_sysroot):
+                               oe_builddir, bootimg_dir, kernel_dir):
         """
         Called before do_prepare_partition(), creates loader-specific config
         """
@@ -178,8 +176,7 @@ class BootimgEFIPlugin(SourcePlugin):
 
     @classmethod
     def do_prepare_partition(cls, part, source_params, creator, cr_workdir,
-                             oe_builddir, bootimg_dir, kernel_dir,
-                             rootfs_dir, native_sysroot):
+                             oe_builddir, bootimg_dir, kernel_dir, rootfs_dir):
         """
         Called to do the actual content population for a partition i.e. it
         'prepares' the partition to be incorporated into the image.
@@ -241,10 +238,10 @@ class BootimgEFIPlugin(SourcePlugin):
         bootimg = "%s/boot.img" % cr_workdir
 
         dosfs_cmd = "mkdosfs -n efi -C %s %d" % (bootimg, blocks)
-        exec_native_cmd(dosfs_cmd, native_sysroot)
+        exec_cmd(dosfs_cmd)
 
         mcopy_cmd = "mcopy -i %s -s %s/* ::/" % (bootimg, hdddir)
-        exec_native_cmd(mcopy_cmd, native_sysroot)
+        exec_cmd(mcopy_cmd)
 
         chmod_cmd = "chmod 644 %s" % bootimg
         exec_cmd(chmod_cmd)

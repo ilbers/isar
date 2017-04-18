@@ -145,8 +145,7 @@ def list_source_plugins():
         print("  %s" % plugin)
 
 
-def wic_create(wks_file, rootfs_dir, bootimg_dir, kernel_dir,
-               native_sysroot, options):
+def wic_create(wks_file, rootfs_dir, bootimg_dir, kernel_dir, options):
     """
     Create image
 
@@ -154,7 +153,6 @@ def wic_create(wks_file, rootfs_dir, bootimg_dir, kernel_dir,
     rootfs_dir - absolute path to the build's /rootfs dir
     bootimg_dir - absolute path to the build's boot artifacts directory
     kernel_dir - absolute path to the build's kernel directory
-    native_sysroot - absolute path to the build's native sysroots dir
     image_output_dir - dirname to create for image
     options - wic command line options (debug, bmap, etc)
 
@@ -166,7 +164,6 @@ def wic_create(wks_file, rootfs_dir, bootimg_dir, kernel_dir,
 
     rootfs_dir:        IMAGE_ROOTFS
     kernel_dir:        DEPLOY_DIR_IMAGE
-    native_sysroot:    STAGING_DIR_NATIVE
 
     In the above case, bootimg_dir remains unset and the
     plugin-specific image creation code is responsible for finding the
@@ -190,7 +187,7 @@ def wic_create(wks_file, rootfs_dir, bootimg_dir, kernel_dir,
         raise WicError('Unknown plugin: %s' % pname)
 
     plugin = plugin_class(wks_file, rootfs_dir, bootimg_dir, kernel_dir,
-                          native_sysroot, oe_builddir, options)
+                          oe_builddir, options)
 
     plugin.do_create()
 

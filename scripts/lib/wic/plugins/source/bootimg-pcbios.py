@@ -31,8 +31,7 @@ from wic import WicError
 from wic.engine import get_custom_config
 from wic.utils import runner
 from wic.pluginbase import SourcePlugin
-from wic.utils.misc import (exec_cmd, exec_native_cmd,
-                            get_bitbake_var, BOOTDD_EXTRA_SPACE)
+from wic.utils.misc import (exec_cmd, get_bitbake_var, BOOTDD_EXTRA_SPACE)
 
 logger = logging.getLogger('wic')
 
@@ -57,7 +56,7 @@ class BootimgPcbiosPlugin(SourcePlugin):
 
     @classmethod
     def do_install_disk(cls, disk, disk_name, creator, workdir, oe_builddir,
-                        bootimg_dir, kernel_dir, native_sysroot):
+                        bootimg_dir, kernel_dir):
         """
         Called after all partitions have been prepared and assembled into a
         disk image.  In this case, we install the MBR.
@@ -82,12 +81,11 @@ class BootimgPcbiosPlugin(SourcePlugin):
                      disk_name, full_path, disk.min_size)
 
         dd_cmd = "dd if=%s of=%s conv=notrunc" % (mbrfile, full_path)
-        exec_cmd(dd_cmd, native_sysroot)
+        exec_cmd(dd_cmd)
 
     @classmethod
     def do_configure_partition(cls, part, source_params, creator, cr_workdir,
-                               oe_builddir, bootimg_dir, kernel_dir,
-                               native_sysroot):
+                               oe_builddir, bootimg_dir, kernel_dir):
         """
         Called before do_prepare_partition(), creates syslinux config
         """
@@ -144,8 +142,7 @@ class BootimgPcbiosPlugin(SourcePlugin):
 
     @classmethod
     def do_prepare_partition(cls, part, source_params, creator, cr_workdir,
-                             oe_builddir, bootimg_dir, kernel_dir,
-                             rootfs_dir, native_sysroot):
+                             oe_builddir, bootimg_dir, kernel_dir, rootfs_dir):
         """
         Called to do the actual content population for a partition i.e. it
         'prepares' the partition to be incorporated into the image.
@@ -189,13 +186,13 @@ class BootimgPcbiosPlugin(SourcePlugin):
         bootimg = "%s/boot.img" % cr_workdir
 
         dosfs_cmd = "mkdosfs -n boot -S 512 -C %s %d" % (bootimg, blocks)
-        exec_native_cmd(dosfs_cmd, native_sysroot)
+        exec_cmd(dosfs_cmd)
 
         mcopy_cmd = "mcopy -i %s -s %s/* ::/" % (bootimg, hdddir)
-        exec_native_cmd(mcopy_cmd, native_sysroot)
+        exec_cmd(mcopy_cmd)
 
         syslinux_cmd = "syslinux %s" % bootimg
-        exec_native_cmd(syslinux_cmd, native_sysroot)
+        exec_cmd(syslinux_cmd)
 
         chmod_cmd = "chmod 644 %s" % bootimg
         exec_cmd(chmod_cmd)
