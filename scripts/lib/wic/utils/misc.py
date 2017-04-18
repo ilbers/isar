@@ -59,6 +59,16 @@ NATIVE_RECIPES = {"bmaptool": "bmap-tools",
                   "syslinux": "syslinux"
                  }
 
+class WicExecError(WicError):
+    def __init__(self, command, output, returncode):
+        self.command = command
+        self.output = output
+        self.returncode = returncode
+
+    def __str__(self):
+        return "_exec_cmd: %s returned '%s' instead of 0\noutput: %s" % \
+            (self.command, self.returncode, self.output)
+
 def _exec_cmd(cmd_and_args, as_shell=False):
     """
     Execute command, catching stderr, stdout
@@ -69,17 +79,18 @@ def _exec_cmd(cmd_and_args, as_shell=False):
     args = cmd_and_args.split()
     logger.debug(args)
 
+    cmd = args
     if as_shell:
+        cmd = cmd_and_args
         ret, out = runner.runtool(cmd_and_args)
     else:
         ret, out = runner.runtool(args)
     out = out.strip()
     if ret != 0:
-        raise WicError("_exec_cmd: %s returned '%s' instead of 0\noutput: %s" % \
-                       (cmd_and_args, ret, out))
+        raise WicExecError(cmd, out, ret)
 
     logger.debug("_exec_cmd: output for %s (rc = %d): %s",
-                 cmd_and_args, ret, out)
+                 cmd_and_args, out, ret)
 
     return ret, out
 
