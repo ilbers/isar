@@ -402,9 +402,10 @@ class IsoImagePlugin(SourcePlugin):
             mmd_cmd = "mmd -i %s ::/EFI" % bootimg
             exec_cmd(mmd_cmd)
 
-            mcopy_cmd = "mcopy -i %s -s %s/EFI/* ::/EFI/" \
+            mcopy_cmd = "env MTOOLS_SKIP_CHECK=1 " \
+                        "mcopy -i %s -s %s/EFI/* ::/EFI/" \
                         % (bootimg, isodir)
-            exec_cmd(mcopy_cmd)
+            exec_cmd(mcopy_cmd, True)
 
             chmod_cmd = "chmod 644 %s" % bootimg
             exec_cmd(chmod_cmd)

@@ -301,8 +301,9 @@ class Partition():
                                                        rootfs, rootfs_size)
         exec_cmd(dosfs_cmd)
 
-        mcopy_cmd = "mcopy -i %s -s %s/* ::/" % (rootfs, rootfs_dir)
-        exec_native_cmd(mcopy_cmd, native_sysroot)
+        mcopy_cmd = "env MTOOLS_SKIP_CHECK=1 mcopy -i %s -s %s/* ::/" % \
+                    (rootfs, rootfs_dir)
+        exec_cmd(mcopy_cmd, True)
 
         chmod_cmd = "chmod 644 %s" % rootfs
         exec_cmd(chmod_cmd)
