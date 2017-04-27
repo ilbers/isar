@@ -69,18 +69,32 @@ class BootimgEFIPlugin(SourcePlugin):
             grubefi_conf += "serial --unit=0 --speed=115200 --word=8 --parity=no --stop=1\n"
             grubefi_conf += "default=boot\n"
             grubefi_conf += "timeout=%s\n" % bootloader.timeout
+            grubefi_conf += "set root='hd0,gpt2'\n"
             grubefi_conf += "menuentry 'boot'{\n"
 
-            kernel = "/bzImage"
+            kernel_image = get_bitbake_var("KERNEL_IMAGE")
+            kernel = "/boot/%s" % kernel_image
 
-            grubefi_conf += "linux %s root=%s rootwait %s\n" \
-                % (kernel, creator.rootdev, bootloader.append)
+            grubefi_conf += "linux %s root=/dev/sda2 rootwait %s\n" \
+                            % (kernel, bootloader.append)
+
+            initrd_image = get_bitbake_var("INITRD_IMAGE")
+            initrd = "/boot/%s" % initrd_image
+
+            grubefi_conf += "initrd %s\n" % initrd
+
             grubefi_conf += "}\n"
 
         logger.debug("Writing grubefi config %s/hdd/boot/EFI/BOOT/grub.cfg",
                      cr_workdir)
         cfg = open("%s/hdd/boot/EFI/BOOT/grub.cfg" % cr_workdir, "w")
         cfg.write(grubefi_conf)
+        cfg.close()
+
+        cfg = open("%s/hdd/boot/EFI/BOOT/grub-mkimage.cfg" % cr_workdir, "w")
+        mkimage_conf = "set root='hd0,gpt1'\n"
+        mkimage_conf += "set prefix=($root)/EFI/BOOT\n"
+        cfg.write(mkimage_conf)
         cfg.close()
 
     @classmethod
@@ -134,7 +148,8 @@ class BootimgEFIPlugin(SourcePlugin):
 
         if not custom_cfg:
             # Create systemd-boot configuration using parameters from wks file
-            kernel = "/bzImage"
+            kernel_name = get_bitbake_var("KERNEL_IMAGE")
+            kernel = "/%s" % kernel_name
 
             boot_conf = ""
             boot_conf += "title boot\n"
@@ -191,8 +206,9 @@ class BootimgEFIPlugin(SourcePlugin):
 
         hdddir = "%s/hdd/boot" % cr_workdir
 
-        install_cmd = "install -m 0644 %s/bzImage %s/bzImage" % \
-            (staging_kernel_dir, hdddir)
+        kernel_name = get_bitbake_var("KERNEL_IMAGE")
+        install_cmd = "install -m 0644 %s/%s %s/%s" % \
+                      (staging_kernel_dir, kernel_name, hdddir, kernel_name)
         exec_cmd(install_cmd)
 
 
@@ -200,11 +216,45 @@ class BootimgEFIPlugin(SourcePlugin):
             if source_params['loader'] == 'grub-efi':
                 shutil.copyfile("%s/hdd/boot/EFI/BOOT/grub.cfg" % cr_workdir,
                                 "%s/grub.cfg" % cr_workdir)
+                shutil.copyfile("%s/hdd/boot/EFI/BOOT/grub-mkimage.cfg" % cr_workdir,
+                                "%s/grub-mkimage.cfg" % cr_workdir)
                 for mod in [x for x in os.listdir(kernel_dir) if x.startswith("grub-efi-")]:
                     cp_cmd = "cp %s/%s %s/EFI/BOOT/%s" % (kernel_dir, mod, hdddir, mod[9:])
                     exec_cmd(cp_cmd, True)
                 shutil.move("%s/grub.cfg" % cr_workdir,
                             "%s/hdd/boot/EFI/BOOT/grub.cfg" % cr_workdir)
+
+                distro_arch = get_bitbake_var("DISTRO_ARCH")
+                if not distro_arch:
+                    raise WicError("Couldn't find target architecture")
+
+                if distro_arch == "amd64":
+                    grub_target = 'x86_64-efi'
+                    grub_image = "bootx64.efi"
+                elif distro_arch == "i386":
+                    grub_target = 'i386-efi'
+                    grub_image = "bootia32.efi"
+                else:
+                    raise WicError("grub-efi is incompatible with target %s" %
+                                   distro_arch)
+
+                bootimg_dir = "%s/hdd/boot" % cr_workdir
+                if not os.path.isfile("%s/EFI/BOOT/%s" \
+                                      % (bootimg_dir, grub_image)):
+
+                    # TODO: check that grub-mkimage is available
+                    grub_cmd = "grub-mkimage -p /EFI/BOOT "
+                    grub_cmd += "-c %s/grub-mkimage.cfg " % cr_workdir
+                    grub_cmd += "-O %s -o %s/EFI/BOOT/%s " \
+                                % (grub_target, bootimg_dir, grub_image)
+                    grub_cmd += "part_gpt part_msdos ntfs ntfscomp fat ext2 "
+                    grub_cmd += "normal chain boot configfile linux multiboot "
+                    grub_cmd += "search efi_gop efi_uga font gfxterm gfxmenu "
+                    grub_cmd += "terminal minicmd test iorw loadenv echo help "
+                    grub_cmd += "reboot serial terminfo iso9660 loopback tar "
+                    grub_cmd += "memdisk ls search_fs_uuid udf btrfs xfs lvm "
+                    grub_cmd += "reiserfs ata "
+                    exec_cmd(grub_cmd)
             elif source_params['loader'] == 'systemd-boot':
                 for mod in [x for x in os.listdir(kernel_dir) if x.startswith("systemd-")]:
                     cp_cmd = "cp %s/%s %s/EFI/BOOT/%s" % (kernel_dir, mod, hdddir, mod[8:])
