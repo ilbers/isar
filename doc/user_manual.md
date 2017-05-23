@@ -38,9 +38,12 @@ configurations:
 
  - QEMU ARM with Debian Wheezy
  - QEMU ARM with Debian Jessie
+ - QEMU ARM with Debian Stretch (builds but fails to run, see #22)
  - QEMU i386 with Debian Jessie
+ - QEMU i386 with Debian Stretch
  - QEMU amd64 with Debian Jessie
- - Raspberry Pi 1 Model B with Raspbian Jessie
+ - QEMU amd64 with Debian Stretch
+ - Raspberry Pi 1 Model B with Raspbian Jessie (see #23)
 
 The steps below describe how to build the images provided by default.
 
@@ -136,8 +139,11 @@ a single call. List all configurations in `conf/local.conf`:
 BBMULTICONFIG = " \
     qemuarm-wheezy \
     qemuarm-jessie \
+    qemuarm-stretch \
     qemui386-jessie \
+    qemui386-stretch \
     qemuamd64-jessie \
+    qemuamd64-stretch \
     rpi-jessie \
 "
 ```
@@ -147,8 +153,11 @@ The following command will produce `isar-image-base` images for all targets:
 ```
 $ bitbake multiconfig:qemuarm-wheezy:isar-image-base \
     multiconfig:qemuarm-jessie:isar-image-base \
+    multiconfig:qemuarm-stretch:isar-image-base \
     multiconfig:qemui386-jessie:isar-image-base \
+    multiconfig:qemui386-stretch:isar-image-base \
     multiconfig:qemuamd64-jessie:isar-image-base \
+    multiconfig:qemuamd64-stretch:isar-image-base \
     multiconfig:rpi-jessie:isar-image-base
 ```
 
@@ -157,8 +166,11 @@ Created images are:
 ```
 tmp/deploy/images/isar-image-base-qemuarm-debian-wheezy.ext4.img
 tmp/deploy/images/isar-image-base-qemuarm-debian-jessie.ext4.img
+tmp/deploy/images/isar-image-base-qemuarm-debian-stretch.ext4.img
 tmp/deploy/images/isar-image-base-qemui386-debian-jessie.ext4.img
+tmp/deploy/images/isar-image-base-qemui386-debian-stretch.ext4.img
 tmp/deploy/images/isar-image-base-qemuamd64-debian-jessie.ext4.img
+tmp/deploy/images/isar-image-base-qemuamd64-debian-stretch.ext4.img
 tmp/deploy/images/isar-image-base.rpi-sdimg
 ```
 
@@ -169,8 +181,11 @@ multiple configurations in different build directories faster:
 ```
 scripts/build_parallel ../build multiconfig:qemuarm-wheezy:isar-image-base \
     multiconfig:qemuarm-jessie:isar-image-base \
+    multiconfig:qemuarm-stretch:isar-image-base \
     multiconfig:qemui386-jessie:isar-image-base \
+    multiconfig:qemui386-stretch:isar-image-base \
     multiconfig:qemuamd64-jessie:isar-image-base \
+    multiconfig:qemuamd64-stretch:isar-image-base \
     multiconfig:rpi-jessie:isar-image-base
 ```
 
@@ -179,9 +194,12 @@ Created images are:
 ```
 ../build-1/tmp/deploy/images/isar-image-base-qemuarm-debian-wheezy.ext4.img
 ../build-2/tmp/deploy/images/isar-image-base-qemuarm-debian-jessie.ext4.img
-../build-3/tmp/deploy/images/isar-image-base-qemui386-debian-jessie.ext4.img
-../build-4/tmp/deploy/images/isar-image-base-qemuamd64-debian-jessie.ext4.img
-../build-5/tmp/deploy/images/isar-image-base.rpi-sdimg
+../build-3/tmp/deploy/images/isar-image-base-qemuarm-debian-stretch.ext4.img
+../build-4/tmp/deploy/images/isar-image-base-qemui386-debian-jessie.ext4.img
+../build-5/tmp/deploy/images/isar-image-base-qemui386-debian-stretch.ext4.img
+../build-6/tmp/deploy/images/isar-image-base-qemuamd64-debian-jessie.ext4.img
+../build-7/tmp/deploy/images/isar-image-base-qemuamd64-debian-stretch.ext4.img
+../build-8/tmp/deploy/images/isar-image-base.rpi-sdimg
 ```
 
 ---
@@ -290,6 +308,7 @@ In Isar, each machine can use its specific Linux distro to generate `buildchroot
 
  - debian-wheezy
  - debian-jessie
+ - debian-stretch
  - raspbian-jessie
 
 User can select appropriate distro for specific machine by setting the following variable in machine configuration file:
