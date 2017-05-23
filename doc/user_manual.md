@@ -39,6 +39,7 @@ configurations:
  - QEMU ARM with Debian Wheezy
  - QEMU ARM with Debian Jessie
  - QEMU i386 with Debian Jessie
+ - QEMU amd64 with Debian Jessie
  - Raspberry Pi 1 Model B with Raspbian Jessie
 
 The steps below describe how to build the images provided by default.
@@ -132,7 +133,13 @@ Alternatively, BitBake supports building images for multiple configurations in
 a single call. List all configurations in `conf/local.conf`:
 
 ```
-BBMULTICONFIG = "qemuarm-wheezy qemuarm-jessie qemui386-jessie rpi-jessie"
+BBMULTICONFIG = " \
+    qemuarm-wheezy \
+    qemuarm-jessie \
+    qemui386-jessie \
+    qemuamd64-jessie \
+    rpi-jessie \
+"
 ```
 
 The following command will produce `isar-image-base` images for all targets:
@@ -141,6 +148,7 @@ The following command will produce `isar-image-base` images for all targets:
 $ bitbake multiconfig:qemuarm-wheezy:isar-image-base \
     multiconfig:qemuarm-jessie:isar-image-base \
     multiconfig:qemui386-jessie:isar-image-base \
+    multiconfig:qemuamd64-jessie:isar-image-base \
     multiconfig:rpi-jessie:isar-image-base
 ```
 
@@ -150,6 +158,7 @@ Created images are:
 tmp/deploy/images/isar-image-base-qemuarm-debian-wheezy.ext4.img
 tmp/deploy/images/isar-image-base-qemuarm-debian-jessie.ext4.img
 tmp/deploy/images/isar-image-base-qemui386-debian-jessie.ext4.img
+tmp/deploy/images/isar-image-base-qemuamd64-debian-jessie.ext4.img
 tmp/deploy/images/isar-image-base.rpi-sdimg
 ```
 
@@ -161,6 +170,7 @@ multiple configurations in different build directories faster:
 scripts/build_parallel ../build multiconfig:qemuarm-wheezy:isar-image-base \
     multiconfig:qemuarm-jessie:isar-image-base \
     multiconfig:qemui386-jessie:isar-image-base \
+    multiconfig:qemuamd64-jessie:isar-image-base \
     multiconfig:rpi-jessie:isar-image-base
 ```
 
@@ -170,7 +180,8 @@ Created images are:
 ../build-1/tmp/deploy/images/isar-image-base-qemuarm-debian-wheezy.ext4.img
 ../build-2/tmp/deploy/images/isar-image-base-qemuarm-debian-jessie.ext4.img
 ../build-3/tmp/deploy/images/isar-image-base-qemui386-debian-jessie.ext4.img
-../build-4/tmp/deploy/images/isar-image-base.rpi-sdimg
+../build-4/tmp/deploy/images/isar-image-base-qemuamd64-debian-jessie.ext4.img
+../build-5/tmp/deploy/images/isar-image-base.rpi-sdimg
 ```
 
 ---
