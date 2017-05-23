@@ -1,5 +1,7 @@
 # ISAR User Manual
 
+Copyright (C) 2016-2017, ilbers GmbH
+
 ## Contents
 
  - [Introduction](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#introduction)
@@ -36,6 +38,7 @@ configurations:
 
  - QEMU ARM with Debian Wheezy
  - QEMU ARM with Debian Jessie
+ - QEMU i386 with Debian Jessie
  - Raspberry Pi 1 Model B with Raspbian Jessie
 
 The steps below describe how to build the images provided by default.
@@ -119,7 +122,7 @@ Alternatively, BitBake supports building images for multiple configurations in
 a single call. List all configurations in `conf/local.conf`:
 
 ```
-BBMULTICONFIG = "qemuarm-wheezy qemuarm-jessie rpi-jessie"
+BBMULTICONFIG = "qemuarm-wheezy qemuarm-jessie qemui386-jessie rpi-jessie"
 ```
 
 The following command will produce `isar-image-base` images for all targets:
@@ -127,6 +130,7 @@ The following command will produce `isar-image-base` images for all targets:
 ```
 $ bitbake multiconfig:qemuarm-wheezy:isar-image-base \
     multiconfig:qemuarm-jessie:isar-image-base \
+    multiconfig:qemui386-jessie:isar-image-base \
     multiconfig:rpi-jessie:isar-image-base
 ```
 
@@ -135,6 +139,7 @@ Created images are:
 ```
 tmp/deploy/images/isar-image-base-qemuarm-debian-wheezy.ext4.img
 tmp/deploy/images/isar-image-base-qemuarm-debian-jessie.ext4.img
+tmp/deploy/images/isar-image-base-qemui386-debian-jessie.ext4.img
 tmp/deploy/images/isar-image-base.rpi-sdimg
 ```
 
@@ -145,6 +150,7 @@ multiple configurations in different build directories faster:
 ```
 scripts/build_parallel ../build multiconfig:qemuarm-wheezy:isar-image-base \
     multiconfig:qemuarm-jessie:isar-image-base \
+    multiconfig:qemui386-jessie:isar-image-base \
     multiconfig:rpi-jessie:isar-image-base
 ```
 
@@ -153,7 +159,8 @@ Created images are:
 ```
 ../build-1/tmp/deploy/images/isar-image-base-qemuarm-debian-wheezy.ext4.img
 ../build-2/tmp/deploy/images/isar-image-base-qemuarm-debian-jessie.ext4.img
-../build-3/tmp/deploy/images/isar-image-base.rpi-sdimg
+../build-3/tmp/deploy/images/isar-image-base-qemui386-debian-jessie.ext4.img
+../build-4/tmp/deploy/images/isar-image-base.rpi-sdimg
 ```
 
 ---
@@ -201,6 +208,7 @@ This filesystem is generated similarly to the `buildchroot` one using the `apt` 
 ### Install Custom Packages
 
 At this stage, Isar populates target filesystem by custom packages that were built in previous stages.
+
 ### Target Image Packaging
 
 Isar can generate various image types, e.g. an ext4 filesystem or a complete SD card image. The list of images to produce is set in configuration file, please refer to image type selection section.
@@ -241,8 +249,8 @@ following variables define the default configuration to build for:
  - `DISTRO_ARCH` - The Debian architecture to build for (e.g., `armhf`).
 
 If BitBake is called with multiconfig targets (e.g.,
-`multiconfig:qemuarm:isar-image-base`), the following variable defines all
-supported configurations:
+`multiconfig:qemuarm-jessie:isar-image-base`), the following variable defines
+all supported configurations:
 
  - `BBMULTICONFIG` - The list of the complete configuration definition files.
    BitBake looks for conf/multiconfig/<CONFIG>.conf in every layer. Every
@@ -260,6 +268,7 @@ Some other variables include:
 In Isar, each machine can use its specific Linux distro to generate `buildchroot` and target filesystem. By default, Isar provides configuration files for the following distros:
 
  - debian-wheezy
+ - debian-jessie
  - raspbian-jessie
 
 User can select appropriate distro for specific machine by setting the following variable in machine configuration file:
