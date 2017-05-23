@@ -10,7 +10,7 @@ LIC_FILES_CHKSUM = "file://${LAYERDIR_isar}/licenses/COPYING.GPLv2;md5=751419260
 
 PV = "1.0"
 
-SRC_URI = "git://github.com/ilbers/hello.git"
+SRC_URI = "git://github.com/ilbers/hello.git;protocol=https"
 SRCREV = "ad7065ecc4840cc436bfcdac427386dbba4ea719"
 
 SRC_DIR = "git"
