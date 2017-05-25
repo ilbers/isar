@@ -46,3 +46,8 @@ Built on:
 Tested on:
 * QEMU 1.1.2+dfsg-6a+deb7u12
 * Raspberry Pi 1 Model B rev 2
+
+# Credits
+
+* Developed by ilbers GmbH
+* Sponsored by Siemens AG
