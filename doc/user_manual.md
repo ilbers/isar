@@ -138,6 +138,24 @@ tmp/deploy/images/isar-image-base-qemuarm-debian-jessie.ext4.img
 tmp/deploy/images/isar-image-base.rpi-sdimg
 ```
 
+The BitBake revision included with Isar seems to serialize multiconfig builds.
+The following script may be used from the project directory (`isar`) to build
+multiple configurations in different build directories faster:
+
+```
+scripts/build_parallel ../build multiconfig:qemuarm-wheezy:isar-image-base \
+    multiconfig:qemuarm-jessie:isar-image-base \
+    multiconfig:rpi-jessie:isar-image-base
+```
+
+Created images are:
+
+```
+../build-1/tmp/deploy/images/isar-image-base-qemuarm-debian-wheezy.ext4.img
+../build-2/tmp/deploy/images/isar-image-base-qemuarm-debian-jessie.ext4.img
+../build-3/tmp/deploy/images/isar-image-base.rpi-sdimg
+```
+
 ---
 
 ## Terms and Definitions
