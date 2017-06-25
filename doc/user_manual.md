@@ -178,7 +178,7 @@ This file contains variables that will be exported to `bitbake` environment and 
 
 In Isar, each machine can use its specific Linux distro to generate `buildchroot` and target filesystem. By default, Isar provides configuration files for the following distros:
  - debian-wheezy
- - raspbian-stable
+ - raspbian-jessie
 
 User can select appropriate distro for specific machine by setting the following variable in machine configuration file:
 ```
@@ -214,9 +214,9 @@ The distro is defined by the set of the following variables:
  - `DISTRO_APT_SOURCE` - Repository URL.
  - `DISTRO_CONFIG_SCRIPT` - Target filesystem finalization script. This script is called after `multistrap` has unpacked the base system packages. It is designed to finalize filesystem, for example to add `fstab` according to machine hardware configuration. The script should be placed to `files` folder in image recipe folder.
 
-Below is an example for Raspbian stable:
+Below is an example for Raspbian Jessie:
 ```
-DISTRO_SUITE = "stable"
+DISTRO_SUITE = "jessie"
 DISTRO_ARCH = "armhf"
 DISTRO_COMPONENTS = "main contrib non-free firmware"
 DISTRO_APT_SOURCE = "http://archive.raspbian.org/raspbian"
