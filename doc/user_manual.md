@@ -21,6 +21,7 @@
 Isar is a set of scripts for building software packages and repeatable generation of Debian-based root filesystems with customizations.
 
 Isar provides:
+
  - Fast target image generation: About 10 minutes to get base system image for one machine.
  - Use any apt package provider, including open-source communities like `Debian`, `Raspbian`, etc. and proprietary ones created manually.
  - Native compilation: Packages are compiled in a `chroot` environment using the same toolchain and libraries that will be installed to the target filesystem.
@@ -31,6 +32,7 @@ Isar provides:
 ## Getting Started
 
 For demonstration purposes, Isar provides support for two machines:
+
  - QEMU ARM
  - Raspberry Pi 1 Model B
 
@@ -50,7 +52,9 @@ qemu
 qemu-user-static
 sudo
 ```
+
 Notes:
+
 * BitBake requires Python 3.4+.
 * The python3 package is required for the correct `alternatives` setting.
 
@@ -156,6 +160,7 @@ Isar uses the following configuration files:
 ### bblayers.conf
 
 This file contains the list of meta layers, where `bitbake` will search for recipes, classes and configuration files. By default, Isar includes the following layers:
+
  - `meta` - Core Isar layer which contains basic functionality.
  - `meta-isar` - Product template layer. It demonstrates Isar's features. Also this layer can be used to create your projects.
 
@@ -196,6 +201,7 @@ Some other variables include:
 ## Isar Distro Configuration
 
 In Isar, each machine can use its specific Linux distro to generate `buildchroot` and target filesystem. By default, Isar provides configuration files for the following distros:
+
  - debian-wheezy
  - raspbian-jessie
 
@@ -209,6 +215,7 @@ DISTRO = "distro-name"
 ## Custom Package Compilation
 
 Isar provides possibility to compile and install custom packages. The current version supports only building `deb` packages using `dpkg-buildpackage`, so the sources should contain the `debian` directory with necessary meta information. To add new package to image, it needs the following:
+
  - Create package recipe and put it in your `isar` layer.
  - Append `IMAGE_INSTALL` variable by this recipe name. If this package should be included for all the machines, put `IMAGE_INSTALL` to `local.conf` file. If you want to include this package for specific machine, put it to your machine configuration file.
 
@@ -219,6 +226,7 @@ Please refer to `add custom application` section for more information about writ
 ## Image Type Selection
 
 Isar can generate various images types for specific machine. The `IMAGE_TYPE` variable contains the list of image types to generate. Currently, the following image types are provided:
+
  - `ext4` - Raw ext4 filesystem image (default option for `qemuarm` machine).
  - `rpi-sdimg` - A complete, partitioned Raspberry Pi SD card image (default option for the `rpi` machine).
  
@@ -227,6 +235,7 @@ Isar can generate various images types for specific machine. The `IMAGE_TYPE` va
 ## Add a New Distro
 
 The distro is defined by the set of the following variables:
+
  - `DISTRO_SUITE` - Repository suite like stable, jessie, wheezy etc.
  - `DISTRO_COMPONENTS` - Repository components like main, contrib, non-free etc.
  - `DISTRO_APT_SOURCE` - Repository URL.
@@ -241,6 +250,7 @@ DISTRO_CONFIG_SCRIPT = "raspbian-configscript.sh"
 ```
 
 To add new distro, user should perform the following steps:
+
  - Create `distro` folder in your layer:
 
     ```
@@ -261,6 +271,7 @@ To add new distro, user should perform the following steps:
 ## Add a New Machine
 
 Every machine is described in its configuration file. The file defines the following variables:
+
  - `IMAGE_PREINSTALL` - The list of machine-specific packages, that has to be included to image. This variable must include the name of the following packages (if applicable):
    - Linux kernel.
    - U-Boot or other boot loader.
@@ -281,6 +292,7 @@ IMAGE_TYPE = "rpi-sdimg"
 ```
 
 To add new machine user should perform the following steps:
+
  - Create the `machine` directory in your layer:
 
     ```
@@ -295,6 +307,7 @@ To add new machine user should perform the following steps:
 ## Add a New Image
 
 Image in Isar contains the following artifacts:
+
  - Image recipe - Describes set of rules how to generate target image.
  - `Multistrap` configuration file - Contains information about distro, suite, `apt` source etc.
  - `Multistrap` setup script - Performs pre-install filesystem configuration.
@@ -339,6 +352,7 @@ IMAGE_TYPE = "my-image"
 ### Reference Classes
 
 Isar contains two image type classes that can be used as reference:
+
  - `ext4-img`
  - `rpi-sdimg`
 
@@ -369,6 +383,7 @@ inherit dpkg
 ```
 
 The following variables are used in this recipe:
+
  - `DESCRIPTION` - Textual description of the package.
  - `LICENSE` - Application license file.
  - `LIC_FILES_CHKSUM` - Reference to the license file with its checksum. Isar recommends to store license files for your applications into layer your layer folder `meta-user/licenses/`. Then you may reference it in recipe using the following path:
@@ -377,10 +392,10 @@ The following variables are used in this recipe:
     LIC_FILES_CHKSUM = file://${LAYERDIR_isar}/licenses/...
     ```
 This approach prevents duplication of the license files in different packages.
+
  - `PV` - Package version.
  - `SRC_URI` - The link where to fetch application source. Please check the BitBake user manual for supported download formats.
  - `SRC_DIR` - The directory name where application sources will be unpacked. For `git` repositories, it should be set to `git`. Please check the BitBake user manual for supported download formats.
  - `SRC_REV` - Source code revision to fetch. Please check the BitBake user manual for supported download formats.
 
 The last line in the example above adds recipe to the Isar work chain.
-
