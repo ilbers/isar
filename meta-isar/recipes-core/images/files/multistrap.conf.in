@@ -15,3 +15,4 @@ source=##DISTRO_APT_SOURCE##
 suite=##DISTRO_SUITE##
 components=##DISTRO_COMPONENTS##
 packages=##IMAGE_PREINSTALL##
+omitdebsrc=true
