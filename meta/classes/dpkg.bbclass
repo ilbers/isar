@@ -1,6 +1,8 @@
 # This software is a part of ISAR.
 # Copyright (C) 2015-2016 ilbers GmbH
 
+inherit isar-base
+
 # Add dependency from buildchroot creation
 DEPENDS += "buildchroot"
 do_unpack[deptask] = "do_build"
