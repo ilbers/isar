@@ -10,7 +10,6 @@ do_unpack[deptask] = "do_build"
 PP = "/home/builder/${PN}"
 BUILDROOT = "${BUILDCHROOT_DIR}/${PP}"
 
-addtask fetch
 do_fetch[dirs] = "${DL_DIR}"
 
 # Fetch package from the source link
