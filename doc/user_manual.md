@@ -98,16 +98,6 @@ To initialize the `isar` build directory run the following commands:
 ```
 `../build` is the build directory. You may use a different name here.
 
-### Set `PATH`
-
-Generating images requires using tools in `/sbin` (e.g., `mkdosfs`), add it to
-`PATH`:
-
-```
-$ PATH="/sbin:${PATH}"
-$ export PATH
-```
-
 ### Building Target Images for One Configuration
 
 To build target images ("targets" in BitBake terms) for one configuration,
