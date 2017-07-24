@@ -12,6 +12,13 @@ ES_BUG=3
 ARCH=arm
 DISTRO=stretch
 
+# Convert bitbake assignments to shell ones
+# a = b         a=b
+# TODO: Use bitbake to parse vars correctly (overriding in local.conf, etc.)
+bb2sh() {
+    sed 's/[[:space:]]*=[[:space:]]*/=/'
+}
+
 start_qemu() {
     root1=`echo $QEMU_ROOTFS_DEV \
         | sed 's,##ROOTFS_IMAGE##,$IMAGE_DIR/'"$ROOTFS_IMAGE"','`
@@ -67,12 +74,10 @@ readonly IMAGE_DIR=$BUILD_DIR/tmp/deploy/images
 readonly ISARROOT="$(dirname "$0")"/..
 
 readonly MACHINE_CONF=$ISARROOT/meta-isar/conf/machine/qemu$ARCH.conf
-eval "$(egrep 'MACHINE_SERIAL' $MACHINE_CONF \
-    | sed 's/[[:space:]]*=[[:space:]]*/=/')"
+eval "$(egrep 'MACHINE_SERIAL' $MACHINE_CONF |bb2sh)"
 
 readonly CONFIG_CONF=$ISARROOT/meta-isar/conf/multiconfig/qemu$ARCH-$DISTRO.conf
-eval "$(egrep '(KERNEL|INITRD)_IMAGE|ROOTFS_DEV|QEMU_' $CONFIG_CONF \
-    | sed 's/[[:space:]]*=[[:space:]]*/=/')"
+eval "$(egrep '(KERNEL|INITRD)_IMAGE|ROOTFS_DEV|QEMU_' $CONFIG_CONF |bb2sh)"
 readonly ROOTFS_IMAGE=isar-image-base-qemu$ARCH-debian-$DISTRO.ext4.img
 
 QCPU=
