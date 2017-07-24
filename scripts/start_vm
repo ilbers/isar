@@ -14,9 +14,10 @@ DISTRO=stretch
 
 # Convert bitbake assignments to shell ones
 # a = b         a=b
+# a ?= b        a=b
 # TODO: Use bitbake to parse vars correctly (overriding in local.conf, etc.)
 bb2sh() {
-    sed 's/[[:space:]]*=[[:space:]]*/=/'
+    sed 's/[[:space:]]*?*=[[:space:]]*/=/'
 }
 
 start_qemu() {
