@@ -10,9 +10,7 @@ do_unpack[deptask] = "do_build"
 # Each package should have its own unique build folder, so use
 # recipe name as identifier
 PP = "/home/builder/${PN}"
-BUILDROOT = "${BUILDCHROOT_DIR}/${PP}"
-
-do_fetch[dirs] = "${DL_DIR}"
+WORKDIR = "${BUILDCHROOT_DIR}/${PP}"
 
 # Fetch package from the source link
 python do_fetch() {
@@ -28,10 +26,10 @@ python do_fetch() {
 }
 
 addtask fetch before do_build
+do_fetch[dirs] = "${DL_DIR}"
 
-do_unpack[dirs] = "${BUILDROOT}"
 do_unpack[stamp-extra-info] = "${DISTRO}"
-S ?= "${BUILDROOT}"
+S ?= "${WORKDIR}"
 
 # Unpack package and put it into working directory in buildchroot
 python do_unpack() {
@@ -39,16 +37,15 @@ python do_unpack() {
     if len(src_uri) == 0:
         return
 
-    rootdir = d.getVar('BUILDROOT', True)
-
     try:
         fetcher = bb.fetch2.Fetch(src_uri, d)
-        fetcher.unpack(rootdir)
+        fetcher.unpack(d.getVar('WORKDIR', True))
     except bb.fetch2.BBFetchException as e:
         raise bb.build.FuncFailed(e)
 }
 
 addtask unpack after do_fetch before do_build
+do_unpack[dirs] = "${WORKDIR}"
 
 do_build[stamp-extra-info] = "${DISTRO}"
 
@@ -62,7 +59,7 @@ do_install[stamp-extra-info] = "${MACHINE}"
 # Install package to dedicated deploy directory
 do_install() {
     install -d ${DEPLOY_DIR_DEB}
-    install -m 755 ${BUILDROOT}/*.deb ${DEPLOY_DIR_DEB}/
+    install -m 755 ${WORKDIR}/*.deb ${DEPLOY_DIR_DEB}/
 }
 
 addtask do_install after do_build
