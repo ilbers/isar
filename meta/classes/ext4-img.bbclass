@@ -1,7 +1,7 @@
 # This software is a part of ISAR.
 # Copyright (C) 2015-2016 ilbers GmbH
 
-inherit isar-base
+inherit isar-base-image
 
 # Extra space for rootfs in MB
 ROOTFS_EXTRA ?= "64"
