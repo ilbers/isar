@@ -1,0 +1,14 @@
+#!/bin/sh
+
+set -e
+
+if ! getent group hello >/dev/null; then
+	addgroup --quiet --system hello
+fi
+
+if ! getent passwd hello >/dev/null; then
+	adduser --system --ingroup hello --home /var/lib/hello hello \
+		--gecos "My hello user"
+fi
+
+chown -R hello:hello /var/lib/hello
