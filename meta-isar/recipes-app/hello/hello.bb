@@ -15,4 +15,4 @@ SRCREV = "ad7065ecc4840cc436bfcdac427386dbba4ea719"
 
 SRC_DIR = "git"
 
-inherit dpkg
+inherit dpkg-src

@@ -29,10 +29,10 @@ do_build() {
     install -d -m 755 ${WORKDIR}/hooks_multistrap
 
     # Copy config files
-    install -m 644 ${THISDIR}/files/multistrap.conf.in ${WORKDIR}/multistrap.conf
-    install -m 755 ${THISDIR}/files/configscript.sh ${WORKDIR}
-    install -m 755 ${THISDIR}/files/setup.sh ${WORKDIR}
-    install -m 755 ${THISDIR}/files/download_dev-random ${WORKDIR}/hooks_multistrap/
+    install -m 644 ${FILESDIR}/multistrap.conf.in ${WORKDIR}/multistrap.conf
+    install -m 755 ${FILESDIR}/configscript.sh ${WORKDIR}
+    install -m 755 ${FILESDIR}/setup.sh ${WORKDIR}
+    install -m 755 ${FILESDIR}/download_dev-random ${WORKDIR}/hooks_multistrap/
 
     # Adjust multistrap config
     sed -i 's|##BUILDCHROOT_PREINSTALL##|${BUILDCHROOT_PREINSTALL}|' ${WORKDIR}/multistrap.conf
@@ -51,7 +51,7 @@ do_build() {
     sudo multistrap -a ${DISTRO_ARCH} -d "${BUILDCHROOT_DIR}" -f "${WORKDIR}/multistrap.conf" || true
 
     # Install package builder script
-    sudo install -m 755 ${THISDIR}/files/build.sh ${BUILDCHROOT_DIR}
+    sudo install -m 755 ${FILESDIR}/build.sh ${BUILDCHROOT_DIR}
 
     # Configure root filesystem
     sudo chroot ${BUILDCHROOT_DIR} /configscript.sh

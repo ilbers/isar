@@ -1,6 +1,8 @@
 # This software is a part of ISAR.
 # Copyright (C) 2015-2016 ilbers GmbH
 
+inherit isar-base-image
+
 # Extra space for rootfs in MB
 ROOTFS_EXTRA ?= "64"
 
@@ -21,16 +23,16 @@ do_ext4_image() {
 
     mkdir -p ${WORKDIR}/mnt
     sudo mount -o loop ${EXT4_IMAGE_FILE} ${WORKDIR}/mnt
-    sudo cp -r ${S}/* ${WORKDIR}/mnt
+    sudo cp -a ${S}/* ${WORKDIR}/mnt
     sudo umount ${WORKDIR}/mnt
     rm -r ${WORKDIR}/mnt
 
     if [ -n "${KERNEL_IMAGE}" ]; then
-        cp ${S}/boot/${KERNEL_IMAGE} ${DEPLOY_DIR_IMAGE}
+        sudo cp -a ${S}/boot/${KERNEL_IMAGE} ${DEPLOY_DIR_IMAGE}
     fi
 
     if [ -n "${INITRD_IMAGE}" ]; then
-        cp ${S}/boot/${INITRD_IMAGE} ${DEPLOY_DIR_IMAGE}
+        sudo cp -a ${S}/boot/${INITRD_IMAGE} ${DEPLOY_DIR_IMAGE}
     fi
 }
 
