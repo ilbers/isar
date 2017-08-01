@@ -18,14 +18,14 @@ do_compile() {
     sudo chroot ${BUILDCHROOT_DIR} /build.sh ${PP}/${SRC_DIR}
 }
 
-addtask compile after do_unpack before do_install
+addtask compile after do_unpack before do_install_package
 do_compile[stamp-extra-info] = "${DISTRO}"
 
 # Install package to dedicated deploy directory
-do_install() {
+do_install_package() {
     install -m 755 ${WORKDIR}/*.deb ${DEPLOY_DIR_DEB}/
 }
 
-addtask install after do_compile before do_build
-do_install[dirs] = "${DEPLOY_DIR_DEB}"
-do_install[stamp-extra-info] = "${MACHINE}"
+addtask install_package after do_compile before do_build
+do_install_package[dirs] = "${DEPLOY_DIR_DEB}"
+do_install_package[stamp-extra-info] = "${MACHINE}"
