@@ -32,3 +32,13 @@ python do_unpack() {
 addtask unpack after do_fetch before do_build
 do_unpack[dirs] = "${WORKDIR}"
 do_unpack[stamp-extra-info] = "${DISTRO}"
+
+
+# Install package to dedicated deploy directory
+do_install_package() {
+    install -m 755 ${WORKDIR}/*.deb ${DEPLOY_DIR_DEB}/
+}
+
+addtask install_package before do_build
+do_install_package[dirs] = "${DEPLOY_DIR_DEB}"
+do_install_package[stamp-extra-info] = "${MACHINE}"

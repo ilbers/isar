@@ -20,12 +20,3 @@ do_compile() {
 
 addtask compile after do_unpack before do_install_package
 do_compile[stamp-extra-info] = "${DISTRO}"
-
-# Install package to dedicated deploy directory
-do_install_package() {
-    install -m 755 ${WORKDIR}/*.deb ${DEPLOY_DIR_DEB}/
-}
-
-addtask install_package after do_compile before do_build
-do_install_package[dirs] = "${DEPLOY_DIR_DEB}"
-do_install_package[stamp-extra-info] = "${MACHINE}"
