@@ -38,12 +38,12 @@ do_build() {
     sudo chroot ${BUILDCHROOT_DIR} /build.sh ${PP}/${SRC_DIR}
 }
 
-do_install[stamp-extra-info] = "${MACHINE}"
 
 # Install package to dedicated deploy directory
 do_install() {
     install -m 755 ${BUILDROOT}/*.deb ${DEPLOY_DIR_DEB}/
 }
 
-addtask do_install after do_build
+addtask install after do_build
 do_install[dirs] = "${DEPLOY_DIR_DEB}"
+do_install[stamp-extra-info] = "${MACHINE}"
