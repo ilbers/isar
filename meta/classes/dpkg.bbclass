@@ -42,8 +42,8 @@ do_install[stamp-extra-info] = "${MACHINE}"
 
 # Install package to dedicated deploy directory
 do_install() {
-    install -d ${DEPLOY_DIR_DEB}
     install -m 755 ${BUILDROOT}/*.deb ${DEPLOY_DIR_DEB}/
 }
 
 addtask do_install after do_build
+do_install[dirs] = "${DEPLOY_DIR_DEB}"
