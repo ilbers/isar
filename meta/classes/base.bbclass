@@ -70,6 +70,20 @@ python do_listtasks() {
 			sys.__stdout__.write("%s\n" % e)
 }
 
+addtask fetch before do_build
+do_fetch[dirs] = "${DL_DIR}"
+python do_fetch() {
+	src_uri = (d.getVar('SRC_URI', True) or "").split()
+	if len(src_uri) == 0:
+		return
+
+	try:
+		fetcher = bb.fetch2.Fetch(src_uri, d)
+		fetcher.download()
+	except bb.fetch2.BBFetchException as e:
+		raise bb.build.FuncFailed(e)
+}
+
 addtask build
 do_build[dirs] = "${TOPDIR}"
 python base_do_build () {
