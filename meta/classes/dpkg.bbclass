@@ -41,7 +41,7 @@ do_build() {
 
 # Install package to dedicated deploy directory
 do_install() {
-    install -m 755 ${BUILDROOT}/*.deb ${DEPLOY_DIR_DEB}/
+    install -m 644 ${BUILDROOT}/*.deb ${DEPLOY_DIR_DEB}/
 }
 
 addtask install after do_build
