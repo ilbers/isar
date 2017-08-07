@@ -17,11 +17,11 @@ DEPENDS += "${IMAGE_INSTALL}"
 IMAGE_PREINSTALL += "apt \
                      dbus"
 
-WORKDIR = "${TMPDIR}/work/${PN}/${MACHINE}"
+WORKDIR = "${TMPDIR}/work/${PN}/${MACHINE}/${DISTRO}"
 S = "${WORKDIR}/rootfs"
 IMAGE_ROOTFS = "${S}"
 
-do_rootfs[stamp-extra-info] = "${MACHINE}"
+do_rootfs[stamp-extra-info] = "${MACHINE}-${DISTRO}"
 
 do_rootfs() {
     install -d -m 755 ${WORKDIR}/hooks_multistrap
@@ -38,9 +38,9 @@ do_rootfs() {
     sed -i 's|##DISTRO_APT_SOURCE##|${DISTRO_APT_SOURCE}|' ${WORKDIR}/multistrap.conf
     sed -i 's|##DISTRO_SUITE##|${DISTRO_SUITE}|' ${WORKDIR}/multistrap.conf
     sed -i 's|##DISTRO_COMPONENTS##|${DISTRO_COMPONENTS}|' ${WORKDIR}/multistrap.conf
-    sed -i 's|##CONFIG_SCRIPT##|./tmp/work/${PN}/${MACHINE}/configscript.sh|' ${WORKDIR}/multistrap.conf
-    sed -i 's|##SETUP_SCRIPT##|./tmp/work/${PN}/${MACHINE}/setup.sh|' ${WORKDIR}/multistrap.conf
-    sed -i 's|##DIR_HOOKS##|./tmp/work/${PN}/${MACHINE}/hooks_multistrap|' ${WORKDIR}/multistrap.conf
+    sed -i 's|##CONFIG_SCRIPT##|./tmp/work/${PN}/${MACHINE}/${DISTRO}/configscript.sh|' ${WORKDIR}/multistrap.conf
+    sed -i 's|##SETUP_SCRIPT##|./tmp/work/${PN}/${MACHINE}/${DISTRO}/setup.sh|' ${WORKDIR}/multistrap.conf
+    sed -i 's|##DIR_HOOKS##|./tmp/work/${PN}/${MACHINE}/${DISTRO}/hooks_multistrap|' ${WORKDIR}/multistrap.conf
 
     # Multistrap config use relative paths, so ensure that we are in the right folder
     cd ${TOPDIR}

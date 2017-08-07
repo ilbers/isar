@@ -11,7 +11,7 @@ PP = "/home/builder/${PN}"
 BUILDROOT = "${BUILDCHROOT_DIR}/${PP}"
 
 do_unpack[dirs] = "${BUILDROOT}"
-do_unpack[stamp-extra-info] = "${DISTRO}"
+do_unpack[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 S ?= "${BUILDROOT}"
 
 # Unpack package and put it into working directory in buildchroot
@@ -31,7 +31,7 @@ python do_unpack() {
 
 addtask unpack after do_fetch before do_build
 
-do_build[stamp-extra-info] = "${DISTRO}"
+do_build[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 
 # Build package from sources using build script
 do_build() {

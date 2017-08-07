@@ -9,7 +9,7 @@ IMAGE_TYPE    ?= "ext4-img"
 
 inherit ${IMAGE_TYPE}
 
-do_populate[stamp-extra-info] = "${MACHINE}"
+do_populate[stamp-extra-info] = "${MACHINE}-${DISTRO}"
 
 # Install Debian packages, that were built from sources
 do_populate() {

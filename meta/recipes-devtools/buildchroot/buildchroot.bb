@@ -23,7 +23,7 @@ BUILDCHROOT_PREINSTALL ?= "gcc \
 
 WORKDIR = "${TMPDIR}/work/${PF}/${DISTRO}"
 
-do_build[stamp-extra-info] = "${DISTRO}"
+do_build[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 
 do_build() {
     install -d -m 755 ${WORKDIR}/hooks_multistrap
