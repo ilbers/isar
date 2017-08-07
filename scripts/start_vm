@@ -8,10 +8,6 @@ set -e
 ES_OK=0
 ES_BUG=3
 
-# TODO: Get the target from the command line or from the build environment
-ARCH=arm
-DISTRO=stretch
-
 # Convert bitbake assignments to shell ones
 # a = b         a=b
 # a ?= b        a=b
@@ -56,19 +52,53 @@ show_help() {
     echo "is used."
     echo
     echo "Parameters:"
-    echo "    --help        display this message and exit."
+    echo "    -a, --arch ARCH       set isar machine architecture."
+    echo "                          Supported: arm, i386, amd64."
+    echo "    -b, --build BUILD     set path to build directory."
+    echo "    -d, --distro DISTRO   set isar Debian distribution."
+    echo "                          Supported: jessie, stretch."
+    echo "    --help                display this message and exit."
+    echo
+    echo "Exit status:"
+    echo " 0  if OK,"
+    echo " 3  if invalid parameters are passed."
 }
 
-if [ "$#" == "1" -a "$1" == "--help" ]; then
-    show_help
-    exit 0
-fi
+# Set default values, that can be overwritten from command line
+ARCH=arm
+DISTRO=stretch
+BUILD_DIR=$PWD
 
-if [ "$#" == "0" ]; then
-    BUILD_DIR=$PWD
-else
-    BUILD_DIR=$1
-fi
+# Parse command line to get user configuration
+while [[ $# -gt 0 ]]
+do
+    key="$1"
+
+    case $key in
+    -h|--help)
+        show_help
+        exit 0
+        ;;
+    -a|--arch)
+        ARCH=$2
+        shift
+        ;;
+    -b|--build)
+        BUILD_DIR=$2
+        shift
+        ;;
+    -d|--distro)
+        DISTRO=$2
+        shift
+        ;;
+    *)
+        echo "error: invalid parameter '$key', please try '--help' to get list of supported parameters"
+        exit $ES_BUG
+        ;;
+    esac
+
+    shift
+done
 
 readonly IMAGE_DIR=$BUILD_DIR/tmp/deploy/images
 
