@@ -1,29 +1,33 @@
-# Script for GitLab runner
+# Script for Jenkins build
 #
 # Alexander Smirnov <asmirnov@ilbers.de>
-# Copyright (c) 2016 ilbers GmbH
+# Copyright (c) 2016-2017 ilbers GmbH
 
 #!/bin/sh
 
 # Export $PATH to use 'parted' tool
 export PATH=$PATH:/sbin
 
-WORKSPACE=`pwd`
+# Get parameters from the command line
+WORKSPACE=$1
+GIT_COMMIT=$2
 
-. isar-init-build-env build
-bitbake multiconfig:qemuarm:isar-image-base multiconfig:rpi:isar-image-base multiconfig:qemuarm:isar-image-debug multiconfig:rpi:isar-image-debug
+# Go to Isar root
+cd $(dirname $0)/..
 
-cd $WORKSPACE
-mkdir images
-cd images
+# Setup build folder for current revision
+if [ ! -d /build/$WORKSPACE/$GIT_COMMIT ]; then
+        mkdir -p /build/$WORKSPACE/$GIT_COMMIT
+fi
+source isar-init-build-env /build/$WORKSPACE/$GIT_COMMIT
 
-# Get QEMU image
-cp ../build/tmp/deploy/images/isar-image-base-qemuarm.ext4.img .
-gzip -9 isar-image-base-qemuarm.ext4.img
-
-# Get RPi SD card image
-cp ../build/tmp/deploy/images/isar-image-base.rpi-sdimg .
-gzip -9 isar-image-base.rpi-sdimg
-
-cd ..
-sudo rm -rf build
+# Start build for all possible configurations
+bitbake \
+        multiconfig:qemuarm-wheezy:isar-image-base \
+        multiconfig:qemuarm-jessie:isar-image-base \
+        multiconfig:qemuarm-stretch:isar-image-base \
+        multiconfig:qemui386-jessie:isar-image-base \
+        multiconfig:qemui386-stretch:isar-image-base \
+        multiconfig:qemuamd64-jessie:isar-image-base \
+        multiconfig:qemuamd64-stretch:isar-image-base \
+        multiconfig:rpi-jessie:isar-image-base
