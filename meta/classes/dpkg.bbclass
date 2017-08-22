@@ -10,6 +10,23 @@ do_unpack[deptask] = "do_build"
 PP = "/home/builder/${PN}"
 BUILDROOT = "${BUILDCHROOT_DIR}/${PP}"
 
+do_fetch[dirs] = "${DL_DIR}"
+
+# Fetch package from the source link
+python do_fetch() {
+    src_uri = (d.getVar('SRC_URI', True) or "").split()
+    if len(src_uri) == 0:
+        return
+
+    try:
+        fetcher = bb.fetch2.Fetch(src_uri, d)
+        fetcher.download()
+    except bb.fetch2.BBFetchException as e:
+        raise bb.build.FuncFailed(e)
+}
+
+addtask fetch before do_build
+
 do_unpack[dirs] = "${BUILDROOT}"
 do_unpack[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 S ?= "${BUILDROOT}"
