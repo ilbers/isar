@@ -121,7 +121,9 @@ All these steps are described in details below.
 
 ## 3.2 Initial Buildchroot Generation
 
-As mentioned above, initial buildchroot is generated using multistrap. The bitbake recipe which is responsible for buildchroot can be found here: `meta/recipes-devtools/buildchroot/buildchroot.bb`
+As mentioned above, initial buildchroot is generated using multistrap. The
+bitbake recipe which is responsible for buildchroot can be found here:
+`meta/recipes-devtools/buildchroot/buildchroot.bb`
 
 This recipe implementes `do_build` task which performs the following:
 
