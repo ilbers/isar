@@ -17,7 +17,7 @@ DEPENDS += "${IMAGE_INSTALL}"
 IMAGE_PREINSTALL += "apt \
                      dbus"
 
-WORKDIR = "${TMPDIR}/work/${PN}/${MACHINE}/${DISTRO}"
+WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${PN}"
 
 do_rootfs[stamp-extra-info] = "${MACHINE}-${DISTRO}"
 
@@ -30,18 +30,20 @@ do_rootfs() {
     install -m 755 ${THISDIR}/files/setup.sh ${WORKDIR}
     install -m 755 ${THISDIR}/files/download_dev-random ${WORKDIR}/hooks_multistrap/
 
-    # Adjust multistrap config
-    sed -i 's|##IMAGE_PREINSTALL##|${IMAGE_PREINSTALL}|' ${WORKDIR}/multistrap.conf
-    sed -i 's|##DISTRO##|${DISTRO}|' ${WORKDIR}/multistrap.conf
-    sed -i 's|##DISTRO_APT_SOURCE##|${DISTRO_APT_SOURCE}|' ${WORKDIR}/multistrap.conf
-    sed -i 's|##DISTRO_SUITE##|${DISTRO_SUITE}|' ${WORKDIR}/multistrap.conf
-    sed -i 's|##DISTRO_COMPONENTS##|${DISTRO_COMPONENTS}|' ${WORKDIR}/multistrap.conf
-    sed -i 's|##CONFIG_SCRIPT##|./tmp/work/${PN}/${MACHINE}/${DISTRO}/configscript.sh|' ${WORKDIR}/multistrap.conf
-    sed -i 's|##SETUP_SCRIPT##|./tmp/work/${PN}/${MACHINE}/${DISTRO}/setup.sh|' ${WORKDIR}/multistrap.conf
-    sed -i 's|##DIR_HOOKS##|./tmp/work/${PN}/${MACHINE}/${DISTRO}/hooks_multistrap|' ${WORKDIR}/multistrap.conf
-
-    # Multistrap config use relative paths, so ensure that we are in the right folder
+    # Multistrap accepts only relative path in configuration files, so get it:
     cd ${TOPDIR}
+    WORKDIR_REL=${@ os.path.relpath(d.getVar("WORKDIR", True))}
+
+    # Adjust multistrap config
+    sed -i -e 's|##IMAGE_PREINSTALL##|${IMAGE_PREINSTALL}|g' \
+           -e 's|##DISTRO##|${DISTRO}|g' \
+           -e 's|##DISTRO_APT_SOURCE##|${DISTRO_APT_SOURCE}|g' \
+           -e 's|##DISTRO_SUITE##|${DISTRO_SUITE}|g' \
+           -e 's|##DISTRO_COMPONENTS##|${DISTRO_COMPONENTS}|g' \
+           -e 's|##CONFIG_SCRIPT##|./'"$WORKDIR_REL"'/configscript.sh|g' \
+           -e 's|##SETUP_SCRIPT##|./'"$WORKDIR_REL"'/setup.sh|g' \
+           -e 's|##DIR_HOOKS##|./'"$WORKDIR_REL"'/hooks_multistrap|g' \
+              ${WORKDIR}/multistrap.conf
 
     # Create root filesystem
     sudo multistrap -a ${DISTRO_ARCH} -d "${IMAGE_ROOTFS}" -f "${WORKDIR}/multistrap.conf" || true
