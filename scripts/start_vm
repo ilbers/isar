@@ -109,7 +109,7 @@ eval "$(egrep 'MACHINE_SERIAL' $MACHINE_CONF |bb2sh)"
 
 readonly CONFIG_CONF=$ISARROOT/meta-isar/conf/multiconfig/qemu$ARCH-$DISTRO.conf
 eval "$(egrep '(KERNEL|INITRD)_IMAGE|ROOTFS_DEV|QEMU_' $CONFIG_CONF |bb2sh)"
-readonly ROOTFS_IMAGE=isar-image-base-qemu$ARCH-debian-$DISTRO.ext4.img
+readonly ROOTFS_IMAGE=isar-image-base-debian-$DISTRO-qemu$ARCH.ext4.img
 
 QCPU=
 [ -n "$QEMU_CPU" ] && QCPU="-cpu $QEMU_CPU"
