@@ -18,8 +18,6 @@ IMAGE_PREINSTALL += "apt \
                      dbus"
 
 WORKDIR = "${TMPDIR}/work/${PN}/${MACHINE}/${DISTRO}"
-S = "${WORKDIR}/rootfs"
-IMAGE_ROOTFS = "${S}"
 
 do_rootfs[stamp-extra-info] = "${MACHINE}-${DISTRO}"
 
@@ -46,12 +44,12 @@ do_rootfs() {
     cd ${TOPDIR}
 
     # Create root filesystem
-    sudo multistrap -a ${DISTRO_ARCH} -d "${S}" -f "${WORKDIR}/multistrap.conf" || true
+    sudo multistrap -a ${DISTRO_ARCH} -d "${IMAGE_ROOTFS}" -f "${WORKDIR}/multistrap.conf" || true
 
     # Configure root filesystem
-    sudo chroot ${S} /configscript.sh ${MACHINE_SERIAL} ${BAUDRATE_TTY} \
+    sudo chroot ${IMAGE_ROOTFS} /configscript.sh ${MACHINE_SERIAL} ${BAUDRATE_TTY} \
         ${ROOTFS_DEV}
-    sudo rm ${S}/configscript.sh
+    sudo rm ${IMAGE_ROOTFS}/configscript.sh
 }
 
 addtask rootfs before do_populate
