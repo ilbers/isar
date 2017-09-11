@@ -6,7 +6,7 @@ ROOTFS_EXTRA ?= "64"
 
 EXT4_IMAGE_FILE = "${DEPLOY_DIR_IMAGE}/${PN}-${MACHINE}-${DISTRO}.ext4.img"
 
-do_ext4_image[stamp-extra-info] = "${MACHINE}-${DISTRO}"
+do_ext4_image[stamp-extra-info] = "${DISTRO}-${MACHINE}"
 
 # Generate ext4 filesystem image
 do_ext4_image() {

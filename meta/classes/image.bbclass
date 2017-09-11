@@ -10,7 +10,7 @@ IMAGE_ROOTFS   = "${WORKDIR}/rootfs"
 
 inherit ${IMAGE_TYPE}
 
-do_populate[stamp-extra-info] = "${MACHINE}-${DISTRO}"
+do_populate[stamp-extra-info] = "${DISTRO}-${MACHINE}"
 
 # Install Debian packages, that were built from sources
 do_populate() {
