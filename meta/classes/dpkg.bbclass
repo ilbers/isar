@@ -1,6 +1,8 @@
 # This software is a part of ISAR.
 # Copyright (C) 2015-2016 ilbers GmbH
 
+inherit dpkg-base
+
 # Add dependency from buildchroot creation
 DEPENDS += "buildchroot"
 do_build[deptask] = "do_build"
@@ -20,13 +22,3 @@ do_build() {
     sudo umount ${BUILDROOT}
     rm -rf ${BUILDROOT}
 }
-
-
-# Install package to dedicated deploy directory
-do_install() {
-    install -m 644 ${WORKDIR}/*.deb ${DEPLOY_DIR_DEB}/
-}
-
-addtask install after do_build
-do_install[dirs] = "${DEPLOY_DIR_DEB}"
-do_install[stamp-extra-info] = "${MACHINE}"
