@@ -160,11 +160,11 @@ contain debian folder. The build process is implemented in
 
 1. Task `do_fetch`: fetch source code from external link
 
-2. Task `do_unpack`: unpack source code to
-   `${BUILDCHROOT_DIR}/home/build/${PN}`
+2. Task `do_unpack`: unpack source code to `${WORKDIR}`
 
-3. Task `do_build`: switch to buildchroot using chroot command and run
-   `build.sh` script. The `build.sh` script performs the following:
+3. Task `do_build`: mount folder with source code to buildchroot, switch
+   to buildchroot using chroot command and run `build.sh` script. The
+   `build.sh` script performs the following:
 
    1. Go to `/home/build/${PN}`
 
@@ -173,8 +173,7 @@ contain debian folder. The build process is implemented in
    3. Run dpkg-buildpackage
 
 4. Task `do_install`: install successfully built packages
-   `${BUILDCHROOT_DIR}/home/build/${PN}/*.deb` to deploy directory
-   `${DEPLOY_DIR_DEB}`
+   `${WORKDIR}/*.deb` to deploy directory `${DEPLOY_DIR_DEB}`
 
 ## 3.5 Populate Target Filesystem
 
