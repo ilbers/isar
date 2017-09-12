@@ -15,10 +15,15 @@ BUILDROOT = "${BUILDCHROOT_DIR}/${PP}"
 do_build[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 
 # Build package from sources using build script
+dpkg_runbuild() {
+    sudo chroot ${BUILDCHROOT_DIR} /build.sh ${PP}/${SRC_DIR}
+}
+
+# Wrap the function dpkg_runbuild with the bind mount for buildroot
 do_build() {
     mkdir -p ${BUILDROOT}
     sudo mount --bind ${WORKDIR} ${BUILDROOT}
-    sudo chroot ${BUILDCHROOT_DIR} /build.sh ${PP}/${SRC_DIR}
+    dpkg_runbuild
     sudo umount ${BUILDROOT}
     rm -rf ${BUILDROOT}
 }
