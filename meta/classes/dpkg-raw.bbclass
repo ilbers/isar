@@ -14,6 +14,7 @@ do_populate_package() {
 	bbnote "Put your files for this package in ${D}"
 }
 
+do_populate_package[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 addtask populate_package after do_unpack before do_deb_package_prepare
 
 # so we can put hooks etc. in there already
@@ -39,6 +40,7 @@ do_deb_package_prepare() {
 	done
 }
 
+do_deb_package_prepare[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 addtask deb_package_prepare after do_populate_package before do_deb_package_conffiles
 
 do_deb_package_conffiles() {
@@ -47,6 +49,7 @@ do_deb_package_conffiles() {
 	test -s $CONFFILES || rm $CONFFILES
 }
 
+do_deb_package_conffiles[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 addtask deb_package_conffiles after do_deb_package_prepare before do_build
 
 dpkg_runbuild() {
