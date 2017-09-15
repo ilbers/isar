@@ -62,6 +62,7 @@ parted
 python3                     # wic
 qemu
 qemu-user-static
+binfmt-support
 sudo
 ```
 
