@@ -12,7 +12,7 @@ SRC_URI = "file://README \
 
 inherit dpkg-raw
 
-do_populate_package() {
+do_install() {
 	bbnote "Creating ${PN} binary"
 	echo "#!/bin/sh" > ${WORKDIR}/${PN}
 	echo "echo Hello ISAR! ${PN}_${PV}" >> ${WORKDIR}/${PN}

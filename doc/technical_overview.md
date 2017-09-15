@@ -170,7 +170,7 @@ Both consist of the following steps:
 
 2. Task `do_unpack`: unpack those files to `${WORKDIR}`
 
-3. Task `do_populate_package` _only_ for `dpkg-raw`: copy all you want in your
+3. Task `do_install` _only_ for `dpkg-raw`: copy all you want in your
    debian package to `${D}`, install hooks in `${D}/DEBIAN`
 
 4. Task `do_build`: mount folder with unpacked files to buildchroot, execute

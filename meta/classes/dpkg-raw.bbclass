@@ -9,16 +9,15 @@ MAINTAINER ?= "FIXME Unknown maintainer"
 D = "${WORKDIR}/image/"
 
 # Populate folder that will be picked up as package
-# TODO this should be called 'do_install'
-do_populate_package() {
+do_install() {
 	bbnote "Put your files for this package in ${D}"
 }
 
-do_populate_package[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
-addtask populate_package after do_unpack before do_deb_package_prepare
+do_install[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
+addtask install after do_unpack before do_deb_package_prepare
 
 # so we can put hooks etc. in there already
-do_populate_package[dirs] = "${D}/DEBIAN"
+do_install[dirs] = "${D}/DEBIAN"
 
 do_deb_package_prepare() {
 	cat<<-__EOF__ > ${D}/DEBIAN/control
@@ -41,7 +40,7 @@ do_deb_package_prepare() {
 }
 
 do_deb_package_prepare[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
-addtask deb_package_prepare after do_populate_package before do_deb_package_conffiles
+addtask deb_package_prepare after do_install before do_deb_package_conffiles
 
 do_deb_package_conffiles() {
 	CONFFILES=${D}/DEBIAN/conffiles
