@@ -190,7 +190,7 @@ Both consist of the following steps:
 	without compiling anything
 
 
-5. Task `do_install`: install successfully built packages
+5. Task `do_deploy_deb`: install successfully built packages
    `${WORKDIR}/*.deb` to deploy directory `${DEPLOY_DIR_DEB}`
 
 ## 3.5 Populate Target Filesystem

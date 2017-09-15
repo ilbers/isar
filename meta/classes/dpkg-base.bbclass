@@ -27,10 +27,10 @@ do_build() {
 }
 
 # Install package to dedicated deploy directory
-do_install() {
+do_deploy_deb() {
     install -m 644 ${WORKDIR}/*.deb ${DEPLOY_DIR_DEB}/
 }
 
-addtask install after do_build
-do_install[dirs] = "${DEPLOY_DIR_DEB}"
-do_install[stamp-extra-info] = "${MACHINE}"
+addtask deploy_deb after do_build
+do_deploy_deb[dirs] = "${DEPLOY_DIR_DEB}"
+do_deploy_deb[stamp-extra-info] = "${MACHINE}"

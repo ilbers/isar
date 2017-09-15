@@ -28,4 +28,4 @@ do_populate() {
 }
 
 addtask populate before do_build
-do_populate[deptask] = "do_install"
+do_populate[deptask] = "do_deploy_deb"
