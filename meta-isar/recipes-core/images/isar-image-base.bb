@@ -20,10 +20,9 @@ IMAGE_PREINSTALL += "apt \
 WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${PN}"
 
 do_rootfs[stamp-extra-info] = "${MACHINE}-${DISTRO}"
+do_rootfs[dirs] = "${WORKDIR}/hooks_multistrap"
 
 do_rootfs() {
-    install -d -m 755 ${WORKDIR}/hooks_multistrap
-
     # Copy config file
     install -m 644 ${THISDIR}/files/multistrap.conf.in ${WORKDIR}/multistrap.conf
     install -m 755 ${THISDIR}/files/${DISTRO_CONFIG_SCRIPT} ${WORKDIR}/configscript.sh
