@@ -33,6 +33,8 @@ do_build[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 do_build[dirs] = "${WORKDIR}/hooks_multistrap"
 
 do_build() {
+    E="${@ bb.utils.export_proxies(d)}"
+
     chmod +x "${WORKDIR}/setup.sh"
     chmod +x "${WORKDIR}/configscript.sh"
     install -m 755 "${WORKDIR}/download_dev-random" "${WORKDIR}/hooks_multistrap/"
@@ -62,7 +64,7 @@ do_build() {
     trap '_do_build_cleanup' EXIT
 
     # Create root filesystem
-    sudo multistrap -a ${DISTRO_ARCH} -d "${BUILDCHROOT_DIR}" -f "${WORKDIR}/multistrap.conf"
+    sudo -E multistrap -a ${DISTRO_ARCH} -d "${BUILDCHROOT_DIR}" -f "${WORKDIR}/multistrap.conf"
 
     # Install package builder script
     sudo install -m 755 ${WORKDIR}/build.sh ${BUILDCHROOT_DIR}

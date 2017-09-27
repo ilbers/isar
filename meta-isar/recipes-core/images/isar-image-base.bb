@@ -29,6 +29,8 @@ WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${PN}"
 do_rootfs[dirs] = "${WORKDIR}/hooks_multistrap"
 
 do_rootfs() {
+    E="${@ bb.utils.export_proxies(d)}"
+
     chmod +x "${WORKDIR}/${DISTRO_CONFIG_SCRIPT}"
     chmod +x "${WORKDIR}/setup.sh"
     install -m 755 "${WORKDIR}/download_dev-random" "${WORKDIR}/hooks_multistrap/"
@@ -60,8 +62,9 @@ do_rootfs() {
     }
     trap '_do_rootfs_cleanup' EXIT
 
-    # Create root filesystem
-    sudo multistrap -a ${DISTRO_ARCH} -d "${IMAGE_ROOTFS}" -f "${WORKDIR}/multistrap.conf"
+    # Create root filesystem. We must use sudo -E here to preserve the environment
+    # because of proxy settings
+    sudo -E multistrap -a ${DISTRO_ARCH} -d "${IMAGE_ROOTFS}" -f "${WORKDIR}/multistrap.conf"
 
     # Configure root filesystem
     sudo chroot ${IMAGE_ROOTFS} /${DISTRO_CONFIG_SCRIPT} ${MACHINE_SERIAL} ${BAUDRATE_TTY} \
