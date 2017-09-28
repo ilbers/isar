@@ -68,8 +68,11 @@ if [ ! -e /dev/console ]; then
      mknod /dev/console c 5 1
 fi
 
-# Enable tty
-echo "T0:23:respawn:/sbin/getty -L $MACHINE_SERIAL $BAUDRATE_TTY vt100" >> /etc/inittab
+# Enable tty conditionally, systemd does not have the file but its own magic
+if [ -f /etc/inittab ]; then
+    echo "T0:23:respawn:/sbin/getty -L $MACHINE_SERIAL $BAUDRATE_TTY vt100" \
+        >> /etc/inittab
+fi
 
 # Undo setup script changes
 if [ -x "$TARGET/sbin/start-stop-daemon.REAL" ]; then
