@@ -64,6 +64,13 @@ do_populate[stamp-extra-info] = "${DISTRO}-${MACHINE}"
 # Install Debian packages, that were built from sources
 do_populate() {
     if [ -n "${IMAGE_INSTALL}" ]; then
+        for p in ${IMAGE_INSTALL}; do
+            call_reprepro -b ${DEPLOY_DIR_APT}/${DISTRO} \
+                          --dbdir ${DEPLOY_DIR_DB}/${DISTRO} \
+                          -C main \
+                          includedeb ${DEBDISTRONAME} \
+                          ${DEPLOY_DIR_DEB}/${p}_*.deb
+        done
         sudo mkdir -p ${IMAGE_ROOTFS}/deb
 
         for p in ${IMAGE_INSTALL}; do
