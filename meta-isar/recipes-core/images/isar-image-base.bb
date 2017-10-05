@@ -46,6 +46,9 @@ do_rootfs() {
         -e 's|##CONFIG_SCRIPT##|./'"$WORKDIR_REL"'/${DISTRO_CONFIG_SCRIPT}|g' \
         -e 's|##SETUP_SCRIPT##|./'"$WORKDIR_REL"'/setup.sh|g' \
         -e 's|##DIR_HOOKS##|./'"$WORKDIR_REL"'/hooks_multistrap|g' \
+        -e 's|##IMAGE_INSTALL##|${IMAGE_INSTALL}|g' \
+        -e 's|##DEPLOY_DIR_APT##|copy:///${DEPLOY_DIR_APT}/${DISTRO}|g' \
+        -e 's|##ISAR_DISTRO_SUITE##|${DEBDISTRONAME}|g' \
            "${WORKDIR}/multistrap.conf.in" > "${WORKDIR}/multistrap.conf"
 
     # Create root filesystem
@@ -57,4 +60,4 @@ do_rootfs() {
     sudo rm "${IMAGE_ROOTFS}/${DISTRO_CONFIG_SCRIPT}"
 }
 
-addtask rootfs before do_populate after do_unpack
+addtask rootfs before do_build after do_populate

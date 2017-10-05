@@ -57,11 +57,11 @@ do_cache_config() {
     fi
 }
 
-addtask cache_config before do_fetch
+addtask cache_config before do_populate
 
 do_populate[stamp-extra-info] = "${DISTRO}-${MACHINE}"
 
-# Install Debian packages, that were built from sources
+# Populate Isar apt repository by newly built packages
 do_populate() {
     if [ -n "${IMAGE_INSTALL}" ]; then
         for p in ${IMAGE_INSTALL}; do
@@ -71,17 +71,8 @@ do_populate() {
                           includedeb ${DEBDISTRONAME} \
                           ${DEPLOY_DIR_DEB}/${p}_*.deb
         done
-        sudo mkdir -p ${IMAGE_ROOTFS}/deb
-
-        for p in ${IMAGE_INSTALL}; do
-            sudo cp ${DEPLOY_DIR_DEB}/${p}_*.deb ${IMAGE_ROOTFS}/deb
-        done
-
-        sudo chroot ${IMAGE_ROOTFS} /usr/bin/dpkg -i -R /deb
-
-        sudo rm -rf ${IMAGE_ROOTFS}/deb
     fi
 }
 
-addtask populate before do_build
+addtask populate before do_build after do_unpack
 do_populate[deptask] = "do_deploy_deb"

@@ -34,4 +34,4 @@ do_ext4_image() {
     fi
 }
 
-addtask ext4_image before do_build after do_populate
+addtask ext4_image before do_build after do_rootfs
