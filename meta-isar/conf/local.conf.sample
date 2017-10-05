@@ -158,3 +158,7 @@ IMAGE_INSTALL = "hello example-raw"
 #
 # Default parallel jobs for bitbake:
 BB_NUMBER_THREADS = "4"
+
+#
+# Number of attempts to try to get reprepro lock for access to apt cache
+REPREPRO_LOCK_ATTEMPTS = "16"
