@@ -1,0 +1,50 @@
+#!/bin/sh
+#
+# This software is a part of ISAR.
+# Copyright (C) 2015-2017 ilbers GmbH
+
+CONSOLE_OUTPUT=/tmp/isar_console
+PID_FILE=/tmp/qemu.pid
+
+check_output() {
+    str=$(tail -1 $CONSOLE_OUTPUT)
+
+    if [ "$str" = "isar login: " ]; then
+        echo "Test: PASSED"
+    else
+        echo "Test: FAIL"
+    fi
+}
+
+run_test () {
+    ARCH=$1
+    DISTRO=$2
+
+    echo "-------------------------------------------------"
+    echo "Testing Isar [$DISTRO] image for [$ARCH] machine:"
+
+    # Start QEMU with Isar image
+    start_vm -a $ARCH -d $DISTRO -o $CONSOLE_OUTPUT -p $PID_FILE > /dev/null 2>&1 &
+    sleep 30
+    kill `cat $PID_FILE`
+
+    # Check output
+    check_output
+
+    # Clean up test artifacts
+    rm $CONSOLE_OUTPUT
+    rm $PID_FILE
+}
+
+# ARM machine
+run_test arm wheezy
+run_test arm jessie
+run_test arm stretch
+
+# AMD64 machine
+run_test amd64 jessie
+run_test amd64 stretch
+
+# i386 machine
+run_test i386 jessie
+run_test i386 stretch
