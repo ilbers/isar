@@ -70,7 +70,7 @@ DISTRO=stretch
 BUILD_DIR=$PWD
 
 # Parse command line to get user configuration
-while [[ $# -gt 0 ]]
+while [ $# -gt 0 ]
 do
     key="$1"
 
