@@ -28,6 +28,7 @@ qemu-system-$QEMU_ARCH \\\\\n\
     -kernel \$IMAGE_DIR/$KERNEL_IMAGE \\\\\n\
     -initrd \$IMAGE_DIR/$INITRD_IMAGE \\\\\n\
     -append \"console=$MACHINE_SERIAL root=/dev/$ROOTFS_DEV rw\" \\\\\n\
+    $EXTRA_ARGS \\\\\n\
     $root1"
 
     root2=`echo $QEMU_ROOTFS_DEV \
@@ -40,6 +41,7 @@ qemu-system-$QEMU_ARCH \\\\\n\
 	-kernel $IMAGE_DIR/$KERNEL_IMAGE \
 	-initrd $IMAGE_DIR/$INITRD_IMAGE \
 	-append "console=$MACHINE_SERIAL root=/dev/$ROOTFS_DEV rw" \
+	$EXTRA_ARGS \
 	$root2
 }
 
@@ -57,6 +59,8 @@ show_help() {
     echo "    -b, --build BUILD     set path to build directory."
     echo "    -d, --distro DISTRO   set isar Debian distribution."
     echo "                          Supported: jessie, stretch."
+    echo "    -o, --out FILE        Route QEMU console output to"
+    echo "                          specified file."
     echo "    --help                display this message and exit."
     echo
     echo "Exit status:"
@@ -89,6 +93,10 @@ do
         ;;
     -d|--distro)
         DISTRO=$2
+        shift
+        ;;
+    -o|--out)
+        EXTRA_ARGS="$EXTRA_ARGS -serial file:$2"
         shift
         ;;
     *)
