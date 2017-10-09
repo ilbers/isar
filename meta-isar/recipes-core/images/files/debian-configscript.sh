@@ -45,9 +45,7 @@ export LC_ALL=C LANGUAGE=C LANG=C
 
 # Configuring packages
 dpkg --configure -a
-mount proc -t proc /proc
 dpkg --configure -a
-umount /proc
 
 # set the root password if that has not been done before
 grep "root:\*:" /etc/shadow && echo "root:root" | chpasswd

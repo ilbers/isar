@@ -51,6 +51,9 @@ do_rootfs() {
         -e 's|##ISAR_DISTRO_SUITE##|${DEBDISTRONAME}|g' \
            "${WORKDIR}/multistrap.conf.in" > "${WORKDIR}/multistrap.conf"
 
+    install -d -m 555 ${IMAGE_ROOTFS}/proc
+    sudo mount -t proc none ${IMAGE_ROOTFS}/proc
+
     # Create root filesystem
     sudo multistrap -a ${DISTRO_ARCH} -d "${IMAGE_ROOTFS}" -f "${WORKDIR}/multistrap.conf" || true
 
@@ -58,6 +61,7 @@ do_rootfs() {
     sudo chroot ${IMAGE_ROOTFS} /${DISTRO_CONFIG_SCRIPT} ${MACHINE_SERIAL} ${BAUDRATE_TTY} \
         ${ROOTFS_DEV}
     sudo rm "${IMAGE_ROOTFS}/${DISTRO_CONFIG_SCRIPT}"
+    sudo umount ${IMAGE_ROOTFS}/proc
 }
 
 addtask rootfs before do_build after do_populate
