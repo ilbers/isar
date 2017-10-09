@@ -44,6 +44,5 @@ mount -t devtmpfs -o mode=0755,nosuid devtmpfs /dev
 
 #configuring packages
 dpkg --configure -a
-dpkg --configure -a
 apt-get update
 umount /dev
