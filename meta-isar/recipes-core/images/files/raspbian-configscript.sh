@@ -53,7 +53,8 @@ mount proc -t proc /proc
 dpkg --configure -a
 umount /proc
 
-echo "root:root" | chpasswd
+# set the root password if that has not been done before
+grep "root:\*:" /etc/shadow && echo "root:root" | chpasswd
 
 cat > /etc/fstab << EOF
 # Begin /etc/fstab

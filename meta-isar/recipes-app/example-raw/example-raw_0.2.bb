@@ -5,7 +5,7 @@
 
 DESCRIPTION = "Sample application for ISAR"
 MAINTAINER = "Your name here <you@domain.com>"
-DEBIAN_DEPENDS = "apt"
+DEBIAN_DEPENDS = "apt passwd"
 
 SRC_URI = "file://README \
 	   file://postinst"
@@ -27,6 +27,11 @@ do_install() {
 
 	bbnote "Now for a debian hook, see dpkg-deb"
 	install -v -m 755 ${WORKDIR}/postinst ${D}/DEBIAN/postinst
+
+	# this wins over meta-isar/recipes-core/images/files/*configscript.sh
+	# but we take the same password for this example
+	bbnote "Set the root password"
+	echo 'echo "root:root" | chpasswd' >> ${D}/DEBIAN/postinst
 
 	bbnote "Now for a fake config file"
 	echo "# empty config file" > ${WORKDIR}/${PN}.conf
