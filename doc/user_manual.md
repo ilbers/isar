@@ -202,9 +202,9 @@ Once the image artifacts have been built (c.f. previous section), full EFI disk 
 Currently, only the `i386` and `amd64` target architectures are supported:
 ```
  # Generate an EFI image for the `i386` target architecture
- $ wic create -D sdimage-efi -o . -e multiconfig:qemui386:isar-image-base
+ $ wic create -D sdimage-efi -o . -e multiconfig:qemui386-stretch:isar-image-base
  # Similarly, for the `amd64` target architecture
- $ wic create -D sdimage-efi -o . -e multiconfig:qemuamd64:isar-image-base
+ $ wic create -D sdimage-efi -o . -e multiconfig:qemuamd64-stretch:isar-image-base
 ```
 
 In order to run the images with `qemu`, an EFI firmware is required and available at the following address:
