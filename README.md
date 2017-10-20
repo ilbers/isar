@@ -15,7 +15,7 @@ See doc/user_manual.md.
 
 To test the QEMU image, run the following command:
 
-        $ start_armhf_vm
+        $ start_vm -a arm -d jessie
 
 The default root password is 'root'.
 

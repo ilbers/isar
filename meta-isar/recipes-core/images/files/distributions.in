@@ -1,0 +1,3 @@
+Codename: {DISTRO_NAME}
+Architectures: i386 armhf amd64 source
+Components: main

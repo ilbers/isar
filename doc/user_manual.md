@@ -62,6 +62,7 @@ parted
 python3                     # wic
 qemu
 qemu-user-static
+binfmt-support
 sudo
 ```
 
@@ -201,9 +202,9 @@ Once the image artifacts have been built (c.f. previous section), full EFI disk 
 Currently, only the `i386` and `amd64` target architectures are supported:
 ```
  # Generate an EFI image for the `i386` target architecture
- $ wic create -D sdimage-efi -o . -e multiconfig:qemui386:isar-image-base
+ $ wic create -D sdimage-efi -o . -e multiconfig:qemui386-stretch:isar-image-base
  # Similarly, for the `amd64` target architecture
- $ wic create -D sdimage-efi -o . -e multiconfig:qemuamd64:isar-image-base
+ $ wic create -D sdimage-efi -o . -e multiconfig:qemuamd64-stretch:isar-image-base
 ```
 
 In order to run the images with `qemu`, an EFI firmware is required and available at the following address:
@@ -253,9 +254,9 @@ Isar workflow consists of stages described below.
 
 This filesystem is used as a build environment to compile custom packages. It is generated using `apt` binaries repository, selected by the user in configuration file. Please refer to distro configuration chapter for more information.
 
-### Custom Package Compilation
+### Custom Package Generation
 
-During this stage Isar processes custom packages selected by the user and generates binary `*.deb` packages for the target. Please refer to custom packages compilation section for more information.
+During this stage Isar processes custom packages selected by the user and generates binary `*.deb` packages for the target. Please refer to custom packages generation section for more information.
 
 ### Generation of Basic Target Filesystem
 
@@ -335,14 +336,14 @@ DISTRO = "distro-name"
 
 ---
 
-## Custom Package Compilation
+## Custom Package Generation
 
-Isar provides possibility to compile and install custom packages. The current version supports only building `deb` packages using `dpkg-buildpackage`, so the sources should contain the `debian` directory with necessary meta information. To add new package to image, it needs the following:
+To add new package to an image, do the following:
 
- - Create package recipe and put it in your `isar` layer.
+ - Create a package recipe and put it in your `isar` layer.
  - Append `IMAGE_INSTALL` variable by this recipe name. If this package should be included for all the machines, put `IMAGE_INSTALL` to `local.conf` file. If you want to include this package for specific machine, put it to your machine configuration file.
 
-Please refer to `add custom application` section for more information about writing recipes.
+Please refer to `Add a Custom Application` section for more information about writing recipes.
 
 ---
 
@@ -483,12 +484,18 @@ Isar contains two image type classes that can be used as reference:
 
 ## Add a Custom Application
 
-Before creating new recipe it's highly recommended to take a look into the BitBake user manual mentioned in Terms and Definitions section.
+Before creating a new recipe it's highly recommended to take a look into the BitBake user manual mentioned in Terms and Definitions section.
 
-Current Isar version supports building packages in Debian format only. The package must contain the `debian` directory with the necessary metadata.
+Isar currently supports two ways of creating custom packages.
 
-A typical Isar recipe looks like this:
+### Compilation of debianized-sources
 
+The `deb` packages are built using `dpkg-buildpackage`, so the sources should contain the `debian` directory with necessary meta information. This way is the default way of adding software that needs to be compiled from source. The bbclass for this approach is called `dpkg`.
+
+**NOTE:** If the sources do not contain a `debian` directory your recipe can fetch, create, or ship that.
+
+
+#### Example
 ```
 DESCRIPTION = "Sample application for ISAR"
 
@@ -522,3 +529,31 @@ This approach prevents duplication of the license files in different packages.
  - `SRC_REV` - Source code revision to fetch. Please check the BitBake user manual for supported download formats.
 
 The last line in the example above adds recipe to the Isar work chain.
+
+### Packages without source
+
+If your customization is not about compiling from source there is a second way of creating `deb` packages. That way can be used for cases like:
+
+ - packaging binaries/files that where built outside of Isar
+ - customization of the rootfs with package-hooks
+ - pulling in dependancies (meta-packages)
+
+The bbclass for this approach is called `dpkg-raw`.
+
+#### Example
+```
+DESCRIPTION = "Sample application for ISAR"
+MAINTAINER = "Your name here <you@domain.com>"
+DEBIAN_DEPENDS = "apt"
+
+inherit dpkg-raw
+
+do_populate_package() {
+....
+}
+```
+For the variables please have a look at the previous example, the following new variables are required by `dpkg-raw` class:
+ - `MAINTAINER` - The maintainer of the `deb` package we create. If the maintainer is undefined, the recipe author should be mentioned here
+ - `DEBIAN_DEPENDS` - Debian packages that the package depends on
+
+Have a look at the `example-raw` recipe to get an idea how the `dpkg-raw` class can be used to customize your image.

@@ -28,6 +28,7 @@ qemu-system-$QEMU_ARCH \\\\\n\
     -kernel \$IMAGE_DIR/$KERNEL_IMAGE \\\\\n\
     -initrd \$IMAGE_DIR/$INITRD_IMAGE \\\\\n\
     -append \"console=$MACHINE_SERIAL root=/dev/$ROOTFS_DEV rw\" \\\\\n\
+    $EXTRA_ARGS \\\\\n\
     $root1"
 
     root2=`echo $QEMU_ROOTFS_DEV \
@@ -40,6 +41,7 @@ qemu-system-$QEMU_ARCH \\\\\n\
 	-kernel $IMAGE_DIR/$KERNEL_IMAGE \
 	-initrd $IMAGE_DIR/$INITRD_IMAGE \
 	-append "console=$MACHINE_SERIAL root=/dev/$ROOTFS_DEV rw" \
+	$EXTRA_ARGS \
 	$root2
 }
 
@@ -57,6 +59,9 @@ show_help() {
     echo "    -b, --build BUILD     set path to build directory."
     echo "    -d, --distro DISTRO   set isar Debian distribution."
     echo "                          Supported: jessie, stretch."
+    echo "    -o, --out FILE        Route QEMU console output to"
+    echo "                          specified file."
+    echo "    -p, --pid FILE        Store QEMU pid to file."
     echo "    --help                display this message and exit."
     echo
     echo "Exit status:"
@@ -70,7 +75,7 @@ DISTRO=stretch
 BUILD_DIR=$PWD
 
 # Parse command line to get user configuration
-while [[ $# -gt 0 ]]
+while [ $# -gt 0 ]
 do
     key="$1"
 
@@ -91,6 +96,14 @@ do
         DISTRO=$2
         shift
         ;;
+    -o|--out)
+        EXTRA_ARGS="$EXTRA_ARGS -serial file:$2"
+        shift
+        ;;
+    -p|--pid)
+        EXTRA_ARGS="$EXTRA_ARGS -pidfile $2"
+        shift
+        ;;
     *)
         echo "error: invalid parameter '$key', please try '--help' to get list of supported parameters"
         exit $ES_BUG
@@ -101,6 +114,10 @@ do
 done
 
 readonly IMAGE_DIR=$BUILD_DIR/tmp/deploy/images
+readonly ROOTFS_IMAGE=isar-image-base-debian-$DISTRO-qemu$ARCH.ext4.img
+
+eval $(bitbake -e multiconfig:qemu$ARCH-$DISTRO:isar-image-base | grep "^KERNEL_IMAGE=")
+eval $(bitbake -e multiconfig:qemu$ARCH-$DISTRO:isar-image-base | grep "^INITRD_IMAGE=")
 
 readonly ISARROOT="$(dirname "$0")"/..
 
@@ -108,8 +125,7 @@ readonly MACHINE_CONF=$ISARROOT/meta-isar/conf/machine/qemu$ARCH.conf
 eval "$(egrep 'MACHINE_SERIAL' $MACHINE_CONF |bb2sh)"
 
 readonly CONFIG_CONF=$ISARROOT/meta-isar/conf/multiconfig/qemu$ARCH-$DISTRO.conf
-eval "$(egrep '(KERNEL|INITRD)_IMAGE|ROOTFS_DEV|QEMU_' $CONFIG_CONF |bb2sh)"
-readonly ROOTFS_IMAGE=isar-image-base-qemu$ARCH-debian-$DISTRO.ext4.img
+eval "$(egrep 'ROOTFS_DEV|QEMU_' $CONFIG_CONF |bb2sh)"
 
 QCPU=
 [ -n "$QEMU_CPU" ] && QCPU="-cpu $QEMU_CPU"

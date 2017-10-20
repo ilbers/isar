@@ -49,11 +49,9 @@ rm /var/lib/dpkg/info/raspberrypi-bootloader-nokernel.postinst
 
 # Configuring packages
 dpkg --configure -a
-mount proc -t proc /proc
-dpkg --configure -a
-umount /proc
 
-echo "root:root" | chpasswd
+# set the root password if that has not been done before
+grep "root:\*:" /etc/shadow && echo "root:root" | chpasswd
 
 cat > /etc/fstab << EOF
 # Begin /etc/fstab
@@ -67,9 +65,11 @@ devtmpfs	/dev		devtmpfs	mode=0755,nosuid	0	0
 # End /etc/fstab
 EOF
 
-# Enable tty
-echo "T0:23:respawn:/sbin/getty -L $MACHINE_SERIAL $BAUDRATE_TTY vt100" \
-    >> /etc/inittab
+# Enable tty conditionally, systemd does not have the file but its own magic
+if [ -f /etc/inittab ]; then
+    echo "T0:23:respawn:/sbin/getty -L $MACHINE_SERIAL $BAUDRATE_TTY vt100" \
+        >> /etc/inittab
+fi
 
 # Undo setup script changes
 if [ -x "$TARGET/sbin/start-stop-daemon.REAL" ]; then

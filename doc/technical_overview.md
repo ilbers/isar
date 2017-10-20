@@ -24,7 +24,7 @@ executing process. Recipes in Isar can be split in two categories:
    infrastructure, manages Debian tools execution for package building and
    installation, generation root file system images
 
- - User recipes: custom user applications, that should be builе from sources
+ - User recipes: custom user applications, that can be built from sources
 
 There are two types of dependencies in Isar:
 
@@ -121,7 +121,9 @@ All these steps are described in details below.
 
 ## 3.2 Initial Buildchroot Generation
 
-As mentioned above, initial buildchroot is generated using multistrap. The bitbake recipe which is responsible for buildchroot can be found here: `meta/recipes-devtools/buildchroot/buildchroot.bb`
+As mentioned above, initial buildchroot is generated using multistrap. The
+bitbake recipe which is responsible for buildchroot can be found here:
+`meta/recipes-devtools/buildchroot/buildchroot.bb`
 
 This recipe implementes `do_build` task which performs the following:
 
@@ -153,28 +155,43 @@ here: `meta-isar/recipes-core/images/files`, and it implements `do_build` task.
 
 ## 3.4 Building Custom Packages
 
-Isar provides possibility to build Debian packages from sources. This features
-works with Debian-like source packages, i.e. the source code tree should
-contain debian folder. The build process is implemented in
-`meta/classes/dpkg.bbclass` and consists from the following steps:
+Isar provides the possibility to build Debian packages from sources. This
+feature works with Debian-like source packages, i.e. the source code tree
+should contain debian folder. This build process is implemented in
+`meta/classes/dpkg.bbclass`.
 
-1. Task `do_fetch`: fetch source code from external link
+Another way of creating Debian packages is implemented in
+`meta/classes/dpkg-raw.bbclass`. This class can be used for customizations that
+are not based on source code that should become a package.
 
-2. Task `do_unpack`: unpack source code to
-   `${BUILDCHROOT_DIR}/home/build/${PN}`
+Both consist of the following steps:
 
-3. Task `do_build`: switch to buildchroot using chroot command and run
-   `build.sh` script. The `build.sh` script performs the following:
+1. Task `do_fetch`: fetch files from external links
 
-   1. Go to `/home/build/${PN}`
+2. Task `do_unpack`: unpack those files to `${WORKDIR}`
 
-   2. Get list of dependencies from debian/control and install them using apt.
+3. Task `do_install` _only_ for `dpkg-raw`: copy all you want in your
+   debian package to `${D}`, install hooks in `${D}/DEBIAN`
 
-   3. Run dpkg-buildpackage
+4. Task `do_build`: mount folder with unpacked files to buildchroot, execute
+   the actual build function `dpkg_runbuild`, and finally umount again
 
-4. Task `do_install`: install successfully built packages
-   `${BUILDCHROOT_DIR}/home/build/${PN}/*.deb` to deploy directory
-   `${DEPLOY_DIR_DEB}`
+   4.1. the `dpkg_runbuild` function of `dpkg.bbclass` runs `build.sh` in the
+        buildchroot. That performs the following:
+
+        1. Go to `/home/build/${PN}`
+
+        2. Get list of dependencies from debian/control and install them
+
+        3. Run dpkg-buildpackage
+
+   4.2. the `dpkg_runbuild` function of `dpkg-raw.bbclass` basically runs
+        `dpkg-deb` to construct a Debian package from a folder of files,
+	without compiling anything
+
+
+5. Task `do_deploy_deb`: install successfully built packages
+   `${WORKDIR}/*.deb` to deploy directory `${DEPLOY_DIR_DEB}`
 
 ## 3.5 Populate Target Filesystem
 

@@ -4,7 +4,7 @@
 [General]
 noauth=true
 unpack=true
-bootstrap=##DISTRO##
+bootstrap=##DISTRO## Isar
 aptsources=##DISTRO##
 configscript=##CONFIG_SCRIPT##
 setupscript=##SETUP_SCRIPT##
@@ -15,4 +15,11 @@ source=##DISTRO_APT_SOURCE##
 suite=##DISTRO_SUITE##
 components=##DISTRO_COMPONENTS##
 packages=##IMAGE_PREINSTALL##
+omitdebsrc=true
+
+[Isar]
+packages=##IMAGE_INSTALL##
+source=##DEPLOY_DIR_APT##
+suite=##ISAR_DISTRO_SUITE##
+components=main
 omitdebsrc=true
