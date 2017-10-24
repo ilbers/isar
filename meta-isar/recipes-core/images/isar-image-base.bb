@@ -55,7 +55,7 @@ do_rootfs() {
     sudo mount -t proc none ${IMAGE_ROOTFS}/proc
 
     # Create root filesystem
-    sudo multistrap -a ${DISTRO_ARCH} -d "${IMAGE_ROOTFS}" -f "${WORKDIR}/multistrap.conf" || true
+    sudo multistrap -a ${DISTRO_ARCH} -d "${IMAGE_ROOTFS}" -f "${WORKDIR}/multistrap.conf"
 
     # Configure root filesystem
     sudo chroot ${IMAGE_ROOTFS} /${DISTRO_CONFIG_SCRIPT} ${MACHINE_SERIAL} ${BAUDRATE_TTY} \

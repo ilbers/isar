@@ -55,7 +55,7 @@ do_build() {
     sudo mount -t proc none ${IMAGE_ROOTFS}/proc
 
     # Create root filesystem
-    sudo multistrap -a ${DISTRO_ARCH} -d "${BUILDCHROOT_DIR}" -f "${WORKDIR}/multistrap.conf" || true
+    sudo multistrap -a ${DISTRO_ARCH} -d "${BUILDCHROOT_DIR}" -f "${WORKDIR}/multistrap.conf"
 
     # Install package builder script
     sudo install -m 755 ${THISDIR}/files/build.sh ${BUILDCHROOT_DIR}
