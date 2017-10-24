@@ -12,7 +12,8 @@ FILESPATH =. "${LAYERDIR_core}/recipes-devtools/buildchroot/files:"
 SRC_URI = "file://multistrap.conf.in \
            file://configscript.sh \
            file://setup.sh \
-           file://download_dev-random"
+           file://download_dev-random \
+           file://build.sh"
 PV = "1.0"
 
 BUILDCHROOT_PREINSTALL ?= "gcc \
@@ -58,7 +59,7 @@ do_build() {
     sudo multistrap -a ${DISTRO_ARCH} -d "${BUILDCHROOT_DIR}" -f "${WORKDIR}/multistrap.conf"
 
     # Install package builder script
-    sudo install -m 755 ${THISDIR}/files/build.sh ${BUILDCHROOT_DIR}
+    sudo install -m 755 ${WORKDIR}/build.sh ${BUILDCHROOT_DIR}
 
     # Configure root filesystem
     sudo chroot ${BUILDCHROOT_DIR} /configscript.sh
