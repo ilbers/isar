@@ -92,7 +92,7 @@ do_copy_boot_files() {
 
     INITRD_IMAGE=${@get_image_name(d, 'initrd.img')}
     if [ -n "${INITRD_IMAGE}" ]; then
-        cp -f ${IMAGE_ROOTFS}/boot/${INITRD_IMAGE} ${DEPLOY_DIR_IMAGE}
+        sudo cp -f ${IMAGE_ROOTFS}/boot/${INITRD_IMAGE} ${DEPLOY_DIR_IMAGE}
     fi
 }
 
