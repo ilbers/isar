@@ -42,9 +42,10 @@ Commercial support: info@ilbers.de
 
 Built on:
 * Debian 8.2
+* Debian 8.7
 
 Tested on:
-* QEMU 1.1.2+dfsg-6a+deb7u12
+* QEMU 1:2.8+dfsg-3~bpo8+1
 * Raspberry Pi 1 Model B rev 2
 
 # Credits

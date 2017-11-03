@@ -71,6 +71,8 @@ Notes:
 
 * BitBake requires Python 3.4+.
 * The python3 package is required for the correct `alternatives` setting.
+* QEMU 2.8+ is required to run Stretch images locally in QEMU. This version is available in Stretch and Jessie backports apts.
+* e2fsprogs v1.42- required for building Wheezy images.
 
 ### Setup Sudo
 
