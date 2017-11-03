@@ -64,6 +64,7 @@ qemu
 qemu-user-static
 binfmt-support
 sudo
+reprepro
 ```
 
 Notes:
