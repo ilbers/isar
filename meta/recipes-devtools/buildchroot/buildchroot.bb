@@ -51,8 +51,8 @@ do_build() {
         -e 's|##DIR_HOOKS##|./'"$WORKDIR_REL"'/hooks_multistrap|g' \
            "${WORKDIR}/multistrap.conf.in" > "${WORKDIR}/multistrap.conf"
 
-    install -d -m 555 ${IMAGE_ROOTFS}/proc
-    sudo mount -t proc none ${IMAGE_ROOTFS}/proc
+    install -d -m 555 ${BUILDCHROOT_DIR}/proc
+    sudo mount -t proc none ${BUILDCHROOT_DIR}/proc
 
     # Create root filesystem
     sudo multistrap -a ${DISTRO_ARCH} -d "${BUILDCHROOT_DIR}" -f "${WORKDIR}/multistrap.conf"
@@ -62,5 +62,5 @@ do_build() {
 
     # Configure root filesystem
     sudo chroot ${BUILDCHROOT_DIR} /configscript.sh
-    sudo umount ${IMAGE_ROOTFS}/proc
+    sudo umount ${BUILDCHROOT_DIR}/proc
 }
