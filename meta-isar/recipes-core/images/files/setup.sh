@@ -57,7 +57,11 @@ EOF
 fi
 
 # Install QEMU emulator to execute ARM binaries
-sudo cp /usr/bin/qemu-arm-static ${TARGET}/usr/bin
+if [ ! -x /usr/bin/qemu-arm-static ]; then
+    echo "qemu-arm-static binary not present, unable to execute ARM binaries"
+else
+    sudo cp /usr/bin/qemu-arm-static ${TARGET}/usr/bin
+fi
 
 # Set hostname
 echo "isar" > $TARGET/etc/hostname
