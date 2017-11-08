@@ -72,6 +72,10 @@ if [ -f /etc/inittab ]; then
         >> /etc/inittab
 fi
 
+# Purge unused locale and installed packages' .deb files
+localepurge
+apt-get clean
+
 # Undo setup script changes
 if [ -x "$TARGET/sbin/start-stop-daemon.REAL" ]; then
     mv -f $TARGET/sbin/start-stop-daemon.REAL $TARGET/sbin/start-stop-daemon

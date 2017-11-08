@@ -21,7 +21,8 @@ inherit image
 DEPENDS += "${IMAGE_INSTALL}"
 
 IMAGE_PREINSTALL += "apt \
-                     dbus"
+                     dbus \
+                     localepurge"
 
 WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${PN}"
 
