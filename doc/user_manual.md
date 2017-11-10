@@ -53,15 +53,18 @@ Install the following packages:
 ```
 dosfstools
 e2fsprogs/jessie-backports  # wic: e2fsprogs -d
+gdisk                       # wic
 git
 grub-efi-amd64-bin          # wic UEFI: /usr/lib/grub/x86_64-efi/moddep.lst
 grub-efi-ia32-bin           # wic UEFI: /usr/lib/grub/i386-efi/moddep.lst
 mtools                      # wic FAT: mcopy
 multistrap
 parted
+python
 python3                     # wic
 qemu
 qemu-user-static
+rxvt-unicode                # build_parallel
 binfmt-support
 sudo
 reprepro
@@ -161,13 +164,13 @@ $ bitbake multiconfig:qemuarm-wheezy:isar-image-base \
 Created images are:
 
 ```
-tmp/deploy/images/isar-image-base-qemuarm-debian-wheezy.ext4.img
-tmp/deploy/images/isar-image-base-qemuarm-debian-jessie.ext4.img
-tmp/deploy/images/isar-image-base-qemuarm-debian-stretch.ext4.img
-tmp/deploy/images/isar-image-base-qemui386-debian-jessie.ext4.img
-tmp/deploy/images/isar-image-base-qemui386-debian-stretch.ext4.img
-tmp/deploy/images/isar-image-base-qemuamd64-debian-jessie.ext4.img
-tmp/deploy/images/isar-image-base-qemuamd64-debian-stretch.ext4.img
+tmp/deploy/images/isar-image-base-debian-wheezy-qemuarm.ext4.img
+tmp/deploy/images/isar-image-base-debian-jessie-qemuarm.ext4.img
+tmp/deploy/images/isar-image-base-debian-stretch-qemuarm.ext4.img
+tmp/deploy/images/isar-image-base-debian-jessie-qemui386.ext4.img
+tmp/deploy/images/isar-image-base-debian-stretch-qemui386.ext4.img
+tmp/deploy/images/isar-image-base-debian-jessie-qemuamd64.ext4.img
+tmp/deploy/images/isar-image-base-debian-stretch-qemuamd64.ext4.img
 tmp/deploy/images/isar-image-base.rpi-sdimg
 ```
 
@@ -189,13 +192,13 @@ scripts/build_parallel ../build multiconfig:qemuarm-wheezy:isar-image-base \
 Created images are:
 
 ```
-../build-1/tmp/deploy/images/isar-image-base-qemuarm-debian-wheezy.ext4.img
-../build-2/tmp/deploy/images/isar-image-base-qemuarm-debian-jessie.ext4.img
-../build-3/tmp/deploy/images/isar-image-base-qemuarm-debian-stretch.ext4.img
-../build-4/tmp/deploy/images/isar-image-base-qemui386-debian-jessie.ext4.img
-../build-5/tmp/deploy/images/isar-image-base-qemui386-debian-stretch.ext4.img
-../build-6/tmp/deploy/images/isar-image-base-qemuamd64-debian-jessie.ext4.img
-../build-7/tmp/deploy/images/isar-image-base-qemuamd64-debian-stretch.ext4.img
+../build-1/tmp/deploy/images/isar-image-base-debian-wheezy-qemuarm.ext4.img
+../build-2/tmp/deploy/images/isar-image-base-debian-jessie-qemuarm.ext4.img
+../build-3/tmp/deploy/images/isar-image-base-debian-stretch-qemuarm.ext4.img
+../build-4/tmp/deploy/images/isar-image-base-debian-jessie-qemui386.ext4.img
+../build-5/tmp/deploy/images/isar-image-base-debian-stretch-qemui386.ext4.img
+../build-6/tmp/deploy/images/isar-image-base-debian-jessie-qemuamd64.ext4.img
+../build-7/tmp/deploy/images/isar-image-base-debian-stretch-qemuamd64.ext4.img
 ../build-8/tmp/deploy/images/isar-image-base.rpi-sdimg
 ```
 
