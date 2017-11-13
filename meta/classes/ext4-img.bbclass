@@ -19,9 +19,15 @@ do_ext4_image() {
 
     mkdir -p ${WORKDIR}/mnt
     sudo mount -o loop ${EXT4_IMAGE_FILE} ${WORKDIR}/mnt
+    _do_ext4_image_cleanup() {
+        ret=$?
+        sudo umount ${WORKDIR}/mnt 2>/dev/null || true
+        sudo rmdir ${WORKDIR}/mnt 2>/dev/null || true
+        (exit $ret) || bb_exit_handler
+    }
+    trap '_do_ext4_image_cleanup' EXIT
     sudo cp -r ${IMAGE_ROOTFS}/* ${WORKDIR}/mnt
-    sudo umount ${WORKDIR}/mnt
-    rm -r ${WORKDIR}/mnt
+    _do_ext4_image_cleanup
 }
 
 addtask ext4_image before do_build after do_copy_boot_files

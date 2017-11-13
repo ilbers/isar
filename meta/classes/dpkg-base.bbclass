@@ -21,9 +21,15 @@ dpkg_runbuild() {
 do_build() {
     mkdir -p ${BUILDROOT}
     sudo mount --bind ${WORKDIR} ${BUILDROOT}
+    _do_build_cleanup() {
+        ret=$?
+        sudo umount ${BUILDROOT} 2>/dev/null || true
+        sudo rmdir ${BUILDROOT} 2>/dev/null || true
+        (exit $ret) || bb_exit_handler
+    }
+    trap '_do_build_cleanup' EXIT
     dpkg_runbuild
-    sudo umount ${BUILDROOT}
-    rm -rf ${BUILDROOT}
+    _do_build_cleanup
 }
 
 # Install package to dedicated deploy directory
