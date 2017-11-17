@@ -52,7 +52,7 @@ do_rootfs() {
         -e 's|##ISAR_DISTRO_SUITE##|${DEBDISTRONAME}|g' \
            "${WORKDIR}/multistrap.conf.in" > "${WORKDIR}/multistrap.conf"
 
-    [ ! -d ${IMAGE_ROOTFS}/proc ] && install -d -m 555 ${IMAGE_ROOTFS}/proc
+    [ ! -d ${IMAGE_ROOTFS}/proc ] && sudo install -d -o 0 -g 0 -m 555 ${IMAGE_ROOTFS}/proc
     sudo mount -t proc none ${IMAGE_ROOTFS}/proc
     _do_rootfs_cleanup() {
         ret=$?
