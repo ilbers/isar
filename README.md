@@ -19,7 +19,7 @@ To test the QEMU image, run the following command:
 
 The default root password is 'root'.
 
-To test the RPi board, flash the image to an SD card using the insctructions from the official site,
+To test the RPi board, flash the image to an SD card using the instructions from the official site,
 section "WRITING AN IMAGE TO THE SD CARD":
 
     https://www.raspberrypi.org/documentation/installation/installing-images/README.md
