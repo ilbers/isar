@@ -2,8 +2,7 @@
 # Copyright (C) 2017 Siemens AG
 
 # Add dependency from buildchroot creation
-DEPENDS += "buildchroot"
-do_build[deptask] = "do_build"
+do_build[depends] = "buildchroot:do_build"
 
 # Each package should have its own unique build folder, so use
 # recipe name as identifier
