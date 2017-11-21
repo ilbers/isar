@@ -26,7 +26,6 @@ IMAGE_PREINSTALL += "apt \
 
 WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${PN}"
 
-do_rootfs[stamp-extra-info] = "${MACHINE}-${DISTRO}"
 do_rootfs[dirs] = "${WORKDIR}/hooks_multistrap"
 
 do_rootfs() {
@@ -70,5 +69,3 @@ do_rootfs() {
     sudo rm "${IMAGE_ROOTFS}/${DISTRO_CONFIG_SCRIPT}"
     _do_rootfs_cleanup
 }
-
-addtask rootfs before do_build after do_populate
