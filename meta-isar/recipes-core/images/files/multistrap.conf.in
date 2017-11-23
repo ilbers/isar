@@ -4,6 +4,7 @@
 [General]
 noauth=true
 unpack=true
+ignorenativearch=true
 bootstrap=##DISTRO## Isar
 aptsources=##DISTRO##
 configscript=##CONFIG_SCRIPT##
