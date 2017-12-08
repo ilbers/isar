@@ -71,13 +71,11 @@ do_populate[stamp-extra-info] = "${DISTRO}-${MACHINE}"
 # Populate Isar apt repository by newly built packages
 do_populate() {
     if [ -n "${IMAGE_INSTALL}" ]; then
-        for p in ${IMAGE_INSTALL}; do
-            call_reprepro -b ${DEPLOY_DIR_APT}/${DISTRO} \
-                          --dbdir ${DEPLOY_DIR_DB}/${DISTRO} \
-                          -C main \
-                          includedeb ${DEBDISTRONAME} \
-                          ${DEPLOY_DIR_DEB}/${p}_*.deb
-        done
+        call_reprepro -b ${DEPLOY_DIR_APT}/${DISTRO} \
+                      --dbdir ${DEPLOY_DIR_DB}/${DISTRO} \
+                      -C main \
+                      includedeb ${DEBDISTRONAME} \
+                      ${DEPLOY_DIR_DEB}/*.deb
     fi
 }
 
