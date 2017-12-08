@@ -5,15 +5,21 @@
 noauth=true
 unpack=true
 ignorenativearch=true
-bootstrap=##DISTRO##
-aptsources=##DISTRO##
+bootstrap=##DISTRO_MULTICONF_BOOTSTRAP##
+aptsources=##DISTRO_MULTICONF_APTSOURCES##
 configscript=##CONFIG_SCRIPT##
 setupscript=##SETUP_SCRIPT##
 hookdir=##DIR_HOOKS##
 
-[##DISTRO##]
+[base]
 source=##DISTRO_APT_SOURCE##
 suite=##DISTRO_SUITE##
 components=##DISTRO_COMPONENTS##
 packages=##BUILDCHROOT_PREINSTALL##
+omitdebsrc=true
+
+[updates]
+source=##DISTRO_APT_SOURCE##
+suite=##DISTRO_SUITE##-updates
+components=##DISTRO_COMPONENTS##
 omitdebsrc=true

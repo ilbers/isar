@@ -45,7 +45,8 @@ do_build() {
 
     # Adjust multistrap config
     sed -e 's|##BUILDCHROOT_PREINSTALL##|${BUILDCHROOT_PREINSTALL}|g' \
-        -e 's|##DISTRO##|${DISTRO}|g' \
+        -e 's|##DISTRO_MULTICONF_BOOTSTRAP##|${DISTRO_MULTICONF_BOOTSTRAP}|g' \
+        -e 's|##DISTRO_MULTICONF_APTSOURCES##|${DISTRO_MULTICONF_APTSOURCES}|g' \
         -e 's|##DISTRO_APT_SOURCE##|${DISTRO_APT_SOURCE}|g' \
         -e 's|##DISTRO_SUITE##|${DISTRO_SUITE}|g' \
         -e 's|##DISTRO_COMPONENTS##|${DISTRO_COMPONENTS}|g' \
