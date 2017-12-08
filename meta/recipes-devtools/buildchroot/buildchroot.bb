@@ -48,6 +48,7 @@ do_build() {
         -e 's|##DISTRO_MULTICONF_BOOTSTRAP##|${DISTRO_MULTICONF_BOOTSTRAP}|g' \
         -e 's|##DISTRO_MULTICONF_APTSOURCES##|${DISTRO_MULTICONF_APTSOURCES}|g' \
         -e 's|##DISTRO_APT_SOURCE##|${DISTRO_APT_SOURCE}|g' \
+        -e 's|##DISTRO_APT_SOURCE_SEC##|${DISTRO_APT_SOURCE_SEC}|g' \
         -e 's|##DISTRO_SUITE##|${DISTRO_SUITE}|g' \
         -e 's|##DISTRO_COMPONENTS##|${DISTRO_COMPONENTS}|g' \
         -e 's|##CONFIG_SCRIPT##|./'"$WORKDIR_REL"'/configscript.sh|g' \

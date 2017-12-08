@@ -24,6 +24,12 @@ suite=##DISTRO_SUITE##-updates
 components=##DISTRO_COMPONENTS##
 omitdebsrc=true
 
+[security]
+source=##DISTRO_APT_SOURCE_SEC##
+suite=##DISTRO_SUITE##/updates
+components=##DISTRO_COMPONENTS##
+omitdebsrc=true
+
 [Isar]
 packages=##IMAGE_INSTALL##
 source=##DEPLOY_DIR_APT##
