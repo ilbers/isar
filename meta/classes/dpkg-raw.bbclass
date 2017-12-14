@@ -26,10 +26,15 @@ do_deb_package_prepare() {
 		Section: misc
 		Priority: optional
 		Maintainer: ${MAINTAINER}
-		Depends: `echo ${DEBIAN_DEPENDS} | tr '[:blank:]' ','`
 		Version: ${PV}+isar
 		Description: ${DESCRIPTION}
 	__EOF__
+	if [ "${DEBIAN_DEPENDS}" != "" ]
+	then
+		echo -n Depends: >> ${D}/DEBIAN/control
+		echo ${DEBIAN_DEPENDS} | tr '[:blank:]' ',' >> \
+			${D}/DEBIAN/control
+	fi
 	for t in pre post
 	do
 		for a in inst rm
