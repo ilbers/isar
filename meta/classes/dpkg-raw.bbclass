@@ -29,12 +29,8 @@ do_deb_package_prepare() {
 		Version: ${PV}+isar
 		Description: ${DESCRIPTION}
 	__EOF__
-	if [ "${DEBIAN_DEPENDS}" != "" ]
-	then
-		echo -n Depends: >> ${D}/DEBIAN/control
-		echo ${DEBIAN_DEPENDS} | tr '[:blank:]' ',' >> \
-			${D}/DEBIAN/control
-	fi
+	[ "${DEBIAN_DEPENDS}" != "" ] && echo "Depends: ${DEBIAN_DEPENDS}" >> \
+		${D}/DEBIAN/control
 	for t in pre post
 	do
 		for a in inst rm
