@@ -25,7 +25,9 @@ BUILDCHROOT_PREINSTALL ?= "gcc \
                            locales \
                            docbook-to-man \
                            apt \
-                           automake"
+                           automake \
+                           devscripts \
+                           equivs"
 
 WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${PN}"
 
