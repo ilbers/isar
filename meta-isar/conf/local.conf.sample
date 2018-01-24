@@ -153,7 +153,7 @@ CONF_VERSION = "1"
 
 #
 # The default list of extra packages to be installed.
-IMAGE_INSTALL = "hello example-raw"
+IMAGE_INSTALL = "example-hello example-raw"
 
 #
 # Default parallel jobs for bitbake:
