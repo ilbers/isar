@@ -4,6 +4,10 @@
 # Add dependency from buildchroot creation
 do_build[depends] = "buildchroot:do_setup_mounts"
 
+# Add dependency between Isar recipes
+DEPENDS ?= ""
+do_build[deptask] = "do_deploy_deb"
+
 # Each package should have its own unique build folder, so use
 # recipe name as identifier
 PP = "/home/builder/${PN}"
