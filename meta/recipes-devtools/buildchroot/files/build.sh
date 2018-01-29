@@ -6,8 +6,14 @@
 # Go to build directory
 cd $1
 
+# Install command to be used by mk-build-deps
+# Notes:
+#   1) everything before the -y switch is unchanged from the defaults
+#   2) we add -y to go non-interactive
+install_cmd="apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y"
+
 # Install all build deps
-mk-build-deps -i -r debian/control
+mk-build-deps -t "${install_cmd}" -i -r debian/control
 
 # If autotools files have been created, update their timestamp to
 # prevent them from being regenerated
