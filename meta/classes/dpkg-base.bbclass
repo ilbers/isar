@@ -31,11 +31,17 @@ do_build() {
     _do_build_cleanup
 }
 
-# Install package to dedicated deploy directory
+# Install package to Isar-apt
 do_deploy_deb() {
-    install -m 644 ${WORKDIR}/*.deb ${DEPLOY_DIR_DEB}/
+    reprepro -b ${DEPLOY_DIR_APT}/${DISTRO} \
+             --dbdir ${DEPLOY_DIR_DB}/${DISTRO} \
+             -C main \
+             includedeb ${DEBDISTRONAME} \
+             ${WORKDIR}/*.deb
 }
 
 addtask deploy_deb after do_build
 do_deploy_deb[dirs] = "${DEPLOY_DIR_DEB}"
-do_deploy_deb[stamp-extra-info] = "${MACHINE}"
+do_deploy_deb[stamp-extra-info] = "${DISTRO}-${MACHINE}"
+do_deploy_deb[lockfiles] = "${DEPLOY_DIR_APT}/isar.lock"
+do_deploy_deb[depends] = "isar-apt:do_cache_config"
