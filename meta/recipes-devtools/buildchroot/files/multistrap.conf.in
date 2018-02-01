@@ -6,7 +6,7 @@ noauth=true
 unpack=true
 ignorenativearch=true
 bootstrap=##DISTRO_MULTICONF_BOOTSTRAP##
-aptsources=##DISTRO_MULTICONF_APTSOURCES##
+aptsources=isar-apt ##DISTRO_MULTICONF_APTSOURCES##
 configscript=##CONFIG_SCRIPT##
 setupscript=##SETUP_SCRIPT##
 hookdir=##DIR_HOOKS##
@@ -28,4 +28,10 @@ omitdebsrc=true
 source=##DISTRO_APT_SOURCE_SEC##
 suite=##DISTRO_SUITE##/updates
 components=##DISTRO_COMPONENTS##
+omitdebsrc=true
+
+[isar-apt]
+source=file:///isar-apt
+suite=isar
+components=main
 omitdebsrc=true

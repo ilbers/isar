@@ -32,7 +32,9 @@ BUILDCHROOT_PREINSTALL ?= "gcc \
 WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${PN}"
 
 do_build[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
-do_build[dirs] = "${WORKDIR}/hooks_multistrap"
+do_build[dirs] = "${WORKDIR}/hooks_multistrap \
+                  ${BUILDCHROOT_DIR}/isar-apt"
+do_build[depends] = "isar-apt:do_cache_config"
 
 do_build() {
     E="${@ bb.utils.export_proxies(d)}"
@@ -67,6 +69,8 @@ do_build() {
     }
     trap '_do_build_cleanup' EXIT
 
+    do_setup_mounts
+
     # Create root filesystem
     sudo -E multistrap -a ${DISTRO_ARCH} -d "${BUILDCHROOT_DIR}" -f "${WORKDIR}/multistrap.conf"
 
@@ -76,4 +80,26 @@ do_build() {
     # Configure root filesystem
     sudo chroot ${BUILDCHROOT_DIR} /configscript.sh
     _do_build_cleanup
+
+    do_cleanup_mounts
+}
+
+# Invalidate stamp for do_setup_mounts before each build start.
+# This will guarantee that this function will be executed once
+# per build.
+python __anonymous() {
+    stamp = d.getVar("STAMP") + ".do_setup_mounts." + d.getVarFlag("do_setup_mounts", 'stamp-extra-info')
+    os.remove(stamp) if os.path.exists(stamp) else None
+}
+
+do_setup_mounts[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
+
+do_setup_mounts() {
+    sudo mount --bind ${DEPLOY_DIR_APT}/${DISTRO} ${BUILDCHROOT_DIR}/isar-apt
+}
+
+addtask setup_mounts after do_build
+
+do_cleanup_mounts() {
+    sudo umount ${BUILDCHROOT_DIR}/isar-apt 2>/dev/null || true
 }

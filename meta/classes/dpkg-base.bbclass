@@ -2,7 +2,7 @@
 # Copyright (C) 2017 Siemens AG
 
 # Add dependency from buildchroot creation
-do_build[depends] = "buildchroot:do_build"
+do_build[depends] = "buildchroot:do_setup_mounts"
 
 # Each package should have its own unique build folder, so use
 # recipe name as identifier
