@@ -23,6 +23,9 @@ cd $1
 #   2) we add -y to go non-interactive
 install_cmd="apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y"
 
+# Allow unauthenticated feeds
+install_cmd="${install_cmd} --allow-unauthenticated"
+
 # Install all build deps
 mk-build-deps -t "${install_cmd}" -i -r debian/control
 
