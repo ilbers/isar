@@ -716,7 +716,7 @@
             </glossdef>
         </glossentry>
 
-        <glossentry id='var-BB_SETSCENE_VERIFY_FUNCTION'><glossterm>BB_SETSCENE_VERIFY_FUNCTION</glossterm>
+        <glossentry id='var-BB_SETSCENE_VERIFY_FUNCTION2'><glossterm>BB_SETSCENE_VERIFY_FUNCTION2</glossterm>
             <glossdef>
                 <para>
                     Specifies a function to call that verifies the list of
@@ -1143,8 +1143,6 @@
             <glossdef>
                 <para>
                     Sets the base location where layers are stored.
-                    By default, this location is set to
-                    <filename>${COREBASE}</filename>.
                     This setting is used in conjunction with
                     <filename>bitbake-layers layerindex-fetch</filename> and
                     tells <filename>bitbake-layers</filename> where to place
@@ -1539,24 +1537,6 @@
             </glossdef>
         </glossentry>
 
-        <glossentry id='var-FILESDIR'><glossterm>FILESDIR</glossterm>
-            <glossdef>
-                <para>
-                    Specifies directories BitBake uses when searching for
-                    patches and files.
-                    The "local" fetcher module uses these directories when
-                    handling <filename>file://</filename> URLs if the file
-                    was not found using
-                    <link linkend='var-FILESPATH'><filename>FILESPATH</filename></link>.
-                    <note>
-                        The <filename>FILESDIR</filename> variable is
-                        deprecated and you should use
-                        <filename>FILESPATH</filename> in all new code.
-                    </note>
-                </para>
-            </glossdef>
-        </glossentry>
-
         <glossentry id='var-FILESPATH'><glossterm>FILESPATH</glossterm>
             <glossdef>
                 <para>
@@ -1614,9 +1594,19 @@
         <glossentry id='var-INHERIT'><glossterm>INHERIT</glossterm>
             <glossdef>
                 <para>
-                    Causes the named class to be inherited at
-                    this point during parsing.
-                    The variable is only valid in configuration files.
+                    Causes the named class or classes to be inherited globally.
+                    Anonymous functions in the class or classes
+                    are not executed for the
+                    base configuration and in each individual recipe.
+                    The OpenEmbedded build system ignores changes to
+                    <filename>INHERIT</filename> in individual recipes.
+                </para>
+
+                <para>
+                    For more information on <filename>INHERIT</filename>, see
+                    the
+                    "<link linkend="inherit-configuration-directive"><filename>INHERIT</filename> Configuration Directive</link>"
+                    section.
                 </para>
             </glossdef>
         </glossentry>
@@ -1911,7 +1901,7 @@
                     Here are two examples:
                     <literallayout class='monospaced'>
      PREFERRED_VERSION_python = "2.7.3"
-     PREFERRED_VERSION_linux-yocto = "3.10%"
+     PREFERRED_VERSION_linux-yocto = "4.12%"
                     </literallayout>
                 </para>
             </glossdef>

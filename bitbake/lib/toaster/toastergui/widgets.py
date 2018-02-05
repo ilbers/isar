@@ -41,6 +41,9 @@ import types
 import json
 import collections
 import re
+import os
+
+from toastergui.tablefilter import TableFilterMap
 
 try:
     from urllib import unquote_plus
@@ -49,8 +52,6 @@ except ImportError:
 
 import logging
 logger = logging.getLogger("toaster")
-
-from toastergui.tablefilter import TableFilterMap
 
 
 class NoFieldOrDataName(Exception):
@@ -85,6 +86,9 @@ class ToasterTable(TemplateView):
         context['title'] = self.title
         context['table_name'] = type(self).__name__.lower()
         context['empty_state'] = self.empty_state
+
+        # global variables
+        context['project_enable'] = ('1' == os.environ.get('TOASTER_BUILDSERVER'))
 
         return context
 
@@ -259,9 +263,9 @@ class ToasterTable(TemplateView):
                     queries = query
 
             if search_queries:
-               search_queries &= queries
+                search_queries &= queries
             else:
-               search_queries = queries
+                search_queries = queries
 
         self.queryset = self.queryset.filter(search_queries)
 
@@ -510,6 +514,10 @@ class MostRecentBuildsView(View):
             build['recipes_parsed_percentage'] = \
                 int((build_obj.recipes_parsed /
                      build_obj.recipes_to_parse) * 100)
+
+            build['repos_cloned_percentage'] = \
+                int((build_obj.repos_cloned /
+                     build_obj.repos_to_clone) * 100)
 
             tasks_complete_percentage = 0
             if build_obj.outcome in (Build.SUCCEEDED, Build.FAILED):

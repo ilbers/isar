@@ -28,8 +28,15 @@ and must not trigger events, directly or indirectly.
 Commands are queued in a CommandQueue
 """
 
+from collections import OrderedDict, defaultdict
+
 import bb.event
 import bb.cooker
+import bb.remotedata
+
+class DataStoreConnectionHandle(object):
+    def __init__(self, dsindex=0):
+        self.dsindex = dsindex
 
 class CommandCompleted(bb.event.Event):
     pass
@@ -43,6 +50,8 @@ class CommandFailed(CommandExit):
     def __init__(self, message):
         self.error = message
         CommandExit.__init__(self, 1)
+    def __str__(self):
+        return "Command execution failed: %s" % self.error
 
 class CommandError(Exception):
     pass
@@ -55,6 +64,7 @@ class Command:
         self.cooker = cooker
         self.cmds_sync = CommandsSync()
         self.cmds_async = CommandsAsync()
+        self.remotedatastores = bb.remotedata.RemoteDatastores(cooker)
 
         # FIXME Add lock for this
         self.currentAsyncCommand = None
@@ -68,7 +78,8 @@ class Command:
                 if not hasattr(command_method, 'readonly') or False == getattr(command_method, 'readonly'):
                     return None, "Not able to execute not readonly commands in readonly mode"
             try:
-                if getattr(command_method, 'needconfig', False):
+                self.cooker.process_inotify_updates()
+                if getattr(command_method, 'needconfig', True):
                     self.cooker.updateCacheSync()
                 result = command_method(self, commandline)
             except CommandError as exc:
@@ -88,6 +99,7 @@ class Command:
 
     def runAsyncCommand(self):
         try:
+            self.cooker.process_inotify_updates()
             if self.cooker.state in (bb.cooker.state.error, bb.cooker.state.shutdown, bb.cooker.state.forceshutdown):
                 # updateCache will trigger a shutdown of the parser
                 # and then raise BBHandledException triggering an exit
@@ -125,13 +137,22 @@ class Command:
 
     def finishAsyncCommand(self, msg=None, code=None):
         if msg or msg == "":
-            bb.event.fire(CommandFailed(msg), self.cooker.expanded_data)
+            bb.event.fire(CommandFailed(msg), self.cooker.data)
         elif code:
-            bb.event.fire(CommandExit(code), self.cooker.expanded_data)
+            bb.event.fire(CommandExit(code), self.cooker.data)
         else:
-            bb.event.fire(CommandCompleted(), self.cooker.expanded_data)
+            bb.event.fire(CommandCompleted(), self.cooker.data)
         self.currentAsyncCommand = None
         self.cooker.finishcommand()
+
+    def reset(self):
+        self.remotedatastores = bb.remotedata.RemoteDatastores(self.cooker)
+
+def split_mc_pn(pn):
+    if pn.startswith("multiconfig:"):
+        _, mc, pn = pn.split(":", 2)
+        return (mc, pn)
+    return ('', pn)
 
 class CommandsSync:
     """
@@ -179,6 +200,7 @@ class CommandsSync:
         """
         varname = params[0]
         value = str(params[1])
+        command.cooker.extraconfigdata[varname] = value
         command.cooker.data.setVar(varname, value)
 
     def getSetVariable(self, command, params):
@@ -218,59 +240,15 @@ class CommandsSync:
         command.cooker.configuration.postfile = postfiles
     setPrePostConfFiles.needconfig = False
 
-    def getCpuCount(self, command, params):
-        """
-        Get the CPU count on the bitbake server
-        """
-        return bb.utils.cpu_count()
-    getCpuCount.readonly = True
-    getCpuCount.needconfig = False
-
     def matchFile(self, command, params):
         fMatch = params[0]
         return command.cooker.matchFile(fMatch)
     matchFile.needconfig = False
 
-    def generateNewImage(self, command, params):
-        image = params[0]
-        base_image = params[1]
-        package_queue = params[2]
-        timestamp = params[3]
-        description = params[4]
-        return command.cooker.generateNewImage(image, base_image,
-                        package_queue, timestamp, description)
-
-    def ensureDir(self, command, params):
-        directory = params[0]
-        bb.utils.mkdirhier(directory)
-    ensureDir.needconfig = False
-
-    def setVarFile(self, command, params):
-        """
-        Save a variable in a file; used for saving in a configuration file
-        """
-        var = params[0]
-        val = params[1]
-        default_file = params[2]
-        op = params[3]
-        command.cooker.modifyConfigurationVar(var, val, default_file, op)
-    setVarFile.needconfig = False
-
-    def removeVarFile(self, command, params):
-        """
-        Remove a variable declaration from a file
-        """
-        var = params[0]
-        command.cooker.removeConfigurationVar(var)
-    removeVarFile.needconfig = False
-
-    def createConfigFile(self, command, params):
-        """
-        Create an extra configuration file
-        """
-        name = params[0]
-        command.cooker.createConfigFile(name)
-    createConfigFile.needconfig = False
+    def getUIHandlerNum(self, command, params):
+        return bb.event.get_uihandler()
+    getUIHandlerNum.needconfig = False
+    getUIHandlerNum.readonly = True
 
     def setEventMask(self, command, params):
         handlerNum = params[0]
@@ -295,8 +273,306 @@ class CommandsSync:
     def updateConfig(self, command, params):
         options = params[0]
         environment = params[1]
-        command.cooker.updateConfigOpts(options, environment)
+        cmdline = params[2]
+        command.cooker.updateConfigOpts(options, environment, cmdline)
     updateConfig.needconfig = False
+
+    def parseConfiguration(self, command, params):
+        """Instruct bitbake to parse its configuration
+        NOTE: it is only necessary to call this if you aren't calling any normal action
+        (otherwise parsing is taken care of automatically)
+        """
+        command.cooker.parseConfiguration()
+    parseConfiguration.needconfig = False
+
+    def getLayerPriorities(self, command, params):
+        command.cooker.parseConfiguration()
+        ret = []
+        # regex objects cannot be marshalled by xmlrpc
+        for collection, pattern, regex, pri in command.cooker.bbfile_config_priorities:
+            ret.append((collection, pattern, regex.pattern, pri))
+        return ret
+    getLayerPriorities.readonly = True
+
+    def getRecipes(self, command, params):
+        try:
+            mc = params[0]
+        except IndexError:
+            mc = ''
+        return list(command.cooker.recipecaches[mc].pkg_pn.items())
+    getRecipes.readonly = True
+
+    def getRecipeDepends(self, command, params):
+        try:
+            mc = params[0]
+        except IndexError:
+            mc = ''
+        return list(command.cooker.recipecaches[mc].deps.items())
+    getRecipeDepends.readonly = True
+
+    def getRecipeVersions(self, command, params):
+        try:
+            mc = params[0]
+        except IndexError:
+            mc = ''
+        return command.cooker.recipecaches[mc].pkg_pepvpr
+    getRecipeVersions.readonly = True
+
+    def getRecipeProvides(self, command, params):
+        try:
+            mc = params[0]
+        except IndexError:
+            mc = ''
+        return command.cooker.recipecaches[mc].fn_provides
+    getRecipeProvides.readonly = True
+
+    def getRecipePackages(self, command, params):
+        try:
+            mc = params[0]
+        except IndexError:
+            mc = ''
+        return command.cooker.recipecaches[mc].packages
+    getRecipePackages.readonly = True
+
+    def getRecipePackagesDynamic(self, command, params):
+        try:
+            mc = params[0]
+        except IndexError:
+            mc = ''
+        return command.cooker.recipecaches[mc].packages_dynamic
+    getRecipePackagesDynamic.readonly = True
+
+    def getRProviders(self, command, params):
+        try:
+            mc = params[0]
+        except IndexError:
+            mc = ''
+        return command.cooker.recipecaches[mc].rproviders
+    getRProviders.readonly = True
+
+    def getRuntimeDepends(self, command, params):
+        ret = []
+        try:
+            mc = params[0]
+        except IndexError:
+            mc = ''
+        rundeps = command.cooker.recipecaches[mc].rundeps
+        for key, value in rundeps.items():
+            if isinstance(value, defaultdict):
+                value = dict(value)
+            ret.append((key, value))
+        return ret
+    getRuntimeDepends.readonly = True
+
+    def getRuntimeRecommends(self, command, params):
+        ret = []
+        try:
+            mc = params[0]
+        except IndexError:
+            mc = ''
+        runrecs = command.cooker.recipecaches[mc].runrecs
+        for key, value in runrecs.items():
+            if isinstance(value, defaultdict):
+                value = dict(value)
+            ret.append((key, value))
+        return ret
+    getRuntimeRecommends.readonly = True
+
+    def getRecipeInherits(self, command, params):
+        try:
+            mc = params[0]
+        except IndexError:
+            mc = ''
+        return command.cooker.recipecaches[mc].inherits
+    getRecipeInherits.readonly = True
+
+    def getBbFilePriority(self, command, params):
+        try:
+            mc = params[0]
+        except IndexError:
+            mc = ''
+        return command.cooker.recipecaches[mc].bbfile_priority
+    getBbFilePriority.readonly = True
+
+    def getDefaultPreference(self, command, params):
+        try:
+            mc = params[0]
+        except IndexError:
+            mc = ''
+        return command.cooker.recipecaches[mc].pkg_dp
+    getDefaultPreference.readonly = True
+
+    def getSkippedRecipes(self, command, params):
+        # Return list sorted by reverse priority order
+        import bb.cache
+        skipdict = OrderedDict(sorted(command.cooker.skiplist.items(),
+                                      key=lambda x: (-command.cooker.collection.calc_bbfile_priority(bb.cache.virtualfn2realfn(x[0])[0]), x[0])))
+        return list(skipdict.items())
+    getSkippedRecipes.readonly = True
+
+    def getOverlayedRecipes(self, command, params):
+        return list(command.cooker.collection.overlayed.items())
+    getOverlayedRecipes.readonly = True
+
+    def getFileAppends(self, command, params):
+        fn = params[0]
+        return command.cooker.collection.get_file_appends(fn)
+    getFileAppends.readonly = True
+
+    def getAllAppends(self, command, params):
+        return command.cooker.collection.bbappends
+    getAllAppends.readonly = True
+
+    def findProviders(self, command, params):
+        return command.cooker.findProviders()
+    findProviders.readonly = True
+
+    def findBestProvider(self, command, params):
+        (mc, pn) = split_mc_pn(params[0])
+        return command.cooker.findBestProvider(pn, mc)
+    findBestProvider.readonly = True
+
+    def allProviders(self, command, params):
+        try:
+            mc = params[0]
+        except IndexError:
+            mc = ''
+        return list(bb.providers.allProviders(command.cooker.recipecaches[mc]).items())
+    allProviders.readonly = True
+
+    def getRuntimeProviders(self, command, params):
+        rprovide = params[0]
+        try:
+            mc = params[1]
+        except IndexError:
+            mc = ''
+        all_p = bb.providers.getRuntimeProviders(command.cooker.recipecaches[mc], rprovide)
+        if all_p:
+            best = bb.providers.filterProvidersRunTime(all_p, rprovide,
+                            command.cooker.data,
+                            command.cooker.recipecaches[mc])[0][0]
+        else:
+            best = None
+        return all_p, best
+    getRuntimeProviders.readonly = True
+
+    def dataStoreConnectorFindVar(self, command, params):
+        dsindex = params[0]
+        name = params[1]
+        datastore = command.remotedatastores[dsindex]
+        value, overridedata = datastore._findVar(name)
+
+        if value:
+            content = value.get('_content', None)
+            if isinstance(content, bb.data_smart.DataSmart):
+                # Value is a datastore (e.g. BB_ORIGENV) - need to handle this carefully
+                idx = command.remotedatastores.check_store(content, True)
+                return {'_content': DataStoreConnectionHandle(idx),
+                        '_connector_origtype': 'DataStoreConnectionHandle',
+                        '_connector_overrides': overridedata}
+            elif isinstance(content, set):
+                return {'_content': list(content),
+                        '_connector_origtype': 'set',
+                        '_connector_overrides': overridedata}
+            else:
+                value['_connector_overrides'] = overridedata
+        else:
+            value = {}
+            value['_connector_overrides'] = overridedata
+        return value
+    dataStoreConnectorFindVar.readonly = True
+
+    def dataStoreConnectorGetKeys(self, command, params):
+        dsindex = params[0]
+        datastore = command.remotedatastores[dsindex]
+        return list(datastore.keys())
+    dataStoreConnectorGetKeys.readonly = True
+
+    def dataStoreConnectorGetVarHistory(self, command, params):
+        dsindex = params[0]
+        name = params[1]
+        datastore = command.remotedatastores[dsindex]
+        return datastore.varhistory.variable(name)
+    dataStoreConnectorGetVarHistory.readonly = True
+
+    def dataStoreConnectorExpandPythonRef(self, command, params):
+        config_data_dict = params[0]
+        varname = params[1]
+        expr = params[2]
+
+        config_data = command.remotedatastores.receive_datastore(config_data_dict)
+
+        varparse = bb.data_smart.VariableParse(varname, config_data)
+        return varparse.python_sub(expr)
+
+    def dataStoreConnectorRelease(self, command, params):
+        dsindex = params[0]
+        if dsindex <= 0:
+            raise CommandError('dataStoreConnectorRelease: invalid index %d' % dsindex)
+        command.remotedatastores.release(dsindex)
+
+    def dataStoreConnectorSetVarFlag(self, command, params):
+        dsindex = params[0]
+        name = params[1]
+        flag = params[2]
+        value = params[3]
+        datastore = command.remotedatastores[dsindex]
+        datastore.setVarFlag(name, flag, value)
+
+    def dataStoreConnectorDelVar(self, command, params):
+        dsindex = params[0]
+        name = params[1]
+        datastore = command.remotedatastores[dsindex]
+        if len(params) > 2:
+            flag = params[2]
+            datastore.delVarFlag(name, flag)
+        else:
+            datastore.delVar(name)
+
+    def dataStoreConnectorRenameVar(self, command, params):
+        dsindex = params[0]
+        name = params[1]
+        newname = params[2]
+        datastore = command.remotedatastores[dsindex]
+        datastore.renameVar(name, newname)
+
+    def parseRecipeFile(self, command, params):
+        """
+        Parse the specified recipe file (with or without bbappends)
+        and return a datastore object representing the environment
+        for the recipe.
+        """
+        fn = params[0]
+        appends = params[1]
+        appendlist = params[2]
+        if len(params) > 3:
+            config_data_dict = params[3]
+            config_data = command.remotedatastores.receive_datastore(config_data_dict)
+        else:
+            config_data = None
+
+        if appends:
+            if appendlist is not None:
+                appendfiles = appendlist
+            else:
+                appendfiles = command.cooker.collection.get_file_appends(fn)
+        else:
+            appendfiles = []
+        # We are calling bb.cache locally here rather than on the server,
+        # but that's OK because it doesn't actually need anything from
+        # the server barring the global datastore (which we have a remote
+        # version of)
+        if config_data:
+            # We have to use a different function here if we're passing in a datastore
+            # NOTE: we took a copy above, so we don't do it here again
+            envdata = bb.cache.parse_recipe(config_data, fn, appendfiles)['']
+        else:
+            # Use the standard path
+            parser = bb.cache.NoCache(command.cooker.databuilder)
+            envdata = parser.loadDataFull(fn, appendfiles)
+        idx = command.remotedatastores.store(envdata)
+        return DataStoreConnectionHandle(idx)
+    parseRecipeFile.readonly = True
 
 class CommandsAsync:
     """
@@ -311,8 +587,15 @@ class CommandsAsync:
         """
         bfile = params[0]
         task = params[1]
+        if len(params) > 2:
+            internal = params[2]
+        else:
+            internal = False
 
-        command.cooker.buildFile(bfile, task)
+        if internal:
+            command.cooker.buildFileInternal(bfile, task, fireevents=False, quietlog=True)
+        else:
+            command.cooker.buildFile(bfile, task)
     buildFile.needcache = False
 
     def buildTargets(self, command, params):
@@ -361,17 +644,6 @@ class CommandsAsync:
         command.cooker.generateTargetsTree(klass, pkg_list)
         command.finishAsyncCommand()
     generateTargetsTree.needcache = True
-
-    def findCoreBaseFiles(self, command, params):
-        """
-        Find certain files in COREBASE directory. i.e. Layers
-        """
-        subdir = params[0]
-        filename = params[1]
-
-        command.cooker.findCoreBaseFiles(subdir, filename)
-        command.finishAsyncCommand()
-    findCoreBaseFiles.needcache = False
 
     def findConfigFiles(self, command, params):
         """
@@ -472,3 +744,22 @@ class CommandsAsync:
         command.finishAsyncCommand()
     resetCooker.needcache = False
 
+    def clientComplete(self, command, params):
+        """
+        Do the right thing when the controlling client exits
+        """
+        command.cooker.clientComplete()
+        command.finishAsyncCommand()
+    clientComplete.needcache = False
+
+    def findSigInfo(self, command, params):
+        """
+        Find signature info files via the signature generator
+        """
+        pn = params[0]
+        taskname = params[1]
+        sigs = params[2]
+        res = bb.siggen.find_siginfo(pn, taskname, sigs, command.cooker.data)
+        bb.event.fire(bb.event.FindSigInfoResult(res), command.cooker.data)
+        command.finishAsyncCommand()
+    findSigInfo.needcache = False

@@ -5,6 +5,8 @@ import re
 import tempfile
 import pickle
 import bb.data
+import difflib
+import simplediff
 from bb.checksum import FileChecksumCache
 
 logger = logging.getLogger('BitBake.SigGen')
@@ -13,7 +15,7 @@ def init(d):
     siggens = [obj for obj in globals().values()
                       if type(obj) is type and issubclass(obj, SignatureGenerator)]
 
-    desired = d.getVar("BB_SIGNATURE_HANDLER", True) or "noop"
+    desired = d.getVar("BB_SIGNATURE_HANDLER") or "noop"
     for sg in siggens:
         if desired == sg.name:
             return sg(d)
@@ -30,6 +32,7 @@ class SignatureGenerator(object):
     name = "noop"
 
     def __init__(self, data):
+        self.basehash = {}
         self.taskhash = {}
         self.runtaskdeps = {}
         self.file_checksum_values = {}
@@ -61,10 +64,13 @@ class SignatureGenerator(object):
         return
 
     def get_taskdata(self):
-       return (self.runtaskdeps, self.taskhash, self.file_checksum_values, self.taints)
+        return (self.runtaskdeps, self.taskhash, self.file_checksum_values, self.taints, self.basehash)
 
     def set_taskdata(self, data):
-        self.runtaskdeps, self.taskhash, self.file_checksum_values, self.taints = data
+        self.runtaskdeps, self.taskhash, self.file_checksum_values, self.taints, self.basehash = data
+
+    def reset(self, data):
+        self.__init__(data)
 
 
 class SignatureGeneratorBasic(SignatureGenerator):
@@ -82,10 +88,10 @@ class SignatureGeneratorBasic(SignatureGenerator):
         self.gendeps = {}
         self.lookupcache = {}
         self.pkgnameextract = re.compile("(?P<fn>.*)\..*")
-        self.basewhitelist = set((data.getVar("BB_HASHBASE_WHITELIST", True) or "").split())
+        self.basewhitelist = set((data.getVar("BB_HASHBASE_WHITELIST") or "").split())
         self.taskwhitelist = None
         self.init_rundepcheck(data)
-        checksum_cache_file = data.getVar("BB_HASH_CHECKSUM_CACHE_FILE", True)
+        checksum_cache_file = data.getVar("BB_HASH_CHECKSUM_CACHE_FILE")
         if checksum_cache_file:
             self.checksum_cache = FileChecksumCache()
             self.checksum_cache.init_cache(data, checksum_cache_file)
@@ -93,7 +99,7 @@ class SignatureGeneratorBasic(SignatureGenerator):
             self.checksum_cache = None
 
     def init_rundepcheck(self, data):
-        self.taskwhitelist = data.getVar("BB_HASHTASK_WHITELIST", True) or None
+        self.taskwhitelist = data.getVar("BB_HASHTASK_WHITELIST") or None
         if self.taskwhitelist:
             self.twl = re.compile(self.taskwhitelist)
         else:
@@ -101,6 +107,7 @@ class SignatureGeneratorBasic(SignatureGenerator):
 
     def _build_data(self, fn, d):
 
+        ignore_mismatch = ((d.getVar("BB_HASH_IGNORE_MISMATCH") or '') == '1')
         tasklist, gendeps, lookupcache = bb.data.generate_dependencies(d)
 
         taskdeps = {}
@@ -133,7 +140,11 @@ class SignatureGeneratorBasic(SignatureGenerator):
                 var = lookupcache[dep]
                 if var is not None:
                     data = data + str(var)
-            self.basehash[fn + "." + task] = hashlib.md5(data.encode("utf-8")).hexdigest()
+            datahash = hashlib.md5(data.encode("utf-8")).hexdigest()
+            k = fn + "." + task
+            if not ignore_mismatch and k in self.basehash and self.basehash[k] != datahash:
+                bb.error("When reparsing %s, the basehash value changed from %s to %s. The metadata is not deterministic and this needs to be fixed." % (k, self.basehash[k], datahash))
+            self.basehash[k] = datahash
             taskdeps[task] = alldeps
 
         self.taskdeps[fn] = taskdeps
@@ -150,13 +161,15 @@ class SignatureGeneratorBasic(SignatureGenerator):
 
         try:
             taskdeps = self._build_data(fn, d)
+        except bb.parse.SkipRecipe:
+            raise
         except:
             bb.warn("Error during finalise of %s" % fn)
             raise
 
         #Slow but can be useful for debugging mismatched basehashes
         #for task in self.taskdeps[fn]:
-        #    self.dump_sigtask(fn, task, d.getVar("STAMP", True), False)
+        #    self.dump_sigtask(fn, task, d.getVar("STAMP"), False)
 
         for task in taskdeps:
             d.setVar("BB_BASEHASH_task-%s" % task, self.basehash[fn + "." + task])
@@ -182,6 +195,7 @@ class SignatureGeneratorBasic(SignatureGenerator):
     def get_taskhash(self, fn, task, deps, dataCache):
         k = fn + "." + task
         data = dataCache.basetaskhash[k]
+        self.basehash[k] = data
         self.runtaskdeps[k] = []
         self.file_checksum_values[k] = []
         recipename = dataCache.pkg_fn[fn]
@@ -278,6 +292,15 @@ class SignatureGeneratorBasic(SignatureGenerator):
             if 'nostamp:' in self.taints[k]:
                 data['taint'] = self.taints[k]
 
+        computed_basehash = calc_basehash(data)
+        if computed_basehash != self.basehash[k]:
+            bb.error("Basehash mismatch %s versus %s for %s" % (computed_basehash, self.basehash[k], k))
+        if runtime and k in self.taskhash:
+            computed_taskhash = calc_taskhash(data)
+            if computed_taskhash != self.taskhash[k]:
+                bb.error("Taskhash mismatch %s versus %s for %s" % (computed_taskhash, self.taskhash[k], k))
+                sigfile = sigfile.replace(self.taskhash[k], computed_taskhash)
+
         fd, tmpfile = tempfile.mkstemp(dir=os.path.dirname(sigfile), prefix="sigtask.")
         try:
             with os.fdopen(fd, "wb") as stream:
@@ -292,17 +315,8 @@ class SignatureGeneratorBasic(SignatureGenerator):
                 pass
             raise err
 
-        computed_basehash = calc_basehash(data)
-        if computed_basehash != self.basehash[k]:
-            bb.error("Basehash mismatch %s versus %s for %s" % (computed_basehash, self.basehash[k], k))
-        if runtime and k in self.taskhash:
-            computed_taskhash = calc_taskhash(data)
-            if computed_taskhash != self.taskhash[k]:
-                bb.error("Taskhash mismatch %s versus %s for %s" % (computed_taskhash, self.taskhash[k], k))
-
-
-    def dump_sigs(self, dataCaches, options):
-        for fn in self.taskdeps:
+    def dump_sigfn(self, fn, dataCaches, options):
+        if fn in self.taskdeps:
             for task in self.taskdeps[fn]:
                 tid = fn + ":" + task
                 (mc, _, _) = bb.runqueue.split_tid(tid)
@@ -340,15 +354,71 @@ class SignatureGeneratorBasicHash(SignatureGeneratorBasic):
 
 def dump_this_task(outfile, d):
     import bb.parse
-    fn = d.getVar("BB_FILENAME", True)
-    task = "do_" + d.getVar("BB_CURRENTTASK", True)
+    fn = d.getVar("BB_FILENAME")
+    task = "do_" + d.getVar("BB_CURRENTTASK")
     referencestamp = bb.build.stamp_internal(task, d, None, True)
     bb.parse.siggen.dump_sigtask(fn, task, outfile, "customfile:" + referencestamp)
 
+def init_colors(enable_color):
+    """Initialise colour dict for passing to compare_sigfiles()"""
+    # First set up the colours
+    colors = {'color_title':   '\033[1;37;40m',
+              'color_default': '\033[0;37;40m',
+              'color_add':     '\033[1;32;40m',
+              'color_remove':  '\033[1;31;40m',
+             }
+    # Leave all keys present but clear the values
+    if not enable_color:
+        for k in colors.keys():
+            colors[k] = ''
+    return colors
+
+def worddiff_str(oldstr, newstr, colors=None):
+    if not colors:
+        colors = init_colors(False)
+    diff = simplediff.diff(oldstr.split(' '), newstr.split(' '))
+    ret = []
+    for change, value in diff:
+        value = ' '.join(value)
+        if change == '=':
+            ret.append(value)
+        elif change == '+':
+            item = '{color_add}{{+{value}+}}{color_default}'.format(value=value, **colors)
+            ret.append(item)
+        elif change == '-':
+            item = '{color_remove}[-{value}-]{color_default}'.format(value=value, **colors)
+            ret.append(item)
+    whitespace_note = ''
+    if oldstr != newstr and ' '.join(oldstr.split()) == ' '.join(newstr.split()):
+        whitespace_note = ' (whitespace changed)'
+    return '"%s"%s' % (' '.join(ret), whitespace_note)
+
+def list_inline_diff(oldlist, newlist, colors=None):
+    if not colors:
+        colors = init_colors(False)
+    diff = simplediff.diff(oldlist, newlist)
+    ret = []
+    for change, value in diff:
+        value = ' '.join(value)
+        if change == '=':
+            ret.append("'%s'" % value)
+        elif change == '+':
+            item = '{color_add}+{value}{color_default}'.format(value=value, **colors)
+            ret.append(item)
+        elif change == '-':
+            item = '{color_remove}-{value}{color_default}'.format(value=value, **colors)
+            ret.append(item)
+    return '[%s]' % (', '.join(ret))
+
 def clean_basepath(a):
-    b = a.rsplit("/", 2)[1] + a.rsplit("/", 2)[2]
+    mc = None
+    if a.startswith("multiconfig:"):
+        _, mc, a = a.split(":", 2)
+    b = a.rsplit("/", 2)[1] + '/' + a.rsplit("/", 2)[2]
     if a.startswith("virtual:"):
         b = b + ":" + a.rsplit(":", 1)[0]
+    if mc:
+        b = b + ":multiconfig:" + mc
     return b
 
 def clean_basepaths(a):
@@ -363,8 +433,25 @@ def clean_basepaths_list(a):
         b.append(clean_basepath(x))
     return b
 
-def compare_sigfiles(a, b, recursecb = None):
+def compare_sigfiles(a, b, recursecb=None, color=False, collapsed=False):
     output = []
+
+    colors = init_colors(color)
+    def color_format(formatstr, **values):
+        """
+        Return colour formatted string.
+        NOTE: call with the format string, not an already formatted string
+        containing values (otherwise you could have trouble with { and }
+        characters)
+        """
+        if not formatstr.endswith('{color_default}'):
+            formatstr += '{color_default}'
+        # In newer python 3 versions you can pass both of these directly,
+        # but we only require 3.4 at the moment
+        formatparams = {}
+        formatparams.update(colors)
+        formatparams.update(values)
+        return formatstr.format(**formatparams)
 
     with open(a, 'rb') as f:
         p1 = pickle.Unpickler(f)
@@ -419,39 +506,59 @@ def compare_sigfiles(a, b, recursecb = None):
         return changed, added, removed
 
     if 'basewhitelist' in a_data and a_data['basewhitelist'] != b_data['basewhitelist']:
-        output.append("basewhitelist changed from '%s' to '%s'" % (a_data['basewhitelist'], b_data['basewhitelist']))
+        output.append(color_format("{color_title}basewhitelist changed{color_default} from '%s' to '%s'") % (a_data['basewhitelist'], b_data['basewhitelist']))
         if a_data['basewhitelist'] and b_data['basewhitelist']:
             output.append("changed items: %s" % a_data['basewhitelist'].symmetric_difference(b_data['basewhitelist']))
 
     if 'taskwhitelist' in a_data and a_data['taskwhitelist'] != b_data['taskwhitelist']:
-        output.append("taskwhitelist changed from '%s' to '%s'" % (a_data['taskwhitelist'], b_data['taskwhitelist']))
+        output.append(color_format("{color_title}taskwhitelist changed{color_default} from '%s' to '%s'") % (a_data['taskwhitelist'], b_data['taskwhitelist']))
         if a_data['taskwhitelist'] and b_data['taskwhitelist']:
             output.append("changed items: %s" % a_data['taskwhitelist'].symmetric_difference(b_data['taskwhitelist']))
 
     if a_data['taskdeps'] != b_data['taskdeps']:
-        output.append("Task dependencies changed from:\n%s\nto:\n%s" % (sorted(a_data['taskdeps']), sorted(b_data['taskdeps'])))
+        output.append(color_format("{color_title}Task dependencies changed{color_default} from:\n%s\nto:\n%s") % (sorted(a_data['taskdeps']), sorted(b_data['taskdeps'])))
 
-    if a_data['basehash'] != b_data['basehash']:
-        output.append("basehash changed from %s to %s" % (a_data['basehash'], b_data['basehash']))
+    if a_data['basehash'] != b_data['basehash'] and not collapsed:
+        output.append(color_format("{color_title}basehash changed{color_default} from %s to %s") % (a_data['basehash'], b_data['basehash']))
 
     changed, added, removed = dict_diff(a_data['gendeps'], b_data['gendeps'], a_data['basewhitelist'] & b_data['basewhitelist'])
     if changed:
         for dep in changed:
-            output.append("List of dependencies for variable %s changed from '%s' to '%s'" % (dep, a_data['gendeps'][dep], b_data['gendeps'][dep]))
+            output.append(color_format("{color_title}List of dependencies for variable %s changed from '{color_default}%s{color_title}' to '{color_default}%s{color_title}'") % (dep, a_data['gendeps'][dep], b_data['gendeps'][dep]))
             if a_data['gendeps'][dep] and b_data['gendeps'][dep]:
                 output.append("changed items: %s" % a_data['gendeps'][dep].symmetric_difference(b_data['gendeps'][dep]))
     if added:
         for dep in added:
-            output.append("Dependency on variable %s was added" % (dep))
+            output.append(color_format("{color_title}Dependency on variable %s was added") % (dep))
     if removed:
         for dep in removed:
-            output.append("Dependency on Variable %s was removed" % (dep))
+            output.append(color_format("{color_title}Dependency on Variable %s was removed") % (dep))
 
 
     changed, added, removed = dict_diff(a_data['varvals'], b_data['varvals'])
     if changed:
         for dep in changed:
-            output.append("Variable %s value changed from '%s' to '%s'" % (dep, a_data['varvals'][dep], b_data['varvals'][dep]))
+            oldval = a_data['varvals'][dep]
+            newval = b_data['varvals'][dep]
+            if newval and oldval and ('\n' in oldval or '\n' in newval):
+                diff = difflib.unified_diff(oldval.splitlines(), newval.splitlines(), lineterm='')
+                # Cut off the first two lines, since we aren't interested in
+                # the old/new filename (they are blank anyway in this case)
+                difflines = list(diff)[2:]
+                if color:
+                    # Add colour to diff output
+                    for i, line in enumerate(difflines):
+                        if line.startswith('+'):
+                            line = color_format('{color_add}{line}', line=line)
+                            difflines[i] = line
+                        elif line.startswith('-'):
+                            line = color_format('{color_remove}{line}', line=line)
+                            difflines[i] = line
+                output.append(color_format("{color_title}Variable {var} value changed:{color_default}\n{diff}", var=dep, diff='\n'.join(difflines)))
+            elif newval and oldval and (' ' in oldval or ' ' in newval):
+                output.append(color_format("{color_title}Variable {var} value changed:{color_default}\n{diff}", var=dep, diff=worddiff_str(oldval, newval, colors)))
+            else:
+                output.append(color_format("{color_title}Variable {var} value changed from '{color_default}{oldval}{color_title}' to '{color_default}{newval}{color_title}'{color_default}", var=dep, oldval=oldval, newval=newval))
 
     if not 'file_checksum_values' in a_data:
          a_data['file_checksum_values'] = {}
@@ -461,32 +568,38 @@ def compare_sigfiles(a, b, recursecb = None):
     changed, added, removed = file_checksums_diff(a_data['file_checksum_values'], b_data['file_checksum_values'])
     if changed:
         for f, old, new in changed:
-            output.append("Checksum for file %s changed from %s to %s" % (f, old, new))
+            output.append(color_format("{color_title}Checksum for file %s changed{color_default} from %s to %s") % (f, old, new))
     if added:
         for f in added:
-            output.append("Dependency on checksum of file %s was added" % (f))
+            output.append(color_format("{color_title}Dependency on checksum of file %s was added") % (f))
     if removed:
         for f in removed:
-            output.append("Dependency on checksum of file %s was removed" % (f))
+            output.append(color_format("{color_title}Dependency on checksum of file %s was removed") % (f))
 
     if not 'runtaskdeps' in a_data:
          a_data['runtaskdeps'] = {}
     if not 'runtaskdeps' in b_data:
          b_data['runtaskdeps'] = {}
 
-    if len(a_data['runtaskdeps']) != len(b_data['runtaskdeps']):
-        changed = ["Number of task dependencies changed"]
-    else:
-        changed = []
-        for idx, task in enumerate(a_data['runtaskdeps']):
-            a = a_data['runtaskdeps'][idx]
-            b = b_data['runtaskdeps'][idx]
-            if a_data['runtaskhashes'][a] != b_data['runtaskhashes'][b]:
-                changed.append("%s with hash %s\n changed to\n%s with hash %s" % (a, a_data['runtaskhashes'][a], b, b_data['runtaskhashes'][b]))
+    if not collapsed:
+        if len(a_data['runtaskdeps']) != len(b_data['runtaskdeps']):
+            changed = ["Number of task dependencies changed"]
+        else:
+            changed = []
+            for idx, task in enumerate(a_data['runtaskdeps']):
+                a = a_data['runtaskdeps'][idx]
+                b = b_data['runtaskdeps'][idx]
+                if a_data['runtaskhashes'][a] != b_data['runtaskhashes'][b] and not collapsed:
+                    changed.append("%s with hash %s\n changed to\n%s with hash %s" % (clean_basepath(a), a_data['runtaskhashes'][a], clean_basepath(b), b_data['runtaskhashes'][b]))
 
-    if changed:
-        output.append("runtaskdeps changed from %s to %s" % (clean_basepaths_list(a_data['runtaskdeps']), clean_basepaths_list(b_data['runtaskdeps'])))
-        output.append("\n".join(changed))
+        if changed:
+            clean_a = clean_basepaths_list(a_data['runtaskdeps'])
+            clean_b = clean_basepaths_list(b_data['runtaskdeps'])
+            if clean_a != clean_b:
+                output.append(color_format("{color_title}runtaskdeps changed:{color_default}\n%s") % list_inline_diff(clean_a, clean_b, colors))
+            else:
+                output.append(color_format("{color_title}runtaskdeps changed:"))
+            output.append("\n".join(changed))
 
 
     if 'runtaskhashes' in a_data and 'runtaskhashes' in b_data:
@@ -502,7 +615,7 @@ def compare_sigfiles(a, b, recursecb = None):
                             #output.append("Dependency on task %s was replaced by %s with same hash" % (dep, bdep))
                             bdep_found = True
                 if not bdep_found:
-                    output.append("Dependency on task %s was added with hash %s" % (clean_basepath(dep), b[dep]))
+                    output.append(color_format("{color_title}Dependency on task %s was added{color_default} with hash %s") % (clean_basepath(dep), b[dep]))
         if removed:
             for dep in removed:
                 adep_found = False
@@ -512,21 +625,25 @@ def compare_sigfiles(a, b, recursecb = None):
                             #output.append("Dependency on task %s was replaced by %s with same hash" % (adep, dep))
                             adep_found = True
                 if not adep_found:
-                    output.append("Dependency on task %s was removed with hash %s" % (clean_basepath(dep), a[dep]))
+                    output.append(color_format("{color_title}Dependency on task %s was removed{color_default} with hash %s") % (clean_basepath(dep), a[dep]))
         if changed:
             for dep in changed:
-                output.append("Hash for dependent task %s changed from %s to %s" % (clean_basepath(dep), a[dep], b[dep]))
+                if not collapsed:
+                    output.append(color_format("{color_title}Hash for dependent task %s changed{color_default} from %s to %s") % (clean_basepath(dep), a[dep], b[dep]))
                 if callable(recursecb):
-                    # If a dependent hash changed, might as well print the line above and then defer to the changes in 
-                    # that hash since in all likelyhood, they're the same changes this task also saw.
                     recout = recursecb(dep, a[dep], b[dep])
                     if recout:
-                        output = [output[-1]] + recout
+                        if collapsed:
+                            output.extend(recout)
+                        else:
+                            # If a dependent hash changed, might as well print the line above and then defer to the changes in 
+                            # that hash since in all likelyhood, they're the same changes this task also saw.
+                            output = [output[-1]] + recout
 
     a_taint = a_data.get('taint', None)
     b_taint = b_data.get('taint', None)
     if a_taint != b_taint:
-        output.append("Taint (by forced/invalidated task) changed from %s to %s" % (a_taint, b_taint))
+        output.append(color_format("{color_title}Taint (by forced/invalidated task) changed{color_default} from %s to %s") % (a_taint, b_taint))
 
     return output
 
@@ -554,7 +671,8 @@ def calc_taskhash(sigdata):
         data = data + sigdata['runtaskhashes'][dep]
 
     for c in sigdata['file_checksum_values']:
-        data = data + c[1]
+        if c[1]:
+            data = data + c[1]
 
     if 'taint' in sigdata:
         if 'nostamp:' in sigdata['taint']:

@@ -61,6 +61,48 @@
             </para>
         </section>
 
+        <section id='line-joining'>
+            <title>Line Joining</title>
+
+            <para>
+                Outside of
+                <link linkend='functions'>functions</link>, BitBake joins
+                any line ending in a backslash character ("\")
+                with the following line before parsing statements.
+                The most common use for the "\" character is to split variable
+                assignments over multiple lines, as in the following example:
+                <literallayout class='monospaced'>
+     FOO = "bar \
+            baz \
+            qaz"
+                </literallayout>
+                Both the "\" character and the newline character
+                that follow it are removed when joining lines.
+                Thus, no newline characters end up in the value of
+                <filename>FOO</filename>.
+            </para>
+
+            <para>
+                Consider this additional example where the two
+                assignments both assign "barbaz" to
+                <filename>FOO</filename>:
+                <literallayout class='monospaced'>
+     FOO = "barbaz"
+
+     FOO = "bar\
+     baz"
+                </literallayout>
+                <note>
+                    BitBake does not interpret escape sequences like
+                    "\n" in variable values.
+                    For these to have an effect, the value must be passed
+                    to some utility that interprets escape sequences,
+                    such as <filename>printf</filename> or
+                    <filename>echo -n</filename>.
+                </note>
+            </para>
+        </section>
+
         <section id='variable-expansion'>
             <title>Variable Expansion</title>
 
@@ -463,14 +505,14 @@
             <title>Unseting variables</title>
 
             <para>
-                It is possible to completely remove a variable or a variable flag 
+                It is possible to completely remove a variable or a variable flag
                 from BitBake's internal data dictionary by using the "unset" keyword.
                 Here is an example:
                 <literallayout class='monospaced'>
         unset DATE
         unset do_fetch[noexec]
                 </literallayout>
-                These two statements remove the <filename>DATE</filename> and the 
+                These two statements remove the <filename>DATE</filename> and the
                 <filename>do_fetch[noexec]</filename> flag.
             </para>
 
@@ -627,7 +669,7 @@
                         <literallayout class='monospaced'>
      DEPENDS = "glibc ncurses"
      OVERRIDES = "machine:local"
-     DEPENDS_append_machine = "libmad"
+     DEPENDS_append_machine = " libmad"
                         </literallayout>
                         In this example, <filename>DEPENDS</filename> becomes
                         "glibc ncurses libmad".
@@ -857,11 +899,12 @@
 
             <para>
                 The <filename>inherit</filename> directive is a rudimentary
-                means of specifying what classes of functionality your
-                recipes require.
+                means of specifying functionality contained in class files
+                that your recipes require.
                 For example, you can easily abstract out the tasks involved in
                 building a package that uses Autoconf and Automake and put
-                those tasks into a class file that can be used by your recipe.
+                those tasks into a class file and then have your recipe
+                inherit that class file.
             </para>
 
             <para>
@@ -880,13 +923,24 @@
                     inherited class within your recipe by doing so
                     after the "inherit" statement.
                 </note>
+                If you want to use the directive to inherit
+                multiple classes, separate them with spaces.
+                The following example shows how to inherit both the
+                <filename>buildhistory</filename> and <filename>rm_work</filename>
+                classes:
+                <literallayout class='monospaced'>
+     inherit buildhistory rm_work
+                </literallayout>
             </para>
 
             <para>
-                If necessary, it is possible to inherit a class
-                conditionally by using
-                a variable expression after the <filename>inherit</filename>
-                statement.
+                An advantage with the inherit directive as compared to both
+                the
+                <link linkend='include-directive'>include</link> and
+                <link linkend='require-inclusion'>require</link> directives
+                is that you can inherit class files conditionally.
+                You can accomplish this by using a variable expression
+                after the <filename>inherit</filename> statement.
                 Here is an example:
                 <literallayout class='monospaced'>
      inherit ${VARNAME}
@@ -943,6 +997,17 @@
             </para>
 
             <para>
+                The include directive is a more generic method of including
+                functionality as compared to the
+                <link linkend='inherit-directive'>inherit</link> directive,
+                which is restricted to class (i.e. <filename>.bbclass</filename>)
+                files.
+                The include directive is applicable for any other kind of
+                shared or encapsulated functionality or configuration that
+                does not suit a <filename>.bbclass</filename> file.
+            </para>
+
+            <para>
                 As an example, suppose you needed a recipe to include some
                 self-test definitions:
                 <literallayout class='monospaced'>
@@ -973,6 +1038,18 @@
                 be found.
                 Thus, any file you require is inserted into the file that is
                 being parsed at the location of the directive.
+            </para>
+
+            <para>
+                The require directive, like the include directive previously
+                described, is a more generic method of including
+                functionality as compared to the
+                <link linkend='inherit-directive'>inherit</link> directive,
+                which is restricted to class (i.e. <filename>.bbclass</filename>)
+                files.
+                The require directive is applicable for any other kind of
+                shared or encapsulated functionality or configuration that
+                does not suit a <filename>.bbclass</filename> file.
             </para>
 
             <para>
@@ -1007,8 +1084,9 @@
 
             <para>
                 When creating a configuration file (<filename>.conf</filename>),
-                you can use the <filename>INHERIT</filename> directive to
-                inherit a class.
+                you can use the
+                <link linkend='var-INHERIT'><filename>INHERIT</filename></link>
+                configuration directive to inherit a class.
                 BitBake only supports this directive when used within
                 a configuration file.
             </para>
@@ -1041,7 +1119,7 @@
                 <filename>autotools</filename> and <filename>pkgconfig</filename>
                 classes:
                 <literallayout class='monospaced'>
-     inherit autotools pkgconfig
+     INHERIT += "autotools pkgconfig"
                 </literallayout>
             </para>
         </section>
@@ -1165,7 +1243,7 @@
                 <literallayout class='monospaced'>
      python some_python_function () {
          d.setVar("TEXT", "Hello World")
-         print d.getVar("TEXT", True)
+         print d.getVar("TEXT")
      }
                 </literallayout>
                 Because the Python "bb" and "os" modules are already
@@ -1180,7 +1258,7 @@
                     to freely set variable values to expandable expressions
                     without having them expanded prematurely.
                     If you do wish to expand a variable within a Python
-                    function, use <filename>d.getVar("X", True)</filename>.
+                    function, use <filename>d.getVar("X")</filename>.
                     Or, for more complicated expressions, use
                     <filename>d.expand()</filename>.
                 </note>
@@ -1232,7 +1310,7 @@
                 Here is an example:
                 <literallayout class='monospaced'>
      def get_depends(d):
-         if d.getVar('SOMECONDITION', True):
+         if d.getVar('SOMECONDITION'):
              return "dependencywithcond"
          else:
              return "dependency"
@@ -1367,7 +1445,7 @@
                 based on the value of  another variable:
                 <literallayout class='monospaced'>
      python () {
-         if d.getVar('SOMEVAR', True) == 'value':
+         if d.getVar('SOMEVAR') == 'value':
              d.setVar('ANOTHERVAR', 'value2')
      }
                 </literallayout>
@@ -1531,37 +1609,29 @@
         <title>Tasks</title>
 
         <para>
-            Tasks are BitBake execution units that originate as
-            functions and make up the steps that BitBake needs to run
-            for given recipe.
-            Tasks are only supported in recipe (<filename>.bb</filename>
-            or <filename>.inc</filename>) and class
-            (<filename>.bbclass</filename>) files.
-            By convention, task names begin with the string "do_".
-        </para>
-
-        <para>
-            Here is an example of a task that prints out the date:
-            <literallayout class='monospaced'>
-     python do_printdate () {
-         import time
-         print time.strftime('%Y%m%d', time.gmtime())
-     }
-     addtask printdate after do_fetch before do_build
-            </literallayout>
+            Tasks are BitBake execution units that make up the
+            steps that BitBake can run for a given recipe.
+            Tasks are only supported in recipes and classes
+            (i.e. in <filename>.bb</filename> files and files
+            included or inherited from <filename>.bb</filename>
+            files).
+            By convention, tasks have names that start with "do_".
         </para>
 
         <section id='promoting-a-function-to-a-task'>
             <title>Promoting a Function to a Task</title>
 
             <para>
-                Any function can be promoted to a task by applying the
+                Tasks are either
+                <link linkend='shell-functions'>shell functions</link> or
+                <link linkend='bitbake-style-python-functions'>BitBake-style Python functions</link>
+                that have been promoted to tasks by using the
                 <filename>addtask</filename> command.
-                The <filename>addtask</filename> command also describes
-                inter-task dependencies.
-                Here is the function from the previous section but with the
-                <filename>addtask</filename> command promoting it to a task
-                and defining some dependencies:
+                The <filename>addtask</filename> command can also
+                optionally describe dependencies between the
+                task and other tasks.
+                Here is an example that shows how to define a task
+                and declare some dependencies:
                 <literallayout class='monospaced'>
      python do_printdate () {
          import time
@@ -1569,15 +1639,81 @@
      }
      addtask printdate after do_fetch before do_build
                 </literallayout>
-                In the example, the function is defined and then promoted
-                as a task.
-                The <filename>do_printdate</filename> task becomes a dependency of
-                the <filename>do_build</filename> task, which is the default
-                task.
-                And, the <filename>do_printdate</filename> task is dependent upon
-                the <filename>do_fetch</filename> task.
-                Execution of the <filename>do_build</filename> task results
-                in the <filename>do_printdate</filename> task running first.
+                The first argument to <filename>addtask</filename>
+                is the name of the function to promote to
+                a task.
+                If the name does not start with "do_", "do_" is
+                implicitly added, which enforces the convention that
+                all task names start with "do_".
+            </para>
+
+            <para>
+                In the previous example, the
+                <filename>do_printdate</filename> task becomes a
+                dependency of the <filename>do_build</filename>
+                task, which is the default task (i.e. the task run by
+                the <filename>bitbake</filename> command unless
+                another task is specified explicitly).
+                Additionally, the <filename>do_printdate</filename>
+                task becomes dependent upon the
+                <filename>do_fetch</filename> task.
+                Running the <filename>do_build</filename> task
+                results in the <filename>do_printdate</filename>
+                task running first.
+                <note>
+                    If you try out the previous example, you might see that
+                    the <filename>do_printdate</filename> task is only run
+                    the first time you build the recipe with
+                    the <filename>bitbake</filename> command.
+                    This is because BitBake considers the task "up-to-date"
+                    after that initial run.
+                    If you want to force the task to always be rerun for
+                    experimentation purposes, you can make BitBake always
+                    consider the task "out-of-date" by using the
+                    <filename>[</filename><link linkend='variable-flags'><filename>nostamp</filename></link><filename>]</filename>
+                    variable flag, as follows:
+                    <literallayout class='monospaced'>
+     do_printdate[nostamp] = "1"
+                    </literallayout>
+                    You can also explicitly run the task and provide the
+                    <filename>-f</filename> option as follows:
+                    <literallayout class='monospaced'>
+     $ bitbake <replaceable>recipe</replaceable> -c printdate -f
+                    </literallayout>
+                    When manually selecting a task to run with the
+                    <filename>bitbake</filename>&nbsp;<replaceable>recipe</replaceable>&nbsp;<filename>-c</filename>&nbsp;<replaceable>task</replaceable>
+                    command, you can omit the "do_" prefix as part of the
+                    task name.
+                </note>
+            </para>
+
+            <para>
+                You might wonder about the practical effects of using
+                <filename>addtask</filename> without specifying any
+                dependencies as is done in the following example:
+                <literallayout class='monospaced'>
+     addtask printdate
+                </literallayout>
+                In this example, assuming dependencies have not been
+                added through some other means, the only way to run
+                the task is by explicitly selecting it with
+                <filename>bitbake</filename>&nbsp;<replaceable>recipe</replaceable>&nbsp;<filename>-c printdate</filename>.
+                You can use the
+                <filename>do_listtasks</filename> task to list all tasks
+                defined in a recipe as shown in the following example:
+                <literallayout class='monospaced'>
+     $ bitbake <replaceable>recipe</replaceable> -c listtasks
+                </literallayout>
+                For more information on task dependencies, see the
+                "<link linkend='dependencies'>Dependencies</link>"
+                section.
+            </para>
+
+            <para>
+                See the
+                "<link linkend='variable-flags'>Variable Flags</link>"
+                section for information on variable flags you can use with
+                tasks.
             </para>
         </section>
 
@@ -1775,14 +1911,23 @@
                      exclusion.
                     </para></listitem>
                 <listitem><para><emphasis><filename>[noexec]</filename>:</emphasis>
-                    Marks the tasks as being empty and no execution required.
-                    The <filename>[noexec]</filename> flag can be used to set up
+                    When set to "1", marks the task as being empty, with
+                    no execution required.
+                    You can use the <filename>[noexec]</filename> flag to set up
                     tasks as dependency placeholders, or to disable tasks defined
                     elsewhere that are not needed in a particular recipe.
                     </para></listitem>
                 <listitem><para><emphasis><filename>[nostamp]</filename>:</emphasis>
-                    Tells BitBake to not generate a stamp file for a task,
-                    which implies the task should always be executed.
+                    When set to "1", tells BitBake to not generate a stamp
+                    file for a task, which implies the task should always
+                    be executed.
+                    <note><title>Caution</title>
+                        Any task that depends (possibly indirectly) on a
+                        <filename>[nostamp]</filename> task will always be
+                        executed as well.
+                        This can cause unnecessary rebuilding if you are
+                        not careful.
+                    </note>
                     </para></listitem>
                 <listitem><para><emphasis><filename>[postfuncs]</filename>:</emphasis>
                     List of functions to call after the completion of the task.
@@ -1875,128 +2020,196 @@
         <title>Events</title>
 
         <para>
-            BitBake allows installation of event handlers within
-            recipe and class files.
-            Events are triggered at certain points during operation,
-            such as the beginning of an operation against a given recipe
-            (<filename>*.bb</filename> file), the start of a given task,
-            task failure, task success, and so forth.
+            BitBake allows installation of event handlers within recipe
+            and class files.
+            Events are triggered at certain points during operation, such
+            as the beginning of operation against a given recipe
+            (i.e. <filename>*.bb</filename>), the start of a given task,
+            a task failure, a task success, and so forth.
             The intent is to make it easy to do things like email
-            notification on build failure.
+            notification on build failures.
         </para>
 
         <para>
-            Following is an example event handler that
-            prints the name of the event and the content of
-            the <filename>FILE</filename> variable:
+            Following is an example event handler that prints the name
+            of the event and the content of the
+            <filename>FILE</filename> variable:
             <literallayout class='monospaced'>
      addhandler myclass_eventhandler
      python myclass_eventhandler() {
          from bb.event import getName
-         from bb import data
          print("The name of the Event is %s" % getName(e))
-         print("The file we run for is %s" % data.getVar('FILE', e.data, True))
+         print("The file we run for is %s" % d.getVar('FILE'))
      }
+     myclass_eventhandler[eventmask] = "bb.event.BuildStarted bb.event.BuildCompleted"
             </literallayout>
-            This event handler gets called every time an event is
-            triggered.
-            A global variable "<filename>e</filename>" is defined and
-            "<filename>e.data</filename>" contains an instance of
-            "<filename>bb.data</filename>".
-            With the <filename>getName(e)</filename> method, one can get
+            In the previous example, an eventmask has been set so that
+            the handler only sees the "BuildStarted" and "BuildCompleted"
+            events.
+            This event handler gets called every time an event matching
+            the eventmask is triggered.
+            A global variable "e" is defined, which represents the current
+            event.
+            With the <filename>getName(e)</filename> method, you can get
             the name of the triggered event.
+            The global datastore is available as "d".
+            In legacy code, you might see "e.data" used to get the datastore.
+            However, realize that "e.data" is deprecated and you should use
+            "d" going forward.
         </para>
 
         <para>
-            Because you probably are only interested in a subset of events,
-            you would likely use the <filename>[eventmask]</filename> flag
-            for your event handler to be sure that only certain events
-            trigger the handler.
-            Given the previous example, suppose you only wanted the
-            <filename>bb.build.TaskFailed</filename> event to trigger that
-            event handler.
-            Use the flag as follows:
-            <literallayout class='monospaced'>
-     addhandler myclass_eventhandler
-     myclass_eventhandler[eventmask] = "bb.build.TaskFailed"
-     python myclass_eventhandler() {
-         from bb.event import getName
-         from bb import data
-         print("The name of the Event is %s" % getName(e))
-         print("The file we run for is %s" % data.getVar('FILE', e.data, True))
-     }
-            </literallayout>
+            The context of the datastore is appropriate to the event
+            in question.
+            For example, "BuildStarted" and "BuildCompleted" events run
+            before any tasks are executed so would be in the global
+            configuration datastore namespace.
+            No recipe-specific metadata exists in that namespace.
+            The "BuildStarted" and "BuildCompleted" events also run in
+            the main cooker/server process rather than any worker context.
+            Thus, any changes made to the datastore would be seen by other
+            cooker/server events within the current build but not seen
+            outside of that build or in any worker context.
+            Task events run in the actual tasks in question consequently
+            have recipe-specific and task-specific contents.
+            These events run in the worker context and are discarded at
+            the end of task execution.
         </para>
 
         <para>
-            During a standard build, the following common events might occur:
+            During a standard build, the following common events might
+            occur.
+            The following events are the most common kinds of events that
+            most metadata might have an interest in viewing:
             <itemizedlist>
                 <listitem><para>
-                    <filename>bb.event.ConfigParsed()</filename>
+                    <filename>bb.event.ConfigParsed()</filename>:
+                    Fired when the base configuration; which consists of
+                    <filename>bitbake.conf</filename>,
+                    <filename>base.bbclass</filename> and any global
+                    <filename>INHERIT</filename> statements; has been parsed.
+                    You can see multiple such events when each of the
+                    workers parse the base configuration or if the server
+                    changes configuration and reparses.
+                    Any given datastore only has one such event executed
+                    against it, however.
+                    If
+                    <link linkende='var-BB_INVALIDCONF'><filename>BB_INVALIDCONF</filename></link>
+                    is set in the datastore by the event handler, the
+                    configuration is reparsed and a new event triggered,
+                    allowing the metadata to update configuration.
                     </para></listitem>
                 <listitem><para>
-                    <filename>bb.event.ParseStarted()</filename>
+                    <filename>bb.event.HeartbeatEvent()</filename>:
+                    Fires at regular time intervals of one second.
+                    You can configure the interval time using the
+                    <filename>BB_HEARTBEAT_EVENT</filename> variable.
+                    The event's "time" attribute is the
+                    <filename>time.time()</filename> value when the
+                    event is triggered.
+                    This event is useful for activities such as
+                    system state monitoring.
                     </para></listitem>
                 <listitem><para>
-                    <filename>bb.event.ParseProgress()</filename>
+                    <filename>bb.event.ParseStarted()</filename>:
+                    Fired when BitBake is about to start parsing recipes.
+                    This event's "total" attribute represents the number of
+                    recipes BitBake plans to parse.
                     </para></listitem>
                 <listitem><para>
-                    <filename>bb.event.ParseCompleted()</filename>
+                    <filename>bb.event.ParseProgress()</filename>:
+                    Fired as parsing progresses.
+                    This event's "current" attribute is the number of
+                    recipes parsed as well as the "total" attribute.
                     </para></listitem>
                 <listitem><para>
-                    <filename>bb.event.BuildStarted()</filename>
+                    <filename>bb.event.ParseCompleted()</filename>:
+                    Fired when parsing is complete.
+                    This event's "cached", "parsed", "skipped", "virtuals",
+                    "masked", and "errors" attributes provide statistics
+                    for the parsing results.
                     </para></listitem>
                 <listitem><para>
-                    <filename>bb.build.TaskStarted()</filename>
+                    <filename>bb.event.BuildStarted()</filename>:
+                    Fired when a new build starts.
+                    BitBake fires multiple "BuildStarted" events (one per configuration)
+                    when multiple configuration (multiconfig) is enabled.
                     </para></listitem>
                 <listitem><para>
-                    <filename>bb.build.TaskInvalid()</filename>
+                    <filename>bb.build.TaskStarted()</filename>:
+                    Fired when a task starts.
+                    This event's "taskfile" attribute points to the recipe
+                    from which the task originates.
+                    The "taskname" attribute, which is the task's name,
+                    includes the <filename>do_</filename> prefix, and the
+                    "logfile" attribute point to where the task's output is
+                    stored.
+                    Finally, the "time" attribute is the task's execution start
+                    time.
                     </para></listitem>
                 <listitem><para>
-                    <filename>bb.build.TaskFailedSilent()</filename>
+                    <filename>bb.build.TaskInvalid()</filename>:
+                    Fired if BitBake tries to execute a task that does not exist.
                     </para></listitem>
                 <listitem><para>
-                    <filename>bb.build.TaskFailed()</filename>
+                    <filename>bb.build.TaskFailedSilent()</filename>:
+                    Fired for setscene tasks that fail and should not be
+                    presented to the user verbosely.
                     </para></listitem>
                 <listitem><para>
-                    <filename>bb.build.TaskSucceeded()</filename>
+                    <filename>bb.build.TaskFailed()</filename>:
+                    Fired for normal tasks that fail.
                     </para></listitem>
                 <listitem><para>
-                    <filename>bb.event.BuildCompleted()</filename>
+                    <filename>bb.build.TaskSucceeded()</filename>:
+                    Fired when a task successfully completes.
                     </para></listitem>
                 <listitem><para>
-                    <filename>bb.cooker.CookerExit()</filename>
+                    <filename>bb.event.BuildCompleted()</filename>:
+                    Fired when a build finishes.
+                    </para></listitem>
+                <listitem><para>
+                    <filename>bb.cooker.CookerExit()</filename>:
+                    Fired when the BitBake server/cooker shuts down.
+                    This event is usually only seen by the UIs as a
+                    sign they should also shutdown.
                     </para></listitem>
             </itemizedlist>
-            Here is a list of other events that occur based on specific requests
-            to the server:
+        </para>
+
+        <para>
+            This next list of example events occur based on specific
+            requests to the server.
+            These events are often used to communicate larger pieces of
+            information from the BitBake server to other parts of
+            BitBake such as user interfaces:
             <itemizedlist>
                 <listitem><para>
                     <filename>bb.event.TreeDataPreparationStarted()</filename>
                     </para></listitem>
                 <listitem><para>
-                    <filename>bb.event.TreeDataPreparationProgress</filename>
+                    <filename>bb.event.TreeDataPreparationProgress()</filename>
                     </para></listitem>
                 <listitem><para>
-                    <filename>bb.event.TreeDataPreparationCompleted</filename>
+                    <filename>bb.event.TreeDataPreparationCompleted()</filename>
                     </para></listitem>
                 <listitem><para>
-                    <filename>bb.event.DepTreeGenerated</filename>
+                    <filename>bb.event.DepTreeGenerated()</filename>
                     </para></listitem>
                 <listitem><para>
-                    <filename>bb.event.CoreBaseFilesFound</filename>
+                    <filename>bb.event.CoreBaseFilesFound()</filename>
                     </para></listitem>
                 <listitem><para>
-                    <filename>bb.event.ConfigFilePathFound</filename>
+                    <filename>bb.event.ConfigFilePathFound()</filename>
                     </para></listitem>
                 <listitem><para>
-                    <filename>bb.event.FilesMatchingFound</filename>
+                    <filename>bb.event.FilesMatchingFound()</filename>
                     </para></listitem>
                 <listitem><para>
-                    <filename>bb.event.ConfigFilesFound</filename>
+                    <filename>bb.event.ConfigFilesFound()</filename>
                     </para></listitem>
                 <listitem><para>
-                    <filename>bb.event.TargetsTreeGenerated</filename>
+                    <filename>bb.event.TargetsTreeGenerated()</filename>
                     </para></listitem>
             </itemizedlist>
         </para>
@@ -2317,7 +2530,8 @@
                             <row>
                                 <entry align="left"><filename>d.getVar("X", expand)</filename></entry>
                                 <entry align="left">Returns the value of variable "X".
-                                Using "expand=True" expands the value.</entry>
+                                    Using "expand=True" expands the value.
+                                    Returns "None" if the variable "X" does not exist.</entry>
                             </row>
                             <row>
                                 <entry align="left"><filename>d.setVar("X", "value")</filename></entry>
@@ -2325,24 +2539,32 @@
                             </row>
                             <row>
                                 <entry align="left"><filename>d.appendVar("X", "value")</filename></entry>
-                                <entry align="left">Adds "value" to the end of the variable "X".</entry>
+                                <entry align="left">Adds "value" to the end of the variable "X".
+                                    Acts like <filename>d.setVar("X", "value")</filename>
+                                    if the variable "X" does not exist.</entry>
                             </row>
                             <row>
                                 <entry align="left"><filename>d.prependVar("X", "value")</filename></entry>
-                                <entry align="left">Adds "value" to the start of the variable "X".</entry>
+                                <entry align="left">Adds "value" to the start of the variable "X".
+                                    Acts like <filename>d.setVar("X", "value")</filename>
+                                    if the variable "X" does not exist.</entry>
                             </row>
                             <row>
                                 <entry align="left"><filename>d.delVar("X")</filename></entry>
-                                <entry align="left">Deletes the variable "X" from the datastore.</entry>
+                                <entry align="left">Deletes the variable "X" from the datastore.
+                                    Does nothing if the variable "X" does not exist.</entry>
                             </row>
                             <row>
                                 <entry align="left"><filename>d.renameVar("X", "Y")</filename></entry>
-                                <entry align="left">Renames the variable "X" to "Y".</entry>
+                                <entry align="left">Renames the variable "X" to "Y".
+                                    Does nothing if the variable "X" does not exist.</entry>
                             </row>
                             <row>
                                 <entry align="left"><filename>d.getVarFlag("X", flag, expand)</filename></entry>
                                 <entry align="left">Returns the value of variable "X".
-                                    Using "expand=True" expands the value.</entry>
+                                    Using "expand=True" expands the value.
+                                    Returns "None" if either the variable "X" or the named flag
+                                    does not exist.</entry>
                             </row>
                             <row>
                                 <entry align="left"><filename>d.setVarFlag("X", flag, "value")</filename></entry>
@@ -2351,12 +2573,16 @@
                             <row>
                                 <entry align="left"><filename>d.appendVarFlag("X", flag, "value")</filename></entry>
                                 <entry align="left">Appends "value" to the named flag on the
-                                variable "X".</entry>
+                                    variable "X".
+                                    Acts like <filename>d.setVarFlag("X", flag, "value")</filename>
+                                    if the named flag does not exist.</entry>
                             </row>
                             <row>
                                 <entry align="left"><filename>d.prependVarFlag("X", flag, "value")</filename></entry>
                                 <entry align="left">Prepends "value" to the named flag on
-                                   the variable "X".</entry>
+                                    the variable "X".
+                                    Acts like <filename>d.setVarFlag("X", flag, "value")</filename>
+                                    if the named flag does not exist.</entry>
                             </row>
                             <row>
                                 <entry align="left"><filename>d.delVarFlag("X", flag)</filename></entry>
@@ -2372,16 +2598,23 @@
                             </row>
                             <row>
                                 <entry align="left"><filename>d.getVarFlags("X")</filename></entry>
-                                <entry align="left">Returns a <filename>flagsdict</filename> of the flags for
-                                    the variable "X".</entry>
+                                <entry align="left">Returns a <filename>flagsdict</filename>
+                                    of the flags for the variable "X".
+                                    Returns "None" if the variable "X" does not exist.</entry>
                             </row>
                             <row>
                                 <entry align="left"><filename>d.delVarFlags("X")</filename></entry>
-                                <entry align="left">Deletes all the flags for the variable "X".</entry>
+                                <entry align="left">Deletes all the flags for the variable "X".
+                                    Does nothing if the variable "X" does not exist.</entry>
                             </row>
                             <row>
                                 <entry align="left"><filename>d.expand(expression)</filename></entry>
-                                <entry align="left">Expands variable references in the specified string expression.</entry>
+                                <entry align="left">Expands variable references in the specified
+                                    string expression.
+                                    References to variables that do not exist are left as is.
+                                    For example, <filename>d.expand("foo ${X}")</filename>
+                                    expands to the literal string "foo ${X}" if the
+                                    variable "X" does not exist.</entry>
                             </row>
                         </tbody>
                     </tgroup>
@@ -2445,7 +2678,7 @@
                     the "setscene" part of the task's execution in order
                     to validate the list of task hashes.
                     </para></listitem>
-                <listitem><para><filename>BB_SETSCENE_VERIFY_FUNCTION</filename>
+                <listitem><para><filename>BB_SETSCENE_VERIFY_FUNCTION2</filename>
                     Specifies a function to call that verifies the list of
                     planned task execution before the main task execution
                     happens.

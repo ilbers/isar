@@ -201,3 +201,25 @@ def fatal(msgdomain, msg):
         logger = logging.getLogger("BitBake")
     logger.critical(msg)
     sys.exit(1)
+
+def logger_create(name, output=sys.stderr, level=logging.INFO, preserve_handlers=False, color='auto'):
+    """Standalone logger creation function"""
+    logger = logging.getLogger(name)
+    console = logging.StreamHandler(output)
+    format = bb.msg.BBLogFormatter("%(levelname)s: %(message)s")
+    if color == 'always' or (color == 'auto' and output.isatty()):
+        format.enable_color()
+    console.setFormatter(format)
+    if preserve_handlers:
+        logger.addHandler(console)
+    else:
+        logger.handlers = [console]
+    logger.setLevel(level)
+    return logger
+
+def has_console_handler(logger):
+    for handler in logger.handlers:
+        if isinstance(handler, logging.StreamHandler):
+            if handler.stream in [sys.stderr, sys.stdout]:
+                return True
+    return False

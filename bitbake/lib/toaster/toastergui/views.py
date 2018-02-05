@@ -35,7 +35,7 @@ from orm.models import BitbakeVersion, CustomImageRecipe
 from django.core.urlresolvers import reverse, resolve
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.http import HttpResponseNotFound
+from django.http import HttpResponseNotFound, JsonResponse
 from django.utils import timezone
 from datetime import timedelta, datetime
 from toastergui.templatetags.projecttags import json as jsonfilter
@@ -49,6 +49,8 @@ import logging
 
 logger = logging.getLogger("toaster")
 
+# Project creation and managed build enable
+project_enable = ('1' == os.environ.get('TOASTER_BUILDSERVER'))
 
 class MimeTypeFinder(object):
     # setting this to False enables additional non-standard mimetypes
@@ -64,6 +66,12 @@ class MimeTypeFinder(object):
         if guessed_type == None:
             guessed_type = 'application/octet-stream'
         return guessed_type
+
+# single point to add global values into the context before rendering
+def toaster_render(request, page, context):
+    context['project_enable'] = project_enable
+    return render(request, page, context)
+
 
 # all new sessions should come through the landing page;
 # determine in which mode we are running in, and redirect appropriately
@@ -86,7 +94,7 @@ def landing(request):
 
     context = {'lvs_nos' : Layer_Version.objects.all().count()}
 
-    return render(request, 'landing.html', context)
+    return toaster_render(request, 'landing.html', context)
 
 def objtojson(obj):
     from django.db.models.query import QuerySet
@@ -118,32 +126,6 @@ def objtojson(obj):
         return inspect.getsourcelines(obj)[0]
     else:
         raise TypeError("Unserializable object %s (%s) of type %s" % ( obj, dir(obj), type(obj)))
-
-
-def _template_renderer(template):
-    def func_wrapper(view):
-        def returned_wrapper(request, *args, **kwargs):
-            try:
-                context = view(request, *args, **kwargs)
-            except RedirectException as e:
-                return e.get_redirect_response()
-
-            if request.GET.get('format', None) == 'json':
-                # objects is a special keyword - it's a Page, but we need the actual objects here
-                # in XHR, the objects come in the "rows" property
-                if "objects" in context:
-                    context["rows"] = context["objects"].object_list
-                    del context["objects"]
-
-                # we're about to return; to keep up with the XHR API, we set the error to OK
-                context["error"] = "ok"
-
-                return HttpResponse(jsonfilter(context, default=objtojson ),
-                            content_type = "application/json; charset=utf-8")
-            else:
-                return render(request, template, context)
-        return returned_wrapper
-    return func_wrapper
 
 
 def _lv_to_dict(prj, x = None):
@@ -303,7 +285,7 @@ def _validate_input(field_input, model):
             return None, invalid + str(field_input_list)
 
         # Check we are looking for a valid field
-        valid_fields = model._meta.get_all_field_names()
+        valid_fields = [f.name for f in model._meta.get_fields()]
         for field in field_input_list[0].split(AND_VALUE_SEPARATOR):
             if True in [field.startswith(x) for x in valid_fields]:
                 break
@@ -483,10 +465,15 @@ def builddashboard( request, build_id ):
         npkg = 0
         pkgsz = 0
         package = None
-        for package in Package.objects.filter(id__in = [x.package_id for x in t.target_installed_package_set.all()]):
-            pkgsz = pkgsz + package.size
-            if package.installed_name:
-                npkg = npkg + 1
+        # Chunk the query to avoid "too many SQL variables" error
+        package_set = t.target_installed_package_set.all()
+        package_set_len = len(package_set)
+        for ps_start in range(0,package_set_len,500):
+            ps_stop = min(ps_start+500,package_set_len)
+            for package in Package.objects.filter(id__in = [x.package_id for x in package_set[ps_start:ps_stop]]):
+                pkgsz = pkgsz + package.size
+                if package.installed_name:
+                    npkg = npkg + 1
         elem['npkg'] = npkg
         elem['pkgsz'] = pkgsz
         ti = Target_Image_File.objects.filter(target_id = t.id)
@@ -540,7 +527,7 @@ def builddashboard( request, build_id ):
             'packagecount'    : packageCount,
             'logmessages'     : logmessages,
     }
-    return render( request, template, context )
+    return toaster_render( request, template, context )
 
 
 
@@ -612,7 +599,7 @@ def task( request, build_id, task_id ):
             build__completed_on__lt=task_object.build.completed_on).exclude(
             order__isnull=True).exclude(outcome=Task.OUTCOME_NA).order_by('-build__completed_on')
 
-    return render( request, template, context )
+    return toaster_render( request, template, context )
 
 def recipe(request, build_id, recipe_id, active_tab="1"):
     template = "recipe.html"
@@ -639,7 +626,7 @@ def recipe(request, build_id, recipe_id, active_tab="1"):
             'package_count' : package_count,
             'tab_states' : tab_states,
     }
-    return render(request, template, context)
+    return toaster_render(request, template, context)
 
 def recipe_packages(request, build_id, recipe_id):
     template = "recipe_packages.html"
@@ -684,7 +671,7 @@ def recipe_packages(request, build_id, recipe_id):
                 },
            ]
        }
-    response = render(request, template, context)
+    response = toaster_render(request, template, context)
     _set_parameters_values(pagesize, orderby, request)
     return response
 
@@ -806,7 +793,7 @@ def dirinfo(request, build_id, target_id, file_path=None):
                 'dir_list': dir_list,
                 'file_path': file_path,
               }
-    return render(request, template, context)
+    return toaster_render(request, template, context)
 
 def _find_task_dep(task_object):
     tdeps = Task_Dependency.objects.filter(task=task_object).filter(depends_on__order__gt=0)
@@ -858,7 +845,7 @@ def configuration(request, build_id):
                     'build': build,
                     'project': build.project,
                     'targets': Target.objects.filter(build=build_id)})
-    return render(request, template, context)
+    return toaster_render(request, template, context)
 
 
 def configvars(request, build_id):
@@ -947,7 +934,7 @@ def configvars(request, build_id):
                 ],
             }
 
-    response = render(request, template, context)
+    response = toaster_render(request, template, context)
     _set_parameters_values(pagesize, orderby, request)
     return response
 
@@ -960,7 +947,7 @@ def bfile(request, build_id, package_id):
         'project': build.project,
         'objects' : files
     }
-    return render(request, template, context)
+    return toaster_render(request, template, context)
 
 
 # A set of dependency types valid for both included and built package views
@@ -1113,7 +1100,7 @@ def package_built_detail(request, build_id, package_id):
     if paths.all().count() < 2:
         context['disable_sort'] = True;
 
-    response = render(request, template, context)
+    response = toaster_render(request, template, context)
     _set_parameters_values(pagesize, orderby, request)
     return response
 
@@ -1132,7 +1119,7 @@ def package_built_dependencies(request, build_id, package_id):
             'other_deps' :   dependencies['other_deps'],
             'dependency_count' : _get_package_dependency_count(package, -1,  False)
     }
-    return render(request, template, context)
+    return toaster_render(request, template, context)
 
 
 def package_included_detail(request, build_id, target_id, package_id):
@@ -1178,7 +1165,7 @@ def package_included_detail(request, build_id, target_id, package_id):
     }
     if paths.all().count() < 2:
         context['disable_sort'] = True
-    response = render(request, template, context)
+    response = toaster_render(request, template, context)
     _set_parameters_values(pagesize, orderby, request)
     return response
 
@@ -1202,7 +1189,7 @@ def package_included_dependencies(request, build_id, target_id, package_id):
             'reverse_count' : _get_package_reverse_dep_count(package, target_id),
             'dependency_count' : _get_package_dependency_count(package, target_id, True)
     }
-    return render(request, template, context)
+    return toaster_render(request, template, context)
 
 def package_included_reverse_dependencies(request, build_id, target_id, package_id):
     template = "package_included_reverse_dependencies.html"
@@ -1253,7 +1240,7 @@ def package_included_reverse_dependencies(request, build_id, target_id, package_
     }
     if objects.all().count() < 2:
         context['disable_sort'] = True
-    response = render(request, template, context)
+    response = toaster_render(request, template, context)
     _set_parameters_values(pagesize, orderby, request)
     return response
 
@@ -1277,6 +1264,89 @@ def managedcontextprocessor(request):
     }
     return ret
 
+# REST-based API calls to return build/building status to external Toaster
+# managers and aggregators via JSON
+
+def _json_build_status(build_id,extend):
+    build_stat = None
+    try:
+        build = Build.objects.get( pk = build_id )
+        build_stat = {}
+        build_stat['id'] = build.id
+        build_stat['name'] = build.build_name
+        build_stat['machine'] = build.machine
+        build_stat['distro'] = build.distro
+        build_stat['start'] = build.started_on
+        # look up target name
+        target= Target.objects.get( build = build )
+        if target:
+            if target.task:
+                build_stat['target'] = '%s:%s' % (target.target,target.task)
+            else:
+                build_stat['target'] = '%s' % (target.target)
+        else:
+            build_stat['target'] = ''
+        # look up project name
+        project = Project.objects.get( build = build )
+        if project:
+            build_stat['project'] = project.name
+        else:
+            build_stat['project'] = ''
+        if Build.IN_PROGRESS == build.outcome:
+            now = timezone.now()
+            timediff = now - build.started_on
+            build_stat['seconds']='%.3f' % timediff.total_seconds()
+            build_stat['clone']='%d:%d' % (build.repos_cloned,build.repos_to_clone)
+            build_stat['parse']='%d:%d' % (build.recipes_parsed,build.recipes_to_parse)
+            tf = Task.objects.filter(build = build)
+            tfc = tf.count()
+            if tfc > 0:
+                tfd = tf.exclude(order__isnull=True).count()
+            else:
+                tfd = 0
+            build_stat['task']='%d:%d' % (tfd,tfc)
+        else:
+            build_stat['outcome'] = build.get_outcome_text()
+            timediff = build.completed_on - build.started_on
+            build_stat['seconds']='%.3f' % timediff.total_seconds()
+            build_stat['stop'] = build.completed_on
+            messages = LogMessage.objects.all().filter(build = build)
+            errors = len(messages.filter(level=LogMessage.ERROR) |
+                 messages.filter(level=LogMessage.EXCEPTION) |
+                 messages.filter(level=LogMessage.CRITICAL))
+            build_stat['errors'] = errors
+            warnings = len(messages.filter(level=LogMessage.WARNING))
+            build_stat['warnings'] = warnings
+        if extend:
+            build_stat['cooker_log'] = build.cooker_log_path
+    except Exception as e:
+        build_state = str(e)
+    return build_stat
+
+def json_builds(request):
+    build_table = []
+    builds = []
+    try:
+        builds = Build.objects.exclude(outcome=Build.IN_PROGRESS).order_by("-started_on")
+        for build in builds:
+            build_table.append(_json_build_status(build.id,False))
+    except Exception as e:
+        build_table = str(e)
+    return JsonResponse({'builds' : build_table, 'count' : len(builds)})
+
+def json_building(request):
+    build_table = []
+    builds = []
+    try:
+        builds = Build.objects.filter(outcome=Build.IN_PROGRESS).order_by("-started_on")
+        for build in builds:
+            build_table.append(_json_build_status(build.id,False))
+    except Exception as e:
+        build_table = str(e)
+    return JsonResponse({'building' : build_table, 'count' : len(builds)})
+
+def json_build(request,build_id):
+    return JsonResponse({'build' : _json_build_status(build_id,True)})
 
 
 import toastermain.settings
@@ -1303,6 +1373,9 @@ if True:
 
     # new project
     def newproject(request):
+        if not project_enable:
+            return redirect( landing )
+
         template = "newproject.html"
         context = {
             'email': request.user.email if request.user.is_authenticated() else '',
@@ -1317,7 +1390,7 @@ if True:
 
         if request.method == "GET":
             # render new project page
-            return render(request, template, context)
+            return toaster_render(request, template, context)
         elif request.method == "POST":
             mandatory_fields = ['projectname', 'ptype']
             try:
@@ -1357,7 +1430,7 @@ if True:
                     context['alert'] = "Your chosen username is already used"
                 else:
                     context['alert'] = str(e)
-                return render(request, template, context)
+                return toaster_render(request, template, context)
 
         raise Exception("Invalid HTTP method for this page")
 
@@ -1365,7 +1438,7 @@ if True:
     def project(request, pid):
         project = Project.objects.get(pk=pid)
         context = {"project": project}
-        return render(request, "project.html", context)
+        return toaster_render(request, "project.html", context)
 
     def jsunittests(request):
         """ Provides a page for the js unit tests """
@@ -1391,7 +1464,7 @@ if True:
                                               name="MACHINE",
                                               value="qemux86")
         context = {'project': new_project}
-        return render(request, "js-unit-tests.html", context)
+        return toaster_render(request, "js-unit-tests.html", context)
 
     from django.views.decorators.csrf import csrf_exempt
     @csrf_exempt
@@ -1509,121 +1582,6 @@ if True:
             return HttpResponse(json.dumps({"error":str(e) + "\n" + traceback.format_exc()}), content_type = "application/json")
 
 
-    def xhr_importlayer(request):
-        if ('vcs_url' not in request.POST or
-            'name' not in request.POST or
-            'git_ref' not in request.POST or
-            'project_id' not in request.POST):
-          return HttpResponse(jsonfilter({"error": "Missing parameters; requires vcs_url, name, git_ref and project_id"}), content_type = "application/json")
-
-        layers_added = [];
-
-        # Rudimentary check for any possible html tags
-        for val in request.POST.values():
-            if "<" in val:
-                return HttpResponse(jsonfilter(
-                    {"error": "Invalid character <"}),
-                    content_type="application/json")
-
-        prj = Project.objects.get(pk=request.POST['project_id'])
-
-        # Strip trailing/leading whitespace from all values
-        # put into a new dict because POST one is immutable.
-        post_data = dict()
-        for key,val in request.POST.items():
-          post_data[key] = val.strip()
-
-
-        try:
-            layer, layer_created = Layer.objects.get_or_create(name=post_data['name'])
-        except MultipleObjectsReturned:
-            return HttpResponse(jsonfilter({"error": "hint-layer-exists"}), content_type = "application/json")
-
-        if layer:
-            if layer_created:
-                layer.vcs_url = post_data.get('vcs_url')
-                layer.local_source_dir = post_data.get('local_source_dir')
-                layer.up_date = timezone.now()
-                layer.save()
-            else:
-                # We have an existing layer by this name, let's see if the git
-                # url is the same, if it is then we can just create a new layer
-                # version for this layer. Otherwise we need to bail out.
-                if layer.vcs_url != post_data['vcs_url']:
-                    return HttpResponse(jsonfilter({"error": "hint-layer-exists-with-different-url" , "current_url" : layer.vcs_url, "current_id": layer.id }), content_type = "application/json")
-
-            layer_version, version_created = \
-                Layer_Version.objects.get_or_create(
-                        layer_source=LayerSource.TYPE_IMPORTED,
-                        layer=layer, project=prj,
-                        release=prj.release,
-                        branch=post_data['git_ref'],
-                        commit=post_data['git_ref'],
-                        dirpath=post_data['dir_path'])
-
-            if layer_version:
-                if not version_created:
-                    return HttpResponse(jsonfilter({"error":
-                                                    "hint-layer-version-exists",
-                                                    "existing_layer_version":
-                                                    layer_version.id }),
-                                        content_type = "application/json")
-
-                layer_version.layer_source = LayerSource.TYPE_IMPORTED
-
-                layer_version.up_date = timezone.now()
-                layer_version.save()
-
-                # Add the dependencies specified for this new layer
-                if ('layer_deps' in post_data and
-                    version_created and
-                    len(post_data["layer_deps"]) > 0):
-                    for layer_dep_id in post_data["layer_deps"].split(","):
-
-                        layer_dep_obj = Layer_Version.objects.get(pk=layer_dep_id)
-                        LayerVersionDependency.objects.get_or_create(layer_version=layer_version, depends_on=layer_dep_obj)
-                        # Now add them to the project, we could get an execption
-                        # if the project now contains the exact
-                        # dependency already (like modified on another page)
-                        try:
-                            prj_layer, prj_layer_created = ProjectLayer.objects.get_or_create(layercommit=layer_dep_obj, project=prj)
-                        except IntegrityError as e:
-                            logger.warning("Integrity error while saving Project Layers: %s (original %s)" % (e, e.__cause__))
-                            continue
-
-                        if prj_layer_created:
-                            layerdepdetailurl = reverse('layerdetails', args=(prj.id, layer_dep_obj.pk))
-                            layers_added.append({'id': layer_dep_obj.id, 'name': Layer.objects.get(id=layer_dep_obj.layer_id).name, 'layerdetailurl': layerdepdetailurl })
-
-
-                # If an old layer version exists in our project then remove it
-                for prj_layers in ProjectLayer.objects.filter(project=prj):
-                    dup_layer_v = Layer_Version.objects.filter(id=prj_layers.layercommit_id, layer_id=layer.id)
-                    if len(dup_layer_v) >0 :
-                        prj_layers.delete()
-
-                # finally add the imported layer (version id) to the project
-                ProjectLayer.objects.create(layercommit=layer_version, project=prj,optional=1)
-
-            else:
-                # We didn't create a layer version so back out now and clean up.
-                if layer_created:
-                    layer.delete()
-
-                return HttpResponse(jsonfilter({"error": "Uncaught error: Could not create layer version"}), content_type = "application/json")
-
-        layerdetailurl = reverse('layerdetails', args=(prj.id, layer_version.pk))
-
-        json_response = {"error": "ok",
-                         "imported_layer" : {
-                           "name" : layer.name,
-                           "id": layer_version.id,
-                           "layerdetailurl": layerdetailurl,
-                         },
-                         "deps_added": layers_added }
-
-        return HttpResponse(jsonfilter(json_response), content_type = "application/json")
-
     def customrecipe_download(request, pid, recipe_id):
         recipe = get_object_or_404(CustomImageRecipe, pk=recipe_id)
 
@@ -1641,10 +1599,8 @@ if True:
         context = {
             'project': Project.objects.get(id=pid),
         }
-        return render(request, template, context)
+        return toaster_render(request, template, context)
 
-    # TODO merge with api pseudo api here is used for deps modal
-    @_template_renderer('layerdetails.html')
     def layerdetails(request, pid, layerid):
         project = Project.objects.get(pk=pid)
         layer_version = Layer_Version.objects.get(pk=layerid)
@@ -1672,7 +1628,7 @@ if True:
             'projectlayers': list(project_layers)
         }
 
-        return context
+        return toaster_render(request, 'layerdetails.html', context)
 
 
     def get_project_configvars_context():
@@ -1692,7 +1648,6 @@ if True:
 
         return(vars_managed,sorted(vars_fstypes),vars_blacklist)
 
-    @_template_renderer("projectconf.html")
     def projectconf(request, pid):
 
         try:
@@ -1763,7 +1718,7 @@ if True:
         except (ProjectVariable.DoesNotExist, BuildEnvironment.DoesNotExist):
             pass
 
-        return context
+        return toaster_render(request, "projectconf.html", context)
 
     def _file_names_for_artifact(build, artifact_type, artifact_id):
         """
@@ -1830,6 +1785,7 @@ if True:
 
                 return response
             else:
-                return render(request, "unavailable_artifact.html")
+                return toaster_render(request, "unavailable_artifact.html")
         except (ObjectDoesNotExist, IOError):
-            return render(request, "unavailable_artifact.html")
+            return toaster_render(request, "unavailable_artifact.html")
+

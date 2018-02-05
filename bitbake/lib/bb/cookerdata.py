@@ -41,10 +41,6 @@ class ConfigParameters(object):
 
         self.options.pkgs_to_build = targets or []
 
-        self.options.tracking = False
-        if hasattr(self.options, "show_environment") and self.options.show_environment:
-            self.options.tracking = True
-
         for key, val in self.options.__dict__.items():
             setattr(self, key, val)
 
@@ -73,15 +69,15 @@ class ConfigParameters(object):
 
     def updateToServer(self, server, environment):
         options = {}
-        for o in ["abort", "tryaltconfigs", "force", "invalidate_stamp", 
-                  "verbose", "debug", "dry_run", "dump_signatures", 
+        for o in ["abort", "force", "invalidate_stamp",
+                  "verbose", "debug", "dry_run", "dump_signatures",
                   "debug_domains", "extra_assume_provided", "profile",
-                  "prefile", "postfile"]:
+                  "prefile", "postfile", "server_timeout"]:
             options[o] = getattr(self.options, o)
 
-        ret, error = server.runCommand(["updateConfig", options, environment])
+        ret, error = server.runCommand(["updateConfig", options, environment, sys.argv])
         if error:
-                raise Exception("Unable to update the server configuration with local parameters: %s" % error)
+            raise Exception("Unable to update the server configuration with local parameters: %s" % error)
 
     def parseActions(self):
         # Parse any commandline into actions
@@ -131,8 +127,6 @@ class CookerConfiguration(object):
         self.extra_assume_provided = []
         self.prefile = []
         self.postfile = []
-        self.prefile_server = []
-        self.postfile_server = []
         self.debug = 0
         self.cmd = None
         self.abort = True
@@ -144,8 +138,12 @@ class CookerConfiguration(object):
         self.dump_signatures = []
         self.dry_run = False
         self.tracking = False
-        self.interface = []
+        self.xmlrpcinterface = []
+        self.server_timeout = None
         self.writeeventlog = False
+        self.server_only = False
+        self.limited_deps = False
+        self.runall = None
 
         self.env = {}
 
@@ -154,7 +152,6 @@ class CookerConfiguration(object):
             if key in parameters.options.__dict__:
                 setattr(self, key, parameters.options.__dict__[key])
         self.env = parameters.environment.copy()
-        self.tracking = parameters.tracking
 
     def setServerRegIdleCallback(self, srcb):
         self.server_register_idlecallback = srcb
@@ -170,7 +167,7 @@ class CookerConfiguration(object):
 
     def __setstate__(self,state):
         for k in state:
-            setattr(self, k, state[k]) 
+            setattr(self, k, state[k])
 
 
 def catch_parse_error(func):
@@ -212,7 +209,7 @@ def _inherit(bbclass, data):
 
 def findConfigFile(configfile, data):
     search = []
-    bbpath = data.getVar("BBPATH", True)
+    bbpath = data.getVar("BBPATH")
     if bbpath:
         for i in bbpath.split(":"):
             search.append(os.path.join(i, "conf", configfile))
@@ -225,6 +222,27 @@ def findConfigFile(configfile, data):
         if os.path.exists(i):
             return i
 
+    return None
+
+#
+# We search for a conf/bblayers.conf under an entry in BBPATH or in cwd working 
+# up to /. If that fails, we search for a conf/bitbake.conf in BBPATH.
+#
+
+def findTopdir():
+    d = bb.data.init()
+    bbpath = None
+    if 'BBPATH' in os.environ:
+        bbpath = os.environ['BBPATH']
+        d.setVar('BBPATH', bbpath)
+
+    layerconf = findConfigFile("bblayers.conf", d)
+    if layerconf:
+        return os.path.dirname(os.path.dirname(layerconf))
+    if bbpath:
+        bitbakeconf = bb.utils.which(bbpath, "conf/bitbake.conf")
+        if bitbakeconf:
+            return os.path.dirname(os.path.dirname(bitbakeconf))
     return None
 
 class CookerDataBuilder(object):
@@ -252,7 +270,7 @@ class CookerDataBuilder(object):
         filtered_keys = bb.utils.approved_variables()
         bb.data.inheritFromOS(self.basedata, self.savedenv, filtered_keys)
         self.basedata.setVar("BB_ORIGENV", self.savedenv)
-        
+
         if worker:
             self.basedata.setVar("BB_WORKERCONTEXT", "1")
 
@@ -286,11 +304,13 @@ class CookerDataBuilder(object):
             self.data_hash = self.data.get_hash()
             self.mcdata[''] = self.data
 
-            multiconfig = (self.data.getVar("BBMULTICONFIG", True) or "").split()
+            multiconfig = (self.data.getVar("BBMULTICONFIG") or "").split()
             for config in multiconfig:
-                mcdata = self.parseConfigurationFiles(['conf/multiconfig/%s.conf' % config] + self.prefiles, self.postfiles)
+                mcdata = self.parseConfigurationFiles(self.prefiles, self.postfiles, config)
                 bb.event.fire(bb.event.ConfigParsed(), mcdata)
                 self.mcdata[config] = mcdata
+            if multiconfig:
+                bb.event.fire(bb.event.MultiConfigParsed(self.mcdata), self.data)
 
         except (SyntaxError, bb.BBHandledException):
             raise bb.BBHandledException
@@ -301,11 +321,24 @@ class CookerDataBuilder(object):
             logger.exception("Error parsing configuration files")
             raise bb.BBHandledException
 
+        # Create a copy so we can reset at a later date when UIs disconnect
+        self.origdata = self.data
+        self.data = bb.data.createCopy(self.origdata)
+        self.mcdata[''] = self.data
+
+    def reset(self):
+        # We may not have run parseBaseConfiguration() yet
+        if not hasattr(self, 'origdata'):
+            return
+        self.data = bb.data.createCopy(self.origdata)
+        self.mcdata[''] = self.data
+
     def _findLayerConf(self, data):
         return findConfigFile("bblayers.conf", data)
 
-    def parseConfigurationFiles(self, prefiles, postfiles):
+    def parseConfigurationFiles(self, prefiles, postfiles, mc = "default"):
         data = bb.data.createCopy(self.basedata)
+        data.setVar("BB_CURRENT_MC", mc)
 
         # Parse files for loading *before* bitbake.conf and any includes
         for f in prefiles:
@@ -319,7 +352,7 @@ class CookerDataBuilder(object):
             data.setVar("TOPDIR", os.path.dirname(os.path.dirname(layerconf)))
             data = parse_config_file(layerconf, data)
 
-            layers = (data.getVar('BBLAYERS', True) or "").split()
+            layers = (data.getVar('BBLAYERS') or "").split()
 
             data = bb.data.createCopy(data)
             approved = bb.utils.approved_variables()
@@ -342,7 +375,28 @@ class CookerDataBuilder(object):
             data.delVar('LAYERDIR_RE')
             data.delVar('LAYERDIR')
 
-        if not data.getVar("BBPATH", True):
+            bbfiles_dynamic = (data.getVar('BBFILES_DYNAMIC') or "").split()
+            collections = (data.getVar('BBFILE_COLLECTIONS') or "").split()
+            invalid = []
+            for entry in bbfiles_dynamic:
+                parts = entry.split(":", 1)
+                if len(parts) != 2:
+                    invalid.append(entry)
+                    continue
+                l, f = parts
+                if l in collections:
+                    data.appendVar("BBFILES", " " + f)
+            if invalid:
+                bb.fatal("BBFILES_DYNAMIC entries must be of the form <collection name>:<filename pattern>, not:\n    %s" % "\n    ".join(invalid))
+
+            layerseries = set((data.getVar("LAYERSERIES_CORENAMES") or "").split())
+            for c in collections:
+                compat = set((data.getVar("LAYERSERIES_COMPAT_%s" % c) or "").split())
+                if compat and not (compat & layerseries):
+                    bb.fatal("Layer %s is not compatible with the core layer which only supports these series: %s (layer is compatible with %s)"
+                              % (c, " ".join(layerseries), " ".join(compat)))
+
+        if not data.getVar("BBPATH"):
             msg = "The BBPATH variable is not set"
             if not layerconf:
                 msg += (" and bitbake did not find a conf/bblayers.conf file in"
@@ -357,7 +411,7 @@ class CookerDataBuilder(object):
             data = parse_config_file(p, data)
 
         # Handle any INHERITs and inherit the base class
-        bbclasses  = ["base"] + (data.getVar('INHERIT', True) or "").split()
+        bbclasses  = ["base"] + (data.getVar('INHERIT') or "").split()
         for bbclass in bbclasses:
             data = _inherit(bbclass, data)
 
@@ -369,7 +423,7 @@ class CookerDataBuilder(object):
                 parselog.critical("Undefined event handler function '%s'" % var)
                 sys.exit(1)
             handlerln = int(data.getVarFlag(var, "lineno", False))
-            bb.event.register(var, data.getVar(var, False),  (data.getVarFlag(var, "eventmask", True) or "").split(), handlerfn, handlerln)
+            bb.event.register(var, data.getVar(var, False),  (data.getVarFlag(var, "eventmask") or "").split(), handlerfn, handlerln)
 
         data.setVar('BBINCLUDED',bb.parse.get_file_depends(data))
 

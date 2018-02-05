@@ -48,7 +48,6 @@ def findProviders(cfgData, dataCache, pkg_pn = None):
 
     # Need to ensure data store is expanded
     localdata = data.createCopy(cfgData)
-    bb.data.update_data(localdata)
     bb.data.expandKeys(localdata)
 
     preferred_versions = {}
@@ -123,11 +122,11 @@ def findPreferredProvider(pn, cfgData, dataCache, pkg_pn = None, item = None):
 
     # pn can contain '_', e.g. gcc-cross-x86_64 and an override cannot
     # hence we do this manually rather than use OVERRIDES
-    preferred_v = cfgData.getVar("PREFERRED_VERSION_pn-%s" % pn, True)
+    preferred_v = cfgData.getVar("PREFERRED_VERSION_pn-%s" % pn)
     if not preferred_v:
-        preferred_v = cfgData.getVar("PREFERRED_VERSION_%s" % pn, True)
+        preferred_v = cfgData.getVar("PREFERRED_VERSION_%s" % pn)
     if not preferred_v:
-        preferred_v = cfgData.getVar("PREFERRED_VERSION", True)
+        preferred_v = cfgData.getVar("PREFERRED_VERSION")
 
     if preferred_v:
         m = re.match('(\d+:)*(.*)(_.*)*', preferred_v)
@@ -245,17 +244,17 @@ def _filterProviders(providers, item, cfgData, dataCache):
             pkg_pn[pn] = []
         pkg_pn[pn].append(p)
 
-    logger.debug(1, "providers for %s are: %s", item, list(pkg_pn.keys()))
+    logger.debug(1, "providers for %s are: %s", item, list(sorted(pkg_pn.keys())))
 
     # First add PREFERRED_VERSIONS
-    for pn in pkg_pn:
+    for pn in sorted(pkg_pn):
         sortpkg_pn[pn] = sortPriorities(pn, dataCache, pkg_pn)
         preferred_versions[pn] = findPreferredProvider(pn, cfgData, dataCache, sortpkg_pn[pn], item)
         if preferred_versions[pn][1]:
             eligible.append(preferred_versions[pn][1])
 
     # Now add latest versions
-    for pn in sortpkg_pn:
+    for pn in sorted(sortpkg_pn):
         if pn in preferred_versions and preferred_versions[pn][1]:
             continue
         preferred_versions[pn] = findLatestProvider(pn, cfgData, dataCache, sortpkg_pn[pn][0])
@@ -289,7 +288,7 @@ def filterProviders(providers, item, cfgData, dataCache):
 
     eligible = _filterProviders(providers, item, cfgData, dataCache)
 
-    prefervar = cfgData.getVar('PREFERRED_PROVIDER_%s' % item, True)
+    prefervar = cfgData.getVar('PREFERRED_PROVIDER_%s' % item)
     if prefervar:
         dataCache.preferred[item] = prefervar
 
@@ -318,7 +317,7 @@ def filterProvidersRunTime(providers, item, cfgData, dataCache):
     eligible = _filterProviders(providers, item, cfgData, dataCache)
 
     # First try and match any PREFERRED_RPROVIDER entry
-    prefervar = cfgData.getVar('PREFERRED_RPROVIDER_%s' % item, True)
+    prefervar = cfgData.getVar('PREFERRED_RPROVIDER_%s' % item)
     foundUnique = False
     if prefervar:
         for p in eligible:
@@ -345,7 +344,7 @@ def filterProvidersRunTime(providers, item, cfgData, dataCache):
             pn = dataCache.pkg_fn[p]
             provides = dataCache.pn_provides[pn]
             for provide in provides:
-                prefervar = cfgData.getVar('PREFERRED_PROVIDER_%s' % provide, True)
+                prefervar = cfgData.getVar('PREFERRED_PROVIDER_%s' % provide)
                 #logger.debug(1, "checking PREFERRED_PROVIDER_%s (value %s) against %s", provide, prefervar, pns.keys())
                 if prefervar in pns and pns[prefervar] not in preferred:
                     var = "PREFERRED_PROVIDER_%s = %s" % (provide, prefervar)

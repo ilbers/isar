@@ -24,7 +24,6 @@
 import os
 
 DEBUG = True
-TEMPLATE_DEBUG = DEBUG
 
 # Set to True to see the SQL queries in console
 SQL_DEBUG = False
@@ -38,8 +37,7 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-TOASTER_SQLITE_DEFAULT_DIR = os.path.join(os.environ.get('TOASTER_DIR', ''),
-                                          'build')
+TOASTER_SQLITE_DEFAULT_DIR = os.environ.get('TOASTER_DIR')
 
 DATABASES = {
     'default': {
@@ -60,9 +58,19 @@ DATABASES = {
 if 'sqlite' in DATABASES['default']['ENGINE']:
     DATABASES['default']['OPTIONS'] = { 'timeout': 20 }
 
-# Hosts/domain names that are valid for this site; required if DEBUG is False
-# See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = []
+# Update as of django 1.8.16 release, the '*' is needed to allow us to connect while running
+# on hosts without explicitly setting the fqdn for the toaster server.
+# See https://docs.djangoproject.com/en/dev/ref/settings/ for info on ALLOWED_HOSTS
+# Previously this setting was not enforced if DEBUG was set but it is now.
+# The previous behavior was such that ALLOWED_HOSTS defaulted to ['localhost','127.0.0.1','::1']
+# and if you bound to 0.0.0.0:<port #> then accessing toaster as localhost or fqdn would both work.
+# To have that same behavior, with a fqdn explicitly enabled you would set
+# ALLOWED_HOSTS= ['localhost','127.0.0.1','::1','myserver.mycompany.com'] for
+# Django >= 1.8.16. By default, we are not enforcing this restriction in
+# DEBUG mode.
+if DEBUG is True:
+    # this will allow connection via localhost,hostname, or fqdn
+    ALLOWED_HOSTS = ['*']
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -152,12 +160,47 @@ STATICFILES_FINDERS = (
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'NOT_SUITABLE_FOR_HOSTED_DEPLOYMENT'
 
-# List of callables that know how to import templates from various sources.
-TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader',
-#     'django.template.loaders.eggs.Loader',
-)
+class InvalidString(str):
+    def __mod__(self, other):
+        from django.template.base import TemplateSyntaxError
+        raise TemplateSyntaxError(
+            "Undefined variable or unknown value for: \"%s\"" % other)
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [
+            # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
+            # Always use forward slashes, even on Windows.
+            # Don't forget to use absolute paths, not relative paths.
+        ],
+        'OPTIONS': {
+            'context_processors': [
+                # Insert your TEMPLATE_CONTEXT_PROCESSORS here or use this
+                # list if you haven't customized them:
+                'django.contrib.auth.context_processors.auth',
+                'django.template.context_processors.debug',
+                'django.template.context_processors.i18n',
+                'django.template.context_processors.media',
+                'django.template.context_processors.static',
+                'django.template.context_processors.tz',
+                'django.contrib.messages.context_processors.messages',
+                # Custom
+                'django.template.context_processors.request',
+                'toastergui.views.managedcontextprocessor',
+
+            ],
+            'loaders': [
+                # List of callables that know how to import templates from various sources.
+                'django.template.loaders.filesystem.Loader',
+                'django.template.loaders.app_directories.Loader',
+                #'django.template.loaders.eggs.Loader',
+            ],
+            'string_if_invalid': InvalidString("%s"),
+            'debug': DEBUG,
+        },
+    },
+]
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
@@ -194,22 +237,6 @@ ROOT_URLCONF = 'toastermain.urls'
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'toastermain.wsgi.application'
 
-TEMPLATE_DIRS = (
-    # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
-    # Always use forward slashes, even on Windows.
-    # Don't forget to use absolute paths, not relative paths.
-)
-
-TEMPLATE_CONTEXT_PROCESSORS = ('django.contrib.auth.context_processors.auth',
- 'django.core.context_processors.debug',
- 'django.core.context_processors.i18n',
- 'django.core.context_processors.media',
- 'django.core.context_processors.static',
- 'django.core.context_processors.tz',
- 'django.contrib.messages.context_processors.messages',
- "django.core.context_processors.request",
- 'toastergui.views.managedcontextprocessor',
- )
 
 INSTALLED_APPS = (
     'django.contrib.auth',
@@ -339,10 +366,4 @@ connection_created.connect(activate_synchronous_off)
 #
 
 
-class InvalidString(str):
-    def __mod__(self, other):
-        from django.template.base import TemplateSyntaxError
-        raise TemplateSyntaxError(
-            "Undefined variable or unknown value for: \"%s\"" % other)
 
-TEMPLATE_STRING_IF_INVALID = InvalidString("%s")

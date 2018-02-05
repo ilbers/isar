@@ -84,6 +84,10 @@ def update_cache(f):
         logger.debug(1, "Updating mtime cache for %s" % f)
         update_mtime(f)
 
+def clear_cache():
+    global __mtime_cache
+    __mtime_cache = {}
+
 def mark_dependency(d, f):
     if f.startswith('./'):
         f = "%s/%s" % (os.getcwd(), f[2:])
@@ -123,7 +127,7 @@ def init_parser(d):
 
 def resolve_file(fn, d):
     if not os.path.isabs(fn):
-        bbpath = d.getVar("BBPATH", True)
+        bbpath = d.getVar("BBPATH")
         newfn, attempts = bb.utils.which(bbpath, fn, history=True)
         for af in attempts:
             mark_dependency(d, af)

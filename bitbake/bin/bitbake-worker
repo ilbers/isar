@@ -11,10 +11,13 @@ import select
 import errno
 import signal
 import pickle
+import traceback
+import queue
 from multiprocessing import Lock
+from threading import Thread
 
 if sys.getfilesystemencoding() != "utf-8":
-    sys.exit("Please use a locale setting which supports utf-8.\nPython can't change the filesystem locale after loading so we need a utf-8 when python starts or things won't work.")
+    sys.exit("Please use a locale setting which supports UTF-8 (such as LANG=en_US.UTF-8).\nPython can't change the filesystem locale after loading so we need a UTF-8 when Python starts or things won't work.")
 
 # Users shouldn't be running this code directly
 if len(sys.argv) != 2 or not sys.argv[1].startswith("decafbad"):
@@ -63,7 +66,7 @@ if 0:
     consolelog.setFormatter(conlogformat)
     logger.addHandler(consolelog)
 
-worker_queue = b""
+worker_queue = queue.Queue()
 
 def worker_fire(event, d):
     data = b"<event>" + pickle.dumps(event) + b"</event>"
@@ -72,21 +75,39 @@ def worker_fire(event, d):
 def worker_fire_prepickled(event):
     global worker_queue
 
-    worker_queue = worker_queue + event
-    worker_flush()
+    worker_queue.put(event)
 
-def worker_flush():
-    global worker_queue, worker_pipe
+#
+# We can end up with write contention with the cooker, it can be trying to send commands
+# and we can be trying to send event data back. Therefore use a separate thread for writing 
+# back data to cooker.
+#
+worker_thread_exit = False
 
-    if not worker_queue:
-        return
+def worker_flush(worker_queue):
+    worker_queue_int = b""
+    global worker_pipe, worker_thread_exit
 
-    try:
-        written = os.write(worker_pipe, worker_queue)
-        worker_queue = worker_queue[written:]
-    except (IOError, OSError) as e:
-        if e.errno != errno.EAGAIN and e.errno != errno.EPIPE:
-            raise
+    while True:
+        try:
+            worker_queue_int = worker_queue_int + worker_queue.get(True, 1)
+        except queue.Empty:
+            pass
+        while (worker_queue_int or not worker_queue.empty()):
+            try:
+                (_, ready, _) = select.select([], [worker_pipe], [], 1)
+                if not worker_queue.empty():
+                    worker_queue_int = worker_queue_int + worker_queue.get()
+                written = os.write(worker_pipe, worker_queue_int)
+                worker_queue_int = worker_queue_int[written:]
+            except (IOError, OSError) as e:
+                if e.errno != errno.EAGAIN and e.errno != errno.EPIPE:
+                    raise
+        if worker_thread_exit and worker_queue.empty() and not worker_queue_int:
+            return
+
+worker_thread = Thread(target=worker_flush, args=(worker_queue,))
+worker_thread.start()
 
 def worker_child_fire(event, d):
     global worker_pipe
@@ -115,7 +136,7 @@ def sigterm_handler(signum, frame):
     os.killpg(0, signal.SIGTERM)
     sys.exit()
 
-def fork_off_task(cfg, data, databuilder, workerdata, fn, task, taskname, appends, taskdepdata, quieterrors=False):
+def fork_off_task(cfg, data, databuilder, workerdata, fn, task, taskname, appends, taskdepdata, extraconfigdata, quieterrors=False, dry_run_exec=False):
     # We need to setup the environment BEFORE the fork, since
     # a fork() or exec*() activates PSEUDO...
 
@@ -131,8 +152,10 @@ def fork_off_task(cfg, data, databuilder, workerdata, fn, task, taskname, append
         except TypeError:
              umask = taskdep['umask'][taskname]
 
+    dry_run = cfg.dry_run or dry_run_exec
+
     # We can't use the fakeroot environment in a dry run as it possibly hasn't been built
-    if 'fakeroot' in taskdep and taskname in taskdep['fakeroot'] and not cfg.dry_run:
+    if 'fakeroot' in taskdep and taskname in taskdep['fakeroot'] and not dry_run:
         envvars = (workerdata["fakerootenv"][fn] or "").split()
         for key, value in (var.split('=') for var in envvars):
             envbackup[key] = os.environ.get(key)
@@ -199,16 +222,21 @@ def fork_off_task(cfg, data, databuilder, workerdata, fn, task, taskname, append
                 the_data = databuilder.mcdata[mc]
                 the_data.setVar("BB_WORKERCONTEXT", "1")
                 the_data.setVar("BB_TASKDEPDATA", taskdepdata)
+                if cfg.limited_deps:
+                    the_data.setVar("BB_LIMITEDDEPS", "1")
                 the_data.setVar("BUILDNAME", workerdata["buildname"])
                 the_data.setVar("DATE", workerdata["date"])
                 the_data.setVar("TIME", workerdata["time"])
+                for varname, value in extraconfigdata.items():
+                    the_data.setVar(varname, value)
+
                 bb.parse.siggen.set_taskdata(workerdata["sigdata"])
                 ret = 0
 
                 the_data = bb_cache.loadDataFull(fn, appends)
                 the_data.setVar('BB_TASKHASH', workerdata["runq_hash"][task])
 
-                bb.utils.set_process_name("%s:%s" % (the_data.getVar("PN", True), taskname.replace("do_", "")))
+                bb.utils.set_process_name("%s:%s" % (the_data.getVar("PN"), taskname.replace("do_", "")))
 
                 # exported_vars() returns a generator which *cannot* be passed to os.environ.update() 
                 # successfully. We also need to unset anything from the environment which shouldn't be there 
@@ -223,23 +251,23 @@ def fork_off_task(cfg, data, databuilder, workerdata, fn, task, taskname, append
                     the_data.setVar(e, fakeenv[e])
                     the_data.setVarFlag(e, 'export', "1")
 
-                task_exports = the_data.getVarFlag(taskname, 'exports', True)
+                task_exports = the_data.getVarFlag(taskname, 'exports')
                 if task_exports:
                     for e in task_exports.split():
                         the_data.setVarFlag(e, 'export', '1')
-                        v = the_data.getVar(e, True)
+                        v = the_data.getVar(e)
                         if v is not None:
                             os.environ[e] = v
 
                 if quieterrors:
                     the_data.setVarFlag(taskname, "quieterrors", "1")
 
-            except Exception as exc:
+            except Exception:
                 if not quieterrors:
-                    logger.critical(str(exc))
+                    logger.critical(traceback.format_exc())
                 os._exit(1)
             try:
-                if cfg.dry_run:
+                if dry_run:
                     return 0
                 return bb.build.exec_task(fn, taskname, the_data, cfg.profile)
             except:
@@ -308,6 +336,7 @@ class BitbakeWorker(object):
         self.cookercfg = None
         self.databuilder = None
         self.data = None
+        self.extraconfigdata = None
         self.build_pids = {}
         self.build_pipes = {}
     
@@ -342,6 +371,7 @@ class BitbakeWorker(object):
                     pass
             if len(self.queue):
                 self.handle_item(b"cookerconfig", self.handle_cookercfg)
+                self.handle_item(b"extraconfigdata", self.handle_extraconfigdata)
                 self.handle_item(b"workerdata", self.handle_workerdata)
                 self.handle_item(b"runtask", self.handle_runtask)
                 self.handle_item(b"finishnow", self.handle_finishnow)
@@ -349,10 +379,11 @@ class BitbakeWorker(object):
                 self.handle_item(b"quit", self.handle_quit)
 
             for pipe in self.build_pipes:
-                self.build_pipes[pipe].read()
+                if self.build_pipes[pipe].input in ready:
+                    self.build_pipes[pipe].read()
             if len(self.build_pids):
-                self.process_waitpid()
-            worker_flush()
+                while self.process_waitpid():
+                    continue
 
 
     def handle_item(self, item, func):
@@ -368,6 +399,9 @@ class BitbakeWorker(object):
         self.databuilder = bb.cookerdata.CookerDataBuilder(self.cookercfg, worker=True)
         self.databuilder.parseBaseConfiguration()
         self.data = self.databuilder.data
+
+    def handle_extraconfigdata(self, data):
+        self.extraconfigdata = pickle.loads(data)
 
     def handle_workerdata(self, data):
         self.workerdata = pickle.loads(data)
@@ -391,10 +425,10 @@ class BitbakeWorker(object):
         sys.exit(0)
 
     def handle_runtask(self, data):
-        fn, task, taskname, quieterrors, appends, taskdepdata = pickle.loads(data)
+        fn, task, taskname, quieterrors, appends, taskdepdata, dry_run_exec = pickle.loads(data)
         workerlog_write("Handling runtask %s %s %s\n" % (task, fn, taskname))
 
-        pid, pipein, pipeout = fork_off_task(self.cookercfg, self.data, self.databuilder, self.workerdata, fn, task, taskname, appends, taskdepdata, quieterrors)
+        pid, pipein, pipeout = fork_off_task(self.cookercfg, self.data, self.databuilder, self.workerdata, fn, task, taskname, appends, taskdepdata, self.extraconfigdata, quieterrors, dry_run_exec)
 
         self.build_pids[pid] = task
         self.build_pipes[pid] = runQueueWorkerPipe(pipein, pipeout)
@@ -407,9 +441,9 @@ class BitbakeWorker(object):
         try:
             pid, status = os.waitpid(-1, os.WNOHANG)
             if pid == 0 or os.WIFSTOPPED(status):
-                return None
+                return False
         except OSError:
-            return None
+            return False
 
         workerlog_write("Exit code of %s for pid %s\n" % (status, pid))
 
@@ -427,6 +461,8 @@ class BitbakeWorker(object):
         del self.build_pipes[pid]
 
         worker_fire_prepickled(b"<exitcode>" + pickle.dumps((task, status)) + b"</exitcode>")
+
+        return True
 
     def handle_finishnow(self, _):
         if self.build_pids:
@@ -457,8 +493,9 @@ except BaseException as e:
         import traceback
         sys.stderr.write(traceback.format_exc())
         sys.stderr.write(str(e))
-while len(worker_queue):
-    worker_flush()
+
+worker_thread_exit = True
+worker_thread.join()
+
 workerlog_write("exitting")
 sys.exit(0)
-

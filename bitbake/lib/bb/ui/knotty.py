@@ -32,6 +32,7 @@ import fcntl
 import struct
 import copy
 import atexit
+
 from bb.ui import uihelper
 
 featureSet = [bb.cooker.CookerFeatures.SEND_SANITYEVENTS]
@@ -40,7 +41,7 @@ logger = logging.getLogger("BitBake")
 interactive = sys.stdout.isatty()
 
 class BBProgress(progressbar.ProgressBar):
-    def __init__(self, msg, maxval, widgets=None, extrapos=-1):
+    def __init__(self, msg, maxval, widgets=None, extrapos=-1, resize_handler=None):
         self.msg = msg
         self.extrapos = extrapos
         if not widgets:
@@ -48,10 +49,10 @@ class BBProgress(progressbar.ProgressBar):
             progressbar.ETA()]
             self.extrapos = 4
 
-        try:
+        if resize_handler:
+            self._resize_default = resize_handler
+        else:
             self._resize_default = signal.getsignal(signal.SIGWINCH)
-        except:
-            self._resize_default = None
         progressbar.ProgressBar.__init__(self, maxval, [self.msg + ": "] + widgets, fd=sys.stdout)
 
     def _handle_resize(self, signum=None, frame=None):
@@ -74,10 +75,8 @@ class BBProgress(progressbar.ProgressBar):
                 extrastr = str(extra)
                 if extrastr[0] != ' ':
                     extrastr = ' ' + extrastr
-                if extrastr[-1] != ' ':
-                    extrastr += ' '
             else:
-                extrastr = ' '
+                extrastr = ''
             self.widgets[self.extrapos] = extrastr
 
     def _need_update(self):
@@ -208,8 +207,10 @@ class TerminalFilter(object):
             self.interactive = False
             bb.note("Unable to use interactive mode for this terminal, using fallback")
             return
-        console.addFilter(InteractConsoleLogFilter(self, format))
-        errconsole.addFilter(InteractConsoleLogFilter(self, format))
+        if console:
+            console.addFilter(InteractConsoleLogFilter(self, format))
+        if errconsole:
+            errconsole.addFilter(InteractConsoleLogFilter(self, format))
 
         self.main_progress = None
 
@@ -247,10 +248,10 @@ class TerminalFilter(object):
                 start_time = activetasks[t].get("starttime", None)
                 if not pbar or pbar.bouncing != (progress < 0):
                     if progress < 0:
-                        pbar = BBProgress("0: %s (pid %s) " % (activetasks[t]["title"], t), 100, widgets=[progressbar.BouncingSlider(), ''], extrapos=2)
+                        pbar = BBProgress("0: %s (pid %s) " % (activetasks[t]["title"], t), 100, widgets=[progressbar.BouncingSlider(), ''], extrapos=2, resize_handler=self.sigwinch_handle)
                         pbar.bouncing = True
                     else:
-                        pbar = BBProgress("0: %s (pid %s) " % (activetasks[t]["title"], t), 100, widgets=[progressbar.Percentage(), ' ', progressbar.Bar(), ''], extrapos=4)
+                        pbar = BBProgress("0: %s (pid %s) " % (activetasks[t]["title"], t), 100, widgets=[progressbar.Percentage(), ' ', progressbar.Bar(), ''], extrapos=4, resize_handler=self.sigwinch_handle)
                         pbar.bouncing = False
                     activetasks[t]["progressbar"] = pbar
                 tasks.append((pbar, progress, rate, start_time))
@@ -274,7 +275,7 @@ class TerminalFilter(object):
             maxtask = self.helper.tasknumber_total
             if not self.main_progress or self.main_progress.maxval != maxtask:
                 widgets = [' ', progressbar.Percentage(), ' ', progressbar.Bar()]
-                self.main_progress = BBProgress("Running tasks", maxtask, widgets=widgets)
+                self.main_progress = BBProgress("Running tasks", maxtask, widgets=widgets, resize_handler=self.sigwinch_handle)
                 self.main_progress.start(False)
             self.main_progress.setmessage(content)
             progress = self.helper.tasknumber_current - 1
@@ -283,7 +284,7 @@ class TerminalFilter(object):
             content = self.main_progress.update(progress)
             print('')
         lines = 1 + int(len(content) / (self.columns + 1))
-        if not self.quiet:
+        if self.quiet == 0:
             for tasknum, task in enumerate(tasks[:(self.rows - 2)]):
                 if isinstance(task, tuple):
                     pbar, progress, rate, start_time = task
@@ -311,7 +312,33 @@ class TerminalFilter(object):
             fd = sys.stdin.fileno()
             self.termios.tcsetattr(fd, self.termios.TCSADRAIN, self.stdinbackup)
 
-def _log_settings_from_server(server):
+def print_event_log(event, includelogs, loglines, termfilter):
+    # FIXME refactor this out further
+    logfile = event.logfile
+    if logfile and os.path.exists(logfile):
+        termfilter.clearFooter()
+        bb.error("Logfile of failure stored in: %s" % logfile)
+        if includelogs and not event.errprinted:
+            print("Log data follows:")
+            f = open(logfile, "r")
+            lines = []
+            while True:
+                l = f.readline()
+                if l == '':
+                    break
+                l = l.rstrip()
+                if loglines:
+                    lines.append(' | %s' % l)
+                    if len(lines) > int(loglines):
+                        lines.pop(0)
+                else:
+                    print('| %s' % l)
+            f.close()
+            if lines:
+                for line in lines:
+                    print(line)
+
+def _log_settings_from_server(server, observe_only):
     # Get values of variables which control our output
     includelogs, error = server.runCommand(["getVariable", "BBINCLUDELOGS"])
     if error:
@@ -321,7 +348,11 @@ def _log_settings_from_server(server):
     if error:
         logger.error("Unable to get the value of BBINCLUDELOGS_LINES variable: %s" % error)
         raise BaseException(error)
-    consolelogfile, error = server.runCommand(["getSetVariable", "BB_CONSOLELOG"])
+    if observe_only:
+        cmd = 'getVariable'
+    else:
+        cmd = 'getSetVariable'
+    consolelogfile, error = server.runCommand([cmd, "BB_CONSOLELOG"])
     if error:
         logger.error("Unable to get the value of BB_CONSOLELOG variable: %s" % error)
         raise BaseException(error)
@@ -339,7 +370,10 @@ _evt_list = [ "bb.runqueue.runQueueExitWait", "bb.event.LogExecTTY", "logging.Lo
 
 def main(server, eventHandler, params, tf = TerminalFilter):
 
-    includelogs, loglines, consolelogfile = _log_settings_from_server(server)
+    if not params.observe_only:
+        params.updateToServer(server, os.environ.copy())
+
+    includelogs, loglines, consolelogfile = _log_settings_from_server(server, params.observe_only)
 
     if sys.stdin.isatty() and sys.stdout.isatty():
         log_exec_tty = True
@@ -352,15 +386,19 @@ def main(server, eventHandler, params, tf = TerminalFilter):
     errconsole = logging.StreamHandler(sys.stderr)
     format_str = "%(levelname)s: %(message)s"
     format = bb.msg.BBLogFormatter(format_str)
-    if params.options.quiet:
-        bb.msg.addDefaultlogFilter(console, bb.msg.BBLogFilterStdOut, bb.msg.BBLogFormatter.WARNING)
+    if params.options.quiet == 0:
+        forcelevel = None
+    elif params.options.quiet > 2:
+        forcelevel = bb.msg.BBLogFormatter.ERROR
     else:
-        bb.msg.addDefaultlogFilter(console, bb.msg.BBLogFilterStdOut)
+        forcelevel = bb.msg.BBLogFormatter.WARNING
+    bb.msg.addDefaultlogFilter(console, bb.msg.BBLogFilterStdOut, forcelevel)
     bb.msg.addDefaultlogFilter(errconsole, bb.msg.BBLogFilterStdErr)
     console.setFormatter(format)
     errconsole.setFormatter(format)
-    logger.addHandler(console)
-    logger.addHandler(errconsole)
+    if not bb.msg.has_console_handler(logger):
+        logger.addHandler(console)
+        logger.addHandler(errconsole)
 
     bb.utils.set_process_name("KnottyUI")
 
@@ -389,7 +427,6 @@ def main(server, eventHandler, params, tf = TerminalFilter):
     universe = False
     if not params.observe_only:
         params.updateFromServer(server)
-        params.updateToServer(server, os.environ.copy())
         cmdline = params.parseActions()
         if not cmdline:
             print("Nothing to do.  Use 'bitbake world' to build everything, or run 'bitbake --help' for usage information.")
@@ -465,11 +502,11 @@ def main(server, eventHandler, params, tf = TerminalFilter):
                         continue
 
                     # Prefix task messages with recipe/task
-                    if event.taskpid in helper.running_tasks:
+                    if event.taskpid in helper.running_tasks and event.levelno != format.PLAIN:
                         taskinfo = helper.running_tasks[event.taskpid]
                         event.msg = taskinfo['title'] + ': ' + event.msg
                 if hasattr(event, 'fn'):
-                        event.msg = event.fn + ': ' + event.msg
+                    event.msg = event.fn + ': ' + event.msg
                 logger.handle(event)
                 continue
 
@@ -478,62 +515,52 @@ def main(server, eventHandler, params, tf = TerminalFilter):
                 continue
             if isinstance(event, bb.build.TaskFailed):
                 return_value = 1
-                logfile = event.logfile
-                if logfile and os.path.exists(logfile):
-                    termfilter.clearFooter()
-                    bb.error("Logfile of failure stored in: %s" % logfile)
-                    if includelogs and not event.errprinted:
-                        print("Log data follows:")
-                        f = open(logfile, "r")
-                        lines = []
-                        while True:
-                            l = f.readline()
-                            if l == '':
-                                break
-                            l = l.rstrip()
-                            if loglines:
-                                lines.append(' | %s' % l)
-                                if len(lines) > int(loglines):
-                                    lines.pop(0)
-                            else:
-                                print('| %s' % l)
-                        f.close()
-                        if lines:
-                            for line in lines:
-                                print(line)
+                print_event_log(event, includelogs, loglines, termfilter)
             if isinstance(event, bb.build.TaskBase):
                 logger.info(event._message)
                 continue
             if isinstance(event, bb.event.ParseStarted):
+                if params.options.quiet > 1:
+                    continue
                 if event.total == 0:
                     continue
                 parseprogress = new_progress("Parsing recipes", event.total).start()
                 continue
             if isinstance(event, bb.event.ParseProgress):
+                if params.options.quiet > 1:
+                    continue
                 if parseprogress:
                     parseprogress.update(event.current)
                 else:
                     bb.warn("Got ParseProgress event for parsing that never started?")
                 continue
             if isinstance(event, bb.event.ParseCompleted):
+                if params.options.quiet > 1:
+                    continue
                 if not parseprogress:
                     continue
                 parseprogress.finish()
                 pasreprogress = None
-                if not params.options.quiet:
+                if params.options.quiet == 0:
                     print(("Parsing of %d .bb files complete (%d cached, %d parsed). %d targets, %d skipped, %d masked, %d errors."
                         % ( event.total, event.cached, event.parsed, event.virtuals, event.skipped, event.masked, event.errors)))
                 continue
 
             if isinstance(event, bb.event.CacheLoadStarted):
+                if params.options.quiet > 1:
+                    continue
                 cacheprogress = new_progress("Loading cache", event.total).start()
                 continue
             if isinstance(event, bb.event.CacheLoadProgress):
+                if params.options.quiet > 1:
+                    continue
                 cacheprogress.update(event.current)
                 continue
             if isinstance(event, bb.event.CacheLoadCompleted):
+                if params.options.quiet > 1:
+                    continue
                 cacheprogress.finish()
-                if not params.options.quiet:
+                if params.options.quiet == 0:
                     print("Loaded %d entries from dependency cache." % event.num_entries)
                 continue
 
@@ -541,7 +568,7 @@ def main(server, eventHandler, params, tf = TerminalFilter):
                 return_value = event.exitcode
                 if event.error:
                     errors = errors + 1
-                    logger.error("Command execution failed: %s", event.error)
+                    logger.error(str(event))
                 main.shutdown = 2
                 continue
             if isinstance(event, bb.command.CommandExit):
@@ -552,39 +579,16 @@ def main(server, eventHandler, params, tf = TerminalFilter):
                 main.shutdown = 2
                 continue
             if isinstance(event, bb.event.MultipleProviders):
-                logger.info("multiple providers are available for %s%s (%s)", event._is_runtime and "runtime " or "",
-                            event._item,
-                            ", ".join(event._candidates))
-                rtime = ""
-                if event._is_runtime:
-                    rtime = "R"
-                logger.info("consider defining a PREFERRED_%sPROVIDER entry to match %s" % (rtime, event._item))
+                logger.info(str(event))
                 continue
             if isinstance(event, bb.event.NoProvider):
-                if event._runtime:
-                    r = "R"
-                else:
-                    r = ""
-
-                extra = ''
-                if not event._reasons:
-                    if event._close_matches:
-                        extra = ". Close matches:\n  %s" % '\n  '.join(event._close_matches)
-
                 # For universe builds, only show these as warnings, not errors
-                h = logger.warning
                 if not universe:
                     return_value = 1
                     errors = errors + 1
-                    h = logger.error
-
-                if event._dependees:
-                    h("Nothing %sPROVIDES '%s' (but %s %sDEPENDS on or otherwise requires it)%s", r, event._item, ", ".join(event._dependees), r, extra)
+                    logger.error(str(event))
                 else:
-                    h("Nothing %sPROVIDES '%s'%s", r, event._item, extra)
-                if event._reasons:
-                    for reason in event._reasons:
-                        h("%s", reason)
+                    logger.warning(str(event))
                 continue
 
             if isinstance(event, bb.runqueue.sceneQueueTaskStarted):
@@ -606,29 +610,33 @@ def main(server, eventHandler, params, tf = TerminalFilter):
             if isinstance(event, bb.runqueue.runQueueTaskFailed):
                 return_value = 1
                 taskfailures.append(event.taskstring)
-                logger.error("Task (%s) failed with exit code '%s'",
-                             event.taskstring, event.exitcode)
+                logger.error(str(event))
                 continue
 
             if isinstance(event, bb.runqueue.sceneQueueTaskFailed):
-                logger.warning("Setscene task (%s) failed with exit code '%s' - real task will be run instead",
-                               event.taskstring, event.exitcode)
+                logger.warning(str(event))
                 continue
 
             if isinstance(event, bb.event.DepTreeGenerated):
                 continue
 
             if isinstance(event, bb.event.ProcessStarted):
+                if params.options.quiet > 1:
+                    continue
                 parseprogress = new_progress(event.processname, event.total)
                 parseprogress.start(False)
                 continue
             if isinstance(event, bb.event.ProcessProgress):
+                if params.options.quiet > 1:
+                    continue
                 if parseprogress:
                     parseprogress.update(event.progress)
                 else:
                     bb.warn("Got ProcessProgress event for someting that never started?")
                 continue
             if isinstance(event, bb.event.ProcessFinished):
+                if params.options.quiet > 1:
+                    continue
                 if parseprogress:
                     parseprogress.finish()
                 parseprogress = None
@@ -639,6 +647,7 @@ def main(server, eventHandler, params, tf = TerminalFilter):
                                   bb.event.MetadataEvent,
                                   bb.event.StampUpdate,
                                   bb.event.ConfigParsed,
+                                  bb.event.MultiConfigParsed,
                                   bb.event.RecipeParsed,
                                   bb.event.RecipePreFinalise,
                                   bb.runqueue.runQueueEvent,
@@ -646,6 +655,7 @@ def main(server, eventHandler, params, tf = TerminalFilter):
                                   bb.event.OperationCompleted,
                                   bb.event.OperationProgress,
                                   bb.event.DiskFull,
+                                  bb.event.HeartbeatEvent,
                                   bb.build.TaskProgress)):
                 continue
 
@@ -699,7 +709,7 @@ def main(server, eventHandler, params, tf = TerminalFilter):
         if return_value and errors:
             summary += pluralise("\nSummary: There was %s ERROR message shown, returning a non-zero exit code.",
                                  "\nSummary: There were %s ERROR messages shown, returning a non-zero exit code.", errors)
-        if summary and not params.options.quiet:
+        if summary and params.options.quiet == 0:
             print(summary)
 
         if interrupted:

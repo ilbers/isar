@@ -297,7 +297,7 @@ class NCursesUI:
 #                            bb.error("log data follows (%s)" % logfile)
 #                            number_of_lines = data.getVar("BBINCLUDELOGS_LINES", d)
 #                            if number_of_lines:
-#                                subprocess.call('tail -n%s %s' % (number_of_lines, logfile), shell=True)
+#                                subprocess.check_call('tail -n%s %s' % (number_of_lines, logfile), shell=True)
 #                            else:
 #                                f = open(logfile, "r")
 #                                while True:
@@ -315,7 +315,7 @@ class NCursesUI:
                     # also allow them to now exit with a single ^C
                     shutdown = 2
                 if isinstance(event, bb.command.CommandFailed):
-                    mw.appendText("Command execution failed: %s" % event.error)
+                    mw.appendText(str(event))
                     time.sleep(2)
                     exitflag = True
                 if isinstance(event, bb.command.CommandExit):
