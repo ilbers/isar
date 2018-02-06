@@ -11,10 +11,19 @@ python isar_handler () {
     devnull = open(os.devnull, 'w')
 
     if isinstance(e, bb.event.BuildCompleted):
-        bchroot = d.getVar('BUILDCHROOT_DIR', True)
+        tmpdir = d.getVar('TMPDIR', True)
+        distro = d.getVar('DISTRO', True)
+        arch = d.getVar('DISTRO_ARCH', True)
 
-        # Clean up buildchroot
-        subprocess.call('/usr/bin/sudo /bin/umount ' + bchroot + '/isar-apt || /bin/true', stdout=devnull, stderr=devnull, shell=True)
+        w = tmpdir + '/work/' + distro + '-' + arch
+
+        # '/proc/mounts' contains all the active mounts, so knowing 'w' we
+        # could get the list of mounts for the specific multiconfig and
+        # clean them.
+        with open('/proc/mounts', 'rU') as f:
+            for line in f:
+                if w in line:
+                    subprocess.call('sudo umount -f ' + line.split()[1], stdout=devnull, stderr=devnull, shell=True)
 
     devnull.close()
 }

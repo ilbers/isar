@@ -39,9 +39,5 @@ export LC_ALL=C LANGUAGE=C LANG=C
 #run pre installation script
 /var/lib/dpkg/info/dash.preinst install
 
-# apt-get http method, gpg require /dev/null
-mount -t devtmpfs -o mode=0755,nosuid devtmpfs /dev
-
 #configuring packages
 dpkg --configure -a
-umount /dev

@@ -55,14 +55,10 @@ do_rootfs() {
         -e 's|##ISAR_DISTRO_SUITE##|${DEBDISTRONAME}|g' \
            "${WORKDIR}/multistrap.conf.in" > "${WORKDIR}/multistrap.conf"
 
+    # Do not use bitbake flag [dirs] here because this folder should have
+    # specific ownership.
     [ ! -d ${IMAGE_ROOTFS}/proc ] && sudo install -d -o 0 -g 0 -m 555 ${IMAGE_ROOTFS}/proc
     sudo mount -t proc none ${IMAGE_ROOTFS}/proc
-    _do_rootfs_cleanup() {
-        ret=$?
-        sudo umount ${IMAGE_ROOTFS}/proc 2>/dev/null || true
-        (exit $ret) || bb_exit_handler
-    }
-    trap '_do_rootfs_cleanup' EXIT
 
     # Create root filesystem. We must use sudo -E here to preserve the environment
     # because of proxy settings
@@ -72,5 +68,6 @@ do_rootfs() {
     sudo chroot ${IMAGE_ROOTFS} /${DISTRO_CONFIG_SCRIPT} ${MACHINE_SERIAL} ${BAUDRATE_TTY} \
         ${ROOTFS_DEV}
     sudo rm "${IMAGE_ROOTFS}/${DISTRO_CONFIG_SCRIPT}"
-    _do_rootfs_cleanup
+
+    sudo umount ${IMAGE_ROOTFS}/proc 2>/dev/null || true
 }

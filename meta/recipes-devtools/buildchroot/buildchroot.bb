@@ -12,7 +12,6 @@ FILESPATH =. "${LAYERDIR_core}/recipes-devtools/buildchroot/files:"
 SRC_URI = "file://multistrap.conf.in \
            file://configscript.sh \
            file://setup.sh \
-           file://download_dev-random \
            file://build.sh"
 PV = "1.0"
 
@@ -32,8 +31,10 @@ BUILDCHROOT_PREINSTALL ?= "gcc \
 WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${PN}"
 
 do_build[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
-do_build[dirs] = "${WORKDIR}/hooks_multistrap \
-                  ${BUILDCHROOT_DIR}/isar-apt"
+do_build[dirs] = "${BUILDCHROOT_DIR}/isar-apt \
+                  ${BUILDCHROOT_DIR}/dev \
+                  ${BUILDCHROOT_DIR}/proc \
+                  ${BUILDCHROOT_DIR}/sys"
 do_build[depends] = "isar-apt:do_cache_config"
 
 do_build() {
@@ -41,7 +42,6 @@ do_build() {
 
     chmod +x "${WORKDIR}/setup.sh"
     chmod +x "${WORKDIR}/configscript.sh"
-    install -m 755 "${WORKDIR}/download_dev-random" "${WORKDIR}/hooks_multistrap/"
 
     # Multistrap accepts only relative path in configuration files, so get it:
     cd ${TOPDIR}
@@ -60,15 +60,6 @@ do_build() {
         -e 's|##DIR_HOOKS##|./'"$WORKDIR_REL"'/hooks_multistrap|g' \
            "${WORKDIR}/multistrap.conf.in" > "${WORKDIR}/multistrap.conf"
 
-    [ ! -d ${BUILDCHROOT_DIR}/proc ] && install -d -m 555 ${BUILDCHROOT_DIR}/proc
-    sudo mount -t proc none ${BUILDCHROOT_DIR}/proc
-    _do_build_cleanup() {
-        ret=$?
-        sudo umount ${BUILDCHROOT_DIR}/proc 2>/dev/null || true
-        (exit $ret) || bb_exit_handler
-    }
-    trap '_do_build_cleanup' EXIT
-
     do_setup_mounts
 
     # Create root filesystem
@@ -79,7 +70,6 @@ do_build() {
 
     # Configure root filesystem
     sudo chroot ${BUILDCHROOT_DIR} /configscript.sh
-    _do_build_cleanup
 
     do_cleanup_mounts
 }
@@ -96,10 +86,14 @@ do_setup_mounts[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 
 do_setup_mounts() {
     sudo mount --bind ${DEPLOY_DIR_APT}/${DISTRO} ${BUILDCHROOT_DIR}/isar-apt
+    sudo mount -t devtmpfs -o mode=0755,nosuid devtmpfs ${BUILDCHROOT_DIR}/dev
+    sudo mount -t proc none ${BUILDCHROOT_DIR}/proc
 }
 
 addtask setup_mounts after do_build
 
 do_cleanup_mounts() {
     sudo umount ${BUILDCHROOT_DIR}/isar-apt 2>/dev/null || true
+    sudo umount ${BUILDCHROOT_DIR}/dev 2>/dev/null || true
+    sudo umount ${BUILDCHROOT_DIR}/proc 2>/dev/null || true
 }
