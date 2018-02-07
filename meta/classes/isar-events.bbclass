@@ -15,15 +15,16 @@ python isar_handler () {
         distro = d.getVar('DISTRO', True)
         arch = d.getVar('DISTRO_ARCH', True)
 
-        w = tmpdir + '/work/' + distro + '-' + arch
+        if tmpdir and distro and arch:
+            w = tmpdir + '/work/' + distro + '-' + arch
 
-        # '/proc/mounts' contains all the active mounts, so knowing 'w' we
-        # could get the list of mounts for the specific multiconfig and
-        # clean them.
-        with open('/proc/mounts', 'rU') as f:
-            for line in f:
-                if w in line:
-                    subprocess.call('sudo umount -f ' + line.split()[1], stdout=devnull, stderr=devnull, shell=True)
+            # '/proc/mounts' contains all the active mounts, so knowing 'w' we
+            # could get the list of mounts for the specific multiconfig and
+            # clean them.
+            with open('/proc/mounts', 'rU') as f:
+                for line in f:
+                    if w in line:
+                        subprocess.call('sudo umount -f ' + line.split()[1], stdout=devnull, stderr=devnull, shell=True)
 
     devnull.close()
 }
