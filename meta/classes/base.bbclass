@@ -37,25 +37,33 @@ bbfatal() {
 	exit 1
 }
 
+# Derived from bitbake: bitbake/classes/base.bbclass
 addtask showdata
 do_showdata[nostamp] = "1"
 python do_showdata() {
-	import sys
-	# emit variables and shell functions
-	bb.data.emit_env(sys.__stdout__, d, True)
-	# emit the metadata which isnt valid shell
-	for e in bb.data.keys(d):
-		if bb.data.getVarFlag(e, 'python', d):
-			sys.__stdout__.write("\npython %s () {\n%s}\n" % (e, bb.data.getVar(e, d, 1)))
+    for e in d.keys():
+        if d.getVarFlag(e, 'python'):
+            bb.plain("\npython %s () {\n%s}\n" % (e, d.getVar(e, True)))
 }
 
+# Derived from Open Embedded: openembedded-core/meta/classes/utility-tasks.bbclass
 addtask listtasks
 do_listtasks[nostamp] = "1"
 python do_listtasks() {
-	import sys
-	for e in bb.data.keys(d):
-		if bb.data.getVarFlag(e, 'task', d):
-			sys.__stdout__.write("%s\n" % e)
+    taskdescs = {}
+    maxlen = 0
+    for e in d.keys():
+        if d.getVarFlag(e, 'task'):
+            maxlen = max(maxlen, len(e))
+            if e.endswith('_setscene'):
+                desc = "%s (setscene version)" % (d.getVarFlag(e[:-9], 'doc') or '')
+            else:
+                desc = d.getVarFlag(e, 'doc') or ''
+            taskdescs[e] = desc
+
+    tasks = sorted(taskdescs.keys())
+    for taskname in tasks:
+        bb.plain("%s  %s" % (taskname.ljust(maxlen), taskdescs[taskname]))
 }
 
 do_fetch[dirs] = "${DL_DIR}"
