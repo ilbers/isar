@@ -513,7 +513,7 @@ PV = "1.0"
 SRC_URI = "git://github.com/ilbers/hello.git"
 SRCREV = "ad7065ecc4840cc436bfcdac427386dbba4ea719"
 
-SRC_DIR = "git"
+S = "git"
 
 inherit dpkg
 ```
@@ -531,8 +531,8 @@ This approach prevents duplication of the license files in different packages.
 
  - `PV` - Package version.
  - `SRC_URI` - The link where to fetch application source. Please check the BitBake user manual for supported download formats.
- - `SRC_DIR` - The directory name where application sources will be unpacked. For `git` repositories, it should be set to `git`. Please check the BitBake user manual for supported download formats.
- - `SRC_REV` - Source code revision to fetch. Please check the BitBake user manual for supported download formats.
+ - `S` - The directory name where application sources will be unpacked. For `git` repositories, it should be set to `git`. Please check the BitBake user manual for supported download formats.
+ - `SRCREV` - Source code revision to fetch. Please check the BitBake user manual for supported download formats.
 
 The last line in the example above adds recipe to the Isar work chain.
 

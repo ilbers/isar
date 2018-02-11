@@ -13,6 +13,6 @@ PV = "0.1-98f2e41"
 SRC_URI = "git://github.com/ilbers/libhello.git;protocol=https"
 SRCREV = "98f2e41e7d05ab8d19b0c5d160b104b725c8fd93"
 
-SRC_DIR = "git"
+S = "git"
 
 inherit dpkg

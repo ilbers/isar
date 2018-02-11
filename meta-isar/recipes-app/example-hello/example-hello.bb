@@ -17,6 +17,6 @@ DEPENDS += "libhello"
 SRC_URI = "git://github.com/ilbers/hello.git;protocol=https"
 SRCREV = "86cc719b3359adc3c4e243387feba50360a860f3"
 
-SRC_DIR = "git"
+S = "git"
 
 inherit dpkg
