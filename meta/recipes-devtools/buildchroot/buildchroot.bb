@@ -31,14 +31,18 @@ BUILDCHROOT_PREINSTALL ?= "gcc \
 WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${PN}"
 
 do_build[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
-do_build[dirs] = "${BUILDCHROOT_DIR}/isar-apt \
-                  ${BUILDCHROOT_DIR}/dev \
-                  ${BUILDCHROOT_DIR}/proc \
-                  ${BUILDCHROOT_DIR}/sys"
 do_build[depends] = "isar-apt:do_cache_config"
 
 do_build() {
     E="${@ bb.utils.export_proxies(d)}"
+
+    # If buildchroot re-build is triggered, this ensure that we are always
+    # re-building a clean image:
+    sudo rm -rf ${BUILDCHROOT_DIR}
+    mkdir -p ${BUILDCHROOT_DIR}/isar-apt
+    mkdir -p ${BUILDCHROOT_DIR}/dev
+    mkdir -p ${BUILDCHROOT_DIR}/proc
+    mkdir -p ${BUILDCHROOT_DIR}/sys
 
     chmod +x "${WORKDIR}/setup.sh"
     chmod +x "${WORKDIR}/configscript.sh"
