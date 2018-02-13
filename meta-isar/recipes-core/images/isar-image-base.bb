@@ -31,6 +31,8 @@ do_rootfs[dirs] = "${WORKDIR}/hooks_multistrap"
 do_rootfs() {
     E="${@ bb.utils.export_proxies(d)}"
 
+    sudo rm -rf ${IMAGE_ROOTFS}
+
     chmod +x "${WORKDIR}/${DISTRO_CONFIG_SCRIPT}"
     chmod +x "${WORKDIR}/setup.sh"
     install -m 755 "${WORKDIR}/download_dev-random" "${WORKDIR}/hooks_multistrap/"
