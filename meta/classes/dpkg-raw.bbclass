@@ -16,10 +16,9 @@ do_install() {
 do_install[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 addtask install after do_unpack before do_deb_package_prepare
 
-# so we can put hooks etc. in there already
-do_install[dirs] = "${D}/DEBIAN"
-
 do_deb_package_prepare() {
+	sudo rm -rf ${D}/DEBIAN
+	mkdir ${D}/DEBIAN
 	cat<<-__EOF__ > ${D}/DEBIAN/control
 		Package: ${PN}
 		Architecture: ${DISTRO_ARCH}
