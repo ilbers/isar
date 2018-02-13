@@ -25,14 +25,6 @@ do_install() {
 	install -v -d ${D}/usr/local/doc/
 	install -v -m 644 ${WORKDIR}/README ${D}/usr/local/doc/README-${P}
 
-	bbnote "Now for a debian hook, see dpkg-deb"
-	install -v -m 755 ${WORKDIR}/postinst ${D}/DEBIAN/postinst
-
-	# this wins over meta-isar/recipes-core/images/files/*configscript.sh
-	# but we take the same password for this example
-	bbnote "Set the root password"
-	echo 'echo "root:root" | chpasswd' >> ${D}/DEBIAN/postinst
-
 	bbnote "Now for a fake config file"
 	echo "# empty config file" > ${WORKDIR}/${PN}.conf
 	install -v -d ${D}/usr/local/etc/

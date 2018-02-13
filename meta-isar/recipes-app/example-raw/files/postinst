@@ -14,3 +14,7 @@ if ! getent passwd isar >/dev/null; then
 fi
 
 chown -R isar:isar /var/lib/isar
+
+# this wins over meta-isar/recipes-core/images/files/*configscript.sh
+# but we take the same password for this example
+echo "root:root" | chpasswd

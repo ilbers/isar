@@ -35,7 +35,10 @@ do_deb_package_prepare() {
 	do
 		for a in inst rm
 		do
-			chmod -f +x ${D}/DEBIAN/${t}${a} || true
+			if [ -f ${WORKDIR}/${t}${a} ]; then
+				install -v -m 755 ${WORKDIR}/${t}${a} \
+					${D}/DEBIAN/${t}${a}
+			fi
 		done
 	done
 }
