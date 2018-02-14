@@ -110,4 +110,37 @@ python base_do_build () {
     bb.note("Try running the 'listtasks' task against a .bb to see what tasks are defined.")
 }
 
-EXPORT_FUNCTIONS do_clean do_mrproper do_build
+EXPORT_FUNCTIONS do_build
+
+CLEANFUNCS ?= ""
+
+# Derived from OpenEmbedded Core: meta/classes/utility-tasks.bbclass
+addtask clean
+do_clean[nostamp] = "1"
+python do_clean() {
+    import subprocess
+
+    for f in (d.getVar('CLEANFUNCS', True) or '').split():
+        bb.build.exec_func(f, d)
+
+    dir = d.expand("${WORKDIR}")
+    subprocess.call('sudo rm -rf ' + dir, shell=True)
+
+    dir = "%s.*" % bb.data.expand(d.getVar('STAMP', False), d)
+    subprocess.call('sudo rm -rf ' + dir, shell=True)
+}
+
+# Derived from OpenEmbedded Core: meta/classes/base.bbclass
+addtask cleanall after do_clean
+do_cleanall[nostamp] = "1"
+python do_cleanall() {
+    src_uri = (d.getVar('SRC_URI', True) or "").split()
+    if len(src_uri) == 0:
+        return
+
+    try:
+        fetcher = bb.fetch2.Fetch(src_uri, d)
+        fetcher.clean()
+    except bb.fetch2.BBFetchException as e:
+        bb.fatal(str(e))
+}

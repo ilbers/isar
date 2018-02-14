@@ -31,8 +31,22 @@ do_build() {
     sudo rmdir ${BUILDROOT} 2>/dev/null || true
 }
 
+CLEANFUNCS += "repo_clean"
+
+repo_clean() {
+    PACKAGES=$(cd ${WORKDIR}; ls *.deb | sed 's/\([^_]*\).*/\1/')
+    if [ -n "${PACKAGES}" ]; then
+        reprepro -b ${DEPLOY_DIR_APT}/${DISTRO} \
+                 --dbdir ${DEPLOY_DIR_DB}/${DISTRO} \
+                 -C main -A ${DISTRO_ARCH} \
+                 remove ${DEBDISTRONAME} \
+                 ${PACKAGES}
+    fi
+}
+
 # Install package to Isar-apt
 do_deploy_deb() {
+    repo_clean
     reprepro -b ${DEPLOY_DIR_APT}/${DISTRO} \
              --dbdir ${DEPLOY_DIR_DB}/${DISTRO} \
              -C main \
