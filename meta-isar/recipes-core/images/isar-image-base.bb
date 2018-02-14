@@ -18,6 +18,8 @@ PV = "1.0"
 
 inherit image
 
+IMAGE_INSTALL += "linux-image-${KERNEL_NAME}"
+
 DEPENDS += "${IMAGE_INSTALL}"
 
 IMAGE_PREINSTALL += "apt \
