@@ -154,7 +154,3 @@ CONF_VERSION = "1"
 #
 # The default list of extra packages to be installed.
 IMAGE_INSTALL = "example-hello example-raw example-module"
-
-#
-# Default parallel jobs for bitbake:
-BB_NUMBER_THREADS = "4"
