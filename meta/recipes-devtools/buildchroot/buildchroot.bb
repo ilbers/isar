@@ -40,6 +40,7 @@ do_build() {
     # re-building a clean image:
     sudo rm -rf ${BUILDCHROOT_DIR}
     mkdir -p ${BUILDCHROOT_DIR}/isar-apt
+    mkdir -p ${BUILDCHROOT_DIR}/downloads
     mkdir -p ${BUILDCHROOT_DIR}/dev
     mkdir -p ${BUILDCHROOT_DIR}/proc
     mkdir -p ${BUILDCHROOT_DIR}/sys

@@ -1,6 +1,16 @@
 # This software is a part of ISAR.
 # Copyright (C) 2017 Siemens AG
 
+do_adjust_git() {
+    if [ -f ${WORKDIR}/${S}/.git/objects/info/alternates ]; then
+        sed -i ${WORKDIR}/${S}/.git/objects/info/alternates \
+            -e 's|${DL_DIR}|/downloads|'
+    fi
+}
+
+addtask adjust_git after do_unpack before do_build
+do_adjust_git[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
+
 # Add dependency from buildchroot creation
 do_build[depends] = "buildchroot:do_build"
 
@@ -30,6 +40,7 @@ do_build() {
     sudo flock ${MOUNT_LOCKFILE} -c ' \
         if ! grep -q ${BUILDCHROOT_DIR}/isar-apt /proc/mounts; then \
             mount --bind ${DEPLOY_DIR_APT}/${DISTRO} ${BUILDCHROOT_DIR}/isar-apt; \
+            mount --bind ${DL_DIR} ${BUILDCHROOT_DIR}/downloads; \
             mount -t devtmpfs -o mode=0755,nosuid devtmpfs ${BUILDCHROOT_DIR}/dev; \
             mount -t proc none ${BUILDCHROOT_DIR}/proc; \
         fi'
