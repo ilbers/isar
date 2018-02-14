@@ -64,6 +64,6 @@ do_deploy_deb() {
 }
 
 addtask deploy_deb after do_build
-do_deploy_deb[stamp-extra-info] = "${DISTRO}-${MACHINE}"
+do_deploy_deb[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 do_deploy_deb[lockfiles] = "${DEPLOY_DIR_APT}/isar.lock"
 do_deploy_deb[depends] = "isar-apt:do_cache_config"
