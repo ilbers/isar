@@ -47,7 +47,7 @@ addtask deb_package_prepare after do_install before do_deb_package_conffiles
 
 do_deb_package_conffiles() {
 	CONFFILES=${D}/DEBIAN/conffiles
-	find ${D} -type f -path '*/etc/*' | sed -e 's|^${D}|/|' >> $CONFFILES
+	find ${D} -type f -path '${D}/etc/*' | sed -e 's|^${D}|/|' >> $CONFFILES
 	test -s $CONFFILES || rm $CONFFILES
 }
 
