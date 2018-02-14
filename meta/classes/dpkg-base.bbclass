@@ -2,7 +2,7 @@
 # Copyright (C) 2017 Siemens AG
 
 # Add dependency from buildchroot creation
-do_build[depends] = "buildchroot:do_setup_mounts"
+do_build[depends] = "buildchroot:do_build"
 
 # Add dependency between Isar recipes
 DEPENDS ?= ""
@@ -20,10 +20,19 @@ dpkg_runbuild() {
     die "This should never be called, overwrite it in your derived class"
 }
 
+MOUNT_LOCKFILE = "${BUILDCHROOT_DIR}/mount.lock"
+
 # Wrap the function dpkg_runbuild with the bind mount for buildroot
 do_build() {
     mkdir -p ${BUILDROOT}
     sudo mount --bind ${WORKDIR} ${BUILDROOT}
+
+    sudo flock ${MOUNT_LOCKFILE} -c ' \
+        if ! grep -q ${BUILDCHROOT_DIR}/isar-apt /proc/mounts; then \
+            mount --bind ${DEPLOY_DIR_APT}/${DISTRO} ${BUILDCHROOT_DIR}/isar-apt; \
+            mount -t devtmpfs -o mode=0755,nosuid devtmpfs ${BUILDCHROOT_DIR}/dev; \
+            mount -t proc none ${BUILDCHROOT_DIR}/proc; \
+        fi'
 
     dpkg_runbuild
 

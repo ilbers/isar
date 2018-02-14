@@ -60,7 +60,9 @@ do_build() {
         -e 's|##DIR_HOOKS##|./'"$WORKDIR_REL"'/hooks_multistrap|g' \
            "${WORKDIR}/multistrap.conf.in" > "${WORKDIR}/multistrap.conf"
 
-    do_setup_mounts
+    sudo mount --bind ${DEPLOY_DIR_APT}/${DISTRO} ${BUILDCHROOT_DIR}/isar-apt
+    sudo mount -t devtmpfs -o mode=0755,nosuid devtmpfs ${BUILDCHROOT_DIR}/dev
+    sudo mount -t proc none ${BUILDCHROOT_DIR}/proc
 
     # Create root filesystem
     sudo -E multistrap -a ${DISTRO_ARCH} -d "${BUILDCHROOT_DIR}" -f "${WORKDIR}/multistrap.conf"
@@ -70,30 +72,4 @@ do_build() {
 
     # Configure root filesystem
     sudo chroot ${BUILDCHROOT_DIR} /configscript.sh
-
-    do_cleanup_mounts
-}
-
-# Invalidate stamp for do_setup_mounts before each build start.
-# This will guarantee that this function will be executed once
-# per build.
-python __anonymous() {
-    stamp = d.getVar("STAMP") + ".do_setup_mounts." + d.getVarFlag("do_setup_mounts", 'stamp-extra-info')
-    os.remove(stamp) if os.path.exists(stamp) else None
-}
-
-do_setup_mounts[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
-
-do_setup_mounts() {
-    sudo mount --bind ${DEPLOY_DIR_APT}/${DISTRO} ${BUILDCHROOT_DIR}/isar-apt
-    sudo mount -t devtmpfs -o mode=0755,nosuid devtmpfs ${BUILDCHROOT_DIR}/dev
-    sudo mount -t proc none ${BUILDCHROOT_DIR}/proc
-}
-
-addtask setup_mounts after do_build
-
-do_cleanup_mounts() {
-    sudo umount ${BUILDCHROOT_DIR}/isar-apt 2>/dev/null || true
-    sudo umount ${BUILDCHROOT_DIR}/dev 2>/dev/null || true
-    sudo umount ${BUILDCHROOT_DIR}/proc 2>/dev/null || true
 }
