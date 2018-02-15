@@ -18,7 +18,7 @@ addtask install after do_unpack before do_deb_package_prepare
 
 do_deb_package_prepare() {
 	sudo rm -rf ${D}/DEBIAN
-	mkdir ${D}/DEBIAN
+	mkdir -p ${D}/DEBIAN
 	cat<<-__EOF__ > ${D}/DEBIAN/control
 		Package: ${PN}
 		Architecture: ${DISTRO_ARCH}
