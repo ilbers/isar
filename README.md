@@ -50,5 +50,5 @@ Tested on:
 
 # Credits
 
-* Developed by ilbers GmbH
+* Developed by ilbers GmbH & Siemens AG
 * Sponsored by Siemens AG
