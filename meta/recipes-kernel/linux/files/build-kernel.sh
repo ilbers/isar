@@ -1,4 +1,12 @@
 #!/bin/sh
+#
+# Custom kernel build
+#
+# This software is a part of ISAR.
+# Copyright (c) Siemens AG, 2018
+#
+# SPDX-License-Identifier: MIT
+
 set -e
 
 REPACK_DIR="$1/../repack"
