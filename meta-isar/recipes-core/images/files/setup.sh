@@ -14,6 +14,7 @@ set -e
 # setup.sh needs to be executable.
 
 TARGET=$1
+ARCH=$2
 
 # Prevent daemons from starting in postinstall during the initial "dpkg
 # --configure -a" under QEMU on the build host
@@ -56,11 +57,20 @@ EOF
     chmod a+x $TARGET/usr/sbin/policy-rc.d
 fi
 
-# Install QEMU emulator to execute ARM binaries
-if [ ! -x /usr/bin/qemu-arm-static ]; then
-    echo "qemu-arm-static binary not present, unable to execute ARM binaries"
+case $ARCH in
+    armel|armhf)
+        qemu_arch=arm
+        ;;
+    arm64)
+        qemu_arch=aarch64
+        ;;
+esac
+
+# Install QEMU emulator to execute foreign binaries
+if [ ! -x /usr/bin/qemu-${qemu_arch}-static ]; then
+    echo "qemu-${qemu_arch}-static binary not present, unable to execute target binaries"
 else
-    sudo cp /usr/bin/qemu-arm-static ${TARGET}/usr/bin
+    sudo cp /usr/bin/qemu-${qemu_arch}-static ${TARGET}/usr/bin
 fi
 
 # Set hostname
