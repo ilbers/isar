@@ -27,11 +27,9 @@ python isar_handler () {
 
     if isinstance(e, bb.event.BuildCompleted):
         tmpdir = d.getVar('TMPDIR', True)
-        distro = d.getVar('DISTRO', True)
-        arch = d.getVar('DISTRO_ARCH', True)
 
-        if tmpdir and distro and arch:
-            basepath = tmpdir + '/work/' + distro + '-' + arch
+        if tmpdir:
+            basepath = tmpdir + '/work/'
 
             while not umount_all(basepath):
                 time.sleep(1)
