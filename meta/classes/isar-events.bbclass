@@ -2,11 +2,26 @@
 #
 # This software is a part of ISAR.
 # Copyright (C) 2015-2017 ilbers GmbH
+# Copyright (c) Siemens AG, 2018
 
 addhandler isar_handler
 
 python isar_handler () {
     import subprocess
+    import time
+
+    def umount_all(basepath):
+        # '/proc/mounts' contains all the active mounts, so knowing basepath
+        # we can get the list of mounts for the specific multiconfig and
+        # clean them.
+        with open('/proc/mounts', 'rU') as f:
+            for line in f:
+                if basepath in line:
+                    if subprocess.call('sudo umount ' + line.split()[1],
+                                       stdout=devnull, stderr=devnull,
+                                       shell=True) != 0:
+                        return False
+        return True
 
     devnull = open(os.devnull, 'w')
 
@@ -16,15 +31,10 @@ python isar_handler () {
         arch = d.getVar('DISTRO_ARCH', True)
 
         if tmpdir and distro and arch:
-            w = tmpdir + '/work/' + distro + '-' + arch
+            basepath = tmpdir + '/work/' + distro + '-' + arch
 
-            # '/proc/mounts' contains all the active mounts, so knowing 'w' we
-            # could get the list of mounts for the specific multiconfig and
-            # clean them.
-            with open('/proc/mounts', 'rU') as f:
-                for line in f:
-                    if w in line:
-                        subprocess.call('sudo umount -f ' + line.split()[1], stdout=devnull, stderr=devnull, shell=True)
+            while not umount_all(basepath):
+                time.sleep(1)
 
     devnull.close()
 }
