@@ -26,6 +26,7 @@ bitbake \
         multiconfig:qemuarm-wheezy:isar-image-base \
         multiconfig:qemuarm-jessie:isar-image-base \
         multiconfig:qemuarm-stretch:isar-image-base \
+        multiconfig:qemuarm64-stretch:isar-image-base \
         multiconfig:qemui386-jessie:isar-image-base \
         multiconfig:qemui386-stretch:isar-image-base \
         multiconfig:qemuamd64-jessie:isar-image-base \
