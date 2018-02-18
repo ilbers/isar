@@ -8,8 +8,11 @@ do_adjust_git() {
     fi
 }
 
-addtask adjust_git after do_unpack before do_build
+addtask adjust_git after do_unpack before do_patch
 do_adjust_git[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
+
+inherit patch
+addtask patch after do_adjust_git before do_build
 
 # Add dependency from buildchroot creation
 do_build[depends] = "buildchroot:do_build"
