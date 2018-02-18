@@ -1,0 +1,40 @@
+From 4615f473881aaff12a52aa3bb625bfb38753b4f2 Mon Sep 17 00:00:00 2001
+From: Jan Kiszka <jan.kiszka@siemens.com>
+Date: Sun, 18 Feb 2018 09:02:11 +0100
+Subject: [PATCH] Add some help
+
+This just provides a commit to demonstrate patching in Isar recipes.
+
+Signed-off-by: Jan Kiszka <jan.kiszka@siemens.com>
+---
+ hello.c | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/hello.c b/hello.c
+index 269c24b..329a0c5 100644
+--- a/hello.c
++++ b/hello.c
+@@ -5,10 +5,19 @@
+  * version 2.
+  */
+ 
++#include <stdio.h>
+ #include <hello.h>
+ 
+-int main(void)
++int main(int argc, char *argv[])
+ {
++	while (argc > 1) {
++		if (strcmp(argv[argc - 1], "--help") == 0) {
++			printf("42\n");
++			return 0;
++		}
++		argc--;
++	}
++
+ 	say_hello();
+ 	return 0;
+ }
+-- 
+2.13.6
+

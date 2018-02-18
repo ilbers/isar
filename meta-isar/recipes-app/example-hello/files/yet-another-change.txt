@@ -1,0 +1,11 @@
+--- hello.c.orig	2018-02-18 09:09:26.712855740 +0100
++++ hello.c	2018-02-18 09:09:51.969056718 +0100
+@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
+ {
+ 	while (argc > 1) {
+ 		if (strcmp(argv[argc - 1], "--help") == 0) {
+-			printf("42\n");
++			printf("42. Or what was the question?\n");
+ 			return 0;
+ 		}
+ 		argc--;
