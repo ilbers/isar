@@ -1,8 +1,20 @@
+image: kasproject/kas-isar:latest
+
 all:
   stage: build
   script:
-    - ./scripts/ci_build.sh
-  artifacts:
-    paths:
-    - images/isar-image-base-qemuarm.ext4.img.gz
-    - images/isar-image-base.rpi-sdimg.gz
+    - export http_proxy=$HTTP_PROXY
+    - export https_proxy=$HTTPS_PROXY
+    - export ftp_proxy=$FTP_PROXY
+    - export no_proxy=$NO_PROXY
+    - source isar-init-build-env out
+    - bitbake
+        multiconfig:qemuarm-wheezy:isar-image-base
+        multiconfig:qemuarm-jessie:isar-image-base
+        multiconfig:qemuarm-stretch:isar-image-base
+        multiconfig:qemuarm64-stretch:isar-image-base
+        multiconfig:qemui386-jessie:isar-image-base
+        multiconfig:qemui386-stretch:isar-image-base
+        multiconfig:qemuamd64-jessie:isar-image-base
+        multiconfig:qemuamd64-stretch:isar-image-base
+        multiconfig:rpi-jessie:isar-image-base
