@@ -4,6 +4,8 @@
 # Extra space for rootfs in MB
 ROOTFS_EXTRA ?= "64"
 
+ROOTFS_TYPE = "ext4"
+
 EXT4_IMAGE_FILE = "${DEPLOY_DIR_IMAGE}/${PN}-${DISTRO}-${MACHINE}.ext4.img"
 
 do_ext4_image[stamp-extra-info] = "${DISTRO}-${MACHINE}"

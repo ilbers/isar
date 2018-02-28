@@ -8,6 +8,7 @@ set -e
 readonly MACHINE_SERIAL="$1"
 readonly BAUDRATE_TTY="$2"
 readonly ROOTFS_DEV="$3"
+readonly ROOTFS_TYPE="$4"
 
 cat >> /etc/default/locale << EOF
 LANG=en_US.UTF-8
@@ -55,7 +56,7 @@ grep "root:\*:" /etc/shadow && echo "root:root" | chpasswd
 
 cat > /etc/fstab << EOF
 # Begin /etc/fstab
-/dev/$ROOTFS_DEV	/		ext4		defaults		1	1
+/dev/$ROOTFS_DEV	/		$ROOTFS_TYPE		defaults		1	1
 proc		/proc		proc		nosuid,noexec,nodev	0	0
 sysfs		/sys		sysfs		nosuid,noexec,nodev	0	0
 devpts		/dev/pts	devpts		gid=5,mode=620		0	0

@@ -69,8 +69,8 @@ do_rootfs() {
     sudo -E multistrap -a ${DISTRO_ARCH} -d "${IMAGE_ROOTFS}" -f "${WORKDIR}/multistrap.conf"
 
     # Configure root filesystem
-    sudo chroot ${IMAGE_ROOTFS} /${DISTRO_CONFIG_SCRIPT} ${MACHINE_SERIAL} ${BAUDRATE_TTY} \
-        ${ROOTFS_DEV}
+    sudo chroot ${IMAGE_ROOTFS} /${DISTRO_CONFIG_SCRIPT} ${MACHINE_SERIAL} \
+        ${BAUDRATE_TTY} ${ROOTFS_DEV} ${ROOTFS_TYPE}
     sudo rm "${IMAGE_ROOTFS}/${DISTRO_CONFIG_SCRIPT}"
 
     sudo umount ${IMAGE_ROOTFS}/proc 2>/dev/null || true
