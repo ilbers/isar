@@ -68,6 +68,7 @@ do_build() {
     sudo mount --bind ${DEPLOY_DIR_APT}/${DISTRO} ${BUILDCHROOT_DIR}/isar-apt
     sudo mount -t devtmpfs -o mode=0755,nosuid devtmpfs ${BUILDCHROOT_DIR}/dev
     sudo mount -t proc none ${BUILDCHROOT_DIR}/proc
+    sudo mount --bind ${DL_DIR} ${BUILDCHROOT_DIR}/downloads
 
     # Create root filesystem
     sudo -E multistrap -a ${DISTRO_ARCH} -d "${BUILDCHROOT_DIR}" -f "${WORKDIR}/multistrap.conf"
