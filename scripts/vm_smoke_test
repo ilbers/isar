@@ -48,3 +48,6 @@ run_test amd64 stretch
 # i386 machine
 run_test i386 jessie
 run_test i386 stretch
+
+# ARM64 machine
+run_test arm64 stretch
