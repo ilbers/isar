@@ -11,9 +11,15 @@
 static int __init example_module_init(void)
 {
 	printk("Just an example\n");
-	return -ENOANO;
+	return 0;
+}
+
+static void __exit example_module_exit(void)
+{
+	return;
 }
 
 module_init(example_module_init);
+module_exit(example_module_exit);
 
 MODULE_LICENSE("GPL");
