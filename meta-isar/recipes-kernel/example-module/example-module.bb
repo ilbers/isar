@@ -10,3 +10,5 @@ include recipes-kernel/linux-module/module.inc
 SRC_URI += "file://src"
 
 S = "src"
+
+AUTOLOAD = "1"
