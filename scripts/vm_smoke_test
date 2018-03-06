@@ -6,13 +6,39 @@
 CONSOLE_OUTPUT=/tmp/isar_console
 PID_FILE=/tmp/qemu.pid
 
-check_output() {
-    str=$(tail -1 $CONSOLE_OUTPUT)
+RET=0
 
-    if [ "$str" = "isar login: " ]; then
-        echo "Test: PASSED"
+dump_boot_log() {
+    echo "Boot log: 8<--"
+    cat $CONSOLE_OUTPUT
+    echo -e "\n8<--"
+}
+
+check_login_prompt() {
+    echo -n "Check login prompt: "
+
+    str=$(grep "isar login: " $CONSOLE_OUTPUT)
+
+    if [ -n "$str" ]; then
+        echo "PASSED"
     else
-        echo "Test: FAIL"
+        echo "FAIL"
+        dump_boot_log
+        RET=1
+    fi
+}
+
+check_example_module() {
+    echo -n "Check example module: "
+
+    str=$(grep "Just an example" $CONSOLE_OUTPUT)
+
+    if [ -n "$str" ]; then
+        echo "PASSED"
+    else
+        echo "FAIL"
+        dump_boot_log
+        RET=1
     fi
 }
 
@@ -28,8 +54,11 @@ run_test () {
     sleep 30
     kill `cat $PID_FILE`
 
-    # Check output
-    check_output
+    # Check login prompt
+    check_login_prompt
+
+    # Check kernel module
+    check_example_module
 
     # Clean up test artifacts
     rm $CONSOLE_OUTPUT
@@ -51,3 +80,5 @@ run_test i386 stretch
 
 # ARM64 machine
 run_test arm64 stretch
+
+exit $RET
