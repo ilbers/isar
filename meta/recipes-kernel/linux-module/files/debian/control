@@ -7,5 +7,5 @@ Maintainer: ISAR project <isar-users@googlegroups.com>
 
 Package: @PN@
 Architecture: any
-Depends: linux-image-@KERNEL_NAME@
+Depends: linux-image-@KERNEL_NAME@, kmod
 Description: @DESCRIPTION@

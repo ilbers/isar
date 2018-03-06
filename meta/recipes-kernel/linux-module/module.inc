@@ -13,6 +13,8 @@ DEPENDS += "linux-headers-${KERNEL_NAME}"
 
 SRC_URI += "file://debian/"
 
+AUTOLOAD ?= "0"
+
 inherit dpkg
 
 dpkg_runbuild_prepend() {
@@ -21,4 +23,9 @@ dpkg_runbuild_prepend() {
            -e 's/@KERNEL_NAME@/${KERNEL_NAME}/g' \
            -e 's/@DESCRIPTION@/${DESCRIPTION}/g' \
         ${WORKDIR}/${S}/debian/changelog ${WORKDIR}/${S}/debian/control
+
+    if [ ${AUTOLOAD} = "1" ]; then
+        echo "echo ${PN} >> /etc/modules" >> ${WORKDIR}/${S}/debian/postinst
+        chmod +x ${WORKDIR}/${S}/debian/postinst
+    fi
 }
