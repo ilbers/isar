@@ -14,14 +14,15 @@ python isar_handler () {
         # '/proc/mounts' contains all the active mounts, so knowing basepath
         # we can get the list of mounts for the specific multiconfig and
         # clean them.
+        result = True
         with open('/proc/mounts', 'rU') as f:
             for line in f:
                 if basepath in line:
                     if subprocess.call('sudo umount ' + line.split()[1],
                                        stdout=devnull, stderr=devnull,
                                        shell=True) != 0:
-                        return False
-        return True
+                        result = False
+        return result
 
     devnull = open(os.devnull, 'w')
 
