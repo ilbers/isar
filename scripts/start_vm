@@ -25,8 +25,8 @@ qemu-system-$QEMU_ARCH \\\\\n\
     -M $QEMU_MACHINE \\\\\n\
     $QCPU\\\\\n\
     -nographic \\\\\n\
-    -kernel \$IMAGE_DIR/$KERNEL_IMAGE \\\\\n\
-    -initrd \$IMAGE_DIR/$INITRD_IMAGE \\\\\n\
+    -kernel \$QKERNEL \\\\\n\
+    -initrd \$QINITRD \\\\\n\
     -append \"console=$MACHINE_SERIAL root=/dev/$ROOTFS_DEV rw\" \\\\\n\
     $EXTRA_ARGS \\\\\n\
     $root1"
@@ -38,8 +38,8 @@ qemu-system-$QEMU_ARCH \\\\\n\
 	-M $QEMU_MACHINE \
 	$QCPU \
 	-nographic \
-	-kernel $IMAGE_DIR/$KERNEL_IMAGE \
-	-initrd $IMAGE_DIR/$INITRD_IMAGE \
+	-kernel $QKERNEL \
+	-initrd $QINITRD \
 	-append "console=$MACHINE_SERIAL root=/dev/$ROOTFS_DEV rw" \
 	$EXTRA_ARGS \
 	$root2
@@ -118,6 +118,9 @@ readonly ROOTFS_IMAGE=isar-image-base-debian-$DISTRO-qemu$ARCH.ext4.img
 
 eval $(bitbake -e multiconfig:qemu$ARCH-$DISTRO:isar-image-base | grep "^KERNEL_IMAGE=")
 eval $(bitbake -e multiconfig:qemu$ARCH-$DISTRO:isar-image-base | grep "^INITRD_IMAGE=")
+QKERNEL=$IMAGE_DIR/$KERNEL_IMAGE
+QINITRD=/dev/null
+[ -n "$INITRD_IMAGE" ] && QINITRD=$IMAGE_DIR/$INITRD_IMAGE
 
 readonly ISARROOT="$(dirname "$0")"/..
 

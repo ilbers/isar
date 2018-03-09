@@ -8,8 +8,11 @@ IMAGE_ROOTFS   = "${WORKDIR}/rootfs"
 def get_image_name(d, name_link):
     S = d.getVar("IMAGE_ROOTFS", True)
     path_link = os.path.join(S, name_link)
-    if os.path.lexists(path_link):
+    if os.path.exists(path_link):
         return os.path.basename(os.path.realpath(path_link))
+    if os.path.islink(path_link):
+        return get_image_name(d, os.path.relpath(os.path.realpath(path_link),
+                                                 '/'))
     return ""
 
 # These variables are used by wic and start_vm
