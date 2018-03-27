@@ -34,12 +34,12 @@ do_rootfs[deptask] = "do_deploy_deb"
 do_copy_boot_files() {
     KERNEL_IMAGE=${@get_image_name(d, 'vmlinuz')}
     if [ -n "${KERNEL_IMAGE}" ]; then
-        cp -f ${IMAGE_ROOTFS}/boot/${KERNEL_IMAGE} ${DEPLOY_DIR_IMAGE}
+        cp -f ${IMAGE_ROOTFS}/boot/${KERNEL_IMAGE} ${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGE}_${DISTRO}-${MACHINE}
     fi
 
     INITRD_IMAGE=${@get_image_name(d, 'initrd.img')}
     if [ -n "${INITRD_IMAGE}" ]; then
-        sudo cp -f ${IMAGE_ROOTFS}/boot/${INITRD_IMAGE} ${DEPLOY_DIR_IMAGE}
+        sudo cp -f ${IMAGE_ROOTFS}/boot/${INITRD_IMAGE} ${DEPLOY_DIR_IMAGE}/${INITRD_IMAGE}_${DISTRO}-${MACHINE}
     fi
 }
 
