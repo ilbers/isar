@@ -29,7 +29,7 @@ install_cmd="${install_cmd} --allow-unauthenticated"
     #   APT::Get::List-Cleanup - do not erase obsolete packages list for
     #                            upstream in '/var/lib/apt/lists'
     apt-get update \
-        -o Dir::Etc::sourcelist="sources.list.d/multistrap-isar-apt.list" \
+        -o Dir::Etc::sourcelist="sources.list.d/isar-apt.list" \
         -o Dir::Etc::sourceparts="-" \
         -o APT::Get::List-Cleanup="0"
 
