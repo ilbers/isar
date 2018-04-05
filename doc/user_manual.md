@@ -58,7 +58,7 @@ git
 grub-efi-amd64-bin          # wic UEFI: /usr/lib/grub/x86_64-efi/moddep.lst
 grub-efi-ia32-bin           # wic UEFI: /usr/lib/grub/i386-efi/moddep.lst
 mtools                      # wic FAT: mcopy
-multistrap
+debootstrap
 parted
 python
 python3                     # wic
@@ -79,7 +79,7 @@ Notes:
 
 ### Setup Sudo
 
-Isar requires `sudo` rights without password to work with `chroot` and `multistrap`. To add them, use the following steps:
+Isar requires `sudo` rights without password to work with `chroot` and `debootstrap`. To add them, use the following steps:
 ```
  # visudo
 ```
@@ -366,17 +366,17 @@ Isar can generate various images types for specific machine. The `IMAGE_TYPE` va
 
 The distro is defined by the set of the following variables:
 
- - `DISTRO_SUITE` - Repository suite like stable, jessie, wheezy etc.
- - `DISTRO_COMPONENTS` - Repository components like main, contrib, non-free etc.
- - `DISTRO_APT_SOURCE` - Repository URL.
- - `DISTRO_CONFIG_SCRIPT` - Target filesystem finalization script. This script is called after `multistrap` has unpacked the base system packages. It is designed to finalize filesystem, for example to add `fstab` according to machine hardware configuration. The script should be placed to `files` folder in image recipe folder.
+ - `DISTRO_APT_SOURCES` - List of apt source files
+ - `DISTRO_APT_KEYS` - List of gpg key URIs used to verify apt repos
+ - `DISTRO_APT_PREFERENCES` - List of apt preference files
+ - `DISTRO_KERNELS` - List of supported kernel suffixes
 
 Below is an example for Raspbian Jessie:
 ```
-DISTRO_SUITE = "jessie"
-DISTRO_COMPONENTS = "main contrib non-free firmware"
-DISTRO_APT_SOURCE = "http://archive.raspbian.org/raspbian"
-DISTRO_CONFIG_SCRIPT = "raspbian-configscript.sh"
+DISTRO_APT_SOURCES += "conf/distro/raspbian-jessie.list"
+DISTRO_APT_KEYS += "https://archive.raspbian.org/raspbian.public.key;sha256sum=ca59cd4f2bcbc3a1d41ba6815a02a8dc5c175467a59bd87edeac458f4a5345de"
+DISTRO_CONFIG_SCRIPT?= "raspbian-configscript.sh"
+DISTRO_KERNELS ?= "rpi rpi2 rpi-rpfv rpi2-rpfv"
 ```
 
 To add new distro, user should perform the following steps:
@@ -439,9 +439,7 @@ To add new machine user should perform the following steps:
 Image in Isar contains the following artifacts:
 
  - Image recipe - Describes set of rules how to generate target image.
- - `Multistrap` configuration file - Contains information about distro, suite, `apt` source etc.
- - `Multistrap` setup script - Performs pre-install filesystem configuration.
- - `Multistrap` config script - Performs post-install filesystem configuration.
+ - Config script - Performs some general base system configuration after all packages were installed. (locale, fstab, cleanup, etc.)
 
 In image recipe, the following variable defines the list of packages that will be included to target image: `IMAGE_PREINSTALL`. These packages will be taken from `apt` source.
 
