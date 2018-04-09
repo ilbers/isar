@@ -28,12 +28,6 @@ do_rootfs[root_cleandirs] = "${IMAGE_ROOTFS} \
                              ${IMAGE_ROOTFS}/isar-apt"
 
 do_rootfs() {
-    CDIRS="${@d.expand(d.getVarFlags("do_rootfs").get("root_cleandirs", ""))}"
-    if [ -n "$CDIRS" ]; then
-        sudo rm -rf $CDIRS
-        mkdir -p $CDIRS
-    fi
-
     setup_root_file_system "${IMAGE_ROOTFS}" "clean" \
         ${IMAGE_PREINSTALL} ${IMAGE_INSTALL}
 

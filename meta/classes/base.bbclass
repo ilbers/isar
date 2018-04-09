@@ -66,6 +66,47 @@ python do_listtasks() {
         bb.plain("%s  %s" % (taskname.ljust(maxlen), taskdescs[taskname]))
 }
 
+root_cleandirs() {
+    ROOT_CLEANDIRS_DIRS_PY="${@d.getVar("ROOT_CLEANDIRS_DIRS", True) or ""}"
+    ROOT_CLEANDIRS_DIRS="${ROOT_CLEANDIRS_DIRS-${ROOT_CLEANDIRS_DIRS_PY}}"
+    for i in $ROOT_CLEANDIRS_DIRS; do
+        awk '{ print $2 }' /proc/mounts | grep -q "^${i}\(/\|\$\)" && \
+            die "Could not remove $i, because subdir is mounted"
+    done
+    if [ -n "$ROOT_CLEANDIRS_DIRS" ]; then
+        sudo rm -rf --one-file-system $ROOT_CLEANDIRS_DIRS
+        mkdir -p $ROOT_CLEANDIRS_DIRS
+    fi
+}
+
+python() {
+    import re
+    for e in d.keys():
+        flags = d.getVarFlags(e)
+        if flags and flags.get('task'):
+            rcleandirs = flags.get('root_cleandirs')
+            if rcleandirs:
+                tmpdir = os.path.normpath(d.getVar("TMPDIR", True))
+                rcleandirs = list(os.path.normpath(d.expand(i))
+                                  for i in rcleandirs.split())
+
+                for i in rcleandirs:
+                    if not i.startswith(tmpdir):
+                        bb.fatal("root_cleandirs entry %s is not contained in "
+                                 "TMPDIR %s" % (i, tmpdir))
+
+                ws = re.match("^\s*", d.getVar(e, False)).group()
+                if flags.get('python'):
+                    d.prependVar(e, ws + "d.setVar('ROOT_CLEANDIRS_DIRS', '"
+                                       + " ".join(rcleandirs) + "')\n"
+                                  + ws + "bb.build.exec_func("
+                                       + "'root_cleandirs', d)\n")
+                else:
+                    d.prependVar(e, ws + "ROOT_CLEANDIRS_DIRS='"
+                                       + " ".join(rcleandirs) + "'\n"
+                                  + ws + "root_cleandirs\n")
+}
+
 do_fetch[dirs] = "${DL_DIR}"
 
 # Fetch package from the source link

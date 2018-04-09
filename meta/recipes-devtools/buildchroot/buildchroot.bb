@@ -57,12 +57,6 @@ do_build[root_cleandirs] = "${BUILDCHROOT_DIR} \
 do_build[depends] = "isar-apt:do_cache_config isar-bootstrap:do_deploy"
 
 do_build() {
-    CDIRS="${@d.expand(d.getVarFlags("do_build").get("root_cleandirs", ""))}"
-    if [ -n "$CDIRS" ]; then
-        sudo rm -rf $CDIRS
-        mkdir -p $CDIRS
-    fi
-
     setup_root_file_system "${BUILDCHROOT_DIR}" "noclean" \
         ${BUILDCHROOT_PREINSTALL}
 
