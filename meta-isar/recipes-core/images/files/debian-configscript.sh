@@ -37,19 +37,6 @@ locales locales/locales_to_be_generated multiselect en_US.UTF-8 UTF-8
 locales locales/default_environment_locale select en_US.UTF-8
 END
 
-# Set up non-interactive configuration
-export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
-export LC_ALL=C LANGUAGE=C LANG=C
-
-# Run pre installation script
-/var/lib/dpkg/info/dash.preinst install
-
-# Configuring packages
-dpkg --configure -a
-
-# set the root password if that has not been done before
-grep "root:\*:" /etc/shadow && echo "root:root" | chpasswd
-
 cat > /etc/fstab << EOF
 # Begin /etc/fstab
 /dev/$ROOTFS_DEV	/		$ROOTFS_TYPE		defaults		1	1
@@ -76,16 +63,3 @@ fi
 # Purge unused locale and installed packages' .deb files
 localepurge
 apt-get clean
-
-# Undo setup script changes
-if [ -x "$TARGET/sbin/start-stop-daemon.REAL" ]; then
-    mv -f $TARGET/sbin/start-stop-daemon.REAL $TARGET/sbin/start-stop-daemon
-fi
-
-if [ -x "$TARGET/sbin/initctl.REAL" ]; then
-    mv $TARGET/sbin/initctl.REAL $TARGET/sbin/initctl
-fi
-
-if [ -x "$TARGET/sbin/init" -a -x "$TARGET/usr/sbin/policy-rc.d" ]; then
-    rm -f $TARGET/usr/sbin/policy-rc.d
-fi
