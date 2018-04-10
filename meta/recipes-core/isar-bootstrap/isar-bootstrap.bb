@@ -68,7 +68,44 @@ def parse_aptsources_list_line(source_list_line):
 
     components = " ".join(s.split())
 
-    return type, options, source, suite, components
+    return [type, options, source, suite, components]
+
+def get_apt_source_mirror(d, aptsources_entry_list):
+    import re
+
+    premirrors = d.getVar('DISTRO_APT_PREMIRRORS', True) or ""
+    mirror_list = [entry.split()
+                  for entry in premirrors.split('\n')
+                  if any(entry)]
+
+    for regex, replace in mirror_list:
+        match = re.search(regex, aptsources_entry_list[2])
+
+        if match:
+            new_aptsources_entry_list = aptsources_entry_list.copy()
+            new_aptsources_entry_list[2] = re.sub(regex, replace,
+                                                  aptsources_entry_list[2],
+                                                  count = 1)
+            return new_aptsources_entry_list
+
+    return aptsources_entry_list
+
+def aggregate_aptsources_list(d, file_list, file_out):
+    import shutil
+
+    with open(file_out, "wb") as out_fd:
+        for entry in file_list:
+            entry_real = bb.parse.resolve_file(entry, d)
+            with open(entry_real, "r") as in_fd:
+                for line in in_fd:
+                    parsed = parse_aptsources_list_line(line)
+                    if parsed:
+                        parsed = get_apt_source_mirror(d, parsed)
+                        out_fd.write(" ".join(parsed).encode())
+                    else:
+                        out_fd.write(line.encode())
+                    out_fd.write("\n".encode())
+            out_fd.write("\n".encode())
 
 def get_distro_primary_source_entry(d):
     apt_sources_list = (d.getVar("DISTRO_APT_SOURCES", True) or "").split()
@@ -78,10 +115,10 @@ def get_distro_primary_source_entry(d):
             for line in in_fd:
                 parsed = parse_aptsources_list_line(line)
                 if parsed:
-                    type, _, source, suite, components = parsed
-                    if type == "deb":
-                        return source, suite, components
-    return "", "", ""
+                    parsed = get_apt_source_mirror(d, parsed)
+                    if parsed[0] == "deb":
+                        return parsed[2:]
+    return ["", "", ""]
 
 def get_distro_source(d):
     return get_distro_primary_source_entry(d)[0]
@@ -126,12 +163,13 @@ python do_apt_config_prepare() {
     apt_sources_out = d.getVar("APTSRCS", True)
     apt_sources_list = (d.getVar("DISTRO_APT_SOURCES", True) or "").split()
 
-    aggregate_files(d, apt_sources_list, apt_sources_out)
+    aggregate_aptsources_list(d, apt_sources_list, apt_sources_out)
 }
 addtask apt_config_prepare before do_build after do_generate_keyring
 
 do_bootstrap[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 do_bootstrap[vardeps] += "DISTRO_APT_SOURCES"
+do_bootstrap[vardeps] += "DISTRO_APT_PREMIRRORS"
 do_bootstrap() {
     if [ -e "${ROOTFSDIR}" ]; then
        sudo umount -l "${ROOTFSDIR}/dev" || true
