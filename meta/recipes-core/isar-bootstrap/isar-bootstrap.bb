@@ -147,6 +147,7 @@ do_generate_keyring() {
 addtask generate_keyring before do_build after do_unpack
 
 do_apt_config_prepare[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
+do_apt_config_prepare[dirs] = "${WORKDIR}"
 do_apt_config_prepare[vardeps] += "\
                                    APTPREFS \
                                    DISTRO_APT_PREFERENCES \
@@ -165,7 +166,7 @@ python do_apt_config_prepare() {
 
     aggregate_aptsources_list(d, apt_sources_list, apt_sources_out)
 }
-addtask apt_config_prepare before do_build after do_generate_keyring
+addtask apt_config_prepare before do_build after do_unpack
 
 do_bootstrap[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 do_bootstrap[vardeps] += "DISTRO_APT_SOURCES"
@@ -186,7 +187,7 @@ do_bootstrap() {
                              "${ROOTFSDIR}" \
                              "${@get_distro_source(d)}"
 }
-addtask bootstrap before do_build after do_apt_config_prepare
+addtask bootstrap before do_build after do_generate_keyring
 
 do_apt_config_install[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 do_apt_config_install() {
@@ -201,7 +202,7 @@ do_apt_config_install() {
     sudo install -v -m644 "${WORKDIR}/isar-apt.conf" \
                           "${ROOTFSDIR}/etc/apt/apt.conf.d/50isar.conf"
 }
-addtask apt_config_install before do_build after do_bootstrap
+addtask apt_config_install before do_build after do_bootstrap do_apt_config_prepare
 
 do_apt_update[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 do_apt_update() {
