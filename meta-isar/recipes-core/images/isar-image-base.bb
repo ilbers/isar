@@ -3,7 +3,7 @@
 # This software is a part of ISAR.
 # Copyright (C) 2015-2017 ilbers GmbH
 
-DESCRIPTION = "Multistrap target filesystem"
+DESCRIPTION = "Isar target filesystem"
 
 LICENSE = "gpl-2.0"
 LIC_FILES_CHKSUM = "file://${LAYERDIR_isar}/licenses/COPYING.GPLv2;md5=751419260aa954499f7abaabaa882bbe"
