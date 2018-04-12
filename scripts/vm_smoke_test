@@ -60,6 +60,8 @@ run_test () {
     # Check kernel module
     check_example_module
 
+    dump_boot_log
+
     # Clean up test artifacts
     rm $CONSOLE_OUTPUT
     rm $PID_FILE

@@ -22,7 +22,7 @@ fi
 source isar-init-build-env /build/$WORKSPACE/$GIT_COMMIT
 
 # Start build for all possible configurations
-bitbake \
+bitbake -v \
         multiconfig:qemuarm-wheezy:isar-image-base \
         multiconfig:qemuarm-jessie:isar-image-base \
         multiconfig:qemuarm-stretch:isar-image-base \
