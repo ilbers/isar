@@ -66,5 +66,5 @@ export PATH
 BBPATH="${BUILDDIR}"
 export BBPATH
 
-BB_ENV_EXTRAWHITE="BASEDIR BUILDDIR http_proxy https_proxy ftp_proxy no_proxy"
+BB_ENV_EXTRAWHITE="BUILDDIR http_proxy https_proxy ftp_proxy no_proxy"
 export BB_ENV_EXTRAWHITE
