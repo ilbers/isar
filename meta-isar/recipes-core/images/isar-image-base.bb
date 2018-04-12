@@ -16,7 +16,7 @@ PV = "1.0"
 inherit image
 inherit isar-bootstrap-helper
 
-IMAGE_INSTALL += "linux-image-${KERNEL_NAME}"
+IMAGE_INSTALL += "${@ ("linux-image-" + d.getVar("KERNEL_NAME", True)) if d.getVar("KERNEL_NAME", True) else ""}"
 
 DEPENDS += "${IMAGE_INSTALL}"
 
