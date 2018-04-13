@@ -5,6 +5,9 @@ IMAGE_INSTALL ?= ""
 IMAGE_TYPE    ?= "ext4-img"
 IMAGE_ROOTFS   = "${WORKDIR}/rootfs"
 
+# Extra space for rootfs in MB
+ROOTFS_EXTRA ?= "64"
+
 def get_image_name(d, name_link):
     S = d.getVar("IMAGE_ROOTFS", True)
     path_link = os.path.join(S, name_link)
@@ -14,6 +17,22 @@ def get_image_name(d, name_link):
         return get_image_name(d, os.path.relpath(os.path.realpath(path_link),
                                                  '/'))
     return ""
+
+def get_rootfs_size(d):
+    import subprocess
+    rootfs_extra = int(d.getVar("ROOTFS_EXTRA", True))
+
+    output = subprocess.check_output(['sudo', 'du', '-s', '--block-size=1k',
+                                      d.getVar("IMAGE_ROOTFS", True)])
+    base_size = int(output.split()[0])
+
+    return base_size + rootfs_extra * 1024
+
+python set_image_size () {
+    rootfs_size = get_rootfs_size(d)
+    d.setVar('ROOTFS_SIZE', str(rootfs_size))
+    d.setVarFlag('ROOTFS_SIZE', 'export', '1')
+}
 
 # These variables are used by wic and start_vm
 KERNEL_IMAGE ?= "${@get_image_name(d, 'vmlinuz')}"
