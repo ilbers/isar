@@ -52,16 +52,10 @@ The steps below describe how to build the images provided by default.
 Install the following packages:
 ```
 dosfstools
-e2fsprogs/jessie-backports  # wic: e2fsprogs -d
-gdisk                       # wic
 git
-grub-efi-amd64-bin          # wic UEFI: /usr/lib/grub/x86_64-efi/moddep.lst
-grub-efi-ia32-bin           # wic UEFI: /usr/lib/grub/i386-efi/moddep.lst
-mtools                      # wic FAT: mcopy
 debootstrap
 parted
 python
-python3                     # wic
 qemu
 qemu-user-static
 rxvt-unicode                # build_parallel

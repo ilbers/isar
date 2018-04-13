@@ -28,6 +28,25 @@ BUILDCHROOT_PREINSTALL ?= "gcc \
                            devscripts \
                            equivs"
 
+BUILDCHROOT_PREINSTALL_WIC = " \
+                             parted \
+                             gdisk \
+                             util-linux \
+                             syslinux \
+                             syslinux-common \
+                             dosfstools \
+                             mtools \
+                             e2fsprogs \
+                             grub-efi-amd64-bin \
+                             grub-efi-ia32-bin \
+                             python3"
+
+python () {
+    if d.getVar('IMAGE_TYPE', True) == 'wic-img':
+        d.appendVar('BUILDCHROOT_PREINSTALL',
+                    d.getVar('BUILDCHROOT_PREINSTALL_WIC', True))
+}
+
 WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${PN}"
 
 do_build[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"

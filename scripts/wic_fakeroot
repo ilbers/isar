@@ -1,0 +1,37 @@
+#!/usr/bin/env python3
+#
+# wic needs a FAKEROOT cmd to run, the default is pseudo. In Isar we do/can not
+# use pseudo. And we call wic as root to begin with, so this script could be a
+# dummy doing nothing. It is almost a dummy ...
+#
+# If the fsck hack ever becomes obsolete, FAKEROOTCMD ?= "true;" can be used
+#
+# This software is a part of Isar.
+# Copyright (C) 2018 Siemens AG
+#
+import os
+import sys
+import shutil
+import subprocess
+
+args = sys.argv
+args.pop(0)
+cmd = args[0]
+
+# expect to be running as root
+# we could loosen that and execv(sudo, args) but even some early
+# "du"s fail, which do not use the fakeroot-wrapper
+#  i.e. in wics partition.py the "du -ks" fails on
+#    var/cache/apt/archives/partial
+#    rootfs/root ...
+assert 'root' == os.environ["USER"]
+
+# e2fsck <= 1.43.5 returns 1 on non-errors (stretch and before affected)
+# treat 1 as safe ... the filesystem was successfully repaired and is OK
+if cmd.startswith('fsck.'):
+    ret = subprocess.call(args)
+    if ret == 0 or ret == 1:
+        sys.exit(0)
+    sys.exit(ret)
+
+os.execv(shutil.which(cmd), args)
