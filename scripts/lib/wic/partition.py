@@ -201,6 +201,17 @@ class Partition():
 
         Currently handles ext2/3/4, btrfs and vfat.
         """
+        p_prefix = os.environ.get("PSEUDO_PREFIX", "%s/usr" % native_sysroot)
+        p_localstatedir = os.environ.get("PSEUDO_LOCALSTATEDIR",
+                                         "%s/../pseudo" % rootfs_dir)
+        p_passwd = os.environ.get("PSEUDO_PASSWD", rootfs_dir)
+        p_nosymlinkexp = os.environ.get("PSEUDO_NOSYMLINKEXP", "1")
+        pseudo = "export PSEUDO_PREFIX=%s;" % p_prefix
+        pseudo += "export PSEUDO_LOCALSTATEDIR=%s;" % p_localstatedir
+        pseudo += "export PSEUDO_PASSWD=%s;" % p_passwd
+        pseudo += "export PSEUDO_NOSYMLINKEXP=%s;" % p_nosymlinkexp
+        pseudo += "%s " % get_bitbake_var("FAKEROOTCMD")
+
         rootfs = "%s/rootfs_%s.%s.%s" % (cr_workdir, self.label,
                                          self.lineno, self.fstype)
         if os.path.isfile(rootfs):
@@ -226,7 +237,7 @@ class Partition():
         self.source_file = rootfs
 
         # get the rootfs size in the right units for kickstart (kB)
-        du_cmd = "sudo du -Lbks %s" % rootfs
+        du_cmd = "du -Lbks %s" % rootfs
         out = exec_cmd(du_cmd)
         self.size = int(out.split()[0])
 
@@ -234,7 +245,7 @@ class Partition():
         """
         Prepare content for an ext2/3/4 rootfs partition.
         """
-        du_cmd = "sudo du -ks %s" % rootfs_dir
+        du_cmd = "du -ks %s" % rootfs_dir
         out = exec_cmd(du_cmd)
         actual_rootfs_size = int(out.split()[0])
 
@@ -249,7 +260,7 @@ class Partition():
         if self.label:
             label_str = "-L %s" % self.label
 
-        mkfs_cmd = "sudo mkfs.%s -F %s %s %s -d %s" % \
+        mkfs_cmd = "mkfs.%s -F %s %s %s -d %s" % \
             (self.fstype, extra_imagecmd, rootfs, label_str, rootfs_dir)
         exec_cmd(mkfs_cmd)
 
@@ -262,7 +273,7 @@ class Partition():
 
         Currently handles ext2/3/4 and btrfs.
         """
-        du_cmd = "sudo du -ks %s" % rootfs_dir
+        du_cmd = "du -ks %s" % rootfs_dir
         out = exec_cmd(du_cmd)
         actual_rootfs_size = int(out.split()[0])
 
@@ -275,7 +286,7 @@ class Partition():
         if self.label:
             label_str = "-L %s" % self.label
 
-        mkfs_cmd = "sudo mkfs.%s -b %d -r %s %s %s" % \
+        mkfs_cmd = "mkfs.%s -b %d -r %s %s %s" % \
             (self.fstype, rootfs_size * 1024, rootfs_dir, label_str, rootfs)
         exec_cmd(mkfs_cmd)
 
@@ -283,7 +294,7 @@ class Partition():
         """
         Prepare content for a msdos/vfat rootfs partition.
         """
-        du_cmd = "sudo du -bks %s" % rootfs_dir
+        du_cmd = "du -bks %s" % rootfs_dir
         out = exec_cmd(du_cmd)
         blocks = int(out.split()[0])
 
@@ -331,7 +342,7 @@ class Partition():
         if self.label:
             label_str = "-L %s" % self.label
 
-        mkfs_cmd = "sudo mkfs.%s -F %s %s %s" % \
+        mkfs_cmd = "mkfs.%s -F %s %s %s" % \
             (self.fstype, extra_imagecmd, label_str, rootfs)
         exec_cmd(mkfs_cmd)
 
@@ -347,7 +358,7 @@ class Partition():
         if self.label:
             label_str = "-L %s" % self.label
 
-        mkfs_cmd = "sudo mkfs.%s -b %d %s %s" % \
+        mkfs_cmd = "mkfs.%s -b %d %s %s" % \
             (self.fstype, self.size * 1024, label_str, rootfs)
         exec_cmd(mkfs_cmd)
 
