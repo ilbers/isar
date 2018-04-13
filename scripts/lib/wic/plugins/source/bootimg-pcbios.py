@@ -188,9 +188,8 @@ class BootimgPcbiosPlugin(SourcePlugin):
         dosfs_cmd = "mkdosfs -n boot -S 512 -C %s %d" % (bootimg, blocks)
         exec_cmd(dosfs_cmd)
 
-        mcopy_cmd = "env MTOOLS_SKIP_CHECK=1 mcopy -i %s -s %s/* ::/" % \
-                    (bootimg, hdddir)
-        exec_cmd(mcopy_cmd, True)
+        mcopy_cmd = "mcopy -i %s -s %s/* ::/" % (bootimg, hdddir)
+        exec_cmd(mcopy_cmd)
 
         syslinux_cmd = "syslinux %s" % bootimg
         exec_cmd(syslinux_cmd)

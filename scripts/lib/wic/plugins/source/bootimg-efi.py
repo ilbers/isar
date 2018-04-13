@@ -240,9 +240,8 @@ class BootimgEFIPlugin(SourcePlugin):
         dosfs_cmd = "mkdosfs -n efi -C %s %d" % (bootimg, blocks)
         exec_cmd(dosfs_cmd)
 
-        mcopy_cmd = "env MTOOLS_SKIP_CHECK=1 mcopy -i %s -s %s/* ::/" % \
-                    (bootimg, hdddir)
-        exec_cmd(mcopy_cmd, True)
+        mcopy_cmd = "mcopy -i %s -s %s/* ::/" % (bootimg, hdddir)
+        exec_cmd(mcopy_cmd)
 
         chmod_cmd = "chmod 644 %s" % bootimg
         exec_cmd(chmod_cmd)
