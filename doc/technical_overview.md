@@ -239,10 +239,11 @@ variable. Task `do_populate` performs the following:
 
 4. Execute dpkg command in chroot for all the copied packages.
 
-## 3.7 Generate Bootable Image
+## 3.7 Generate an Image
 
 This process contains the following steps:
 
-1. Task `do_ext4_image`: target filesystem is packed to extfs image.
+1. Task `do_<..>_image`: creates filesystem or disk images
 
-2. wic tool generates bootable image for dedicated platform.
+   1.1. `do_ext4_image`: target filesystem is packed to extfs image.
+   1.2. `do_wic_image`: a bootable disk image gets created for the platform
