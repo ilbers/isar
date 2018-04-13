@@ -51,7 +51,7 @@ run_test () {
 
     # Start QEMU with Isar image
     start_vm -a $ARCH -d $DISTRO -o $CONSOLE_OUTPUT -p $PID_FILE > /dev/null 2>&1 &
-    sleep 30
+    sleep 60
     kill `cat $PID_FILE`
 
     # Check login prompt
