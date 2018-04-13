@@ -29,7 +29,7 @@ import os
 import tempfile
 
 from wic import WicError
-from wic.utils.misc import WicExecError, exec_cmd, get_bitbake_var
+from wic.utils.misc import exec_cmd, get_bitbake_var
 from wic.pluginbase import PluginMgr
 
 logger = logging.getLogger('wic')
@@ -253,12 +253,8 @@ class Partition():
             (self.fstype, extra_imagecmd, rootfs, label_str, rootfs_dir)
         exec_cmd(mkfs_cmd)
 
-        try:
-            mkfs_cmd = "fsck.%s -pvfD %s" % (self.fstype, rootfs)
-            exec_cmd(mkfs_cmd)
-        except WicExecError as e:
-            if e.returncode != 1:
-                raise e
+        mkfs_cmd = "fsck.%s -pvfD %s" % (self.fstype, rootfs)
+        exec_native_cmd(mkfs_cmd, native_sysroot, pseudo=pseudo)
 
     def prepare_rootfs_btrfs(self, rootfs, oe_builddir, rootfs_dir):
         """
