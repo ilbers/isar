@@ -57,8 +57,4 @@ export ISARROOT
 }
 unset ISARROOT
 
-# wic executes mkdosfs
-PATH=/sbin:$PATH
-export PATH
-
 [ -z "$BUILDDIR" ] || cd "$BUILDDIR"
