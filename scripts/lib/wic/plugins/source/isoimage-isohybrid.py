@@ -29,7 +29,7 @@ import shutil
 from wic import WicError
 from wic.engine import get_custom_config
 from wic.pluginbase import SourcePlugin
-from wic.utils.misc import exec_cmd, get_bitbake_var
+from wic.utils.misc import exec_cmd, exec_native_cmd, get_bitbake_var
 
 logger = logging.getLogger('wic')
 
@@ -199,7 +199,8 @@ class IsoImagePlugin(SourcePlugin):
 
     @classmethod
     def do_configure_partition(cls, part, source_params, creator, cr_workdir,
-                               oe_builddir, bootimg_dir, kernel_dir):
+                               oe_builddir, bootimg_dir, kernel_dir,
+                               native_sysroot):
         """
         Called before do_prepare_partition(), creates loader-specific config
         """
@@ -220,7 +221,8 @@ class IsoImagePlugin(SourcePlugin):
 
     @classmethod
     def do_prepare_partition(cls, part, source_params, creator, cr_workdir,
-                             oe_builddir, bootimg_dir, kernel_dir, rootfs_dir):
+                             oe_builddir, bootimg_dir, kernel_dir,
+                             rootfs_dir, native_sysroot):
         """
         Called to do the actual content population for a partition i.e. it
         'prepares' the partition to be incorporated into the image.
@@ -269,7 +271,8 @@ class IsoImagePlugin(SourcePlugin):
             part.size = int(out.split()[0])
             part.extra_space = 0
             part.overhead_factor = 1.2
-            part.prepare_rootfs(cr_workdir, oe_builddir, rootfs_dir)
+            part.prepare_rootfs(cr_workdir, oe_builddir, rootfs_dir, \
+                                native_sysroot)
             rootfs_img = part.source_file
 
         install_cmd = "install -m 0644 %s %s/rootfs.img" \
@@ -360,7 +363,7 @@ class IsoImagePlugin(SourcePlugin):
                     grub_cmd += "reboot serial terminfo iso9660 loopback tar "
                     grub_cmd += "memdisk ls search_fs_uuid udf btrfs xfs lvm "
                     grub_cmd += "reiserfs ata "
-                    exec_cmd(grub_cmd)
+                    exec_native_cmd(grub_cmd, native_sysroot)
 
             else:
                 raise WicError("unrecognized bootimg-efi loader: %s" %
@@ -397,14 +400,14 @@ class IsoImagePlugin(SourcePlugin):
 
             dosfs_cmd = 'mkfs.vfat -n "EFIimg" -S 512 -C %s %d' \
                         % (bootimg, blocks)
-            exec_cmd(dosfs_cmd)
+            exec_native_cmd(dosfs_cmd, native_sysroot)
 
             mmd_cmd = "mmd -i %s ::/EFI" % bootimg
-            exec_cmd(mmd_cmd)
+            exec_native_cmd(mmd_cmd, native_sysroot)
 
             mcopy_cmd = "mcopy -i %s -s %s/EFI/* ::/EFI/" \
                         % (bootimg, isodir)
-            exec_cmd(mcopy_cmd)
+            exec_native_cmd(mcopy_cmd, native_sysroot)
 
             chmod_cmd = "chmod 644 %s" % bootimg
             exec_cmd(chmod_cmd)
@@ -453,7 +456,7 @@ class IsoImagePlugin(SourcePlugin):
         mkisofs_cmd += "-no-emul-boot %s " % isodir
 
         logger.debug("running command: %s", mkisofs_cmd)
-        exec_cmd(mkisofs_cmd)
+        exec_native_cmd(mkisofs_cmd, native_sysroot)
 
         shutil.rmtree(isodir)
 
@@ -466,7 +469,7 @@ class IsoImagePlugin(SourcePlugin):
 
     @classmethod
     def do_install_disk(cls, disk, disk_name, creator, workdir, oe_builddir,
-                        bootimg_dir, kernel_dir):
+                        bootimg_dir, kernel_dir, native_sysroot):
         """
         Called after all partitions have been prepared and assembled into a
         disk image.  In this case, we insert/modify the MBR using isohybrid
@@ -479,7 +482,7 @@ class IsoImagePlugin(SourcePlugin):
 
         isohybrid_cmd = "isohybrid -u %s" % iso_img
         logger.debug("running command: %s", isohybrid_cmd)
-        exec_cmd(isohybrid_cmd)
+        exec_native_cmd(isohybrid_cmd, native_sysroot)
 
         # Replace the image created by direct plugin with the one created by
         # mkisofs command. This is necessary because the iso image created by
