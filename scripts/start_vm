@@ -27,9 +27,6 @@ start_qemu() {
 	-M $QEMU_MACHINE \
 	$QCPU \
 	-nographic \
-	-kernel $QKERNEL \
-	-initrd $QINITRD \
-	-append "console=$MACHINE_SERIAL root=/dev/$ROOTFS_DEV rw" \
 	$EXTRA_ARGS \
 	$root
     [ $had_x -eq 0 ] && set +x
@@ -104,13 +101,6 @@ do
 done
 
 readonly IMAGE_DIR=$BUILD_DIR/tmp/deploy/images
-readonly ROOTFS_IMAGE=isar-image-base-debian-$DISTRO-qemu$ARCH.ext4.img
-
-eval $(bitbake -e multiconfig:qemu$ARCH-$DISTRO:isar-image-base | grep "^KERNEL_IMAGE=")
-eval $(bitbake -e multiconfig:qemu$ARCH-$DISTRO:isar-image-base | grep "^INITRD_IMAGE=")
-QKERNEL=$IMAGE_DIR/${KERNEL_IMAGE}
-QINITRD=/dev/null
-[ -n "$INITRD_IMAGE" ] && QINITRD=$IMAGE_DIR/${INITRD_IMAGE}
 
 readonly ISARROOT="$(dirname "$0")"/..
 
@@ -119,6 +109,31 @@ eval "$(egrep 'MACHINE_SERIAL' $MACHINE_CONF |bb2sh)"
 
 readonly CONFIG_CONF=$ISARROOT/meta-isar/conf/multiconfig/qemu$ARCH-$DISTRO.conf
 eval "$(egrep 'ROOTFS_DEV|QEMU_' $CONFIG_CONF |bb2sh)"
+
+eval $(bitbake -e multiconfig:qemu$ARCH-$DISTRO:isar-image-base | grep "^IMAGE_TYPE=")
+case "$IMAGE_TYPE" in
+    ext4-img)
+    readonly ROOTFS_IMAGE=isar-image-base-debian-$DISTRO-qemu$ARCH.ext4.img
+
+    eval $(bitbake -e multiconfig:qemu$ARCH-$DISTRO:isar-image-base | grep "^KERNEL_IMAGE=")
+    eval $(bitbake -e multiconfig:qemu$ARCH-$DISTRO:isar-image-base | grep "^INITRD_IMAGE=")
+    QKERNEL=$IMAGE_DIR/${KERNEL_IMAGE}
+    QINITRD=/dev/null
+    [ -n "$INITRD_IMAGE" ] && QINITRD=$IMAGE_DIR/${INITRD_IMAGE}
+    EXTRA_ARGS="$EXTRA_ARGS \
+	-kernel $QKERNEL \
+	-initrd $QINITRD \
+	-append \"console=$MACHINE_SERIAL root=/dev/$ROOTFS_DEV rw\""
+    ;;
+    wic-img)
+    readonly ROOTFS_IMAGE=isar-image-base-debian-$DISTRO-qemu$ARCH.wic.img
+    EXTRA_ARGS="$EXTRA_ARGS -snapshot"
+    ;;
+    *)
+    echo "IMAGE_TYPE \"$IMAGE_TYPE\" not supported"
+    exit 1
+    ;;
+esac
 
 QCPU=
 [ -n "$QEMU_CPU" ] && QCPU="-cpu $QEMU_CPU"
