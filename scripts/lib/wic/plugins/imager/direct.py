@@ -323,7 +323,7 @@ class PartitionedImage():
                 if self.ptable_format == 'gpt':
                     part.uuid = str(uuid.uuid4())
                 else: # msdos partition table
-                    part.uuid = '%08x-%02d' % (self.identifier, part.realnum)
+                    part.uuid = '%0x-%02d' % (self.identifier, part.realnum)
 
     def prepare(self, imager):
         """Prepare an image. Call prepare method of all image partitions."""
@@ -487,8 +487,8 @@ class PartitionedImage():
                 parted_fs_type = "fat32"
             elif part.fstype == "msdos":
                 parted_fs_type = "fat16"
-                if not part.system_id:
-                    part.system_id = '0x6' # FAT16
+            elif part.fstype == "ontrackdm6aux3":
+                parted_fs_type = "ontrackdm6aux3"
             else:
                 # Type for ext2/ext3/ext4/btrfs
                 parted_fs_type = "ext2"
@@ -537,6 +537,17 @@ class PartitionedImage():
                 exec_native_cmd("sfdisk --part-type %s %s %s" % \
                                 (self.path, part.num, part.system_id),
                                 self.native_sysroot)
+
+            # Parted defaults to enabling the lba flag for fat16 partitions,
+            # which causes compatibility issues with some firmware (and really
+            # isn't necessary).
+            if parted_fs_type == "fat16":
+                if self.ptable_format == 'msdos':
+                    logger.debug("Disable 'lba' flag for partition '%s' on disk '%s'",
+                                 part.num, self.path)
+                    exec_native_cmd("parted -s %s set %d lba off" % \
+                                    (self.path, part.num),
+                                    self.native_sysroot)
 
     def cleanup(self):
         # remove partition images

@@ -14,17 +14,32 @@
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc., 59
 # Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+import logging
+import os
 import subprocess
 
 from wic import WicError
 
-def runtool(cmdln_or_args):
+logger = logging.getLogger('wic')
+
+def runtool(cmdln_or_args, catch=1):
     """ wrapper for most of the subprocess calls
     input:
         cmdln_or_args: can be both args and cmdln str (shell=True)
+        catch: 0, quitely run
+               1, only STDOUT
+               2, only STDERR
+               3, both STDOUT and STDERR
     return:
-        rc, output
+        (rc, output)
+        if catch==0: the output will always None
     """
+
+    if catch not in (0, 1, 2, 3):
+        # invalid catch selection, will cause exception, that's good
+        return None
+
     if isinstance(cmdln_or_args, list):
         cmd = cmdln_or_args[0]
         shell = False
@@ -33,13 +48,26 @@ def runtool(cmdln_or_args):
         cmd = shlex.split(cmdln_or_args)[0]
         shell = True
 
-    sout = subprocess.PIPE
-    serr = subprocess.STDOUT
+    if catch != 3:
+        dev_null = os.open("/dev/null", os.O_WRONLY)
+
+    if catch == 0:
+        sout = dev_null
+        serr = dev_null
+    elif catch == 1:
+        sout = subprocess.PIPE
+        serr = dev_null
+    elif catch == 2:
+        sout = dev_null
+        serr = subprocess.PIPE
+    elif catch == 3:
+        sout = subprocess.PIPE
+        serr = subprocess.STDOUT
 
     try:
         process = subprocess.Popen(cmdln_or_args, stdout=sout,
                                    stderr=serr, shell=shell)
-        sout, serr = process.communicate()
+        (sout, serr) = process.communicate()
         # combine stdout and stderr, filter None out and decode
         out = ''.join([out.decode('utf-8') for out in [sout, serr] if out])
     except OSError as err:
@@ -48,5 +76,39 @@ def runtool(cmdln_or_args):
             raise WicError('Cannot run command: %s, lost dependency?' % cmd)
         else:
             raise # relay
+    finally:
+        if catch != 3:
+            os.close(dev_null)
 
-    return process.returncode, out
+    return (process.returncode, out)
+
+def show(cmdln_or_args):
+    """Show all messages using logger.debug."""
+
+    rcode, out = runtool(cmdln_or_args, catch=3)
+
+    if isinstance(cmdln_or_args, list):
+        cmd = ' '.join(cmdln_or_args)
+    else:
+        cmd = cmdln_or_args
+
+    msg = 'running command: "%s"' % cmd
+    if out:
+        out = out.strip()
+    if out:
+        msg += ', with output::'
+        msg += '\n  +----------------'
+        for line in out.splitlines():
+            msg += '\n  | %s' % line
+        msg += '\n  +----------------'
+
+    logger.debug(msg)
+
+    return rcode
+
+def outs(cmdln_or_args, catch=1):
+    # get the outputs of tools
+    return runtool(cmdln_or_args, catch)[1].strip()
+
+def quiet(cmdln_or_args):
+    return runtool(cmdln_or_args, catch=0)[0]

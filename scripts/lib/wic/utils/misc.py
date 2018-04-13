@@ -59,7 +59,7 @@ NATIVE_RECIPES = {"bmaptool": "bmap-tools",
                   "syslinux": "syslinux"
                  }
 
-def _exec_cmd(cmd_and_args, as_shell=False):
+def _exec_cmd(cmd_and_args, as_shell=False, catch=3):
     """
     Execute command, catching stderr, stdout
 
@@ -70,9 +70,9 @@ def _exec_cmd(cmd_and_args, as_shell=False):
     logger.debug(args)
 
     if as_shell:
-        ret, out = runner.runtool(cmd_and_args)
+        ret, out = runner.runtool(cmd_and_args, catch)
     else:
-        ret, out = runner.runtool(args)
+        ret, out = runner.runtool(args, catch)
     out = out.strip()
     if ret != 0:
         raise WicError("_exec_cmd: %s returned '%s' instead of 0\noutput: %s" % \
@@ -84,14 +84,14 @@ def _exec_cmd(cmd_and_args, as_shell=False):
     return ret, out
 
 
-def exec_cmd(cmd_and_args, as_shell=False):
+def exec_cmd(cmd_and_args, as_shell=False, catch=3):
     """
     Execute command, return output
     """
-    return _exec_cmd(cmd_and_args, as_shell)[1]
+    return _exec_cmd(cmd_and_args, as_shell, catch)[1]
 
 
-def exec_native_cmd(cmd_and_args, native_sysroot, pseudo=""):
+def exec_native_cmd(cmd_and_args, native_sysroot, catch=3, pseudo=""):
     """
     Execute native command, catching stderr, stdout
 
@@ -118,7 +118,7 @@ def exec_native_cmd(cmd_and_args, native_sysroot, pseudo=""):
 
     # If the command isn't in the native sysroot say we failed.
     if spawn.find_executable(args[0], native_paths):
-        ret, out = _exec_cmd(native_cmd_and_args, True)
+        ret, out = _exec_cmd(native_cmd_and_args, True, catch)
     else:
         ret = 127
         out = "can't find native executable %s in %s" % (args[0], native_paths)
@@ -131,7 +131,7 @@ def exec_native_cmd(cmd_and_args, native_sysroot, pseudo=""):
               "was not found (see details above).\n\n" % prog
         recipe = NATIVE_RECIPES.get(prog)
         if recipe:
-            msg += "Please make sure wic-tools have %s-native in its DEPENDS, bake it with 'bitbake wic-tools' "\
+            msg += "Please bake it with 'bitbake %s-native' "\
                    "and try again.\n" % recipe
         else:
             msg += "Wic failed to find a recipe to build native %s. Please "\
