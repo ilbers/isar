@@ -108,9 +108,9 @@ readonly ROOTFS_IMAGE=isar-image-base-debian-$DISTRO-qemu$ARCH.ext4.img
 
 eval $(bitbake -e multiconfig:qemu$ARCH-$DISTRO:isar-image-base | grep "^KERNEL_IMAGE=")
 eval $(bitbake -e multiconfig:qemu$ARCH-$DISTRO:isar-image-base | grep "^INITRD_IMAGE=")
-QKERNEL=$IMAGE_DIR/${KERNEL_IMAGE}_debian-$DISTRO-qemu$ARCH
+QKERNEL=$IMAGE_DIR/${KERNEL_IMAGE}
 QINITRD=/dev/null
-[ -n "$INITRD_IMAGE" ] && QINITRD=$IMAGE_DIR/${INITRD_IMAGE}_debian-$DISTRO-qemu$ARCH
+[ -n "$INITRD_IMAGE" ] && QINITRD=$IMAGE_DIR/${INITRD_IMAGE}
 
 readonly ISARROOT="$(dirname "$0")"/..
 
