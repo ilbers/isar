@@ -36,7 +36,8 @@ do_rootfs() {
         mkdir -p $CDIRS
     fi
 
-    setup_root_file_system "${IMAGE_ROOTFS}" ${IMAGE_PREINSTALL} ${IMAGE_INSTALL}
+    setup_root_file_system "${IMAGE_ROOTFS}" "clean" \
+        ${IMAGE_PREINSTALL} ${IMAGE_INSTALL}
 
     # Configure root filesystem
     sudo install -m 755 "${WORKDIR}/${DISTRO_CONFIG_SCRIPT}" "${IMAGE_ROOTFS}"

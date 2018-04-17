@@ -7,8 +7,13 @@
 
 setup_root_file_system() {
     ROOTFSDIR="$1"
+    CLEANHOSTLEAK="$2"
+    shift
     shift
     PACKAGES="$@"
+    APT_ARGS="install --yes --allow-unauthenticated \
+              -o Debug::pkgProblemResolver=yes"
+    CLEANHOSTLEAK_FILES="${ROOTFSDIR}/etc/hostname ${ROOTFSDIR}/etc/resolv.conf"
 
     sudo cp -Trpfx \
         "${DEPLOY_DIR_IMAGE}/isar-bootstrap-${DISTRO}-${DISTRO_ARCH}/" \
@@ -32,8 +37,8 @@ setup_root_file_system() {
         -o Dir::Etc::sourceparts="-" \
         -o APT::Get::List-Cleanup="0"
     sudo -E chroot "$ROOTFSDIR" \
-        /usr/bin/apt-get install -y \
-            --allow-unauthenticated \
-            -o Debug::pkgProblemResolver=yes \
-        $PACKAGES
+        /usr/bin/apt-get ${APT_ARGS} --download-only $PACKAGES
+    [ "clean" = ${CLEANHOSTLEAK} ] && sudo rm -f ${CLEANHOSTLEAK_FILES}
+    sudo -E chroot "$ROOTFSDIR" \
+        /usr/bin/apt-get ${APT_ARGS} $PACKAGES
 }

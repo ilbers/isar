@@ -44,7 +44,8 @@ do_build() {
         mkdir -p $CDIRS
     fi
 
-    setup_root_file_system "${BUILDCHROOT_DIR}" ${BUILDCHROOT_PREINSTALL}
+    setup_root_file_system "${BUILDCHROOT_DIR}" "noclean" \
+        ${BUILDCHROOT_PREINSTALL}
 
     # Install package builder script
     sudo chmod -R a+rw "${BUILDCHROOT_DIR}/home/builder"
