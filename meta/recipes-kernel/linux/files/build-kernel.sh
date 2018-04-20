@@ -21,6 +21,13 @@ flock /dpkg.lock \
 cd $1
 make olddefconfig
 
+KV=$( make -s kernelrelease )
+if [ "${KV}" != "${PV}" ]; then
+	echo "ERROR: Recipe PV is \"${PV}\" but should be \"${KV}\"" 1>&2
+	echo "ERROR: Probably due to CONFIG_LOCALVERSION" 1>&2
+	exit 1
+fi
+
 rm -f .version
 make -j $(($(nproc) * 2)) deb-pkg
 
