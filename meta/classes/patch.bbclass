@@ -5,7 +5,7 @@ python do_patch() {
     import subprocess
 
     workdir = d.getVar("WORKDIR", True) + "/"
-    src_dir = workdir + (d.getVar("S", True) or "")
+    src_dir = d.getVar("S", True)
 
     for src_uri in (d.getVar("SRC_URI", True) or "").split():
         try:

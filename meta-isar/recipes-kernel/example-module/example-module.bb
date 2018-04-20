@@ -9,6 +9,6 @@ include recipes-kernel/linux-module/module.inc
 
 SRC_URI += "file://src"
 
-S = "src"
+S = "${WORKDIR}/src"
 
 AUTOLOAD = "1"

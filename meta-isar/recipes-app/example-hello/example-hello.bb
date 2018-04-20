@@ -15,11 +15,9 @@ PV = "0.2-86cc719"
 DEPENDS += "libhello"
 
 SRC_URI = " \
-    git://github.com/ilbers/hello.git;protocol=https \
+    git://github.com/ilbers/hello.git;protocol=https;destsuffix=${P} \
     file://0001-Add-some-help.patch \
     file://yet-another-change.txt;apply=yes;striplevel=0"
 SRCREV = "86cc719b3359adc3c4e243387feba50360a860f3"
-
-S = "git"
 
 inherit dpkg

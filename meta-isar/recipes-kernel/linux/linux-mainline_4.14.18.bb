@@ -12,6 +12,6 @@ SRC_URI += " \
     file://x86_64_defconfig"
 SRC_URI[sha256sum] = "866a94c1c38d923ae18e74b683d7a8a79b674ebdfe7f40f1a3be9a27d39fe354"
 
-S = "linux-${PV}"
+S = "${WORKDIR}/linux-${PV}"
 
 KERNEL_DEFCONFIG_qemuamd64 = "x86_64_defconfig"

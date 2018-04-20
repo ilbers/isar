@@ -6,5 +6,5 @@ inherit dpkg-base
 # Build package from sources using build script
 dpkg_runbuild() {
     E="${@ bb.utils.export_proxies(d)}"
-    sudo -E chroot ${BUILDCHROOT_DIR} /build.sh ${PP}/${S}
+    sudo -E chroot ${BUILDCHROOT_DIR} /build.sh ${PP}/${PPS}
 }

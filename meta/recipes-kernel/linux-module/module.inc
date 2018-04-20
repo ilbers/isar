@@ -18,14 +18,14 @@ AUTOLOAD ?= "0"
 inherit dpkg
 
 dpkg_runbuild_prepend() {
-    cp -r ${WORKDIR}/debian ${WORKDIR}/${S}/
+    cp -r ${WORKDIR}/debian ${S}/
     sed -i -e 's/@PN@/${PN}/g' -e 's/@PV@/${PV}/g' \
            -e 's/@KERNEL_NAME@/${KERNEL_NAME}/g' \
            -e 's/@DESCRIPTION@/${DESCRIPTION}/g' \
-        ${WORKDIR}/${S}/debian/changelog ${WORKDIR}/${S}/debian/control
+        ${S}/debian/changelog ${S}/debian/control
 
     if [ ${AUTOLOAD} = "1" ]; then
-        echo "echo ${PN} >> /etc/modules" >> ${WORKDIR}/${S}/debian/postinst
-        chmod +x ${WORKDIR}/${S}/debian/postinst
+        echo "echo ${PN} >> /etc/modules" >> ${S}/debian/postinst
+        chmod +x ${S}/debian/postinst
     fi
 }

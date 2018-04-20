@@ -2,8 +2,8 @@
 # Copyright (C) 2017 Siemens AG
 
 do_adjust_git() {
-    if [ -f ${WORKDIR}/${S}/.git/objects/info/alternates ]; then
-        sed -i ${WORKDIR}/${S}/.git/objects/info/alternates \
+    if [ -f ${S}/.git/objects/info/alternates ]; then
+        sed -i ${S}/.git/objects/info/alternates \
             -e 's|${DL_DIR}|/downloads|'
     fi
 }
@@ -21,9 +21,18 @@ do_build[depends] = "buildchroot:do_build"
 DEPENDS ?= ""
 do_build[deptask] = "do_deploy_deb"
 
+def get_package_srcdir(d):
+    s = d.getVar("S", True)
+    workdir = d.getVar("WORKDIR", True)
+    if s.startswith(workdir):
+        return s[len(workdir)+1:]
+    bb.warn('S does not start with WORKDIR')
+    return s
+
 # Each package should have its own unique build folder, so use
 # recipe name as identifier
 PP = "/home/builder/${PN}"
+PPS ?= "${@get_package_srcdir(d)}"
 
 BUILDROOT = "${BUILDCHROOT_DIR}/${PP}"
 do_build[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"

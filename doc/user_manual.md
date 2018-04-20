@@ -504,7 +504,7 @@ PV = "1.0"
 SRC_URI = "git://github.com/ilbers/hello.git"
 SRCREV = "ad7065ecc4840cc436bfcdac427386dbba4ea719"
 
-S = "git"
+S = "${WORKDIR}/git"
 
 inherit dpkg
 ```

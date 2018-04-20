@@ -32,7 +32,7 @@ dpkg_runbuild() {
 	# Install package builder script
 	sudo install -m 755 ${WORKDIR}/build-kernel.sh ${BUILDCHROOT_DIR}
 
-	sudo cp ${WORKDIR}/${KERNEL_DEFCONFIG} ${WORKDIR}/${S}/.config
+	sudo cp ${WORKDIR}/${KERNEL_DEFCONFIG} ${S}/.config
 
 	E="${@ bb.utils.export_proxies(d)}"
 
@@ -43,5 +43,5 @@ dpkg_runbuild() {
 	export KERNEL_DEBIAN_DEPENDS="${KERNEL_DEBIAN_DEPENDS}"
 	export KERNEL_HEADERS_DEBIAN_DEPENDS="${KERNEL_HEADERS_DEBIAN_DEPENDS}"
 
-	sudo -E chroot ${BUILDCHROOT_DIR} /build-kernel.sh ${PP}/${S}
+	sudo -E chroot ${BUILDCHROOT_DIR} /build-kernel.sh ${PP}/${PPS}
 }
