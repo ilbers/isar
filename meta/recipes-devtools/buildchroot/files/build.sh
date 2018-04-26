@@ -9,6 +9,11 @@ set -e
 # Go to build directory
 cd $1
 
+# To avoid Perl locale warnings:
+export LC_ALL=C
+export LANG=C
+export LANGUAGE=C
+
 # Install command to be used by mk-build-deps
 # Notes:
 #   1) everything before the -y switch is unchanged from the defaults
@@ -46,4 +51,4 @@ for i in configure aclocal.m4 Makefile.am Makefile.in; do
 done
 
 # Build the package
-LC_ALL=C LANG=C dpkg-buildpackage
+dpkg-buildpackage
