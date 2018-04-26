@@ -32,6 +32,10 @@ setup_root_file_system() {
     # Install packages:
     E="${@ bb.utils.export_proxies(d)}"
     export DEBIAN_FRONTEND=noninteractive
+    # To avoid Perl locale warnings:
+    export LANG=C
+    export LANGUAGE=C
+    export LC_ALL=C
     sudo -E chroot "$ROOTFSDIR" /usr/bin/apt-get update \
         -o Dir::Etc::sourcelist="sources.list.d/isar-apt.list" \
         -o Dir::Etc::sourceparts="-" \
