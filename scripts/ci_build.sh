@@ -1,28 +1,78 @@
-# Script for Jenkins build
+# Script for CI system build
 #
 # Alexander Smirnov <asmirnov@ilbers.de>
-# Copyright (c) 2016-2017 ilbers GmbH
+# Copyright (c) 2016-2018 ilbers GmbH
 
 #!/bin/sh
+
+ES_BUG=3
 
 # Export $PATH to use 'parted' tool
 export PATH=$PATH:/sbin
 
-# Get parameters from the command line
-WORKSPACE=$1
-GIT_COMMIT=$2
-
 # Go to Isar root
 cd $(dirname $0)/..
 
-# Setup build folder for current revision
-if [ ! -d /build/$WORKSPACE/$GIT_COMMIT ]; then
-        mkdir -p /build/$WORKSPACE/$GIT_COMMIT
+# Start build in Isar tree by default
+BUILD_DIR=./build
+
+BB_ARGS="-v"
+
+show_help() {
+    echo "This script builds all the default Isar images."
+    echo
+    echo "Usage:"
+    echo "    $0 [params]"
+    echo
+    echo "Parameters:"
+    echo "    -b, --build BUILD_DIR set path to build directory. If not set,"
+    echo "                          the build will be started in current path."
+    echo "    -d, --debug           enable debug bitbake output."
+    echo "    -q, --quite           suppress verbose bitbake output."
+    echo "    --help                display this message and exit."
+    echo
+    echo "Exit status:"
+    echo " 0  if OK,"
+    echo " 3  if invalid parameters are passed."
+}
+
+# Parse command line to get user configuration
+while [ $# -gt 0 ]
+do
+    key="$1"
+
+    case $key in
+    -h|--help)
+        show_help
+        exit 0
+        ;;
+    -b|--build)
+        BUILD_DIR="$2"
+        shift
+        ;;
+    -d|--debug)
+        BB_ARGS="$BB_ARGS -d"
+        ;;
+    -q|--quite)
+        BB_ARGS=""
+        ;;
+    *)
+        echo "error: invalid parameter '$key', please try '--help' to get list of supported parameters"
+        exit $ES_BUG
+        ;;
+    esac
+
+    shift
+done
+
+# Setup build folder for the current build
+if [ ! -d $BUILD_DIR ]; then
+        mkdir -p $BUILD_DIR
 fi
-source isar-init-build-env /build/$WORKSPACE/$GIT_COMMIT
+source isar-init-build-env $BUILD_DIR
 
 # Start build for all possible configurations
-bitbake -v \
+bitbake $BB_ARGS \
         multiconfig:qemuarm-wheezy:isar-image-base \
         multiconfig:qemuarm-jessie:isar-image-base \
         multiconfig:qemuarm-stretch:isar-image-base \
