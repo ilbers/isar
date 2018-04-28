@@ -5,13 +5,19 @@
 
 CONSOLE_OUTPUT=/tmp/isar_console
 PID_FILE=/tmp/qemu.pid
+VERBOSE=1
 
-RET=0
+# Error codes:
+ES_OK=0
+ES_FAIL=1
+ES_BUG=3
+
+RET=$ES_OK
 
 dump_boot_log() {
-    echo "Boot log: 8<--"
+    echo "Boot log:\n8<--"
     cat $CONSOLE_OUTPUT
-    echo -e "\n8<--"
+    echo "\n8<--"
 }
 
 check_login_prompt() {
@@ -23,8 +29,8 @@ check_login_prompt() {
         echo "PASSED"
     else
         echo "FAIL"
-        dump_boot_log
-        RET=1
+        RET=$ES_FAIL
+        FAIL=1
     fi
 }
 
@@ -37,8 +43,8 @@ check_example_module() {
         echo "PASSED"
     else
         echo "FAIL"
-        dump_boot_log
-        RET=1
+        RET=$ES_FAIL
+        FAIL=1
     fi
 }
 
@@ -49,23 +55,61 @@ run_test () {
     echo "-------------------------------------------------"
     echo "Testing Isar [$DISTRO] image for [$ARCH] machine:"
 
-    # Start QEMU with Isar image
     start_vm -a $ARCH -d $DISTRO -o $CONSOLE_OUTPUT -p $PID_FILE > /dev/null 2>&1 &
     sleep 60
     kill `cat $PID_FILE`
 
-    # Check login prompt
+    FAIL=0
+
     check_login_prompt
 
-    # Check kernel module
     check_example_module
 
-    dump_boot_log
+    [ $VERBOSE -eq 1 -o $FAIL -eq 1 ] && dump_boot_log
 
-    # Clean up test artifacts
     rm $CONSOLE_OUTPUT
     rm $PID_FILE
 }
+
+show_help() {
+    echo "This script tests all the default Isar images in QEMU."
+    echo
+    echo "Usage:"
+    echo "    $0 [params]"
+    echo
+    echo "Parameters:"
+    echo "    -q, --quite           do not display boot logs for all the targets."
+    echo "                          If test failed for the specific configuration,"
+    echo "                          the respective boot log will be printed anyway."
+    echo "    -h, --help            display this message and exit."
+    echo
+    echo "Exit status:"
+    echo " 0  if OK,"
+    echo " 1  if test failed,"
+    echo " 3  if invalid parameters are passed."
+}
+
+# Parse command line to get user configuration
+while [ $# -gt 0 ]
+do
+    key="$1"
+
+    case $key in
+    -h|--help)
+        show_help
+        exit 0
+        ;;
+    -q|--quite)
+        VERBOSE=0
+        ;;
+    *)
+        echo "error: invalid parameter '$key', please try '--help' to get list of supported parameters"
+        exit $ES_BUG
+        ;;
+    esac
+
+    shift
+done
 
 # ARM machine
 run_test arm wheezy
