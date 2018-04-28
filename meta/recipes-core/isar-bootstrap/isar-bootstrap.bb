@@ -14,7 +14,7 @@ SRC_URI = "file://isar-apt.conf"
 PV = "1.0"
 
 WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${PN}"
-DEBOOTSTRAP ?= ""
+DEBOOTSTRAP ?= "qemu-debootstrap"
 ROOTFSDIR = "${WORKDIR}/rootfs"
 APTPREFS = "${WORKDIR}/apt-preferences"
 APTSRCS = "${WORKDIR}/apt-sources"
@@ -24,21 +24,6 @@ DEBOOTSTRAP_KEYRING = ""
 
 python () {
     from urllib.parse import urlparse
-
-    debootstrap = d.getVar("DEBOOTSTRAP", True)
-    if not debootstrap:
-        target = d.getVar("DISTRO_ARCH", True)
-        machine = os.uname()[4]
-        m = {
-            "x86_64": ["i386", "amd64"],
-            "x86": ["i386"],
-            }
-        if machine not in m or target not in m[machine]:
-            debootstrap = "qemu-debootstrap"
-        else:
-            debootstrap = "debootstrap"
-        d.setVar("DEBOOTSTRAP", debootstrap)
-
     distro_apt_keys = d.getVar("DISTRO_APT_KEYS", False)
     if distro_apt_keys:
         d.setVar("DEBOOTSTRAP_KEYRING", "--keyring ${APTKEYRING}")
