@@ -10,7 +10,7 @@ ROOTFS_TYPE ?= "ext4"
 STAGING_DATADIR ?= "/usr/lib/"
 STAGING_LIBDIR ?= "/usr/lib/"
 STAGING_DIR ?= "${TMPDIR}"
-IMAGE_BASENAME ?= "multiconfig:${MACHINE}-${DISTRO}:${PN}"
+IMAGE_BASENAME ?= "${PN}-${DISTRO}"
 FAKEROOTCMD ?= "${ISARROOT}/scripts/wic_fakeroot"
 RECIPE_SYSROOT_NATIVE ?= "/"
 
