@@ -18,7 +18,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 # DESCRIPTION
-# This implements the 'bootimg-pcbios-isar' source plugin class for 'wic'
+# This implements the 'bootimg-pcbios' source plugin class for 'wic'
 #
 # AUTHORS
 # Tom Zanussi <tom.zanussi (at] linux.intel.com>
@@ -36,12 +36,12 @@ from wic.utils.misc import (exec_cmd, exec_native_cmd,
 
 logger = logging.getLogger('wic')
 
-class BootimgPcbiosIsarPlugin(SourcePlugin):
+class BootimgPcbiosPlugin(SourcePlugin):
     """
     Create MBR boot partition and install syslinux on it.
     """
 
-    name = 'bootimg-pcbios-isar'
+    name = 'bootimg-pcbios'
 
     @classmethod
     def _get_syslinux_dir(cls, bootimg_dir):
@@ -67,9 +67,9 @@ class BootimgPcbiosIsarPlugin(SourcePlugin):
         """
         syslinux_dir = cls._get_syslinux_dir(bootimg_dir)
         if creator.ptable_format == 'msdos':
-            mbrfile = os.path.join(syslinux_dir, "mbr/mbr.bin")
+            mbrfile = os.path.join(syslinux_dir, "mbr.bin")
         elif creator.ptable_format == 'gpt':
-            mbrfile = os.path.join(syslinux_dir, "mbr/gptmbr.bin")
+            mbrfile = os.path.join(syslinux_dir, "gptmbr.bin")
         else:
             raise WicError("Unsupported partition table: %s" %
                            creator.ptable_format)
@@ -134,12 +134,11 @@ class BootimgPcbiosIsarPlugin(SourcePlugin):
             syslinux_conf += "DEFAULT boot\n"
             syslinux_conf += "LABEL boot\n"
 
-            kernel = get_bitbake_var("KERNEL_IMAGE")
-            initrd = get_bitbake_var("INITRD_IMAGE")
+            kernel = "/vmlinuz"
             syslinux_conf += "KERNEL " + kernel + "\n"
 
-            syslinux_conf += "APPEND label=boot root=%s initrd=%s %s\n" % \
-                             (creator.rootdev, initrd, bootloader.append)
+            syslinux_conf += "APPEND label=boot root=%s %s\n" % \
+                             (creator.rootdev, bootloader.append)
 
         logger.debug("Writing syslinux config %s/hdd/boot/syslinux.cfg",
                      cr_workdir)
@@ -159,22 +158,18 @@ class BootimgPcbiosIsarPlugin(SourcePlugin):
         syslinux_dir = cls._get_syslinux_dir(bootimg_dir)
 
         staging_kernel_dir = kernel_dir
-        kernel = get_bitbake_var("KERNEL_IMAGE")
-        initrd = get_bitbake_var("INITRD_IMAGE")
 
         hdddir = "%s/hdd/boot" % cr_workdir
 
-        cmds = ("install -m 0644 %s/%s %s/%s" %
-                (staging_kernel_dir, kernel, hdddir, kernel),
-                "install -m 0644 %s/%s %s/%s" %
-                (staging_kernel_dir, initrd, hdddir, initrd),
-                "install -m 444 %s/modules/bios/ldlinux.c32 %s/ldlinux.c32" %
+        cmds = ("install -m 0644 %s/bzImage %s/vmlinuz" %
+                (staging_kernel_dir, hdddir),
+                "install -m 444 %s/ldlinux.sys %s/ldlinux.sys" %
                 (syslinux_dir, hdddir),
-                "install -m 0644 %s/modules/bios/vesamenu.c32 %s/vesamenu.c32" %
+                "install -m 0644 %s/vesamenu.c32 %s/vesamenu.c32" %
                 (syslinux_dir, hdddir),
-                "install -m 444 %s/modules/bios/libcom32.c32 %s/libcom32.c32" %
+                "install -m 444 %s/libcom32.c32 %s/libcom32.c32" %
                 (syslinux_dir, hdddir),
-                "install -m 444 %s/modules/bios/libutil.c32 %s/libutil.c32" %
+                "install -m 444 %s/libutil.c32 %s/libutil.c32" %
                 (syslinux_dir, hdddir))
 
         for install_cmd in cmds:
@@ -201,7 +196,7 @@ class BootimgPcbiosIsarPlugin(SourcePlugin):
         exec_native_cmd(dosfs_cmd, native_sysroot)
 
         mcopy_cmd = "mcopy -i %s -s %s/* ::/" % (bootimg, hdddir)
-        exec_cmd(mcopy_cmd, native_sysroot)
+        exec_native_cmd(mcopy_cmd, native_sysroot)
 
         syslinux_cmd = "syslinux %s" % bootimg
         exec_native_cmd(syslinux_cmd, native_sysroot)
