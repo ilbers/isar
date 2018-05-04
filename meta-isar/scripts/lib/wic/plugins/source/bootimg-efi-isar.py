@@ -18,7 +18,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 # DESCRIPTION
-# This implements the 'bootimg-efi' source plugin class for 'wic'
+# This implements the 'bootimg-efi-isar' source plugin class for 'wic'
 #
 # AUTHORS
 # Tom Zanussi <tom.zanussi (at] linux.intel.com>
@@ -31,8 +31,7 @@ import shutil
 from wic import WicError
 from wic.engine import get_custom_config
 from wic.pluginbase import SourcePlugin
-from wic.utils.misc import (exec_cmd, exec_native_cmd, get_bitbake_var,
-                            BOOTDD_EXTRA_SPACE)
+from wic.utils.misc import (exec_cmd, get_bitbake_var, BOOTDD_EXTRA_SPACE)
 
 logger = logging.getLogger('wic')
 
@@ -42,7 +41,7 @@ class BootimgEFIPlugin(SourcePlugin):
     This plugin supports GRUB 2 and systemd-boot bootloaders.
     """
 
-    name = 'bootimg-efi'
+    name = 'bootimg-efi-isar'
 
     @classmethod
     def do_configure_grubefi(cls, creator, cr_workdir):
@@ -70,18 +69,30 @@ class BootimgEFIPlugin(SourcePlugin):
             grubefi_conf += "serial --unit=0 --speed=115200 --word=8 --parity=no --stop=1\n"
             grubefi_conf += "default=boot\n"
             grubefi_conf += "timeout=%s\n" % bootloader.timeout
+            grubefi_conf += "set root='hd0,gpt2'\n"
             grubefi_conf += "menuentry 'boot'{\n"
 
-            kernel = "/bzImage"
+            kernel = "/vmlinuz"
 
             grubefi_conf += "linux %s root=%s rootwait %s\n" \
-                % (kernel, creator.rootdev, bootloader.append)
+                            % (kernel, creator.rootdev, bootloader.append)
+
+            initrd = "/initrd.img"
+
+            grubefi_conf += "initrd %s\n" % initrd
+
             grubefi_conf += "}\n"
 
         logger.debug("Writing grubefi config %s/hdd/boot/EFI/BOOT/grub.cfg",
                      cr_workdir)
         cfg = open("%s/hdd/boot/EFI/BOOT/grub.cfg" % cr_workdir, "w")
         cfg.write(grubefi_conf)
+        cfg.close()
+
+        cfg = open("%s/hdd/boot/EFI/BOOT/grub-mkimage.cfg" % cr_workdir, "w")
+        mkimage_conf = "set root='hd0,gpt1'\n"
+        mkimage_conf += "set prefix=($root)/EFI/BOOT\n"
+        cfg.write(mkimage_conf)
         cfg.close()
 
     @classmethod
@@ -135,7 +146,7 @@ class BootimgEFIPlugin(SourcePlugin):
 
         if not custom_cfg:
             # Create systemd-boot configuration using parameters from wks file
-            kernel = "/bzImage"
+            kernel = "/vmlinuz"
 
             boot_conf = ""
             boot_conf += "title boot\n"
@@ -171,9 +182,9 @@ class BootimgEFIPlugin(SourcePlugin):
             elif source_params['loader'] == 'systemd-boot':
                 cls.do_configure_systemdboot(hdddir, creator, cr_workdir, source_params)
             else:
-                raise WicError("unrecognized bootimg-efi loader: %s" % source_params['loader'])
+                raise WicError("unrecognized bootimg-efi-isar loader: %s" % source_params['loader'])
         except KeyError:
-            raise WicError("bootimg-efi requires a loader, none specified")
+            raise WicError("bootimg-efi-isar requires a loader, none specified")
 
 
     @classmethod
@@ -194,29 +205,58 @@ class BootimgEFIPlugin(SourcePlugin):
 
         hdddir = "%s/hdd/boot" % cr_workdir
 
-        install_cmd = "install -m 0644 %s/bzImage %s/bzImage" % \
-            (staging_kernel_dir, hdddir)
-        exec_cmd(install_cmd)
-
-
         try:
             if source_params['loader'] == 'grub-efi':
                 shutil.copyfile("%s/hdd/boot/EFI/BOOT/grub.cfg" % cr_workdir,
                                 "%s/grub.cfg" % cr_workdir)
+                shutil.copyfile("%s/hdd/boot/EFI/BOOT/grub-mkimage.cfg" % cr_workdir,
+                                "%s/grub-mkimage.cfg" % cr_workdir)
                 for mod in [x for x in os.listdir(kernel_dir) if x.startswith("grub-efi-")]:
                     cp_cmd = "cp %s/%s %s/EFI/BOOT/%s" % (kernel_dir, mod, hdddir, mod[9:])
                     exec_cmd(cp_cmd, True)
                 shutil.move("%s/grub.cfg" % cr_workdir,
                             "%s/hdd/boot/EFI/BOOT/grub.cfg" % cr_workdir)
+
+                distro_arch = get_bitbake_var("DISTRO_ARCH")
+                if not distro_arch:
+                    raise WicError("Couldn't find target architecture")
+
+                if distro_arch == "amd64":
+                    grub_target = 'x86_64-efi'
+                    grub_image = "bootx64.efi"
+                elif distro_arch == "i386":
+                    grub_target = 'i386-efi'
+                    grub_image = "bootia32.efi"
+                else:
+                    raise WicError("grub-efi is incompatible with target %s" %
+                                   distro_arch)
+
+                bootimg_dir = "%s/hdd/boot" % cr_workdir
+                if not os.path.isfile("%s/EFI/BOOT/%s" \
+                                      % (bootimg_dir, grub_image)):
+
+                    # TODO: check that grub-mkimage is available
+                    grub_cmd = "grub-mkimage -p /EFI/BOOT "
+                    grub_cmd += "-c %s/grub-mkimage.cfg " % cr_workdir
+                    grub_cmd += "-O %s -o %s/EFI/BOOT/%s " \
+                                % (grub_target, bootimg_dir, grub_image)
+                    grub_cmd += "part_gpt part_msdos ntfs ntfscomp fat ext2 "
+                    grub_cmd += "normal chain boot configfile linux multiboot "
+                    grub_cmd += "search efi_gop efi_uga font gfxterm gfxmenu "
+                    grub_cmd += "terminal minicmd test iorw loadenv echo help "
+                    grub_cmd += "reboot serial terminfo iso9660 loopback tar "
+                    grub_cmd += "memdisk ls search_fs_uuid udf btrfs xfs lvm "
+                    grub_cmd += "reiserfs ata "
+                    exec_cmd(grub_cmd)
             elif source_params['loader'] == 'systemd-boot':
                 for mod in [x for x in os.listdir(kernel_dir) if x.startswith("systemd-")]:
                     cp_cmd = "cp %s/%s %s/EFI/BOOT/%s" % (kernel_dir, mod, hdddir, mod[8:])
                     exec_cmd(cp_cmd, True)
             else:
-                raise WicError("unrecognized bootimg-efi loader: %s" %
+                raise WicError("unrecognized bootimg-efi-isar loader: %s" %
                                source_params['loader'])
         except KeyError:
-            raise WicError("bootimg-efi requires a loader, none specified")
+            raise WicError("bootimg-efi-isar requires a loader, none specified")
 
         startup = os.path.join(kernel_dir, "startup.nsh")
         if os.path.exists(startup):
@@ -241,10 +281,10 @@ class BootimgEFIPlugin(SourcePlugin):
         bootimg = "%s/boot.img" % cr_workdir
 
         dosfs_cmd = "mkdosfs -n efi -C %s %d" % (bootimg, blocks)
-        exec_native_cmd(dosfs_cmd, native_sysroot)
+        exec_cmd(dosfs_cmd)
 
         mcopy_cmd = "mcopy -i %s -s %s/* ::/" % (bootimg, hdddir)
-        exec_native_cmd(mcopy_cmd, native_sysroot)
+        exec_cmd(mcopy_cmd, True)
 
         chmod_cmd = "chmod 644 %s" % bootimg
         exec_cmd(chmod_cmd)
