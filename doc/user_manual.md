@@ -79,9 +79,11 @@ Isar requires `sudo` rights without password to work with `chroot` and `debootst
 ```
 In the editor, allow the current user to run sudo without a password, e.g.:
 ```
- <user>  ALL=NOPASSWD: ALL
+ <user>  ALL=(ALL:ALL) NOPASSWD:ALL
+ Defaults env_keep += "ftp_proxy http_proxy https_proxy no_proxy"
 ```
 Replace `<user>` with your user name. Use the tab character between the user name and parameters.
+The second line will make sure your proxy settings will not get lost when using `sudo`. Include it if you are in the unfortunate possition to having to deal with that.
 
 ### Check out Isar
 
