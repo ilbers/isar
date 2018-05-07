@@ -5,6 +5,8 @@ IMAGE_INSTALL ?= ""
 IMAGE_TYPE    ?= "ext4-img"
 IMAGE_ROOTFS   = "${WORKDIR}/rootfs"
 
+IMAGE_INSTALL += "${@ ("linux-image-" + d.getVar("KERNEL_NAME", True)) if d.getVar("KERNEL_NAME", True) else ""}"
+
 # Extra space for rootfs in MB
 ROOTFS_EXTRA ?= "64"
 
