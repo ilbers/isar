@@ -6,6 +6,7 @@
 CONSOLE_OUTPUT=/tmp/isar_console
 PID_FILE=/tmp/qemu.pid
 VERBOSE=1
+TIMEOUT=60
 
 # Error codes:
 ES_OK=0
@@ -65,7 +66,7 @@ run_test () {
         start_vm -a $ARCH -d $DISTRO -o $CONSOLE_OUTPUT -p $PID_FILE
         echo "\n8<--"
     else
-        sleep 60
+        sleep $TIMEOUT
         kill `cat $PID_FILE`
 
         FAIL=0
@@ -89,9 +90,15 @@ show_help() {
     echo "    $0 [params]"
     echo
     echo "Parameters:"
+    echo "    -o,--output FILE      specify file to store console output."
+    echo "                          The default is: /tmp/isar_console"
+    echo "    -p,--pid-file FILE    specify file to store QEMU process PID."
+    echo "                          The default is: /tmp/qemu.pid"
     echo "    -q, --quite           do not display boot logs for all the targets."
     echo "                          If test failed for the specific configuration,"
     echo "                          the respective boot log will be printed anyway."
+    echo "    -t,--timeout SEC      specify time in seconds to wait before stop QEMU."
+    echo "                          The default is: 60"
     echo "    -h, --help            display this message and exit."
     echo
     echo "Exit status:"
@@ -110,8 +117,20 @@ do
         show_help
         exit 0
         ;;
+    -o|--output)
+        CONSOLE_OUTPUT=$2
+        shift
+        ;;
+    -p|--pid-file)
+        PID_FILE=$2
+        shift
+        ;;
     -q|--quite)
         VERBOSE=0
+        ;;
+    -t|--timeout)
+        TIMEOUT=$2
+        shift
         ;;
     *)
         echo "error: invalid parameter '$key', please try '--help' to get list of supported parameters"
