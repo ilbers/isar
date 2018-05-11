@@ -123,7 +123,6 @@ do
 done
 
 # ARM machine
-run_test arm wheezy
 run_test arm jessie
 run_test arm stretch
 
