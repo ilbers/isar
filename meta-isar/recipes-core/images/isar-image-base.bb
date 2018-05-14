@@ -45,4 +45,5 @@ do_rootfs() {
     sudo rmdir ${IMAGE_ROOTFS}/isar-apt
     sudo umount -l ${IMAGE_ROOTFS}/dev
     sudo umount -l ${IMAGE_ROOTFS}/proc
+    sudo rm -f "${IMAGE_ROOTFS}/etc/apt/apt.conf.d/55isar-fallback.conf"
 }

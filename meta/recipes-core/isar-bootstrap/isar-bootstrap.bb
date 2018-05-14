@@ -10,7 +10,9 @@ Description = "Minimal debian root file system"
 LICENSE = "gpl-2.0"
 LIC_FILES_CHKSUM = "file://${LAYERDIR_isar}/licenses/COPYING.GPLv2;md5=751419260aa954499f7abaabaa882bbe"
 FILESPATH_prepend := "${THISDIR}/files:"
-SRC_URI = "file://isar-apt.conf"
+SRC_URI = " \
+    file://isar-apt.conf \
+    file://isar-apt-fallback.conf"
 PV = "1.0"
 
 WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${PN}"
@@ -189,6 +191,11 @@ do_bootstrap() {
 }
 addtask bootstrap before do_build after do_generate_keyring
 
+def get_host_release():
+    import platform
+    rel = platform.release()
+    return rel
+
 do_apt_config_install[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 do_apt_config_install() {
     sudo mkdir -p "${ROOTFSDIR}/etc/apt/preferences.d"
@@ -201,6 +208,11 @@ do_apt_config_install() {
     sudo mkdir -p "${ROOTFSDIR}/etc/apt/apt.conf.d"
     sudo install -v -m644 "${WORKDIR}/isar-apt.conf" \
                           "${ROOTFSDIR}/etc/apt/apt.conf.d/50isar.conf"
+
+    if [ "${@get_distro_suite(d)}" = "stretch" ] && [ "${@get_host_release().split('.')[0]}" -lt "4" ]; then
+        sudo install -v -m644 "${WORKDIR}/isar-apt-fallback.conf" \
+                              "${ROOTFSDIR}/etc/apt/apt.conf.d/55isar-fallback.conf"
+    fi
 }
 addtask apt_config_install before do_build after do_bootstrap do_apt_config_prepare
 
