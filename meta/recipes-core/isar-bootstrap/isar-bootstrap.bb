@@ -181,8 +181,8 @@ do_bootstrap() {
     fi
     E="${@bb.utils.export_proxies(d)}"
     sudo -E "${DEBOOTSTRAP}" --verbose \
-                             --variant minbase \
-                             --arch "${DISTRO_ARCH}" \
+                             --variant=minbase \
+                             --arch="${DISTRO_ARCH}" \
                              ${@get_distro_components_argument(d)} \
                              ${DEBOOTSTRAP_KEYRING} \
                              "${@get_distro_suite(d)}" \
