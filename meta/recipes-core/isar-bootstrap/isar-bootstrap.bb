@@ -77,7 +77,7 @@ def get_apt_source_mirror(d, aptsources_entry_list):
 
     premirrors = d.getVar('DISTRO_APT_PREMIRRORS', True) or ""
     mirror_list = [entry.split()
-                  for entry in premirrors.split('\n')
+                  for entry in premirrors.split('\\n')
                   if any(entry)]
 
     for regex, replace in mirror_list:
