@@ -1,0 +1,10 @@
+# Remove localized man pages
+MANDELETE
+
+# Delete new locales which appear on the system without bothering you
+DONTBOTHERNEWLOCALE
+
+# Keep these locales after package installations via apt-get(8)
+en
+en_US
+en_US.UTF-8
