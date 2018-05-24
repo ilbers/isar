@@ -41,6 +41,9 @@ do_rootfs() {
     # Cleanup
     sudo rm "${IMAGE_ROOTFS}/${DISTRO_CONFIG_SCRIPT}"
     sudo rm "${IMAGE_ROOTFS}/etc/apt/sources.list.d/isar-apt.list"
+    test ! -e "${IMAGE_ROOTFS}/usr/share/doc/qemu-user-static" && \
+         sudo find "${IMAGE_ROOTFS}/usr/bin" \
+              -maxdepth 1 -name 'qemu-*-static' -type f -delete
     sudo umount -l ${IMAGE_ROOTFS}/isar-apt
     sudo rmdir ${IMAGE_ROOTFS}/isar-apt
     sudo umount -l ${IMAGE_ROOTFS}/dev
