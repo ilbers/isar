@@ -20,15 +20,14 @@ setup_root_file_system() {
     shift
     shift
     PACKAGES="$@"
-    APT_ARGS="install --yes --allow-unauthenticated \
-              -o Debug::pkgProblemResolver=yes"
+    APT_ARGS="install --yes -o Debug::pkgProblemResolver=yes"
     CLEAN_FILES="${ROOTFSDIR}/etc/hostname ${ROOTFSDIR}/etc/resolv.conf"
 
     sudo cp -Trpfx \
         "${DEPLOY_DIR_IMAGE}/isar-bootstrap-${DISTRO}-${DISTRO_ARCH}/" \
         "$ROOTFSDIR"
 
-    echo "deb file:///isar-apt ${DEBDISTRONAME} main" | \
+    echo "deb [trusted=yes] file:///isar-apt ${DEBDISTRONAME} main" | \
         sudo tee "$ROOTFSDIR/etc/apt/sources.list.d/isar-apt.list" >/dev/null
 
     echo "Package: *\nPin: release n=${DEBDISTRONAME}\nPin-Priority: 1000" | \

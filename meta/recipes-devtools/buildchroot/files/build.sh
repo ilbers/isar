@@ -20,9 +20,6 @@ export LANGUAGE=C
 #   2) we add -y to go non-interactive
 install_cmd="apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y"
 
-# Allow unauthenticated feeds
-install_cmd="${install_cmd} --allow-unauthenticated"
-
 (
     # Lock-protected because apt and dpkg do not wait in case of contention
     flock 42 || exit 1
