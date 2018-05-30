@@ -40,4 +40,3 @@ fi
 
 # Purge unused locale and installed packages' .deb files
 localepurge
-apt-get clean

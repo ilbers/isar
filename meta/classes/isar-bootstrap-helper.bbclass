@@ -5,15 +5,24 @@
 #
 # SPDX-License-Identifier: MIT
 
+IMAGE_TRANSIENT_PACKAGES ??= ""
+
+def reverse_bb_array(d, varname):
+    array = d.getVar(varname, True)
+    if array is None:
+        return None
+    array = reversed(array.split())
+    return " ".join(i for i in array)
+
 setup_root_file_system() {
     ROOTFSDIR="$1"
-    CLEANHOSTLEAK="$2"
+    CLEAN="$2"
     shift
     shift
     PACKAGES="$@"
     APT_ARGS="install --yes --allow-unauthenticated \
               -o Debug::pkgProblemResolver=yes"
-    CLEANHOSTLEAK_FILES="${ROOTFSDIR}/etc/hostname ${ROOTFSDIR}/etc/resolv.conf"
+    CLEAN_FILES="${ROOTFSDIR}/etc/hostname ${ROOTFSDIR}/etc/resolv.conf"
 
     sudo cp -Trpfx \
         "${DEPLOY_DIR_IMAGE}/isar-bootstrap-${DISTRO}-${DISTRO_ARCH}/" \
@@ -41,8 +50,23 @@ setup_root_file_system() {
         -o Dir::Etc::sourceparts="-" \
         -o APT::Get::List-Cleanup="0"
     sudo -E chroot "$ROOTFSDIR" \
-        /usr/bin/apt-get ${APT_ARGS} --download-only $PACKAGES
-    [ "clean" = ${CLEANHOSTLEAK} ] && sudo rm -f ${CLEANHOSTLEAK_FILES}
+        /usr/bin/apt-get ${APT_ARGS} --download-only $PACKAGES \
+            ${IMAGE_TRANSIENT_PACKAGES}
+    [ "clean" = ${CLEAN} ] && sudo rm -f ${CLEAN_FILES}
     sudo -E chroot "$ROOTFSDIR" \
         /usr/bin/apt-get ${APT_ARGS} $PACKAGES
+    for pkg in ${IMAGE_TRANSIENT_PACKAGES}; do
+        sudo -E chroot "$ROOTFSDIR" \
+            /usr/bin/apt-get ${APT_ARGS} $pkg
+    done
+    for pkg in ${@reverse_bb_array(d, "IMAGE_TRANSIENT_PACKAGES") or ""}; do
+        sudo -E chroot "$ROOTFSDIR" \
+            /usr/bin/apt-get purge --yes $pkg
+    done
+    if [ "clean" = ${CLEAN} ]; then
+        sudo -E chroot "$ROOTFSDIR" \
+            /usr/bin/apt-get autoremove --purge --yes
+        sudo -E chroot "$ROOTFSDIR" \
+            /usr/bin/apt-get clean
+    fi
 }

@@ -40,4 +40,3 @@ kernel=$KERNEL_IMAGE
 EOF
 
 localepurge
-apt-get clean
