@@ -318,6 +318,8 @@ Some other variables include:
 
  - `IMAGE_INSTALL` - The list of custom packages to build and install to target image, please refer to relative chapter for more information.
  - `BB_NUMBER_THREADS` - The number of `bitbake` jobs that can be run in parallel. Please set this option according your host CPU cores number.
+ - `LOCALE_GEN` - A `\n` seperated list of `/etc/locale.gen` entries desired on the target.
+ - `LOCALE_DEFAULT` - The default locale used for the `LANG` and `LANGUAGE` variable in `/etc/locale`.
 
 ---
 
@@ -478,6 +480,22 @@ Isar contains two image type classes that can be used as reference:
 
  - `ext4-img`
  - `rpi-sdimg`
+
+---
+
+## Customize and configure image
+
+Customization and configuration of an image should be done via packages, see below.
+
+Adding those configuration packages to the image can be done in two ways:
+
+ 1. Simply adding the package to `IMAGE_INSTALL`, like any other isar created package, or
+ 2. Adding the package to `IMAGE_TRANSIENT_PACKAGES`.
+
+In most cases adding the configuration package to `IMAGE_INSTALL` is the right option.
+
+In cases were the configuration script of the package has some external dependencies, that should not be part of the final image, then `IMAGE_TRANSIENT_PACKAGES` is the right option.
+Packages in the `IMAGE_TRANSIENT_PACKAGES` variable are installed to the image and purged in the next step. If such a configuration package deploys file as part of their content, then those files will be removed as well.
 
 ---
 
