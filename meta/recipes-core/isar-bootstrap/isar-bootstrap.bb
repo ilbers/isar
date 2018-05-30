@@ -13,8 +13,7 @@ FILESPATH_prepend := "${THISDIR}/files:"
 SRC_URI = " \
     file://isar-apt.conf \
     file://isar-apt-fallback.conf \
-    file://locale \
-    file://locale.nopurge"
+    file://locale"
 PV = "1.0"
 
 WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${PN}"
@@ -196,7 +195,6 @@ addtask bootstrap before do_build after do_generate_keyring
 
 do_set_locale() {
     sudo install -v -m644 "${WORKDIR}/locale" "${ROOTFSDIR}/etc/locale"
-    sudo install -v -m644 "${WORKDIR}/locale.nopurge" "${ROOTFSDIR}/etc/locale.nopurge"
 
     sudo sed -i '/en_US.UTF-8 UTF-8/s/^#//g' "${ROOTFSDIR}/etc/locale.gen"
     sudo -E chroot "${ROOTFSDIR}" /usr/sbin/locale-gen

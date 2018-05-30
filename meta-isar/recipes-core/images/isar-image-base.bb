@@ -16,11 +16,11 @@ PV = "1.0"
 inherit image
 inherit isar-bootstrap-helper
 
-DEPENDS += "${IMAGE_INSTALL}"
+DEPENDS += "${IMAGE_INSTALL} ${IMAGE_TRANSIENT_PACKAGES}"
 
 IMAGE_PREINSTALL += "apt \
-                     dbus \
-                     localepurge"
+                     dbus"
+IMAGE_TRANSIENT_PACKAGES += "isar-cfg-localepurge"
 
 WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${PN}"
 

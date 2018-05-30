@@ -10,11 +10,6 @@ readonly BAUDRATE_TTY="$2"
 readonly ROOTFS_DEV="$3"
 readonly ROOTFS_TYPE="$4"
 
-debconf-set-selections <<END
-locales locales/locales_to_be_generated multiselect en_US.UTF-8 UTF-8
-locales locales/default_environment_locale select en_US.UTF-8
-END
-
 cat > /etc/fstab << EOF
 # Begin /etc/fstab
 /dev/$ROOTFS_DEV	/		$ROOTFS_TYPE		defaults		1	1
@@ -38,5 +33,3 @@ KERNEL_IMAGE=`ls /boot | grep vmlinuz`
 cat > /boot/config.txt << EOF
 kernel=$KERNEL_IMAGE
 EOF
-
-localepurge
