@@ -24,18 +24,7 @@ die() {
 	bbfatal "$*"
 }
 
-bbnote() {
-	echo "NOTE:" "$*"
-}
-
-bbwarn() {
-	echo "WARNING:" "$*"
-}
-
-bbfatal() {
-	echo "FATAL:" "$*"
-	exit 1
-}
+inherit logging
 
 # Derived from bitbake: bitbake/classes/base.bbclass
 addtask showdata
