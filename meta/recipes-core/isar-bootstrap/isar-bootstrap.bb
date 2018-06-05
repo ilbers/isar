@@ -13,7 +13,8 @@ FILESPATH_prepend := "${THISDIR}/files:"
 SRC_URI = " \
     file://isar-apt.conf \
     file://isar-apt-fallback.conf \
-    file://locale"
+    file://locale \
+    file://chroot-setup.sh"
 PV = "1.0"
 
 WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${PN}"
@@ -201,6 +202,12 @@ do_set_locale() {
 }
 addtask set_locale after do_bootstrap
 
+do_setup_chroot() {
+    sudo install -v -m755 "${WORKDIR}/chroot-setup.sh" "${ROOTFSDIR}/chroot-setup.sh"
+    sudo "${ROOTFSDIR}/chroot-setup.sh" "setup" "${ROOTFSDIR}"
+}
+addtask setup_chroot before do_build after do_bootstrap
+
 def get_host_release():
     import platform
     rel = platform.release()
@@ -237,7 +244,7 @@ do_apt_update() {
     sudo -E chroot "${ROOTFSDIR}" /usr/bin/apt-get dist-upgrade -y \
                                       -o Debug::pkgProblemResolver=yes
 }
-addtask apt_update before do_build after do_apt_config_install do_set_locale
+addtask apt_update before do_build after do_apt_config_install do_set_locale do_setup_chroot
 
 do_deploy[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 do_deploy[dirs] = "${DEPLOY_DIR_IMAGE}"

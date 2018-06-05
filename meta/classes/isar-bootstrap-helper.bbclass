@@ -67,5 +67,7 @@ setup_root_file_system() {
             /usr/bin/apt-get autoremove --purge --yes
         sudo -E chroot "$ROOTFSDIR" \
             /usr/bin/apt-get clean
+        sudo "$ROOTFSDIR/chroot-setup.sh" "cleanup" "$ROOTFSDIR"
+        sudo rm -f "$ROOTFSDIR/chroot-setup.sh"
     fi
 }
