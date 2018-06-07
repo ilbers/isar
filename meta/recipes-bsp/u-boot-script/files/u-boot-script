@@ -1,0 +1,9 @@
+# Arguments to append to kernel command line.
+# Make sure to escape $ in u-boot variables, e.g. "\${console}".
+KERNEL_ARGS_APPEND=""
+
+# Set to "yes" or "1" to leave out initrd, even if present
+NO_INITRD=""
+
+# U-boot commands to prepend to boot script
+SCRIPT_PREPEND=""

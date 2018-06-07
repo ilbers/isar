@@ -1,0 +1,57 @@
+#!/bin/sh
+#
+# Boot script generator for U-Boot
+#
+# This software is a part of ISAR.
+# Copyright (c) Siemens AG, 2018
+#
+# SPDX-License-Identifier: MIT
+
+set -e
+
+if [ -f /etc/default/u-boot-script ]; then
+	. /etc/default/u-boot-script
+fi
+
+ROOT_DEV=$(egrep '^[^# 	]+[ 	]+/[ 	]' /etc/fstab | awk '{print $1}') \
+	|| true
+
+ROOT_PART="\${distro_bootpart}"
+if [ -n "${ROOT_DEV}" ]; then
+	ROOT_PART=$(echo ${DEV} | sed 's/.*[^0-9]\([0-9]*\)$/\1/')
+fi
+
+BOOT_CMD=$(mktemp)
+
+KERNEL_VERSION=$(linux-version list | linux-version sort --reverse | head -1)
+
+echo "${SCRIPT_PREPEND}" >> ${BOOT_CMD}
+
+echo "setenv bootargs root=${ROOT_DEV} ${KERNEL_ARGS_APPEND}" >> ${BOOT_CMD}
+
+echo "load \${devtype} \${devnum}:${ROOT_PART} \${fdt_addr_r}" \
+     "/usr/lib/linux-image-${KERNEL_VERSION}/\${fdtfile}" >> ${BOOT_CMD}
+echo "load \${devtype} \${devnum}:\${distro_bootpart} \${kernel_addr_r}" \
+     "/boot/vmlinuz-${KERNEL_VERSION}" >> ${BOOT_CMD}
+
+case "${NO_INITRD}" in
+yes|1)
+	INITRD_ADDR="-"
+	;;
+*)
+	echo "load \${devtype} \${devnum}:\${distro_bootpart}" \
+	     "\${ramdisk_addr_r} /boot/initrd.img-${KERNEL_VERSION}" \
+	     >> ${BOOT_CMD}
+	INITRD_ADDR="\${ramdisk_addr_r}:\${filesize}"
+esac
+
+BOOT="bootz"
+if [ "$(uname -m)" == "aarch64" ]; then
+	BOOT="booti"
+fi
+
+echo "${BOOT} \${kernel_addr_r} ${INITRD_ADDR} \${fdt_addr_r}" >> ${BOOT_CMD}
+
+mkimage -T script -A invalid -C none -d ${BOOT_CMD} /boot/boot.scr > /dev/null
+
+rm ${BOOT_CMD}
