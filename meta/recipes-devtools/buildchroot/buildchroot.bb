@@ -32,14 +32,26 @@ BUILDCHROOT_PREINSTALL_WIC = " \
                              parted \
                              gdisk \
                              util-linux \
-                             syslinux \
-                             syslinux-common \
                              dosfstools \
                              mtools \
                              e2fsprogs \
-                             grub-efi-amd64-bin \
-                             grub-efi-ia32-bin \
                              python3"
+
+BUILDCHROOT_PREINSTALL_WIC_append_amd64 = " \
+                             syslinux \
+                             syslinux-common \
+                             grub-efi-amd64-bin"
+
+BUILDCHROOT_PREINSTALL_WIC_append_armhf = " \
+                             grub-efi-arm-bin"
+
+BUILDCHROOT_PREINSTALL_WIC_append_arm64 = " \
+                             grub-efi-arm64-bin"
+
+BUILDCHROOT_PREINSTALL_WIC_append_i386 = " \
+                             syslinux \
+                             syslinux-common \
+                             grub-efi-ia32-bin"
 
 python () {
     if d.getVar('IMAGE_TYPE', True) == 'wic-img':
