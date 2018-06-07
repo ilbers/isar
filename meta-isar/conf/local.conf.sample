@@ -46,6 +46,7 @@ BBMULTICONFIG = " \
     qemui386-stretch \
     qemuamd64-jessie \
     qemuamd64-stretch \
+    bananapi-stretch \
     rpi-jessie \
 "
 

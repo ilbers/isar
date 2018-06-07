@@ -1,0 +1,5 @@
+part u-boot --source rawcopy --sourceparams="file=/usr/lib/u-boot/Bananapi/u-boot-sunxi-with-spl.bin" --ondisk mmcblk --no-table --align 8
+
+part / --source rootfs --ondisk mmcblk --fstype=ext4 --label platform --align 1024
+
+bootloader --append="rootwait"
