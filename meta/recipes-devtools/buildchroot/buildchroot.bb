@@ -69,8 +69,7 @@ do_build[root_cleandirs] = "${BUILDCHROOT_DIR} \
 do_build[depends] = "isar-apt:do_cache_config isar-bootstrap:do_deploy"
 
 do_build() {
-    setup_root_file_system "${BUILDCHROOT_DIR}" "noclean" \
-        ${BUILDCHROOT_PREINSTALL}
+    setup_root_file_system "${BUILDCHROOT_DIR}" ${BUILDCHROOT_PREINSTALL}
 
     # Install package builder script
     sudo chmod -R a+rw "${BUILDCHROOT_DIR}/home/builder"

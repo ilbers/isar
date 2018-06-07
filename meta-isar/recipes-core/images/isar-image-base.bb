@@ -28,7 +28,7 @@ do_rootfs[root_cleandirs] = "${IMAGE_ROOTFS} \
                              ${IMAGE_ROOTFS}/isar-apt"
 
 do_rootfs() {
-    setup_root_file_system "${IMAGE_ROOTFS}" "clean" \
+    setup_root_file_system --clean "${IMAGE_ROOTFS}" \
         ${IMAGE_PREINSTALL} ${IMAGE_INSTALL}
 
     # Configure root filesystem

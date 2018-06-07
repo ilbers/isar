@@ -15,9 +15,16 @@ def reverse_bb_array(d, varname):
     return " ".join(i for i in array)
 
 setup_root_file_system() {
+    CLEAN=""
+    while true; do
+        case "$1" in
+        --clean) CLEAN=1 ;;
+        -*) bbfatal "$0: invalid option specified: $1" ;;
+        *) break ;;
+        esac
+        shift
+    done
     ROOTFSDIR="$1"
-    CLEAN="$2"
-    shift
     shift
     PACKAGES="$@"
     APT_ARGS="install --yes -o Debug::pkgProblemResolver=yes"
@@ -51,7 +58,7 @@ setup_root_file_system() {
     sudo -E chroot "$ROOTFSDIR" \
         /usr/bin/apt-get ${APT_ARGS} --download-only $PACKAGES \
             ${IMAGE_TRANSIENT_PACKAGES}
-    [ "clean" = ${CLEAN} ] && sudo rm -f ${CLEAN_FILES}
+    [ ${CLEAN} ] && sudo rm -f ${CLEAN_FILES}
     sudo -E chroot "$ROOTFSDIR" \
         /usr/bin/apt-get ${APT_ARGS} $PACKAGES
     for pkg in ${IMAGE_TRANSIENT_PACKAGES}; do
@@ -62,7 +69,7 @@ setup_root_file_system() {
         sudo -E chroot "$ROOTFSDIR" \
             /usr/bin/apt-get purge --yes $pkg
     done
-    if [ "clean" = ${CLEAN} ]; then
+    if [ ${CLEAN} ]; then
         sudo -E chroot "$ROOTFSDIR" \
             /usr/bin/apt-get autoremove --purge --yes
         sudo -E chroot "$ROOTFSDIR" \
