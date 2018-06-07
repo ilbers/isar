@@ -28,15 +28,25 @@ do_rootfs[root_cleandirs] = "${IMAGE_ROOTFS} \
                              ${IMAGE_ROOTFS}/isar-apt"
 
 do_rootfs() {
-    setup_root_file_system --clean "${IMAGE_ROOTFS}" \
-        ${IMAGE_PREINSTALL} ${IMAGE_INSTALL}
+    cat > ${WORKDIR}/fstab << EOF
+# Begin /etc/fstab
+/dev/${ROOTFS_DEV}	/		${ROOTFS_TYPE}		defaults		1	1
+proc		/proc		proc		nosuid,noexec,nodev	0	0
+sysfs		/sys		sysfs		nosuid,noexec,nodev	0	0
+devpts		/dev/pts	devpts		gid=5,mode=620		0	0
+tmpfs		/run		tmpfs		defaults		0	0
+devtmpfs	/dev		devtmpfs	mode=0755,nosuid	0	0
+
+# End /etc/fstab
+EOF
+
+    setup_root_file_system --clean --fstab "${WORKDIR}/fstab" \
+        "${IMAGE_ROOTFS}" ${IMAGE_PREINSTALL} ${IMAGE_INSTALL}
 
     # Configure root filesystem
     sudo install -m 755 "${WORKDIR}/${DISTRO_CONFIG_SCRIPT}" "${IMAGE_ROOTFS}"
     sudo chroot ${IMAGE_ROOTFS} /${DISTRO_CONFIG_SCRIPT} ${MACHINE_SERIAL} \
-                                                         ${BAUDRATE_TTY} \
-                                                         ${ROOTFS_DEV} \
-                                                         ${ROOTFS_TYPE}
+                                                         ${BAUDRATE_TTY}
 
     # Cleanup
     sudo rm "${IMAGE_ROOTFS}/${DISTRO_CONFIG_SCRIPT}"

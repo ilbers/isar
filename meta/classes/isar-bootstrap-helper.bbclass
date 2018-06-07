@@ -16,9 +16,11 @@ def reverse_bb_array(d, varname):
 
 setup_root_file_system() {
     CLEAN=""
+    FSTAB=""
     while true; do
         case "$1" in
         --clean) CLEAN=1 ;;
+        --fstab) FSTAB=$2; shift ;;
         -*) bbfatal "$0: invalid option specified: $1" ;;
         *) break ;;
         esac
@@ -33,6 +35,7 @@ setup_root_file_system() {
     sudo cp -Trpfx \
         "${DEPLOY_DIR_IMAGE}/isar-bootstrap-${DISTRO}-${DISTRO_ARCH}/" \
         "$ROOTFSDIR"
+    [ -n "${FSTAB}" ] && cat ${FSTAB} | sudo tee "$ROOTFSDIR/etc/fstab"
 
     echo "deb [trusted=yes] file:///isar-apt ${DEBDISTRONAME} main" | \
         sudo tee "$ROOTFSDIR/etc/apt/sources.list.d/isar-apt.list" >/dev/null
