@@ -78,4 +78,6 @@ do_build() {
     # Configure root filesystem
     sudo install -m 755 ${WORKDIR}/configscript.sh ${BUILDCHROOT_DIR}
     sudo chroot ${BUILDCHROOT_DIR} /configscript.sh
+
+    sudo mount --bind ${DL_DIR} ${BUILDCHROOT_DIR}/downloads
 }
