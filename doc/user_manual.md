@@ -17,6 +17,7 @@ Copyright (C) 2016-2017, ilbers GmbH
  - [Add a New Image](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#add-a-new-image)
  - [Add a New Image Type](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#add-a-new-image-type)
  - [Add a Custom Application](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#add-a-custom-application)
+ - [Create an ISAR SDK root filesystem](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#create-an-isar-sdk-root-filesystem)
 
 ## Introduction
 
@@ -54,6 +55,7 @@ Install the following packages:
 dosfstools
 git
 debootstrap
+dpkg-dev
 parted
 python
 qemu
@@ -320,6 +322,10 @@ Some other variables include:
  - `BB_NUMBER_THREADS` - The number of `bitbake` jobs that can be run in parallel. Please set this option according your host CPU cores number.
  - `LOCALE_GEN` - A `\n` seperated list of `/etc/locale.gen` entries desired on the target.
  - `LOCALE_DEFAULT` - The default locale used for the `LANG` and `LANGUAGE` variable in `/etc/locale`.
+ - `HOST_DISTRO` - The distro to use for SDK root filesystem (so far limited only to `debian-stretch`). This variable is optional.
+ - `HOST_ARCH` - The Debian architecture of SDK root filesystem (e.g., `amd64`). By default set to current Debian host architecture. This variable is optional.
+ - `HOST_DISTRO_APT_SOURCES` - List of apt source files for SDK root filesystem. This variable is optional.
+ - `HOST_DISTRO_APT_PREFERENCES` - List of apt preference files for SDK root filesystem. This variable is optional.
 
 ---
 
@@ -574,3 +580,93 @@ For the variables please have a look at the previous example, the following new 
  - `DEBIAN_DEPENDS` - Debian packages that the package depends on
 
 Have a look at the `example-raw` recipe to get an idea how the `dpkg-raw` class can be used to customize your image.
+
+## Create an ISAR SDK root filesystem
+
+### Motivation
+
+Building applications for targets in ISAR takes a lot of time as they are built under QEMU.
+SDK providing crossbuild environment will help to solve this problem.
+
+### Approach
+
+Create SDK root file system for host with installed cross-toolchain for target architecture and ability to install already prebuilt
+target binary artifacts. Developer chroots to sdk rootfs and develops applications for target platform.
+
+### Solution
+
+User manually triggers creation of SDK root filesystem for his target platform by launching the task `do_populate_sdk` for target image, f.e.
+`bitbake -c do_populate_sdk multiconfig:${MACHINE}-${DISTRO}:isar-image-base`.
+
+The resulting SDK rootfs is located under `tmp/work/${DISTRO}-${DISTRO_ARCH}/sdkchroot-${HOST_DISTRO}-${HOST_ARCH}/rootfs`.
+SDK rootfs directory `/isar-apt` contains the copy of isar-apt repo with locally prebuilt target debian packages (for <HOST_DISTRO>).
+One may chroot to SDK and install required target packages with the help of `apt-get install <package_name>:<DISTRO_ARCH>` command.
+
+### Limitation
+
+Only Debian Stretch for SDK root filesystem is supported as only Stretch provides crossbuild environment by default.
+(Debian Jessie requires some additional preconfiguration steps see https://wiki.debian.org/CrossToolchains#Installation for details).
+
+### Example
+
+ - Trigger creation of SDK root filesystem
+
+```
+bitbake -c do_populate_sdk multiconfig:qemuarm-stretch:isar-image-base
+```
+
+ - Mount the following directories in chroot by passing resulting rootfs as an argument to the script `mount_chroot.sh`:
+
+```
+cat scripts/mount_chroot.sh
+#!/bin/sh
+
+set -e
+
+mount /tmp     $1/tmp                 -o bind
+mount proc     $1/proc    -t proc     -o nosuid,noexec,nodev
+mount sysfs    $1/sys     -t sysfs    -o nosuid,noexec,nodev
+mount devtmpfs $1/dev     -t devtmpfs -o mode=0755,nosuid
+mount devpts   $1/dev/pts -t devpts   -o gid=5,mode=620
+mount tmpfs    $1/dev/shm -t tmpfs    -o rw,seclabel,nosuid,nodev
+
+$ sudo scripts/mount_chroot.sh ../build/tmp/work/debian-stretch-armhf/sdkchroot-debian-stretch-amd64/rootfs
+```
+
+ - chroot to isar SDK rootfs:
+
+```
+$ sudo chroot ../build/tmp/work/debian-stretch-armhf/sdkchroot-debian-stretch-amd64/rootfs
+```
+ - Check that cross toolchains are installed
+
+```
+:~# dpkg -l | grep crossbuild-essential-armhf
+ii  crossbuild-essential-armhf           12.3                   all          Informational list of cross-build-essential packages
+```
+
+ - Install needed prebuilt target packages.
+
+```
+:~# apt-get install libhello-dev:armhf
+```
+
+ - Check the contents of the installed target package
+
+```
+:~# dpkg -L libhello-dev
+/.
+/usr
+/usr/include
+/usr/include/hello.h
+/usr/lib
+/usr/lib/arm-linux-gnueabihf
+/usr/lib/arm-linux-gnueabihf/libhello.a
+/usr/lib/arm-linux-gnueabihf/libhello.la
+/usr/share
+/usr/share/doc
+/usr/share/doc/libhello-dev
+/usr/share/doc/libhello-dev/changelog.gz
+/usr/share/doc/libhello-dev/copyright
+~#
+```
