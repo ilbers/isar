@@ -47,7 +47,7 @@ INITRD_IMAGE ?= "${@get_image_name(d, 'initrd.img')[1]}"
 inherit ${IMAGE_TYPE}
 
 do_rootfs[stamp-extra-info] = "${MACHINE}-${DISTRO}"
-do_rootfs[depends] = "isar-apt:do_cache_config isar-bootstrap:do_deploy"
+do_rootfs[depends] = "isar-apt:do_cache_config isar-bootstrap-target:do_deploy"
 
 do_rootfs() {
     die "No root filesystem function defined, please implement in your recipe"
