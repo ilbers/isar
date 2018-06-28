@@ -9,7 +9,8 @@ https://github.com/ilbers/isar/
 
 # Build
 
-See doc/user_manual.md.
+Instruction on how to build can be found in the [User Manual](doc/user_manual.md).
+
 
 # Try
 
@@ -21,8 +22,7 @@ The default root password is 'root'.
 
 To test the RPi board, flash the image to an SD card using the instructions from the official site,
 section "WRITING AN IMAGE TO THE SD CARD":
-
-    https://www.raspberrypi.org/documentation/installation/installing-images/README.md
+ https://www.raspberrypi.org/documentation/installation/installing-images/README.md
 
 # Support
 
@@ -37,16 +37,6 @@ Mailing lists:
   * Unsubscribe: debian-embedded-request@lists.debian.org, Subject: unsubscribe
 
 Commercial support: info@ilbers.de
-
-# Release Information
-
-Built on:
-* Debian 8.2
-* Debian 8.7
-
-Tested on:
-* QEMU 1:2.8+dfsg-3~bpo8+1
-* Raspberry Pi 1 Model B rev 2
 
 # Credits
 
