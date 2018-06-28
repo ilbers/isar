@@ -34,6 +34,25 @@ def get_rootfs_size(d):
 
     return base_size + rootfs_extra * 1024
 
+# we assume that one git commit can describe the whole image, so you should be
+# using submodules, kas, or something like that
+# set ISAR_GIT_RELEASE_PATH to that one "most significant" layer
+# when not using git, override do_mark_rootfs
+def get_build_id(d):
+    import subprocess
+    if (len(d.getVar("BBLAYERS", True).strip().split(' ')) != 2 and
+        (d.getVar("ISAR_GIT_RELEASE_PATH", True) ==
+         d.getVar("LAYERDIR_isar", True))):
+        bb.warn('You are using external layers that will not be considered' +
+                ' in the build_id. Considder setting ISAR_GIT_RELEASE_PATH.')
+    base = ["git", "-C", d.getVar("ISAR_GIT_RELEASE_PATH", True)]
+    if (0 == subprocess.call(base + ["rev-parse"])):
+        v = subprocess.check_output(base +
+                                    ["describe", "--long", "--dirty",
+                                     "--always"], universal_newlines=True)
+        return v.rstrip()
+    return ""
+
 python set_image_size () {
     rootfs_size = get_rootfs_size(d)
     d.setVar('ROOTFS_SIZE', str(rootfs_size))
@@ -55,6 +74,14 @@ do_rootfs() {
 
 addtask rootfs before do_build after do_unpack
 do_rootfs[deptask] = "do_deploy_deb"
+
+do_mark_rootfs() {
+    update_etc_os_release \
+        --build-id "${@get_build_id(d)}" --variant "${DESCRIPTION}" \
+        "${IMAGE_ROOTFS}"
+}
+
+addtask mark_rootfs before do_copy_boot_files after do_rootfs
 
 do_copy_boot_files() {
     KERNEL_IMAGE=${@get_image_name(d, 'vmlinuz')[1]}

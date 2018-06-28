@@ -24,6 +24,8 @@ IMAGE_TRANSIENT_PACKAGES += "isar-cfg-localepurge"
 
 WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${PN}"
 
+ISAR_GIT_RELEASE_PATH ?= "${LAYERDIR_isar}"
+
 do_rootfs[root_cleandirs] = "${IMAGE_ROOTFS} \
                              ${IMAGE_ROOTFS}/isar-apt"
 

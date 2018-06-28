@@ -27,6 +27,32 @@ def reverse_bb_array(d, varname):
     return " ".join(i for i in array)
 
 
+update_etc_os_release() {
+    OS_RELEASE_BUILD_ID=""
+    OS_RELEASE_VARIANT=""
+    while true; do
+        case "$1" in
+	--build-id) OS_RELEASE_BUILD_ID=$2; shift ;;
+	--variant) OS_RELEASE_VARIANT=$2; shift ;;
+        -*) bbfatal "$0: invalid option specified: $1" ;;
+        *) break ;;
+        esac
+        shift
+    done
+    ROOTFSDIR="$1"
+
+    if [ -n "${OS_RELEASE_BUILD_ID}" ]; then
+        sudo sed -i '/^BUILD_ID=.*/d' ${ROOTFSDIR}/etc/os-release
+        echo "BUILD_ID=\"${OS_RELEASE_BUILD_ID}\"" | \
+            sudo tee -a ${ROOTFSDIR}/etc/os-release
+    fi
+    if [ -n "${OS_RELEASE_VARIANT}" ]; then
+        sudo sed -i '/^VARIANT=.*/d' ${ROOTFSDIR}/etc/os-release
+        echo "VARIANT=\"${OS_RELEASE_VARIANT}\"" | \
+            sudo tee -a ${ROOTFSDIR}/etc/os-release
+    fi
+}
+
 setup_root_file_system() {
     CLEAN=""
     COPYISARAPT=""
