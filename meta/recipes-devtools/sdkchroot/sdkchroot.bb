@@ -31,7 +31,7 @@ do_build[stamp-extra-info] = "${HOST_DISTRO}-${HOST_ARCH}"
 do_build[root_cleandirs] = "${S} \
                             ${S}/isar-apt"
 
-do_build[depends] = "isar-apt-host:do_cache_config isar-bootstrap-host:do_deploy"
+do_build[depends] = "isar-apt-host:do_cache_config isar-bootstrap-host:do_bootstrap"
 
 do_build() {
 

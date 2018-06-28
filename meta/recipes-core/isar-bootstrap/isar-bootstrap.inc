@@ -22,6 +22,7 @@ APTSRCS = "${WORKDIR}/apt-sources"
 APTKEYFILES = ""
 APTKEYRING = "${WORKDIR}/apt-keyring.gpg"
 DEBOOTSTRAP_KEYRING = ""
+DEPLOY_ISAR_BOOTSTRAP ?= ""
 
 python () {
     from urllib.parse import urlparse
@@ -149,52 +150,100 @@ do_generate_keyring() {
 }
 addtask generate_keyring before do_build after do_unpack
 
-do_set_locale() {
-    sudo install -v -m644 "${WORKDIR}/locale" "${ROOTFSDIR}/etc/locale"
 
-    sudo sed -i '/en_US.UTF-8 UTF-8/s/^#//g' "${ROOTFSDIR}/etc/locale.gen"
-    sudo -E chroot "${ROOTFSDIR}" /usr/sbin/locale-gen
-}
-addtask set_locale after do_bootstrap
-
-do_setup_chroot() {
-    sudo install -v -m755 "${WORKDIR}/chroot-setup.sh" "${ROOTFSDIR}/chroot-setup.sh"
-    sudo "${ROOTFSDIR}/chroot-setup.sh" "setup" "${ROOTFSDIR}"
-}
-addtask setup_chroot before do_build after do_bootstrap
 
 def get_host_release():
     import platform
     rel = platform.release()
     return rel
 
-do_apt_config_install() {
-    sudo mkdir -p "${ROOTFSDIR}/etc/apt/preferences.d"
-    sudo install -v -m644 "${APTPREFS}" \
-                          "${ROOTFSDIR}/etc/apt/preferences.d/bootstrap"
-    sudo mkdir -p "${ROOTFSDIR}/etc/apt/sources.list.d"
-    sudo install -v -m644 "${APTSRCS}" \
-                          "${ROOTFSDIR}/etc/apt/sources.list.d/bootstrap.list"
-    sudo rm -f "${ROOTFSDIR}/etc/apt/sources.list"
-    sudo mkdir -p "${ROOTFSDIR}/etc/apt/apt.conf.d"
-    sudo install -v -m644 "${WORKDIR}/isar-apt.conf" \
-                          "${ROOTFSDIR}/etc/apt/apt.conf.d/50isar.conf"
 
-    if [ "${@get_distro_suite(d, True)}" = "stretch" ] && [ "${@get_host_release().split('.')[0]}" -lt "4" ]; then
-        sudo install -v -m644 "${WORKDIR}/isar-apt-fallback.conf" \
-                              "${ROOTFSDIR}/etc/apt/apt.conf.d/55isar-fallback.conf"
-    fi
-}
-addtask apt_config_install before do_build after do_bootstrap do_apt_config_prepare
+do_bootstrap[vardeps] += "DISTRO_APT_PREMIRRORS"
+do_bootstrap[dirs] = "${DEPLOY_DIR_IMAGE}"
 
-do_apt_update() {
-    sudo mount -t devtmpfs -o mode=0755,nosuid devtmpfs ${ROOTFSDIR}/dev
-    sudo mount -t proc none ${ROOTFSDIR}/proc
+isar_bootstrap() {
+    IS_HOST=""
+    while true; do
+        case "$1" in
+        --host) IS_HOST=1 ;;
+        -*) bbfatal "$0: invalid option specified: $1" ;;
+        *) break ;;
+        esac
+        shift
+    done
+    sudo flock "${ISAR_BOOTSTRAP_LOCK}" -c "\
+        if [ ! -e "${DEPLOY_ISAR_BOOTSTRAP}" ]; then
+            if [ -e "${ROOTFSDIR}" ]; then
+               sudo umount -l "${ROOTFSDIR}/dev" || true
+               sudo umount -l "${ROOTFSDIR}/proc" || true
+               sudo rm -rf "${ROOTFSDIR}"
+            fi
+            E="${@bb.utils.export_proxies(d)}"
+            if [ ${IS_HOST} ]; then
+                sudo -E "${DEBOOTSTRAP}" --verbose \
+                                         --variant=minbase \
+                                         --include=locales \
+                                         ${@get_distro_components_argument(d, True)} \
+                                         ${DEBOOTSTRAP_KEYRING} \
+                                         "${@get_distro_suite(d, True)}" \
+                                         "${ROOTFSDIR}" \
+                                         "${@get_distro_source(d, True)}"
 
-    E="${@bb.utils.export_proxies(d)}"
-    export DEBIAN_FRONTEND=noninteractive
-    sudo -E chroot "${ROOTFSDIR}" /usr/bin/apt-get update -y
-    sudo -E chroot "${ROOTFSDIR}" /usr/bin/apt-get dist-upgrade -y \
+            else
+                 sudo -E "${DEBOOTSTRAP}" --verbose \
+                                          --variant=minbase \
+                                          --arch="${DISTRO_ARCH}" \
+                                          --include=locales \
+                                          ${@get_distro_components_argument(d, False)} \
+                                          ${DEBOOTSTRAP_KEYRING} \
+                                         "${@get_distro_suite(d, False)}" \
+                                         "${ROOTFSDIR}" \
+                                         "${@get_distro_source(d, False)}"
+            fi
+
+            # Install apt config
+            sudo mkdir -p "${ROOTFSDIR}/etc/apt/preferences.d"
+            sudo install -v -m644 "${APTPREFS}" \
+                                  "${ROOTFSDIR}/etc/apt/preferences.d/bootstrap"
+            sudo mkdir -p "${ROOTFSDIR}/etc/apt/sources.list.d"
+            sudo install -v -m644 "${APTSRCS}" \
+                                  "${ROOTFSDIR}/etc/apt/sources.list.d/bootstrap.list"
+            sudo rm -f "${ROOTFSDIR}/etc/apt/sources.list"
+            sudo mkdir -p "${ROOTFSDIR}/etc/apt/apt.conf.d"
+            sudo install -v -m644 "${WORKDIR}/isar-apt.conf" \
+                                  "${ROOTFSDIR}/etc/apt/apt.conf.d/50isar.conf"
+
+            if [ "${@get_distro_suite(d, True)}" = "stretch" ] && [ "${@get_host_release().split('.')[0]}" -lt "4" ]; then
+                sudo install -v -m644 "${WORKDIR}/isar-apt-fallback.conf" \
+                                      "${ROOTFSDIR}/etc/apt/apt.conf.d/55isar-fallback.conf"
+            fi
+
+            # Set locale
+            sudo install -v -m644 "${WORKDIR}/locale" "${ROOTFSDIR}/etc/locale"
+
+            sudo sed -i '/en_US.UTF-8 UTF-8/s/^#//g' "${ROOTFSDIR}/etc/locale.gen"
+            sudo -E chroot "${ROOTFSDIR}" /usr/sbin/locale-gen
+
+            # setup chroot
+            sudo install -v -m755 "${WORKDIR}/chroot-setup.sh" "${ROOTFSDIR}/chroot-setup.sh"
+            sudo "${ROOTFSDIR}/chroot-setup.sh" "setup" "${ROOTFSDIR}"
+
+            # update APT
+            sudo mount -t devtmpfs -o mode=0755,nosuid devtmpfs ${ROOTFSDIR}/dev
+            sudo mount -t proc none ${ROOTFSDIR}/proc
+
+            E="${@bb.utils.export_proxies(d)}"
+            export DEBIAN_FRONTEND=noninteractive
+            sudo -E chroot "${ROOTFSDIR}" /usr/bin/apt-get update -y
+            sudo -E chroot "${ROOTFSDIR}" /usr/bin/apt-get dist-upgrade -y \
                                       -o Debug::pkgProblemResolver=yes
+
+            # Finalize debootstrap by setting the link in deploy
+            ln -Tfsr "${ROOTFSDIR}" "${DEPLOY_ISAR_BOOTSTRAP}"
+        fi"
 }
-addtask apt_update before do_build after do_apt_config_install do_set_locale do_setup_chroot
+
+CLEANFUNCS = "clean_deploy"
+clean_deploy() {
+    rm -f "${DEPLOY_ISAR_BOOTSTRAP}"
+}

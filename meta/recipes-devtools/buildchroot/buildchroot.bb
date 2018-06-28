@@ -66,7 +66,7 @@ do_build[root_cleandirs] = "${BUILDCHROOT_DIR} \
                             ${BUILDCHROOT_DIR}/isar-apt \
                             ${BUILDCHROOT_DIR}/downloads \
                             ${BUILDCHROOT_DIR}/home/builder"
-do_build[depends] = "isar-apt:do_cache_config isar-bootstrap-target:do_deploy"
+do_build[depends] = "isar-apt:do_cache_config isar-bootstrap-target:do_bootstrap"
 
 do_build() {
     setup_root_file_system "${BUILDCHROOT_DIR}" ${BUILDCHROOT_PREINSTALL}
