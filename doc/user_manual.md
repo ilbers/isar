@@ -118,7 +118,8 @@ DISTRO_ARCH ??= "armhf"
 Then, call `bitbake` with image names, e.g.:
 
 ```
-bitbake isar-image-base isar-image-debug
+bitbake multiconfig:qemuamd64-stretch:isar-image-base \
+        multiconfig:qemuamd64-stretch:isar-image-debug
 ```
 
 The following images are created:
