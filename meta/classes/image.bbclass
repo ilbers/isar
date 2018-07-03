@@ -34,24 +34,25 @@ def get_rootfs_size(d):
 
     return base_size + rootfs_extra * 1024
 
-# we assume that one git commit can describe the whole image, so you should be
-# using submodules, kas, or something like that
-# set ISAR_GIT_RELEASE_PATH to that one "most significant" layer
-# when not using git, override do_mark_rootfs
+# here we call a command that should describe your whole build system,
+# this could be "git describe" or something similar.
+# set ISAR_RELEASE_CMD to customize, or override do_mark_rootfs to do something
+# completely different
 def get_build_id(d):
     import subprocess
     if (len(d.getVar("BBLAYERS", True).strip().split(' ')) != 2 and
-        (d.getVar("ISAR_GIT_RELEASE_PATH", True) ==
-         d.getVar("LAYERDIR_isar", True))):
+        (d.getVar("ISAR_RELEASE_CMD", True) ==
+         d.getVar("ISAR_RELEASE_CMD_DEFAULT", True))):
         bb.warn('You are using external layers that will not be considered' +
-                ' in the build_id. Considder setting ISAR_GIT_RELEASE_PATH.')
-    base = ["git", "-C", d.getVar("ISAR_GIT_RELEASE_PATH", True)]
-    if (0 == subprocess.call(base + ["rev-parse"])):
-        v = subprocess.check_output(base +
-                                    ["describe", "--long", "--dirty",
-                                     "--always"], universal_newlines=True)
+                ' in the build_id. Consider changing ISAR_RELEASE_CMD.')
+    cmd = d.getVar("ISAR_RELEASE_CMD", True)
+    try:
+        v = subprocess.check_output(cmd, shell=True, universal_newlines=True)
         return v.rstrip()
-    return ""
+    except subprocess.CalledProcessError as e:
+        bb.warn('\"%s\" returned %d, returning empty build_id' %
+                (e.cmd, e.returncode))
+        return ""
 
 python set_image_size () {
     rootfs_size = get_rootfs_size(d)
