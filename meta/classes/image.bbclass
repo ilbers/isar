@@ -38,21 +38,18 @@ def get_rootfs_size(d):
 # this could be "git describe" or something similar.
 # set ISAR_RELEASE_CMD to customize, or override do_mark_rootfs to do something
 # completely different
-def get_build_id(d):
-    import subprocess
-    if (len(d.getVar("BBLAYERS", True).strip().split(' ')) != 2 and
-        (d.getVar("ISAR_RELEASE_CMD", True) ==
-         d.getVar("ISAR_RELEASE_CMD_DEFAULT", True))):
-        bb.warn('You are using external layers that will not be considered' +
-                ' in the build_id. Consider changing ISAR_RELEASE_CMD.')
-    cmd = d.getVar("ISAR_RELEASE_CMD", True)
-    try:
-        v = subprocess.check_output(cmd, shell=True, universal_newlines=True)
-        return v.rstrip()
-    except subprocess.CalledProcessError as e:
-        bb.warn('\"%s\" returned %d, returning empty build_id' %
-                (e.cmd, e.returncode))
-        return ""
+get_build_id() {
+	if [ $(echo ${BBLAYERS} | wc -w) -ne 2 ] &&
+	   [ "${ISAR_RELEASE_CMD}" = "${ISAR_RELEASE_CMD_DEFAULT}" ]; then
+		bbwarn "You are using external layers that will not be" \
+		       "considered in the build_id. Consider changing" \
+		       "ISAR_RELEASE_CMD."
+	fi
+	if ! ${ISAR_RELEASE_CMD} 2>/dev/null; then
+		bbwarn "\"${ISAR_RELEASE_CMD}\" failed, returning empty build_id."
+		echo ""
+	fi
+}
 
 python set_image_size () {
     rootfs_size = get_rootfs_size(d)
@@ -78,7 +75,7 @@ do_rootfs[deptask] = "do_deploy_deb"
 
 do_mark_rootfs() {
     update_etc_os_release \
-        --build-id "${@get_build_id(d)}" --variant "${DESCRIPTION}" \
+        --build-id $(get_build_id) --variant "${DESCRIPTION}" \
         "${IMAGE_ROOTFS}"
 }
 
