@@ -50,6 +50,9 @@ do
         BUILD_DIR="$2"
         shift
         ;;
+    -c|--cross)
+        CROSS_BUILD="1"
+        ;;
     -d|--debug)
         BB_ARGS="$BB_ARGS -d"
         ;;
@@ -71,8 +74,14 @@ if [ ! -d $BUILD_DIR ]; then
 fi
 source isar-init-build-env $BUILD_DIR
 
-# Start build for all possible configurations
-bitbake $BB_ARGS \
+if [ -n "$CROSS_BUILD" ]; then
+    sed -i -e 's/ISAR_CROSS_COMPILE ?= "0"/ISAR_CROSS_COMPILE ?= "1"/g' conf/local.conf
+    bitbake $BB_ARGS \
+        multiconfig:qemuarm-stretch:isar-image-base \
+        multiconfig:qemuarm64-stretch:isar-image-base
+else
+    # Start build for all possible configurations
+    bitbake $BB_ARGS \
         multiconfig:qemuarm-wheezy:isar-image-base \
         multiconfig:qemuarm-jessie:isar-image-base \
         multiconfig:qemuarm-stretch:isar-image-base \
@@ -82,3 +91,4 @@ bitbake $BB_ARGS \
         multiconfig:qemuamd64-jessie:isar-image-base \
         multiconfig:qemuamd64-stretch:isar-image-base \
         multiconfig:rpi-jessie:isar-image-base
+fi
