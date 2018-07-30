@@ -111,6 +111,11 @@ setup_root_file_system() {
         -o Dir::Etc::sourcelist="sources.list.d/isar-apt.list" \
         -o Dir::Etc::sourceparts="-" \
         -o APT::Get::List-Cleanup="0"
+    # Add multiarch for cross-target
+    if [ "${ROOTFS_ARCH}" != "${DISTRO_ARCH}" ]; then
+        sudo -E chroot "$ROOTFSDIR" /usr/bin/dpkg --add-architecture ${DISTRO_ARCH}
+        sudo -E chroot "$ROOTFSDIR" /usr/bin/apt-get update
+    fi
     sudo -E chroot "$ROOTFSDIR" \
         /usr/bin/apt-get ${APT_ARGS} --download-only $PACKAGES \
             ${IMAGE_TRANSIENT_PACKAGES}
