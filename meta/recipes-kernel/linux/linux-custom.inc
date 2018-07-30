@@ -43,5 +43,5 @@ dpkg_runbuild() {
 	export KERNEL_DEBIAN_DEPENDS="${KERNEL_DEBIAN_DEPENDS}"
 	export KERNEL_HEADERS_DEBIAN_DEPENDS="${KERNEL_HEADERS_DEBIAN_DEPENDS}"
 
-	sudo -E chroot ${BUILDCHROOT_DIR} /build-kernel.sh ${PP}/${PPS}
+	sudo -E chroot ${BUILDCHROOT_DIR} /build-kernel.sh ${PP}/${PPS} ${DISTRO_ARCH}
 }

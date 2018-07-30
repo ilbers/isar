@@ -9,6 +9,22 @@
 
 set -e
 
+host_arch=$(dpkg --print-architecture)
+target_arch=$2
+
+if [ "$host_arch" != "$target_arch" ]; then
+    case $target_arch in
+    armhf)
+        export ARCH=arm
+        export CROSS_COMPILE="arm-linux-gnueabihf-"
+        ;;
+    *)
+        echo "error: unsupported architecture ($target_arch)"
+        exit 1
+        ;;
+    esac
+fi
+
 REPACK_DIR="$1/../repack"
 REPACK_LINUX_IMAGE_DIR="${REPACK_DIR}/linux-image"
 REPACK_LINUX_HEADERS_DIR="${REPACK_DIR}/linux-headers"
@@ -29,7 +45,7 @@ if [ "${KV}" != "${PV}" ]; then
 fi
 
 rm -f .version
-make -j $(($(nproc) * 2)) deb-pkg
+KBUILD_DEBARCH=$target_arch make -j $(($(nproc) * 2)) deb-pkg
 
 rm -rf ${REPACK_DIR}
 mkdir -p ${REPACK_DIR}
@@ -49,7 +65,8 @@ dpkg-gencontrol -crepack/debian/control \
 	-DPackage="linux-image-${KERNEL_NAME}" \
 	-DSection=kernel \
 	-DPriority=required \
-	-DDepends="${KERNEL_DEBIAN_DEPENDS}"
+	-DDepends="${KERNEL_DEBIAN_DEPENDS}" \
+	-DArchitecture=$target_arch
 
 # Add Debian-like link installation to postinst
 touch ${REPACK_LINUX_IMAGE_DIR}/lib/modules/${PV}/.fresh-install
@@ -82,7 +99,8 @@ dpkg-gencontrol -crepack/debian/control \
 	-Vkernel:debarch="${KERNEL_NAME}" \
 	-DPackage="linux-headers-${KERNEL_NAME}" \
 	-DSection=kernel \
-	-DDepends="${KERNEL_HEADERS_DEBIAN_DEPENDS}"
+	-DDepends="${KERNEL_HEADERS_DEBIAN_DEPENDS}" \
+	-DArchitecture=$target_arch
 
 dpkg-deb -b ${REPACK_LINUX_IMAGE_DIR} \
 	linux-image-${KERNEL_NAME}_${PV}-1_${KERNEL_NAME}.deb
