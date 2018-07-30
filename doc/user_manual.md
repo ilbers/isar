@@ -17,6 +17,7 @@ Copyright (C) 2016-2017, ilbers GmbH
  - [Add a New Image](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#add-a-new-image)
  - [Add a New Image Type](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#add-a-new-image-type)
  - [Add a Custom Application](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#add-a-custom-application)
+ - [Enabling Cross-compilation](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#isar-cross-compilation)
  - [Create an ISAR SDK root filesystem](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#create-an-isar-sdk-root-filesystem)
 
 ## Introduction
@@ -581,6 +582,32 @@ For the variables please have a look at the previous example, the following new 
  - `DEBIAN_DEPENDS` - Debian packages that the package depends on
 
 Have a look at the `example-raw` recipe to get an idea how the `dpkg-raw` class can be used to customize your image.
+
+## Isar Cross-compilation
+
+### Motivation
+
+binfmt is a powerful feature that makes possible to run foreign architectures like ARM on x86 hosts. But at the same the performance of
+such emulation is quite low. For the cases when lots of packages should be built from sources, a cross-compilation support could be very
+useful.
+
+### Solution
+
+Cross-compilation mode could be enabled by using the `ISAR_CROSS_COMPILE` variable. This variable could be set in both:
+
+ - In `local.conf` to set cross-compilation mode to be the default option for the whole build.
+ - In specific recipe to overwrite global settings. This could be useful when package doesn't support cross-compilation, so the following line
+   should be added to its recipe: `ISAR_CROSS_COMPILE := "0"`.
+
+The cross-building process is absolutely the same as for native compilation, no extra tasks are added and removed: newly built packages are
+put into Isar apt.
+
+### Limitation
+
+Debian cross-compilation works out of the box starting from Debian stretch distribution. So currently the only following build configurations are supported in Isar:
+
+ - qemuarm-stretch
+ - qemuarm64-stretch
 
 ## Create an ISAR SDK root filesystem
 
