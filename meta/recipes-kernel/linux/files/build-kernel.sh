@@ -18,6 +18,10 @@ if [ "$host_arch" != "$target_arch" ]; then
         export ARCH=arm
         export CROSS_COMPILE="arm-linux-gnueabihf-"
         ;;
+    arm64)
+        export ARCH=arm64
+        export CROSS_COMPILE="aarch64-linux-gnu-"
+        ;;
     *)
         echo "error: unsupported architecture ($target_arch)"
         exit 1
