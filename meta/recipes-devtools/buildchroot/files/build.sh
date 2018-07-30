@@ -6,6 +6,19 @@
 
 set -e
 
+# Create human-readable names
+target_arch=$2
+
+# Notes:
+#   mk-build-deps for jessie and jtretch has different parameter name to specify
+#   host architecture.
+debian_version=$(cut -c1 /etc/debian_version)
+if [ $(($debian_version)) -ge 9 ]; then
+    set_arch="--host-arch $target_arch"
+else
+    set_arch="-a $target_arch"
+fi
+
 # Go to build directory
 cd $1
 
@@ -36,7 +49,7 @@ install_cmd="apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y
         -o APT::Get::List-Cleanup="0"
 
     # Install all build deps
-    mk-build-deps -t "${install_cmd}" -i -r debian/control
+    mk-build-deps $set_arch -t "${install_cmd}" -i -r debian/control
 ) 42>/dpkg.lock
 
 # If autotools files have been created, update their timestamp to
@@ -48,4 +61,4 @@ for i in configure aclocal.m4 Makefile.am Makefile.in; do
 done
 
 # Build the package
-dpkg-buildpackage
+dpkg-buildpackage -a$target_arch
