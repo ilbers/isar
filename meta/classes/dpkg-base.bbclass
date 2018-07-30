@@ -15,7 +15,7 @@ inherit patch
 addtask patch after do_adjust_git before do_build
 
 # Add dependency from buildchroot creation
-do_build[depends] = "buildchroot:do_build"
+do_build[depends] = "buildchroot-target:do_build"
 
 # Add dependency between Isar recipes
 DEPENDS ?= ""

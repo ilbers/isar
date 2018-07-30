@@ -7,6 +7,7 @@ DEBIAN_DEPENDS ?= ""
 MAINTAINER ?= "FIXME Unknown maintainer"
 
 D = "${WORKDIR}/image/"
+BUILDCHROOT_DIR = "${BUILDCHROOT_TARGET_DIR}"
 
 # Populate folder that will be picked up as package
 do_install() {
