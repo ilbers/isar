@@ -9,8 +9,12 @@ IMAGE_TRANSIENT_PACKAGES ??= ""
 
 def get_deb_host_arch():
     import subprocess
-    arch =  subprocess.check_output(['/usr/bin/dpkg-architecture', '-q', 'DEB_HOST_ARCH'], universal_newlines=True)
-    return str.splitlines(arch)[0]
+    host_arch = subprocess.Popen("dpkg --print-architecture",
+                                 shell=True,
+                                 env=os.environ,
+                                 stdout=subprocess.PIPE
+                                ).stdout.read().decode('utf-8').strip()
+    return host_arch
 
 #Debian Distribution for SDK host
 HOST_DISTRO ?= "debian-stretch"
