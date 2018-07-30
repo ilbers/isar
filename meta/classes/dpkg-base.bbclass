@@ -1,6 +1,22 @@
 # This software is a part of ISAR.
 # Copyright (C) 2017 Siemens AG
 
+ISAR_CROSS_COMPILE ??= "0"
+
+# Add dependency from the correct buildchroot: host or target
+python __anonymous() {
+    mode = d.getVar('ISAR_CROSS_COMPILE', True)
+    if mode == "0":
+        dep = "buildchroot-target:do_build"
+        rootfs = d.getVar('BUILDCHROOT_TARGET_DIR', True)
+    else:
+        dep = "buildchroot-host:do_build"
+        rootfs = d.getVar('BUILDCHROOT_HOST_DIR', True)
+
+    d.setVarFlag('do_build', 'depends', dep)
+    d.setVar('BUILDCHROOT_DIR', rootfs)
+}
+
 do_adjust_git() {
     if [ -f ${S}/.git/objects/info/alternates ]; then
         sed -i ${S}/.git/objects/info/alternates \
@@ -13,9 +29,6 @@ do_adjust_git[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 
 inherit patch
 addtask patch after do_adjust_git before do_build
-
-# Add dependency from buildchroot creation
-do_build[depends] = "buildchroot-target:do_build"
 
 # Add dependency between Isar recipes
 DEPENDS ?= ""

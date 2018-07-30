@@ -156,3 +156,8 @@ CONF_VERSION = "1"
 #
 # The default list of extra packages to be installed.
 IMAGE_INSTALL = "example-hello example-raw example-module"
+
+#
+# Enable cross-compilation support
+# NOTE: this works only for stretch-armhf and stretch-amd64 targets for now.
+ISAR_CROSS_COMPILE ?= "0"
