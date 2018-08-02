@@ -82,7 +82,6 @@ if [ -n "$CROSS_BUILD" ]; then
 else
     # Start build for all possible configurations
     bitbake $BB_ARGS \
-        multiconfig:qemuarm-wheezy:isar-image-base \
         multiconfig:qemuarm-jessie:isar-image-base \
         multiconfig:qemuarm-stretch:isar-image-base \
         multiconfig:qemuarm64-stretch:isar-image-base \
