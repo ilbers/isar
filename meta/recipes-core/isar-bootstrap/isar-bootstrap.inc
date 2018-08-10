@@ -138,13 +138,13 @@ def get_distro_components_argument(d, is_host):
     else:
         return ""
 
-do_generate_keyring[dirs] = "${WORKDIR}"
+do_generate_keyring[dirs] = "${DL_DIR}"
 do_generate_keyring[vardeps] += "DISTRO_APT_KEYS"
 do_generate_keyring() {
     if [ -n "${@d.getVar("APTKEYFILES", True) or ""}" ]; then
         for keyfile in ${@d.getVar("APTKEYFILES", True)}; do
            gpg --no-default-keyring --keyring "${APTKEYRING}" \
-               --homedir "${WORKDIR}" --import "$keyfile"
+               --homedir "${DL_DIR}"  --import "$keyfile"
         done
     fi
 }
