@@ -172,6 +172,7 @@ isar_bootstrap() {
         shift
     done
     sudo flock "${ISAR_BOOTSTRAP_LOCK}" -c "\
+        set -e
         if [ ! -e "${DEPLOY_ISAR_BOOTSTRAP}" ]; then
             if [ -e "${ROOTFSDIR}" ]; then
                sudo umount -l "${ROOTFSDIR}/dev" || true

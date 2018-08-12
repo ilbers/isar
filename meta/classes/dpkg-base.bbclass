@@ -63,6 +63,7 @@ do_build() {
     sudo mount --bind ${WORKDIR} ${BUILDROOT}
 
     sudo flock ${MOUNT_LOCKFILE} -c ' \
+        set -e
         if ! grep -q ${BUILDCHROOT_DIR}/isar-apt /proc/mounts; then \
             mount --bind ${DEPLOY_DIR_APT}/${DISTRO} ${BUILDCHROOT_DIR}/isar-apt; \
             mount --bind ${DL_DIR} ${BUILDCHROOT_DIR}/downloads; \
