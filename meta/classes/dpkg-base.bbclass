@@ -64,11 +64,11 @@ do_build() {
 
     sudo flock ${MOUNT_LOCKFILE} -c ' \
         set -e
-        if ! grep -q ${BUILDCHROOT_DIR}/isar-apt /proc/mounts; then \
-            mount --bind ${DEPLOY_DIR_APT}/${DISTRO} ${BUILDCHROOT_DIR}/isar-apt; \
-            mount --bind ${DL_DIR} ${BUILDCHROOT_DIR}/downloads; \
-            mount -t devtmpfs -o mode=0755,nosuid devtmpfs ${BUILDCHROOT_DIR}/dev; \
-            mount -t proc none ${BUILDCHROOT_DIR}/proc; \
+        if ! grep -q ${BUILDCHROOT_DIR}/isar-apt /proc/mounts; then
+            mount --bind ${DEPLOY_DIR_APT}/${DISTRO} ${BUILDCHROOT_DIR}/isar-apt
+            mount --bind ${DL_DIR} ${BUILDCHROOT_DIR}/downloads
+            mount -t devtmpfs -o mode=0755,nosuid devtmpfs ${BUILDCHROOT_DIR}/dev
+            mount -t proc none ${BUILDCHROOT_DIR}/proc
         fi'
 
     dpkg_runbuild
