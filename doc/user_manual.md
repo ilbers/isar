@@ -58,7 +58,8 @@ git
 debootstrap/jessie-backports# for debian >= "buster"
 dpkg-dev
 parted
-python
+python3
+python3-distutils           # in case your host is host > debian 9
 qemu
 qemu-user-static
 rxvt-unicode                # build_parallel
