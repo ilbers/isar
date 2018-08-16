@@ -29,6 +29,8 @@ BUILDCHROOT_PREINSTALL_WIC = " \
                              e2fsprogs \
                              python3"
 
+BUILDCHROOT_PREINSTALL_WIC_append_debian-buster = " python3-distutils"
+
 BUILDCHROOT_PREINSTALL_WIC_append_amd64 = " \
                              syslinux \
                              syslinux-common \

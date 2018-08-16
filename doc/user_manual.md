@@ -55,7 +55,7 @@ Install the following packages:
 ```
 dosfstools
 git
-debootstrap
+debootstrap/jessie-backports# for debian >= "buster"
 dpkg-dev
 parted
 python

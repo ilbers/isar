@@ -148,10 +148,12 @@ run_test arm stretch
 # AMD64 machine
 run_test amd64 jessie
 run_test amd64 stretch
+run_test amd64 buster
 
 # i386 machine
 run_test i386 jessie
 run_test i386 stretch
+run_test i386 buster
 
 # ARM64 machine
 run_test arm64 stretch

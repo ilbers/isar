@@ -87,7 +87,14 @@ else
         multiconfig:qemuarm64-stretch:isar-image-base \
         multiconfig:qemui386-jessie:isar-image-base \
         multiconfig:qemui386-stretch:isar-image-base \
+        multiconfig:qemui386-buster:isar-image-base \
         multiconfig:qemuamd64-jessie:isar-image-base \
         multiconfig:qemuamd64-stretch:isar-image-base \
+        multiconfig:qemuamd64-buster:isar-image-base \
         multiconfig:rpi-jessie:isar-image-base
+
+    # qemu-user-static of <= jessie too old to build that
+    #multiconfig:qemuarm-buster:isar-image-base
+    # qemu-user-static of <= buster too old to build that
+    #multiconfig:qemuarm64-buster:isar-image-base
 fi

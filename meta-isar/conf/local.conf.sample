@@ -41,12 +41,16 @@ BBMULTICONFIG = " \
     qemuarm-wheezy \
     qemuarm-jessie \
     qemuarm-stretch \
+    qemuarm-buster \
     qemuarm64-stretch \
+    qemuarm64-buster \
     qemui386-jessie \
     qemui386-stretch \
+    qemui386-buster \
     qemuamd64-jessie \
     qemuamd64-stretch \
     bananapi-stretch \
+    qemuamd64-buster \
     rpi-jessie \
 "
 
