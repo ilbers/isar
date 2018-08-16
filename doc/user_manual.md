@@ -45,6 +45,7 @@ configurations:
  - QEMU amd64 with Debian Jessie
  - QEMU amd64 with Debian Stretch
  - Raspberry Pi 1 Model B with Raspbian Jessie (see #23)
+ - Banana Pi BPI-M1
 
 The steps below describe how to build the images provided by default.
 
@@ -142,6 +143,7 @@ BBMULTICONFIG = " \
     qemuamd64-jessie \
     qemuamd64-stretch \
     rpi-jessie \
+    bananapi-stretch \
 "
 ```
 
@@ -155,7 +157,8 @@ $ bitbake \
     multiconfig:qemui386-stretch:isar-image-base \
     multiconfig:qemuamd64-jessie:isar-image-base \
     multiconfig:qemuamd64-stretch:isar-image-base \
-    multiconfig:rpi-jessie:isar-image-base
+    multiconfig:rpi-jessie:isar-image-base \
+    multiconfig:bananapi-stretch:isar-image-base
 ```
 
 Created images are:
@@ -168,6 +171,7 @@ tmp/deploy/images/isar-image-base-debian-stretch-qemui386.ext4.img
 tmp/deploy/images/isar-image-base-debian-jessie-qemuamd64.ext4.img
 tmp/deploy/images/isar-image-base-debian-stretch-qemuamd64.ext4.img
 tmp/deploy/images/isar-image-base.rpi-sdimg
+tmp/deploy/images/isar-image-base-debian-stretch-bananapi.wic.img
 ```
 
 ### Generate full disk image
