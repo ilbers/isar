@@ -26,6 +26,5 @@ dpkg_runbuild_prepend() {
 
     if [ ${AUTOLOAD} = "1" ]; then
         echo "echo ${PN} >> /etc/modules" >> ${S}/debian/postinst
-        chmod +x ${S}/debian/postinst
     fi
 }
