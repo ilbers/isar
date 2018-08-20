@@ -1,5 +1,8 @@
 image: kasproject/kas-isar:latest
 
+variables:
+  GIT_STRATEGY: clone
+
 all:
   stage: build
   script:
@@ -9,12 +12,15 @@ all:
     - export no_proxy=$NO_PROXY
     - source isar-init-build-env out
     - bitbake
-        multiconfig:qemuarm-wheezy:isar-image-base
         multiconfig:qemuarm-jessie:isar-image-base
-        multiconfig:qemuarm-stretch:isar-image-base
-        multiconfig:qemuarm64-stretch:isar-image-base
         multiconfig:qemui386-jessie:isar-image-base
         multiconfig:qemui386-stretch:isar-image-base
+        multiconfig:qemui386-buster:isar-image-base
         multiconfig:qemuamd64-jessie:isar-image-base
         multiconfig:qemuamd64-stretch:isar-image-base
+        multiconfig:qemuamd64-buster:isar-image-base
         multiconfig:rpi-jessie:isar-image-base
+    - sed -i -e 's/ISAR_CROSS_COMPILE ?= "0"/ISAR_CROSS_COMPILE ?= "1"/g' conf/local.conf
+    - bitbake
+        multiconfig:qemuarm-stretch:isar-image-base
+        multiconfig:qemuarm64-stretch:isar-image-base
