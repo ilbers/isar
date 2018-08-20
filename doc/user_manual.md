@@ -62,7 +62,6 @@ python3
 python3-distutils           # in case your host is host > debian 9
 qemu
 qemu-user-static
-rxvt-unicode                # build_parallel
 binfmt-support
 sudo
 reprepro
@@ -173,34 +172,6 @@ tmp/deploy/images/isar-image-base-debian-stretch-qemui386.ext4.img
 tmp/deploy/images/isar-image-base-debian-jessie-qemuamd64.ext4.img
 tmp/deploy/images/isar-image-base-debian-stretch-qemuamd64.ext4.img
 tmp/deploy/images/isar-image-base.rpi-sdimg
-```
-
-The BitBake revision included with Isar seems to serialize multiconfig builds.
-The following script may be used from the project directory (`isar`) to build
-multiple configurations in different build directories faster:
-
-```
-scripts/build_parallel ../build multiconfig:qemuarm-wheezy:isar-image-base \
-    multiconfig:qemuarm-jessie:isar-image-base \
-    multiconfig:qemuarm-stretch:isar-image-base \
-    multiconfig:qemui386-jessie:isar-image-base \
-    multiconfig:qemui386-stretch:isar-image-base \
-    multiconfig:qemuamd64-jessie:isar-image-base \
-    multiconfig:qemuamd64-stretch:isar-image-base \
-    multiconfig:rpi-jessie:isar-image-base
-```
-
-Created images are:
-
-```
-../build-1/tmp/deploy/images/isar-image-base-debian-wheezy-qemuarm.ext4.img
-../build-2/tmp/deploy/images/isar-image-base-debian-jessie-qemuarm.ext4.img
-../build-3/tmp/deploy/images/isar-image-base-debian-stretch-qemuarm.ext4.img
-../build-4/tmp/deploy/images/isar-image-base-debian-jessie-qemui386.ext4.img
-../build-5/tmp/deploy/images/isar-image-base-debian-stretch-qemui386.wic.img
-../build-6/tmp/deploy/images/isar-image-base-debian-jessie-qemuamd64.ext4.img
-../build-7/tmp/deploy/images/isar-image-base-debian-stretch-qemuamd64.wic.img
-../build-8/tmp/deploy/images/isar-image-base.rpi-sdimg
 ```
 
 ### Generate full disk image
