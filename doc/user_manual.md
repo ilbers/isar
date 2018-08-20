@@ -38,7 +38,6 @@ Isar provides:
 For demonstration purposes, Isar provides support for the following
 configurations:
 
- - QEMU ARM with Debian Wheezy
  - QEMU ARM with Debian Jessie
  - QEMU ARM with Debian Stretch (builds but fails to run, see #22)
  - QEMU i386 with Debian Jessie
@@ -72,7 +71,6 @@ Notes:
 * BitBake requires Python 3.4+.
 * The python3 package is required for the correct `alternatives` setting.
 * QEMU 2.8+ is required to run Stretch images locally in QEMU. This version is available in Stretch and Jessie backports apts.
-* e2fsprogs v1.42- required for building Wheezy images.
 
 ### Setup Sudo
 
@@ -137,7 +135,6 @@ a single call. List all configurations in `conf/local.conf`:
 
 ```
 BBMULTICONFIG = " \
-    qemuarm-wheezy \
     qemuarm-jessie \
     qemuarm-stretch \
     qemui386-jessie \
@@ -151,7 +148,7 @@ BBMULTICONFIG = " \
 The following command will produce `isar-image-base` images for all targets:
 
 ```
-$ bitbake multiconfig:qemuarm-wheezy:isar-image-base \
+$ bitbake \
     multiconfig:qemuarm-jessie:isar-image-base \
     multiconfig:qemuarm-stretch:isar-image-base \
     multiconfig:qemui386-jessie:isar-image-base \
@@ -164,7 +161,6 @@ $ bitbake multiconfig:qemuarm-wheezy:isar-image-base \
 Created images are:
 
 ```
-tmp/deploy/images/isar-image-base-debian-wheezy-qemuarm.ext4.img
 tmp/deploy/images/isar-image-base-debian-jessie-qemuarm.ext4.img
 tmp/deploy/images/isar-image-base-debian-stretch-qemuarm.ext4.img
 tmp/deploy/images/isar-image-base-debian-jessie-qemui386.ext4.img
@@ -277,7 +273,7 @@ following variables define the default configuration to build for:
  - `MACHINE` - The board to build for (e.g., `qemuarm`, `rpi`). BitBake looks
    for conf/multiconfig/${MACHINE}.conf in every layer.
 
- - `DISTRO` - The distro to use (e.g., `debian-wheezy`, `raspbian-jessie`).
+ - `DISTRO` - The distro to use (e.g. `raspbian-jessie`, `debian-stretch`).
    BitBake looks for conf/distro/${DISTRO}.conf in every layer.
 
  - `DISTRO_ARCH` - The Debian architecture to build for (e.g., `armhf`).
@@ -307,7 +303,6 @@ Some other variables include:
 
 In Isar, each machine can use its specific Linux distro to generate `buildchroot` and target filesystem. By default, Isar provides configuration files for the following distros:
 
- - debian-wheezy
  - debian-jessie
  - debian-stretch
  - raspbian-jessie
@@ -367,8 +362,8 @@ To add new distro, user should perform the following steps:
  - Create the `.conf` file in distro folder with the name of your distribution. We recommend to name distribution in the following format: `name`-`suite`, for example:
 
     ```
-    debian-wheezy
     debian-jessie
+    debian-stretch
     ```
 
  - In this file, define the variables described above.
