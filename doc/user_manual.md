@@ -327,11 +327,12 @@ Please refer to `Add a Custom Application` section for more information about wr
 
 ## Image Type Selection
 
-Isar can generate various images types for specific machine. The `IMAGE_TYPE` variable contains the list of image types to generate. Currently, the following image types are provided:
+Isar can generate various images types for specific machine. The type of the image to be generated may be specified through the `IMAGE_TYPE` variable. Currently, the following image types are provided:
 
  - `ext4` - Raw ext4 filesystem image (default option for `qemuarm` machine).
  - `rpi-sdimg` - A complete, partitioned Raspberry Pi SD card image (default option for the `rpi` machine).
- 
+ - `wic-img` - A full disk image with user-specified partitions created and populated using the wic tool.
+
 ---
 
 ## Add a New Distro
@@ -451,10 +452,11 @@ IMAGE_TYPE = "my-image"
 
 ### Reference Classes
 
-Isar contains two image type classes that can be used as reference:
+Isar contains three image type classes that can be used as reference:
 
  - `ext4-img`
  - `rpi-sdimg`
+ - `wic-img`
 
 ---
 
