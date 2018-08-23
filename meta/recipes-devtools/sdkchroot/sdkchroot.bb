@@ -26,6 +26,7 @@ SDKCHROOT_PREINSTALL := "debhelper \
 WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${PN}-${HOST_DISTRO}-${HOST_ARCH}"
 S = "${WORKDIR}/rootfs"
 
+do_build[dirs] = "${DEPLOY_DIR_IMAGE}"
 do_build[stamp-extra-info] = "${HOST_DISTRO}-${HOST_ARCH}"
 do_build[root_cleandirs] = "${S} \
                             ${S}/isar-apt"
@@ -52,4 +53,12 @@ do_build() {
     # Configure root filesystem
     sudo install -m 755 ${WORKDIR}/configscript.sh ${S}
     sudo chroot ${S} /configscript.sh  ${DISTRO_ARCH}
+
+    # Create SDK archive
+    sudo umount ${S}/dev ${S}/proc
+    sudo tar -C ${WORKDIR} --transform="s|^rootfs|sdk-${DISTRO}-${DISTRO_ARCH}|" \
+        -c rootfs | xz -T0 > ${DEPLOY_DIR_IMAGE}/sdk-${DISTRO}-${DISTRO_ARCH}.tar.xz
+
+    # Install deployment link for local use
+    ln -Tfsr ${S} ${DEPLOY_DIR_IMAGE}/sdk-${DISTRO}-${DISTRO_ARCH}
 }

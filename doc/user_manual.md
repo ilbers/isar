@@ -595,9 +595,10 @@ target binary artifacts. Developer chroots to sdk rootfs and develops applicatio
 User manually triggers creation of SDK root filesystem for his target platform by launching the task `do_populate_sdk` for target image, f.e.
 `bitbake -c do_populate_sdk multiconfig:${MACHINE}-${DISTRO}:isar-image-base`.
 
-The resulting SDK rootfs is located under `tmp/work/${DISTRO}-${DISTRO_ARCH}/sdkchroot-${HOST_DISTRO}-${HOST_ARCH}/rootfs`.
-SDK rootfs directory `/isar-apt` contains the copy of isar-apt repo with locally prebuilt target debian packages (for <HOST_DISTRO>).
-One may chroot to SDK and install required target packages with the help of `apt-get install <package_name>:<DISTRO_ARCH>` command.
+The resulting SDK rootfs is archived into `tmp/deploy/images/sdk-${DISTRO}-${DISTRO_ARCH}.tar.xz`.
+It is additionally available for direct use under `tmp/deploy/images/sdk-${DISTRO}-${DISTRO_ARCH}/`.
+The SDK rootfs directory `/isar-apt` contains a copy of isar-apt repo with locally prebuilt target debian packages (for <HOST_DISTRO>).
+One may chroot into the SDK and install required target packages with the help of `apt-get install <package_name>:<DISTRO_ARCH>` command.
 
 ### Limitation
 
