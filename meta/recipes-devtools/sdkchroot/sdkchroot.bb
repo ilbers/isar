@@ -13,8 +13,7 @@ PV = "0.1"
 
 inherit isar-bootstrap-helper
 
-SDKCHROOT_PREINSTALL := "crossbuild-essential-${DISTRO_ARCH} \
-                           debhelper \
+SDKCHROOT_PREINSTALL := "debhelper \
                            autotools-dev \
                            dpkg \
                            locales \
@@ -36,10 +35,19 @@ do_build[depends] = "isar-apt-host:do_cache_config isar-bootstrap-host:do_bootst
 do_build() {
 
     if [ ${HOST_DISTRO} != "debian-stretch" ]; then
-         bbfatal "SDK doesn't support ${HOST_DISTRO}"
+        bbfatal "SDK doesn't support ${HOST_DISTRO}"
+    fi
+    if [ ${HOST_ARCH} != "i386" -a ${HOST_ARCH} != "amd64" ]; then
+        bbfatal "SDK doesn't support ${HOST_ARCH} as host"
     fi
 
-    setup_root_file_system --copyisarapt --host-arch --host-distro "${S}" ${SDKCHROOT_PREINSTALL}
+    if [ ${HOST_ARCH} = ${DISTRO_ARCH} -o ${DISTRO_ARCH} = "i386" ]; then
+        packages="${SDKCHROOT_PREINSTALL} build-essential"
+    else
+        packages="${SDKCHROOT_PREINSTALL} crossbuild-essential-${DISTRO_ARCH}"
+    fi
+
+    setup_root_file_system --copyisarapt --host-arch --host-distro "${S}" $packages
 
     # Configure root filesystem
     sudo install -m 755 ${WORKDIR}/configscript.sh ${S}
