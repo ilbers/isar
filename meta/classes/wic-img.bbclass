@@ -71,6 +71,7 @@ do_wic_image() {
     export MTOOLS_SKIP_CHECK=1
 
     sudo -E chroot ${BUILDCHROOT_DIR} ${ISARROOT}/scripts/wic create ${WKS_FILE} --vars "${STAGING_DIR}/${MACHINE}/imgdata/" -o /tmp/ -e ${IMAGE_BASENAME} ${WIC_CREATE_EXTRA_ARGS}
+    sudo chown -R $(stat -c "%U" ${ISARROOT}) ${ISARROOT}/meta ${ISARROOT}/meta-isar ${ISARROOT}/scripts
     cp -f `ls -t -1 ${BUILDCHROOT_DIR}/tmp/${WKS_FILE}*.direct | head -1` ${WIC_IMAGE_FILE}
 }
 
