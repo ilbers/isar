@@ -97,14 +97,7 @@ addtask copy_boot_files before do_build after do_rootfs
 do_copy_boot_files[dirs] = "${DEPLOY_DIR_IMAGE}"
 do_copy_boot_files[stamp-extra-info] = "${DISTRO}-${MACHINE}"
 
-
-SDKCHROOT_DIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/sdkchroot-${HOST_DISTRO}-${HOST_ARCH}/rootfs"
-
 do_populate_sdk() {
-    if [ ${HOST_DISTRO} != "debian-stretch" ]; then
-         bbfatal "SDK doesn't support ${HOST_DISTRO}"
-    fi
-    sudo cp -Trpfx ${DEPLOY_DIR_APT}/${HOST_DISTRO}  ${SDKCHROOT_DIR}/isar-apt
 }
 
 do_populate_sdk[stamp-extra-info] = "${MACHINE}-${DISTRO}"
