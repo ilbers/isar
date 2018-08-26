@@ -33,11 +33,6 @@ REPACK_DIR="$1/../repack"
 REPACK_LINUX_IMAGE_DIR="${REPACK_DIR}/linux-image"
 REPACK_LINUX_HEADERS_DIR="${REPACK_DIR}/linux-headers"
 
-# Lock-protected because apt and dpkg do not wait in case of contention
-flock /dpkg.lock \
-    apt-get install -y -o Debug::pkgProblemResolver=yes \
-        --no-install-recommends ${KBUILD_DEPENDS}
-
 cd $1
 make olddefconfig
 

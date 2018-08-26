@@ -28,6 +28,14 @@ KBUILD_DEPENDS ?= "libssl-dev libelf-dev bc"
 KERNEL_DEBIAN_DEPENDS ?= "initramfs-tools | linux-initramfs-tool, kmod, linux-base (>= 4.3~)"
 KERNEL_HEADERS_DEBIAN_DEPENDS ?= "libc6, libssl1.1"
 
+dpkg_prepare() {
+	# Lock-protected because apt and dpkg do not wait in case of contention
+	sudo -E chroot ${BUILDCHROOT_DIR} \
+		flock /dpkg.lock apt-get install \
+			-y -o Debug::pkgProblemResolver=yes \
+			--no-install-recommends ${KBUILD_DEPENDS}
+}
+
 dpkg_runbuild() {
 	# Install package builder script
 	sudo install -m 755 ${WORKDIR}/build-kernel.sh ${BUILDCHROOT_DIR}
