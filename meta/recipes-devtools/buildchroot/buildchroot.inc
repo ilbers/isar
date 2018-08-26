@@ -8,7 +8,9 @@ LIC_FILES_CHKSUM = "file://${LAYERDIR_isar}/licenses/COPYING.GPLv2;md5=751419260
 
 FILESPATH_prepend := "${THISDIR}/files:"
 SRC_URI = "file://configscript.sh \
-           file://build.sh"
+           file://build.sh \
+           file://common.sh \
+           file://deps.sh"
 PV = "1.0"
 
 inherit isar-bootstrap-helper
@@ -27,7 +29,10 @@ do_build() {
 
     # Install package builder script
     sudo chmod -R a+rw "${BUILDCHROOT_DIR}/home/builder"
-    sudo install -m 755 ${WORKDIR}/build.sh ${BUILDCHROOT_DIR}
+    sudo install -m 755 -d ${BUILDCHROOT_DIR}/isar
+    sudo install -m 755 ${WORKDIR}/build.sh ${BUILDCHROOT_DIR}/isar/
+    sudo install -m 755 ${WORKDIR}/common.sh ${BUILDCHROOT_DIR}/isar/
+    sudo install -m 755 ${WORKDIR}/deps.sh ${BUILDCHROOT_DIR}/isar/
 
     # Configure root filesystem
     sudo install -m 755 ${WORKDIR}/configscript.sh ${BUILDCHROOT_DIR}

@@ -14,9 +14,9 @@ do_install() {
 }
 
 do_install[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
-addtask install after do_unpack before do_deb_package_prepare
+addtask install after do_unpack before do_prepare
 
-do_deb_package_prepare() {
+deb_package_prepare() {
 	sudo rm -rf ${D}/DEBIAN
 	mkdir -p ${D}/DEBIAN
 	cat<<-__EOF__ > ${D}/DEBIAN/control
@@ -42,17 +42,16 @@ do_deb_package_prepare() {
 	done
 }
 
-do_deb_package_prepare[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
-addtask deb_package_prepare after do_install before do_deb_package_conffiles
-
-do_deb_package_conffiles() {
+deb_package_conffiles() {
 	CONFFILES=${D}/DEBIAN/conffiles
 	find ${D} -type f -path '${D}/etc/*' | sed -e 's|^${D}|/|' >> $CONFFILES
 	test -s $CONFFILES || rm $CONFFILES
 }
 
-do_deb_package_conffiles[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
-addtask deb_package_conffiles after do_deb_package_prepare before do_build
+dpkg_prepare() {
+	deb_package_prepare
+	deb_package_conffiles
+}
 
 dpkg_runbuild() {
 	sudo chown -R root:root ${D}/DEBIAN/

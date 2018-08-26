@@ -13,7 +13,7 @@ python __anonymous() {
         dep = "buildchroot-host:do_build"
         rootfs = d.getVar('BUILDCHROOT_HOST_DIR', True)
 
-    d.setVarFlag('do_build', 'depends', dep)
+    d.setVarFlag('do_prepare', 'depends', dep)
     d.setVar('BUILDCHROOT_DIR', rootfs)
 }
 
@@ -32,7 +32,7 @@ addtask patch after do_adjust_git before do_build
 
 # Add dependency between Isar recipes
 DEPENDS ?= ""
-do_build[deptask] = "do_deploy_deb"
+do_prepare[deptask] = "do_deploy_deb"
 
 def get_package_srcdir(d):
     s = d.getVar("S", True)
@@ -50,7 +50,10 @@ PPS ?= "${@get_package_srcdir(d)}"
 BUILDROOT = "${BUILDCHROOT_DIR}/${PP}"
 do_build[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 
-# default to "emtpy" implementation
+# default to "emtpy" implementation for dpkg_prepare() and dpkg_runbuild()
+dpkg_prepare() {
+    true
+}
 dpkg_runbuild() {
     die "This should never be called, overwrite it in your derived class"
 }
@@ -58,7 +61,7 @@ dpkg_runbuild() {
 MOUNT_LOCKFILE = "${BUILDCHROOT_DIR}/mount.lock"
 
 # Wrap the function dpkg_runbuild with the bind mount for buildroot
-do_build() {
+dpkg_do_mounts() {
     mkdir -p ${BUILDROOT}
     sudo mount --bind ${WORKDIR} ${BUILDROOT}
 
@@ -70,11 +73,26 @@ do_build() {
             mount -t devtmpfs -o mode=0755,nosuid devtmpfs ${BUILDCHROOT_DIR}/dev
             mount -t proc none ${BUILDCHROOT_DIR}/proc
         fi'
+}
 
-    dpkg_runbuild
-
+dpkg_undo_mounts() {
     sudo umount ${BUILDROOT} 2>/dev/null || true
     sudo rmdir ${BUILDROOT} 2>/dev/null || true
+}
+
+do_prepare() {
+    dpkg_do_mounts
+    dpkg_prepare
+    dpkg_undo_mounts
+}
+
+addtask prepare after do_patch before do_build
+do_prepare[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
+
+do_build() {
+    dpkg_do_mounts
+    dpkg_runbuild
+    dpkg_undo_mounts
 }
 
 CLEANFUNCS += "repo_clean"
