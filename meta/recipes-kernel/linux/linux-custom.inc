@@ -29,12 +29,14 @@ KERNEL_DEBIAN_DEPENDS ?= "initramfs-tools | linux-initramfs-tool, kmod, linux-ba
 KERNEL_HEADERS_DEBIAN_DEPENDS ?= "libc6, libssl1.1"
 
 dpkg_prepare() {
-	# Lock-protected because apt and dpkg do not wait in case of contention
 	sudo -E chroot ${BUILDCHROOT_DIR} \
-		flock /dpkg.lock apt-get install \
+		apt-get install \
 			-y -o Debug::pkgProblemResolver=yes \
 			--no-install-recommends ${KBUILD_DEPENDS}
 }
+
+# apt and reprepro may not run in parallel, acquire the Isar lock
+do_prepare[lockfiles] += "${DEPLOY_DIR_APT}/isar.lock"
 
 dpkg_runbuild() {
 	# Install package builder script
