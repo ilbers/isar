@@ -46,7 +46,7 @@ yes|1)
 esac
 
 BOOT="bootz"
-if [ "$(uname -m)" == "aarch64" ]; then
+if [ "$(uname -m)" = "aarch64" ]; then
 	BOOT="booti"
 fi
 
