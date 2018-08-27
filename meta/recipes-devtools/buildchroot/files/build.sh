@@ -15,4 +15,4 @@ for i in configure aclocal.m4 Makefile.am Makefile.in; do
 done
 
 # Build the package
-dpkg-buildpackage -a$target_arch -d
+dpkg-buildpackage -a$target_arch -d --source-option=-I
