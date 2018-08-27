@@ -90,6 +90,13 @@ if [ \"\$1\" != upgrade ] && command -v linux-update-symlinks >/dev/null; then\\
 	linux-update-symlinks remove ${PV}  /boot/vmlinuz-${PV}\\
 fi"
 
+# Make sure arm64 kernels are decompressed
+if [ "$target_arch" = "arm64" ]; then
+	vmlinuz=${REPACK_LINUX_IMAGE_DIR}/boot/vmlinuz-${PV}
+	mv $vmlinuz $vmlinuz.gz
+	gunzip $vmlinuz.gz
+fi
+
 dpkg-gencontrol -crepack/debian/control \
 	-lrepack/debian/changelog \
 	-frepack/debian/files \
