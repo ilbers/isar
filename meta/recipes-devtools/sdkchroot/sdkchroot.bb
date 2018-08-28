@@ -53,12 +53,4 @@ do_build() {
     # Configure root filesystem
     sudo install -m 755 ${WORKDIR}/configscript.sh ${S}
     sudo chroot ${S} /configscript.sh  ${DISTRO_ARCH}
-
-    # Create SDK archive
-    sudo umount ${S}/dev ${S}/proc
-    sudo tar -C ${WORKDIR} --transform="s|^rootfs|sdk-${DISTRO}-${DISTRO_ARCH}|" \
-        -c rootfs | xz -T0 > ${DEPLOY_DIR_IMAGE}/sdk-${DISTRO}-${DISTRO_ARCH}.tar.xz
-
-    # Install deployment link for local use
-    ln -Tfsr ${S} ${DEPLOY_DIR_IMAGE}/sdk-${DISTRO}-${DISTRO_ARCH}
 }

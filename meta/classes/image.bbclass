@@ -97,7 +97,19 @@ addtask copy_boot_files before do_build after do_rootfs
 do_copy_boot_files[dirs] = "${DEPLOY_DIR_IMAGE}"
 do_copy_boot_files[stamp-extra-info] = "${DISTRO}-${MACHINE}"
 
+SDKCHROOT_DIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/sdkchroot-${HOST_DISTRO}-${HOST_ARCH}"
+
 do_populate_sdk() {
+    # Copy isar-apt with deployed Isar packages
+    sudo cp -Trpfx ${DEPLOY_DIR_APT}/${DISTRO}  ${SDKCHROOT_DIR}/rootfs/isar-apt
+
+    # Create SDK archive
+    sudo umount ${SDKCHROOT_DIR}/rootfs/dev ${SDKCHROOT_DIR}/rootfs/proc
+    sudo tar -C ${SDKCHROOT_DIR} --transform="s|^rootfs|sdk-${DISTRO}-${DISTRO_ARCH}|" \
+        -c rootfs | xz -T0 > ${DEPLOY_DIR_IMAGE}/sdk-${DISTRO}-${DISTRO_ARCH}.tar.xz
+
+    # Install deployment link for local use
+    ln -Tfsr ${SDKCHROOT_DIR}/rootfs ${DEPLOY_DIR_IMAGE}/sdk-${DISTRO}-${DISTRO_ARCH}
 }
 
 do_populate_sdk[stamp-extra-info] = "${MACHINE}-${DISTRO}"
