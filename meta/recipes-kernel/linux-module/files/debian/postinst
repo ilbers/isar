@@ -1,2 +1,2 @@
 #!/bin/sh
-depmod -a
+depmod -a $(ls /lib/modules)
