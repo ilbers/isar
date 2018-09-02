@@ -3,6 +3,8 @@
 
 ISAR_CROSS_COMPILE ??= "0"
 
+DEPENDS ?= ""
+
 # Add dependency from the correct buildchroot: host or target
 python __anonymous() {
     mode = d.getVar('ISAR_CROSS_COMPILE', True)
@@ -29,10 +31,6 @@ do_adjust_git[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 
 inherit patch
 addtask patch after do_adjust_git before do_build
-
-# Add dependency between Isar recipes
-DEPENDS ?= ""
-do_prepare[deptask] = "do_deploy_deb"
 
 def get_package_srcdir(d):
     s = d.getVar("S", True)
@@ -85,6 +83,9 @@ do_prepare() {
 
 addtask prepare after do_patch before do_build
 do_prepare[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
+# If Isar recipes depend on each other, they typically need the package
+# deployed to isar-apt
+do_prepare[deptask] = "do_deploy_deb"
 
 # Placeholder for actual dpkg_runbuild() implementation
 dpkg_runbuild() {
