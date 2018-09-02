@@ -50,12 +50,9 @@ PPS ?= "${@get_package_srcdir(d)}"
 BUILDROOT = "${BUILDCHROOT_DIR}/${PP}"
 do_build[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 
-# default to "emtpy" implementation for dpkg_prepare() and dpkg_runbuild()
+# Empty do_prepare() implementation, to be overwritten if needed
 dpkg_prepare() {
     true
-}
-dpkg_runbuild() {
-    die "This should never be called, overwrite it in your derived class"
 }
 
 MOUNT_LOCKFILE = "${BUILDCHROOT_DIR}/mount.lock"
@@ -88,6 +85,11 @@ do_prepare() {
 
 addtask prepare after do_patch before do_build
 do_prepare[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
+
+# Placeholder for actual dpkg_runbuild() implementation
+dpkg_runbuild() {
+    die "This should never be called, overwrite it in your derived class"
+}
 
 do_build() {
     dpkg_do_mounts
