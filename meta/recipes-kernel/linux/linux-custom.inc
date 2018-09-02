@@ -29,6 +29,7 @@ KERNEL_DEBIAN_DEPENDS ?= "initramfs-tools | linux-initramfs-tool, kmod, linux-ba
 KERNEL_HEADERS_DEBIAN_DEPENDS ?= "libc6, libssl1.1"
 
 dpkg_prepare() {
+	E="${@ bb.utils.export_proxies(d)}"
 	sudo -E chroot ${BUILDCHROOT_DIR} \
 		apt-get install \
 			-y -o Debug::pkgProblemResolver=yes \
