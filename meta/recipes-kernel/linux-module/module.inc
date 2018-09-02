@@ -17,7 +17,7 @@ AUTOLOAD ?= "0"
 
 inherit dpkg
 
-do_prepare_prepend() {
+do_prepare_build() {
     cp -r ${WORKDIR}/debian ${S}/
     sed -i -e 's/@PN@/${PN}/g' -e 's/@PV@/${PV}/g' \
            -e 's/@KERNEL_NAME@/${KERNEL_NAME}/g' \

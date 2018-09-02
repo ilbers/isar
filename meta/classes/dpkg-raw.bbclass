@@ -14,7 +14,7 @@ do_install() {
 }
 
 do_install[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
-addtask install after do_unpack before do_prepare
+addtask install after do_unpack before do_prepare_build
 
 deb_package_prepare() {
 	sudo rm -rf ${D}/DEBIAN
@@ -48,7 +48,7 @@ deb_package_conffiles() {
 	test -s $CONFFILES || rm $CONFFILES
 }
 
-dpkg_prepare() {
+do_prepare_build() {
 	deb_package_prepare
 	deb_package_conffiles
 }

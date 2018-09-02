@@ -15,7 +15,7 @@ python __anonymous() {
         dep = "buildchroot-host:do_build"
         rootfs = d.getVar('BUILDCHROOT_HOST_DIR', True)
 
-    d.setVarFlag('do_prepare', 'depends', dep)
+    d.setVarFlag('do_prepare_build', 'depends', dep)
     d.setVar('BUILDCHROOT_DIR', rootfs)
 }
 
@@ -48,10 +48,16 @@ PPS ?= "${@get_package_srcdir(d)}"
 BUILDROOT = "${BUILDCHROOT_DIR}/${PP}"
 do_build[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 
-# Empty do_prepare() implementation, to be overwritten if needed
-dpkg_prepare() {
+# Empty do_prepare_build() implementation, to be overwritten if needed
+do_prepare_build() {
     true
 }
+
+addtask prepare_build after do_patch before do_build
+do_prepare_build[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
+# If Isar recipes depend on each other, they typically need the package
+# deployed to isar-apt
+do_prepare_build[deptask] = "do_deploy_deb"
 
 MOUNT_LOCKFILE = "${BUILDCHROOT_DIR}/mount.lock"
 
@@ -74,18 +80,6 @@ dpkg_undo_mounts() {
     sudo umount ${BUILDROOT} 2>/dev/null || true
     sudo rmdir ${BUILDROOT} 2>/dev/null || true
 }
-
-do_prepare() {
-    dpkg_do_mounts
-    dpkg_prepare
-    dpkg_undo_mounts
-}
-
-addtask prepare after do_patch before do_build
-do_prepare[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
-# If Isar recipes depend on each other, they typically need the package
-# deployed to isar-apt
-do_prepare[deptask] = "do_deploy_deb"
 
 # Placeholder for actual dpkg_runbuild() implementation
 dpkg_runbuild() {
