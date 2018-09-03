@@ -33,8 +33,8 @@ do_install() {
 	# to the packaged /etc/default/u-boot-script.
 	if [ -n ${WKS_PATH} ]; then
 		APPEND=$(grep "^bootloader " ${WKS_PATH} | \
-			 sed 's/.* --append=\([^ $]*\).*/\1/')
-		sed -i 's|\(^KERNEL_ARGS_APPEND=\).*|\1'${APPEND}'|' \
+			 sed 's/.* --append=\(".*"\|[^ $]*\).*/\1/')
+		sed -i 's|\(^KERNEL_ARGS_APPEND=\).*|\1'"${APPEND}"'|' \
 			${WORKDIR}/u-boot-script
 	fi
 
