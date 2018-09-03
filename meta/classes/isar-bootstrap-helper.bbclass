@@ -136,6 +136,6 @@ setup_root_file_system() {
         sudo -E chroot "$ROOTFSDIR" \
             /usr/bin/apt-get clean
         sudo "$ROOTFSDIR/chroot-setup.sh" "cleanup" "$ROOTFSDIR"
-        sudo rm -f "$ROOTFSDIR/chroot-setup.sh"
+        sudo rm -rf "$ROOTFSDIR/chroot-setup.sh" "$ROOTFSDIR/var/lib/apt/lists/"*
     fi
 }
