@@ -74,8 +74,9 @@ addtask rootfs before do_build after do_unpack
 do_rootfs[deptask] = "do_deploy_deb"
 
 do_mark_rootfs() {
+    BUILD_ID=$(get_build_id)
     update_etc_os_release \
-        --build-id $(get_build_id) --variant "${DESCRIPTION}" \
+        --build-id "${BUILD_ID}" --variant "${DESCRIPTION}" \
         "${IMAGE_ROOTFS}"
 }
 
