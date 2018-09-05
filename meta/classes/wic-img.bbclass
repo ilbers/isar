@@ -4,7 +4,11 @@
 # this class is heavily inspired by OEs ./meta/classes/image_types_wic.bbclass
 #
 
-WKS_FILE ?= "sdimage-efi"
+python () {
+    if not d.getVar('WKS_FILE', True):
+        bb.fatal("WKS_FILE must be set")
+}
+
 ROOTFS_TYPE ?= "ext4"
 
 STAGING_DATADIR ?= "/usr/lib/"
