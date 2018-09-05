@@ -117,3 +117,37 @@ do_populate_sdk[stamp-extra-info] = "${MACHINE}-${DISTRO}"
 do_populate_sdk[depends] = "sdkchroot:do_build"
 
 addtask populate_sdk after do_rootfs
+
+# Imager are expected to run natively, thus will use the target buildchroot.
+ISAR_CROSS_COMPILE = "0"
+
+inherit buildchroot
+
+IMAGER_INSTALL ??= ""
+IMAGER_BUILD_DEPS ??= ""
+DEPENDS += "${IMAGER_BUILD_DEPS}"
+
+do_install_imager_deps() {
+    if [ -z "${@d.getVar("IMAGER_INSTALL", True).strip()}" ]; then
+        exit
+    fi
+
+    buildchroot_do_mounts
+
+    E="${@bb.utils.export_proxies(d)}"
+    sudo -E chroot ${BUILDCHROOT_DIR} sh -c ' \
+        apt-get update \
+            -o Dir::Etc::sourcelist="sources.list.d/isar-apt.list" \
+            -o Dir::Etc::sourceparts="-" \
+            -o APT::Get::List-Cleanup="0"
+        apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y \
+            --allow-unauthenticated install \
+            ${IMAGER_INSTALL}'
+}
+
+do_install_imager_deps[depends] = "buildchroot-target:do_build"
+do_install_imager_deps[deptask] = "do_deploy_deb"
+do_install_imager_deps[lockfiles] += "${DEPLOY_DIR_APT}/isar.lock"
+do_install_imager_deps[stamp-extra-info] = "${DISTRO}-${MACHINE}"
+
+addtask install_imager_deps before do_build
