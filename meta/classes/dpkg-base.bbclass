@@ -1,23 +1,11 @@
 # This software is a part of ISAR.
-# Copyright (C) 2017 Siemens AG
+# Copyright (C) 2017-2018 Siemens AG
+#
+# SPDX-License-Identifier: MIT
 
-ISAR_CROSS_COMPILE ??= "0"
+inherit buildchroot
 
 DEPENDS ?= ""
-
-# Add dependency from the correct buildchroot: host or target
-python __anonymous() {
-    mode = d.getVar('ISAR_CROSS_COMPILE', True)
-    if mode == "0":
-        dep = "buildchroot-target:do_build"
-        rootfs = d.getVar('BUILDCHROOT_TARGET_DIR', True)
-    else:
-        dep = "buildchroot-host:do_build"
-        rootfs = d.getVar('BUILDCHROOT_HOST_DIR', True)
-
-    d.setVarFlag('do_prepare_build', 'depends', dep)
-    d.setVar('BUILDCHROOT_DIR', rootfs)
-}
 
 do_adjust_git() {
     if [ -f ${S}/.git/objects/info/alternates ]; then
@@ -45,7 +33,6 @@ def get_package_srcdir(d):
 PP = "/home/builder/${PN}"
 PPS ?= "${@get_package_srcdir(d)}"
 
-BUILDROOT = "${BUILDCHROOT_DIR}/${PP}"
 do_build[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 
 # Empty do_prepare_build() implementation, to be overwritten if needed
@@ -59,21 +46,13 @@ do_prepare_build[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 # deployed to isar-apt
 do_prepare_build[deptask] = "do_deploy_deb"
 
-MOUNT_LOCKFILE = "${BUILDCHROOT_DIR}/mount.lock"
+BUILDROOT = "${BUILDCHROOT_DIR}/${PP}"
 
-# Wrap the function dpkg_runbuild with the bind mount for buildroot
 dpkg_do_mounts() {
     mkdir -p ${BUILDROOT}
     sudo mount --bind ${WORKDIR} ${BUILDROOT}
 
-    sudo flock ${MOUNT_LOCKFILE} -c ' \
-        set -e
-        if ! grep -q ${BUILDCHROOT_DIR}/isar-apt /proc/mounts; then
-            mount --bind ${DEPLOY_DIR_APT}/${DISTRO} ${BUILDCHROOT_DIR}/isar-apt
-            mount --bind ${DL_DIR} ${BUILDCHROOT_DIR}/downloads
-            mount -t devtmpfs -o mode=0755,nosuid devtmpfs ${BUILDCHROOT_DIR}/dev
-            mount -t proc none ${BUILDCHROOT_DIR}/proc
-        fi'
+    buildchroot_do_mounts
 }
 
 dpkg_undo_mounts() {
