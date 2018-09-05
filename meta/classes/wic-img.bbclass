@@ -81,4 +81,4 @@ do_wic_image() {
 
 do_wic_image[depends] = "buildchroot-target:do_build"
 
-addtask wic_image before do_build after do_copy_boot_files
+addtask wic_image before do_build after do_install_imager_deps

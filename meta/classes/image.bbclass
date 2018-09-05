@@ -127,6 +127,12 @@ IMAGER_INSTALL ??= ""
 IMAGER_BUILD_DEPS ??= ""
 DEPENDS += "${IMAGER_BUILD_DEPS}"
 
+python () {
+    if d.getVar('IMAGE_TYPE', True) == 'wic-img':
+        d.appendVar('IMAGER_INSTALL',
+                    ' ' + d.getVar('WIC_IMAGER_INSTALL', True))
+}
+
 do_install_imager_deps() {
     if [ -z "${@d.getVar("IMAGER_INSTALL", True).strip()}" ]; then
         exit
