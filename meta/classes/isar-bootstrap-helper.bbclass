@@ -93,9 +93,9 @@ setup_root_file_system() {
         sudo tee "$ROOTFSDIR/etc/apt/preferences.d/isar" >/dev/null
 
     if [ ${COPYISARAPT} ]; then
-        sudo cp -Trpfx ${DEPLOY_DIR_APT}/${ROOTFS_DISTRO} $ROOTFSDIR/isar-apt
+        sudo cp -Trpfx ${DEPLOY_DIR_APT}/${DISTRO} $ROOTFSDIR/isar-apt
     else
-        sudo mount --bind ${DEPLOY_DIR_APT}/${ROOTFS_DISTRO} $ROOTFSDIR/isar-apt
+        sudo mount --bind ${DEPLOY_DIR_APT}/${DISTRO} $ROOTFSDIR/isar-apt
     fi
     sudo mount -t devtmpfs -o mode=0755,nosuid devtmpfs $ROOTFSDIR/dev
     sudo mount -t proc none $ROOTFSDIR/proc
