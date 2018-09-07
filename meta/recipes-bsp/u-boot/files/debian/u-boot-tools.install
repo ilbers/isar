@@ -1,0 +1,5 @@
+tools/dumpimage		/usr/bin/
+tools/env/fw_printenv	/usr/bin/
+tools/mkenvimage	/usr/bin/
+tools/mkimage		/usr/bin/
+tools/env/fw_env.config	/etc

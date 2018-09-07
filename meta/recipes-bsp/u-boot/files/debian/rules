@@ -1,0 +1,28 @@
+#!/usr/bin/make -f
+
+# Debian rules for custom kernel module build
+#
+# This software is a part of ISAR.
+# Copyright (c) Siemens AG, 2018
+#
+# SPDX-License-Identifier: MIT
+
+ifneq ($(DEB_BUILD_GNU_TYPE),$(DEB_HOST_GNU_TYPE))
+export CROSS_COMPILE=$(DEB_HOST_GNU_TYPE)-
+SET_CROSS_BUILD_TOOLS=CROSS_BUILD_TOOLS=y
+endif
+
+PARALLEL_BUILD=-j $(shell $$(($$(nproc) * 2)))
+
+override_dh_auto_build:
+	$(MAKE) $(PARALLEL_BUILD) $(U_BOOT_CONFIG)
+	$(MAKE) $(PARALLEL_BUILD) ${U_BOOT_BIN}
+	$(MAKE) $(PARALLEL_BUILD) $(SET_CROSS_BUILD_TOOLS) NO_SDL=1 tools-only envtools
+
+override_dh_auto_install:
+	mv tools/env/lib.a tools/env/libubootenv.a
+
+override_dh_auto_test:
+
+%:
+	dh $@ --parallel
