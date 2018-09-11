@@ -6,4 +6,4 @@ part /boot --source bootimg-efi-isar --sourceparams="loader=grub-efi" --ondisk s
 
 part / --source rootfs --ondisk sda --fstype=ext4 --label platform --align 1024 --use-uuid
 
-bootloader --ptable gpt --timeout=5 --append="rootfstype=ext4 console=ttyS0,115200 console=tty0"
+bootloader --ptable gpt --timeout=5 --append "rootwait console=ttyS0,115200 console=tty0"
