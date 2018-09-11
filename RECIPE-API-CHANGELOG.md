@@ -57,3 +57,10 @@ If the top-layer is managed in git, set `LAYERDIR_mylayer = "${LAYERDIR}"` in
                             --match 'v[0-9].[0-9]*'"
 
 in the image recipe (or `isar-image-base.bbappend`) of that layer.
+
+### ROOTFS_DEV and ROOTFS_TYPE no longer needed
+
+These variables can be removed from own machine.conf or multiconfig files.
+
+If you want to enable support for QEMU in your config (start_vm), specify the
+`QEMU_ROOTFS_DEV` and `QEMU_DISK_ARGS` instead.
