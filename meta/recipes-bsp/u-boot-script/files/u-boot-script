@@ -1,6 +1,9 @@
-# Arguments to append to kernel command line.
+# Root filesystem partition number
+ROOT_PARTITION="\${distro_bootpart}"
+
+# Arguments for the kernel command line.
 # Make sure to escape $ in u-boot variables, e.g. "\${console}".
-KERNEL_ARGS_APPEND=""
+KERNEL_ARGS=""
 
 # Set to "yes" or "1" to leave out initrd, even if present
 NO_INITRD=""
