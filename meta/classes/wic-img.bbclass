@@ -9,8 +9,6 @@ python () {
         bb.fatal("WKS_FILE must be set")
 }
 
-ROOTFS_TYPE ?= "ext4"
-
 STAGING_DATADIR ?= "/usr/lib/"
 STAGING_LIBDIR ?= "/usr/lib/"
 STAGING_DIR ?= "${TMPDIR}"

@@ -1,8 +1,6 @@
 # This software is a part of ISAR.
 # Copyright (C) 2015-2017 ilbers GmbH
 
-ROOTFS_TYPE = "ext4"
-
 EXT4_IMAGE_FILE = "${DEPLOY_DIR_IMAGE}/${PN}-${DISTRO}-${MACHINE}.ext4.img"
 
 do_ext4_image[stamp-extra-info] = "${DISTRO}-${MACHINE}"
