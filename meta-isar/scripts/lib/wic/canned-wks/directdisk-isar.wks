@@ -4,4 +4,4 @@
 
 include common-isar.wks.inc
 
-bootloader  --timeout=0  --append="rootwait rootfstype=ext4 video=vesafb vga=0x318 console=tty0 console=ttyS0,115200n8"
+bootloader  --timeout=0  --append "rootwait rootfstype=ext4 video=vesafb vga=0x318 console=tty0 console=ttyS0,115200n8"
