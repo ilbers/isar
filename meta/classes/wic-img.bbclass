@@ -9,6 +9,9 @@ python () {
         bb.fatal("WKS_FILE must be set")
 }
 
+# wic comes with reasonable defaults, and the proper interface is the wks file
+ROOTFS_EXTRA ?= "0"
+
 STAGING_DATADIR ?= "/usr/lib/"
 STAGING_LIBDIR ?= "/usr/lib/"
 STAGING_DIR ?= "${TMPDIR}"

@@ -7,6 +7,12 @@ IMAGE_ROOTFS   = "${WORKDIR}/rootfs"
 
 IMAGE_INSTALL += "${@ ("linux-image-" + d.getVar("KERNEL_NAME", True)) if d.getVar("KERNEL_NAME", True) else ""}"
 
+# These variables are used by wic and start_vm
+KERNEL_IMAGE ?= "${@get_image_name(d, 'vmlinuz')[1]}"
+INITRD_IMAGE ?= "${@get_image_name(d, 'initrd.img')[1]}"
+
+inherit ${IMAGE_TYPE}
+
 # Extra space for rootfs in MB
 ROOTFS_EXTRA ?= "64"
 
@@ -56,12 +62,6 @@ python set_image_size () {
     d.setVar('ROOTFS_SIZE', str(rootfs_size))
     d.setVarFlag('ROOTFS_SIZE', 'export', '1')
 }
-
-# These variables are used by wic and start_vm
-KERNEL_IMAGE ?= "${@get_image_name(d, 'vmlinuz')[1]}"
-INITRD_IMAGE ?= "${@get_image_name(d, 'initrd.img')[1]}"
-
-inherit ${IMAGE_TYPE}
 
 do_rootfs[stamp-extra-info] = "${MACHINE}-${DISTRO}"
 do_rootfs[depends] = "isar-apt:do_cache_config isar-bootstrap-target:do_bootstrap"
