@@ -1,0 +1,23 @@
+# This software is a part of ISAR.
+# Copyright (c) Siemens AG, 2018
+#
+# SPDX-License-Identifier: MIT
+
+[Unit]
+Description=Enable fsck for mounted devices
+DefaultDependencies=no
+Conflicts=shutdown.target
+After=systemd-remount-fs.service
+Before=sysinit.target shutdown.target
+ConditionPathIsReadWrite=/etc
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/share/enable-fsck/enable-fsck.sh
+ExecStartPost=-/bin/systemctl disable enable-fsck.service
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=sysinit.target
