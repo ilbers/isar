@@ -9,15 +9,13 @@ FILESPATH =. "${LAYERDIR_core}/recipes-kernel/linux/files:"
 
 DESCRIPTION ?= "Custom kernel"
 
-KERNEL_FLAVOR ?= "${@ d.getVar('PN', True).partition('linux-')[2]}"
+KERNEL_NAME_PRODVIDED ?= "${@ d.getVar('PN', True).partition('linux-')[2]}"
 KERNEL_DEFCONFIG ?= "defconfig"
 
 python() {
-    kernel = d.getVar("KERNEL_NAME", True)
-    flavor = d.getVar("KERNEL_FLAVOR", True)
-    if kernel and flavor and kernel.startswith(flavor + "-"):
-        d.setVar('PROVIDES', 'linux-image-' + kernel + ' ' + \
-                             'linux-headers-' + kernel)
+    kernel_name = d.getVar("KERNEL_NAME_PRODVIDED", True)
+    d.setVar('PROVIDES', 'linux-image-' + kernel_name + ' ' + \
+                         'linux-headers-' + kernel_name)
 }
 
 inherit dpkg-base

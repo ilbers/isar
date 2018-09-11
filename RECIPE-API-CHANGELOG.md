@@ -64,3 +64,11 @@ These variables can be removed from own machine.conf or multiconfig files.
 
 If you want to enable support for QEMU in your config (start_vm), specify the
 `QEMU_ROOTFS_DEV` and `QEMU_DISK_ARGS` instead.
+
+### KERNEL_NAME_PROVIDED replaces KERNEL_FLAVOR in custom kernels
+
+The matching logic for custom kernel recipes to the selected kernel was
+reworked and simplified. If your kernel recipe is called `linux-foo_4.18.bb`,
+you now have to set `KERNEL_NAME = "foo"` in order to select that kernel.
+Alternatively, a recipe with a different naming scheme can set
+`KERNEL_NAME_PROVIDED = "foo"` in order to match as well.
