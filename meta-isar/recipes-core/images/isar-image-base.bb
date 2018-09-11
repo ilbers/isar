@@ -32,7 +32,7 @@ do_rootfs[root_cleandirs] = "${IMAGE_ROOTFS} \
 do_rootfs() {
     cat > ${WORKDIR}/fstab << EOF
 # Begin /etc/fstab
-/dev/${ROOTFS_DEV}	/		${ROOTFS_TYPE}		defaults		0	0
+/dev/root	/		auto		defaults		0	0
 proc		/proc		proc		nosuid,noexec,nodev	0	0
 sysfs		/sys		sysfs		nosuid,noexec,nodev	0	0
 devpts		/dev/pts	devpts		gid=5,mode=620		0	0
