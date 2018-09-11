@@ -17,7 +17,7 @@ bb2sh() {
 }
 
 start_qemu() {
-    root=`echo $QEMU_ROOTFS_DEV \
+    root=`echo $QEMU_DISK_ARGS \
         | sed 's,##ROOTFS_IMAGE##,'$IMAGE_DIR/$ROOTFS_IMAGE','`
     local had_x
     echo $- | grep -q x && had_x=1 || had_x=0
