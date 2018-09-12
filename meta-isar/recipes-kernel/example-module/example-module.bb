@@ -11,7 +11,7 @@ SRC_URI += "file://src"
 
 S = "${WORKDIR}/src"
 
-AUTOLOAD = "1"
+AUTOLOAD = "${PN}"
 
 # Cross-compilation is not supported for the default Debian kernels.
 # For example, package with kernel headers for ARM:

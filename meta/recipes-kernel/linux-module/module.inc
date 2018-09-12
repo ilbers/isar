@@ -13,7 +13,7 @@ DEPENDS += "linux-headers-${KERNEL_NAME}"
 
 SRC_URI += "file://debian/"
 
-AUTOLOAD ?= "0"
+AUTOLOAD ?= ""
 
 inherit dpkg
 
@@ -24,7 +24,7 @@ do_prepare_build() {
            -e 's/@DESCRIPTION@/${DESCRIPTION}/g' \
         ${S}/debian/changelog ${S}/debian/control
 
-    if [ ${AUTOLOAD} = "1" ]; then
-        echo "echo ${PN} >> /etc/modules" >> ${S}/debian/postinst
-    fi
+    for module in "${AUTOLOAD}"; do
+        echo "echo $module >> /etc/modules" >> ${S}/debian/postinst
+    done
 }
