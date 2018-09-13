@@ -171,7 +171,8 @@ isar_bootstrap() {
         esac
         shift
     done
-    sudo flock "${ISAR_BOOTSTRAP_LOCK}" -c "\
+    E="${@bb.utils.export_proxies(d)}"
+    sudo -E flock "${ISAR_BOOTSTRAP_LOCK}" -c "\
         set -e
         if [ ! -e "${DEPLOY_ISAR_BOOTSTRAP}" ]; then
             if [ -e "${ROOTFSDIR}" ]; then
@@ -179,7 +180,6 @@ isar_bootstrap() {
                umount -l "${ROOTFSDIR}/proc" || true
                rm -rf "${ROOTFSDIR}"
             fi
-            E="${@bb.utils.export_proxies(d)}"
             if [ ${IS_HOST} ]; then
                 ${DEBOOTSTRAP} --verbose \
                                --variant=minbase \
@@ -233,7 +233,6 @@ isar_bootstrap() {
             mount -t devtmpfs -o mode=0755,nosuid devtmpfs ${ROOTFSDIR}/dev
             mount -t proc none ${ROOTFSDIR}/proc
 
-            E="${@bb.utils.export_proxies(d)}"
             export DEBIAN_FRONTEND=noninteractive
             chroot "${ROOTFSDIR}" /usr/bin/apt-get update -y
             chroot "${ROOTFSDIR}" /usr/bin/apt-get dist-upgrade -y \
