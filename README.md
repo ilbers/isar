@@ -24,6 +24,10 @@ To test the RPi board, flash the image to an SD card using the instructions from
 section "WRITING AN IMAGE TO THE SD CARD":
  https://www.raspberrypi.org/documentation/installation/installing-images/README.md
 
+# Supported distributions
+
+List of supported distributions, architectures and features can be found in the [Supported_Configurations](Supported_Configurations.md).
+
 # Support
 
 Mailing lists:
