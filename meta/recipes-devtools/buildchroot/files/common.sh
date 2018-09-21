@@ -5,6 +5,7 @@
 # Copyright (c) 2018 Siemens AG
 
 set -e
+printenv | grep -q BB_VERBOSE_LOGS && set -x
 
 # Create human-readable names
 target_arch=$2
