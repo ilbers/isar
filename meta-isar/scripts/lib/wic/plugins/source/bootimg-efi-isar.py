@@ -224,9 +224,15 @@ class BootimgEFIPlugin(SourcePlugin):
                 if distro_arch == "amd64":
                     grub_target = 'x86_64-efi'
                     grub_image = "bootx64.efi"
+                    grub_modules = "multiboot efi_uga iorw ata "
                 elif distro_arch == "i386":
                     grub_target = 'i386-efi'
                     grub_image = "bootia32.efi"
+                    grub_modules = "multiboot efi_uga iorw ata "
+                elif distro_arch == "arm64":
+                    grub_target = 'arm64-efi'
+                    grub_image = "bootaa64.efi"
+                    grub_modules = ""
                 else:
                     raise WicError("grub-efi is incompatible with target %s" %
                                    distro_arch)
@@ -241,12 +247,12 @@ class BootimgEFIPlugin(SourcePlugin):
                     grub_cmd += "-O %s -o %s/EFI/BOOT/%s " \
                                 % (grub_target, bootimg_dir, grub_image)
                     grub_cmd += "part_gpt part_msdos ntfs ntfscomp fat ext2 "
-                    grub_cmd += "normal chain boot configfile linux multiboot "
-                    grub_cmd += "search efi_gop efi_uga font gfxterm gfxmenu "
-                    grub_cmd += "terminal minicmd test iorw loadenv echo help "
+                    grub_cmd += "normal chain boot configfile linux "
+                    grub_cmd += "search efi_gop font gfxterm gfxmenu "
+                    grub_cmd += "terminal minicmd test loadenv echo help "
                     grub_cmd += "reboot serial terminfo iso9660 loopback tar "
                     grub_cmd += "memdisk ls search_fs_uuid udf btrfs xfs lvm "
-                    grub_cmd += "reiserfs ata "
+                    grub_cmd += "reiserfs " + grub_modules
                     exec_cmd(grub_cmd)
             elif source_params['loader'] == 'systemd-boot':
                 for mod in [x for x in os.listdir(kernel_dir) if x.startswith("systemd-")]:
