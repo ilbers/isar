@@ -27,8 +27,9 @@ show_help() {
     echo "Parameters:"
     echo "    -b, --build BUILD_DIR set path to build directory. If not set,"
     echo "                          the build will be started in current path."
+    echo "    -c, --cross           enable cross-compilation."
     echo "    -d, --debug           enable debug bitbake output."
-    echo "    -q, --quite           suppress verbose bitbake output."
+    echo "    -q, --quiet           suppress verbose bitbake output."
     echo "    --help                display this message and exit."
     echo
     echo "Exit status:"
@@ -56,7 +57,7 @@ do
     -d|--debug)
         BB_ARGS="$BB_ARGS -d"
         ;;
-    -q|--quite)
+    -q|--quiet)
         BB_ARGS=""
         ;;
     *)
