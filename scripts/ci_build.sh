@@ -78,8 +78,13 @@ source isar-init-build-env $BUILD_DIR
 if [ -n "$CROSS_BUILD" ]; then
     sed -i -e 's/ISAR_CROSS_COMPILE ?= "0"/ISAR_CROSS_COMPILE ?= "1"/g' conf/local.conf
     bitbake $BB_ARGS \
+        multiconfig:qemuarm-jessie:isar-image-base \
         multiconfig:qemuarm-stretch:isar-image-base \
-        multiconfig:qemuarm64-stretch:isar-image-base
+        multiconfig:qemuarm-buster:isar-image-base \
+        multiconfig:qemuarm64-stretch:isar-image-base \
+        multiconfig:qemuamd64-jessie:isar-image-base \
+        multiconfig:qemuamd64-stretch:isar-image-base \
+        multiconfig:qemuamd64-buster:isar-image-base
 else
     # Start build for all possible configurations
     bitbake $BB_ARGS \
