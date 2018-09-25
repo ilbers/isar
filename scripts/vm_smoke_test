@@ -6,7 +6,7 @@
 CONSOLE_OUTPUT=/tmp/isar_console
 PID_FILE=/tmp/qemu.pid
 VERBOSE=1
-TIMEOUT=60
+TIMEOUT=300
 
 # Error codes:
 ES_OK=0
@@ -98,7 +98,7 @@ show_help() {
     echo "                          If test failed for the specific configuration,"
     echo "                          the respective boot log will be printed anyway."
     echo "    -t,--timeout SEC      specify time in seconds to wait before stop QEMU."
-    echo "                          The default is: 60"
+    echo "                          The default is: 300"
     echo "    -h, --help            display this message and exit."
     echo
     echo "Exit status:"
