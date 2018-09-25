@@ -27,7 +27,7 @@ MACHINE ??= "qemuarm"
 # generation of buildchroot environment and target root filesystem.
 #
 # This sets the default distribution configuration:
-DISTRO ??= "debian-jessie"
+DISTRO ??= "debian-stretch"
 DISTRO_ARCH ??= "armhf"
 
 #
@@ -163,5 +163,5 @@ IMAGE_INSTALL = "example-hello example-raw example-module enable-fsck"
 
 #
 # Enable cross-compilation support
-# NOTE: this works only for stretch-armhf and stretch-amd64 targets for now.
+# NOTE: this works on build host >= stretch for armhf, arm64 and amd64 targets for now.
 ISAR_CROSS_COMPILE ?= "0"
