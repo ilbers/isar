@@ -94,7 +94,7 @@ show_help() {
     echo "                          The default is: /tmp/isar_console"
     echo "    -p,--pid-file FILE    specify file to store QEMU process PID."
     echo "                          The default is: /tmp/qemu.pid"
-    echo "    -q, --quite           do not display boot logs for all the targets."
+    echo "    -q, --quiet           do not display boot logs for all the targets."
     echo "                          If test failed for the specific configuration,"
     echo "                          the respective boot log will be printed anyway."
     echo "    -t,--timeout SEC      specify time in seconds to wait before stop QEMU."
@@ -125,7 +125,7 @@ do
         PID_FILE=$2
         shift
         ;;
-    -q|--quite)
+    -q|--quiet)
         VERBOSE=0
         ;;
     -t|--timeout)
