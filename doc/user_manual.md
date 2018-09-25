@@ -111,22 +111,22 @@ e.g.:
 
 ```
 MACHINE ??= "qemuarm"
-DISTRO ??= "debian-jessie"
+DISTRO ??= "debian-stretch"
 DISTRO_ARCH ??= "armhf"
 ```
 
 Then, call `bitbake` with image names, e.g.:
 
 ```
-bitbake multiconfig:qemuamd64-stretch:isar-image-base \
-        multiconfig:qemuamd64-stretch:isar-image-debug
+bitbake multiconfig:qemuarm-stretch:isar-image-base \
+        multiconfig:qemuarm-stretch:isar-image-debug
 ```
 
 The following images are created:
 
 ```
-tmp/deploy/images/isar-image-base-qemuarm-debian-jessie.ext4.img
-tmp/deploy/images/isar-image-debug-qemuarm-debian-jessie.ext4.img
+tmp/deploy/images/isar-image-base-qemuarm-debian-stretch.ext4.img
+tmp/deploy/images/isar-image-debug-qemuarm-debian-stretch.ext4.img
 ```
 
 ### Building Target Images for Multiple Configurations
@@ -136,12 +136,18 @@ a single call. List all configurations in `conf/local.conf`:
 
 ```
 BBMULTICONFIG = " \
+    qemuarm-wheezy \
     qemuarm-jessie \
     qemuarm-stretch \
+    qemuarm-buster \
+    qemuarm64-stretch \
+    qemuarm64-buster \
     qemui386-jessie \
     qemui386-stretch \
+    qemui386-buster \
     qemuamd64-jessie \
     qemuamd64-stretch \
+    qemuamd64-buster \
     rpi-jessie \
     bananapi-stretch \
 "
@@ -153,10 +159,14 @@ The following command will produce `isar-image-base` images for all targets:
 $ bitbake \
     multiconfig:qemuarm-jessie:isar-image-base \
     multiconfig:qemuarm-stretch:isar-image-base \
+    multiconfig:qemuarm-buster:isar-image-base \
+    multiconfig:qemuarm64-stretch:isar-image-base \
     multiconfig:qemui386-jessie:isar-image-base \
     multiconfig:qemui386-stretch:isar-image-base \
+    multiconfig:qemui386-buster:isar-image-base \
     multiconfig:qemuamd64-jessie:isar-image-base \
     multiconfig:qemuamd64-stretch:isar-image-base \
+    multiconfig:qemuamd64-buster:isar-image-base \
     multiconfig:rpi-jessie:isar-image-base \
     multiconfig:bananapi-stretch:isar-image-base
 ```
@@ -166,6 +176,8 @@ Created images are:
 ```
 tmp/deploy/images/isar-image-base-debian-jessie-qemuarm.ext4.img
 tmp/deploy/images/isar-image-base-debian-stretch-qemuarm.ext4.img
+tmp/deploy/images/isar-image-base-debian-stretch-qemuarm.ext4.img
+tmp/deploy/images/isar-image-base-debian-stretch-qemuarm64.ext4.img
 tmp/deploy/images/isar-image-base-debian-jessie-qemui386.ext4.img
 tmp/deploy/images/isar-image-base-debian-stretch-qemui386.ext4.img
 tmp/deploy/images/isar-image-base-debian-jessie-qemuamd64.ext4.img
@@ -309,6 +321,7 @@ In Isar, each machine can use its specific Linux distro to generate `buildchroot
 
  - debian-jessie
  - debian-stretch
+ - debian-buster
  - raspbian-jessie
 
 User can select appropriate distro for specific machine by setting the following variable in machine configuration file:
@@ -369,6 +382,7 @@ To add new distro, user should perform the following steps:
     ```
     debian-jessie
     debian-stretch
+    debian-buster
     ```
 
  - In this file, define the variables described above.
