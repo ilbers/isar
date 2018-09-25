@@ -144,6 +144,7 @@ done
 # ARM machine
 run_test arm jessie
 run_test arm stretch
+run_test arm buster
 
 # AMD64 machine
 run_test amd64 jessie
