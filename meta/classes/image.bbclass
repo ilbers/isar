@@ -107,8 +107,10 @@ do_populate_sdk() {
     # Purge apt cache to make image slimmer
     sudo rm -rf ${SDKCHROOT_DIR}/rootfs/var/cache/apt/*
 
+    sudo umount ${SDKCHROOT_DIR}/rootfs/dev || true
+    sudo umount ${SDKCHROOT_DIR}/rootfs/proc || true
+
     # Create SDK archive
-    sudo umount ${SDKCHROOT_DIR}/rootfs/dev ${SDKCHROOT_DIR}/rootfs/proc
     sudo tar -C ${SDKCHROOT_DIR} --transform="s|^rootfs|sdk-${DISTRO}-${DISTRO_ARCH}|" \
         -c rootfs | xz -T0 > ${DEPLOY_DIR_IMAGE}/sdk-${DISTRO}-${DISTRO_ARCH}.tar.xz
 
