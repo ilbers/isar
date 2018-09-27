@@ -28,18 +28,18 @@ Release v0.6-beta
 |Target System         |Native Build |Cross Build  |QEMU test    |SDK Support  |Version |
 |:--------------------:|:-----------:|:------------|:-----------:|:-----------:|:------:|
 | debian-wheezy-armhf  |PASSED       |UNTESTED     |UNTESTED     |NO           |3cd5798 |
-| debian-jessie-i386   |PASSED       |UNTESTED     |PASSED       |NO           |e231e88 |
-| debian-jessie-amd64  |PASSED       |PASSED       |PASSED       |NO           |e231e88 |
-| debian-jessie-armhf  |PASSED       |PASSED       |PASSED       |NO           |e231e88 |
+| debian-jessie-i386   |PASSED       |UNTESTED     |PASSED       |NO           |96672c7 |
+| debian-jessie-amd64  |PASSED       |PASSED       |PASSED       |NO           |96672c7 |
+| debian-jessie-armhf  |PASSED       |PASSED       |PASSED       |NO           |96672c7 |
 | debian-jessie-arm64  |UNTESTED     |UNTESTED     |UNTESTED     |UNTESTED     |UNTESTED|
-| debian-stretch-i386  |PASSED       |UNTESTED     |PASSED       |UNTESTED     |e231e88 |
-| debian-stretch-amd64 |PASSED       |PASSED       |PASSED       |UNTESTED     |e231e88 |
-| debian-stretch-armhf |PASSED       |PASSED       |PASSED       |PASSED       |e231e88 |
-| debian-stretch-arm64 |PASSED       |PASSED       |PASSED       |PASSED       |e231e88 |
-| debian-buster-i386   |PASSED       |UNTESTED     |PASSED       |UNTESTED     |e231e88 |
-| debian-buster-amd64  |PASSED       |PASSED       |PASSED       |UNTESTED     |e231e88 |
-| debian-buster-armhf  |PASSED       |NTESTED      |PASSED       |UNTESTED     |e231e88 |
-| debian-buster-arm64  |PASSED       |UNTESTED     |FAILED       |UNTESTED     |e231e88 |
+| debian-stretch-i386  |PASSED       |UNTESTED     |PASSED       |UNTESTED     |96672c7 |
+| debian-stretch-amd64 |PASSED       |PASSED       |PASSED       |PASSED       |96672c7 |
+| debian-stretch-armhf |PASSED       |PASSED       |PASSED       |PASSED       |96672c7 |
+| debian-stretch-arm64 |PASSED       |PASSED       |PASSED       |PASSED       |96672c7 |
+| debian-buster-i386   |PASSED       |UNTESTED     |PASSED       |UNTESTED     |96672c7 |
+| debian-buster-amd64  |PASSED       |PASSED       |PASSED       |PASSED       |96672c7 |
+| debian-buster-armhf  |PASSED       |PASSED       |PASSED       |PASSED       |96672c7 |
+| debian-buster-arm64  |PASSED       |UNTESTED     |FAILED       |UNTESTED     |96672c7 |
 
 ### Host System : debian-buster-amd64
 
