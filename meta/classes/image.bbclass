@@ -104,6 +104,9 @@ do_populate_sdk() {
     # Copy isar-apt with deployed Isar packages
     sudo cp -Trpfx ${DEPLOY_DIR_APT}/${DISTRO}  ${SDKCHROOT_DIR}/rootfs/isar-apt
 
+    # Purge apt cache to make image slimmer
+    sudo rm -rf ${SDKCHROOT_DIR}/rootfs/var/cache/apt/*
+
     # Create SDK archive
     sudo umount ${SDKCHROOT_DIR}/rootfs/dev ${SDKCHROOT_DIR}/rootfs/proc
     sudo tar -C ${SDKCHROOT_DIR} --transform="s|^rootfs|sdk-${DISTRO}-${DISTRO_ARCH}|" \
