@@ -51,8 +51,14 @@ mkdir -p ${REPACK_DIR}
 mkdir -p ${REPACK_LINUX_IMAGE_DIR}
 mkdir -p ${REPACK_LINUX_HEADERS_DIR}
 
+cp -a debian ${REPACK_DIR}
+
+# dpkg-gencontrol performs cross-incompatible checks on the
+# Architecture field; trick it to accept the control file
+sed -i "s/Architecture: .*/Architecture: any/" ${REPACK_DIR}/debian/control
+
 cd ..
-tar xzf linux-${PV}_${PV}-1.debian.tar.gz -C ${REPACK_DIR}
+
 dpkg-deb -R linux-image-${PV}_${PV}-1_*.deb ${REPACK_LINUX_IMAGE_DIR}
 dpkg-deb -R linux-headers-${PV}_${PV}-1_*.deb ${REPACK_LINUX_HEADERS_DIR}
 
