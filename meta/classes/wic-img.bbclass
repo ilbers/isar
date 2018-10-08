@@ -87,6 +87,7 @@ do_wic_image() {
     cp -f `ls -t -1 ${BUILDCHROOT_DIR}/tmp/${WKS_FILE}*.direct | head -1` ${WIC_IMAGE_FILE}
 }
 
+do_wic_image[file-checksums] += "${WKS_FULL_PATH}:True"
 do_wic_image[depends] = "buildchroot-target:do_build"
 
 addtask wic_image before do_build after do_install_imager_deps
