@@ -97,6 +97,8 @@ python() {
 }
 
 do_fetch[dirs] = "${DL_DIR}"
+do_fetch[file-checksums] = "${@bb.fetch.get_checksum_file_list(d)}"
+do_fetch[vardeps] += "SRCREV"
 
 # Fetch package from the source link
 python do_fetch() {
