@@ -12,7 +12,7 @@ export CROSS_COMPILE=$(DEB_HOST_GNU_TYPE)-
 SET_CROSS_BUILD_TOOLS=CROSS_BUILD_TOOLS=y
 endif
 
-PARALLEL_BUILD=-j $(shell $$(($$(nproc) * 2)))
+PARALLEL_BUILD=-j $(shell echo $$(($$(nproc) * 2)))
 
 override_dh_auto_build:
 	$(MAKE) $(PARALLEL_BUILD) $(U_BOOT_CONFIG)
