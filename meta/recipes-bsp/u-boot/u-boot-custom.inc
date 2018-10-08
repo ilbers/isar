@@ -15,9 +15,12 @@ inherit dpkg
 
 SRC_URI += "file://debian/"
 
+U_BOOT_BUILD_DEPENDS ?= "bc, bison, flex, device-tree-compiler"
+
 do_prepare_build() {
     cp -r ${WORKDIR}/debian ${S}/
     sed -i -e 's/@PN@/${PN}/g' -e 's/@PV@/${PV}/g' \
+        -e 's/@BUILD_DEPENDS@/${U_BOOT_BUILD_DEPENDS}/g' \
         -e 's/@MACHINE@/${MACHINE}/g' \
         -e 's/@DISTRO_ARCH@/${DISTRO_ARCH}/g' \
         -e 's/@DESCRIPTION@/${DESCRIPTION}/g' \

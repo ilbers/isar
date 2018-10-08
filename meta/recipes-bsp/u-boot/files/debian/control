@@ -2,7 +2,7 @@ Source: @PN@
 Section: admin
 Priority: optional
 Standards-Version: 3.9.6
-Build-Depends: bc, bison, flex, device-tree-compiler
+Build-Depends: @BUILD_DEPENDS@
 Maintainer: ISAR project <isar-users@googlegroups.com>
 
 Package: u-boot-@MACHINE@
