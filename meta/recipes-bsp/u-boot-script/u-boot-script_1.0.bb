@@ -6,6 +6,9 @@
 # SPDX-License-Identifier: MIT
 
 inherit dpkg-raw
+inherit wks-file
+
+WKS_FULL_PATH = "${@get_wks_full_path(d)}"
 
 DESCRIPTION = "Boot script generator for U-Boot"
 
@@ -61,17 +64,7 @@ init_config_from_wks() {
 }
 
 do_install() {
-	# Find WKS_FILE specified for the current target.
-	WKS_DIRS=$(dirname $(which wic))/lib/wic/canned-wks
-	for LAYER in ${BBLAYERS}; do
-		WKS_DIRS="${WKS_DIRS} ${LAYER}/scripts/lib/wic/canned-wks"
-	done
-	for DIR in ${WKS_DIRS}; do
-		if [ -f ${DIR}/${WKS_FILE}.wks ]; then
-			init_config_from_wks ${DIR}/${WKS_FILE}.wks
-			break
-		fi
-	done
+	[ -n ${WKS_FULL_PATH} ] && init_config_from_wks "${WKS_FULL_PATH}"
 
 	sudo rm -rf ${D}/etc ${D}/usr
 
