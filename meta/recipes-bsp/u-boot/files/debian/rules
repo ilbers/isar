@@ -1,6 +1,6 @@
 #!/usr/bin/make -f
 
-# Debian rules for custom kernel module build
+# Debian rules for custom U-Boot build
 #
 # This software is a part of ISAR.
 # Copyright (c) Siemens AG, 2018
