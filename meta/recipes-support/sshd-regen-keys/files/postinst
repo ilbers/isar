@@ -1,0 +1,4 @@
+#!/bin/sh
+set -e
+
+systemctl enable sshd-regen-keys.service

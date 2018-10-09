@@ -1,0 +1,19 @@
+[Unit]
+Description=Regenerate sshd host keys
+DefaultDependencies=no
+Conflicts=shutdown.target
+After=systemd-remount-fs.service
+Before=shutdown.target sshd.service
+ConditionPathIsReadWrite=/etc
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+Environment=DEBIAN_FRONTEND=noninteractive
+ExecStart=/bin/sh -c "rm -v /etc/ssh/ssh_host_*_key*; dpkg-reconfigure openssh-server"
+ExecStartPost=-/bin/systemctl disable sshd-regen-keys.service
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=sysinit.target
