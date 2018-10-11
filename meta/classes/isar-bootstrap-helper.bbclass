@@ -98,6 +98,11 @@ setup_root_file_system() {
     else
         sudo mount --bind ${REPO_ISAR_DIR}/${DISTRO} $ROOTFSDIR/isar-apt
     fi
+
+    if [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" ]; then
+        sudo mount --bind ${REPO_BASE_DIR} ${ROOTFSDIR}/base-apt
+    fi
+
     sudo mount -t devtmpfs -o mode=0755,nosuid devtmpfs $ROOTFSDIR/dev
     sudo mount -t proc none $ROOTFSDIR/proc
 
