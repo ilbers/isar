@@ -3,10 +3,10 @@
 
 SRC_URI = "file://distributions.in"
 
-CACHE_CONF_DIR = "${DEPLOY_DIR_APT}/${DISTRO}/conf"
+CACHE_CONF_DIR = "${REPO_ISAR_DIR}/${DISTRO}/conf"
 do_cache_config[dirs] = "${CACHE_CONF_DIR}"
 do_cache_config[stamp-extra-info] = "${DISTRO}"
-do_cache_config[lockfiles] = "${DEPLOY_DIR_APT}/isar.lock"
+do_cache_config[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
 
 # Generate reprepro config for current distro if it doesn't exist. Once it's
 # generated, this task should do nothing.
@@ -16,8 +16,8 @@ do_cache_config() {
             ${WORKDIR}/distributions.in > ${CACHE_CONF_DIR}/distributions
     fi
 
-    path_cache="${DEPLOY_DIR_APT}/${DISTRO}"
-    path_databases="${DEPLOY_DIR_DB}/${DISTRO}"
+    path_cache="${REPO_ISAR_DIR}/${DISTRO}"
+    path_databases="${REPO_ISAR_DB_DIR}/${DISTRO}"
 
     if [ ! -d "${path_databases}" ]; then
         reprepro -b ${path_cache} \

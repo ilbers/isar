@@ -76,8 +76,8 @@ CLEANFUNCS += "repo_clean"
 repo_clean() {
     PACKAGES=$(cd ${S}/..; ls *.deb | sed 's/\([^_]*\).*/\1/')
     if [ -n "${PACKAGES}" ]; then
-        reprepro -b ${DEPLOY_DIR_APT}/${DISTRO} \
-                 --dbdir ${DEPLOY_DIR_DB}/${DISTRO} \
+        reprepro -b ${REPO_ISAR_DIR}/${DISTRO} \
+                 --dbdir ${REPO_ISAR_DB_DIR}/${DISTRO} \
                  -C main -A ${DISTRO_ARCH} \
                  remove ${DEBDISTRONAME} \
                  ${PACKAGES}
@@ -87,8 +87,8 @@ repo_clean() {
 # Install package to Isar-apt
 do_deploy_deb() {
     repo_clean
-    reprepro -b ${DEPLOY_DIR_APT}/${DISTRO} \
-             --dbdir ${DEPLOY_DIR_DB}/${DISTRO} \
+    reprepro -b ${REPO_ISAR_DIR}/${DISTRO} \
+             --dbdir ${REPO_ISAR_DB_DIR}/${DISTRO} \
              -C main \
              includedeb ${DEBDISTRONAME} \
              ${S}/../*.deb
@@ -96,6 +96,6 @@ do_deploy_deb() {
 
 addtask deploy_deb after do_build
 do_deploy_deb[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
-do_deploy_deb[lockfiles] = "${DEPLOY_DIR_APT}/isar.lock"
+do_deploy_deb[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
 do_deploy_deb[depends] = "isar-apt:do_cache_config"
 do_deploy_deb[dirs] = "${S}"

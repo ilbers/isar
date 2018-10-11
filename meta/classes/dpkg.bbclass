@@ -13,7 +13,7 @@ do_install_builddeps() {
 
 addtask install_builddeps after do_prepare_build before do_build
 # apt and reprepro may not run in parallel, acquire the Isar lock
-do_install_builddeps[lockfiles] += "${DEPLOY_DIR_APT}/isar.lock"
+do_install_builddeps[lockfiles] += "${REPO_ISAR_DIR}/isar.lock"
 do_install_builddeps[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 
 # Build package from sources using build script

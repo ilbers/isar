@@ -16,7 +16,7 @@ populate_base_apt() {
 
         # Check if this package is taken from Isar-apt, if so - ingore it.
         base_name=${package##*/}
-        isar_package=$(find ${DEPLOY_DIR_APT}/${DISTRO} -name $base_name)
+        isar_package=$(find ${REPO_ISAR_DIR}/${DISTRO} -name $base_name)
         if [ -n "$isar_package" ]; then
             # Check if MD5 sums are identical. This helps to avoid the case
             # when packages is overridden from another repo.

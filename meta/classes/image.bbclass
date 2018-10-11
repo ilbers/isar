@@ -102,7 +102,7 @@ SDKCHROOT_DIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/sdkchroot-${HOST_DISTRO
 
 do_populate_sdk() {
     # Copy isar-apt with deployed Isar packages
-    sudo cp -Trpfx ${DEPLOY_DIR_APT}/${DISTRO}  ${SDKCHROOT_DIR}/rootfs/isar-apt
+    sudo cp -Trpfx ${REPO_ISAR_DIR}/${DISTRO}  ${SDKCHROOT_DIR}/rootfs/isar-apt
 
     # Purge apt cache to make image slimmer
     sudo rm -rf ${SDKCHROOT_DIR}/rootfs/var/cache/apt/*
@@ -158,7 +158,7 @@ do_install_imager_deps() {
 
 do_install_imager_deps[depends] = "buildchroot-target:do_build"
 do_install_imager_deps[deptask] = "do_deploy_deb"
-do_install_imager_deps[lockfiles] += "${DEPLOY_DIR_APT}/isar.lock"
+do_install_imager_deps[lockfiles] += "${REPO_ISAR_DIR}/isar.lock"
 do_install_imager_deps[stamp-extra-info] = "${DISTRO}-${MACHINE}"
 
 addtask install_imager_deps before do_build
