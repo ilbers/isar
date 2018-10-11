@@ -12,17 +12,23 @@ SRC_URI = " \
     file://isar-apt.conf \
     file://isar-apt-fallback.conf \
     file://locale \
-    file://chroot-setup.sh"
+    file://chroot-setup.sh \
+    file://base-apt-sources"
 PV = "1.0"
 
 DEBOOTSTRAP ?= "qemu-debootstrap"
 ROOTFSDIR = "${WORKDIR}/rootfs"
 APTPREFS = "${WORKDIR}/apt-preferences"
 APTSRCS = "${WORKDIR}/apt-sources"
+BASEAPTSRCS = "${WORKDIR}/base-apt-sources"
 APTKEYFILES = ""
 APTKEYRING = "${WORKDIR}/apt-keyring.gpg"
 DEBOOTSTRAP_KEYRING = ""
 DEPLOY_ISAR_BOOTSTRAP ?= ""
+
+DISTRO_APT_PREMIRRORS ?= "${@ "http://ftp\.(\S+\.)?debian.org  file:///${REPO_BASE_DIR} \n" if bb.utils.to_boolean(d.getVar('ISAR_USE_CACHED_BASE_REPO')) else "" }"
+
+inherit base-apt-helper
 
 python () {
     from urllib.parse import urlparse
@@ -171,6 +177,10 @@ isar_bootstrap() {
         esac
         shift
     done
+    debootstrap_args="--verbose --variant=minbase --include=locales "
+    if [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" ]; then
+        debootstrap_args="$debootstrap_args --no-check-gpg"
+    fi
     E="${@bb.utils.export_proxies(d)}"
     sudo -E flock "${ISAR_BOOTSTRAP_LOCK}" -c "\
         set -e
@@ -181,9 +191,7 @@ isar_bootstrap() {
                rm -rf "${ROOTFSDIR}"
             fi
             if [ ${IS_HOST} ]; then
-                ${DEBOOTSTRAP} --verbose \
-                               --variant=minbase \
-                               --include=locales \
+                ${DEBOOTSTRAP} $debootstrap_args \
                                ${@get_distro_components_argument(d, True)} \
                                ${DEBOOTSTRAP_KEYRING} \
                                "${@get_distro_suite(d, True)}" \
@@ -191,10 +199,8 @@ isar_bootstrap() {
                                "${@get_distro_source(d, True)}"
 
             else
-                 "${DEBOOTSTRAP}" --verbose \
-                                  --variant=minbase \
+                 "${DEBOOTSTRAP}" $debootstrap_args \
                                   --arch="${DISTRO_ARCH}" \
-                                  --include=locales \
                                   ${@get_distro_components_argument(d, False)} \
                                   ${DEBOOTSTRAP_KEYRING} \
                                   "${@get_distro_suite(d, False)}" \
@@ -207,8 +213,16 @@ isar_bootstrap() {
             install -v -m644 "${APTPREFS}" \
                              "${ROOTFSDIR}/etc/apt/preferences.d/bootstrap"
             mkdir -p "${ROOTFSDIR}/etc/apt/sources.list.d"
-            install -v -m644 "${APTSRCS}" \
-                             "${ROOTFSDIR}/etc/apt/sources.list.d/bootstrap.list"
+            if [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" ]; then
+                sed -i -e "s#{DISTRO}#"${DISTRO_SUITE}"#g" ${BASEAPTSRCS}
+                mkdir -p ${ROOTFSDIR}/base-apt
+                sudo mount --bind ${REPO_BASE_DIR} ${ROOTFSDIR}/base-apt
+                install -v -m644 "${BASEAPTSRCS}" \
+                                 "${ROOTFSDIR}/etc/apt/sources.list.d/base-apt.list"
+            else
+                install -v -m644 "${APTSRCS}" \
+                                 "${ROOTFSDIR}/etc/apt/sources.list.d/bootstrap.list"
+            fi
             rm -f "${ROOTFSDIR}/etc/apt/sources.list"
             mkdir -p "${ROOTFSDIR}/etc/apt/apt.conf.d"
             install -v -m644 "${WORKDIR}/isar-apt.conf" \
