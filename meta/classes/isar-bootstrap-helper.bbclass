@@ -70,6 +70,7 @@ setup_root_file_system() {
         --fstab) FSTAB=$2; shift ;;
         --host-arch) ROOTFS_ARCH=${HOST_ARCH} ;;
         --host-distro) ROOTFS_DISTRO=${HOST_DISTRO} ;;
+        --keep-apt-cache) KEEP_APT_CACHE=1 ;;
         -*) bbfatal "$0: invalid option specified: $1" ;;
         *) break ;;
         esac
@@ -131,6 +132,11 @@ setup_root_file_system() {
             /usr/bin/apt-get purge --yes $pkg
     done
     if [ ${CLEAN} ]; then
+        if [ ${KEEP_APT_CACHE} ]; then
+            mkdir -p ${WORKDIR}/apt_cache
+            sudo mv $(find $ROOTFSDIR/var/cache/apt -name '*.deb') ${WORKDIR}/apt_cache
+            sudo chown $USER ${WORKDIR}/apt_cache/*
+        fi
         sudo -E chroot "$ROOTFSDIR" \
             /usr/bin/apt-get autoremove --purge --yes
         sudo -E chroot "$ROOTFSDIR" \
