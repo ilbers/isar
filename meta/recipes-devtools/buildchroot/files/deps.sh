@@ -10,7 +10,7 @@ source /isar/common.sh
 # Notes:
 #   1) everything before the -y switch is unchanged from the defaults
 #   2) we add -y to go non-interactive
-install_cmd="apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y"
+install_cmd="apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y --allow-unauthenticated"
 
 # Make sure that we have latest isar-apt content.
 # Options meaning:

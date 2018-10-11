@@ -79,7 +79,7 @@ setup_root_file_system() {
     ROOTFSDIR="$1"
     shift
     PACKAGES="$@"
-    APT_ARGS="install --yes -o Debug::pkgProblemResolver=yes"
+    APT_ARGS="install --yes --allow-unauthenticated -o Debug::pkgProblemResolver=yes"
     CLEAN_FILES="${ROOTFSDIR}/etc/hostname ${ROOTFSDIR}/etc/resolv.conf"
 
     sudo cp -Trpfx \
