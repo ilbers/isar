@@ -123,6 +123,27 @@ do_populate_sdk[depends] = "sdkchroot:do_build"
 
 addtask populate_sdk after do_rootfs
 
+inherit base-apt-helper
+
+do_cache_base_repo[depends] = "base-apt:do_cache_config"
+do_cache_base_repo[stamp-extra-info] = "${MACHINE}-${DISTRO}"
+
+do_cache_base_repo() {
+    if [ -d ${WORKDIR}/apt_cache ]; then
+        populate_base_apt ${WORKDIR}/apt_cache
+    fi
+
+    if [ -d ${BUILDCHROOT_HOST_DIR}/var/cache/apt ]; then
+        populate_base_apt ${BUILDCHROOT_HOST_DIR}/var/cache/apt
+    fi
+
+    if [ -d ${BUILDCHROOT_TARGET_DIR}/var/cache/apt ]; then
+        populate_base_apt ${BUILDCHROOT_TARGET_DIR}/var/cache/apt
+    fi
+}
+
+addtask cache_base_repo after do_rootfs
+
 # Imager are expected to run natively, thus will use the target buildchroot.
 ISAR_CROSS_COMPILE = "0"
 

@@ -41,7 +41,8 @@ devtmpfs	/dev		devtmpfs	mode=0755,nosuid	0	0
 # End /etc/fstab
 EOF
 
-    setup_root_file_system --clean --fstab "${WORKDIR}/fstab" \
+    setup_root_file_system --clean --keep-apt-cache \
+        --fstab "${WORKDIR}/fstab" \
         "${IMAGE_ROOTFS}" ${IMAGE_PREINSTALL} ${IMAGE_INSTALL}
 
     # Configure root filesystem
