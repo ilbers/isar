@@ -19,6 +19,8 @@ Copyright (C) 2016-2017, ilbers GmbH
  - [Add a Custom Application](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#add-a-custom-application)
  - [Enabling Cross-compilation](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#isar-cross-compilation)
  - [Create an ISAR SDK root filesystem](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#create-an-isar-sdk-root-filesystem)
+ - [Creation of local apt repo caching upstream Debian packages](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#creation-repo-caching-upstream-debian)
+
 
 ## Introduction
 
@@ -686,3 +688,40 @@ ii  crossbuild-essential-armhf           12.3                   all          Inf
 /usr/share/doc/libhello-dev/copyright
 ~#
 ```
+
+## Creation of local apt repo caching upstream Debian packages
+
+### Motivation
+
+Cache upstream debian packages to reduce time for further downloads and to be able to work offline.
+
+### Solution
+
+ - Trigger creation of local apt caching Debian packages during image generation.
+
+```
+bitbake -c cache_base_repo multiconfig:qemuarm-stretch:isar-image-base
+```
+
+ - Set `ISAR_USE_CACHED_BASE_REPO` in `conf/local.conf`:
+
+```
+# Uncomment this to enable use of cached base repository
+#ISAR_USE_CACHED_BASE_REPO ?= "1"
+```
+ - Remove build artifacts to use only local base-apt:
+
+```
+sudo rm -rf tmp/stamps/ tmp/work/ tmp/deploy/isar-apt/ tmp/deploy/images
+
+```
+
+ - Trigger again generation of image (now using local caching repo):
+
+```
+bitbake multiconfig:qemuarm-stretch:isar-image-base
+```
+
+### Limitation
+
+So far the local base-apt repo is not gpg signed.
