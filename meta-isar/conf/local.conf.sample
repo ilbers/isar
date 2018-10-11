@@ -165,3 +165,7 @@ IMAGE_INSTALL = "example-hello example-raw example-module enable-fsck"
 # Enable cross-compilation support
 # NOTE: this works on build host >= stretch for armhf, arm64 and amd64 targets for now.
 ISAR_CROSS_COMPILE ?= "0"
+
+#
+# Uncomment this to enable use of cached base repository
+#ISAR_USE_CACHED_BASE_REPO ?= "1"
