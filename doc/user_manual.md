@@ -562,7 +562,7 @@ DEBIAN_DEPENDS = "apt"
 
 inherit dpkg-raw
 
-do_populate_package() {
+do_install() {
 ....
 }
 ```
