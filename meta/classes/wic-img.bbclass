@@ -9,6 +9,7 @@ python () {
         bb.fatal("WKS_FILE must be set")
 }
 
+inherit buildchroot
 inherit wks-file
 
 WKS_FULL_PATH = "${@get_wks_full_path(d)}"
@@ -67,13 +68,11 @@ WIC_IMAGE_FILE ="${DEPLOY_DIR_IMAGE}/${PN}-${DISTRO}-${MACHINE}.wic.img"
 do_build[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 
 do_wic_image() {
-    if ! grep -q ${BUILDCHROOT_DIR}/dev /proc/mounts; then
-        sudo mount -t devtmpfs -o mode=0755,nosuid devtmpfs ${BUILDCHROOT_DIR}/dev
-        sudo mount -t proc none ${BUILDCHROOT_DIR}/proc
-    fi
+    buildchroot_do_mounts
     for dir in ${BBLAYERS} ${STAGING_DIR} ${ISARROOT}/scripts; do
 	sudo mkdir -p ${BUILDCHROOT_DIR}/$dir
-        sudo mount --bind $dir ${BUILDCHROOT_DIR}/$dir
+        mountpoint ${BUILDCHROOT_DIR}/$dir >/dev/null 2>&1 \
+        || sudo mount --bind $dir ${BUILDCHROOT_DIR}/$dir
     done
     export FAKEROOTCMD=${FAKEROOTCMD}
     export BUILDDIR=${BUILDDIR}
