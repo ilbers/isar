@@ -57,11 +57,11 @@ Install the following packages:
 ```
 dosfstools
 git
-debootstrap/jessie-backports# for debian >= "buster"
+debootstrap/jessie-backports  # host == jessie && target >= buster
 dpkg-dev
 parted
 python3
-python3-distutils           # in case your host is host > debian 9
+python3-distutils             # host >= buster
 qemu
 qemu-user-static
 binfmt-support
