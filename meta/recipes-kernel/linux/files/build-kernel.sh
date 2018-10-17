@@ -34,7 +34,11 @@ REPACK_LINUX_IMAGE_DIR="${REPACK_DIR}/linux-image"
 REPACK_LINUX_HEADERS_DIR="${REPACK_DIR}/linux-headers"
 
 cd $1
-make olddefconfig
+if [ -e .config ]; then
+	make olddefconfig
+else
+	make defconfig
+fi
 
 KV=$( make -s kernelrelease )
 if [ "${KV}" != "${PV}" ]; then

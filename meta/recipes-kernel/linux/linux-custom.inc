@@ -10,7 +10,7 @@ FILESPATH =. "${LAYERDIR_core}/recipes-kernel/linux/files:"
 DESCRIPTION ?= "Custom kernel"
 
 KERNEL_NAME_PROVIDED ?= "${@ d.getVar('PN', True).partition('linux-')[2]}"
-KERNEL_DEFCONFIG ?= "defconfig"
+KERNEL_DEFCONFIG ?= ""
 
 python() {
     kernel_name = d.getVar("KERNEL_NAME_PROVIDED", True)
@@ -43,7 +43,9 @@ dpkg_runbuild() {
 	# Install package builder script
 	sudo install -m 755 ${WORKDIR}/build-kernel.sh ${BUILDCHROOT_DIR}
 
-	sudo cp ${WORKDIR}/${KERNEL_DEFCONFIG} ${S}/.config
+	if [ -n "${KERNEL_DEFCONFIG}" ]; then
+		sudo cp ${WORKDIR}/${KERNEL_DEFCONFIG} ${S}/.config
+	fi
 
 	E="${@ bb.utils.export_proxies(d)}"
 
