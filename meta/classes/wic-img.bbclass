@@ -63,7 +63,7 @@ addtask do_rootfs_wicenv after do_copy_boot_files before do_wic_image
 do_rootfs_wicenv[vardeps] += "${WICVARS}"
 do_rootfs_wicenv[prefuncs] = 'set_image_size'
 
-WIC_IMAGE_FILE ="${DEPLOY_DIR_IMAGE}/${PN}-${DISTRO}-${MACHINE}.wic.img"
+WIC_IMAGE_FILE ="${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.wic.img"
 
 do_build[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 
@@ -81,10 +81,10 @@ do_wic_image() {
     sudo -E chroot ${BUILDCHROOT_DIR} \
         ${ISARROOT}/scripts/wic create ${WKS_FULL_PATH} \
             --vars "${STAGING_DIR}/${MACHINE}/imgdata/" \
-            -o /tmp/${PN}-${DISTRO}-${MACHINE}.wic/ \
+            -o /tmp/${IMAGE_FULLNAME}.wic/ \
             -e ${IMAGE_BASENAME} ${WIC_CREATE_EXTRA_ARGS}
     sudo chown -R $(stat -c "%U" ${ISARROOT}) ${ISARROOT}/meta ${ISARROOT}/meta-isar ${ISARROOT}/scripts || true
-    cp -f $(ls -t -1 ${BUILDCHROOT_DIR}/tmp/${PN}-${DISTRO}-${MACHINE}.wic/*.direct | head -1) ${WIC_IMAGE_FILE}
+    cp -f $(ls -t -1 ${BUILDCHROOT_DIR}/tmp/${IMAGE_FULLNAME}.wic/*.direct | head -1) ${WIC_IMAGE_FILE}
 }
 
 do_wic_image[file-checksums] += "${WKS_FULL_PATH}:True"

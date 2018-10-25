@@ -1,7 +1,7 @@
 # This software is a part of ISAR.
 # Copyright (C) 2015-2017 ilbers GmbH
 
-EXT4_IMAGE_FILE = "${DEPLOY_DIR_IMAGE}/${PN}-${DISTRO}-${MACHINE}.ext4.img"
+EXT4_IMAGE_FILE = "${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.ext4.img"
 
 do_ext4_image[stamp-extra-info] = "${DISTRO}-${MACHINE}"
 

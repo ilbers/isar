@@ -7,6 +7,9 @@ IMAGE_ROOTFS   = "${WORKDIR}/rootfs"
 
 IMAGE_INSTALL += "${@ ("linux-image-" + d.getVar("KERNEL_NAME", True)) if d.getVar("KERNEL_NAME", True) else ""}"
 
+# Name of the image including distro&machine names
+IMAGE_FULLNAME = "${PN}-${DISTRO}-${MACHINE}"
+
 # These variables are used by wic and start_vm
 KERNEL_IMAGE ?= "${@get_image_name(d, 'vmlinuz')[1]}"
 INITRD_IMAGE ?= "${@get_image_name(d, 'initrd.img')[1]}"
@@ -21,9 +24,7 @@ def get_image_name(d, name_link):
     path_link = os.path.join(S, name_link)
     if os.path.exists(path_link):
         base = os.path.basename(os.path.realpath(path_link))
-        full = base
-        full += "_" + d.getVar("DISTRO", True)
-        full += "-" + d.getVar("MACHINE", True)
+        full = d.getVar("IMAGE_FULLNAME", True) + "." + base
         return [base, full]
     if os.path.islink(path_link):
         return get_image_name(d, os.path.relpath(os.path.realpath(path_link),

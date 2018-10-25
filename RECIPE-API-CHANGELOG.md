@@ -3,6 +3,30 @@ Recipe API Changelog
 
 Baseline: Release v0.5
 
+Upcoming changes (v0.7)
+-----------------------
+
+### more consistent artifact names
+
+multiconfig image artifacts are all placed in tmp/deploy/images. They include
+kernel, initrd and ext4/wic images. A consistent naming scheme is now used:
+`IMAGE-DISTRO-MACHINE.TYPE`. This scheme was already used for ext4/wic images
+so no visible changes there. Kernel and initrd images are however affected; for
+instance:
+
+```
+vmlinuz-4.9.0-8-armmp_debian-stretch-qemuarm
+```
+
+is now
+
+```
+isar-image-base-debian-stretch-qemuarm.vmlinuz-4.9.0-8-armmp
+```
+
+It should be noted that the `KERNEL_IMAGE` and `INITRD_IMAGE` variables were
+updated hence recipes using them shouldn't be impacted per se.
+
 Changes in v0.6
 ---------------
 
