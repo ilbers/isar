@@ -18,6 +18,7 @@ BUILDCHROOT_PREINSTALL ?= "gcc \
                            apt \
                            automake \
                            devscripts \
-                           equivs"
+                           equivs \
+                           adduser"
 
 do_build[depends] = "isar-apt:do_cache_config isar-bootstrap-target:do_bootstrap"
