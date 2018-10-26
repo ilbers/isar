@@ -4,6 +4,16 @@
 DISTRO_NAME ?= "${@ d.getVar('DISTRO', True).split('-')[0]}"
 DISTRO_SUITE ?= "${@ d.getVar('DISTRO', True).split('-')[1]}"
 
+compare_pkg_md5sums() {
+   pkg1=$1
+   pkg2=$2
+
+   md1=$(md5sum $pkg1 | cut -d ' ' -f 1)
+   md2=$(md5sum $pkg2 | cut -d ' ' -f 1)
+
+   [ "$md1" = "$md2" ]
+}
+
 populate_base_apt() {
     search_dir=$1
 
@@ -20,21 +30,13 @@ populate_base_apt() {
         if [ -n "$isar_package" ]; then
             # Check if MD5 sums are identical. This helps to avoid the case
             # when packages is overridden from another repo.
-            md1=$(md5sum $package | cut -d ' ' -f 1)
-            md2=$(md5sum $isar_package | cut -d ' ' -f 1)
-            if [ "$md1" = "$md2" ]; then
-                continue
-            fi
+            compare_pkg_md5sums "$package" "$isar_package" && continue
         fi
 
         # Check if this package is already in base-apt
         isar_package=$(find ${REPO_BASE_DIR}/${DISTRO_NAME} -name $base_name)
         if [ -n "$isar_package" ]; then
-            md1=$(md5sum $package | cut -d ' ' -f 1)
-            md2=$(md5sum $isar_package | cut -d ' ' -f 1)
-            if [ "$md1" = "$md2" ]; then
-                continue
-            fi
+            compare_pkg_md5sums "$package" "$isar_package" && continue
 
             # md5sum differs, so remove the package from base-apt
             name=$(echo $base_name | cut -d '_' -f 1)
