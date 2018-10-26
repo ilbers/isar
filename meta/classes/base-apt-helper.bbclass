@@ -37,7 +37,7 @@ populate_base_apt() {
             fi
 
             # md5sum differs, so remove the package from base-apt
-            name=$($base_name | cut -d '_' -f 1)
+            name=$(echo $base_name | cut -d '_' -f 1)
             reprepro -b ${REPO_BASE_DIR}/${DISTRO_NAME} \
                      --dbdir ${REPO_BASE_DB_DIR}/${DISTRO_NAME} \
                      -C main -A ${DISTRO_ARCH} \
