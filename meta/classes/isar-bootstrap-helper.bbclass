@@ -137,7 +137,7 @@ setup_root_file_system() {
             /usr/bin/apt-get purge --yes $pkg
     done
     if [ ${CLEAN} ]; then
-        if [ ${KEEP_APT_CACHE} ]; then
+        if [ ${KEEP_APT_CACHE} -eq 1 ]; then
             mkdir -p ${WORKDIR}/apt_cache
             sudo mv $(find $ROOTFSDIR/var/cache/apt -name '*.deb') ${WORKDIR}/apt_cache
             sudo chown $USER ${WORKDIR}/apt_cache/*
