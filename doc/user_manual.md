@@ -496,6 +496,39 @@ Packages in the `IMAGE_TRANSIENT_PACKAGES` variable are installed to the image a
 
 ---
 
+## Create a Custom Image Recipe
+
+A custom image recipe may be created to assemble packages of your choice into a root file-system image. The `isar-image` class
+implements a `do_rootfs` function to compile and configure the file-system for you. Prebuilt packages may be selected for
+installation by appending them to the `IMAGE_PREINSTALL` variable while packages created by ISAR should be appended to
+`IMAGE_INSTALL`. A sample image recipe follows.
+
+### Example
+```
+DESCRIPTION = "Sample image recipe for ISAR"
+
+LICENSE = "gpl-2.0"
+LIC_FILES_CHKSUM = "file://${LAYERDIR_isar}/licenses/COPYING.GPLv2;md5=751419260aa954499f7abaabaa882bbe"
+
+PV = "1.0"
+
+IMAGE_PREINSTALL = " \
+    openssh-server   \
+"
+
+inherit isar-image
+
+```
+
+### Additional Notes
+
+The distribution selected via the `DISTRO` variable may need to run a post-configuration script after the root file-system
+was assembled. Isar provides scripts for Debian and Raspbian. In the event where a different Debian-based distribution is
+used, your custom image recipe may need to set `DISTRO_CONFIG_SCRIPT` and use `SRC_URI` and `FILESPATH` for the script to
+be copied into the work directory (`WORKDIR`).
+
+---
+
 ## Add a Custom Application
 
 Before creating a new recipe it's highly recommended to take a look into the BitBake user manual mentioned in Terms and Definitions section.
