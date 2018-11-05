@@ -7,15 +7,18 @@
 
 include recipes-kernel/linux-module/module.inc
 
-SRC_URI += "file://src"
-
-S = "${WORKDIR}/src"
-
-AUTOLOAD = "${PN}"
-
 # Cross-compilation is not supported for the default Debian kernels.
 # For example, package with kernel headers for ARM:
 #   linux-headers-armmp
 # has hard dependencies from linux-compiler-gcc-4.8-arm, what
 # conflicts with the host binaries.
-ISAR_CROSS_COMPILE = "0"
+python() {
+    if d.getVar('KERNEL_NAME') in ['armmp', 'arm64', 'rpi-rpfv', 'amd64', '686-pae']:
+        d.setVar('ISAR_CROSS_COMPILE', '0')
+}
+
+SRC_URI += "file://src"
+
+S = "${WORKDIR}/src"
+
+AUTOLOAD = "${PN}"
