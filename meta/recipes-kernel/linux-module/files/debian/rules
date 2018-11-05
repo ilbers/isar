@@ -16,7 +16,7 @@ export CROSS_COMPILE=$(DEB_HOST_GNU_TYPE)-
 ifeq ($(DEB_HOST_GNU_CPU), arm)
 export ARCH=arm
 endif
-ifeq ($(DEB_HOST_GNU_CPU), arm64)
+ifeq ($(DEB_HOST_GNU_CPU), aarch64)
 export ARCH=arm64
 endif
 ifneq (,$(findstring 86,$(DEB_HOST_GNU_CPU)))
