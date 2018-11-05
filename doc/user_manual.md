@@ -138,7 +138,6 @@ a single call. List all configurations in `conf/local.conf`:
 
 ```
 BBMULTICONFIG = " \
-    qemuarm-wheezy \
     qemuarm-jessie \
     qemuarm-stretch \
     qemuarm-buster \

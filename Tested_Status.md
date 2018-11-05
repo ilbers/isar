@@ -1,14 +1,13 @@
 Tested Status
 =============
 
-Release v0.6-beta
------------------
+Release v0.6
+------------
 
 ### Host System : debian-jessie-amd64
 
 |Target System         |Native Build |QEMU test    |SDK Support  |Version |
 |:--------------------:|:-----------:|:-----------:|:-----------:|:------:|
-| debian-wheezy-armhf  |PASSED       |UNTESTED     |NO           |3cd5798 |
 | debian-jessie-i386   |PASSED       |PASSED       |NO           |422b0be |
 | debian-jessie-amd64  |PASSED       |PASSED       |NO           |422b0be |
 | debian-jessie-armhf  |PASSED       |PASSED       |NO           |422b0be |
@@ -27,7 +26,6 @@ Release v0.6-beta
 
 |Target System         |Native Build |Cross Build  |QEMU test    |SDK Support  |Version |
 |:--------------------:|:-----------:|:------------|:-----------:|:-----------:|:------:|
-| debian-wheezy-armhf  |PASSED       |UNTESTED     |UNTESTED     |NO           |3cd5798 |
 | debian-jessie-i386   |PASSED       |UNTESTED     |PASSED       |NO           |96672c7 |
 | debian-jessie-amd64  |PASSED       |PASSED       |PASSED       |NO           |96672c7 |
 | debian-jessie-armhf  |PASSED       |PASSED       |PASSED       |NO           |96672c7 |

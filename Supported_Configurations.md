@@ -1,14 +1,13 @@
 Supported Configurations
 ========================
 
-Release v0.6-beta
------------------
+Release v0.6
+------------
 
 ### Host System : debian-jessie-amd64
 
 |Target System         |Native Build |Cross Build  |QEMU test    |SDK Support  |Notes                        |
 |:--------------------:|:-----------:|:------------|:-----------:|:-----------:|:---------------------------:|
-| debian-wheezy-armhf  |YES          |NO           |UNKNOWN      |NO           | not supported since 9fc721a |
 | debian-jessie-i386   |YES          |NO           |YES          |NO           |                             |
 | debian-jessie-amd64  |YES          |NO           |YES          |NO           |                             |
 | debian-jessie-armhf  |YES          |NO           |YES          |NO           |                             |
@@ -27,7 +26,6 @@ Release v0.6-beta
 
 |Target System         |Native Build |Cross Build  |QEMU test    |SDK Support  |Notes                        |
 |:--------------------:|:-----------:|:------------|:-----------:|:-----------:|:---------------------------:|
-| debian-wheezy-armhf  |YES          |UNKNOWN      |UNKNOWN      |NO           | not supported since 9fc721a |
 | debian-jessie-i386   |YES          |UNKNOWN      |YES          |NO           |                             |
 | debian-jessie-amd64  |YES          |YES          |YES          |NO           |                             |
 | debian-jessie-armhf  |YES          |YES          |YES          |NO           |                             |
