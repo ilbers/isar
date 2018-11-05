@@ -50,6 +50,7 @@ BBMULTICONFIG = " \
     qemuamd64-stretch \
     bananapi-stretch \
     de0-nano-soc-stretch \
+    hikey-stretch \
     qemuamd64-buster \
     rpi-jessie \
 "
