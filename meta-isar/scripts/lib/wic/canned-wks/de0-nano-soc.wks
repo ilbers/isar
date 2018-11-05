@@ -1,0 +1,10 @@
+#
+# Copyright (c) Siemens AG, 2018
+#
+# SPDX-License-Identifier: MIT
+
+part --source rawcopy --sourceparams "file=/usr/lib/u-boot/de0-nano-soc/u-boot-with-spl.sfp" --system-id 0xa2 --align 1
+
+part / --source rootfs --ondisk mmcblk0 --fstype ext4 --label platform --align 1024 --active
+
+bootloader --append "rw rootwait"
