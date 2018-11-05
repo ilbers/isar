@@ -44,7 +44,7 @@ class BootimgEFIPlugin(SourcePlugin):
     name = 'bootimg-efi-isar'
 
     @classmethod
-    def do_configure_grubefi(cls, creator, cr_workdir):
+    def do_configure_grubefi(cls, creator, cr_workdir, bootpart):
         """
         Create loader-specific (grub-efi) config
         """
@@ -69,7 +69,9 @@ class BootimgEFIPlugin(SourcePlugin):
             grubefi_conf += "serial --unit=0 --speed=115200 --word=8 --parity=no --stop=1\n"
             grubefi_conf += "default=boot\n"
             grubefi_conf += "timeout=%s\n" % bootloader.timeout
-            grubefi_conf += "set root='hd0,gpt2'\n"
+            for part in creator.parts:
+                if part.mountpoint == "/":
+                    grubefi_conf += "set root='hd0,gpt%d'\n" % part.realnum
             grubefi_conf += "menuentry 'boot'{\n"
 
             kernel = "/vmlinuz"
@@ -90,7 +92,7 @@ class BootimgEFIPlugin(SourcePlugin):
         cfg.close()
 
         cfg = open("%s/hdd/boot/EFI/BOOT/grub-mkimage.cfg" % cr_workdir, "w")
-        mkimage_conf = "set root='hd0,gpt1'\n"
+        mkimage_conf = "set root='hd0,gpt%d'\n" % bootpart.realnum
         mkimage_conf += "set prefix=($root)/EFI/BOOT\n"
         cfg.write(mkimage_conf)
         cfg.close()
@@ -178,7 +180,7 @@ class BootimgEFIPlugin(SourcePlugin):
 
         try:
             if source_params['loader'] == 'grub-efi':
-                cls.do_configure_grubefi(creator, cr_workdir)
+                cls.do_configure_grubefi(creator, cr_workdir, part)
             elif source_params['loader'] == 'systemd-boot':
                 cls.do_configure_systemdboot(hdddir, creator, cr_workdir, source_params)
             else:
