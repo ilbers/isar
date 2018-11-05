@@ -75,7 +75,7 @@ class BootimgEFIPlugin(SourcePlugin):
             kernel = "/vmlinuz"
 
             grubefi_conf += "linux %s root=%s rootwait %s\n" \
-                            % (kernel, creator.rootdev, bootloader.append)
+                            % (kernel, creator.rootdev, bootloader.append or "")
 
             initrd = "/initrd.img"
 
@@ -152,7 +152,7 @@ class BootimgEFIPlugin(SourcePlugin):
             boot_conf += "title boot\n"
             boot_conf += "linux %s\n" % kernel
             boot_conf += "options LABEL=Boot root=%s %s\n" % \
-                             (creator.rootdev, bootloader.append)
+                             (creator.rootdev, bootloader.append or "")
 
             if initrd:
                 boot_conf += "initrd /%s\n" % initrd
