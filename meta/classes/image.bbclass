@@ -143,7 +143,7 @@ do_cache_base_repo() {
     fi
 }
 
-addtask cache_base_repo after do_rootfs
+addtask cache_base_repo after do_rootfs do_install_imager_deps
 
 # Imager are expected to run natively, thus will use the target buildchroot.
 ISAR_CROSS_COMPILE = "0"
