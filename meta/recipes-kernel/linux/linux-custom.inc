@@ -27,11 +27,18 @@ KERNEL_DEBIAN_DEPENDS ?= "initramfs-tools | linux-initramfs-tool, kmod, linux-ba
 KERNEL_HEADERS_DEBIAN_DEPENDS ?= "libc6, libssl1.1"
 
 do_install_builddeps() {
+	dpkg_do_mounts
 	E="${@ bb.utils.export_proxies(d)}"
+	sudo -E chroot ${BUILDCHROOT_DIR} \
+		apt-get update \
+			-o Dir::Etc::sourcelist="sources.list.d/isar-apt.list" \
+			-o Dir::Etc::sourceparts="-" \
+			-o APT::Get::List-Cleanup="0"
 	sudo -E chroot ${BUILDCHROOT_DIR} \
 		apt-get install \
 			-y -o Debug::pkgProblemResolver=yes \
 			--no-install-recommends ${KBUILD_DEPENDS}
+	dpkg_undo_mounts
 }
 
 addtask install_builddeps after do_prepare_build before do_build
