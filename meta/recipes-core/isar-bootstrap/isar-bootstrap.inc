@@ -178,9 +178,6 @@ isar_bootstrap() {
         shift
     done
     debootstrap_args="--verbose --variant=minbase --include=locales "
-    if [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" ]; then
-        debootstrap_args="$debootstrap_args --no-check-gpg"
-    fi
     E="${@bb.utils.export_proxies(d)}"
     sudo -E flock "${ISAR_BOOTSTRAP_LOCK}" -c "\
         set -e
