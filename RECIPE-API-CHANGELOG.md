@@ -6,6 +6,11 @@ Baseline: Release v0.5
 Upcoming changes (v0.7)
 -----------------------
 
+### dpkg-raw recipes chown all files to "root:root"
+
+if your recipes rely on any other ownership, you will have to change file
+ownership in the postinst script
+
 ### more consistent artifact names
 
 multiconfig image artifacts are all placed in tmp/deploy/images. They include

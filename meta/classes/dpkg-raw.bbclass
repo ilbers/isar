@@ -54,6 +54,6 @@ do_prepare_build() {
 }
 
 dpkg_runbuild() {
-	sudo chown -R root:root ${D}/DEBIAN/
+	sudo chown -R root:root ${D}
 	sudo chroot ${BUILDCHROOT_DIR} dpkg-deb --build ${PP}/image ${PP}
 }
