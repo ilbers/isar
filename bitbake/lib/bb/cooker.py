@@ -516,6 +516,8 @@ class BBCooker:
             fn = runlist[0][3]
         else:
             envdata = self.data
+            data.expandKeys(envdata)
+            parse.ast.runAnonFuncs(envdata)
 
         if fn:
             try:
@@ -536,7 +538,6 @@ class BBCooker:
             logger.plain(env.getvalue())
 
         # emit the metadata which isnt valid shell
-        data.expandKeys(envdata)
         for e in sorted(envdata.keys()):
             if envdata.getVarFlag(e, 'func', False) and envdata.getVarFlag(e, 'python', False):
                 logger.plain("\npython %s () {\n%s}\n", e, envdata.getVar(e, False))
@@ -608,7 +609,14 @@ class BBCooker:
                 k2 = k.split(":do_")
                 k = k2[0]
                 ktask = k2[1]
-            taskdata[mc].add_provider(localdata[mc], self.recipecaches[mc], k)
+            if mc:
+                # Provider might be from another mc
+                for mcavailable in self.multiconfigs:
+                    # The first element is empty
+                    if mcavailable:
+                        taskdata[mcavailable].add_provider(localdata[mcavailable], self.recipecaches[mcavailable], k)
+            else:
+                taskdata[mc].add_provider(localdata[mc], self.recipecaches[mc], k)
             current += 1
             if not ktask.startswith("do_"):
                 ktask = "do_%s" % ktask
@@ -619,6 +627,27 @@ class BBCooker:
             runlist.append([mc, k, ktask, fn])
             bb.event.fire(bb.event.TreeDataPreparationProgress(current, len(fulltargetlist)), self.data)
 
+        mcdeps = taskdata[mc].get_mcdepends()
+        # No need to do check providers if there are no mcdeps or not an mc build
+        if mcdeps and mc:
+            # Make sure we can provide the multiconfig dependency
+            seen = set()
+            new = True
+            while new:
+                new = False
+                for mc in self.multiconfigs:
+                    for k in mcdeps:
+                        if k in seen:
+                            continue
+                        l = k.split(':')
+                        depmc = l[2]
+                        if depmc not in self.multiconfigs:
+                            bb.fatal("Multiconfig dependency %s depends on nonexistent mc configuration %s" % (k,depmc))
+                        else:
+                            logger.debug(1, "Adding providers for multiconfig dependency %s" % l[3])
+                            taskdata[depmc].add_provider(localdata[depmc], self.recipecaches[depmc], l[3])
+                            seen.add(k)
+                            new = True
         for mc in self.multiconfigs:
             taskdata[mc].add_unresolved(localdata[mc], self.recipecaches[mc])
 
@@ -705,8 +734,8 @@ class BBCooker:
             if not dotname in depend_tree["tdepends"]:
                 depend_tree["tdepends"][dotname] = []
             for dep in rq.rqdata.runtaskentries[tid].depends:
-                (depmc, depfn, deptaskname, deptaskfn) = bb.runqueue.split_tid_mcfn(dep)
-                deppn = self.recipecaches[mc].pkg_fn[deptaskfn]
+                (depmc, depfn, _, deptaskfn) = bb.runqueue.split_tid_mcfn(dep)
+                deppn = self.recipecaches[depmc].pkg_fn[deptaskfn]
                 depend_tree["tdepends"][dotname].append("%s.%s" % (deppn, bb.runqueue.taskname_from_tid(dep)))
             if taskfn not in seen_fns:
                 seen_fns.append(taskfn)
@@ -1170,6 +1199,7 @@ class BBCooker:
                 elif regex == "":
                     parselog.debug(1, "BBFILE_PATTERN_%s is empty" % c)
                     errors = False
+                    continue
                 else:
                     try:
                         cre = re.compile(regex)
@@ -1564,7 +1594,7 @@ class BBCooker:
                     pkgs_to_build.append(t)
 
         if 'universe' in pkgs_to_build:
-            parselog.warning("The \"universe\" target is only intended for testing and may produce errors.")
+            parselog.verbnote("The \"universe\" target is only intended for testing and may produce errors.")
             parselog.debug(1, "collating packages for \"universe\"")
             pkgs_to_build.remove('universe')
             for mc in self.multiconfigs:
@@ -1603,8 +1633,6 @@ class BBCooker:
 
         if self.parser:
             self.parser.shutdown(clean=not force, force=force)
-        self.notifier.stop()
-        self.confignotifier.stop()
 
     def finishcommand(self):
         self.state = state.initial
@@ -1633,7 +1661,10 @@ class CookerExit(bb.event.Event):
 class CookerCollectFiles(object):
     def __init__(self, priorities):
         self.bbappends = []
-        self.bbfile_config_priorities = priorities
+        # Priorities is a list of tupples, with the second element as the pattern.
+        # We need to sort the list with the longest pattern first, and so on to
+        # the shortest.  This allows nested layers to be properly evaluated.
+        self.bbfile_config_priorities = sorted(priorities, key=lambda tup: tup[1], reverse=True)
 
     def calc_bbfile_priority( self, filename, matched = None ):
         for _, _, regex, pri in self.bbfile_config_priorities:
@@ -1807,21 +1838,25 @@ class CookerCollectFiles(object):
             realfn, cls, mc = bb.cache.virtualfn2realfn(p)
             priorities[p] = self.calc_bbfile_priority(realfn, matched)
 
-        # Don't show the warning if the BBFILE_PATTERN did match .bbappend files
         unmatched = set()
         for _, _, regex, pri in self.bbfile_config_priorities:
             if not regex in matched:
                 unmatched.add(regex)
 
-        def findmatch(regex):
+        # Don't show the warning if the BBFILE_PATTERN did match .bbappend files
+        def find_bbappend_match(regex):
             for b in self.bbappends:
                 (bbfile, append) = b
                 if regex.match(append):
+                    # If the bbappend is matched by already "matched set", return False
+                    for matched_regex in matched:
+                        if matched_regex.match(append):
+                            return False
                     return True
             return False
 
         for unmatch in unmatched.copy():
-            if findmatch(unmatch):
+            if find_bbappend_match(unmatch):
                 unmatched.remove(unmatch)
 
         for collection, pattern, regex, _ in self.bbfile_config_priorities:

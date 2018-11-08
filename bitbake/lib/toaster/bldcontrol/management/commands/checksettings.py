@@ -74,8 +74,9 @@ class Command(BaseCommand):
                         print("Loading default settings")
                         call_command("loaddata", "settings")
                         template_conf = os.environ.get("TEMPLATECONF", "")
+                        custom_xml_only = os.environ.get("CUSTOM_XML_ONLY")
 
-                        if ToasterSetting.objects.filter(name='CUSTOM_XML_ONLY').count() > 0:
+                        if ToasterSetting.objects.filter(name='CUSTOM_XML_ONLY').count() > 0 or (not custom_xml_only == None):
                             # only use the custom settings
                             pass
                         elif "poky" in template_conf:
@@ -107,7 +108,10 @@ class Command(BaseCommand):
                                 action="ignore",
                                 message="^.*No fixture named.*$")
                             print("Importing custom settings if present")
-                            call_command("loaddata", "custom")
+                            try:
+                                call_command("loaddata", "custom")
+                            except:
+                                print("NOTE: optional fixture 'custom' not found")
 
                         # we run lsupdates after config update
                         print("\nFetching information from the layer index, "

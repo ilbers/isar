@@ -335,35 +335,39 @@ def handleInherit(statements, filename, lineno, m):
     classes = m.group(1)
     statements.append(InheritNode(filename, lineno, classes))
 
-def finalize(fn, d, variant = None):
-    saved_handlers = bb.event.get_handlers().copy()
-
-    for var in d.getVar('__BBHANDLERS', False) or []:
-        # try to add the handler
-        handlerfn = d.getVarFlag(var, "filename", False)
-        if not handlerfn:
-            bb.fatal("Undefined event handler function '%s'" % var)
-        handlerln = int(d.getVarFlag(var, "lineno", False))
-        bb.event.register(var, d.getVar(var, False), (d.getVarFlag(var, "eventmask") or "").split(), handlerfn, handlerln)
-
-    bb.event.fire(bb.event.RecipePreFinalise(fn), d)
-
-    bb.data.expandKeys(d)
+def runAnonFuncs(d):
     code = []
     for funcname in d.getVar("__BBANONFUNCS", False) or []:
         code.append("%s(d)" % funcname)
     bb.utils.better_exec("\n".join(code), {"d": d})
 
-    tasklist = d.getVar('__BBTASKS', False) or []
-    bb.event.fire(bb.event.RecipeTaskPreProcess(fn, list(tasklist)), d)
-    bb.build.add_tasks(tasklist, d)
+def finalize(fn, d, variant = None):
+    saved_handlers = bb.event.get_handlers().copy()
+    try:
+        for var in d.getVar('__BBHANDLERS', False) or []:
+            # try to add the handler
+            handlerfn = d.getVarFlag(var, "filename", False)
+            if not handlerfn:
+                bb.fatal("Undefined event handler function '%s'" % var)
+            handlerln = int(d.getVarFlag(var, "lineno", False))
+            bb.event.register(var, d.getVar(var, False), (d.getVarFlag(var, "eventmask") or "").split(), handlerfn, handlerln)
 
-    bb.parse.siggen.finalise(fn, d, variant)
+        bb.event.fire(bb.event.RecipePreFinalise(fn), d)
 
-    d.setVar('BBINCLUDED', bb.parse.get_file_depends(d))
+        bb.data.expandKeys(d)
+        runAnonFuncs(d)
 
-    bb.event.fire(bb.event.RecipeParsed(fn), d)
-    bb.event.set_handlers(saved_handlers)
+        tasklist = d.getVar('__BBTASKS', False) or []
+        bb.event.fire(bb.event.RecipeTaskPreProcess(fn, list(tasklist)), d)
+        bb.build.add_tasks(tasklist, d)
+
+        bb.parse.siggen.finalise(fn, d, variant)
+
+        d.setVar('BBINCLUDED', bb.parse.get_file_depends(d))
+
+        bb.event.fire(bb.event.RecipeParsed(fn), d)
+    finally:
+        bb.event.set_handlers(saved_handlers)
 
 def _create_variants(datastores, names, function, onlyfinalise):
     def create_variant(name, orig_d, arg = None):

@@ -125,6 +125,9 @@ class GitProgressHandler(bb.progress.LineFilterProgressHandler):
 
 
 class Git(FetchMethod):
+    bitbake_dir = os.path.abspath(os.path.join(os.path.dirname(os.path.join(os.path.abspath(__file__))), '..', '..', '..'))
+    make_shallow_path = os.path.join(bitbake_dir, 'bin', 'git-make-shallow')
+
     """Class to fetch a module or modules from git repositories"""
     def init(self, d):
         pass
@@ -258,7 +261,7 @@ class Git(FetchMethod):
                 gitsrcname = gitsrcname + '_' + ud.revisions[name]
 
         dl_dir = d.getVar("DL_DIR")
-        gitdir = d.getVar("GITDIR") or (dl_dir + "/git2/")
+        gitdir = d.getVar("GITDIR") or (dl_dir + "/git2")
         ud.clonedir = os.path.join(gitdir, gitsrcname)
         ud.localfile = ud.clonedir
 
@@ -296,16 +299,21 @@ class Git(FetchMethod):
         return ud.clonedir
 
     def need_update(self, ud, d):
+        return self.clonedir_need_update(ud, d) or self.shallow_tarball_need_update(ud) or self.tarball_need_update(ud)
+
+    def clonedir_need_update(self, ud, d):
         if not os.path.exists(ud.clonedir):
             return True
         for name in ud.names:
             if not self._contains_ref(ud, d, name, ud.clonedir):
                 return True
-        if ud.shallow and ud.write_shallow_tarballs and not os.path.exists(ud.fullshallow):
-            return True
-        if ud.write_tarballs and not os.path.exists(ud.fullmirror):
-            return True
         return False
+
+    def shallow_tarball_need_update(self, ud):
+        return ud.shallow and ud.write_shallow_tarballs and not os.path.exists(ud.fullshallow)
+
+    def tarball_need_update(self, ud):
+        return ud.write_tarballs and not os.path.exists(ud.fullmirror)
 
     def try_premirror(self, ud, d):
         # If we don't do this, updating an existing checkout with only premirrors
@@ -319,16 +327,13 @@ class Git(FetchMethod):
     def download(self, ud, d):
         """Fetch url"""
 
-        no_clone = not os.path.exists(ud.clonedir)
-        need_update = no_clone or self.need_update(ud, d)
-
         # A current clone is preferred to either tarball, a shallow tarball is
         # preferred to an out of date clone, and a missing clone will use
         # either tarball.
-        if ud.shallow and os.path.exists(ud.fullshallow) and need_update:
+        if ud.shallow and os.path.exists(ud.fullshallow) and self.need_update(ud, d):
             ud.localpath = ud.fullshallow
             return
-        elif os.path.exists(ud.fullmirror) and no_clone:
+        elif os.path.exists(ud.fullmirror) and not os.path.exists(ud.clonedir):
             bb.utils.mkdirhier(ud.clonedir)
             runfetchcmd("tar -xzf %s" % ud.fullmirror, d, workdir=ud.clonedir)
 
@@ -350,11 +355,12 @@ class Git(FetchMethod):
         for name in ud.names:
             if not self._contains_ref(ud, d, name, ud.clonedir):
                 needupdate = True
+                break
+
         if needupdate:
-            try: 
-                runfetchcmd("%s remote rm origin" % ud.basecmd, d, workdir=ud.clonedir)
-            except bb.fetch2.FetchError:
-                logger.debug(1, "No Origin")
+            output = runfetchcmd("%s remote" % ud.basecmd, d, quiet=True, workdir=ud.clonedir)
+            if "origin" in output:
+              runfetchcmd("%s remote rm origin" % ud.basecmd, d, workdir=ud.clonedir)
 
             runfetchcmd("%s remote add --mirror=fetch origin %s" % (ud.basecmd, repourl), d, workdir=ud.clonedir)
             fetch_cmd = "LANG=C %s fetch -f --prune --progress %s refs/*:refs/*" % (ud.basecmd, repourl)
@@ -370,6 +376,7 @@ class Git(FetchMethod):
             except OSError as exc:
                 if exc.errno != errno.ENOENT:
                     raise
+
         for name in ud.names:
             if not self._contains_ref(ud, d, name, ud.clonedir):
                 raise bb.fetch2.FetchError("Unable to find revision %s in branch %s even from upstream" % (ud.revisions[name], ud.branches[name]))
@@ -446,7 +453,7 @@ class Git(FetchMethod):
                 shallow_branches.append(r)
 
         # Make the repository shallow
-        shallow_cmd = ['git', 'make-shallow', '-s']
+        shallow_cmd = [self.make_shallow_path, '-s']
         for b in shallow_branches:
             shallow_cmd.append('-r')
             shallow_cmd.append(b)
@@ -469,11 +476,27 @@ class Git(FetchMethod):
         if os.path.exists(destdir):
             bb.utils.prunedir(destdir)
 
-        if ud.shallow and (not os.path.exists(ud.clonedir) or self.need_update(ud, d)):
-            bb.utils.mkdirhier(destdir)
-            runfetchcmd("tar -xzf %s" % ud.fullshallow, d, workdir=destdir)
-        else:
-            runfetchcmd("%s clone %s %s/ %s" % (ud.basecmd, ud.cloneflags, ud.clonedir, destdir), d)
+        source_found = False
+        source_error = []
+
+        if not source_found:
+            clonedir_is_up_to_date = not self.clonedir_need_update(ud, d)
+            if clonedir_is_up_to_date:
+                runfetchcmd("%s clone %s %s/ %s" % (ud.basecmd, ud.cloneflags, ud.clonedir, destdir), d)
+                source_found = True
+            else:
+                source_error.append("clone directory not available or not up to date: " + ud.clonedir)
+
+        if not source_found:
+            if ud.shallow and os.path.exists(ud.fullshallow):
+                bb.utils.mkdirhier(destdir)
+                runfetchcmd("tar -xzf %s" % ud.fullshallow, d, workdir=destdir)
+                source_found = True
+            else:
+                source_error.append("shallow clone not enabled or not available: " + ud.fullshallow)
+
+        if not source_found:
+            raise bb.fetch2.UnpackError("No up to date source found: " + "; ".join(source_error), ud.url)
 
         repourl = self._get_repo_url(ud)
         runfetchcmd("%s remote set-url origin %s" % (ud.basecmd, repourl), d, workdir=destdir)
@@ -592,7 +615,8 @@ class Git(FetchMethod):
         tagregex = re.compile(d.getVar('UPSTREAM_CHECK_GITTAGREGEX') or "(?P<pver>([0-9][\.|_]?)+)")
         try:
             output = self._lsremote(ud, d, "refs/tags/*")
-        except bb.fetch2.FetchError or bb.fetch2.NetworkAccess:
+        except (bb.fetch2.FetchError, bb.fetch2.NetworkAccess) as e:
+            bb.note("Could not list remote: %s" % str(e))
             return pupver
 
         verstring = ""

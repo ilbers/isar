@@ -89,6 +89,10 @@ class ToasterTable(TemplateView):
 
         # global variables
         context['project_enable'] = ('1' == os.environ.get('TOASTER_BUILDSERVER'))
+        try:
+            context['project_specific'] = ('1' == os.environ.get('TOASTER_PROJECTSPECIFIC'))
+        except:
+            context['project_specific'] = ''
 
         return context
 
@@ -511,13 +515,20 @@ class MostRecentBuildsView(View):
                 buildrequest_id = build_obj.buildrequest.pk
             build['buildrequest_id'] = buildrequest_id
 
-            build['recipes_parsed_percentage'] = \
-                int((build_obj.recipes_parsed /
-                     build_obj.recipes_to_parse) * 100)
+            if build_obj.recipes_to_parse > 0:
+                build['recipes_parsed_percentage'] = \
+                    int((build_obj.recipes_parsed /
+                         build_obj.recipes_to_parse) * 100)
+            else:
+                build['recipes_parsed_percentage'] = 0
+            if build_obj.repos_to_clone > 0:
+                build['repos_cloned_percentage'] = \
+                    int((build_obj.repos_cloned /
+                         build_obj.repos_to_clone) * 100)
+            else:
+                build['repos_cloned_percentage'] = 0
 
-            build['repos_cloned_percentage'] = \
-                int((build_obj.repos_cloned /
-                     build_obj.repos_to_clone) * 100)
+            build['progress_item'] = build_obj.progress_item
 
             tasks_complete_percentage = 0
             if build_obj.outcome in (Build.SUCCEEDED, Build.FAILED):
