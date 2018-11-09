@@ -101,7 +101,8 @@ do
     shift
 done
 
-readonly IMAGE_DIR=$BUILD_DIR/tmp/deploy/images
+eval $(bitbake -e multiconfig:qemu$ARCH-$DISTRO:isar-image-base | grep "^DEPLOY_DIR_IMAGE=")
+readonly IMAGE_DIR=$DEPLOY_DIR_IMAGE
 
 readonly ISARROOT="$(dirname "$0")"/..
 
