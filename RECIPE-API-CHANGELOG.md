@@ -11,6 +11,11 @@ Upcoming changes (v0.7)
 if your recipes rely on any other ownership, you will have to change file
 ownership in the postinst script
 
+### location of image artifacts
+
+Align with OpenEmbedded and place image artifacts in a per-machine folder placed
+in tmp/deploy (to avoid collisions among other things).
+
 ### more consistent artifact names
 
 multiconfig image artifacts are all placed in tmp/deploy/images. They include
