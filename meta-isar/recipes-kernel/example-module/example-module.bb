@@ -5,8 +5,6 @@
 #
 # SPDX-License-Identifier: MIT
 
-include recipes-kernel/linux-module/module.inc
-
 # Cross-compilation is not supported for the default Debian kernels.
 # For example, package with kernel headers for ARM:
 #   linux-headers-armmp
@@ -16,6 +14,8 @@ python() {
     if d.getVar('KERNEL_NAME') in ['armmp', 'arm64', 'rpi-rpfv', 'amd64', '686-pae']:
         d.setVar('ISAR_CROSS_COMPILE', '0')
 }
+
+include recipes-kernel/linux-module/module.inc
 
 SRC_URI += "file://src"
 
