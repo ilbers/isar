@@ -120,16 +120,11 @@ do_unpack[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 
 # Unpack package and put it into working directory
 python do_unpack() {
-    import subprocess
-
     src_uri = (d.getVar('SRC_URI', True) or "").split()
     if len(src_uri) == 0:
         return
 
     rootdir = d.getVar('WORKDIR', True)
-
-    uid = str(os.getuid())
-    subprocess.call('sudo chown -R ' + uid + ' ' + rootdir, shell=True)
 
     try:
         fetcher = bb.fetch2.Fetch(src_uri, d)
