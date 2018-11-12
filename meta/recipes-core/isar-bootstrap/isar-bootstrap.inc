@@ -211,7 +211,9 @@ isar_bootstrap() {
                              "${ROOTFSDIR}/etc/apt/preferences.d/bootstrap"
             mkdir -p "${ROOTFSDIR}/etc/apt/sources.list.d"
             if [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" ]; then
-                sed -i -e "s#{DISTRO}#"${DISTRO_SUITE}"#g" ${BASEAPTSRCS}
+                sed -e "s#{BASE_DISTRO}#"${BASE_DISTRO}"#g" \
+                    -e "s#{BASE_DISTRO_CODENAME}#"${BASE_DISTRO_CODENAME}"#g" \
+	            -i ${BASEAPTSRCS}
                 mkdir -p ${ROOTFSDIR}/base-apt
                 sudo mount --bind ${REPO_BASE_DIR} ${ROOTFSDIR}/base-apt
                 install -v -m644 "${BASEAPTSRCS}" \

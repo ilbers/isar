@@ -1,1 +1,1 @@
-deb [trusted=yes] file:///base-apt/debian {DISTRO} main
+deb [trusted=yes] file:///base-apt/{BASE_DISTRO} {BASE_DISTRO_CODENAME} main

@@ -1,9 +1,6 @@
 # This software is a part of ISAR.
 # Copyright (C) 2018 ilbers GmbH
 
-DISTRO_NAME ?= "${@ d.getVar('DISTRO', True).split('-')[0]}"
-DISTRO_SUITE ?= "${@ d.getVar('DISTRO', True).split('-')[1]}"
-
 compare_pkg_md5sums() {
    pkg1=$1
    pkg2=$2
@@ -34,23 +31,23 @@ populate_base_apt() {
         fi
 
         # Check if this package is already in base-apt
-        isar_package=$(find ${REPO_BASE_DIR}/${DISTRO_NAME} -name $base_name)
+        isar_package=$(find ${REPO_BASE_DIR}/${BASE_DISTRO} -name $base_name)
         if [ -n "$isar_package" ]; then
             compare_pkg_md5sums "$package" "$isar_package" && continue
 
             # md5sum differs, so remove the package from base-apt
             name=$(echo $base_name | cut -d '_' -f 1)
-            reprepro -b ${REPO_BASE_DIR}/${DISTRO_NAME} \
-                     --dbdir ${REPO_BASE_DB_DIR}/${DISTRO_NAME} \
+            reprepro -b ${REPO_BASE_DIR}/${BASE_DISTRO} \
+                     --dbdir ${REPO_BASE_DB_DIR}/${BASE_DISTRO} \
                      -C main -A ${DISTRO_ARCH} \
-                     remove ${DISTRO_SUITE} \
+                     remove ${BASE_DISTRO_CODENAME} \
                      $name
         fi
 
-        reprepro -b ${REPO_BASE_DIR}/${DISTRO_NAME} \
-                 --dbdir ${REPO_BASE_DB_DIR}/${DISTRO_NAME} \
+        reprepro -b ${REPO_BASE_DIR}/${BASE_DISTRO} \
+                 --dbdir ${REPO_BASE_DB_DIR}/${BASE_DISTRO} \
                  -C main \
-                 includedeb ${DISTRO_SUITE} \
+                 includedeb ${BASE_DISTRO_CODENAME} \
                  $package
     done
 }
