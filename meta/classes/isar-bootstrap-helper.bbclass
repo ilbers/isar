@@ -106,6 +106,9 @@ setup_root_file_system() {
     sudo mount -t devtmpfs -o mode=0755,nosuid devtmpfs $ROOTFSDIR/dev
     sudo mount -t proc none $ROOTFSDIR/proc
 
+    # Refresh /etc/resolv.conf
+    sudo cp -L /etc/resolv.conf ${ROOTFSDIR}/etc
+
     # Install packages:
     E="${@ bb.utils.export_proxies(d)}"
     export DEBIAN_FRONTEND=noninteractive

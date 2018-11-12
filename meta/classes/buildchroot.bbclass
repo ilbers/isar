@@ -29,5 +29,9 @@ buildchroot_do_mounts() {
             mount --bind ${DL_DIR} ${BUILDCHROOT_DIR}/downloads
             mount -t devtmpfs -o mode=0755,nosuid devtmpfs ${BUILDCHROOT_DIR}/dev
             mount -t proc none ${BUILDCHROOT_DIR}/proc
-        fi'
+        fi
+
+        # Refresh /etc/resolv.conf at this chance
+        cp -L /etc/resolv.conf ${BUILDCHROOT_DIR}/etc
+        '
 }
