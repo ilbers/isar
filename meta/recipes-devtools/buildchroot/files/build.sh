@@ -15,6 +15,4 @@ for i in configure aclocal.m4 Makefile.am Makefile.in; do
 done
 
 # Build the package as user "builder"
-chown -R builder:builder $1 # the sources
-chown builder:builder $1/.. # the output
 su builder -c "cd $1; dpkg-buildpackage -a$target_arch -d --source-option=-I"
