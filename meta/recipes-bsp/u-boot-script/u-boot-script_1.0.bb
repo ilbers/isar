@@ -76,6 +76,4 @@ do_install() {
 
 	install -v -d ${D}/etc/kernel/postinst.d
 	install -v -m 755 ${WORKDIR}/zz-u-boot-script ${D}/etc/kernel/postinst.d
-
-	sudo chown -R root:root ${D}/etc ${D}/usr
 }
