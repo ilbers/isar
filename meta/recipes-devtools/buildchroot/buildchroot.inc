@@ -36,7 +36,9 @@ do_build() {
 
     # Configure root filesystem
     sudo install -m 755 ${WORKDIR}/configscript.sh ${BUILDCHROOT_DIR}
-    sudo chroot ${BUILDCHROOT_DIR} /configscript.sh
+    USER_ID=$(id -u)
+    GROUP_ID=$(id -g)
+    sudo chroot ${BUILDCHROOT_DIR} /configscript.sh $USER_ID $GROUP_ID
 
     sudo mount --bind ${DL_DIR} ${BUILDCHROOT_DIR}/downloads
 }
