@@ -6,10 +6,15 @@ Baseline: Release v0.5
 Upcoming changes (v0.7)
 -----------------------
 
-### dpkg-raw recipes chown all files to "root:root"
+### dpkg-raw recipes build method changed
 
-if your recipes rely on any other ownership, you will have to change file
-ownership in the postinst script
+These packages are now built using the whole dpkg-buildpackage workflow, and
+not just packaged as before.
+
+ - all files will be owned by root:root before it might have been 1000:1000
+   use postinst to change that (see example-raw)
+ - a lot of debhelpers will help .. or complain
+   fix the issues or override the helpers (see example-raw)
 
 ### location of image artifacts
 

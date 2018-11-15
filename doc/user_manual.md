@@ -603,7 +603,7 @@ For the variables please have a look at the previous example, the following new 
  - `DEBIAN_DEPENDS` - Debian packages that the package depends on
 
 Have a look at the `example-raw` recipe to get an idea how the `dpkg-raw` class can be used to customize your image.
-Note that all files you install will be owned by "root:root". If you want to change that, call chown in the postinst script.
+Note that the package will be build using the whole debian package workflow, so your package will be checked by many debhelper scripts. If those helpers point out quality issues it might be a good idea to fix them. But `example-raw` also shows how rules can still be violated.
 
 ## Isar Cross-compilation
 
