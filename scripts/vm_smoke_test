@@ -84,12 +84,13 @@ run_test () {
 }
 
 show_help() {
-    echo "This script tests all the default Isar images in QEMU."
+    echo "This script tests the Isar images for default targets in QEMU."
     echo
     echo "Usage:"
     echo "    $0 [params]"
     echo
     echo "Parameters:"
+    echo "    -f,--fast             test reduced set of supported targets."
     echo "    -o,--output FILE      specify file to store console output."
     echo "                          The default is: /tmp/isar_console"
     echo "    -p,--pid-file FILE    specify file to store QEMU process PID."
@@ -125,6 +126,9 @@ do
         PID_FILE=$2
         shift
         ;;
+    -f|--fast)
+        FAST_BUILD="1"
+        ;;
     -q|--quiet)
         VERBOSE=0
         ;;
@@ -142,19 +146,25 @@ do
 done
 
 # ARM machine
-run_test arm jessie
+if [ -z "$FAST_BUILD" ]; then
+    run_test arm jessie
+    run_test arm buster
+fi
 run_test arm stretch
-run_test arm buster
 
 # AMD64 machine
-run_test amd64 jessie
+if [ -z "$FAST_BUILD" ]; then
+    run_test amd64 jessie
+    run_test amd64 buster
+fi
 run_test amd64 stretch
-run_test amd64 buster
 
 # i386 machine
-run_test i386 jessie
-run_test i386 stretch
-run_test i386 buster
+if [ -z "$FAST_BUILD" ]; then
+    run_test i386 jessie
+    run_test i386 stretch
+    run_test i386 buster
+fi
 
 # ARM64 machine
 run_test arm64 stretch

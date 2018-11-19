@@ -19,7 +19,7 @@ BUILD_DIR=./build
 BB_ARGS="-v"
 
 show_help() {
-    echo "This script builds all the default Isar images."
+    echo "This script builds the default Isar images."
     echo
     echo "Usage:"
     echo "    $0 [params]"
@@ -29,6 +29,7 @@ show_help() {
     echo "                          the build will be started in current path."
     echo "    -c, --cross           enable cross-compilation."
     echo "    -d, --debug           enable debug bitbake output."
+    echo "    -f, --fast            build reduced set of configurations."
     echo "    -q, --quiet           suppress verbose bitbake output."
     echo "    --help                display this message and exit."
     echo
@@ -57,6 +58,9 @@ do
     -d|--debug)
         BB_ARGS="$BB_ARGS -d"
         ;;
+    -f|--fast)
+        FAST_BUILD="1"
+        ;;
     -q|--quiet)
         BB_ARGS=""
         ;;
@@ -77,14 +81,16 @@ source isar-init-build-env $BUILD_DIR
 
 if [ -n "$CROSS_BUILD" ]; then
     sed -i -e 's/ISAR_CROSS_COMPILE ?= "0"/ISAR_CROSS_COMPILE ?= "1"/g' conf/local.conf
+fi
+
+if [ -n "$FAST_BUILD" ]; then
+    # Start build for the reduced set of configurations
+    # Enforce cross-compilation to speed up the build
+    sed -i -e 's/ISAR_CROSS_COMPILE ?= "0"/ISAR_CROSS_COMPILE ?= "1"/g' conf/local.conf
     bitbake $BB_ARGS \
-        multiconfig:qemuarm-jessie:isar-image-base \
         multiconfig:qemuarm-stretch:isar-image-base \
-        multiconfig:qemuarm-buster:isar-image-base \
         multiconfig:qemuarm64-stretch:isar-image-base \
-        multiconfig:qemuamd64-jessie:isar-image-base \
-        multiconfig:qemuamd64-stretch:isar-image-base \
-        multiconfig:qemuamd64-buster:isar-image-base
+        multiconfig:qemuamd64-stretch:isar-image-base
 else
     # Start build for all possible configurations
     bitbake $BB_ARGS \
