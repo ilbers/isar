@@ -16,6 +16,14 @@ not just packaged as before.
  - a lot of debhelpers will help .. or complain
    fix the issues or override the helpers (see example-raw)
 
+### Set LAYERSERIES_COMPAT_*  when an own layer is defined
+
+When defining an own layer LAYERSERIES_COMPAT_mylayer_root_name has to be set,
+the possible values are listed in the variable LAYERSERIES_CORENAMES.
+
+If you need to express the fact that your layer requires the
+layer version higher than existing release corename, use the value 'next'.
+
 ### location of image artifacts
 
 Align with OpenEmbedded and place image artifacts in a per-machine folder placed
