@@ -185,6 +185,7 @@ isar_bootstrap() {
             if [ -e "${ROOTFSDIR}" ]; then
                umount -R -l "${ROOTFSDIR}/dev" || true
                umount -l "${ROOTFSDIR}/proc" || true
+               umount -R -l "${ROOTFSDIR}/sys" || true
                rm -rf "${ROOTFSDIR}"
             fi
             if [ ${IS_HOST} ]; then
@@ -246,6 +247,8 @@ isar_bootstrap() {
             mount --rbind /dev ${BUILDCHROOT_DIR}/dev
             mount --make-rslave ${BUILDCHROOT_DIR}/dev
             mount -t proc none ${ROOTFSDIR}/proc
+            mount --rbind /sys ${BUILDCHROOT_DIR}/sys
+            mount --make-rslave ${BUILDCHROOT_DIR}/sys
 
             export DEBIAN_FRONTEND=noninteractive
             chroot "${ROOTFSDIR}" /usr/bin/apt-get update -y

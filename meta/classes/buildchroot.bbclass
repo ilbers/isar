@@ -30,6 +30,8 @@ buildchroot_do_mounts() {
             mount --rbind /dev ${BUILDCHROOT_DIR}/dev
             mount --make-rslave ${BUILDCHROOT_DIR}/dev
             mount -t proc none ${BUILDCHROOT_DIR}/proc
+            mount --rbind /sys ${BUILDCHROOT_DIR}/sys
+            mount --make-rslave ${BUILDCHROOT_DIR}/sys
         fi
 
         # Refresh /etc/resolv.conf at this chance

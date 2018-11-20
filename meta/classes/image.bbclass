@@ -110,6 +110,7 @@ do_populate_sdk() {
 
     sudo umount -R ${SDKCHROOT_DIR}/rootfs/dev || true
     sudo umount ${SDKCHROOT_DIR}/rootfs/proc || true
+    sudo umount -R ${SDKCHROOT_DIR}/rootfs/sys || true
 
     # Create SDK archive
     sudo tar -C ${SDKCHROOT_DIR} --transform="s|^rootfs|sdk-${DISTRO}-${DISTRO_ARCH}|" \

@@ -106,6 +106,8 @@ setup_root_file_system() {
     sudo mount --rbind /dev ${ROOTFSDIR}/dev
     sudo mount --make-rslave ${ROOTFSDIR}/dev
     sudo mount -t proc none $ROOTFSDIR/proc
+    sudo mount --rbind /sys ${ROOTFSDIR}/sys
+    sudo mount --make-rslave ${ROOTFSDIR}/sys
 
     # Refresh /etc/resolv.conf
     sudo cp -L /etc/resolv.conf ${ROOTFSDIR}/etc
