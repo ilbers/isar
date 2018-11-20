@@ -183,7 +183,7 @@ isar_bootstrap() {
         set -e
         if [ ! -e "${DEPLOY_ISAR_BOOTSTRAP}" ]; then
             if [ -e "${ROOTFSDIR}" ]; then
-               umount -l "${ROOTFSDIR}/dev" || true
+               umount -R -l "${ROOTFSDIR}/dev" || true
                umount -l "${ROOTFSDIR}/proc" || true
                rm -rf "${ROOTFSDIR}"
             fi
@@ -243,7 +243,8 @@ isar_bootstrap() {
             "${ROOTFSDIR}/chroot-setup.sh" "setup" "${ROOTFSDIR}"
 
             # update APT
-            mount -t devtmpfs -o mode=0755,nosuid devtmpfs ${ROOTFSDIR}/dev
+            mount --rbind /dev ${BUILDCHROOT_DIR}/dev
+            mount --make-rslave ${BUILDCHROOT_DIR}/dev
             mount -t proc none ${ROOTFSDIR}/proc
 
             export DEBIAN_FRONTEND=noninteractive

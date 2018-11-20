@@ -108,7 +108,7 @@ do_populate_sdk() {
     # Purge apt cache to make image slimmer
     sudo rm -rf ${SDKCHROOT_DIR}/rootfs/var/cache/apt/*
 
-    sudo umount ${SDKCHROOT_DIR}/rootfs/dev || true
+    sudo umount -R ${SDKCHROOT_DIR}/rootfs/dev || true
     sudo umount ${SDKCHROOT_DIR}/rootfs/proc || true
 
     # Create SDK archive

@@ -27,7 +27,8 @@ buildchroot_do_mounts() {
         if ! grep -q ${BUILDCHROOT_DIR}/isar-apt /proc/mounts; then
             mount --bind ${REPO_ISAR_DIR}/${DISTRO} ${BUILDCHROOT_DIR}/isar-apt
             mount --bind ${DL_DIR} ${BUILDCHROOT_DIR}/downloads
-            mount -t devtmpfs -o mode=0755,nosuid devtmpfs ${BUILDCHROOT_DIR}/dev
+            mount --rbind /dev ${BUILDCHROOT_DIR}/dev
+            mount --make-rslave ${BUILDCHROOT_DIR}/dev
             mount -t proc none ${BUILDCHROOT_DIR}/proc
         fi
 

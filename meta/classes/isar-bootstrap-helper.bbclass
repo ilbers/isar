@@ -103,7 +103,8 @@ setup_root_file_system() {
         sudo mount --bind ${REPO_BASE_DIR} ${ROOTFSDIR}/base-apt
     fi
 
-    sudo mount -t devtmpfs -o mode=0755,nosuid devtmpfs $ROOTFSDIR/dev
+    sudo mount --rbind /dev ${ROOTFSDIR}/dev
+    sudo mount --make-rslave ${ROOTFSDIR}/dev
     sudo mount -t proc none $ROOTFSDIR/proc
 
     # Refresh /etc/resolv.conf
