@@ -83,7 +83,7 @@ setup_root_file_system() {
     CLEAN_FILES="${ROOTFSDIR}/etc/hostname ${ROOTFSDIR}/etc/resolv.conf"
 
     sudo cp -Trpfx \
-        "${DEPLOY_DIR_IMAGE}/isar-bootstrap-$ROOTFS_DISTRO-$ROOTFS_ARCH/" \
+        "${DEPLOY_DIR_BOOTSTRAP}/$ROOTFS_DISTRO-$ROOTFS_ARCH/" \
         "$ROOTFSDIR"
     [ -n "${FSTAB}" ] && cat ${FSTAB} | sudo tee "$ROOTFSDIR/etc/fstab"
 
