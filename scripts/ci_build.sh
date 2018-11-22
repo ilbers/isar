@@ -108,3 +108,7 @@ else
     # qemu-user-static of <= buster too old to build that
     #multiconfig:qemuarm64-buster:isar-image-base
 fi
+
+echo -e "do_fetch_append() {\n\n}" >> ${ISARROOT}/meta/classes/dpkg-base.bbclass
+
+bitbake $BB_ARGS multiconfig:qemuamd64-stretch:isar-image-base
