@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Custom kernel build
 #
@@ -7,10 +7,9 @@
 #
 # SPDX-License-Identifier: MIT
 
-set -e
+source /isar/common.sh
 
 host_arch=$(dpkg --print-architecture)
-target_arch=$2
 
 if [ "$host_arch" != "$target_arch" ]; then
     case $target_arch in
@@ -33,7 +32,6 @@ REPACK_DIR="$1/../repack"
 REPACK_LINUX_IMAGE_DIR="${REPACK_DIR}/linux-image"
 REPACK_LINUX_HEADERS_DIR="${REPACK_DIR}/linux-headers"
 
-cd $1
 if [ -e .config ]; then
 	make olddefconfig
 else
@@ -118,9 +116,9 @@ dpkg-gencontrol -crepack/debian/control \
 	-DDepends="${KERNEL_HEADERS_DEBIAN_DEPENDS}" \
 	-DArchitecture=$target_arch
 
-dpkg-deb -b ${REPACK_LINUX_IMAGE_DIR} \
+fakeroot dpkg-deb -b ${REPACK_LINUX_IMAGE_DIR} \
 	linux-image-${KERNEL_NAME}_${PV}-1_${KERNEL_NAME}.deb
 rm -f linux-image-${PV}_${PV}-1_*.deb
-dpkg-deb -b ${REPACK_LINUX_HEADERS_DIR} \
+fakeroot dpkg-deb -b ${REPACK_LINUX_HEADERS_DIR} \
 	linux-headers-${KERNEL_NAME}_${PV}-1_${KERNEL_NAME}.deb
 rm -f linux-headers-${PV}_${PV}-1_*.deb

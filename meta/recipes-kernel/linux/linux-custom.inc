@@ -47,11 +47,9 @@ do_install_builddeps[lockfiles] += "${REPO_ISAR_DIR}/isar.lock"
 do_install_builddeps[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 
 dpkg_runbuild() {
-	# Install package builder script
-	sudo install -m 755 ${WORKDIR}/build-kernel.sh ${BUILDCHROOT_DIR}
-
+	chmod +x ${WORKDIR}/build-kernel.sh
 	if [ -n "${KERNEL_DEFCONFIG}" ]; then
-		sudo cp ${WORKDIR}/${KERNEL_DEFCONFIG} ${S}/.config
+		cp ${WORKDIR}/${KERNEL_DEFCONFIG} ${S}/.config
 	fi
 
 	E="${@ bb.utils.export_proxies(d)}"
@@ -63,5 +61,5 @@ dpkg_runbuild() {
 	export KERNEL_DEBIAN_DEPENDS="${KERNEL_DEBIAN_DEPENDS}"
 	export KERNEL_HEADERS_DEBIAN_DEPENDS="${KERNEL_HEADERS_DEBIAN_DEPENDS}"
 
-	sudo -E chroot ${BUILDCHROOT_DIR} /build-kernel.sh ${PP}/${PPS} ${DISTRO_ARCH}
+	sudo -E chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} ${PP}/build-kernel.sh ${PP}/${PPS} ${DISTRO_ARCH}
 }
