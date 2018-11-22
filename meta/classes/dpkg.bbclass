@@ -19,5 +19,5 @@ do_install_builddeps[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 # Build package from sources using build script
 dpkg_runbuild() {
     E="${@ bb.utils.export_proxies(d)}"
-    sudo -E chroot ${BUILDCHROOT_DIR} /isar/build.sh ${PP}/${PPS} ${DISTRO_ARCH}
+    sudo -E chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} /isar/build.sh ${PP}/${PPS} ${DISTRO_ARCH}
 }
