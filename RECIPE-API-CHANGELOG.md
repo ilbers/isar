@@ -3,53 +3,6 @@ Recipe API Changelog
 
 Baseline: Release v0.5
 
-Upcoming changes (v0.7)
------------------------
-
-### dpkg-raw recipes build method changed
-
-These packages are now built using the whole dpkg-buildpackage workflow, and
-not just packaged as before.
-
- - all files will be owned by root:root before it might have been 1000:1000
-   use postinst to change that (see example-raw)
- - a lot of debhelpers will help .. or complain
-   fix the issues or override the helpers (see example-raw)
-
-### Set LAYERSERIES_COMPAT_*  when an own layer is defined
-
-When defining an own layer LAYERSERIES_COMPAT_mylayer_root_name has to be set,
-the possible values are listed in the variable LAYERSERIES_CORENAMES.
-
-If you need to express the fact that your layer requires the
-layer version higher than existing release corename, use the value 'next'.
-
-### location of image artifacts
-
-Align with OpenEmbedded and place image artifacts in a per-machine folder placed
-in tmp/deploy (to avoid collisions among other things).
-
-### more consistent artifact names
-
-multiconfig image artifacts are all placed in tmp/deploy/images. They include
-kernel, initrd and ext4/wic images. A consistent naming scheme is now used:
-`IMAGE-DISTRO-MACHINE.TYPE`. This scheme was already used for ext4/wic images
-so no visible changes there. Kernel and initrd images are however affected; for
-instance:
-
-```
-vmlinuz-4.9.0-8-armmp_debian-stretch-qemuarm
-```
-
-is now
-
-```
-isar-image-base-debian-stretch-qemuarm.vmlinuz-4.9.0-8-armmp
-```
-
-It should be noted that the `KERNEL_IMAGE` and `INITRD_IMAGE` variables were
-updated hence recipes using them shouldn't be impacted per se.
-
 Changes in v0.6
 ---------------
 
@@ -119,3 +72,50 @@ reworked and simplified. If your kernel recipe is called `linux-foo_4.18.bb`,
 you now have to set `KERNEL_NAME = "foo"` in order to select that kernel.
 Alternatively, a recipe with a different naming scheme can set
 `KERNEL_NAME_PROVIDED = "foo"` in order to match as well.
+
+Upcoming changes (v0.7)
+-----------------------
+
+### dpkg-raw recipes build method changed
+
+These packages are now built using the whole dpkg-buildpackage workflow, and
+not just packaged as before.
+
+ - all files will be owned by root:root before it might have been 1000:1000
+   use postinst to change that (see example-raw)
+ - a lot of debhelpers will help .. or complain
+   fix the issues or override the helpers (see example-raw)
+
+### Set LAYERSERIES_COMPAT_*  when an own layer is defined
+
+When defining an own layer LAYERSERIES_COMPAT_mylayer_root_name has to be set,
+the possible values are listed in the variable LAYERSERIES_CORENAMES.
+
+If you need to express the fact that your layer requires the
+layer version higher than existing release corename, use the value 'next'.
+
+### location of image artifacts
+
+Align with OpenEmbedded and place image artifacts in a per-machine folder placed
+in tmp/deploy (to avoid collisions among other things).
+
+### more consistent artifact names
+
+multiconfig image artifacts are all placed in tmp/deploy/images. They include
+kernel, initrd and ext4/wic images. A consistent naming scheme is now used:
+`IMAGE-DISTRO-MACHINE.TYPE`. This scheme was already used for ext4/wic images
+so no visible changes there. Kernel and initrd images are however affected; for
+instance:
+
+```
+vmlinuz-4.9.0-8-armmp_debian-stretch-qemuarm
+```
+
+is now
+
+```
+isar-image-base-debian-stretch-qemuarm.vmlinuz-4.9.0-8-armmp
+```
+
+It should be noted that the `KERNEL_IMAGE` and `INITRD_IMAGE` variables were
+updated hence recipes using them shouldn't be impacted per se.
