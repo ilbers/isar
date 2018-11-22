@@ -428,7 +428,11 @@ class BitBakeServer(object):
                         bb.error("Last 10 lines of server log for this session (%s):\n%s" % (logfile, "".join(lines[-10:])))
                     else:
                         bb.error("Server log for this session (%s):\n%s" % (logfile, "".join(lines)))
+            else:
+                bb.error("%s doesn't exist" % logfile)
+
             raise SystemExit(1)
+
         ready.close()
 
     def _startServer(self):
@@ -452,16 +456,15 @@ def connectProcessServer(sockname, featureset):
     # AF_UNIX has path length issues so chdir here to workaround
     cwd = os.getcwd()
 
-    try:
-        os.chdir(os.path.dirname(sockname))
-        sock.connect(os.path.basename(sockname))
-    finally:
-        os.chdir(cwd)
-
     readfd = writefd = readfd1 = writefd1 = readfd2 = writefd2 = None
     eq = command_chan_recv = command_chan = None
 
     try:
+        try:
+            os.chdir(os.path.dirname(sockname))
+            sock.connect(os.path.basename(sockname))
+        finally:
+            os.chdir(cwd)
 
         # Send an fd for the remote to write events to
         readfd, writefd = os.pipe()

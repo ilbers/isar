@@ -122,7 +122,11 @@ class VariableParse:
                 connector = self.d["_remote_data"]
                 return connector.expandPythonRef(self.varname, code, self.d)
 
-            codeobj = compile(code.strip(), self.varname or "<expansion>", "eval")
+            if self.varname:
+                varname = 'Var <%s>' % self.varname
+            else:
+                varname = '<expansion>'
+            codeobj = compile(code.strip(), varname, "eval")
 
             parser = bb.codeparser.PythonParser(self.varname, logger)
             parser.parse_python(code)
@@ -427,7 +431,8 @@ class DataSmart(MutableMapping):
             except bb.parse.SkipRecipe:
                 raise
             except Exception as exc:
-                raise ExpansionError(varname, s, exc) from exc
+                tb = sys.exc_info()[2]
+                raise ExpansionError(varname, s, exc).with_traceback(tb) from exc
 
         varparse.value = s
 
