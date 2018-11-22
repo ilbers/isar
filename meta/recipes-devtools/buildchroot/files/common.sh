@@ -7,6 +7,9 @@
 set -e
 printenv | grep -q BB_VERBOSE_LOGS && set -x
 
+# assert we are either "root:root" or "builder:builder"
+[ $( id -un ) = "builder" -a $( id -un ) = "builder" ] || [ $( id -un ) = "root" -a $( id -un ) = "root" ]
+
 # Create human-readable names
 target_arch=$2
 
