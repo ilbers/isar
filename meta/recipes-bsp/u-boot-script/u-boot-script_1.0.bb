@@ -12,6 +12,8 @@ WKS_FULL_PATH = "${@get_wks_full_path(d)}"
 
 DESCRIPTION = "Boot script generator for U-Boot"
 
+PN .= "-${KERNEL_NAME}"
+
 SRC_URI = " \
     file://update-u-boot-script \
     file://u-boot-script \

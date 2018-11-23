@@ -21,4 +21,4 @@ SRC_URI += "file://src"
 
 S = "${WORKDIR}/src"
 
-AUTOLOAD = "${PN}"
+AUTOLOAD = "example-module"

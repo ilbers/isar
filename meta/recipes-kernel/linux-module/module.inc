@@ -9,6 +9,8 @@ FILESPATH =. "${LAYERDIR_core}/recipes-kernel/linux-module/files:"
 
 DESCRIPTION ?= "Custom kernel module ${PN}"
 
+PN .= "-${KERNEL_NAME}"
+
 DEPENDS += "linux-headers-${KERNEL_NAME}"
 
 SRC_URI += "file://debian/"

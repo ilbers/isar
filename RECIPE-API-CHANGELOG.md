@@ -119,3 +119,8 @@ isar-image-base-debian-stretch-qemuarm.vmlinuz-4.9.0-8-armmp
 
 It should be noted that the `KERNEL_IMAGE` and `INITRD_IMAGE` variables were
 updated hence recipes using them shouldn't be impacted per se.
+
+### Append kernel name to custom module and u-boot-script packages
+
+These packages depend on a specific kernel. Its identification is now appended
+to the binary package names in the form "-${KERNEL_NAME}".
