@@ -5,15 +5,15 @@ Standards-Version: 3.9.6
 Build-Depends: @BUILD_DEPENDS@
 Maintainer: ISAR project <isar-users@googlegroups.com>
 
-Package: @PN@-@MACHINE@
+Package: u-boot-@MACHINE@
 Architecture: @DISTRO_ARCH@
 Description: @DESCRIPTION@, bootloader binaries
 
-Package: @PN@-@MACHINE@-dev
+Package: u-boot-@MACHINE@-dev
 Architecture: @DISTRO_ARCH@
 Description: @DESCRIPTION@, bootloader libraries
 
-Package: @PN@-tools
+Package: u-boot-tools
 Architecture: linux-any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: @DESCRIPTION@, companion tools

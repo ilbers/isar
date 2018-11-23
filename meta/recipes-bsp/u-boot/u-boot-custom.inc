@@ -9,7 +9,7 @@ FILESPATH =. "${LAYERDIR_core}/recipes-bsp/u-boot/files:"
 
 DESCRIPTION ?= "Custom U-Boot"
 
-PROVIDES += "${PN}-${MACHINE} ${PN}-${MACHINE}-dev ${PN}-tools"
+PROVIDES += "u-boot-${MACHINE} u-boot-tools"
 
 inherit dpkg
 
