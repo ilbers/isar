@@ -5,14 +5,32 @@
 #
 
 python () {
-    if not d.getVar('WKS_FILE', True):
+    wks_full_path = None
+
+    wks_file = d.getVar('WKS_FILE', True)
+    if not wks_file:
         bb.fatal("WKS_FILE must be set")
+    if not wks_file.endswith('.wks'):
+        wks_file += '.wks'
+
+    if os.path.isabs(wks_file):
+        if os.path.exists(wks_file):
+            wks_full_path = wks_file
+    else:
+        bbpaths = d.getVar('BBPATH', True).split(':')
+        corebase = d.getVar('COREBASE', True)
+        search_path = ':'.join('%s/wic' % p for p in bbpaths) + ':' + \
+            ':'.join('%s/scripts/lib/wic/canned-wks' % l \
+                     for l in (bbpaths + [corebase]))
+        wks_full_path = bb.utils.which(search_path, wks_file)
+
+    if not wks_full_path:
+        bb.fatal("WKS_FILE '%s' not found" % wks_file)
+
+    d.setVar('WKS_FULL_PATH', wks_full_path)
 }
 
 inherit buildchroot
-inherit wks-file
-
-WKS_FULL_PATH = "${@get_wks_full_path(d)}"
 
 # wic comes with reasonable defaults, and the proper interface is the wks file
 ROOTFS_EXTRA ?= "0"
