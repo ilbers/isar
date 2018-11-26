@@ -150,7 +150,7 @@ do_generate_keyring() {
     if [ -n "${@d.getVar("APTKEYFILES", True) or ""}" ]; then
         for keyfile in ${@d.getVar("APTKEYFILES", True)}; do
            gpg --no-default-keyring --keyring "${APTKEYRING}" \
-               --homedir "${DL_DIR}"  --import "$keyfile"
+               --no-tty --homedir "${DL_DIR}"  --import "$keyfile"
         done
     fi
 }
