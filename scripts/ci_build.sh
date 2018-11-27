@@ -112,6 +112,7 @@ else
         multiconfig:qemuamd64-jessie:isar-image-base \
         multiconfig:qemuamd64-stretch:isar-image-base \
         multiconfig:qemuamd64-buster:isar-image-base \
+        multiconfig:qemuamd64-buster-tgz:isar-image-base \
         multiconfig:rpi-jessie:isar-image-base
     # qemu-user-static of <= buster too old to build that
     #multiconfig:qemuarm64-buster:isar-image-base
