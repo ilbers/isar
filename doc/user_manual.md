@@ -745,7 +745,7 @@ bitbake -c cache_base_repo multiconfig:qemuarm-stretch:isar-image-base
  - Remove build artifacts to use only local base-apt:
 
 ```
-sudo rm -rf tmp/stamps/ tmp/work/ tmp/deploy/isar-apt/ tmp/deploy/images
+sudo rm -rf tmp
 
 ```
 
