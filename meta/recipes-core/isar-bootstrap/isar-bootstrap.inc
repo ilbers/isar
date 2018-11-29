@@ -185,12 +185,8 @@ isar_bootstrap() {
     sudo -E flock "${ISAR_BOOTSTRAP_LOCK}" -c "\
         set -e
         if [ ! -e "${DEPLOY_ISAR_BOOTSTRAP}" ]; then
-            if [ -e "${ROOTFSDIR}" ]; then
-               umount -R -l "${ROOTFSDIR}/dev" || true
-               umount -l "${ROOTFSDIR}/proc" || true
-               umount -R -l "${ROOTFSDIR}/sys" || true
-               rm -rf "${ROOTFSDIR}"
-            fi
+            rm -rf "${ROOTFSDIR}"
+
             if [ ${IS_HOST} ]; then
                 ${DEBOOTSTRAP} $debootstrap_args \
                                ${@get_distro_components_argument(d, True)} \
@@ -247,16 +243,21 @@ isar_bootstrap() {
             "${ROOTFSDIR}/chroot-setup.sh" "setup" "${ROOTFSDIR}"
 
             # update APT
-            mount --rbind /dev ${BUILDCHROOT_DIR}/dev
-            mount --make-rslave ${BUILDCHROOT_DIR}/dev
+            mount --rbind /dev ${ROOTFSDIR}/dev
+            mount --make-rslave ${ROOTFSDIR}/dev
             mount -t proc none ${ROOTFSDIR}/proc
-            mount --rbind /sys ${BUILDCHROOT_DIR}/sys
-            mount --make-rslave ${BUILDCHROOT_DIR}/sys
+            mount --rbind /sys ${ROOTFSDIR}/sys
+            mount --make-rslave ${ROOTFSDIR}/sys
 
             export DEBIAN_FRONTEND=noninteractive
             chroot "${ROOTFSDIR}" /usr/bin/apt-get update -y
             chroot "${ROOTFSDIR}" /usr/bin/apt-get dist-upgrade -y \
                                   -o Debug::pkgProblemResolver=yes
+
+            umount -R -l "${ROOTFSDIR}/dev"
+            umount -l "${ROOTFSDIR}/proc"
+            umount -R -l "${ROOTFSDIR}/sys"
+            umount -l "${ROOTFSDIR}/base-apt" || true
 
             # Finalize debootstrap by setting the link in deploy
             ln -Tfsr "${ROOTFSDIR}" "${DEPLOY_ISAR_BOOTSTRAP}"
