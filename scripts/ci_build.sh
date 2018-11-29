@@ -86,7 +86,14 @@ fi
 if [ -n "$FAST_BUILD" ]; then
     # Start build for the reduced set of configurations
     # Enforce cross-compilation to speed up the build
+    # Enable use of cached base repository
     sed -i -e 's/ISAR_CROSS_COMPILE ?= "0"/ISAR_CROSS_COMPILE ?= "1"/g' conf/local.conf
+    bitbake $BB_ARGS -c cache_base_repo \
+        multiconfig:qemuarm-stretch:isar-image-base \
+        multiconfig:qemuarm64-stretch:isar-image-base \
+        multiconfig:qemuamd64-stretch:isar-image-base
+    sudo rm -rf tmp
+    sed -i -e 's/#ISAR_USE_CACHED_BASE_REPO ?= "1"/ISAR_USE_CACHED_BASE_REPO ?= "1"/g' conf/local.conf
     bitbake $BB_ARGS \
         multiconfig:qemuarm-stretch:isar-image-base \
         multiconfig:qemuarm64-stretch:isar-image-base \
