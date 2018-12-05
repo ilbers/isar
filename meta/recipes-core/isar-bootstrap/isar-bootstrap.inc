@@ -254,9 +254,9 @@ isar_bootstrap() {
             chroot "${ROOTFSDIR}" /usr/bin/apt-get dist-upgrade -y \
                                   -o Debug::pkgProblemResolver=yes
 
-            umount -R -l "${ROOTFSDIR}/dev"
+            umount -l "${ROOTFSDIR}/dev"
             umount -l "${ROOTFSDIR}/proc"
-            umount -R -l "${ROOTFSDIR}/sys"
+            umount -l "${ROOTFSDIR}/sys"
             umount -l "${ROOTFSDIR}/base-apt" || true
 
             # Finalize debootstrap by setting the link in deploy

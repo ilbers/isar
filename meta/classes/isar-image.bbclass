@@ -59,9 +59,9 @@ isar_image_cleanup() {
               -maxdepth 1 -name 'qemu-*-static' -type f -delete
     sudo umount -l ${IMAGE_ROOTFS}/isar-apt
     sudo rmdir ${IMAGE_ROOTFS}/isar-apt
-    sudo umount -R -l ${IMAGE_ROOTFS}/dev
+    sudo umount -l ${IMAGE_ROOTFS}/dev
     sudo umount -l ${IMAGE_ROOTFS}/proc
-    sudo umount -R -l ${IMAGE_ROOTFS}/sys
+    sudo umount -l ${IMAGE_ROOTFS}/sys
     sudo rm -f "${IMAGE_ROOTFS}/etc/apt/apt.conf.d/55isar-fallback.conf"
     if [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" ]; then
         sudo umount -l ${IMAGE_ROOTFS}/base-apt
