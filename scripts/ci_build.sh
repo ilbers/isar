@@ -92,6 +92,7 @@ if [ -n "$FAST_BUILD" ]; then
         multiconfig:qemuarm-stretch:isar-image-base \
         multiconfig:qemuarm64-stretch:isar-image-base \
         multiconfig:qemuamd64-stretch:isar-image-base
+    while [ -e bitbake.sock ]; do sleep 1; done
     sudo rm -rf tmp
     sed -i -e 's/#ISAR_USE_CACHED_BASE_REPO ?= "1"/ISAR_USE_CACHED_BASE_REPO ?= "1"/g' conf/local.conf
     bitbake $BB_ARGS \
