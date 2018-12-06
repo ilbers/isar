@@ -87,11 +87,14 @@ do_build[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 
 do_wic_image() {
     buildchroot_do_mounts
-    for dir in ${BBLAYERS} ${STAGING_DIR} ${ISARROOT}/scripts; do
-	sudo mkdir -p ${BUILDCHROOT_DIR}/$dir
-        mountpoint ${BUILDCHROOT_DIR}/$dir >/dev/null 2>&1 \
-        || sudo mount --bind $dir ${BUILDCHROOT_DIR}/$dir
-    done
+    sudo flock ${MOUNT_LOCKFILE} -c ' \
+        for dir in ${BBLAYERS} ${STAGING_DIR} ${ISARROOT}/scripts; do
+            mkdir -p ${BUILDCHROOT_DIR}/$dir
+            if ! mountpoint ${BUILDCHROOT_DIR}/$dir >/dev/null 2>&1; then
+                mount --bind --make-private $dir ${BUILDCHROOT_DIR}/$dir
+            fi
+        done
+        '
     export FAKEROOTCMD=${FAKEROOTCMD}
     export BUILDDIR=${BUILDDIR}
     export MTOOLS_SKIP_CHECK=1
