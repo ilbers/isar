@@ -117,6 +117,9 @@ else
     #multiconfig:qemuarm64-buster:isar-image-base
 fi
 
+cp -a ${ISARROOT}/meta/classes/dpkg-base.bbclass ${ISARROOT}/meta/classes/dpkg-base.bbclass.ci-backup
 echo -e "do_fetch_append() {\n\n}" >> ${ISARROOT}/meta/classes/dpkg-base.bbclass
 
 bitbake $BB_ARGS multiconfig:qemuamd64-stretch:isar-image-base
+
+mv ${ISARROOT}/meta/classes/dpkg-base.bbclass.ci-backup ${ISARROOT}/meta/classes/dpkg-base.bbclass
