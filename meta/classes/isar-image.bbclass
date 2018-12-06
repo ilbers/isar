@@ -69,9 +69,9 @@ isar_image_cleanup() {
     fi
 }
 
-python do_rootfs() {
-    bb.build.exec_func("isar_image_gen_fstab", d)
-    bb.build.exec_func("isar_image_gen_rootfs", d)
-    bb.build.exec_func("isar_image_conf_rootfs", d)
-    bb.build.exec_func("isar_image_cleanup", d)
+do_rootfs() {
+    isar_image_gen_fstab
+    isar_image_gen_rootfs
+    isar_image_conf_rootfs
+    isar_image_cleanup
 }
