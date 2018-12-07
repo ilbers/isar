@@ -53,11 +53,12 @@ The steps below describe how to build the images provided by default.
 
 ### Install Host Tools
 
+The supported host system is >= stretch.
+
 Install the following packages:
 ```
 dosfstools
 git
-debootstrap/jessie-backports  # host == jessie && target >= buster
 dpkg-dev
 parted
 python3
@@ -73,7 +74,6 @@ Notes:
 
 * BitBake requires Python 3.4+.
 * The python3 package is required for the correct `alternatives` setting.
-* QEMU 2.8+ is required to run Stretch images locally in QEMU. This version is available in Stretch and Jessie backports apts.
 
 ### Setup Sudo
 
@@ -652,11 +652,6 @@ The resulting SDK rootfs is archived into `tmp/deploy/images/sdk-${DISTRO}-${DIS
 It is additionally available for direct use under `tmp/deploy/images/sdk-${DISTRO}-${DISTRO_ARCH}/`.
 The SDK rootfs directory `/isar-apt` contains a copy of isar-apt repo with locally prebuilt target debian packages (for <HOST_DISTRO>).
 One may chroot into the SDK and install required target packages with the help of `apt-get install <package_name>:<DISTRO_ARCH>` command.
-
-### Limitation
-
-Only Debian Stretch for SDK root filesystem is supported as only Stretch provides crossbuild environment by default.
-(Debian Jessie requires some additional preconfiguration steps see https://wiki.debian.org/CrossToolchains#Installation for details).
 
 ### Example
 
