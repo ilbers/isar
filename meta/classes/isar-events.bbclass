@@ -18,10 +18,11 @@ python isar_handler() {
 
     with open(os.devnull, 'w') as devnull:
         with open('/proc/mounts', 'rU') as f:
-            for line in f:
-                if basepath in line:
-                    subprocess.call('sudo umount -l ' + line.split()[1],
-                                    stdout=devnull, stderr=devnull, shell=True)
+            lines = f.readlines()
+        for line in lines:
+            if basepath in line:
+                subprocess.call('sudo umount -l ' + line.split()[1],
+                                stdout=devnull, stderr=devnull, shell=True)
 }
 
 isar_handler[eventmask] = "bb.runqueue.runQueueExitWait bb.event.BuildCompleted"
