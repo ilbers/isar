@@ -145,8 +145,9 @@ setup_root_file_system() {
     if [ ${CLEAN} ]; then
         if [ ${KEEP_APT_CACHE} -eq 1 ]; then
             mkdir -p ${WORKDIR}/apt_cache
-            sudo mv $(find $ROOTFSDIR/var/cache/apt -name '*.deb') ${WORKDIR}/apt_cache
-            sudo chown `whoami` ${WORKDIR}/apt_cache/*
+            sudo find ${ROOTFSDIR}/var/cache/apt/archives \
+                -maxdepth 1 -name '*.deb' -execdir /bin/mv -t ${WORKDIR}/apt_cache '{}' '+'
+            sudo chown -R $(whoami) ${WORKDIR}/apt_cache
         fi
         sudo -E chroot "$ROOTFSDIR" \
             /usr/bin/apt-get autoremove --purge --yes
