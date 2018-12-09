@@ -5,6 +5,11 @@ ROOT_PARTITION="\${distro_bootpart}"
 # Make sure to escape $ in u-boot variables, e.g. "\${console}".
 KERNEL_ARGS=""
 
+# Space-separated list of device tree overlay files.
+# Can be absolute paths in root filesystem or relative ones under
+# /usr/lib/linux-image-<KERNEL_VERSION>
+OVERLAYS=""
+
 # Set to "yes" or "1" to leave out initrd, even if present
 NO_INITRD=""
 

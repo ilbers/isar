@@ -9,6 +9,7 @@
 # u-boot-script to boot this rootfs.
 # Recognized sourceparams:
 #  - no_initrd=yes          (disables initrd loading)
+#  - overlays=file.dtbo ... (overlay files)
 #  - script_prepend=cmd;... (prepends U-Boot command)
 
 import glob
@@ -71,6 +72,8 @@ class RootfsUBootPlugin(RootfsPlugin):
                 (cr.rootdev, cr.ks.bootloader.append))
             no_initrd = source_params.get('no_initrd') or ''
             cfg.write('NO_INITRD="%s"\n' % no_initrd)
+            overlays = source_params.get('overlays') or ''
+            cfg.write('OVERLAYS="%s"\n' % overlays)
             script_prepend = source_params.get('script_prepend') or ''
             cfg.write('SCRIPT_PREPEND="%s"\n' % script_prepend)
 

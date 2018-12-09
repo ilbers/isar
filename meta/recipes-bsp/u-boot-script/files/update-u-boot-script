@@ -37,6 +37,22 @@ yes|1)
 	INITRD_ADDR="\${ramdisk_addr_r}:\${filesize}"
 esac
 
+if [ -n "${OVERLAYS}" ]; then
+	echo "fdt addr \${fdt_addr_r}" >> ${BOOT_CMD}
+	# grant 1 MB to combined device tree
+	echo "fdt resize 0x100000" >> ${BOOT_CMD}
+	echo "setexpr overlay_addr_r \${fdt_addr_r} + 0x100000" >> ${BOOT_CMD}
+	for OVERLAY in ${OVERLAYS}; do
+		if ! echo $OVERLAY | grep -q "^/"; then
+			OVERLAY_PATH=/usr/lib/linux-image-${KERNEL_VERSION}/
+		fi
+		echo "load \${devtype} \${devnum}:${ROOT_PARTITION}" \
+		     "\${overlay_addr_r} ${OVERLAY_PATH}${OVERLAY}" \
+		     >> ${BOOT_CMD}
+		echo "fdt apply \${overlay_addr_r}" >> ${BOOT_CMD}
+	done
+fi
+
 BOOT="bootz"
 if [ "$(uname -m)" = "aarch64" ]; then
 	BOOT="booti"
