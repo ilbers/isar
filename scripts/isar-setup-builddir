@@ -110,30 +110,9 @@ cat <<EOF > $BUILDDIR/conf/bitbake.conf
 # THIS FILE IS GENERATED! DO NOT MESS WITH IT!
 # ********************************************
 
-# ---------
-# begin original bitbake.conf
-# ---------
-
-EOF
-cat "$ISARROOT/bitbake/conf/bitbake.conf" >> \
-  "$BUILDDIR/conf/bitbake.conf"
-cat <<EOF >> $BUILDDIR/conf/bitbake.conf
-# ---------
-# end original bitbake.conf
-# ---------
-
-# ---------
-# begin isar-bitbake.conf
-# ---------
-
 EOF
 cat "$ISARROOT/meta/conf/isar-bitbake.conf" >> \
   "$BUILDDIR/conf/bitbake.conf"
-cat <<EOF >> $BUILDDIR/conf/bitbake.conf
-# ---------
-# end isar-bitbake.conf
-# ---------
-EOF
 
 # Ending the first-time run message. Show the no documentation banner.
 if [ ! -z "$SHOWYPDOC" ]; then
