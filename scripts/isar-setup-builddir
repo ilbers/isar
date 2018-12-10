@@ -105,15 +105,6 @@ EOM
     SHOWYPDOC=yes
 fi
 
-cat <<EOF > $BUILDDIR/conf/bitbake.conf
-# ********************************************
-# THIS FILE IS GENERATED! DO NOT MESS WITH IT!
-# ********************************************
-
-EOF
-cat "$ISARROOT/meta/conf/isar-bitbake.conf" >> \
-  "$BUILDDIR/conf/bitbake.conf"
-
 # Ending the first-time run message. Show the no documentation banner.
 if [ ! -z "$SHOWYPDOC" ]; then
     cat <<EOM
