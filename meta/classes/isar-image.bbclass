@@ -66,7 +66,13 @@ isar_image_cleanup() {
     if [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" ]; then
         sudo umount -l ${IMAGE_ROOTFS}/base-apt
         sudo rmdir ${IMAGE_ROOTFS}/base-apt
+        # Replace the local apt we bootstrapped with the
+        # APT sources initially defined in DISTRO_APT_SOURCES
+        sudo rm -f "${IMAGE_ROOTFS}/etc/apt/sources.list.d/base-apt.list"
+        sudo mv "${IMAGE_ROOTFS}/etc/apt/sources-list" \
+                "${IMAGE_ROOTFS}/etc/apt/sources.list.d/bootstrap.list"
     fi
+    sudo rm -f "${IMAGE_ROOTFS}/etc/apt/sources-list"
 }
 
 do_rootfs() {
