@@ -20,6 +20,7 @@ DEBOOTSTRAP ?= "qemu-debootstrap"
 ROOTFSDIR = "${WORKDIR}/rootfs"
 APTPREFS = "${WORKDIR}/apt-preferences"
 APTSRCS = "${WORKDIR}/apt-sources"
+APTSRCS_INIT = "${WORKDIR}/apt-sources-init"
 BASEAPTSRCS = "${WORKDIR}/base-apt-sources"
 APTKEYFILES = ""
 APTKEYRING = "${WORKDIR}/apt-keyring.gpg"
@@ -222,6 +223,8 @@ isar_bootstrap() {
                 install -v -m644 "${APTSRCS}" \
                                  "${ROOTFSDIR}/etc/apt/sources.list.d/bootstrap.list"
             fi
+            install -v -m644 "${APTSRCS_INIT}" \
+                                 "${ROOTFSDIR}/etc/apt/sources-list"
             rm -f "${ROOTFSDIR}/etc/apt/sources.list"
             mkdir -p "${ROOTFSDIR}/etc/apt/apt.conf.d"
             install -v -m644 "${WORKDIR}/isar-apt.conf" \
