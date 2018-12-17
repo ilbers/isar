@@ -5,6 +5,8 @@
 
 #!/bin/sh
 
+set -e
+
 ES_BUG=3
 
 # Export $PATH to use 'parted' tool
