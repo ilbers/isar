@@ -26,6 +26,7 @@ APTKEYFILES = ""
 APTKEYRING = "${WORKDIR}/apt-keyring.gpg"
 DEBOOTSTRAP_KEYRING = ""
 DEPLOY_ISAR_BOOTSTRAP ?= ""
+DISTRO_BOOTSTRAP_BASE_PACKAGES = "locales"
 
 DISTRO_APT_PREMIRRORS ?= "${@ "http://ftp\.(\S+\.)?debian.org  file:///${REPO_BASE_DIR} \n" if bb.utils.to_boolean(d.getVar('ISAR_USE_CACHED_BASE_REPO')) else "" }"
 
@@ -116,11 +117,15 @@ def aggregate_aptsources_list(d, file_list, file_out):
                     out_fd.write("\n".encode())
             out_fd.write("\n".encode())
 
-def get_distro_primary_source_entry(d, is_host=False):
+def get_aptsources_list(d, is_host=False):
     if is_host:
         apt_sources_list = (d.getVar("HOST_DISTRO_APT_SOURCES", True) or "").split()
     else:
         apt_sources_list = (d.getVar("DISTRO_APT_SOURCES", True) or "").split()
+    return apt_sources_list
+
+def get_distro_primary_source_entry(d, is_host=False):
+    apt_sources_list = get_aptsources_list(d, is_host)
     for entry in apt_sources_list:
         entry_real = bb.parse.resolve_file(entry, d)
         with open(entry_real, "r") as in_fd:
@@ -131,6 +136,24 @@ def get_distro_primary_source_entry(d, is_host=False):
                     if parsed[0] == "deb":
                         return parsed[2:]
     return ["", "", ""]
+
+def get_distro_have_https_source(d, is_host=False):
+    for entry in get_aptsources_list(d, is_host):
+        entry_real = bb.parse.resolve_file(entry, d)
+        with open(entry_real, "r") as in_fd:
+            for line in in_fd:
+                parsed = parse_aptsources_list_line(line)
+                if parsed:
+                    parsed = get_apt_source_mirror(d, parsed)
+                    if parsed[2].startswith("https://"):
+                        return True
+    return False
+
+def get_distro_needs_https_support(d, is_host=False):
+    if get_distro_have_https_source(d, is_host):
+        return "https-support"
+    else:
+        return ""
 
 def get_distro_source(d, is_host):
     return get_distro_primary_source_entry(d, is_host)[0]
@@ -178,7 +201,7 @@ isar_bootstrap() {
         esac
         shift
     done
-    debootstrap_args="--verbose --variant=minbase --include=locales "
+    debootstrap_args="--verbose --variant=minbase --include='${DISTRO_BOOTSTRAP_BASE_PACKAGES}'"
     if [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" ]; then
         debootstrap_args="$debootstrap_args --no-check-gpg"
     fi

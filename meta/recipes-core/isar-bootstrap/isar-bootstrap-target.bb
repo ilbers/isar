@@ -41,6 +41,8 @@ python do_apt_config_prepare() {
 }
 addtask apt_config_prepare before do_bootstrap after do_unpack
 
+OVERRIDES_append = ":${@get_distro_needs_https_support(d, False)}"
+
 do_bootstrap[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 do_bootstrap[vardeps] += "DISTRO_APT_SOURCES"
 do_bootstrap() {
