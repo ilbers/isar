@@ -30,3 +30,17 @@ do_prepare_build() {
         echo "echo $module >> /etc/modules" >> ${S}/debian/postinst
     done
 }
+
+dpkg_runbuild_prepend() {
+    # Custom kernels contain the build folder directly.
+    export KDIR=$(dpkg -L --root=${BUILDCHROOT_DIR} linux-headers-${KERNEL_NAME} | \
+                  grep "/lib/modules/.*/build")
+    if [ -z "$KDIR" ]; then
+        # Debian kernels install that folder indirectly via a dependency.
+        KERNEL_DEP=$(dpkg -s --root=${BUILDCHROOT_DIR} linux-headers-${KERNEL_NAME} | \
+                     grep "^Depends: .*linux-headers-" | \
+                     sed 's/.*\(linux-headers-[^,]*\).*/\1/')
+        export KDIR=$(dpkg -L --root=${BUILDCHROOT_DIR} ${KERNEL_DEP} | \
+                      grep "/lib/modules/.*/build")
+    fi
+}
