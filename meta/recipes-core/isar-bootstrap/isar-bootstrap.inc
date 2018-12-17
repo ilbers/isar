@@ -124,7 +124,7 @@ def get_aptsources_list(d, is_host=False):
         apt_sources_list = (d.getVar("DISTRO_APT_SOURCES", True) or "").split()
     return apt_sources_list
 
-def get_distro_primary_source_entry(d, is_host=False):
+def generate_distro_sources(d, is_host=False):
     apt_sources_list = get_aptsources_list(d, is_host)
     for entry in apt_sources_list:
         entry_real = bb.parse.resolve_file(entry, d)
@@ -133,21 +133,17 @@ def get_distro_primary_source_entry(d, is_host=False):
                 parsed = parse_aptsources_list_line(line)
                 if parsed:
                     parsed = get_apt_source_mirror(d, parsed)
-                    if parsed[0] == "deb":
-                        return parsed[2:]
+                    yield parsed
+
+def get_distro_primary_source_entry(d, is_host=False):
+    apt_sources_list = get_aptsources_list(d, is_host)
+    for source in generate_distro_sources(d, is_host):
+        if source[0] == "deb":
+            return source[2:]
     return ["", "", ""]
 
 def get_distro_have_https_source(d, is_host=False):
-    for entry in get_aptsources_list(d, is_host):
-        entry_real = bb.parse.resolve_file(entry, d)
-        with open(entry_real, "r") as in_fd:
-            for line in in_fd:
-                parsed = parse_aptsources_list_line(line)
-                if parsed:
-                    parsed = get_apt_source_mirror(d, parsed)
-                    if parsed[2].startswith("https://"):
-                        return True
-    return False
+    return any(source[2].startswith("https://") for source in generate_distro_sources(d, is_host))
 
 def get_distro_needs_https_support(d, is_host=False):
     if get_distro_have_https_source(d, is_host):
