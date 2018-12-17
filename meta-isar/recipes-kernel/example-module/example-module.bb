@@ -15,7 +15,7 @@ python() {
         d.setVar('ISAR_CROSS_COMPILE', '0')
 }
 
-include recipes-kernel/linux-module/module.inc
+require recipes-kernel/linux-module/module.inc
 
 SRC_URI += "file://src"
 

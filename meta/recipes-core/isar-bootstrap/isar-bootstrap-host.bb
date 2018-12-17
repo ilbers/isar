@@ -11,7 +11,7 @@ WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${PN}-${HOST_DISTRO}-${HOST_A
 DEPLOY_ISAR_BOOTSTRAP = "${DEPLOY_DIR_BOOTSTRAP}/${HOST_DISTRO}-${HOST_ARCH}"
 ISAR_BOOTSTRAP_LOCK = "${DEPLOY_DIR_BOOTSTRAP}/${HOST_DISTRO}-${HOST_ARCH}.lock"
 
-include isar-bootstrap.inc
+require isar-bootstrap.inc
 inherit isar-bootstrap-helper
 
 do_generate_keyring[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"

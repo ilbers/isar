@@ -5,7 +5,7 @@
 
 DESCRIPTION = "Isar development filesystem for target"
 
-include buildchroot.inc
+require buildchroot.inc
 
 BUILDCHROOT_PREINSTALL ?= "gcc \
                            make \

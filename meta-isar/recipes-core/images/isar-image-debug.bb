@@ -3,7 +3,7 @@
 # This software is a part of ISAR.
 # Copyright (C) 2015-2016 ilbers GmbH
 
-include recipes-core/images/isar-image-base.bb
+require recipes-core/images/isar-image-base.bb
 
 IMAGE_PREINSTALL += "gdb \
                      strace"

@@ -5,7 +5,7 @@
 
 DESCRIPTION = "Isar development filesystem for host"
 
-include buildchroot.inc
+require buildchroot.inc
 
 BUILDCHROOT_PREINSTALL ?= "make \
                            debhelper \
