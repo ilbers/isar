@@ -53,26 +53,28 @@ isar_image_conf_rootfs() {
 
 isar_image_cleanup() {
     # Cleanup
-    sudo rm "${IMAGE_ROOTFS}/etc/apt/sources.list.d/isar-apt.list"
-    test ! -e "${IMAGE_ROOTFS}/usr/share/doc/qemu-user-static" && \
-         sudo find "${IMAGE_ROOTFS}/usr/bin" \
-              -maxdepth 1 -name 'qemu-*-static' -type f -delete
-    sudo umount -l ${IMAGE_ROOTFS}/isar-apt
-    sudo rmdir ${IMAGE_ROOTFS}/isar-apt
-    sudo umount -l ${IMAGE_ROOTFS}/dev
-    sudo umount -l ${IMAGE_ROOTFS}/proc
-    sudo umount -l ${IMAGE_ROOTFS}/sys
-    sudo rm -f "${IMAGE_ROOTFS}/etc/apt/apt.conf.d/55isar-fallback.conf"
-    if [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" ]; then
-        sudo umount -l ${IMAGE_ROOTFS}/base-apt
-        sudo rmdir ${IMAGE_ROOTFS}/base-apt
-        # Replace the local apt we bootstrapped with the
-        # APT sources initially defined in DISTRO_APT_SOURCES
-        sudo rm -f "${IMAGE_ROOTFS}/etc/apt/sources.list.d/base-apt.list"
-        sudo mv "${IMAGE_ROOTFS}/etc/apt/sources-list" \
+    sudo sh -c ' \
+        rm "${IMAGE_ROOTFS}/etc/apt/sources.list.d/isar-apt.list"
+        test ! -e "${IMAGE_ROOTFS}/usr/share/doc/qemu-user-static" && \
+            find "${IMAGE_ROOTFS}/usr/bin" \
+                -maxdepth 1 -name 'qemu-*-static' -type f -delete
+             umount -l ${IMAGE_ROOTFS}/isar-apt
+        rmdir ${IMAGE_ROOTFS}/isar-apt
+        umount -l ${IMAGE_ROOTFS}/dev
+        umount -l ${IMAGE_ROOTFS}/proc
+        umount -l ${IMAGE_ROOTFS}/sys
+        rm -f "${IMAGE_ROOTFS}/etc/apt/apt.conf.d/55isar-fallback.conf"
+        if [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" ]; then
+            umount -l ${IMAGE_ROOTFS}/base-apt
+            rmdir ${IMAGE_ROOTFS}/base-apt
+            # Replace the local apt we bootstrapped with the
+            # APT sources initially defined in DISTRO_APT_SOURCES
+            rm -f "${IMAGE_ROOTFS}/etc/apt/sources.list.d/base-apt.list"
+            mv "${IMAGE_ROOTFS}/etc/apt/sources-list" \
                 "${IMAGE_ROOTFS}/etc/apt/sources.list.d/bootstrap.list"
-    fi
-    sudo rm -f "${IMAGE_ROOTFS}/etc/apt/sources-list"
+        fi
+        rm -f "${IMAGE_ROOTFS}/etc/apt/sources-list"
+    '
 }
 
 do_rootfs() {
