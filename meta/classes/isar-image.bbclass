@@ -6,9 +6,15 @@
 inherit image
 inherit isar-bootstrap-helper
 
+def cfg_script(d):
+    cf = d.getVar('DISTRO_CONFIG_SCRIPT', True) or ''
+    if cf:
+        return 'file://' + cf
+    return ''
+
 FILESPATH =. "${LAYERDIR_isar}/conf/distro:"
 FILESPATH =. "${LAYERDIR_core}/conf/distro:"
-SRC_URI += "${@ 'file://${DISTRO_CONFIG_SCRIPT}' if '${DISTRO_CONFIG_SCRIPT}' else '' }"
+SRC_URI += "${@ cfg_script(d) }"
 
 DEPENDS += "${IMAGE_INSTALL} ${IMAGE_TRANSIENT_PACKAGES}"
 
