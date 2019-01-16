@@ -43,4 +43,5 @@ dpkg_runbuild_prepend() {
         export KDIR=$(dpkg -L --root=${BUILDCHROOT_DIR} ${KERNEL_DEP} | \
                       grep "/lib/modules/.*/build")
     fi
+    export PN=${PN}
 }

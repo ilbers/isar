@@ -131,3 +131,8 @@ In order to use the same file permissions for an input file to a dpkg-raw
 package on the build machine as well as on the target, its absolute target path
 needs to be listed in the PRESERVE_PERMS variable (space-separated list of
 files). Otherwise, default permissions are used.
+
+### Reduce requirements on custom module makefiles
+
+It's now sufficient to provide only kbuild rules. Makefile targets like modules
+or modules_install as well as KDIR and DESTDIR evaluation are no longer needed.

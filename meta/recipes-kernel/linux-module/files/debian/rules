@@ -21,5 +21,11 @@ ifneq (,$(findstring 86,$(DEB_HOST_GNU_CPU)))
 export ARCH=x86
 endif
 
+override_dh_auto_build:
+	$(MAKE) -C $(KDIR) M=$(PWD) modules
+
+override_dh_auto_install:
+	$(MAKE) -C $(KDIR) M=$(PWD) INSTALL_MOD_PATH=$(PWD)/debian/$(PN) modules_install
+
 %:
 	CFLAGS= LDFLAGS= dh $@ --parallel
