@@ -65,8 +65,10 @@ class BootimgEFIPlugin(SourcePlugin):
             # Create grub configuration using parameters from wks file
             bootloader = creator.ks.bootloader
 
-            grubefi_conf = ""
-            grubefi_conf += "serial --unit=0 --speed=115200 --word=8 --parity=no --stop=1\n"
+            grubefi_conf =  "serial --unit=0 --speed=115200 --word=8 --parity=no --stop=1\n"
+            grubefi_conf += "terminal_input --append serial\n"
+            grubefi_conf += "terminal_output --append serial\n"
+            grubefi_conf += "\n"
             grubefi_conf += "default=boot\n"
             grubefi_conf += "timeout=%s\n" % bootloader.timeout
             for part in creator.parts:
