@@ -71,7 +71,8 @@ class BootimgEFIPlugin(SourcePlugin):
             grubefi_conf += "timeout=%s\n" % bootloader.timeout
             for part in creator.parts:
                 if part.mountpoint == "/":
-                    grubefi_conf += "set root='hd0,gpt%d'\n" % part.realnum
+                    grubefi_conf += "regexp --set bootdisk '(hd[0-9]*),' $prefix\n"
+                    grubefi_conf += "set root=$bootdisk',gpt%d'\n" % part.realnum
             grubefi_conf += "menuentry 'boot'{\n"
 
             kernel = "/vmlinuz"
@@ -245,7 +246,7 @@ class BootimgEFIPlugin(SourcePlugin):
                     grub_cmd += "terminal minicmd test loadenv echo help "
                     grub_cmd += "reboot serial terminfo iso9660 loopback tar "
                     grub_cmd += "memdisk ls search_fs_uuid udf btrfs xfs lvm "
-                    grub_cmd += "reiserfs " + grub_modules
+                    grub_cmd += "reiserfs regexp " + grub_modules
                     exec_cmd(grub_cmd)
             elif source_params['loader'] == 'systemd-boot':
                 for mod in [x for x in os.listdir(kernel_dir) if x.startswith("systemd-")]:
