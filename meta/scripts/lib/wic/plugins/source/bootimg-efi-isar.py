@@ -75,17 +75,11 @@ class BootimgEFIPlugin(SourcePlugin):
                 if part.mountpoint == "/":
                     grubefi_conf += "regexp --set bootdisk '(hd[0-9]*),' $prefix\n"
                     grubefi_conf += "set root=$bootdisk',gpt%d'\n" % part.realnum
+            grubefi_conf += "\n"
             grubefi_conf += "menuentry 'boot'{\n"
-
-            kernel = "/vmlinuz"
-
-            grubefi_conf += "linux %s root=%s rootwait %s\n" \
-                            % (kernel, creator.rootdev, bootloader.append or "")
-
-            initrd = "/initrd.img"
-
-            grubefi_conf += "initrd %s\n" % initrd
-
+            grubefi_conf += "    linux /vmlinuz root=%s rootwait %s\n" \
+                            % (creator.rootdev, bootloader.append or "")
+            grubefi_conf += "    initrd /initrd.img\n"
             grubefi_conf += "}\n"
 
         logger.debug("Writing grubefi config %s/hdd/boot/EFI/BOOT/grub.cfg",
