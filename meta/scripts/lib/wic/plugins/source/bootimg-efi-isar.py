@@ -91,12 +91,6 @@ class BootimgEFIPlugin(SourcePlugin):
         cfg.write(grubefi_conf)
         cfg.close()
 
-        cfg = open("%s/hdd/boot/EFI/BOOT/grub-mkimage.cfg" % cr_workdir, "w")
-        mkimage_conf = "set root='hd0,gpt%d'\n" % bootpart.realnum
-        mkimage_conf += "set prefix=($root)/EFI/BOOT\n"
-        cfg.write(mkimage_conf)
-        cfg.close()
-
     @classmethod
     def do_configure_systemdboot(cls, hdddir, creator, cr_workdir, source_params):
         """
@@ -211,8 +205,6 @@ class BootimgEFIPlugin(SourcePlugin):
             if source_params['loader'] == 'grub-efi':
                 shutil.copyfile("%s/hdd/boot/EFI/BOOT/grub.cfg" % cr_workdir,
                                 "%s/grub.cfg" % cr_workdir)
-                shutil.copyfile("%s/hdd/boot/EFI/BOOT/grub-mkimage.cfg" % cr_workdir,
-                                "%s/grub-mkimage.cfg" % cr_workdir)
                 for mod in [x for x in os.listdir(kernel_dir) if x.startswith("grub-efi-")]:
                     cp_cmd = "cp %s/%s %s/EFI/BOOT/%s" % (kernel_dir, mod, hdddir, mod[9:])
                     exec_cmd(cp_cmd, True)
@@ -245,7 +237,6 @@ class BootimgEFIPlugin(SourcePlugin):
 
                     # TODO: check that grub-mkimage is available
                     grub_cmd = "grub-mkimage -p /EFI/BOOT "
-                    grub_cmd += "-c %s/grub-mkimage.cfg " % cr_workdir
                     grub_cmd += "-O %s -o %s/EFI/BOOT/%s " \
                                 % (grub_target, bootimg_dir, grub_image)
                     grub_cmd += "part_gpt part_msdos ntfs ntfscomp fat ext2 "
