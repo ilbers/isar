@@ -7,6 +7,7 @@ inherit image
 inherit isar-bootstrap-helper
 
 FILESPATH =. "${LAYERDIR_isar}/conf/distro:"
+FILESPATH =. "${LAYERDIR_core}/conf/distro:"
 SRC_URI += "${@ 'file://${DISTRO_CONFIG_SCRIPT}' if '${DISTRO_CONFIG_SCRIPT}' else '' }"
 
 DEPENDS += "${IMAGE_INSTALL} ${IMAGE_TRANSIENT_PACKAGES}"
@@ -15,7 +16,7 @@ IMAGE_TRANSIENT_PACKAGES += "isar-cfg-localepurge"
 
 WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${PN}"
 
-ISAR_RELEASE_CMD_DEFAULT = "git -C ${LAYERDIR_isar} describe --tags --dirty --match 'v[0-9].[0-9]*'"
+ISAR_RELEASE_CMD_DEFAULT = "git -C ${LAYERDIR_core} describe --tags --dirty --match 'v[0-9].[0-9]*'"
 ISAR_RELEASE_CMD ?= "${ISAR_RELEASE_CMD_DEFAULT}"
 
 do_rootfs[root_cleandirs] = "${IMAGE_ROOTFS} \
