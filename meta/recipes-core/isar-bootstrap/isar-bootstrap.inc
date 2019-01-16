@@ -6,7 +6,7 @@
 # SPDX-License-Identifier: MIT
 
 LICENSE = "gpl-2.0"
-LIC_FILES_CHKSUM = "file://${LAYERDIR_isar}/licenses/COPYING.GPLv2;md5=751419260aa954499f7abaabaa882bbe"
+LIC_FILES_CHKSUM = "file://${LAYERDIR_core}/licenses/COPYING.GPLv2;md5=751419260aa954499f7abaabaa882bbe"
 FILESPATH_prepend := "${THISDIR}/files:"
 SRC_URI = " \
     file://isar-apt.conf \

@@ -6,7 +6,7 @@
 DESCRIPTION = "Sample shared library for ISAR"
 
 LICENSE = "gpl-2.0"
-LIC_FILES_CHKSUM = "file://${LAYERDIR_isar}/licenses/COPYING.GPLv2;md5=751419260aa954499f7abaabaa882bbe"
+LIC_FILES_CHKSUM = "file://${LAYERDIR_core}/licenses/COPYING.GPLv2;md5=751419260aa954499f7abaabaa882bbe"
 
 PV = "0.1-98f2e41"
 
