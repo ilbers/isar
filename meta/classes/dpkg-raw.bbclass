@@ -53,12 +53,19 @@ Description: ${DESCRIPTION}
 EOF
 }
 
+DH_FIXPERM_EXCLUSIONS = \
+    "${@' '.join(['-X ' + x for x in \
+                  (d.getVar('PRESERVE_PERMS', False) or '').split()])}"
+
 deb_create_rules() {
 	cat << EOF > ${S}/debian/rules
 #!/usr/bin/make -f
+
+override_dh_fixperms:
+	dh_fixperms ${DH_FIXPERM_EXCLUSIONS}
+
 %:
 	dh \$@
-
 EOF
 	chmod +x ${S}/debian/rules
 }

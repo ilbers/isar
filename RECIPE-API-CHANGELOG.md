@@ -124,3 +124,10 @@ updated hence recipes using them shouldn't be impacted per se.
 
 These packages depend on a specific kernel. Its identification is now appended
 to the binary package names in the form "-${KERNEL_NAME}".
+
+### PRESERVE_PERMS needed with dpkg-raw for implicit file permission setting
+
+In order to use the same file permissions for an input file to a dpkg-raw
+package on the build machine as well as on the target, its absolute target path
+needs to be listed in the PRESERVE_PERMS variable (space-separated list of
+files). Otherwise, default permissions are used.
