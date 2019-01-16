@@ -42,6 +42,9 @@ do_gen_config() {
 		locales     locales/locales_to_be_generated    multiselect ${@get_dc_locale_gen(d)}
 		locales     locales/default_environment_locale select      ${LOCALE_DEFAULT}
 	__EOF__
+	cat<<-__EOF__ > ${WORKDIR}/locale.default
+		LANG=${LOCALE_DEFAULT}
+	__EOF__
 	cat<<-__EOF__ > ${WORKDIR}/locale.nopurge
 		#USE_DPKG
 		MANDELETE
@@ -60,6 +63,8 @@ do_install() {
                           ${D}/usr/lib/${PN}/locale.debconf
 	install -v -m 644 ${WORKDIR}/locale.gen \
                           ${D}/usr/lib/${PN}/locale.gen
+	install -v -m 644 ${WORKDIR}/locale.default \
+			  ${D}/usr/lib/${PN}/locale.default
 	install -v -m 644 ${WORKDIR}/locale.nopurge \
                           ${D}/usr/lib/${PN}/locale.nopurge
 }
