@@ -52,9 +52,10 @@ isar_image_conf_rootfs() {
     # Configure root filesystem
     if [ -n "${DISTRO_CONFIG_SCRIPT}" ]; then
         sudo install -m 755 "${WORKDIR}/${DISTRO_CONFIG_SCRIPT}" "${IMAGE_ROOTFS}"
-        sudo chroot ${IMAGE_ROOTFS} /${DISTRO_CONFIG_SCRIPT} "${MACHINE_SERIAL}" \
-                                                             "${BAUDRATE_TTY}"
-        sudo rm "${IMAGE_ROOTFS}/${DISTRO_CONFIG_SCRIPT}"
+        TARGET_DISTRO_CONFIG_SCRIPT="$(basename ${DISTRO_CONFIG_SCRIPT})"
+        sudo chroot ${IMAGE_ROOTFS} "/$TARGET_DISTRO_CONFIG_SCRIPT" \
+                                    "${MACHINE_SERIAL}" "${BAUDRATE_TTY}"
+        sudo rm "${IMAGE_ROOTFS}/$TARGET_DISTRO_CONFIG_SCRIPT"
    fi
 }
 
