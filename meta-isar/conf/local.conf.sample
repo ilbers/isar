@@ -161,7 +161,7 @@ CONF_VERSION = "1"
 
 #
 # The default list of extra packages to be installed.
-IMAGE_INSTALL = "example-hello example-raw example-module-${KERNEL_NAME} enable-fsck"
+IMAGE_INSTALL = "hello-isar example-raw example-module-${KERNEL_NAME} enable-fsck"
 
 #
 # Enable cross-compilation support

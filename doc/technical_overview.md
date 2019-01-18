@@ -58,7 +58,7 @@ Typical example, when Isar builds the following configurations:
  - Debian Stretch, i386
 
 In this case there will be 3 different build subtrees. So the standard
-example-hello demo application will be processed 3 times for each
+hello-isar demo application will be processed 3 times for each
 environment. Three different sets of stamps will be used to distinguish
 build progress between different bitbake configurations.
 
