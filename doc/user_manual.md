@@ -507,7 +507,7 @@ installation by appending them to the `IMAGE_PREINSTALL` variable while packages
 DESCRIPTION = "Sample image recipe for ISAR"
 
 LICENSE = "gpl-2.0"
-LIC_FILES_CHKSUM = "file://${LAYERDIR_isar}/licenses/COPYING.GPLv2;md5=751419260aa954499f7abaabaa882bbe"
+LIC_FILES_CHKSUM = "file://${LAYERDIR_core}/licenses/COPYING.GPLv2;md5=751419260aa954499f7abaabaa882bbe"
 
 PV = "1.0"
 
@@ -546,7 +546,7 @@ The `deb` packages are built using `dpkg-buildpackage`, so the sources should co
 DESCRIPTION = "Sample application for ISAR"
 
 LICENSE = "gpl-2.0"
-LIC_FILES_CHKSUM = "file://${LAYERDIR_isar}/licenses/COPYING.GPLv2;md5=751419260aa954499f7abaabaa882bbe"
+LIC_FILES_CHKSUM = "file://${LAYERDIR_core}/licenses/COPYING.GPLv2;md5=751419260aa954499f7abaabaa882bbe"
 
 PV = "0.3-a18c14c"
 
@@ -565,7 +565,7 @@ The following variables are used in this recipe:
  - `LIC_FILES_CHKSUM` - Reference to the license file with its checksum. Isar recommends to store license files for your applications into layer your layer folder `meta-user/licenses/`. Then you may reference it in recipe using the following path:
 
     ```
-    LIC_FILES_CHKSUM = file://${LAYERDIR_isar}/licenses/...
+    LIC_FILES_CHKSUM = file://${LAYERDIR_core}/licenses/...
     ```
 This approach prevents duplication of the license files in different packages.
 
