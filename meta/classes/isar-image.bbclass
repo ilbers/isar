@@ -12,7 +12,6 @@ def cfg_script(d):
         return 'file://' + cf
     return ''
 
-FILESPATH =. "${LAYERDIR_isar}/conf/distro:"
 FILESPATH =. "${LAYERDIR_core}/conf/distro:"
 SRC_URI += "${@ cfg_script(d) }"
 
