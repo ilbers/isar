@@ -25,3 +25,6 @@ apt-get update \
 
 # Install all build deps
 mk-build-deps $set_arch -t "${install_cmd}" -i -r debian/control
+
+# Upgrade any already installed packages in case we are partially rebuilding
+apt-get upgrade -y
