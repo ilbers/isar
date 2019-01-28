@@ -122,3 +122,10 @@ rm -f linux-image-${PV}_${PV}-1_*.deb
 fakeroot dpkg-deb -b ${REPACK_LINUX_HEADERS_DIR} \
 	linux-headers-${KERNEL_NAME}_${PV}-1_${KERNEL_NAME}.deb
 rm -f linux-headers-${PV}_${PV}-1_*.deb
+
+# linux-libc-dev causes dependency problems if we downgrade
+# remove it after the build so the downgraded version does not get deployed
+LINUX_LIBC_DEV_V=$( dpkg-query --show --showformat '${Version}' linux-libc-dev )
+if dpkg --compare-versions $LINUX_LIBC_DEV_V gt $PV; then
+	rm -f linux-libc-dev_${PV}*.deb
+fi

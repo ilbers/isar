@@ -62,4 +62,7 @@ dpkg_runbuild() {
 	export KERNEL_HEADERS_DEBIAN_DEPENDS="${KERNEL_HEADERS_DEBIAN_DEPENDS}"
 
 	sudo -E chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} ${PP}/build-kernel.sh ${PP}/${PPS} ${DISTRO_ARCH}
+	if [ ! -f ${WORKDIR}/linux-libc-dev_${PV}*.deb ]; then
+		bbwarn "Kernel downgrade detected, not deploying linux-libc-dev"
+	fi
 }
