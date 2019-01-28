@@ -8,7 +8,7 @@
 require recipes-kernel/linux/linux-custom.inc
 
 SRC_URI += " \
-    git://git.kernel.org/pub/scm/linux/kernel/git/bwh/linux-cip.git;branch=linux-4.4.y-cip;destsuffix=${P} \
+    git://git.kernel.org/pub/scm/linux/kernel/git/cip/linux-cip.git;branch=linux-4.4.y-cip;destsuffix=${P} \
     file://x86_64_defconfig"
 
 SRCREV = "af3adf9f9c633ac0e1d68487d7fad22285dda8a3"
