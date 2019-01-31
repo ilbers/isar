@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: MIT
 
 inherit buildchroot
+inherit debianize
 
 DEPENDS ?= ""
 
