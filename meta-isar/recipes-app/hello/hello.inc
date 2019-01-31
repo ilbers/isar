@@ -6,7 +6,7 @@
 inherit dpkg
 
 # this will fetch and unpack the sources from upstream debian
-SRC_APT = "${PN}"
+SRC_URI = "apt://${PN}=${PV}"
 
 MAINTAINER = "isar-users <isar-users@googlegroups.com>"
 CHANGELOG_V = "${PV}-99+isar"
