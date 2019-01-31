@@ -540,6 +540,9 @@ The `deb` packages are built using `dpkg-buildpackage`, so the sources should co
 
 **NOTE:** If the sources do not contain a `debian` directory your recipe can fetch, create, or ship that.
 
+This is also what you do if you want to rebuild/modify an upstream package.
+Isar does understand `SRC_URI` entries starting with "apt://". For an example
+of a customized upstream package have a look at `meta-isar/recipes-app/hello`.
 
 #### Example
 ```
@@ -753,3 +756,4 @@ bitbake multiconfig:qemuarm-stretch:isar-image-base
 ### Limitation
 
 So far the local base-apt repo is not gpg signed.
+Files fetched with the `SRC_URI` protocol "apt://" are not yet cached.
