@@ -109,7 +109,7 @@ fi
 if [ ! -z "$SHOWYPDOC" ]; then
     cat <<EOM
 For more information about isar, contact the developers at:
-    https://lists.debian.org/debian-embedded/
+    https://groups.google.com/d/forum/isar-users
 
 EOM
     unset SHOWYPDOC
