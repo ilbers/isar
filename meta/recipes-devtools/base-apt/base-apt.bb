@@ -5,6 +5,8 @@ SRC_URI = "file://distributions.in"
 
 inherit base-apt-helper
 
+BASE_REPO_KEY ?= ""
+
 CACHE_CONF_DIR = "${REPO_BASE_DIR}/${BASE_DISTRO}/conf"
 do_cache_config[dirs] = "${CACHE_CONF_DIR}"
 do_cache_config[stamp-extra-info] = "${DISTRO}"
@@ -16,6 +18,10 @@ do_cache_config() {
     if [ ! -e "${CACHE_CONF_DIR}/distributions" ]; then
         sed -e "s#{CODENAME}#"${BASE_DISTRO_CODENAME}"#g" \
             ${WORKDIR}/distributions.in > ${CACHE_CONF_DIR}/distributions
+        if [ "${BASE_REPO_KEY}" ] ; then
+            # To generate Release.gpg
+            echo "SignWith: yes" >> ${CACHE_CONF_DIR}/distributions
+        fi
     fi
 
     path_cache="${REPO_BASE_DIR}/${BASE_DISTRO}"

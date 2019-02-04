@@ -35,14 +35,23 @@ inherit base-apt-helper
 python () {
     from urllib.parse import urlparse
     distro_apt_keys = d.getVar("DISTRO_APT_KEYS", False)
+    wd = d.getVar("WORKDIR", True)
     if distro_apt_keys:
         d.setVar("DEBOOTSTRAP_KEYRING", "--keyring ${APTKEYRING}")
-        wd = d.getVar("WORKDIR", True)
         for key in distro_apt_keys.split():
             url = urlparse(key)
             filename = ''.join([wd, url.path])
             d.appendVar("SRC_URI", " %s" % key)
             d.appendVar("APTKEYFILES", " %s" % filename)
+    if bb.utils.to_boolean(d.getVar('ISAR_USE_CACHED_BASE_REPO')):
+        own_pub_key = d.getVar("BASE_REPO_KEY", False)
+        if own_pub_key:
+            d.setVar("DEBOOTSTRAP_KEYRING", "--keyring ${APTKEYRING}")
+            for key in own_pub_key.split():
+                url = urlparse(key)
+                filename = ''.join([wd, url.path])
+                d.appendVar("SRC_URI", " %s" % key)
+                d.appendVar("APTKEYFILES", " %s" % filename)
 }
 
 def aggregate_files(d, file_list, file_out):
@@ -200,7 +209,9 @@ isar_bootstrap() {
     done
     debootstrap_args="--verbose --variant=minbase --include='${DISTRO_BOOTSTRAP_BASE_PACKAGES}'"
     if [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" ]; then
-        debootstrap_args="$debootstrap_args --no-check-gpg"
+        if [ -z "${BASE_REPO_KEY}" ] ; then
+            debootstrap_args="$debootstrap_args --no-check-gpg"
+        fi
     fi
     E="${@bb.utils.export_proxies(d)}"
     sudo -E flock "${ISAR_BOOTSTRAP_LOCK}" -c "\
