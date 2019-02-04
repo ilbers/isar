@@ -37,9 +37,10 @@ python () {
     distro_apt_keys = d.getVar("DISTRO_APT_KEYS", False)
     if distro_apt_keys:
         d.setVar("DEBOOTSTRAP_KEYRING", "--keyring ${APTKEYRING}")
+        wd = d.getVar("WORKDIR", True)
         for key in distro_apt_keys.split():
             url = urlparse(key)
-            filename = os.path.basename(url.path)
+            filename = ''.join([wd, url.path])
             d.appendVar("SRC_URI", " %s" % key)
             d.appendVar("APTKEYFILES", " %s" % filename)
 }
