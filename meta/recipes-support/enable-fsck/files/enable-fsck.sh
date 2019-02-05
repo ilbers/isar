@@ -9,8 +9,8 @@
 
 set -e
 
-ROOT_DEV=$(/bin/findmnt -n -o SOURCE /)
-sed -i -e 's|^/dev/root\([ 	]\+.*[ 	]\+\)0[ 	]\+0|'$ROOT_DEV'\10	1|' \
+ROOT_DEV="$(/bin/findmnt -n -o SOURCE /)"
+sed -i -e 's|^/dev/root\([ 	]\+.*[ 	]\+\)0[ 	]\+0|'"$ROOT_DEV"'\10	1|' \
        -e 's|^\(/dev/.*[ 	]\+\)0[ 	]\+0|\10	2|' /etc/fstab
 
 update-initramfs -u

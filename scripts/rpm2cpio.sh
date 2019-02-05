@@ -11,12 +11,12 @@ fatal() {
 }
 
 pkg="$1"
-[ -n "$pkg" -a -e "$pkg" ] ||
+[ -n "$pkg" ] && [ -e "$pkg" ] ||
 	fatal "No package supplied"
 
 _dd() {
 	local o="$1"; shift
-	dd if="$pkg" skip="$o" iflag=skip_bytes status=none $*
+	dd if="$pkg" skip="$o" iflag=skip_bytes status=none "$@"
 }
 
 calcsize() {

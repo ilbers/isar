@@ -48,10 +48,10 @@ if [ -z "$ISARROOT" ]; then
 fi
 unset THIS_SCRIPT
 
-ISARROOT=`readlink -f "$ISARROOT"`
+ISARROOT=$(readlink -f "$ISARROOT")
 export ISARROOT
-. $ISARROOT/scripts/isar-buildenv-internal $1 && \
-    TEMPLATECONF="$TEMPLATECONF" $ISARROOT/scripts/isar-setup-builddir || {
+. "$ISARROOT/scripts/isar-buildenv-internal" "$1" && \
+    TEMPLATECONF="$TEMPLATECONF" "$ISARROOT/scripts/isar-setup-builddir" || {
     unset ISARROOT
     return 1
 }

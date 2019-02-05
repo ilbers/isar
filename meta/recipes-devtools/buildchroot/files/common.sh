@@ -24,7 +24,7 @@ else
 fi
 
 # Go to build directory
-cd $1
+cd "$1"
 
 # To avoid Perl locale warnings:
 export LC_ALL=C

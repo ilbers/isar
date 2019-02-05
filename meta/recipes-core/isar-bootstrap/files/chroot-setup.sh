@@ -23,7 +23,7 @@ usage() {
 		is prevented.
 
 		Usage:
-		$(basename $0) [command] [parameters]
+		$(basename "$0") [command] [parameters]
 		commands:
 		    setup [target path]    Setup chroot environment
 		    cleanup [target path]  Cleanup chroot environment
@@ -132,9 +132,9 @@ main() {
 
 	case "${CMD}" in
 		"setup")
-			chroot_setup $@;;
+			chroot_setup "$@";;
 		"cleanup")
-			chroot_cleanup $@;;
+			chroot_cleanup "$@";;
 		*)
 			echo "Unknown command '${CMD}'." 1>&2
 			echo 1>&2
@@ -143,4 +143,4 @@ main() {
 	esac
 }
 
-main $@
+main "$@"

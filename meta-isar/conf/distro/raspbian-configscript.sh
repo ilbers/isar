@@ -14,7 +14,7 @@ if [ -f /etc/inittab ]; then
         >> /etc/inittab
 fi
 
-KERNEL_IMAGE=`ls /boot | grep vmlinuz`
+KERNEL_IMAGE="$(find /boot -maxdepth 1 -name "vmlinuz*" -printf "%p\n")"
 
 cat > /boot/config.txt << EOF
 kernel=$KERNEL_IMAGE

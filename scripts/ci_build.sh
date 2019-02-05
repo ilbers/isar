@@ -13,7 +13,7 @@ ES_BUG=3
 export PATH=$PATH:/sbin
 
 # Go to Isar root
-cd $(dirname $0)/..
+cd "$(dirname "$0")/.."
 
 # Start build in Isar tree by default
 BUILD_DIR=./build
@@ -76,10 +76,10 @@ do
 done
 
 # Setup build folder for the current build
-if [ ! -d $BUILD_DIR ]; then
-        mkdir -p $BUILD_DIR
+if [ ! -d "$BUILD_DIR" ]; then
+        mkdir -p "$BUILD_DIR"
 fi
-source isar-init-build-env $BUILD_DIR
+source isar-init-build-env "$BUILD_DIR"
 
 if [ -n "$CROSS_BUILD" ]; then
     sed -i -e 's/ISAR_CROSS_COMPILE ?= "0"/ISAR_CROSS_COMPILE ?= "1"/g' conf/local.conf
@@ -120,9 +120,9 @@ else
     #multiconfig:qemuarm64-buster:isar-image-base
 fi
 
-cp -a ${ISARROOT}/meta/classes/dpkg-base.bbclass ${ISARROOT}/meta/classes/dpkg-base.bbclass.ci-backup
-echo -e "do_fetch_append() {\n\n}" >> ${ISARROOT}/meta/classes/dpkg-base.bbclass
+cp -a "${ISARROOT}/meta/classes/dpkg-base.bbclass" "${ISARROOT}/meta/classes/dpkg-base.bbclass.ci-backup"
+echo -e "do_fetch_append() {\n\n}" >> "${ISARROOT}/meta/classes/dpkg-base.bbclass"
 
 bitbake $BB_ARGS multiconfig:qemuamd64-stretch:isar-image-base
 
-mv ${ISARROOT}/meta/classes/dpkg-base.bbclass.ci-backup ${ISARROOT}/meta/classes/dpkg-base.bbclass
+mv "${ISARROOT}/meta/classes/dpkg-base.bbclass.ci-backup" "${ISARROOT}/meta/classes/dpkg-base.bbclass"
