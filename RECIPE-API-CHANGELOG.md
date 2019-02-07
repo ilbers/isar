@@ -136,3 +136,12 @@ files). Otherwise, default permissions are used.
 
 It's now sufficient to provide only kbuild rules. Makefile targets like modules
 or modules_install as well as KDIR and DESTDIR evaluation are no longer needed.
+
+### Remove setting of root passwords in custom packages
+
+Custom packages that are not installed via the IMAGE_TRANSIENT_PACKAGES and set
+a root password, leak that password via its script in /var/lib/dpkg/info.
+
+Instead set the CFG_ROOT_PW variable to the encrypted password and use the
+transient 'isar-cfg-rootpw' package (now installed as transient package per
+default).

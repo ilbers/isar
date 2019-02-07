@@ -317,6 +317,8 @@ Some other variables include:
  - `HOST_DISTRO_APT_SOURCES` - List of apt source files for SDK root filesystem. This variable is optional.
  - `HOST_DISTRO_APT_PREFERENCES` - List of apt preference files for SDK root filesystem. This variable is optional.
  - `DISTRO_APT_PREMIRRORS` - The preferred mirror (append it to the default URI in the format `ftp.debian.org my.preferred.mirror`. This variable is optional.
+ - `CFG_ROOT_PW` - The encrypted root password to be set. To encrypt password use `mkpasswd`. You find `mkpasswd` in the `whois` package of Debian. If the variable is empty, root login is passwordless.
+ - `CFG_ROOT_LOCKED` - If set to `1` the root account will be locked.
 
 ---
 

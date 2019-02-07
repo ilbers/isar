@@ -17,7 +17,7 @@ SRC_URI += "${@ cfg_script(d) }"
 
 DEPENDS += "${IMAGE_INSTALL} ${IMAGE_TRANSIENT_PACKAGES}"
 
-IMAGE_TRANSIENT_PACKAGES += "isar-cfg-localepurge"
+IMAGE_TRANSIENT_PACKAGES += "isar-cfg-localepurge isar-cfg-rootpw"
 
 WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${PN}"
 
