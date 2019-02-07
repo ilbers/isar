@@ -128,6 +128,7 @@ addtask populate_sdk after do_rootfs
 inherit base-apt-helper
 
 do_cache_base_repo[depends] = "base-apt:do_cache_config"
+do_cache_base_repo[lockfiles] = "${REPO_BASE_DIR}/isar.lock"
 do_cache_base_repo[stamp-extra-info] = "${MACHINE}-${DISTRO}"
 
 do_cache_base_repo() {
