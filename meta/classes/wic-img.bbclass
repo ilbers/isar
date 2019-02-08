@@ -4,13 +4,36 @@
 # this class is heavily inspired by OEs ./meta/classes/image_types_wic.bbclass
 #
 
+WKS_FILE_CHECKSUM = "${@'${WKS_FULL_PATH}:%s' % os.path.exists('${WKS_FULL_PATH}')}"
+
+python do_write_wks_template () {
+    """Write out expanded template contents to WKS_FULL_PATH."""
+    import re
+
+    template_body = d.getVar('_WKS_TEMPLATE')
+
+    # Remove any remnant variable references left behind by the expansion
+    # due to undefined variables
+    expand_var_regexp = re.compile(r"\${[^{}@\n\t :]+}")
+    while True:
+        new_body = re.sub(expand_var_regexp, '', template_body)
+        if new_body == template_body:
+            break
+        else:
+            template_body = new_body
+
+    wks_file = d.getVar('WKS_FULL_PATH')
+    with open(wks_file, 'w') as f:
+        f.write(template_body)
+}
+
 python () {
     wks_full_path = None
 
     wks_file = d.getVar('WKS_FILE', True)
     if not wks_file:
         bb.fatal("WKS_FILE must be set")
-    if not wks_file.endswith('.wks'):
+    if not wks_file.endswith('.wks') and not wks_file.endswith('.wks.in'):
         wks_file += '.wks'
 
     if os.path.isabs(wks_file):
@@ -28,6 +51,32 @@ python () {
         bb.fatal("WKS_FILE '%s' not found" % wks_file)
 
     d.setVar('WKS_FULL_PATH', wks_full_path)
+
+    wks_file_u = wks_full_path
+    wks_file = wks_full_path
+    base, ext = os.path.splitext(wks_file)
+    if ext == '.in' and os.path.exists(wks_file):
+        wks_out_file = os.path.join(d.getVar('WORKDIR'), os.path.basename(base))
+        d.setVar('WKS_FULL_PATH', wks_out_file)
+        d.setVar('WKS_TEMPLATE_PATH', wks_file_u)
+        d.setVar('WKS_FILE_CHECKSUM', '${WKS_TEMPLATE_PATH}:True')
+
+        # We need to re-parse each time the file changes, and bitbake
+        # needs to be told about that explicitly.
+        bb.parse.mark_dependency(d, wks_file)
+
+        try:
+            with open(wks_file, 'r') as f:
+                body = f.read()
+        except (IOError, OSError) as exc:
+            pass
+        else:
+            # Previously, I used expandWithRefs to get the dependency list
+            # and add it to WICVARS, but there's no point re-parsing the
+            # file in process_wks_template as well, so just put it in
+            # a variable and let the metadata deal with the deps.
+            d.setVar('_WKS_TEMPLATE', body)
+            bb.build.addtask('do_write_wks_template', 'do_wic_image', None, d)
 }
 
 inherit buildchroot
@@ -108,7 +157,7 @@ do_wic_image() {
     cp -f $(ls -t -1 ${BUILDCHROOT_DIR}/tmp/${IMAGE_FULLNAME}.wic/*.direct | head -1) ${WIC_IMAGE_FILE}
 }
 
-do_wic_image[file-checksums] += "${WKS_FULL_PATH}:True"
+do_wic_image[file-checksums] += "${WKS_FILE_CHECKSUM}"
 do_wic_image[depends] = "buildchroot-target:do_build"
 
 addtask wic_image before do_build after do_install_imager_deps

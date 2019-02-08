@@ -198,6 +198,8 @@ A bootable disk image is generated if you set IMAGE_TYPE to 'wic-img'. Behind th
  $ bitbake multiconfig:qemuamd64-stretch:isar-image-base
 ```
 
+Variables may be used in `.wks.in` files; Isar will expand them and generate a regular `.wks` file before generating the disk image using `wic`.
+
 In order to run the EFI images with `qemu`, an EFI firmware is required and available at the following address:
 https://github.com/tianocore/edk2/tree/3858b4a1ff09d3243fea8d07bd135478237cb8f7
 
