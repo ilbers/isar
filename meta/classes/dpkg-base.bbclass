@@ -31,6 +31,10 @@ do_apt_fetch() {
 	fi
 	dpkg_do_mounts
 	E="${@ bb.utils.export_proxies(d)}"
+	sudo -E chroot ${BUILDCHROOT_DIR} /usr/bin/apt-get update \
+		-o Dir::Etc::sourcelist="sources.list.d/isar-apt.list" \
+		-o Dir::Etc::sourceparts="-" \
+		-o APT::Get::List-Cleanup="0"
 	sudo -E chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} \
 		sh -c 'cd ${PP} && apt-get -y source ${SRC_APT}'
 	dpkg_undo_mounts
