@@ -1,0 +1,58 @@
+/dts-v1/;
+
+/ {
+	description = "Configuration to of a fitimage";
+
+	images {
+		kernel {
+			description = "Linux kernel";
+			data = /incbin/("${KERNEL_IMG}");
+			type = "kernel";
+			arch = "arm";
+			os = "linux";
+			compression = "none";
+			load =  <0x8000>;
+                        entry = <0x8000>;
+			hash-1 {
+				algo = "sha256";
+			};
+		};
+
+		fdt {
+			description = "Device Tree";
+			data = /incbin/("${DTB_IMG}");
+			type = "flat_dt";
+			arch = "arm";
+			compression = "none";
+			hash-1 {
+				algo = "sha256";
+			};
+		};
+
+		initrd {
+			description = "Initial ram disk";
+			data = /incbin/("${INITRD_IMG}");
+			type = "ramdisk";
+			arch = "arm";
+			os = "linux";
+			compression = "none";
+			hash-1 {
+				algo = "sha256";
+			};
+		};
+	};
+
+	configurations {
+		default = "config-1";
+
+		config-1 {
+			description = "System boot configuration";
+			fdt = "fdt";
+                        kernel = "kernel";
+                        ramdisk = "initrd";
+			hash {
+				algo = "sha256";
+			};
+		};
+	};
+};

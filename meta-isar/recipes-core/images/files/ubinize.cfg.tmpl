@@ -1,0 +1,17 @@
+[fitimage]
+mode=ubi
+image=${FIT_IMG}
+vol_id=1
+vol_type=static
+vol_name=fitimage
+vol_size=64MiB
+vol_alignment=1
+
+[rootfs]
+mode=ubi
+image=${UBIFS_IMG}
+vol_id=2
+vol_type=dynamic
+vol_name=rootfs
+vol_size=300MiB
+vol_alignment=1

@@ -53,6 +53,7 @@ BBMULTICONFIG = " \
     hikey-stretch \
     qemuamd64-buster \
     qemuamd64-buster-tgz \
+    nand-ubi-demo-buster \
     rpi-jessie \
 "
 

@@ -102,7 +102,7 @@ do_mark_rootfs() {
         "${IMAGE_ROOTFS}"
 }
 
-addtask mark_rootfs before do_copy_boot_files after do_rootfs
+addtask mark_rootfs before do_copy_boot_files do_transform_template after do_rootfs
 
 do_copy_boot_files() {
     KERNEL_IMAGE=${@get_image_name(d, 'vmlinuz')[1]}
@@ -113,6 +113,18 @@ do_copy_boot_files() {
     INITRD_IMAGE=${@get_image_name(d, 'initrd.img')[1]}
     if [ -n "${INITRD_IMAGE}" ]; then
         sudo cp -f ${IMAGE_ROOTFS}/boot/${@get_image_name(d, 'initrd.img')[0]} ${DEPLOY_DIR_IMAGE}/${INITRD_IMAGE}
+    fi
+
+    # Check DTB_FILE via inline python to handle unset case:
+    if [ -n "${@d.getVar('DTB_FILE', True) or ""}" ]; then
+        dtb="$(find '${IMAGE_ROOTFS}/usr/lib' -type f \
+                    -iwholename '*linux-image-*/${DTB_FILE}' | head -1)"
+
+        if [ -z "$dtb" -o ! -e "$dtb" ]; then
+            die "${DTB_FILE} not found"
+        fi
+
+        cp -f "$dtb" "${DEPLOY_DIR_IMAGE}/${DTB_FILE}"
     fi
 }
 
