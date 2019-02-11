@@ -478,6 +478,7 @@ Isar contains additional image type classes that can be used as reference:
  - `ext4-img`
  - `rpi-sdimg`
  - `targz-img`
+ - `ubifs-img`
  - `wic-img`
 
 ---
