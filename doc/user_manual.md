@@ -352,6 +352,7 @@ Isar can generate various images types for specific machine. The type of the ima
  - `ext4` - Raw ext4 filesystem image (default option for `qemuarm` machine).
  - `rpi-sdimg` - A complete, partitioned Raspberry Pi SD card image (default option for the `rpi` machine).
  - `wic-img` - A full disk image with user-specified partitions created and populated using the wic tool.
+ - `ubi-img` - A image for use on mtd nand partitions employing UBI
 
 ---
 
@@ -479,6 +480,7 @@ Isar contains additional image type classes that can be used as reference:
  - `rpi-sdimg`
  - `targz-img`
  - `ubifs-img`
+ - `ubi-img`
  - `wic-img`
 
 ---
