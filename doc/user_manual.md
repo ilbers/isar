@@ -472,10 +472,11 @@ IMAGE_TYPE = "my-image"
 
 ### Reference Classes
 
-Isar contains three image type classes that can be used as reference:
+Isar contains additional image type classes that can be used as reference:
 
  - `ext4-img`
  - `rpi-sdimg`
+ - `targz-img`
  - `wic-img`
 
 ---
