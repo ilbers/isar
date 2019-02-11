@@ -14,6 +14,27 @@ IMAGE_FULLNAME = "${PN}-${DISTRO}-${MACHINE}"
 KERNEL_IMAGE ?= "${@get_image_name(d, 'vmlinuz')[1]}"
 INITRD_IMAGE ?= "${@get_image_name(d, 'initrd.img')[1]}"
 
+# Useful variables for imager implementations:
+PP = "/home/builder/${PN}"
+PP_DEPLOY = "${PP}/deploy"
+PP_ROOTFS = "${PP}/rootfs"
+PP_WORK = "${PP}/work"
+
+BUILDROOT = "${BUILDCHROOT_DIR}${PP}"
+BUILDROOT_DEPLOY = "${BUILDCHROOT_DIR}${PP_DEPLOY}"
+BUILDROOT_ROOTFS = "${BUILDCHROOT_DIR}${PP_ROOTFS}"
+BUILDROOT_WORK = "${BUILDCHROOT_DIR}${PP_WORK}"
+
+image_do_mounts() {
+    sudo flock ${MOUNT_LOCKFILE} -c ' \
+        mkdir -p "${BUILDROOT_DEPLOY}" "${BUILDROOT_ROOTFS}" "${BUILDROOT_WORK}"
+        mount --bind "${DEPLOY_DIR_IMAGE}" "${BUILDROOT_DEPLOY}"
+        mount --bind "${IMAGE_ROOTFS}" "${BUILDROOT_ROOTFS}"
+        mount --bind "${WORKDIR}" "${BUILDROOT_WORK}"
+    '
+    buildchroot_do_mounts
+}
+
 inherit ${IMAGE_TYPE}
 
 # Extra space for rootfs in MB
