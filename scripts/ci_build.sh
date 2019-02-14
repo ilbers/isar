@@ -20,6 +20,23 @@ BUILD_DIR=./build
 
 BB_ARGS="-v"
 
+TARGETS_SET="\
+            multiconfig:qemuarm-jessie:isar-image-base \
+            multiconfig:qemuarm-stretch:isar-image-base \
+            multiconfig:qemuarm-buster:isar-image-base \
+            multiconfig:qemuarm64-stretch:isar-image-base \
+            multiconfig:qemui386-jessie:isar-image-base \
+            multiconfig:qemui386-stretch:isar-image-base \
+            multiconfig:qemui386-buster:isar-image-base \
+            multiconfig:qemuamd64-jessie:isar-image-base \
+            multiconfig:qemuamd64-stretch:isar-image-base \
+            multiconfig:qemuamd64-buster:isar-image-base \
+            multiconfig:qemuamd64-buster-tgz:isar-image-base \
+            multiconfig:rpi-jessie:isar-image-base"
+          # qemu-user-static of <= buster too old to build that
+          # multiconfig:qemuarm64-buster:isar-image-base
+
+
 show_help() {
     echo "This script builds the default Isar images."
     echo
@@ -62,6 +79,10 @@ do
         ;;
     -f|--fast)
         FAST_BUILD="1"
+        TARGETS_SET="\
+                     multiconfig:qemuarm-stretch:isar-image-base \
+                     multiconfig:qemuarm64-stretch:isar-image-base \
+                     multiconfig:qemuamd64-stretch:isar-image-base"
         ;;
     -q|--quiet)
         BB_ARGS=""
@@ -90,34 +111,15 @@ if [ -n "$FAST_BUILD" ]; then
     # Enforce cross-compilation to speed up the build
     # Enable use of cached base repository
     sed -i -e 's/ISAR_CROSS_COMPILE ?= "0"/ISAR_CROSS_COMPILE ?= "1"/g' conf/local.conf
-    bitbake $BB_ARGS -c cache_base_repo \
-        multiconfig:qemuarm-stretch:isar-image-base \
-        multiconfig:qemuarm64-stretch:isar-image-base \
-        multiconfig:qemuamd64-stretch:isar-image-base
+    bitbake $BB_ARGS -c cache_base_repo $TARGETS_SET
     while [ -e bitbake.sock ]; do sleep 1; done
     sudo rm -rf tmp
     sed -i -e 's/#ISAR_USE_CACHED_BASE_REPO ?= "1"/ISAR_USE_CACHED_BASE_REPO ?= "1"/g' conf/local.conf
-    bitbake $BB_ARGS \
-        multiconfig:qemuarm-stretch:isar-image-base \
-        multiconfig:qemuarm64-stretch:isar-image-base \
-        multiconfig:qemuamd64-stretch:isar-image-base
+    bitbake $BB_ARGS $TARGETS_SET
 else
-    # Start build for all possible configurations
-    bitbake $BB_ARGS \
-        multiconfig:qemuarm-jessie:isar-image-base \
-        multiconfig:qemuarm-stretch:isar-image-base \
-        multiconfig:qemuarm-buster:isar-image-base \
-        multiconfig:qemuarm64-stretch:isar-image-base \
-        multiconfig:qemui386-jessie:isar-image-base \
-        multiconfig:qemui386-stretch:isar-image-base \
-        multiconfig:qemui386-buster:isar-image-base \
-        multiconfig:qemuamd64-jessie:isar-image-base \
-        multiconfig:qemuamd64-stretch:isar-image-base \
-        multiconfig:qemuamd64-buster:isar-image-base \
-        multiconfig:qemuamd64-buster-tgz:isar-image-base \
-        multiconfig:rpi-jessie:isar-image-base
-    # qemu-user-static of <= buster too old to build that
-    #multiconfig:qemuarm64-buster:isar-image-base
+    # Start build for the full set of configurations
+    bitbake $BB_ARGS $TARGETS_SET
+
 fi
 
 cp -a "${ISARROOT}/meta/classes/dpkg-base.bbclass" "${ISARROOT}/meta/classes/dpkg-base.bbclass.ci-backup"
