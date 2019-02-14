@@ -81,10 +81,8 @@ do
     -f|--fast)
         # Start build for the reduced set of configurations
         # Enforce cross-compilation to speed up the build
-        # Enable use of cached base repository
         FAST_BUILD="1"
         CROSS_BUILD="1"
-        REPRO_BUILD="1"
         TARGETS_SET="\
                      multiconfig:qemuarm-stretch:isar-image-base \
                      multiconfig:qemuarm64-stretch:isar-image-base \
