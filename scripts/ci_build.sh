@@ -48,8 +48,9 @@ show_help() {
     echo "                          the build will be started in current path."
     echo "    -c, --cross           enable cross-compilation."
     echo "    -d, --debug           enable debug bitbake output."
-    echo "    -f, --fast            build reduced set of configurations."
+    echo "    -f, --fast            cross build reduced set of configurations."
     echo "    -q, --quiet           suppress verbose bitbake output."
+    echo "    -r, --repro           enable use of cached base repository."
     echo "    --help                display this message and exit."
     echo
     echo "Exit status:"
@@ -78,7 +79,12 @@ do
         BB_ARGS="$BB_ARGS -d"
         ;;
     -f|--fast)
+        # Start build for the reduced set of configurations
+        # Enforce cross-compilation to speed up the build
+        # Enable use of cached base repository
         FAST_BUILD="1"
+        CROSS_BUILD="1"
+        REPRO_BUILD="1"
         TARGETS_SET="\
                      multiconfig:qemuarm-stretch:isar-image-base \
                      multiconfig:qemuarm64-stretch:isar-image-base \
@@ -86,6 +92,9 @@ do
         ;;
     -q|--quiet)
         BB_ARGS=""
+        ;;
+    -r|--repro)
+        REPRO_BUILD="1"
         ;;
     *)
         echo "error: invalid parameter '$key', please try '--help' to get list of supported parameters"
@@ -106,21 +115,16 @@ if [ -n "$CROSS_BUILD" ]; then
     sed -i -e 's/ISAR_CROSS_COMPILE ?= "0"/ISAR_CROSS_COMPILE ?= "1"/g' conf/local.conf
 fi
 
-if [ -n "$FAST_BUILD" ]; then
-    # Start build for the reduced set of configurations
-    # Enforce cross-compilation to speed up the build
+if [ -n "$REPRO_BUILD" ]; then
     # Enable use of cached base repository
-    sed -i -e 's/ISAR_CROSS_COMPILE ?= "0"/ISAR_CROSS_COMPILE ?= "1"/g' conf/local.conf
-    bitbake $BB_ARGS -c cache_base_repo $TARGETS_SET
+    bitbake $BB_ARGS -c cache_base_repo  $TARGETS_SET
     while [ -e bitbake.sock ]; do sleep 1; done
     sudo rm -rf tmp
     sed -i -e 's/#ISAR_USE_CACHED_BASE_REPO ?= "1"/ISAR_USE_CACHED_BASE_REPO ?= "1"/g' conf/local.conf
-    bitbake $BB_ARGS $TARGETS_SET
-else
-    # Start build for the full set of configurations
-    bitbake $BB_ARGS $TARGETS_SET
-
 fi
+
+# Start build for the defined set of configurations
+bitbake $BB_ARGS $TARGETS_SET
 
 cp -a "${ISARROOT}/meta/classes/dpkg-base.bbclass" "${ISARROOT}/meta/classes/dpkg-base.bbclass.ci-backup"
 echo -e "do_fetch_append() {\n\n}" >> "${ISARROOT}/meta/classes/dpkg-base.bbclass"
