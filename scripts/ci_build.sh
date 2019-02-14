@@ -126,6 +126,13 @@ fi
 # Start build for the defined set of configurations
 bitbake $BB_ARGS $TARGETS_SET
 
+# Note: de0-nano-soc build is launched separately as
+# parallel build with the same target arch (armhf) fails.
+# The problem is being investigated
+if [ -n "$FAST_BUILD" ]; then
+    bitbake $BB_ARGS multiconfig:de0-nano-soc-stretch:isar-image-base
+fi
+
 cp -a "${ISARROOT}/meta/classes/dpkg-base.bbclass" "${ISARROOT}/meta/classes/dpkg-base.bbclass.ci-backup"
 echo -e "do_fetch_append() {\n\n}" >> "${ISARROOT}/meta/classes/dpkg-base.bbclass"
 
