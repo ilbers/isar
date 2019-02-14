@@ -136,14 +136,16 @@ do_build[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 
 do_wic_image() {
     buildchroot_do_mounts
-    sudo flock ${MOUNT_LOCKFILE} -c ' \
+    sudo -s <<'EOSUDO'
+        ( flock 9
         for dir in ${BBLAYERS} ${STAGING_DIR} ${ISARROOT}/scripts; do
             mkdir -p ${BUILDCHROOT_DIR}/$dir
             if ! mountpoint ${BUILDCHROOT_DIR}/$dir >/dev/null 2>&1; then
                 mount --bind --make-private $dir ${BUILDCHROOT_DIR}/$dir
             fi
         done
-        '
+        ) 9>${MOUNT_LOCKFILE}
+EOSUDO
     export FAKEROOTCMD=${FAKEROOTCMD}
     export BUILDDIR=${BUILDDIR}
     export MTOOLS_SKIP_CHECK=1

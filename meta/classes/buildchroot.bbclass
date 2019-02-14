@@ -22,7 +22,8 @@ python __anonymous() {
 MOUNT_LOCKFILE = "${BUILDCHROOT_DIR}/mount.lock"
 
 buildchroot_do_mounts() {
-    sudo flock ${MOUNT_LOCKFILE} -c ' \
+    sudo -s <<'EOSUDO'
+        ( flock 9
         set -e
         if ! grep -q ${BUILDCHROOT_DIR}/isar-apt /proc/mounts; then
             mount --bind ${REPO_ISAR_DIR}/${DISTRO} ${BUILDCHROOT_DIR}/isar-apt
@@ -36,5 +37,6 @@ buildchroot_do_mounts() {
 
         # Refresh /etc/resolv.conf at this chance
         cp -L /etc/resolv.conf ${BUILDCHROOT_DIR}/etc
-        '
+        ) 9>${MOUNT_LOCKFILE}
+EOSUDO
 }

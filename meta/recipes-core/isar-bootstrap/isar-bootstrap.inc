@@ -207,14 +207,16 @@ isar_bootstrap() {
         esac
         shift
     done
-    debootstrap_args="--verbose --variant=minbase --include='${DISTRO_BOOTSTRAP_BASE_PACKAGES}'"
+    debootstrap_args="--verbose --variant=minbase --include=${DISTRO_BOOTSTRAP_BASE_PACKAGES}"
     if [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" ]; then
         if [ -z "${BASE_REPO_KEY}" ] ; then
             debootstrap_args="$debootstrap_args --no-check-gpg"
         fi
     fi
     E="${@bb.utils.export_proxies(d)}"
-    sudo -E flock "${ISAR_BOOTSTRAP_LOCK}" -c "\
+    export IS_HOST debootstrap_args E
+    sudo -E -s <<'EOSUDO'
+        ( flock 9
         set -e
         if [ ! -e "${DEPLOY_ISAR_BOOTSTRAP}" ]; then
             rm -rf "${ROOTFSDIR}"
@@ -295,7 +297,9 @@ isar_bootstrap() {
 
             # Finalize debootstrap by setting the link in deploy
             ln -Tfsr "${ROOTFSDIR}" "${DEPLOY_ISAR_BOOTSTRAP}"
-        fi"
+        fi
+        ) 9>'${ISAR_BOOTSTRAP_LOCK}'
+EOSUDO
 }
 
 CLEANFUNCS = "clean_deploy"
