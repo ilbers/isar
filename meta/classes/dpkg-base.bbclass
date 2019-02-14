@@ -60,7 +60,7 @@ do_prepare_build() {
     true
 }
 
-addtask prepare_build after do_patch before do_build
+addtask prepare_build after do_patch do_transform_template before do_build
 do_prepare_build[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 # If Isar recipes depend on each other, they typically need the package
 # deployed to isar-apt

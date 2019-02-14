@@ -25,6 +25,7 @@ die() {
 }
 
 inherit logging
+inherit template
 
 # Derived from bitbake: bitbake/classes/base.bbclass
 addtask showdata

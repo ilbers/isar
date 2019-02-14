@@ -1,0 +1,11 @@
+Source: ${PN}
+Section: kernel
+Priority: optional
+Standards-Version: 3.9.6
+Build-Depends: linux-headers-${KERNEL_NAME}
+Maintainer: ISAR project <isar-users@googlegroups.com>
+
+Package: ${PN}
+Architecture: any
+Depends: linux-image-${KERNEL_NAME}, kmod
+Description: ${DESCRIPTION}

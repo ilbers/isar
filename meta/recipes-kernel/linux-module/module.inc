@@ -19,12 +19,11 @@ AUTOLOAD ?= ""
 
 inherit dpkg
 
+TEMPLATE_FILES = "debian/control.tmpl \
+                  debian/changelog.tmpl"
+
 do_prepare_build() {
     cp -r ${WORKDIR}/debian ${S}/
-    sed -i -e 's/@PN@/${PN}/g' -e 's/@PV@/${PV}/g' \
-           -e 's/@KERNEL_NAME@/${KERNEL_NAME}/g' \
-           -e 's/@DESCRIPTION@/${DESCRIPTION}/g' \
-        ${S}/debian/changelog ${S}/debian/control
 
     for module in "${AUTOLOAD}"; do
         echo "echo $module >> /etc/modules" >> ${S}/debian/postinst

@@ -283,3 +283,28 @@ cross-compilation, this is done by the same tools as for native compilation.
 Depending on ISAR_CROSS_COMPILE value, additional architecture specifiers are
 passed to build tools automatically, so this is absolutely transparent from
 the user point of view.
+
+## 3.9 Additional features
+
+### 3.9.1 Template files
+
+A basic templating system implemented on top `envsubst(1)` is available. It
+allows limited access to bitbake variables for file generation.
+
+This system is implemented in the `template.bbclass` and defines the
+`do_transform_template` task, the `TEMPLATE_FILES` and `TEMPLATE_VARS`
+variables. Tasks that use need to use files generated via templates need
+to be executed after the `do_transform_template` task.
+
+The `TEMPLATE_FILES` variable contains a space separated list of template
+files and the `TEMPLATE_VARS` variable a space separated list of bitbake
+variable names. The `do_transform_template` task takes these and generates
+files using `envsubst(1)`. The output files are placed in the same directory
+as the template files. The name of the output files are either the name of the
+template file with `.tmpl` removed from the file name end or, if the template
+file did not end with `.tmpl`, the name of the template file with `.out` added
+to the end.
+
+Only template files from the `WORKDIR` are accepted. Either specify relative
+paths based on the recipes `WORKDIR` or absolute paths containing the `WORKDIR`
+in the `TEMPLATE_FILES` variable.

@@ -68,6 +68,7 @@ qemu-user-static
 binfmt-support
 sudo
 reprepro
+gettext-base
 ```
 
 Notes:
