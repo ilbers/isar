@@ -57,24 +57,33 @@ The supported host system is >= stretch.
 
 Install the following packages:
 ```
+binfmt-support
+debootstrap
 dosfstools
-git
 dpkg-dev
+gettext-base
+git
+mtools
 parted
 python3
 python3-distutils             # host >= buster
-qemu
+qemu                          # start_vm
 qemu-user-static
-binfmt-support
-sudo
 reprepro
-gettext-base
+sudo
 ```
 
 Notes:
 
 * BitBake requires Python 3.4+.
 * The python3 package is required for the correct `alternatives` setting.
+* If you'd like to run bitbake in a container (chroot, docker, etc.), install
+  the above in the container, and also perform `sudo apt-get install
+  binfmt-support qemu-user-static` on the host that should run the container.
+* If you install `binfmt-support` after `qemu-user-static`, perform `sudo
+  apt-get install --reinstall qemu-user-static` to register binary formats
+  handled by QEMU (check e.g. `qemu-arm` in `/usr/sbin/update-binfmts
+  --display`).
 
 ### Setup Sudo
 
