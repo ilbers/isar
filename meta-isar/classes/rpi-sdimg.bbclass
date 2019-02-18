@@ -15,7 +15,7 @@ BOOT_SPACE ?= "40960"
 IMAGE_ROOTFS_ALIGNMENT = "4096"
 
 SDIMG = "${DEPLOY_DIR_IMAGE}/${PN}.rpi-sdimg"
-SDIMG_ROOTFS = "${EXT4_IMAGE_FILE}"
+SDIMG_ROOTFS = "${DEPLOY_DIR_IMAGE}/${EXT4_IMAGE_FILE}"
 
 do_rpi_sdimg () {
     # Align partitions
