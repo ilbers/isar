@@ -145,6 +145,9 @@ do_populate_sdk() {
     sudo umount ${SDKCHROOT_DIR}/rootfs/proc || true
     sudo umount -R ${SDKCHROOT_DIR}/rootfs/sys || true
 
+    # Remove setup scripts
+    sudo rm -f ${SDKCHROOT_DIR}/rootfs/chroot-setup.sh ${SDKCHROOT_DIR}/rootfs/configscript.sh
+
     # Create SDK archive
     sudo tar -C ${SDKCHROOT_DIR} --transform="s|^rootfs|sdk-${DISTRO}-${DISTRO_ARCH}|" \
         -c rootfs | xz -T0 > ${DEPLOY_DIR_IMAGE}/sdk-${DISTRO}-${DISTRO_ARCH}.tar.xz
