@@ -148,6 +148,9 @@ do_populate_sdk() {
     # Remove setup scripts
     sudo rm -f ${SDKCHROOT_DIR}/rootfs/chroot-setup.sh ${SDKCHROOT_DIR}/rootfs/configscript.sh
 
+    # Copy mount_chroot.sh for convenience
+    sudo cp ${ISARROOT}/scripts/mount_chroot.sh ${SDKCHROOT_DIR}/rootfs
+
     # Create SDK archive
     sudo tar -C ${SDKCHROOT_DIR} --transform="s|^rootfs|sdk-${DISTRO}-${DISTRO_ARCH}|" \
         -c rootfs | xz -T0 > ${DEPLOY_DIR_IMAGE}/sdk-${DISTRO}-${DISTRO_ARCH}.tar.xz
