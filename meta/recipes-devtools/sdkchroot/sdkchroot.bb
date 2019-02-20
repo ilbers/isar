@@ -8,7 +8,9 @@ DESCRIPTION = "Isar SDK Root filesystem"
 LICENSE = "gpl-2.0"
 LIC_FILES_CHKSUM = "file://${LAYERDIR_core}/licenses/COPYING.GPLv2;md5=751419260aa954499f7abaabaa882bbe"
 
-SRC_URI = "file://configscript.sh"
+SRC_URI = " \
+    file://configscript.sh \
+    file://README.sdk"
 PV = "0.1"
 
 inherit isar-bootstrap-helper
@@ -51,6 +53,7 @@ do_build() {
     setup_root_file_system --copyisarapt --host-arch --host-distro "${S}" $packages
 
     # Configure root filesystem
+    sudo install -m 644 ${WORKDIR}/README.sdk ${S}
     sudo install -m 755 ${WORKDIR}/configscript.sh ${S}
     sudo chroot ${S} /configscript.sh  ${DISTRO_ARCH}
 }
