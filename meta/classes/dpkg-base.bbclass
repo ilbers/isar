@@ -101,13 +101,20 @@ do_build() {
 CLEANFUNCS += "repo_clean"
 
 repo_clean() {
-    PACKAGES=$(cd ${S}/..; ls *.deb | sed 's/\([^_]*\).*/\1/')
-    if [ -n "${PACKAGES}" ]; then
-        reprepro -b ${REPO_ISAR_DIR}/${DISTRO} \
-                 --dbdir ${REPO_ISAR_DB_DIR}/${DISTRO} \
-                 -C main -A ${DISTRO_ARCH} \
-                 remove ${DEBDISTRONAME} \
-                 ${PACKAGES}
+    DEBS=$( ls ${S}/../*.deb )
+    if [ -n "${DEBS}" ]; then
+        for d in ${DEBS}; do
+            p=$( dpkg-deb --show --showformat '${Package}' ${d} )
+            a=$( dpkg-deb --show --showformat '${Architecture}' ${d} )
+            # removing "all" means no arch
+            aarg="-A ${a}"
+            [ "${a}" = "all" ] && aarg=""
+            reprepro -b ${REPO_ISAR_DIR}/${DISTRO} \
+                     --dbdir ${REPO_ISAR_DB_DIR}/${DISTRO} \
+                     -C main ${aarg} \
+                     remove ${DEBDISTRONAME} \
+                     ${p}
+        done
     fi
 }
 
