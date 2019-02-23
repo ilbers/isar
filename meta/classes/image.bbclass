@@ -232,7 +232,7 @@ do_install_imager_deps() {
             -o Dir::Etc::sourceparts="-" \
             -o APT::Get::List-Cleanup="0"
         apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y \
-            --allow-unauthenticated install \
+            --allow-unauthenticated --allow-downgrades install \
             ${IMAGER_INSTALL}'
 }
 

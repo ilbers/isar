@@ -10,7 +10,9 @@ source /isar/common.sh
 # Notes:
 #   1) everything before the -y switch is unchanged from the defaults
 #   2) we add -y to go non-interactive
-install_cmd="apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y"
+#   3) downgrades shall be allowed in case a package recipe was changed
+install_cmd="apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends \
+    -y --allow-downgrades"
 
 # Make sure that we have latest isar-apt content.
 # Options meaning:
