@@ -19,7 +19,7 @@ Copyright (C) 2016-2017, ilbers GmbH
  - [Add a Custom Application](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#add-a-custom-application)
  - [Enabling Cross-compilation](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#isar-cross-compilation)
  - [Create an ISAR SDK root filesystem](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#create-an-isar-sdk-root-filesystem)
- - [Creation of local apt repo caching upstream Debian packages](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#creation-repo-caching-upstream-debian)
+ - [Creation of local apt repo caching upstream Debian packages](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#creation-of-local-apt-repo-caching-upstream-debian-packages)
 
 
 ## Introduction
