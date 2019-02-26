@@ -76,6 +76,7 @@ dpkg-gencontrol -crepack/debian/control \
 	-DArchitecture=$target_arch
 
 # Add Debian-like link installation to postinst
+mkdir -p ${REPACK_LINUX_IMAGE_DIR}/lib/modules/${PV}
 touch "${REPACK_LINUX_IMAGE_DIR}/lib/modules/${PV}/.fresh-install"
 sed -i "${REPACK_LINUX_IMAGE_DIR}/DEBIAN/postinst" \
     -e "/^set -e$/a\\
