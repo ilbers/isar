@@ -7,10 +7,10 @@
 set -e
 printenv | grep -q BB_VERBOSE_LOGS && set -x
 
-# assert we are either "root:root" or "builder:builder"
-if ([ "$(id -un)" != "builder" ] || [ "$(id -gn)" != "builder" ]) &&
+# assert we are either "root:root" or "builder:<gid of builder>"
+if ([ "$(id -un)" != "builder" ] || [ "$(id -g)" != "$(id -g builder)" ]) &&
    ([ "$(id -un)" != "root"    ] || [ "$(id -gn)" != "root"    ]); then
-    echo "This script can only be run as root:root or builder:builder!" >&2
+    echo "This script can only be run as root:root or builder:<gid of builder>!" >&2
     echo "(Currently running as $(id -un)($(id -u)):$(id -gn)($(id -g)))" >&2
     exit 1
 fi
