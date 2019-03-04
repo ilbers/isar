@@ -43,13 +43,24 @@ ROOTFS_EXTRA ?= "64"
 def get_image_name(d, name_link):
     S = d.getVar("IMAGE_ROOTFS", True)
     path_link = os.path.join(S, name_link)
+
+    # If path_link does not exist, it might be a symlink
+    # in the target rootfs.  This block attempts to resolve
+    # it relative to the rootfs location.
+    if not os.path.exists(path_link):
+        path_link = os.path.join(
+            S,
+            os.path.relpath(
+                os.path.realpath(path_link),
+                "/",
+            ),
+        )
+
     if os.path.exists(path_link):
         base = os.path.basename(os.path.realpath(path_link))
         full = d.getVar("IMAGE_FULLNAME", True) + "." + base
         return [base, full]
-    if os.path.islink(path_link):
-        return get_image_name(d, os.path.relpath(os.path.realpath(path_link),
-                                                 '/'))
+
     return ["", ""]
 
 def get_rootfs_size(d):
