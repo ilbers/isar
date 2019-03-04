@@ -171,15 +171,17 @@ addtask clean
 do_clean[nostamp] = "1"
 python do_clean() {
     import subprocess
+    import glob
 
     for f in (d.getVar('CLEANFUNCS', True) or '').split():
         bb.build.exec_func(f, d)
 
-    dir = d.expand("${WORKDIR}")
-    subprocess.call('sudo rm -rf ' + dir, shell=True)
+    workdir = d.expand("${WORKDIR}")
+    subprocess.check_call(["sudo", "rm", "-rf", workdir])
 
-    dir = "%s.*" % bb.data.expand(d.getVar('STAMP', False), d)
-    subprocess.call('sudo rm -rf ' + dir, shell=True)
+    stamppath = bb.data.expand(d.getVar('STAMP', False), d)
+    stampdirs = glob.glob(stamppath + ".*")
+    subprocess.check_call(["sudo", "rm", "-rf"] + stampdirs)
 }
 
 # Derived from OpenEmbedded Core: meta/classes/base.bbclass

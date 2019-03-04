@@ -21,10 +21,15 @@ python do_patch() {
 
             striplevel = fetcher.ud[src_uri].parm.get("striplevel") or "1"
 
-            cmd = "patch --no-backup-if-mismatch -p " + striplevel + \
-                  " --directory " + src_dir + " --input " + workdir + basename
-            bb.note(cmd)
-            if subprocess.call(cmd, shell=True) != 0:
+            cmd = [
+                "patch",
+                "--no-backup-if-mismatch",
+                "-p", striplevel,
+                "--directory", src_dir,
+                "--input", workdir + basename,
+            ]
+            bb.note(" ".join(cmd))
+            if subprocess.call(cmd) != 0:
                 bb.fatal("patching failed")
         except bb.fetch2.BBFetchException as e:
             raise bb.build.FuncFailed(e)

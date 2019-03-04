@@ -16,13 +16,14 @@ python isar_handler() {
 
     basepath = tmpdir + '/work/'
 
-    with open(os.devnull, 'w') as devnull:
-        with open('/proc/mounts', 'rU') as f:
-            lines = f.readlines()
-        for line in lines:
+    with open('/proc/mounts') as f:
+        for line in f.readlines():
             if basepath in line:
-                subprocess.call('sudo umount -l ' + line.split()[1],
-                                stdout=devnull, stderr=devnull, shell=True)
+                subprocess.call(
+                    ["sudo", "umount", "-l", line.split()[1]],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
 }
 
 isar_handler[eventmask] = "bb.runqueue.runQueueExitWait bb.event.BuildCompleted"
