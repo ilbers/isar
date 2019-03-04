@@ -11,7 +11,7 @@ def get_deb_host_arch():
     import subprocess
     host_arch = subprocess.check_output(
         ["dpkg", "--print-architecture"]
-    ).strip()
+    ).decode('utf-8').strip()
     return host_arch
 
 #Debian Distribution for SDK host
