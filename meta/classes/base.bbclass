@@ -126,7 +126,7 @@ python() {
     src_apt = []
     for u in src_uri:
         if u.startswith(prefix):
-            src_apt.append(u[len(prefix):])
+            src_apt.append(u[len(prefix) :])
         else:
             new_src_uri.append(u)
 

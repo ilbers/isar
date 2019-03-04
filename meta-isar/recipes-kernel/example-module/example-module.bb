@@ -11,7 +11,13 @@
 # has hard dependencies from linux-compiler-gcc-4.8-arm, what
 # conflicts with the host binaries.
 python() {
-    if d.getVar('KERNEL_NAME') in ['armmp', 'arm64', 'rpi-rpfv', 'amd64', '686-pae']:
+    if d.getVar('KERNEL_NAME') in [
+        'armmp',
+        'arm64',
+        'rpi-rpfv',
+        'amd64',
+        '686-pae',
+    ]:
         d.setVar('ISAR_CROSS_COMPILE', '0')
 }
 

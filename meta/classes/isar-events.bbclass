@@ -8,7 +8,6 @@ addhandler isar_handler
 
 python isar_handler() {
     import subprocess
-    import bb.runqueue
 
     tmpdir = d.getVar('TMPDIR', True)
     if not tmpdir:

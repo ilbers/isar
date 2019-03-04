@@ -28,8 +28,9 @@ do_apt_config_prepare[vardeps] += "\
 python do_apt_config_prepare() {
     if not os.path.islink(d.getVar("DEPLOY_ISAR_BOOTSTRAP", True)):
         apt_preferences_out = d.getVar("APTPREFS", True)
-        apt_preferences_list = (d.getVar("DISTRO_APT_PREFERENCES", True) or ""
-                             ).split()
+        apt_preferences_list = (
+            d.getVar("DISTRO_APT_PREFERENCES", True) or ""
+        ).split()
         aggregate_files(d, apt_preferences_list, apt_preferences_out)
 
         apt_sources_out = d.getVar("APTSRCS", True)
