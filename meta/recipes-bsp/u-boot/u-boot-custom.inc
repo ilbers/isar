@@ -15,7 +15,7 @@ inherit dpkg
 
 SRC_URI += "file://debian/"
 
-BUILD_DEPENDS ?= "bc, bison, flex, device-tree-compiler"
+BUILD_DEPENDS ?= "bc, bison, flex, device-tree-compiler, git"
 
 TEMPLATE_FILES = "debian/changelog.tmpl \
                   debian/control.tmpl"
