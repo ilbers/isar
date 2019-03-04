@@ -40,18 +40,16 @@ python () {
         d.setVar("DEBOOTSTRAP_KEYRING", "--keyring ${APTKEYRING}")
         for key in distro_apt_keys.split():
             url = urlparse(key)
-            filename = ''.join([wd, url.path])
-            d.appendVar("SRC_URI", " %s" % key)
-            d.appendVar("APTKEYFILES", " %s" % filename)
+            d.appendVar("SRC_URI", " " + key)
+            d.appendVar("APTKEYFILES", " " + wd + url.path)
     if bb.utils.to_boolean(d.getVar('ISAR_USE_CACHED_BASE_REPO')):
         own_pub_key = d.getVar("BASE_REPO_KEY", False)
         if own_pub_key:
             d.setVar("DEBOOTSTRAP_KEYRING", "--keyring ${APTKEYRING}")
             for key in own_pub_key.split():
                 url = urlparse(key)
-                filename = ''.join([wd, url.path])
-                d.appendVar("SRC_URI", " %s" % key)
-                d.appendVar("APTKEYFILES", " %s" % filename)
+                d.appendVar("SRC_URI", " " + key)
+                d.appendVar("APTKEYFILES", " " + wd + url.path)
 }
 
 def aggregate_files(d, file_list, file_out):
@@ -170,7 +168,7 @@ def get_distro_suite(d, is_host):
 def get_distro_components_argument(d, is_host):
     components = get_distro_primary_source_entry(d, is_host)[2]
     if components and components.strip():
-        return "--components=%s" % ",".join(components.split())
+        return "--components=" + ",".join(components.split())
     else:
         return ""
 

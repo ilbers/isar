@@ -28,6 +28,8 @@ python do_write_wks_template () {
 }
 
 python () {
+    import itertools
+
     wks_full_path = None
 
     wks_file = d.getVar('WKS_FILE', True)
@@ -41,14 +43,21 @@ python () {
             wks_full_path = wks_file
     else:
         bbpaths = d.getVar('BBPATH', True).split(':')
+        corebase_paths = bbpaths
+
         corebase = d.getVar('COREBASE', True)
-        search_path = ':'.join('%s/wic' % p for p in bbpaths) + ':' + \
-            ':'.join('%s/scripts/lib/wic/canned-wks' % l \
-                     for l in (bbpaths + [corebase]))
+        if corebase is not None:
+            corebase_paths.append(corebase)
+
+        search_path = ":".join(itertools.chain(
+            (p + "/wic" for p in bbpaths),
+            (l + "/scripts/lib/wic/canned-wks"
+             for l in (corebase_paths)),
+        ))
         wks_full_path = bb.utils.which(search_path, wks_file)
 
     if not wks_full_path:
-        bb.fatal("WKS_FILE '%s' not found" % wks_file)
+        bb.fatal("WKS_FILE '{}' not found".format(wks_file))
 
     d.setVar('WKS_FULL_PATH', wks_full_path)
 
@@ -117,12 +126,12 @@ python do_rootfs_wicenv () {
         for var in wicvars.split():
             value = d.getVar(var, True)
             if value:
-                envf.write('%s="%s"\n' % (var, value.strip()))
+                envf.write('{}="{}"\n'.format(var, value.strip()))
 
     # this part is stolen from OE ./meta/recipes-core/meta/wic-tools.bb
     with open(os.path.join(outdir, "wic-tools.env"), 'w') as envf:
         for var in ('RECIPE_SYSROOT_NATIVE', 'STAGING_DATADIR', 'STAGING_LIBDIR'):
-            envf.write('%s="%s"\n' % (var, d.getVar(var, True).strip()))
+            envf.write('{}="{}"\n'.format(var, d.getVar(var, True).strip()))
 
 }
 

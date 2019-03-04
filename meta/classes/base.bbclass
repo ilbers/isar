@@ -33,27 +33,35 @@ do_showdata[nostamp] = "1"
 python do_showdata() {
     for e in d.keys():
         if d.getVarFlag(e, 'python'):
-            bb.plain("\npython %s () {\n%s}\n" % (e, d.getVar(e, True)))
+            code = d.getVar(e, True)
+            if code.startswith("def"):
+                bb.plain("\n" + code + "\n")
+            else:
+                bb.plain(
+                    "\npython {name} () {{\n{code}}}\n".format(
+                        name=e, code=code
+                    )
+                )
 }
 
 # Derived from Open Embedded: openembedded-core/meta/classes/utility-tasks.bbclass
 addtask listtasks
 do_listtasks[nostamp] = "1"
 python do_listtasks() {
-    taskdescs = {}
+    tasks = {}
     maxlen = 0
     for e in d.keys():
         if d.getVarFlag(e, 'task'):
             maxlen = max(maxlen, len(e))
             if e.endswith('_setscene'):
-                desc = "%s (setscene version)" % (d.getVarFlag(e[:-9], 'doc') or '')
+                tasks[e] = (
+                    d.getVarFlag(e[:-9], 'doc') or ''
+                ) + " (setscene version)"
             else:
-                desc = d.getVarFlag(e, 'doc') or ''
-            taskdescs[e] = desc
+                tasks[e] = d.getVarFlag(e, 'doc') or ''
 
-    tasks = sorted(taskdescs.keys())
-    for taskname in tasks:
-        bb.plain("%s  %s" % (taskname.ljust(maxlen), taskdescs[taskname]))
+    for name, desc in sorted(tasks.items()):
+        bb.plain("{0:{len}}  {1}".format(name, desc, len=maxlen))
 }
 
 root_cleandirs() {
@@ -71,30 +79,40 @@ root_cleandirs() {
 
 python() {
     import re
+
     for e in d.keys():
         flags = d.getVarFlags(e)
         if flags and flags.get('task'):
             rcleandirs = flags.get('root_cleandirs')
             if rcleandirs:
                 tmpdir = os.path.normpath(d.getVar("TMPDIR", True))
-                rcleandirs = list(os.path.normpath(d.expand(i))
-                                  for i in rcleandirs.split())
+                rcleandirs = list(
+                    os.path.normpath(d.expand(i)) for i in rcleandirs.split()
+                )
 
                 for i in rcleandirs:
                     if not i.startswith(tmpdir):
-                        bb.fatal("root_cleandirs entry %s is not contained in "
-                                 "TMPDIR %s" % (i, tmpdir))
+                        bb.fatal(
+                            "root_cleandirs entry {} is not contained in TMPDIR {}".format(
+                                i, tmpdir
+                            )
+                        )
 
-                ws = re.match("^\s*", d.getVar(e, False)).group()
                 if flags.get('python'):
-                    d.prependVar(e, ws + "d.setVar('ROOT_CLEANDIRS_DIRS', '"
-                                       + " ".join(rcleandirs) + "')\n"
-                                  + ws + "bb.build.exec_func("
-                                       + "'root_cleandirs', d)\n")
+                    cleandir_code = (
+                        "{ws}d.setVar('ROOT_CLEANDIRS_DIRS', '{dirlist}')\n"
+                        "{ws}bb.build.exec_func('root_cleandirs', d)\n"
+                    )
                 else:
-                    d.prependVar(e, ws + "ROOT_CLEANDIRS_DIRS='"
-                                       + " ".join(rcleandirs) + "'\n"
-                                  + ws + "root_cleandirs\n")
+                    cleandir_code = (
+                        "{ws}ROOT_CLEANDIRS_DIRS='{dirlist}'\n"
+                        "{ws}root_cleandirs\n"
+                    )
+
+                ws = re.match(r"^\s*", d.getVar(e, False)).group()
+                d.prependVar(
+                    e, cleandir_code.format(ws=ws, dirlist=" ".join(rcleandirs))
+                )
 }
 
 # filter out all "apt://" URIs out of SRC_URI and stick them into SRC_APT
