@@ -11,7 +11,6 @@
 #
 import os
 import sys
-import shutil
 import subprocess
 
 args = sys.argv
@@ -24,14 +23,12 @@ cmd = args[0]
 #  i.e. in wics partition.py the "du -ks" fails on
 #    var/cache/apt/archives/partial
 #    rootfs/root ...
-assert 'root' == os.environ["USER"]
+assert os.geteuid() == 0, "wic_fakeroot must be run as root!"
 
 # e2fsck <= 1.43.5 returns 1 on non-errors (stretch and before affected)
 # treat 1 as safe ... the filesystem was successfully repaired and is OK
 if cmd.startswith('fsck.'):
     ret = subprocess.call(args)
-    if ret == 0 or ret == 1:
-        sys.exit(0)
-    sys.exit(ret)
+    sys.exit(0 if ret == 1 else ret)
 
-os.execv(shutil.which(cmd), args)
+os.execvp(cmd, args)
