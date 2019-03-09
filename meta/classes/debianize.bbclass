@@ -6,7 +6,12 @@
 CHANGELOG_V ?= "${PV}"
 
 deb_add_changelog() {
-	date=$( LANG=C date -R )
+	timestamp=$(find ${S}/ -type f -not -path "${S}/debian/*" -printf "%T@\n"|sort -n -r|head -n 1)
+	if [ -n "${timestamp}" ]; then
+		date=$(LANG=C date -R -d @${timestamp})
+	else
+		date=$(LANG=C date -R)
+	fi
 	cat <<EOF > ${S}/debian/changelog
 ${PN} (${CHANGELOG_V}) UNRELEASED; urgency=low
 
