@@ -1,7 +1,7 @@
 Supported Configurations
 ========================
 
-Release next
+Release v0.7
 ------------
 
 ### Host System : debian-jessie-amd64

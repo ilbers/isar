@@ -1,0 +1,27 @@
+Release v0.7
+
+ * Improved CI scripts
+ * Added setting of root (encrypted) password
+ * Added support for UBI file system images
+ * Added support of "apt://" in SRC_URI to fetch/unpack/rebuild an upstream package
+ * Renamed example-hello to hello-isar to avoid collisions with Debian hello
+ * Moved debian distro conf files from meta-isar to meta
+ * Added support of tar.gz images
+ * Debian "raw" packages are built using the whole dpkg-buildpackage workflow
+ * Supported host system >= stretch
+ * bitbake updated to the 19dee675
+ * Added LeMaker HiKey board support
+ * Added Terasic DE0-Nano-SoC support
+ * Added option to create local apt repo caching upstream Debian packages
+
+Release v0.6
+
+ * Migration to deboostrap from multistrap as later is deprecated
+ * WIC support is integrated
+ * Added cross compilation support
+ * Added SDK root filesystem creation
+ * Added Debian buster support
+ * Dropped wheezy support
+ * Added Banana Pi support
+
+Release v0.5

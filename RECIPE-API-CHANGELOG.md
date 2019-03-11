@@ -73,8 +73,8 @@ you now have to set `KERNEL_NAME = "foo"` in order to select that kernel.
 Alternatively, a recipe with a different naming scheme can set
 `KERNEL_NAME_PROVIDED = "foo"` in order to match as well.
 
-Upcoming changes (v0.7)
------------------------
+Changes in v0.7
+---------------
 
 ### dpkg-raw recipes build method changed
 
