@@ -6,29 +6,14 @@
 
 WKS_FILE_CHECKSUM = "${@'${WKS_FULL_PATH}:%s' % os.path.exists('${WKS_FULL_PATH}')}"
 
-python do_write_wks_template () {
-    """Write out expanded template contents to WKS_FULL_PATH."""
-    import re
-
-    template_body = d.getVar('_WKS_TEMPLATE')
-
-    # Remove any remnant variable references left behind by the expansion
-    # due to undefined variables
-    expand_var_regexp = re.compile(r"\${[^{}@\n\t :]+}")
-    while True:
-        new_body = re.sub(expand_var_regexp, '', template_body)
-        if new_body == template_body:
-            break
-        else:
-            template_body = new_body
-
-    wks_file = d.getVar('WKS_FULL_PATH')
-    with open(wks_file, 'w') as f:
-        f.write(template_body)
+do_copy_wks_template[file-checksums] += "${WKS_FILE_CHECKSUM}"
+do_copy_wks_template () {
+    cp -f '${WKS_TEMPLATE_PATH}' '${WORKDIR}/${WKS_TEMPLATE_FILE}'
 }
 
 python () {
     import itertools
+    import re
 
     wks_full_path = None
 
@@ -70,22 +55,25 @@ python () {
         d.setVar('WKS_TEMPLATE_PATH', wks_file_u)
         d.setVar('WKS_FILE_CHECKSUM', '${WKS_TEMPLATE_PATH}:True')
 
+        wks_template_file = os.path.basename(base) + '.tmpl'
+        d.setVar('WKS_TEMPLATE_FILE', wks_template_file)
+        d.appendVar('TEMPLATE_FILES', " {}".format(wks_template_file))
+
         # We need to re-parse each time the file changes, and bitbake
         # needs to be told about that explicitly.
         bb.parse.mark_dependency(d, wks_file)
 
+        expand_var_regexp = re.compile(r"\${(?P<name>[^{}@\n\t :]+)}")
+
         try:
             with open(wks_file, 'r') as f:
-                body = f.read()
+                d.appendVar("TEMPLATE_VARS", " {}".format(
+                    " ".join(expand_var_regexp.findall(f.read()))))
         except (IOError, OSError) as exc:
             pass
         else:
-            # Previously, I used expandWithRefs to get the dependency list
-            # and add it to WICVARS, but there's no point re-parsing the
-            # file in process_wks_template as well, so just put it in
-            # a variable and let the metadata deal with the deps.
-            d.setVar('_WKS_TEMPLATE', body)
-            bb.build.addtask('do_write_wks_template', 'do_wic_image', None, d)
+            bb.build.addtask('do_copy_wks_template', 'do_transform_template do_wic_image', None, d)
+            bb.build.addtask('do_transform_template', 'do_wic_image', None, d)
 }
 
 inherit buildchroot
