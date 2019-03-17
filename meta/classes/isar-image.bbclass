@@ -19,7 +19,7 @@ DEPENDS += "${IMAGE_INSTALL} ${IMAGE_TRANSIENT_PACKAGES}"
 
 IMAGE_TRANSIENT_PACKAGES += "isar-cfg-localepurge isar-cfg-rootpw"
 
-WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${PN}"
+WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${MACHINE}/${PN}"
 
 ISAR_RELEASE_CMD_DEFAULT = "git -C ${LAYERDIR_core} describe --tags --dirty --match 'v[0-9].[0-9]*'"
 ISAR_RELEASE_CMD ?= "${ISAR_RELEASE_CMD_DEFAULT}"
