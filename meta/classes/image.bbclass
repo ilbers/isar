@@ -97,7 +97,10 @@ python set_image_size () {
     d.setVarFlag('ROOTFS_SIZE', 'export', '1')
 }
 
-do_rootfs[stamp-extra-info] = "${MACHINE}-${DISTRO}"
+do_fetch[stamp-extra-info] = "${DISTRO}-${MACHINE}"
+do_unpack[stamp-extra-info] = "${DISTRO}-${MACHINE}"
+
+do_rootfs[stamp-extra-info] = "${DISTRO}-${MACHINE}"
 do_rootfs[depends] = "isar-apt:do_cache_config isar-bootstrap-target:do_bootstrap"
 
 do_rootfs() {
@@ -113,6 +116,8 @@ do_mark_rootfs() {
         --build-id "${BUILD_ID}" --variant "${DESCRIPTION}" \
         "${IMAGE_ROOTFS}"
 }
+
+do_mark_rootfs[stamp-extra-info] = "${DISTRO}-${MACHINE}"
 
 addtask mark_rootfs before do_copy_boot_files do_transform_template after do_rootfs
 
@@ -171,7 +176,7 @@ do_populate_sdk() {
     ln -Tfsr ${SDKCHROOT_DIR}/rootfs ${DEPLOY_DIR_IMAGE}/sdk-${DISTRO}-${DISTRO_ARCH}
 }
 
-do_populate_sdk[stamp-extra-info] = "${MACHINE}-${DISTRO}"
+do_populate_sdk[stamp-extra-info] = "${DISTRO}-${MACHINE}"
 do_populate_sdk[depends] = "sdkchroot:do_build"
 
 addtask populate_sdk after do_rootfs
@@ -180,7 +185,7 @@ inherit base-apt-helper
 
 do_cache_base_repo[depends] = "base-apt:do_cache_config"
 do_cache_base_repo[lockfiles] = "${REPO_BASE_DIR}/isar.lock"
-do_cache_base_repo[stamp-extra-info] = "${MACHINE}-${DISTRO}"
+do_cache_base_repo[stamp-extra-info] = "${DISTRO}-${MACHINE}"
 
 do_cache_base_repo() {
     if [ -d ${WORKDIR}/apt_cache ]; then
