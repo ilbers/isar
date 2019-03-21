@@ -527,7 +527,7 @@ IMAGE_PREINSTALL = " \
     openssh-server   \
 "
 
-inherit isar-image
+inherit image
 
 ```
 

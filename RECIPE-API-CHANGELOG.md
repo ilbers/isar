@@ -145,3 +145,12 @@ a root password, leak that password via its script in /var/lib/dpkg/info.
 Instead set the CFG_ROOT_PW variable to the encrypted password and use the
 transient 'isar-cfg-rootpw' package (now installed as transient package per
 default).
+
+Changes in v0.8
+---------------
+
+### `isar-image.bbclass` class will be deprecated in future version of isar
+
+The content of `isar-image.bbclass` was moved to the `image.bbclass` file.
+Recipes that inherit `isar-image` should be modified to inherit from `image`
+instead.

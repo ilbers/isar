@@ -10,4 +10,4 @@ LIC_FILES_CHKSUM = "file://${LAYERDIR_core}/licenses/COPYING.GPLv2;md5=751419260
 
 PV = "1.0"
 
-inherit isar-image
+inherit image

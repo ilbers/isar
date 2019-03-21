@@ -10,7 +10,7 @@ DESCRIPTION = "UBI Isar image"
 LICENSE = "gpl-2.0"
 LIC_FILES_CHKSUM = "file://${LAYERDIR_core}/licenses/COPYING.GPLv2;md5=751419260aa954499f7abaabaa882bbe"
 
-inherit isar-image
+inherit image
 
 SRC_URI += "file://ubinize.cfg.tmpl \
             file://fitimage.its.tmpl"
