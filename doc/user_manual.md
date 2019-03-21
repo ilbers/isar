@@ -509,7 +509,7 @@ Packages in the `IMAGE_TRANSIENT_PACKAGES` variable are installed to the image a
 
 ## Create a Custom Image Recipe
 
-A custom image recipe may be created to assemble packages of your choice into a root file-system image. The `isar-image` class
+A custom image recipe may be created to assemble packages of your choice into a root file-system image. The `image` class
 implements a `do_rootfs` function to compile and configure the file-system for you. Prebuilt packages may be selected for
 installation by appending them to the `IMAGE_PREINSTALL` variable while packages created by ISAR should be appended to
 `IMAGE_INSTALL`. A sample image recipe follows.

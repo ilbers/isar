@@ -25,6 +25,24 @@ BUILDROOT_DEPLOY = "${BUILDCHROOT_DIR}${PP_DEPLOY}"
 BUILDROOT_ROOTFS = "${BUILDCHROOT_DIR}${PP_ROOTFS}"
 BUILDROOT_WORK = "${BUILDCHROOT_DIR}${PP_WORK}"
 
+def cfg_script(d):
+    cf = d.getVar('DISTRO_CONFIG_SCRIPT', True) or ''
+    if cf:
+        return 'file://' + cf
+    return ''
+
+FILESPATH =. "${LAYERDIR_core}/conf/distro:"
+SRC_URI += "${@ cfg_script(d) }"
+
+DEPENDS += "${IMAGE_INSTALL} ${IMAGE_TRANSIENT_PACKAGES}"
+
+IMAGE_TRANSIENT_PACKAGES += "isar-cfg-localepurge isar-cfg-rootpw"
+
+WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${MACHINE}/${PN}"
+
+ISAR_RELEASE_CMD_DEFAULT = "git -C ${LAYERDIR_core} describe --tags --dirty --match 'v[0-9].[0-9]*'"
+ISAR_RELEASE_CMD ?= "${ISAR_RELEASE_CMD_DEFAULT}"
+
 image_do_mounts() {
     sudo flock ${MOUNT_LOCKFILE} -c ' \
         mkdir -p "${BUILDROOT_DEPLOY}" "${BUILDROOT_ROOTFS}" "${BUILDROOT_WORK}"
@@ -36,6 +54,7 @@ image_do_mounts() {
 }
 
 inherit ${IMAGE_TYPE}
+inherit isar-bootstrap-helper
 
 # Extra space for rootfs in MB
 ROOTFS_EXTRA ?= "64"
@@ -97,18 +116,79 @@ python set_image_size () {
     d.setVarFlag('ROOTFS_SIZE', 'export', '1')
 }
 
+isar_image_gen_fstab() {
+    cat > ${WORKDIR}/fstab << EOF
+# Begin /etc/fstab
+/dev/root	/		auto		defaults		0	0
+proc		/proc		proc		nosuid,noexec,nodev	0	0
+sysfs		/sys		sysfs		nosuid,noexec,nodev	0	0
+devpts		/dev/pts	devpts		gid=5,mode=620		0	0
+tmpfs		/run		tmpfs		defaults		0	0
+devtmpfs	/dev		devtmpfs	mode=0755,nosuid	0	0
+
+# End /etc/fstab
+EOF
+}
+
+isar_image_gen_rootfs() {
+    setup_root_file_system --clean --keep-apt-cache \
+        --fstab "${WORKDIR}/fstab" \
+        "${IMAGE_ROOTFS}" ${IMAGE_PREINSTALL} ${IMAGE_INSTALL}
+}
+
+isar_image_conf_rootfs() {
+    # Configure root filesystem
+    if [ -n "${DISTRO_CONFIG_SCRIPT}" ]; then
+        sudo install -m 755 "${WORKDIR}/${DISTRO_CONFIG_SCRIPT}" "${IMAGE_ROOTFS}"
+        TARGET_DISTRO_CONFIG_SCRIPT="$(basename ${DISTRO_CONFIG_SCRIPT})"
+        sudo chroot ${IMAGE_ROOTFS} "/$TARGET_DISTRO_CONFIG_SCRIPT" \
+                                    "${MACHINE_SERIAL}" "${BAUDRATE_TTY}"
+        sudo rm "${IMAGE_ROOTFS}/$TARGET_DISTRO_CONFIG_SCRIPT"
+   fi
+}
+
+isar_image_cleanup() {
+    # Cleanup
+    sudo sh -c ' \
+        rm "${IMAGE_ROOTFS}/etc/apt/sources.list.d/isar-apt.list"
+        test ! -e "${IMAGE_ROOTFS}/usr/share/doc/qemu-user-static" && \
+            find "${IMAGE_ROOTFS}/usr/bin" \
+                -maxdepth 1 -name 'qemu-*-static' -type f -delete
+             umount -l ${IMAGE_ROOTFS}/isar-apt
+        rmdir ${IMAGE_ROOTFS}/isar-apt
+        umount -l ${IMAGE_ROOTFS}/dev
+        umount -l ${IMAGE_ROOTFS}/proc
+        umount -l ${IMAGE_ROOTFS}/sys
+        rm -f "${IMAGE_ROOTFS}/etc/apt/apt.conf.d/55isar-fallback.conf"
+        if [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" ]; then
+            umount -l ${IMAGE_ROOTFS}/base-apt
+            rmdir ${IMAGE_ROOTFS}/base-apt
+            # Replace the local apt we bootstrapped with the
+            # APT sources initially defined in DISTRO_APT_SOURCES
+            rm -f "${IMAGE_ROOTFS}/etc/apt/sources.list.d/base-apt.list"
+            mv "${IMAGE_ROOTFS}/etc/apt/sources-list" \
+                "${IMAGE_ROOTFS}/etc/apt/sources.list.d/bootstrap.list"
+        fi
+        rm -f "${IMAGE_ROOTFS}/etc/apt/sources-list"
+    '
+}
+
 do_fetch[stamp-extra-info] = "${DISTRO}-${MACHINE}"
 do_unpack[stamp-extra-info] = "${DISTRO}-${MACHINE}"
 
 do_rootfs[stamp-extra-info] = "${DISTRO}-${MACHINE}"
 do_rootfs[depends] = "isar-apt:do_cache_config isar-bootstrap-target:do_bootstrap"
 
-do_rootfs() {
-    die "No root filesystem function defined, please implement in your recipe"
-}
-
-addtask rootfs before do_build after do_unpack
 do_rootfs[deptask] = "do_deploy_deb"
+do_rootfs[root_cleandirs] = "${IMAGE_ROOTFS} \
+                             ${IMAGE_ROOTFS}/isar-apt"
+do_rootfs() {
+    isar_image_gen_fstab
+    isar_image_gen_rootfs
+    isar_image_conf_rootfs
+    isar_image_cleanup
+}
+addtask rootfs before do_build after do_unpack
 
 do_mark_rootfs() {
     BUILD_ID=$(get_build_id)
