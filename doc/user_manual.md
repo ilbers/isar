@@ -1,6 +1,6 @@
 # ISAR User Manual
 
-Copyright (C) 2016-2017, ilbers GmbH
+Copyright (C) 2016-2019, ilbers GmbH
 
 ## Contents
 
@@ -31,6 +31,7 @@ Isar provides:
  - Fast target image generation: About 10 minutes to get base system image for one machine.
  - Use any apt package provider, including open-source communities like `Debian`, `Raspbian`, etc. and proprietary ones created manually.
  - Native compilation: Packages are compiled in a `chroot` environment using the same toolchain and libraries that will be installed to the target filesystem.
+ - Cross compilation: Could be enabled, when native compilation from the sources takes a lot of time f.e. for Linux kernel.
  - Product templates that can be quickly re-used for real projects.
 
 ---
@@ -41,13 +42,21 @@ For demonstration purposes, Isar provides support for the following
 configurations:
 
  - QEMU ARM with Debian Jessie
- - QEMU ARM with Debian Stretch (builds but fails to run, see #22)
+ - QEMU ARM with Debian Stretch
+ - QEMU ARM with Debian Buster
+ - QEMU ARM64 with Debian Jessie
+ - QEMU ARM64 with Debian Stretch
+ - QEMU ARM64 with Debian Buster (for host >= buster)
  - QEMU i386 with Debian Jessie
  - QEMU i386 with Debian Stretch
+ - QEMU i386 with Debian Buster
  - QEMU amd64 with Debian Jessie
  - QEMU amd64 with Debian Stretch
+ - QEMU amd64 with Debian Buster
  - Raspberry Pi 1 Model B with Raspbian Jessie (see #23)
  - Banana Pi BPI-M1
+ - LeMaker HiKey
+ - Terasic DE0-Nano-SoC
 
 The steps below describe how to build the images provided by default.
 
@@ -137,8 +146,8 @@ bitbake multiconfig:qemuarm-stretch:isar-image-base \
 The following images are created:
 
 ```
-tmp/deploy/images/isar-image-base-qemuarm-debian-stretch.ext4.img
-tmp/deploy/images/isar-image-debug-qemuarm-debian-stretch.ext4.img
+tmp/deploy/images/qemuarm/isar-image-base-qemuarm-debian-stretch.ext4.img
+tmp/deploy/images/qemuarm/isar-image-debug-qemuarm-debian-stretch.ext4.img
 ```
 
 ### Building Target Images for Multiple Configurations
@@ -160,7 +169,6 @@ BBMULTICONFIG = " \
     qemuamd64-stretch \
     qemuamd64-buster \
     rpi-jessie \
-    bananapi-stretch \
 "
 ```
 
@@ -178,23 +186,23 @@ $ bitbake \
     multiconfig:qemuamd64-jessie:isar-image-base \
     multiconfig:qemuamd64-stretch:isar-image-base \
     multiconfig:qemuamd64-buster:isar-image-base \
-    multiconfig:rpi-jessie:isar-image-base \
-    multiconfig:bananapi-stretch:isar-image-base
+    multiconfig:rpi-jessie:isar-image-base
 ```
 
 Created images are:
 
 ```
-tmp/deploy/images/isar-image-base-debian-jessie-qemuarm.ext4.img
-tmp/deploy/images/isar-image-base-debian-stretch-qemuarm.ext4.img
-tmp/deploy/images/isar-image-base-debian-stretch-qemuarm.ext4.img
-tmp/deploy/images/isar-image-base-debian-stretch-qemuarm64.ext4.img
-tmp/deploy/images/isar-image-base-debian-jessie-qemui386.ext4.img
-tmp/deploy/images/isar-image-base-debian-stretch-qemui386.ext4.img
-tmp/deploy/images/isar-image-base-debian-jessie-qemuamd64.ext4.img
-tmp/deploy/images/isar-image-base-debian-stretch-qemuamd64.ext4.img
-tmp/deploy/images/isar-image-base.rpi-sdimg
-tmp/deploy/images/isar-image-base-debian-stretch-bananapi.wic.img
+tmp/deploy/images/qemuarm/isar-image-base-debian-jessie-qemuarm.ext4.img
+tmp/deploy/images/qemuarm/isar-image-base-debian-stretch-qemuarm.ext4.img
+tmp/deploy/images/qemuarm/isar-image-base-debian-buster-qemuarm.ext4.img
+tmp/deploy/images/qemuarm64/isar-image-base-debian-stretch-qemuarm64.ext4.img
+tmp/deploy/images/qemui386/isar-image-base-debian-jessie-qemui386.ext4.img
+tmp/deploy/images/qemui386/isar-image-base-debian-stretch-qemui386.wic.img
+tmp/deploy/images/qemui386/isar-image-base-debian-buster-qemui386.wic.img
+tmp/deploy/images/qemuamd64/isar-image-base-debian-jessie-qemuamd64.ext4.img
+tmp/deploy/images/qemuamd64/isar-image-base-debian-stretch-qemuamd64.wic.img
+tmp/deploy/images/qemuamd64/isar-image-base-debian-buster-qemuamd64.wic.img
+tmp/deploy/images/rpi/isar-image-base.rpi-sdimg
 ```
 
 ### Generate full disk image
@@ -217,9 +225,9 @@ enough to allow images to be testable under `qemu`.
 
 ```
 # AMD64 image, EFI
-qemu-system-x86_64 -m 256M -nographic -bios edk2/Build/OvmfX64/RELEASE_*/FV/OVMF.fd -hda tmp/deploy/images/isar-image-base-debian-stretch-qemuamd64.wic.img
+qemu-system-x86_64 -m 256M -nographic -bios edk2/Build/OvmfX64/RELEASE_*/FV/OVMF.fd -hda tmp/deploy/images/qemuamd64/isar-image-base-debian-stretch-qemuamd64.wic.img
 # i386 image
-qemu-system-i386 -m 256M -nographic -hda tmp/deploy/images/isar-image-base-debian-stretch-qemui386.wic.img
+qemu-system-i386 -m 256M -nographic -hda tmp/deploy/images/qemui386/isar-image-base-debian-stretch-qemui386.wic.img
 ```
 
 ---
@@ -457,9 +465,9 @@ The user may use `met-isar/recipes-core-images` as a template for new image reci
 
 ## Add a New Image Type
 ### General Information
-The image recipe in Isar creates a folder with target root filesystem. The default its location is:
+The image recipe in Isar creates a folder with target root filesystem. Its default location is:
 ```
-tmp/work/${IMAGE}/${MACHINE}/rootfs
+tmp/work/${DISTRO}-${DISTRO_ARCH}/${MACHINE}/${IMAGE}/rootfs
 ```
 Every image type in Isar is implemented as a `bitbake` class. The goal of these classes is to pack root filesystem folder to appropriate format.
 
@@ -648,10 +656,14 @@ put into Isar apt.
 
 ### Limitation
 
-Debian cross-compilation works out of the box starting from Debian stretch distribution. So currently the only following build configurations are supported in Isar:
+Debian cross-compilation works out of the box starting from Debian stretch distribution. Currently the following build configurations are supported in Isar:
 
+ - qemuarm-jessie
  - qemuarm-stretch
+ - qemuarm-buster
  - qemuarm64-stretch
+ - qemuarm64-buster (for host >= buster)
+
 
 ## Create an ISAR SDK root filesystem
 
@@ -670,8 +682,8 @@ target binary artifacts. Developer chroots to sdk rootfs and develops applicatio
 User manually triggers creation of SDK root filesystem for his target platform by launching the task `do_populate_sdk` for target image, f.e.
 `bitbake -c do_populate_sdk multiconfig:${MACHINE}-${DISTRO}:isar-image-base`.
 
-The resulting SDK rootfs is archived into `tmp/deploy/images/sdk-${DISTRO}-${DISTRO_ARCH}.tar.xz`.
-It is additionally available for direct use under `tmp/deploy/images/sdk-${DISTRO}-${DISTRO_ARCH}/`.
+The resulting SDK rootfs is archived into `tmp/deploy/images/${MACHINE}/sdk-${DISTRO}-${DISTRO_ARCH}.tar.xz`.
+It is additionally available for direct use under `tmp/deploy/images/${MACHINE}/sdk-${DISTRO}-${DISTRO_ARCH}/`.
 The SDK rootfs directory `/isar-apt` contains a copy of isar-apt repo with locally prebuilt target debian packages (for <HOST_DISTRO>).
 One may chroot into the SDK and install required target packages with the help of `apt-get install <package_name>:<DISTRO_ARCH>` command.
 
@@ -698,13 +710,14 @@ mount devtmpfs $1/dev     -t devtmpfs -o mode=0755,nosuid
 mount devpts   $1/dev/pts -t devpts   -o gid=5,mode=620
 mount tmpfs    $1/dev/shm -t tmpfs    -o rw,seclabel,nosuid,nodev
 
-$ sudo scripts/mount_chroot.sh ../build/tmp/work/debian-stretch-armhf/sdkchroot-debian-stretch-amd64/rootfs
+$ sudo scripts/mount_chroot.sh ../build/tmp/deploy/images/qemuarm/sdk-debian-stretch-armhf
+
 ```
 
  - chroot to isar SDK rootfs:
 
 ```
-$ sudo chroot ../build/tmp/work/debian-stretch-armhf/sdkchroot-debian-stretch-amd64/rootfs
+$ sudo chroot build/tmp/deploy/images/qemuarm/sdk-debian-stretch-armhf
 ```
  - Check that cross toolchains are installed
 
@@ -716,6 +729,7 @@ ii  crossbuild-essential-armhf           12.3                   all          Inf
  - Install needed prebuilt target packages.
 
 ```
+:~# apt-get update
 :~# apt-get install libhello-dev:armhf
 ```
 
