@@ -19,7 +19,7 @@ BUILD_DEPENDS ?= "bc, bison, flex, device-tree-compiler, git"
 
 TEMPLATE_FILES = "debian/changelog.tmpl \
                   debian/control.tmpl"
-TEMPLATE_VARS += "BUILD_DEPENDS"
+TEMPLATE_VARS += "MACHINE BUILD_DEPENDS"
 
 do_prepare_build() {
     cp -r ${WORKDIR}/debian ${S}/
