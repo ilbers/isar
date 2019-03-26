@@ -17,12 +17,13 @@ SRC_URI += "file://debian/"
 
 BUILD_DEPENDS ?= "bc, bison, flex, device-tree-compiler, git"
 
-TEMPLATE_FILES = "debian/changelog.tmpl \
-                  debian/control.tmpl"
+TEMPLATE_FILES = "debian/control.tmpl"
 TEMPLATE_VARS += "MACHINE BUILD_DEPENDS"
 
 do_prepare_build() {
     cp -r ${WORKDIR}/debian ${S}/
+
+    deb_add_changelog
 
     echo "${U_BOOT_BIN} /usr/lib/u-boot/${MACHINE}" > \
         ${S}/debian/u-boot-${MACHINE}.install
