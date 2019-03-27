@@ -53,7 +53,8 @@ configurations:
  - QEMU amd64 with Debian Jessie
  - QEMU amd64 with Debian Stretch
  - QEMU amd64 with Debian Buster
- - Raspberry Pi 1 Model B with Raspbian Jessie (see #23)
+ - Raspberry Pi 1 Model B with Raspbian Jessie
+ - Raspberry Pi 1 Model B with Raspbian Stretch
  - Banana Pi BPI-M1
  - LeMaker HiKey
  - Terasic DE0-Nano-SoC
@@ -169,6 +170,7 @@ BBMULTICONFIG = " \
     qemuamd64-stretch \
     qemuamd64-buster \
     rpi-jessie \
+    rpi-stretch \
 "
 ```
 
@@ -186,7 +188,8 @@ $ bitbake \
     multiconfig:qemuamd64-jessie:isar-image-base \
     multiconfig:qemuamd64-stretch:isar-image-base \
     multiconfig:qemuamd64-buster:isar-image-base \
-    multiconfig:rpi-jessie:isar-image-base
+    multiconfig:rpi-jessie:isar-image-base \
+    multiconfig:rpi-stretch:isar-image-base
 ```
 
 Created images are:
