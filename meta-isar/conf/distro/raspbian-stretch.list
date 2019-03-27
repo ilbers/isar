@@ -1,0 +1,2 @@
+deb	http://archive.raspbian.org/raspbian	stretch	main contrib non-free firmware
+deb-src	http://archive.raspbian.org/raspbian	stretch	main contrib non-free firmware

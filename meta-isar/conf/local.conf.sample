@@ -55,6 +55,7 @@ BBMULTICONFIG = " \
     qemuamd64-buster-tgz \
     nand-ubi-demo-buster \
     rpi-jessie \
+    rpi-stretch \
 "
 
 #
