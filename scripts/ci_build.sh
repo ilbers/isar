@@ -33,7 +33,8 @@ TARGETS_SET="\
             multiconfig:qemuamd64-buster:isar-image-base \
             multiconfig:qemuamd64-buster-tgz:isar-image-base \
             multiconfig:nand-ubi-demo-buster:isar-image-ubi \
-            multiconfig:rpi-jessie:isar-image-base"
+            multiconfig:rpi-jessie:isar-image-base \
+            multiconfig:rpi-stretch:isar-image-base"
           # qemu-user-static of <= buster too old to build that
           # multiconfig:qemuarm64-buster:isar-image-base
 
@@ -87,7 +88,8 @@ do
         TARGETS_SET="\
                      multiconfig:qemuarm-stretch:isar-image-base \
                      multiconfig:qemuarm64-stretch:isar-image-base \
-                     multiconfig:qemuamd64-stretch:isar-image-base"
+                     multiconfig:qemuamd64-stretch:isar-image-base \
+                     multiconfig:rpi-stretch:isar-image-base"
         ;;
     -q|--quiet)
         BB_ARGS=""
