@@ -46,7 +46,7 @@ show_help() {
     echo "                          Supported: arm, i386, amd64, arm64."
     echo "    -b, --build BUILD     set path to build directory."
     echo "    -d, --distro DISTRO   set isar Debian distribution."
-    echo "                          Supported: jessie, stretch."
+    echo "                          Supported: stretch, buster"
     echo "    -o, --out FILE        Route QEMU console output to"
     echo "                          specified file."
     echo "    -p, --pid FILE        Store QEMU pid to file."

@@ -51,11 +51,11 @@ that include:
 
 Typical example, when Isar builds the following configurations:
 
- - Debian Jessie, amd64
-
- - Debian Jessie, i386
+ - Debian Stretch, amd64
 
  - Debian Stretch, i386
+
+ - Debian Buster, arm
 
 In this case there will be 3 different build subtrees. So the standard
 hello-isar demo application will be processed 3 times for each

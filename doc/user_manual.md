@@ -41,19 +41,14 @@ Isar provides:
 For demonstration purposes, Isar provides support for the following
 configurations:
 
- - QEMU ARM with Debian Jessie
  - QEMU ARM with Debian Stretch
  - QEMU ARM with Debian Buster
- - QEMU ARM64 with Debian Jessie
  - QEMU ARM64 with Debian Stretch
  - QEMU ARM64 with Debian Buster (for host >= buster)
- - QEMU i386 with Debian Jessie
  - QEMU i386 with Debian Stretch
  - QEMU i386 with Debian Buster
- - QEMU amd64 with Debian Jessie
  - QEMU amd64 with Debian Stretch
  - QEMU amd64 with Debian Buster
- - Raspberry Pi 1 Model B with Raspbian Jessie
  - Raspberry Pi 1 Model B with Raspbian Stretch
  - Banana Pi BPI-M1
  - LeMaker HiKey
@@ -158,18 +153,14 @@ a single call. List all configurations in `conf/local.conf`:
 
 ```
 BBMULTICONFIG = " \
-    qemuarm-jessie \
     qemuarm-stretch \
     qemuarm-buster \
     qemuarm64-stretch \
     qemuarm64-buster \
-    qemui386-jessie \
     qemui386-stretch \
     qemui386-buster \
-    qemuamd64-jessie \
     qemuamd64-stretch \
     qemuamd64-buster \
-    rpi-jessie \
     rpi-stretch \
 "
 ```
@@ -178,31 +169,24 @@ The following command will produce `isar-image-base` images for all targets:
 
 ```
 $ bitbake \
-    multiconfig:qemuarm-jessie:isar-image-base \
     multiconfig:qemuarm-stretch:isar-image-base \
     multiconfig:qemuarm-buster:isar-image-base \
     multiconfig:qemuarm64-stretch:isar-image-base \
-    multiconfig:qemui386-jessie:isar-image-base \
     multiconfig:qemui386-stretch:isar-image-base \
     multiconfig:qemui386-buster:isar-image-base \
-    multiconfig:qemuamd64-jessie:isar-image-base \
     multiconfig:qemuamd64-stretch:isar-image-base \
     multiconfig:qemuamd64-buster:isar-image-base \
-    multiconfig:rpi-jessie:isar-image-base \
     multiconfig:rpi-stretch:isar-image-base
 ```
 
 Created images are:
 
 ```
-tmp/deploy/images/qemuarm/isar-image-base-debian-jessie-qemuarm.ext4.img
 tmp/deploy/images/qemuarm/isar-image-base-debian-stretch-qemuarm.ext4.img
 tmp/deploy/images/qemuarm/isar-image-base-debian-buster-qemuarm.ext4.img
 tmp/deploy/images/qemuarm64/isar-image-base-debian-stretch-qemuarm64.ext4.img
-tmp/deploy/images/qemui386/isar-image-base-debian-jessie-qemui386.ext4.img
 tmp/deploy/images/qemui386/isar-image-base-debian-stretch-qemui386.wic.img
 tmp/deploy/images/qemui386/isar-image-base-debian-buster-qemui386.wic.img
-tmp/deploy/images/qemuamd64/isar-image-base-debian-jessie-qemuamd64.ext4.img
 tmp/deploy/images/qemuamd64/isar-image-base-debian-stretch-qemuamd64.wic.img
 tmp/deploy/images/qemuamd64/isar-image-base-debian-buster-qemuamd64.wic.img
 tmp/deploy/images/rpi/isar-image-base.rpi-sdimg
@@ -223,7 +207,7 @@ Variables may be used in `.wks.in` files; Isar will expand them and generate a r
 In order to run the EFI images with `qemu`, an EFI firmware is required and available at the following address:
 https://github.com/tianocore/edk2/tree/3858b4a1ff09d3243fea8d07bd135478237cb8f7
 
-Note that the `ovmf` package in Debian jessie/stretch/sid contains a pre-compiled firmware, but doesn't seem to be recent
+Note that the `ovmf` package in Debian stretch/buster contains a pre-compiled firmware, but doesn't seem to be recent
 enough to allow images to be testable under `qemu`.
 
 ```
@@ -313,13 +297,13 @@ following variables define the default configuration to build for:
  - `MACHINE` - The board to build for (e.g., `qemuarm`, `rpi`). BitBake looks
    for conf/multiconfig/${MACHINE}.conf in every layer.
 
- - `DISTRO` - The distro to use (e.g. `raspbian-jessie`, `debian-stretch`).
+ - `DISTRO` - The distro to use (e.g. `raspbian-stretch`, `debian-stretch`).
    BitBake looks for conf/distro/${DISTRO}.conf in every layer.
 
  - `DISTRO_ARCH` - The Debian architecture to build for (e.g., `armhf`).
 
 If BitBake is called with multiconfig targets (e.g.,
-`multiconfig:qemuarm-jessie:isar-image-base`), the following variable defines
+`multiconfig:qemuarm-stretch:isar-image-base`), the following variable defines
 all supported configurations:
 
  - `BBMULTICONFIG` - The list of the complete configuration definition files.
@@ -346,10 +330,9 @@ Some other variables include:
 
 In Isar, each machine can use its specific Linux distro to generate `buildchroot` and target filesystem. By default, Isar provides configuration files for the following distros:
 
- - debian-jessie
  - debian-stretch
  - debian-buster
- - raspbian-jessie
+ - raspbian-stretch
 
 User can select appropriate distro for specific machine by setting the following variable in machine configuration file:
 ```
@@ -389,9 +372,9 @@ The distro is defined by the set of the following variables:
  - `DISTRO_APT_PREFERENCES` - List of apt preference files
  - `DISTRO_KERNELS` - List of supported kernel suffixes
 
-Below is an example for Raspbian Jessie:
+Below is an example for Raspbian Stretch:
 ```
-DISTRO_APT_SOURCES += "conf/distro/raspbian-jessie.list"
+DISTRO_APT_SOURCES += "conf/distro/raspbian-stretch.list"
 DISTRO_APT_KEYS += "https://archive.raspbian.org/raspbian.public.key;sha256sum=ca59cd4f2bcbc3a1d41ba6815a02a8dc5c175467a59bd87edeac458f4a5345de"
 DISTRO_CONFIG_SCRIPT?= "raspbian-configscript.sh"
 DISTRO_KERNELS ?= "rpi rpi2 rpi-rpfv rpi2-rpfv"
@@ -408,7 +391,6 @@ To add new distro, user should perform the following steps:
  - Create the `.conf` file in distro folder with the name of your distribution. We recommend to name distribution in the following format: `name`-`suite`, for example:
 
     ```
-    debian-jessie
     debian-stretch
     debian-buster
     ```
@@ -661,7 +643,6 @@ put into Isar apt.
 
 Debian cross-compilation works out of the box starting from Debian stretch distribution. Currently the following build configurations are supported in Isar:
 
- - qemuarm-jessie
  - qemuarm-stretch
  - qemuarm-buster
  - qemuarm64-stretch

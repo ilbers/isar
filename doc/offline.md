@@ -11,13 +11,13 @@ mkdir -p $WEB_HOME
 
 ```
 DST=$WEB_HOME/debian
-DISTROS=jessie,jessie-updates,stretch,stretch-updates,buster,buster-updates
+DISTROS=stretch,stretch-updates,buster,buster-updates
 time debmirror -p --getcontents -e http -h $HOST -d $DISTROS -a $ARCHES $DST
 ```
 
 ```
 DST=$WEB_HOME/debian-security
-DISTROS=jessie/updates,stretch/updates,buster/updates
+DISTROS=stretch/updates,buster/updates
 time debmirror -p --getcontents -e http -h $HOST -r /debian-security \
     -d $DISTROS -a $ARCHES $DST
 ```

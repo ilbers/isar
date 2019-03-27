@@ -1,6 +1,47 @@
 Supported Configurations
 ========================
 
+Release next
+------------
+
+### Host System : debian-jessie-amd64
+
+Not supported
+
+### Host System : debian-stretch-amd64
+
+|Target System         |Native Build |Cross Build  |QEMU test    |SDK Support  |Notes                        |
+|:--------------------:|:-----------:|:------------|:-----------:|:-----------:|:---------------------------:|
+| debian-jessie-i386   |UNKNOWN      |UNKNOWN      |UNKNOWN      |NO           | Not supported               |
+| debian-jessie-amd64  |UNKNOWN      |UNKNOWN      |UNKNOWN      |NO           | Not supported               |
+| debian-jessie-armhf  |UNKNOWN      |UNKNOWN      |UNKNOWM      |NO           | Not supported               |
+| debian-jessie-arm64  |UNKNOWN      |UNKNOWN      |UNKNOWN      |NO           | Not supported               |
+| debian-stretch-i386  |YES          |UNKNOWN      |YES          |UNKNOWN      |                             |
+| debian-stretch-amd64 |YES          |YES          |YES          |UNKNOWN      |                             |
+| debian-stretch-armhf |YES          |YES          |YES          |YES          |                             |
+| debian-stretch-arm64 |YES          |YES          |YES          |YES          |                             |
+| debian-buster-i386   |YES          |UNKWNOWN     |YES          |UNKNOWN      | supported since 4808430     |
+| debian-buster-amd64  |YES          |YES          |YES          |UNKNOWN      | supported since 4808430     |
+| debian-buster-armhf  |YES          |UNKNOWN      |YES          |UNKNOWN      | supported since 4808430     |
+| debian-buster-arm64  |YES          |UNKNOWN      |YES          |UNKNOWN      | supported since 4808430     |
+
+### Host System : debian-buster-amd64
+
+TBD
+
+### Host System : debian-jessie-i386
+
+Not supported
+
+### Host System : debian-stretch-i386
+
+TBD
+
+### Host System : debian-buster-i386
+TBD
+
+
+
 Release v0.7
 ------------
 

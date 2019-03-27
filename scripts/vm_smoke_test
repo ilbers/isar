@@ -147,21 +147,18 @@ done
 
 # ARM machine
 if [ -z "$FAST_BUILD" ]; then
-    run_test arm jessie
     run_test arm buster
 fi
 run_test arm stretch
 
 # AMD64 machine
 if [ -z "$FAST_BUILD" ]; then
-    run_test amd64 jessie
     run_test amd64 buster
 fi
 run_test amd64 stretch
 
 # i386 machine
 if [ -z "$FAST_BUILD" ]; then
-    run_test i386 jessie
     run_test i386 stretch
     run_test i386 buster
 fi

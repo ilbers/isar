@@ -16,7 +16,7 @@ Instruction on how to build can be found in the [User Manual](doc/user_manual.md
 
 To test the QEMU image, run the following command:
 
-        $ start_vm -a arm -d jessie
+        $ start_vm -a arm -d stretch
 
 The default root password is 'root'.
 

@@ -1,4 +1,4 @@
 Common targets are:
     multiconfig:qemuarm-stretch:isar-image-base
     multiconfig:qemuamd64-stretch:isar-image-base
-    multiconfig:rpi-jessie:isar-image-base
+    multiconfig:rpi-stretch:isar-image-base
