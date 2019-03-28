@@ -5,7 +5,7 @@
 
 python() {
     if not d.getVar("UBINIZE_ARGS"):
-        bb.fatal("UBINIZE_ARGS must be set")
+        raise bb.parse.SkipRecipe("UBINIZE_ARGS must be set")
 }
 
 UBINIZE_CFG ??= "ubinize.cfg"
