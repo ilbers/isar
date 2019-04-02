@@ -127,6 +127,6 @@ rm -f linux-headers-${PV}_${PV}-1_*.deb
 # linux-libc-dev causes dependency problems if we downgrade
 # remove it after the build so the downgraded version does not get deployed
 LINUX_LIBC_DEV_V=$( dpkg-query --show --showformat '${Version}' linux-libc-dev )
-if dpkg --compare-versions $LINUX_LIBC_DEV_V gt $PV; then
+if dpkg --compare-versions $LINUX_LIBC_DEV_V gt $PV-1; then
 	rm -f linux-libc-dev_${PV}*.deb
 fi
