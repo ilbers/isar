@@ -21,6 +21,7 @@ inherit dpkg
 
 TEMPLATE_FILES = "debian/control.tmpl \
                   debian/changelog.tmpl"
+TEMPLATE_VARS += "KERNEL_NAME"
 
 do_prepare_build() {
     cp -r ${WORKDIR}/debian ${S}/
