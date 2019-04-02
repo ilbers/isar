@@ -19,13 +19,14 @@ python do_patch() {
             if not (basename.endswith(".patch") or apply == "yes"):
                 continue
 
+            patchdir = fetcher.ud[src_uri].parm.get("patchdir") or src_dir
             striplevel = fetcher.ud[src_uri].parm.get("striplevel") or "1"
 
             cmd = [
                 "patch",
                 "--no-backup-if-mismatch",
                 "-p", striplevel,
-                "--directory", src_dir,
+                "--directory", patchdir,
                 "--input", workdir + basename,
             ]
             bb.note(" ".join(cmd))
