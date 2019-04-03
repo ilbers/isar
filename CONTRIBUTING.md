@@ -21,6 +21,19 @@ All technical communication about Isar should take place on `isar-users`
 mailing list. Please be polite and respect opinions and contributions of
 others.
 
+## Trunk based development guidelines
+
+We adapt trunk based development technique
+
+* `master` is the main development branch and not a stable release.
+
+* `next` is a branch for CI (Continous Integration), testing and early feedback.
+
+* `next` is sync'ed with `master` once in about two weeks (or more often whenever appropriate).
+
+If a major problem exists in `master`, it will be handled with priority.
+If a major change has been recently merged into `next`,  allow time to collect feedback and resolve issues.
+Plan merges to `master` so that both fit the two-week window; short extensions should be an exception.
 
 ## Development
 
@@ -63,6 +76,35 @@ others.
    * No regressions are introduced in the affected code.
 
    * Seemingly unaffected boards still build.
+
+   * It's highly suggested to test your patchset before submitting it to the mailing
+     by launching CI tests scripts. The procedure is described below:
+
+    First, run "fast" CI
+```
+     scripts/ci_build.sh -q -f
+     ...
+     source isar-init-build-env
+     scripts/vm_smoke_test -f
+```
+    Currently "fast" CI launches
+     * parallel cross build of QEMU arm/arm64/amd64 Debian stretch and Raspberry Pi 1 Raspbian stretch targets
+     * cross build of one of the supported boards which includes compilation of Linux kernel/U-Boot for it
+     * Launches login prompt check tests for built QEMU targets
+
+    Second, run standard CI
+```
+     scripts/ci_build.sh -q
+     ...
+     source isar-init-build-env
+     scripts/vm_smoke_test -q
+```
+    Currently standard CI launches
+     * parallel native build of QEMU arm/arm64/i386/amd64 Debian stretch/buster and Raspberry Pi 1 Raspbian stretch targets
+     * Launches login prompt check tests for built QEMU targets
+
+    Active developers may request from maintainers an account on isar-build.org
+    to analyze CI logs or to launch their own CI builds there.
 
 4. Structure patches logically, in small increments.
 
@@ -143,7 +185,7 @@ others.
 
      * Check with your employer when not working on your own.
 
-   * Base patches on top of the lastest master.
+   * Base patches on top of the latest 'next' branch
 
    * Every file should carry the copyright and licensing information:
 
@@ -171,7 +213,7 @@ others.
 
 1. Patches are reviewed on the mailing list.
 
-   * At least by maintainters, but everyone is invited, so the process can be
+   * At least by maintainers, but everyone is invited, so the process can be
      recurrent.
 
    * Feedback has to consider design, functionality and style.
@@ -179,10 +221,13 @@ others.
    * Simpler and clearer code is preferred, even if the original code works
      fine.
 
-2. After the review, patches are applied to the testing branch and CI checks
-   are executed.
+2. After the review, patches are applied to the maintainers testing branch and
+   CI checks are executed.
 
-3. If no new comments have appeared, the patches are merged to master branch.
+3. If CI tests are passed OK and no new comments have appeared,
+   the patches are merged into the `next` branch and later (normally in two weeks)
+   into `master`.
+
 
 GitHub facilities other than issues are not used for the review process, so
 that people can follow all changes and related discussions at one stop, the
@@ -193,7 +238,7 @@ mailing list. This may change in the future.
 
 1. Maintainers:
 
-   * Alexander Smirnov <asmirnov@ilbers.de>
+   * Maxim Yu. Osipov <mosipov@ilbers.de>
 
    * Baurzhan Ismagulov <ibr@ilbers.de>
 
