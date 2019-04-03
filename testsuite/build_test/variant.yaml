@@ -1,0 +1,22 @@
+variants: !mux
+    stretch-amd64:
+        distro: "stretch"
+        arch:   "amd64"
+    stretch-i386:
+        distro: "stretch"
+        arch:   "i386"
+    stretch-arm:
+        distro: "stretch"
+        arch:   "arm"
+    stretch-arm64:
+        distro: "stretch"
+        arch:   "arm64"
+    buster-amd64:
+        distro: "buster"
+        arch:   "amd64"
+    buster-i386:
+        distro: "buster"
+        arch:   "i386"
+    buster-arm:
+        distro: "buster"
+        arch:   "arm"
