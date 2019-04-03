@@ -33,6 +33,6 @@ do_prepare_build() {
 }
 
 dpkg_runbuild_prepend() {
-    export U_BOOT_CONFIG=${U_BOOT_CONFIG}
-    export U_BOOT_BIN=${U_BOOT_BIN}
+    export U_BOOT_CONFIG="${U_BOOT_CONFIG}"
+    export U_BOOT_BIN="${U_BOOT_BIN}"
 }
