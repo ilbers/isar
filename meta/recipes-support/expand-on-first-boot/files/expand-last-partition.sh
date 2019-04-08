@@ -28,4 +28,8 @@ sfdisk -d "${BOOT_DEV}" 2>/dev/null | grep -v last-lba | \
 # Inform the kernel about the partitioning change
 partx -u "${LAST_PART}"
 
+# Do not fail resize2fs if no mtab entry is found, e.g.,
+# when using systemd mount units.
+export EXT2FS_NO_MTAB_OK=1
+
 resize2fs "${LAST_PART}"
