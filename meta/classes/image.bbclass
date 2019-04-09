@@ -54,9 +54,12 @@ image_do_mounts() {
 }
 
 inherit isar-bootstrap-helper
+ROOTFS_FEATURES += "finalize-rootfs"
+inherit rootfs
 inherit image-sdk-extension
 inherit image-cache-extension
 inherit image-tools-extension
+inherit image-postproc-extension
 
 # Extra space for rootfs in MB
 ROOTFS_EXTRA ?= "64"
@@ -118,7 +121,7 @@ python set_image_size () {
     d.setVarFlag('ROOTFS_SIZE', 'export', '1')
 }
 
-isar_image_gen_fstab() {
+do_image_gen_fstab() {
     cat > ${WORKDIR}/fstab << EOF
 # Begin /etc/fstab
 /dev/root	/		auto		defaults		0	0
@@ -131,69 +134,18 @@ devtmpfs	/dev		devtmpfs	mode=0755,nosuid	0	0
 # End /etc/fstab
 EOF
 }
-
-isar_image_gen_rootfs() {
-    setup_root_file_system --clean --keep-apt-cache \
-        --fstab "${WORKDIR}/fstab" \
-        "${IMAGE_ROOTFS}" ${IMAGE_PREINSTALL} ${IMAGE_INSTALL}
-}
-
-isar_image_conf_rootfs() {
-    # Configure root filesystem
-    if [ -n "${DISTRO_CONFIG_SCRIPT}" ]; then
-        sudo install -m 755 "${WORKDIR}/${DISTRO_CONFIG_SCRIPT}" "${IMAGE_ROOTFS}"
-        TARGET_DISTRO_CONFIG_SCRIPT="$(basename ${DISTRO_CONFIG_SCRIPT})"
-        sudo chroot ${IMAGE_ROOTFS} "/$TARGET_DISTRO_CONFIG_SCRIPT" \
-                                    "${MACHINE_SERIAL}" "${BAUDRATE_TTY}"
-        sudo rm "${IMAGE_ROOTFS}/$TARGET_DISTRO_CONFIG_SCRIPT"
-   fi
-}
-
-isar_image_cleanup() {
-    # Cleanup
-    sudo sh -c ' \
-        rm "${IMAGE_ROOTFS}/etc/apt/sources.list.d/isar-apt.list"
-        test ! -e "${IMAGE_ROOTFS}/usr/share/doc/qemu-user-static" && \
-            find "${IMAGE_ROOTFS}/usr/bin" \
-                -maxdepth 1 -name 'qemu-*-static' -type f -delete
-             umount -l ${IMAGE_ROOTFS}/isar-apt
-        rmdir ${IMAGE_ROOTFS}/isar-apt
-        umount -l ${IMAGE_ROOTFS}/dev
-        umount -l ${IMAGE_ROOTFS}/proc
-        umount -l ${IMAGE_ROOTFS}/sys
-        rm -f "${IMAGE_ROOTFS}/etc/apt/apt.conf.d/55isar-fallback.conf"
-        if [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" ]; then
-            umount -l ${IMAGE_ROOTFS}/base-apt
-            rmdir ${IMAGE_ROOTFS}/base-apt
-            # Replace the local apt we bootstrapped with the
-            # APT sources initially defined in DISTRO_APT_SOURCES
-            rm -f "${IMAGE_ROOTFS}/etc/apt/sources.list.d/base-apt.list"
-            mv "${IMAGE_ROOTFS}/etc/apt/sources-list" \
-                "${IMAGE_ROOTFS}/etc/apt/sources.list.d/bootstrap.list"
-        fi
-        rm -f "${IMAGE_ROOTFS}/etc/apt/sources-list"
-    '
-}
+addtask image_gen_fstab before do_rootfs_install
 
 do_rootfs_install[depends] = "isar-apt:do_cache_config isar-bootstrap-target:do_bootstrap"
 do_rootfs_install[deptask] = "do_deploy_deb"
 do_rootfs_install[root_cleandirs] = "${IMAGE_ROOTFS} \
                              ${IMAGE_ROOTFS}/isar-apt"
 do_rootfs_install() {
-    isar_image_gen_fstab
-    isar_image_gen_rootfs
-    isar_image_conf_rootfs
-    isar_image_cleanup
+    setup_root_file_system --clean --keep-apt-cache \
+        --fstab "${WORKDIR}/fstab" \
+        "${IMAGE_ROOTFS}" ${IMAGE_PREINSTALL} ${IMAGE_INSTALL}
 }
 addtask rootfs_install before do_build after do_unpack
-
-do_mark_rootfs() {
-    BUILD_ID=$(get_build_id)
-    update_etc_os_release \
-        --build-id "${BUILD_ID}" --variant "${DESCRIPTION}" \
-        "${IMAGE_ROOTFS}"
-}
-addtask mark_rootfs before do_rootfs_postprocess after do_rootfs_install
 
 do_copy_boot_files[dirs] = "${DEPLOY_DIR_IMAGE}"
 do_copy_boot_files() {
@@ -218,18 +170,6 @@ do_copy_boot_files() {
     fi
 }
 addtask copy_boot_files before do_rootfs_postprocess after do_rootfs_install
-
-python do_rootfs_postprocess() {
-    """Virtual task"""
-    pass
-}
-addtask rootfs_postprocess before do_build after do_rootfs_install
-
-python do_rootfs() {
-    """Virtual task"""
-    pass
-}
-addtask rootfs before do_build after do_rootfs_postprocess
 
 python do_image_tools() {
     """Virtual task"""
