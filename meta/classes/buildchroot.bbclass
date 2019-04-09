@@ -25,18 +25,21 @@ buildchroot_do_mounts() {
     sudo -s <<'EOSUDO'
         ( flock 9
         set -e
-        if ! grep -q ${BUILDCHROOT_DIR}/isar-apt /proc/mounts; then
-            mount --bind ${REPO_ISAR_DIR}/${DISTRO} ${BUILDCHROOT_DIR}/isar-apt
-            mount --bind ${DL_DIR} ${BUILDCHROOT_DIR}/downloads
-            mount --rbind /dev ${BUILDCHROOT_DIR}/dev
-            mount --make-rslave ${BUILDCHROOT_DIR}/dev
-            mount -t proc none ${BUILDCHROOT_DIR}/proc
-            mount --rbind /sys ${BUILDCHROOT_DIR}/sys
-            mount --make-rslave ${BUILDCHROOT_DIR}/sys
-        fi
+        mountpoint -q '${BUILDCHROOT_DIR}/isar-apt' ||
+            mount --bind '${REPO_ISAR_DIR}/${DISTRO}' '${BUILDCHROOT_DIR}/isar-apt'
+        mountpoint -q '${BUILDCHROOT_DIR}/downloads' ||
+            mount --bind '${DL_DIR}' '${BUILDCHROOT_DIR}/downloads'
+        mountpoint -q '${BUILDCHROOT_DIR}/dev' ||
+            mount --rbind /dev '${BUILDCHROOT_DIR}/dev'
+        mount --make-rslave '${BUILDCHROOT_DIR}/dev'
+        mountpoint -q '${BUILDCHROOT_DIR}/proc' ||
+            mount -t proc none '${BUILDCHROOT_DIR}/proc'
+        mountpoint -q '${BUILDCHROOT_DIR}/sys' ||
+            mount --rbind /sys '${BUILDCHROOT_DIR}/sys'
+        mount --make-rslave '${BUILDCHROOT_DIR}/sys'
 
         # Refresh /etc/resolv.conf at this chance
-        cp -L /etc/resolv.conf ${BUILDCHROOT_DIR}/etc
-        ) 9>${MOUNT_LOCKFILE}
+        cp -L /etc/resolv.conf '${BUILDCHROOT_DIR}/etc'
+        ) 9>'${MOUNT_LOCKFILE}'
 EOSUDO
 }
