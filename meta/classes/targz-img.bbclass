@@ -10,4 +10,4 @@ do_targz_image() {
     sudo tar -cvzf ${TARGZ_IMAGE_FILE} --one-file-system -C ${IMAGE_ROOTFS} .
 }
 
-addtask targz_image before do_build after do_mark_rootfs
+addtask targz_image before do_image after do_image_tools

@@ -17,5 +17,5 @@ do_ext4_image() {
                 -F -d '${PP_ROOTFS}' '${PP_DEPLOY}/${EXT4_IMAGE_FILE}'
 }
 
-addtask ext4_image before do_build after do_copy_boot_files do_install_imager_deps
+addtask ext4_image before do_image after do_image_tools
 do_ext4_image[prefuncs] = 'set_image_size'

@@ -24,4 +24,4 @@ do_fit_image() {
     sudo chroot ${BUILDCHROOT_DIR} /usr/bin/mkimage ${MKIMAGE_ARGS} \
                 -f '${PP_WORK}/${FIT_IMAGE_SOURCE}' '${PP_DEPLOY}/${FIT_IMAGE_FILE}'
 }
-addtask fit_image before do_build after do_copy_boot_files do_install_imager_deps do_unpack do_transform_template
+addtask fit_image before do_image after do_image_tools do_transform_template

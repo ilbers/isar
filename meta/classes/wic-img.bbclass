@@ -121,7 +121,7 @@ python do_rootfs_wicenv () {
 
 }
 
-addtask do_rootfs_wicenv after do_copy_boot_files before do_wic_image
+addtask do_rootfs_wicenv after do_rootfs before do_wic_image
 do_rootfs_wicenv[vardeps] += "${WICVARS}"
 do_rootfs_wicenv[prefuncs] = 'set_image_size'
 
@@ -155,4 +155,4 @@ EOSUDO
 do_wic_image[file-checksums] += "${WKS_FILE_CHECKSUM}"
 do_wic_image[depends] = "buildchroot-target:do_build"
 
-addtask wic_image before do_build after do_install_imager_deps
+addtask wic_image before do_image after do_image_tools

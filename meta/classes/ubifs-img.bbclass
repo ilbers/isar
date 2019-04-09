@@ -23,4 +23,4 @@ do_ubifs_image() {
                 -r '${PP_ROOTFS}' '${PP_DEPLOY}/${UBIFS_IMAGE_FILE}'
 }
 
-addtask ubifs_image before do_build after do_copy_boot_files do_install_imager_deps
+addtask ubifs_image before do_image after do_image_tools

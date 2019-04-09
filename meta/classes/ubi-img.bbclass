@@ -27,4 +27,4 @@ do_ubi_image() {
     sudo chroot ${BUILDCHROOT_DIR} /usr/sbin/ubinize ${UBINIZE_ARGS} \
                 -o '${PP_DEPLOY}/${UBI_IMAGE_FILE}' '${PP_WORK}/${UBINIZE_CFG}'
 }
-addtask ubi_image before do_build after do_copy_boot_files do_install_imager_deps do_unpack do_transform_template
+addtask ubi_image before do_image after do_image_tools do_transform_template

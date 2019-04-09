@@ -53,8 +53,10 @@ image_do_mounts() {
     buildchroot_do_mounts
 }
 
-inherit ${IMAGE_TYPE}
 inherit isar-bootstrap-helper
+inherit image-sdk-extension
+inherit image-cache-extension
+inherit image-tools-extension
 
 # Extra space for rootfs in MB
 ROOTFS_EXTRA ?= "64"
@@ -173,18 +175,17 @@ isar_image_cleanup() {
     '
 }
 
-do_rootfs[depends] = "isar-apt:do_cache_config isar-bootstrap-target:do_bootstrap"
-
-do_rootfs[deptask] = "do_deploy_deb"
-do_rootfs[root_cleandirs] = "${IMAGE_ROOTFS} \
+do_rootfs_install[depends] = "isar-apt:do_cache_config isar-bootstrap-target:do_bootstrap"
+do_rootfs_install[deptask] = "do_deploy_deb"
+do_rootfs_install[root_cleandirs] = "${IMAGE_ROOTFS} \
                              ${IMAGE_ROOTFS}/isar-apt"
-do_rootfs() {
+do_rootfs_install() {
     isar_image_gen_fstab
     isar_image_gen_rootfs
     isar_image_conf_rootfs
     isar_image_cleanup
 }
-addtask rootfs before do_build after do_unpack
+addtask rootfs_install before do_build after do_unpack
 
 do_mark_rootfs() {
     BUILD_ID=$(get_build_id)
@@ -192,9 +193,9 @@ do_mark_rootfs() {
         --build-id "${BUILD_ID}" --variant "${DESCRIPTION}" \
         "${IMAGE_ROOTFS}"
 }
+addtask mark_rootfs before do_rootfs_postprocess after do_rootfs_install
 
-addtask mark_rootfs before do_copy_boot_files do_transform_template after do_rootfs
-
+do_copy_boot_files[dirs] = "${DEPLOY_DIR_IMAGE}"
 do_copy_boot_files() {
     if [ -n "${KERNEL_IMAGE}" ]; then
         cp -f ${IMAGE_ROOTFS}/boot/${@get_image_name(d, 'vmlinuz')[0]} ${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGE}
@@ -216,97 +217,37 @@ do_copy_boot_files() {
         cp -f "$dtb" "${DEPLOY_DIR_IMAGE}/${DTB_FILE}"
     fi
 }
+addtask copy_boot_files before do_rootfs_postprocess after do_rootfs_install
 
-addtask copy_boot_files before do_build after do_rootfs
-do_copy_boot_files[dirs] = "${DEPLOY_DIR_IMAGE}"
-
-SDKCHROOT_DIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/sdkchroot-${HOST_DISTRO}-${HOST_ARCH}"
-
-do_populate_sdk() {
-    # Copy isar-apt with deployed Isar packages
-    sudo cp -Trpfx ${REPO_ISAR_DIR}/${DISTRO}  ${SDKCHROOT_DIR}/rootfs/isar-apt
-
-    # Purge apt cache to make image slimmer
-    sudo rm -rf ${SDKCHROOT_DIR}/rootfs/var/cache/apt/*
-
-    sudo umount -R ${SDKCHROOT_DIR}/rootfs/dev || true
-    sudo umount ${SDKCHROOT_DIR}/rootfs/proc || true
-    sudo umount -R ${SDKCHROOT_DIR}/rootfs/sys || true
-
-    # Remove setup scripts
-    sudo rm -f ${SDKCHROOT_DIR}/rootfs/chroot-setup.sh ${SDKCHROOT_DIR}/rootfs/configscript.sh
-
-    # Copy mount_chroot.sh for convenience
-    sudo cp ${ISARROOT}/scripts/mount_chroot.sh ${SDKCHROOT_DIR}/rootfs
-
-    # Create SDK archive
-    sudo tar -C ${SDKCHROOT_DIR} --transform="s|^rootfs|sdk-${DISTRO}-${DISTRO_ARCH}|" \
-        -c rootfs | xz -T0 > ${DEPLOY_DIR_IMAGE}/sdk-${DISTRO}-${DISTRO_ARCH}.tar.xz
-
-    # Install deployment link for local use
-    ln -Tfsr ${SDKCHROOT_DIR}/rootfs ${DEPLOY_DIR_IMAGE}/sdk-${DISTRO}-${DISTRO_ARCH}
+python do_rootfs_postprocess() {
+    """Virtual task"""
+    pass
 }
+addtask rootfs_postprocess before do_build after do_rootfs_install
 
-do_populate_sdk[depends] = "sdkchroot:do_build"
-
-addtask populate_sdk after do_rootfs
-
-inherit base-apt-helper
-
-do_cache_base_repo[depends] = "base-apt:do_cache_config"
-do_cache_base_repo[lockfiles] = "${REPO_BASE_DIR}/isar.lock"
-
-do_cache_base_repo() {
-    if [ -d ${WORKDIR}/apt_cache ]; then
-        populate_base_apt ${WORKDIR}/apt_cache
-    fi
-
-    if [ -d ${BUILDCHROOT_HOST_DIR}/var/cache/apt ]; then
-        populate_base_apt ${BUILDCHROOT_HOST_DIR}/var/cache/apt
-    fi
-
-    if [ -d ${BUILDCHROOT_TARGET_DIR}/var/cache/apt ]; then
-        populate_base_apt ${BUILDCHROOT_TARGET_DIR}/var/cache/apt
-    fi
+python do_rootfs() {
+    """Virtual task"""
+    pass
 }
+addtask rootfs before do_build after do_rootfs_postprocess
 
-addtask cache_base_repo after do_rootfs do_install_imager_deps
-
-# Imager are expected to run natively, thus will use the target buildchroot.
-ISAR_CROSS_COMPILE = "0"
-
-inherit buildchroot
-
-IMAGER_INSTALL ??= ""
-IMAGER_BUILD_DEPS ??= ""
-DEPENDS += "${IMAGER_BUILD_DEPS}"
-
-python () {
-    if d.getVar('IMAGE_TYPE', True) == 'wic-img':
-        d.appendVar('IMAGER_INSTALL',
-                    ' ' + d.getVar('WIC_IMAGER_INSTALL', True))
+python do_image_tools() {
+    """Virtual task"""
+    pass
 }
+addtask image_tools before do_build after do_rootfs
 
-do_install_imager_deps() {
-    if [ -z "${@d.getVar("IMAGER_INSTALL", True).strip()}" ]; then
-        exit
-    fi
-
-    buildchroot_do_mounts
-
-    E="${@bb.utils.export_proxies(d)}"
-    sudo -E chroot ${BUILDCHROOT_DIR} sh -c ' \
-        apt-get update \
-            -o Dir::Etc::sourcelist="sources.list.d/isar-apt.list" \
-            -o Dir::Etc::sourceparts="-" \
-            -o APT::Get::List-Cleanup="0"
-        apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y \
-            --allow-unauthenticated --allow-downgrades install \
-            ${IMAGER_INSTALL}'
+python do_image() {
+    """Virtual task"""
+    pass
 }
+addtask image before do_build after do_image_tools
 
-do_install_imager_deps[depends] = "buildchroot-target:do_build"
-do_install_imager_deps[deptask] = "do_deploy_deb"
-do_install_imager_deps[lockfiles] += "${REPO_ISAR_DIR}/isar.lock"
+python do_deploy() {
+    """Virtual task"""
+    pass
+}
+addtask deploy before do_build after do_image
 
-addtask install_imager_deps before do_build
+# Last so that the image type can overwrite tasks if needed
+inherit ${IMAGE_TYPE}
