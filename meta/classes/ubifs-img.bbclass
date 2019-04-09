@@ -8,8 +8,6 @@ python() {
         bb.fatal("MKUBIFS_ARGS must be set")
 }
 
-inherit image
-
 UBIFS_IMAGE_FILE ?= "${IMAGE_FULLNAME}.ubifs.img"
 
 IMAGER_INSTALL += "mtd-utils"

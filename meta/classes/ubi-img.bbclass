@@ -9,9 +9,6 @@ python() {
 }
 
 UBINIZE_CFG ??= "ubinize.cfg"
-
-inherit image
-
 UBI_IMAGE_FILE ?= "${IMAGE_FULLNAME}.ubi.img"
 
 IMAGER_INSTALL += "mtd-utils"

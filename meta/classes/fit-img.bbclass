@@ -6,9 +6,6 @@
 MKIMAGE_ARGS ??= ""
 
 FIT_IMAGE_SOURCE ??= "fitimage.its"
-
-inherit image
-
 FIT_IMAGE_FILE ?= "${IMAGE_FULLNAME}.fit.img"
 
 IMAGER_INSTALL += "u-boot-tools device-tree-compiler"
