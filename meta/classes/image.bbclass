@@ -87,7 +87,7 @@ def get_rootfs_size(d):
     rootfs_extra = int(d.getVar("ROOTFS_EXTRA", True))
 
     output = subprocess.check_output(
-        ["sudo", "du", "-s", "--block-size=1k", d.getVar("IMAGE_ROOTFS", True)]
+        ["sudo", "du", "-xs", "--block-size=1k", d.getVar("IMAGE_ROOTFS", True)]
     )
     base_size = int(output.split()[0])
 
