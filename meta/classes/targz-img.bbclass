@@ -9,7 +9,7 @@ do_targz_image[stamp-extra-info] = "${DISTRO}-${MACHINE}"
 
 do_targz_image() {
     rm -f ${TARGZ_IMAGE_FILE}
-    sudo tar -cvzf ${TARGZ_IMAGE_FILE} -C ${IMAGE_ROOTFS} .
+    sudo tar -cvzf ${TARGZ_IMAGE_FILE} --one-file-system -C ${IMAGE_ROOTFS} .
 }
 
 addtask targz_image before do_build after do_mark_rootfs
