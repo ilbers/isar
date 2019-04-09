@@ -13,8 +13,6 @@ FIT_IMAGE_FILE ?= "${IMAGE_FULLNAME}.fit.img"
 
 IMAGER_INSTALL += "u-boot-tools device-tree-compiler"
 
-do_fit_image[stamp-extra-info] = "${DISTRO}-${MACHINE}"
-
 # Generate fit image
 do_fit_image() {
     if [ ! -e "${WORKDIR}/${FIT_IMAGE_SOURCE}" ]; then

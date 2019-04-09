@@ -14,8 +14,6 @@ UBIFS_IMAGE_FILE ?= "${IMAGE_FULLNAME}.ubifs.img"
 
 IMAGER_INSTALL += "mtd-utils"
 
-do_ubifs_image[stamp-extra-info] = "${DISTRO}-${MACHINE}"
-
 # Generate ubifs filesystem image
 do_ubifs_image() {
     rm -f '${DEPLOY_DIR_IMAGE}/${UBIFS_IMAGE_FILE}'

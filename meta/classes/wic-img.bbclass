@@ -89,8 +89,6 @@ FAKEROOTCMD ?= "${ISARROOT}/scripts/wic_fakeroot"
 RECIPE_SYSROOT_NATIVE ?= "/"
 BUILDCHROOT_DIR = "${BUILDCHROOT_TARGET_DIR}"
 
-do_wic_image[stamp-extra-info] = "${DISTRO}-${MACHINE}"
-
 WIC_CREATE_EXTRA_ARGS ?= ""
 
 WICVARS += "\
@@ -128,8 +126,6 @@ do_rootfs_wicenv[vardeps] += "${WICVARS}"
 do_rootfs_wicenv[prefuncs] = 'set_image_size'
 
 WIC_IMAGE_FILE ="${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.wic.img"
-
-do_build[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 
 do_wic_image() {
     buildchroot_do_mounts

@@ -5,8 +5,6 @@
 
 TARGZ_IMAGE_FILE = "${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.tar.gz"
 
-do_targz_image[stamp-extra-info] = "${DISTRO}-${MACHINE}"
-
 do_targz_image() {
     rm -f ${TARGZ_IMAGE_FILE}
     sudo tar -cvzf ${TARGZ_IMAGE_FILE} --one-file-system -C ${IMAGE_ROOTFS} .

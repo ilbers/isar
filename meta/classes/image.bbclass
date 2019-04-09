@@ -1,6 +1,8 @@
 # This software is a part of ISAR.
 # Copyright (C) 2015-2017 ilbers GmbH
 
+PF = "${PN}-${DISTRO}-${MACHINE}"
+
 IMAGE_INSTALL ?= ""
 IMAGE_TYPE    ?= "ext4-img"
 IMAGE_ROOTFS   = "${WORKDIR}/rootfs"
@@ -8,7 +10,7 @@ IMAGE_ROOTFS   = "${WORKDIR}/rootfs"
 IMAGE_INSTALL += "${@ ("linux-image-" + d.getVar("KERNEL_NAME", True)) if d.getVar("KERNEL_NAME", True) else ""}"
 
 # Name of the image including distro&machine names
-IMAGE_FULLNAME = "${PN}-${DISTRO}-${MACHINE}"
+IMAGE_FULLNAME = "${PF}"
 
 # These variables are used by wic and start_vm
 KERNEL_IMAGE ?= "vmlinuz"
@@ -37,8 +39,6 @@ SRC_URI += "${@ cfg_script(d) }"
 DEPENDS += "${IMAGE_INSTALL} ${IMAGE_TRANSIENT_PACKAGES}"
 
 IMAGE_TRANSIENT_PACKAGES += "isar-cfg-localepurge isar-cfg-rootpw"
-
-WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${MACHINE}/${PN}"
 
 ISAR_RELEASE_CMD_DEFAULT = "git -C ${LAYERDIR_core} describe --tags --dirty --match 'v[0-9].[0-9]*'"
 ISAR_RELEASE_CMD ?= "${ISAR_RELEASE_CMD_DEFAULT}"
@@ -173,10 +173,6 @@ isar_image_cleanup() {
     '
 }
 
-do_fetch[stamp-extra-info] = "${DISTRO}-${MACHINE}"
-do_unpack[stamp-extra-info] = "${DISTRO}-${MACHINE}"
-
-do_rootfs[stamp-extra-info] = "${DISTRO}-${MACHINE}"
 do_rootfs[depends] = "isar-apt:do_cache_config isar-bootstrap-target:do_bootstrap"
 
 do_rootfs[deptask] = "do_deploy_deb"
@@ -196,8 +192,6 @@ do_mark_rootfs() {
         --build-id "${BUILD_ID}" --variant "${DESCRIPTION}" \
         "${IMAGE_ROOTFS}"
 }
-
-do_mark_rootfs[stamp-extra-info] = "${DISTRO}-${MACHINE}"
 
 addtask mark_rootfs before do_copy_boot_files do_transform_template after do_rootfs
 
@@ -225,7 +219,6 @@ do_copy_boot_files() {
 
 addtask copy_boot_files before do_build after do_rootfs
 do_copy_boot_files[dirs] = "${DEPLOY_DIR_IMAGE}"
-do_copy_boot_files[stamp-extra-info] = "${DISTRO}-${MACHINE}"
 
 SDKCHROOT_DIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/sdkchroot-${HOST_DISTRO}-${HOST_ARCH}"
 
@@ -254,7 +247,6 @@ do_populate_sdk() {
     ln -Tfsr ${SDKCHROOT_DIR}/rootfs ${DEPLOY_DIR_IMAGE}/sdk-${DISTRO}-${DISTRO_ARCH}
 }
 
-do_populate_sdk[stamp-extra-info] = "${DISTRO}-${MACHINE}"
 do_populate_sdk[depends] = "sdkchroot:do_build"
 
 addtask populate_sdk after do_rootfs
@@ -263,7 +255,6 @@ inherit base-apt-helper
 
 do_cache_base_repo[depends] = "base-apt:do_cache_config"
 do_cache_base_repo[lockfiles] = "${REPO_BASE_DIR}/isar.lock"
-do_cache_base_repo[stamp-extra-info] = "${DISTRO}-${MACHINE}"
 
 do_cache_base_repo() {
     if [ -d ${WORKDIR}/apt_cache ]; then
@@ -317,6 +308,5 @@ do_install_imager_deps() {
 do_install_imager_deps[depends] = "buildchroot-target:do_build"
 do_install_imager_deps[deptask] = "do_deploy_deb"
 do_install_imager_deps[lockfiles] += "${REPO_ISAR_DIR}/isar.lock"
-do_install_imager_deps[stamp-extra-info] = "${DISTRO}-${MACHINE}"
 
 addtask install_imager_deps before do_build

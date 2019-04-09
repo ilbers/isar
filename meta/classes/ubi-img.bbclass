@@ -16,8 +16,6 @@ UBI_IMAGE_FILE ?= "${IMAGE_FULLNAME}.ubi.img"
 
 IMAGER_INSTALL += "mtd-utils"
 
-do_ubi_image[stamp-extra-info] = "${DISTRO}-${MACHINE}"
-
 # Generate ubi filesystem image
 do_ubi_image() {
     if [ ! -e "${WORKDIR}/${UBINIZE_CFG}" ]; then
