@@ -126,8 +126,11 @@ bitbake $BB_ARGS $TARGETS_SET
 # Note: de0-nano-soc build is launched separately as
 # parallel build with the same target arch (armhf) fails.
 # The problem is being investigated
+# In addition test SDK creation
 if [ -n "$FAST_BUILD" ]; then
     bitbake $BB_ARGS multiconfig:de0-nano-soc-stretch:isar-image-base
+    while [ -e bitbake.sock ]; do sleep 1; done
+    bitbake $BB_ARGS -c do_populate_sdk multiconfig:qemuarm-stretch:isar-image-base
 fi
 
 cp -a "${ISARROOT}/meta/classes/dpkg-base.bbclass" "${ISARROOT}/meta/classes/dpkg-base.bbclass.ci-backup"
