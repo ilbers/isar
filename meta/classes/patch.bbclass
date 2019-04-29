@@ -40,8 +40,8 @@ python do_patch() {
             if apply == "no":
                 continue
 
-            basename = fetcher.ud[src_uri].basename or ""
-            if not (basename.endswith(".patch") or apply == "yes"):
+            path = fetcher.ud[src_uri].path or ""
+            if not (path.endswith(".patch") or apply == "yes"):
                 continue
 
             patchdir = fetcher.ud[src_uri].parm.get("patchdir") or src_dir
@@ -54,8 +54,9 @@ python do_patch() {
 
             cmds = open(applied_patches_dir + ".patch-commands", "a")
 
-            patch_file = applied_patches_dir + basename
-            shutil.copyfile(workdir + basename, patch_file)
+            patch_file = applied_patches_dir + path
+            bb.utils.mkdirhier(os.path.dirname(patch_file))
+            shutil.copyfile(workdir + path, patch_file)
 
             striplevel = fetcher.ud[src_uri].parm.get("striplevel") or "1"
 
