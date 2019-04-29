@@ -45,9 +45,12 @@ do_apt_fetch[lockfiles] += "${REPO_ISAR_DIR}/isar.lock"
 do_apt_fetch[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 
 def get_package_srcdir(d):
-    s = d.getVar("S", True)
-    workdir = d.getVar("WORKDIR", True)
-    if s.startswith(workdir):
+    s = os.path.abspath(d.getVar("S", True))
+    workdir = os.path.abspath(d.getVar("WORKDIR", True))
+    if os.path.commonpath([s, workdir]) == workdir:
+        if s == workdir:
+            bb.warn('S is not a subdir of WORKDIR debian package operations' +
+                    ' will not work for this recipe.')
         return s[len(workdir)+1:]
     bb.warn('S does not start with WORKDIR')
     return s
