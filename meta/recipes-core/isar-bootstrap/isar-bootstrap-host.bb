@@ -14,7 +14,7 @@ ISAR_BOOTSTRAP_LOCK = "${DEPLOY_DIR_BOOTSTRAP}/${HOST_DISTRO}-${HOST_ARCH}.lock"
 require isar-bootstrap.inc
 inherit isar-bootstrap-helper
 
-do_generate_keyring[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
+do_generate_keyrings[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 
 do_apt_config_prepare[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 do_apt_config_prepare[dirs] = "${WORKDIR}"
@@ -52,4 +52,4 @@ do_bootstrap[vardeps] += "HOST_DISTRO_APT_SOURCES"
 do_bootstrap() {
     isar_bootstrap --host
 }
-addtask bootstrap before do_build after do_generate_keyring
+addtask bootstrap before do_build after do_generate_keyrings

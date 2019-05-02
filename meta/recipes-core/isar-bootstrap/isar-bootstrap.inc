@@ -22,34 +22,41 @@ APTPREFS = "${WORKDIR}/apt-preferences"
 APTSRCS = "${WORKDIR}/apt-sources"
 APTSRCS_INIT = "${WORKDIR}/apt-sources-init"
 BASEAPTSRCS = "${WORKDIR}/base-apt-sources"
-APTKEYFILES = ""
-APTKEYRING = "${WORKDIR}/apt-keyring.gpg"
-DEBOOTSTRAP_KEYRING = ""
+DISTRO_BOOTSTRAP_KEYFILES = ""
+THIRD_PARTY_APT_KEYFILES = ""
 DEPLOY_ISAR_BOOTSTRAP ?= ""
 DISTRO_BOOTSTRAP_BASE_PACKAGES = "locales"
+DISTRO_BOOTSTRAP_BASE_PACKAGES_append_gnupg = ",gnupg2"
 
 DISTRO_APT_PREMIRRORS ?= "${@ "http://ftp\.(\S+\.)?debian.org  file:///${REPO_BASE_DIR} \n" if bb.utils.to_boolean(d.getVar('ISAR_USE_CACHED_BASE_REPO')) else "" }"
 
 inherit base-apt-helper
 
 python () {
-    distro_apt_keys = d.getVar("DISTRO_APT_KEYS", False)
-    aptkeys = []
+    distro_bootstrap_keys = (d.getVar("DISTRO_BOOTSTRAP_KEYS", False) or "").split()
 
-    if distro_apt_keys:
-        aptkeys += distro_apt_keys.split()
+    third_party_apt_keys = (d.getVar("THIRD_PARTY_APT_KEYS", False) or "").split() 
+
+    # The cached repo key can be both for bootstrapping and apt package
+    # installation afterwards. However, debootstrap will include the key into
+    # the rootfs automatically thus the right place is distro_bootstrap_keys.
 
     if bb.utils.to_boolean(d.getVar('ISAR_USE_CACHED_BASE_REPO')):
         own_pub_key = d.getVar("BASE_REPO_KEY", False)
         if own_pub_key:
-            aptkeys += own_pub_key.split()
+            distro_bootstrap_keys += own_pub_key.split()
 
-    d.setVar("DEBOOTSTRAP_KEYRING", "--keyring ${APTKEYRING}")
-    for key in aptkeys:
+    for key in distro_bootstrap_keys:
         d.appendVar("SRC_URI", " %s" % key)
         fetcher = bb.fetch2.Fetch([key], d)
         filename = fetcher.localpath(key)
-        d.appendVar("APTKEYFILES", " %s" % filename)
+        d.appendVar("DISTRO_BOOTSTRAP_KEYFILES", " %s" % filename)
+
+    for key in third_party_apt_keys:
+        d.appendVar("SRC_URI", " %s" % key)
+        fetcher = bb.fetch2.Fetch([key], d)
+        filename = fetcher.localpath(key)
+        d.appendVar("THIRD_PARTY_APT_KEYFILES", " %s" % filename)
 }
 
 def aggregate_files(d, file_list, file_out):
@@ -159,6 +166,14 @@ def get_distro_needs_https_support(d, is_host=False):
     else:
         return ""
 
+def get_distro_needs_gpg_support(d):
+    apt_keys = d.getVar("THIRD_PARTY_APT_KEYS", False)
+    if apt_keys and apt_keys != "":
+        return "gnupg"
+    return ""
+
+OVERRIDES_append = ":${@get_distro_needs_gpg_support(d)}"
+
 def get_distro_source(d, is_host):
     return get_distro_primary_source_entry(d, is_host)[0]
 
@@ -172,17 +187,26 @@ def get_distro_components_argument(d, is_host):
     else:
         return ""
 
-do_generate_keyring[dirs] = "${DL_DIR}"
-do_generate_keyring[vardeps] += "DISTRO_APT_KEYS"
-do_generate_keyring() {
-    if [ -n "${@d.getVar("APTKEYFILES", True) or ""}" ]; then
-        for keyfile in ${@d.getVar("APTKEYFILES", True)}; do
-           gpg --no-default-keyring --keyring "${APTKEYRING}" \
-               --no-tty --homedir "${DL_DIR}"  --import "$keyfile"
+APT_KEYS_DIR := "${WORKDIR}/aptkeys"
+DISTRO_BOOTSTRAP_KEYRING := "${WORKDIR}/distro-keyring.gpg"
+
+do_generate_keyrings[cleandirs] = "${APT_KEYS_DIR}"
+do_generate_keyrings[dirs] = "${DL_DIR}"
+do_generate_keyrings[vardeps] += "DISTRO_BOOTSTRAP_KEYS THIRD_PARTY_APT_KEYS"
+do_generate_keyrings() {
+    if [ -n "${@d.getVar("THIRD_PARTY_APT_KEYFILES", True) or ""}" ]; then
+        chmod 777 "${APT_KEYS_DIR}"
+        for keyfile in ${@d.getVar("THIRD_PARTY_APT_KEYFILES", True)}; do
+           cp "$keyfile" "${APT_KEYS_DIR}"/"$(basename "$keyfile")"
+        done
+    fi
+    if [ -n "${@d.getVar("DISTRO_BOOTSTRAP_KEYFILES", True) or ""}" ]; then
+        for keyfile in ${@d.getVar("DISTRO_BOOTSTRAP_KEYFILES", True)}; do
+           sudo apt-key --keyring "${DISTRO_BOOTSTRAP_KEYRING}" add $keyfile
         done
     fi
 }
-addtask generate_keyring before do_build after do_unpack
+addtask generate_keyrings before do_build after do_unpack
 
 
 
@@ -206,6 +230,9 @@ isar_bootstrap() {
         shift
     done
     debootstrap_args="--verbose --variant=minbase --include=${DISTRO_BOOTSTRAP_BASE_PACKAGES}"
+    if [ ! "x${DISTRO_BOOTSTRAP_KEYS}" = "x" ]; then
+        debootstrap_args="$debootstrap_args --keyring=${DISTRO_BOOTSTRAP_KEYRING}"
+    fi
     if [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" ]; then
         if [ -z "${BASE_REPO_KEY}" ] ; then
             debootstrap_args="$debootstrap_args --no-check-gpg"
@@ -222,7 +249,6 @@ isar_bootstrap() {
             if [ ${IS_HOST} ]; then
                 ${DEBOOTSTRAP} $debootstrap_args \
                                ${@get_distro_components_argument(d, True)} \
-                               ${DEBOOTSTRAP_KEYRING} \
                                "${@get_distro_suite(d, True)}" \
                                "${ROOTFSDIR}" \
                                "${@get_distro_source(d, True)}"
@@ -231,7 +257,6 @@ isar_bootstrap() {
                  "${DEBOOTSTRAP}" $debootstrap_args \
                                   --arch="${DISTRO_ARCH}" \
                                   ${@get_distro_components_argument(d, False)} \
-                                  ${DEBOOTSTRAP_KEYRING} \
                                   "${@get_distro_suite(d, False)}" \
                                   "${ROOTFSDIR}" \
                                   "${@get_distro_source(d, False)}"
@@ -260,6 +285,14 @@ isar_bootstrap() {
             mkdir -p "${ROOTFSDIR}/etc/apt/apt.conf.d"
             install -v -m644 "${WORKDIR}/isar-apt.conf" \
                              "${ROOTFSDIR}/etc/apt/apt.conf.d/50isar.conf"
+            find ${APT_KEYS_DIR}/ -type f | while read keyfile
+            do
+                kfn="$(basename $keyfile)"
+                cp $keyfile "${ROOTFSDIR}/tmp/$kfn"
+                sudo -E chroot "${ROOTFSDIR}" /usr/bin/apt-key \
+                   --keyring ${THIRD_PARTY_APT_KEYRING} add "/tmp/$kfn"
+                rm "${ROOTFSDIR}/tmp/$kfn"
+            done
 
             if [ "${@get_distro_suite(d, True)}" = "stretch" ] && [ "${@get_host_release().split('.')[0]}" -lt "4" ]; then
                 install -v -m644 "${WORKDIR}/isar-apt-fallback.conf" \
