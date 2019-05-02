@@ -238,7 +238,8 @@ isar_bootstrap() {
         shift
     done
     debootstrap_args="--verbose --variant=minbase --include=${DISTRO_BOOTSTRAP_BASE_PACKAGES}"
-    if [ ! "x${DISTRO_BOOTSTRAP_KEYS}" = "x" ]; then
+    if [ ! "x${DISTRO_BOOTSTRAP_KEYS}" = "x" ] || \
+       [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" ]; then
         debootstrap_args="$debootstrap_args --keyring=${DISTRO_BOOTSTRAP_KEYRING}"
     fi
     if [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" ]; then
