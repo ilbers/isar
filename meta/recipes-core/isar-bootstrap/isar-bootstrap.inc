@@ -33,23 +33,23 @@ DISTRO_APT_PREMIRRORS ?= "${@ "http://ftp\.(\S+\.)?debian.org  file:///${REPO_BA
 inherit base-apt-helper
 
 python () {
-    from urllib.parse import urlparse
     distro_apt_keys = d.getVar("DISTRO_APT_KEYS", False)
-    wd = d.getVar("WORKDIR", True)
+    aptkeys = []
+
     if distro_apt_keys:
-        d.setVar("DEBOOTSTRAP_KEYRING", "--keyring ${APTKEYRING}")
-        for key in distro_apt_keys.split():
-            url = urlparse(key)
-            d.appendVar("SRC_URI", " " + key)
-            d.appendVar("APTKEYFILES", " " + wd + url.path)
+        aptkeys += distro_apt_keys.split()
+
     if bb.utils.to_boolean(d.getVar('ISAR_USE_CACHED_BASE_REPO')):
         own_pub_key = d.getVar("BASE_REPO_KEY", False)
         if own_pub_key:
-            d.setVar("DEBOOTSTRAP_KEYRING", "--keyring ${APTKEYRING}")
-            for key in own_pub_key.split():
-                url = urlparse(key)
-                d.appendVar("SRC_URI", " " + key)
-                d.appendVar("APTKEYFILES", " " + wd + url.path)
+            aptkeys += own_pub_key.split()
+
+    d.setVar("DEBOOTSTRAP_KEYRING", "--keyring ${APTKEYRING}")
+    for key in aptkeys:
+        d.appendVar("SRC_URI", " %s" % key)
+        fetcher = bb.fetch2.Fetch([key], d)
+        filename = fetcher.localpath(key)
+        d.appendVar("APTKEYFILES", " %s" % filename)
 }
 
 def aggregate_files(d, file_list, file_out):
