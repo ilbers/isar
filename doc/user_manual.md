@@ -321,6 +321,7 @@ Some other variables include:
  - `HOST_DISTRO_APT_SOURCES` - List of apt source files for SDK root filesystem. This variable is optional.
  - `HOST_DISTRO_APT_PREFERENCES` - List of apt preference files for SDK root filesystem. This variable is optional.
  - `DISTRO_APT_PREMIRRORS` - The preferred mirror (append it to the default URI in the format `ftp.debian.org my.preferred.mirror`. This variable is optional.
+ - `THIRD_PARTY_APT_KEYS` - List of gpg key URIs used to verify apt repos for apt installation after bootstrapping
  - `CFG_ROOT_PW` - The encrypted root password to be set. To encrypt password use `mkpasswd`. You find `mkpasswd` in the `whois` package of Debian. If the variable is empty, root login is passwordless.
  - `CFG_ROOT_LOCKED` - If set to `1` the root account will be locked.
 
@@ -368,9 +369,11 @@ Isar can generate various images types for specific machine. The type of the ima
 The distro is defined by the set of the following variables:
 
  - `DISTRO_APT_SOURCES` - List of apt source files
- - `DISTRO_APT_KEYS` - List of gpg key URIs used to verify apt repos
+ - `DISTRO_BOOTSTRAP_KEYS` - List of gpg key URIs used to verify apt bootstrap repo
  - `DISTRO_APT_PREFERENCES` - List of apt preference files
  - `DISTRO_KERNELS` - List of supported kernel suffixes
+
+The first entry of DISTRO_APT_SOURCES is used for bootstrapping.
 
 Below is an example for Raspbian Stretch:
 ```
@@ -783,3 +786,39 @@ bitbake multiconfig:qemuarm-stretch:isar-image-base
 ### Limitation
 
 Files fetched with the `SRC_URI` protocol "apt://" are not yet cached.
+
+## Add foreign packages from other repositories to the generated image
+
+### Motivation
+
+When building embedded systems with Isar, one might want to include packages that are not provided by debian by default. One example is docker-ce.
+
+### Approach/Solution
+
+Add a new sources list entry to fetch the package from, i.e. include a new apt source mirror. Then add the needed apt key for the third party repository. Add the wanted package to the IMAGE_PREINSTALL variable.
+
+### Example
+
+Add docker-ce from arm64:
+
+Create a new layer containing `conf/distro/docker-stretch.list` with the following content:
+
+```
+deb [arch=arm64] https://download.docker.com/linux/debian	stretch	stable
+```
+
+Include the layer in your project.
+
+To the local.conf add:
+
+```
+IMAGE_PREINSTALL += "docker-ce"
+THIRD_PARTY_APT_KEYS_append = " https://download.docker.com/linux/debian/gpg;md5sum=1afae06b34a13c1b3d9cb61a26285a15"
+DISTRO_APT_SOURCES_append = " conf/distro/docker-stretch.list"
+```
+
+And build the corresponding image target:
+
+```
+bitbake multiconfig:qemuarm64-stretch:isar-image-base
+```
