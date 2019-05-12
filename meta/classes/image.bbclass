@@ -169,7 +169,7 @@ do_copy_boot_files() {
         cp -f "$dtb" "${DEPLOY_DIR_IMAGE}/${DTB_FILE}"
     fi
 }
-addtask copy_boot_files before do_rootfs_postprocess after do_rootfs_install
+addtask copy_boot_files before do_rootfs_postprocess do_transform_template after do_rootfs_install
 
 python do_image_tools() {
     """Virtual task"""
