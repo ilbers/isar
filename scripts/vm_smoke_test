@@ -146,10 +146,8 @@ do
 done
 
 # ARM machine
-if [ -z "$FAST_BUILD" ]; then
-    run_test arm buster
-fi
 run_test arm stretch
+run_test arm buster
 
 # AMD64 machine
 if [ -z "$FAST_BUILD" ]; then
