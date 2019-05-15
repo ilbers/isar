@@ -12,6 +12,8 @@ DEPLOY_ISAR_BOOTSTRAP = "${DEPLOY_DIR_BOOTSTRAP}/${HOST_DISTRO}-${HOST_ARCH}"
 ISAR_BOOTSTRAP_LOCK = "${DEPLOY_DIR_BOOTSTRAP}/${HOST_DISTRO}-${HOST_ARCH}.lock"
 
 require isar-bootstrap.inc
+# We only build debian host buildchroot environments
+DISTRO_BOOTSTRAP_KEYS = ""
 inherit isar-bootstrap-helper
 
 do_generate_keyrings[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
