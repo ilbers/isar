@@ -4,6 +4,7 @@
 # Copyright (C) 2015-2018 ilbers GmbH
 
 DESCRIPTION = "Isar development filesystem for host"
+PF = "${PN}-${HOST_DISTRO}-${HOST_ARCH}-${DISTRO_ARCH}"
 
 require buildchroot.inc
 
@@ -27,5 +28,5 @@ BUILDCHROOT_PREINSTALL_append_arm64 += "binutils-aarch64-linux-gnu \
                                         crossbuild-essential-arm64"
 
 
-PARAMS = "--host-arch --host-distro"
+PARAMS = "--host-arch '${HOST_ARCH}' --host-distro '${HOST_DISTRO}'"
 do_build[depends] = "isar-apt:do_cache_config isar-bootstrap-host:do_bootstrap"

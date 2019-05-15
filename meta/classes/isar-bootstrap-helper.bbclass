@@ -52,8 +52,8 @@ setup_root_file_system() {
         --clean) CLEAN=1 ;;
         --copyisarapt) COPYISARAPT=1 ;;
         --fstab) FSTAB=$2; shift ;;
-        --host-arch) ROOTFS_ARCH=${HOST_ARCH} ;;
-        --host-distro) ROOTFS_DISTRO=${HOST_DISTRO} ;;
+        --host-arch) ROOTFS_ARCH="$2-$ROOTFS_ARCH"; shift ;;
+        --host-distro) ROOTFS_DISTRO="$2"; shift ;;
         --keep-apt-cache) KEEP_APT_CACHE=1 ;;
         -*) bbfatal "$0: invalid option specified: $1" ;;
         *) break ;;

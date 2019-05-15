@@ -15,10 +15,8 @@ PV = "1.0"
 
 inherit isar-bootstrap-helper
 
-WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${PN}"
 BUILDCHROOT_DIR = "${WORKDIR}/rootfs"
 
-do_build[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 do_build[root_cleandirs] = "${BUILDCHROOT_DIR} \
                             ${BUILDCHROOT_DIR}/isar-apt \
                             ${BUILDCHROOT_DIR}/downloads \

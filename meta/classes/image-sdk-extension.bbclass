@@ -5,7 +5,7 @@
 #
 # This class extends the image.bbclass to supply the creation of a sdk
 
-SDKCHROOT_DIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/sdkchroot-${HOST_DISTRO}-${HOST_ARCH}"
+SDKCHROOT_DIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/sdkchroot-${HOST_DISTRO}-${HOST_ARCH}-${DISTRO_ARCH}"
 
 do_populate_sdk[stamp-extra-info] = "${DISTRO}-${MACHINE}"
 do_populate_sdk[depends] = "sdkchroot:do_build"

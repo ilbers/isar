@@ -6,19 +6,15 @@
 # SPDX-License-Identifier: MIT
 
 Description = "Minimal host Debian root file system"
+PF = "${PN}-${HOST_DISTRO}-${HOST_ARCH}-${DISTRO_ARCH}"
 
-WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${PN}-${HOST_DISTRO}-${HOST_ARCH}"
-DEPLOY_ISAR_BOOTSTRAP = "${DEPLOY_DIR_BOOTSTRAP}/${HOST_DISTRO}-${HOST_ARCH}"
-ISAR_BOOTSTRAP_LOCK = "${DEPLOY_DIR_BOOTSTRAP}/${HOST_DISTRO}-${HOST_ARCH}.lock"
+DEPLOY_ISAR_BOOTSTRAP = "${DEPLOY_DIR_BOOTSTRAP}/${HOST_DISTRO}-${HOST_ARCH}-${DISTRO_ARCH}"
+ISAR_BOOTSTRAP_LOCK = "${DEPLOY_DIR_BOOTSTRAP}/${HOST_DISTRO}-${HOST_ARCH}-${DISTRO_ARCH}.lock"
 
 require isar-bootstrap.inc
 # We only build debian host buildchroot environments
 DISTRO_BOOTSTRAP_KEYS = ""
-inherit isar-bootstrap-helper
 
-do_generate_keyrings[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
-
-do_apt_config_prepare[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 do_apt_config_prepare[dirs] = "${WORKDIR}"
 do_apt_config_prepare[vardeps] += "\
                                    APTPREFS \
@@ -49,7 +45,6 @@ addtask apt_config_prepare before do_bootstrap after do_unpack
 
 OVERRIDES_append = ":${@get_distro_needs_https_support(d, True)}"
 
-do_bootstrap[stamp-extra-info] = "${HOST_DISTRO}-${HOST_ARCH}"
 do_bootstrap[vardeps] += "HOST_DISTRO_APT_SOURCES"
 do_bootstrap() {
     isar_bootstrap --host

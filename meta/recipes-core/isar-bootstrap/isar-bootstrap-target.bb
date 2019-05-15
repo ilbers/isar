@@ -6,16 +6,13 @@
 # SPDX-License-Identifier: MIT
 
 Description = "Minimal target Debian root file system"
+PF = "${PN}-${DISTRO}-${DISTRO_ARCH}"
 
-WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${PN}"
 DEPLOY_ISAR_BOOTSTRAP = "${DEPLOY_DIR_BOOTSTRAP}/${DISTRO}-${DISTRO_ARCH}"
 ISAR_BOOTSTRAP_LOCK = "${DEPLOY_DIR_BOOTSTRAP}/${DISTRO}-${DISTRO_ARCH}.lock"
 
 require isar-bootstrap.inc
 
-do_generate_keyrings[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
-
-do_apt_config_prepare[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 do_apt_config_prepare[dirs] = "${WORKDIR}"
 do_apt_config_prepare[vardeps] += "\
                                    APTPREFS \
@@ -44,7 +41,6 @@ addtask apt_config_prepare before do_bootstrap after do_unpack
 
 OVERRIDES_append = ":${@get_distro_needs_https_support(d, False)}"
 
-do_bootstrap[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 do_bootstrap[vardeps] += "DISTRO_APT_SOURCES"
 do_bootstrap() {
     isar_bootstrap
