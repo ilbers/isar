@@ -7,18 +7,6 @@
 
 IMAGE_TRANSIENT_PACKAGES ??= ""
 
-def get_deb_host_arch():
-    import subprocess
-    host_arch = subprocess.check_output(
-        ["dpkg", "--print-architecture"]
-    ).decode('utf-8').strip()
-    return host_arch
-
-#Debian Distribution for SDK host
-HOST_DISTRO ?= "debian-stretch"
-#Determine SDK host architecture if not explicitly set
-HOST_ARCH ?= "${@get_deb_host_arch()}"
-
 HOST_DISTRO_APT_SOURCES += "conf/distro/${HOST_DISTRO}.list"
 
 def reverse_bb_array(d, varname):

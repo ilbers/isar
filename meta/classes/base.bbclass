@@ -20,6 +20,15 @@
 
 THISDIR = "${@os.path.dirname(d.getVar('FILE', True))}"
 
+def get_deb_host_arch():
+    import subprocess
+    host_arch = subprocess.check_output(
+        ["dpkg", "--print-architecture"]
+    ).decode('utf-8').strip()
+    return host_arch
+HOST_ARCH ??= "${@get_deb_host_arch()}"
+HOST_DISTRO ??= "${DISTRO}"
+
 die() {
 	bbfatal "$*"
 }
