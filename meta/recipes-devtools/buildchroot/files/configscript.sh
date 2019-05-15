@@ -10,6 +10,6 @@ locales locales/locales_to_be_generated multiselect en_US.UTF-8 UTF-8
 locales locales/default_environment_locale select en_US.UTF-8
 END
 
-groupadd --system builder -o --gid $2
-useradd --system -o --uid $1 --gid builder --no-create-home --home /home/builder --no-user-group --comment "Isar buildchroot build user" builder
+grep -q "builder:x:$2" /etc/group || groupadd -f --system builder -o --gid $2
+grep -q "builder:x:$1" /etc/passwd || useradd --system -o --uid $1 --gid builder --no-create-home --home /home/builder --no-user-group --comment "Isar buildchroot build user" builder
 chown -R builder:builder /home/builder
