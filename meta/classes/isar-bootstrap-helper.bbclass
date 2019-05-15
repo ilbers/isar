@@ -7,8 +7,6 @@
 
 IMAGE_TRANSIENT_PACKAGES ??= ""
 
-HOST_DISTRO_APT_SOURCES += "conf/distro/${HOST_DISTRO}.list"
-
 def reverse_bb_array(d, varname):
     array = d.getVar(varname, True)
     if array is None:
