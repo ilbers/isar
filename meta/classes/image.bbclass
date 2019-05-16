@@ -13,8 +13,8 @@ IMAGE_INSTALL += "${@ ("linux-image-" + d.getVar("KERNEL_NAME", True)) if d.getV
 IMAGE_FULLNAME = "${PF}"
 
 # These variables are used by wic and start_vm
-KERNEL_IMAGE ?= "${@get_image_name(d, 'vmlinuz')[1]}"
-INITRD_IMAGE ?= "${@get_image_name(d, 'initrd.img')[1]}"
+KERNEL_IMAGE ?= "${PF}-vmlinuz"
+INITRD_IMAGE ?= "${PF}-initrd.img"
 
 # Useful variables for imager implementations:
 PP = "/home/builder/${PN}"
@@ -149,12 +149,10 @@ addtask rootfs_install before do_build after do_unpack
 
 do_copy_boot_files[dirs] = "${DEPLOY_DIR_IMAGE}"
 do_copy_boot_files() {
-    KERNEL_IMAGE=${@get_image_name(d, 'vmlinuz')[1]}
     if [ -n "${KERNEL_IMAGE}" ]; then
         cp -f ${IMAGE_ROOTFS}/boot/${@get_image_name(d, 'vmlinuz')[0]} ${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGE}
     fi
 
-    INITRD_IMAGE=${@get_image_name(d, 'initrd.img')[1]}
     if [ -n "${INITRD_IMAGE}" ]; then
         sudo cp -f ${IMAGE_ROOTFS}/boot/${@get_image_name(d, 'initrd.img')[0]} ${DEPLOY_DIR_IMAGE}/${INITRD_IMAGE}
     fi
