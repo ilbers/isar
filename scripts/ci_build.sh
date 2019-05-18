@@ -34,6 +34,10 @@ TARGETS_SET="\
           # qemu-user-static of <= buster too old to build that
           # multiconfig:qemuarm64-buster:isar-image-base
 
+REPRO_TARGETS_SET="\
+            multiconfig:qemuarm-stretch:isar-image-base \
+            multiconfig:qemuarm64-stretch:isar-image-base \
+            multiconfig:qemuamd64-stretch:isar-image-base"
 
 show_help() {
     echo "This script builds the default Isar images."
@@ -116,10 +120,15 @@ fi
 
 if [ -n "$REPRO_BUILD" ]; then
     # Enable use of cached base repository
-    bitbake $BB_ARGS -c cache_base_repo  $TARGETS_SET
+    bitbake $BB_ARGS -c cache_base_repo $REPRO_TARGETS_SET
     while [ -e bitbake.sock ]; do sleep 1; done
     sudo rm -rf tmp
     sed -i -e 's/#ISAR_USE_CACHED_BASE_REPO ?= "1"/ISAR_USE_CACHED_BASE_REPO ?= "1"/g' conf/local.conf
+    bitbake $BB_ARGS $REPRO_TARGETS_SET
+    while [ -e bitbake.sock ]; do sleep 1; done
+    # Cleanup and disable use of cached base repository
+    sudo rm -rf tmp
+    sed -i -e 's/ISAR_USE_CACHED_BASE_REPO ?= "1"/#ISAR_USE_CACHED_BASE_REPO ?= "1"/g' conf/local.conf
 fi
 
 # Start build for the defined set of configurations
