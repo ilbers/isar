@@ -64,29 +64,6 @@ inherit image-postproc-extension
 # Extra space for rootfs in MB
 ROOTFS_EXTRA ?= "64"
 
-def get_image_name(d, name_link):
-    S = d.getVar("IMAGE_ROOTFS", True)
-    path_link = os.path.join(S, name_link)
-
-    # If path_link does not exist, it might be a symlink
-    # in the target rootfs.  This block attempts to resolve
-    # it relative to the rootfs location.
-    if not os.path.exists(path_link):
-        path_link = os.path.join(
-            S,
-            os.path.relpath(
-                os.path.realpath(path_link),
-                "/",
-            ),
-        )
-
-    if os.path.exists(path_link):
-        base = os.path.basename(os.path.realpath(path_link))
-        full = d.getVar("IMAGE_FULLNAME", True) + "." + base
-        return [base, full]
-
-    return ["", ""]
-
 def get_rootfs_size(d):
     import subprocess
     rootfs_extra = int(d.getVar("ROOTFS_EXTRA", True))
@@ -149,12 +126,14 @@ addtask rootfs_install before do_build after do_unpack
 
 do_copy_boot_files[dirs] = "${DEPLOY_DIR_IMAGE}"
 do_copy_boot_files() {
-    if [ -n "${KERNEL_IMAGE}" ]; then
-        cp -f ${IMAGE_ROOTFS}/boot/${@get_image_name(d, 'vmlinuz')[0]} ${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGE}
+    kernel="$(realpath -q '${IMAGE_ROOTFS}/vmlinuz')"
+    if [ -n "$kernel" ]; then
+        cp -f "$kernel" '${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGE}'
     fi
 
-    if [ -n "${INITRD_IMAGE}" ]; then
-        sudo cp -f ${IMAGE_ROOTFS}/boot/${@get_image_name(d, 'initrd.img')[0]} ${DEPLOY_DIR_IMAGE}/${INITRD_IMAGE}
+    initrd="$(realpath -q '${IMAGE_ROOTFS}/initrd.img')"
+    if [ -n "$initrd" ]; then
+        cp -f "$initrd" '${DEPLOY_DIR_IMAGE}/${INITRD_IMAGE}'
     fi
 
     # Check DTB_FILE via inline python to handle unset case:
