@@ -76,7 +76,7 @@ def parse_aptsources_list_line(source_list_line):
 
     s = source_list_line.strip()
 
-    if s.startswith("#"):
+    if not s or s.startswith("#"):
         return None
 
     type, s = re.split("\s+", s, maxsplit=1)
