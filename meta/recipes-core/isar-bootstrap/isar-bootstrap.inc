@@ -30,7 +30,7 @@ DISTRO_BOOTSTRAP_BASE_PACKAGES_append_gnupg = ",gnupg2"
 DISTRO_BOOTSTRAP_BASE_PACKAGES_append_https-support = ",apt-transport-https,ca-certificates"
 HOST_DISTRO_APT_SOURCES += "conf/distro/${HOST_DISTRO}.list"
 
-DISTRO_APT_PREMIRRORS ?= "${@ "http://ftp\.(\S+\.)?debian.org  file:///${REPO_BASE_DIR} \n" if bb.utils.to_boolean(d.getVar('ISAR_USE_CACHED_BASE_REPO')) else "" }"
+DISTRO_APT_PREMIRRORS ?= "${@ "http://ftp\.(\S+\.)?debian.org/\S* file:///${REPO_BASE_DIR}/${BASE_DISTRO} \n" if bb.utils.to_boolean(d.getVar('ISAR_USE_CACHED_BASE_REPO')) else "" }"
 
 inherit base-apt-helper
 
