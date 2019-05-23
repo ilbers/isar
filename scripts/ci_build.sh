@@ -45,7 +45,9 @@ CROSS_TARGETS_SET="\
 REPRO_TARGETS_SET="\
             multiconfig:qemuarm-stretch:isar-image-base \
             multiconfig:qemuarm64-stretch:isar-image-base \
-            multiconfig:qemuamd64-stretch:isar-image-base"
+            multiconfig:qemuamd64-stretch:isar-image-base \
+            multiconfig:qemuarm-buster:isar-image-base"
+
 
 show_help() {
     echo "This script builds the default Isar images."
