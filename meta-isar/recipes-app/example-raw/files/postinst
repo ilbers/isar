@@ -2,17 +2,4 @@
 
 set -e
 
-if ! getent group isar >/dev/null; then
-	addgroup --quiet --system isar
-fi
-
-if ! getent passwd isar >/dev/null; then
-	useradd --system --gid isar --create-home \
-		--home /var/lib/isar --no-user-group \
-		--comment "My isar user" \
-		isar
-fi
-
-chown -R isar:isar /var/lib/isar
-
 echo "isar" > /etc/hostname

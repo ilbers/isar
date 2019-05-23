@@ -174,4 +174,14 @@ ISAR_CROSS_COMPILE ?= "0"
 # Password was encrypted using following command:
 #   mkpasswd -m sha512crypt -R 10000
 # mkpasswd is part of the 'whois' package of Debian
-CFG_ROOT_PW ?= "$6$rounds=10000$RXeWrnFmkY$DtuS/OmsAS2cCEDo0BF5qQsizIrq6jPgXnwv3PHqREJeKd1sXdHX/ayQtuQWVDHe0KIO0/sVH8dvQm1KthF0d/"
+USERS += "root"
+USER_root[password] ??= "$6$rounds=10000$RXeWrnFmkY$DtuS/OmsAS2cCEDo0BF5qQsizIrq6jPgXnwv3PHqREJeKd1sXdHX/ayQtuQWVDHe0KIO0/sVH8dvQm1KthF0d/"
+
+GROUPS += "isar"
+GROUP_isar[flags] = "system"
+
+USERS += "isar"
+USER_isar[gid] = "isar"
+USER_isar[home] = "/var/lib/isar"
+USER_isar[comment] = "My isar user"
+USER_isar[flags] = "system create-home"
