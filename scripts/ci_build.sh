@@ -35,6 +35,14 @@ TARGETS_SET="\
           # qemu-user-static of <= buster too old to build that
           # multiconfig:qemuarm64-buster:isar-image-base
 
+CROSS_TARGETS_SET="\
+                  multiconfig:qemuarm-stretch:isar-image-base \
+                  multiconfig:qemuarm-buster:isar-image-base \
+                  multiconfig:qemuarm64-stretch:isar-image-base \
+                  multiconfig:qemuamd64-stretch:isar-image-base \
+                  multiconfig:de0-nano-soc-stretch:isar-image-base \
+                  multiconfig:rpi-stretch:isar-image-base"
+
 REPRO_TARGETS_SET="\
             multiconfig:qemuarm-stretch:isar-image-base \
             multiconfig:qemuarm64-stretch:isar-image-base \
@@ -86,13 +94,6 @@ do
         # Enforce cross-compilation to speed up the build
         FAST_BUILD="1"
         CROSS_BUILD="1"
-        TARGETS_SET="\
-                     multiconfig:qemuarm-stretch:isar-image-base \
-                     multiconfig:qemuarm-buster:isar-image-base \
-                     multiconfig:qemuarm64-stretch:isar-image-base \
-                     multiconfig:qemuamd64-stretch:isar-image-base \
-                     multiconfig:de0-nano-soc-stretch:isar-image-base \
-                     multiconfig:rpi-stretch:isar-image-base"
         ;;
     -q|--quiet)
         BB_ARGS=""
@@ -132,12 +133,19 @@ if [ -n "$REPRO_BUILD" ]; then
     sed -i -e 's/ISAR_USE_CACHED_BASE_REPO ?= "1"/#ISAR_USE_CACHED_BASE_REPO ?= "1"/g' conf/local.conf
 fi
 
-# Start build for the defined set of configurations
-bitbake $BB_ARGS $TARGETS_SET
-
+# Start cross build for the defined set of configurations
+sed -i -e 's/ISAR_CROSS_COMPILE ?= "0"/ISAR_CROSS_COMPILE ?= "1"/g' conf/local.conf
+bitbake $BB_ARGS $CROSS_TARGETS_SET
+while [ -e bitbake.sock ]; do sleep 1; done
 # In addition test SDK creation
-if [ -n "$FAST_BUILD" ]; then
-    bitbake $BB_ARGS -c do_populate_sdk multiconfig:qemuarm-stretch:isar-image-base
+bitbake $BB_ARGS -c do_populate_sdk multiconfig:qemuarm-stretch:isar-image-base
+while [ -e bitbake.sock ]; do sleep 1; done
+
+if [ ! -n "$FAST_BUILD" ]; then
+    # Cleanup and disable cross build
+    sudo rm -rf tmp
+    sed -i -e 's/ISAR_CROSS_COMPILE ?= "1"/ISAR_CROSS_COMPILE ?= "0"/g' conf/local.conf
+    bitbake $BB_ARGS $TARGETS_SET
 fi
 
 cp -a "${ISARROOT}/meta/classes/dpkg-base.bbclass" "${ISARROOT}/meta/classes/dpkg-base.bbclass.ci-backup"
