@@ -7,6 +7,8 @@ DESCRIPTION = "Isar development filesystem for host"
 PF = "${PN}-${HOST_DISTRO}-${HOST_ARCH}-${DISTRO_ARCH}"
 
 require buildchroot.inc
+ROOTFS_ARCH = "${HOST_ARCH}"
+ROOTFS_DISTRO = "${HOST_DISTRO}"
 
 BUILDCHROOT_PREINSTALL ?= "make \
                            debhelper \
@@ -18,15 +20,5 @@ BUILDCHROOT_PREINSTALL ?= "make \
                            automake \
                            devscripts \
                            equivs \
-                           libc6:${DISTRO_ARCH}"
-
-# According to the wiki page:
-#     https://wiki.debian.org/CrossToolchains
-BUILDCHROOT_PREINSTALL_append_armhf += "binutils-arm-linux-gnueabihf \
-                                        crossbuild-essential-armhf"
-BUILDCHROOT_PREINSTALL_append_arm64 += "binutils-aarch64-linux-gnu \
-                                        crossbuild-essential-arm64"
-
-
-PARAMS = "--host-arch '${HOST_ARCH}' --host-distro '${HOST_DISTRO}'"
-do_build[depends] = "isar-apt:do_cache_config isar-bootstrap-host:do_bootstrap"
+                           libc6:${DISTRO_ARCH} \
+                           crossbuild-essential-${DISTRO_ARCH}"

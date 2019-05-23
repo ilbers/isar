@@ -21,5 +21,3 @@ BUILDCHROOT_PREINSTALL ?= "gcc \
                            devscripts \
                            equivs \
                            adduser"
-
-do_build[depends] = "isar-apt:do_cache_config isar-bootstrap-target:do_bootstrap"

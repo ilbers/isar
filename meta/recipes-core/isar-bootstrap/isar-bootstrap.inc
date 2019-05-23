@@ -327,6 +327,11 @@ isar_bootstrap() {
             mount --make-rslave ${ROOTFSDIR}/sys
 
             export DEBIAN_FRONTEND=noninteractive
+
+            if [ ${IS_HOST} ]; then
+                chroot "${ROOTFSDIR}" /usr/bin/dpkg --add-architecture ${DISTRO_ARCH}
+            fi
+
             chroot "${ROOTFSDIR}" /usr/bin/apt-get update -y
             chroot "${ROOTFSDIR}" /usr/bin/apt-get dist-upgrade -y \
                                   -o Debug::pkgProblemResolver=yes

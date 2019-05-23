@@ -13,18 +13,25 @@ SRC_URI = "file://configscript.sh \
            file://deps.sh"
 PV = "1.0"
 
-inherit isar-bootstrap-helper
+inherit rootfs
 
 BUILDCHROOT_DIR = "${WORKDIR}/rootfs"
+ROOTFSDIR = "${BUILDCHROOT_DIR}"
+ROOTFS_PACKAGES = "${BUILDCHROOT_PREINSTALL}"
+ROOTFS_CLEAN_FILES = ""
 
-do_build[root_cleandirs] = "${BUILDCHROOT_DIR} \
-                            ${BUILDCHROOT_DIR}/isar-apt \
-                            ${BUILDCHROOT_DIR}/downloads \
-                            ${BUILDCHROOT_DIR}/home/builder"
+rootfs_do_mounts_append() {
+    sudo -s <<'EOSUDO'
+    mkdir -p '${BUILDCHROOT_DIR}/downloads'
+    mountpoint -q '${BUILDCHROOT_DIR}/downloads' || \
+        mount --bind '${DL_DIR}' '${BUILDCHROOT_DIR}/downloads'
+EOSUDO
+}
 
-do_build() {
-    setup_root_file_system ${PARAMS} ${BUILDCHROOT_DIR} ${BUILDCHROOT_PREINSTALL}
-
+ROOTFS_POSTPROCESS_COMMAND =+ "buildchroot_install_files"
+buildchroot_install_files() {
+    sudo mkdir -p "${BUILDCHROOT_DIR}/home/builder"
+    sudo mkdir -p "${BUILDCHROOT_DIR}/isar-apt"
     # Install package builder script
     sudo chmod -R a+rw "${BUILDCHROOT_DIR}/home/builder"
     sudo install -m 755 -d ${BUILDCHROOT_DIR}/isar
@@ -38,5 +45,4 @@ do_build() {
     GROUP_ID=$(id -g)
     sudo chroot ${BUILDCHROOT_DIR} /configscript.sh $USER_ID $GROUP_ID
 
-    sudo mount --bind ${DL_DIR} ${BUILDCHROOT_DIR}/downloads
 }

@@ -51,8 +51,10 @@ image_do_mounts() {
     buildchroot_do_mounts
 }
 
-inherit isar-bootstrap-helper
-ROOTFS_FEATURES += "finalize-rootfs"
+ROOTFSDIR = "${IMAGE_ROOTFS}"
+ROOTFS_FEATURES += "copy-package-cache clean-package-cache finalize-rootfs"
+ROOTFS_PACKAGES += "${IMAGE_PREINSTALL} ${IMAGE_INSTALL}"
+
 inherit rootfs
 inherit image-sdk-extension
 inherit image-cache-extension
@@ -96,8 +98,10 @@ python set_image_size () {
     d.setVarFlag('ROOTFS_SIZE', 'export', '1')
 }
 
-do_image_gen_fstab() {
-    cat > ${WORKDIR}/fstab << EOF
+ROOTFS_CONFIGURE_COMMAND += "image_configure_fstab"
+image_configure_fstab[weight] = "2"
+image_configure_fstab() {
+    sudo tee '${IMAGE_ROOTFS}/etc/fstab' << EOF
 # Begin /etc/fstab
 /dev/root	/		auto		defaults		0	0
 proc		/proc		proc		nosuid,noexec,nodev	0	0
@@ -109,18 +113,6 @@ devtmpfs	/dev		devtmpfs	mode=0755,nosuid	0	0
 # End /etc/fstab
 EOF
 }
-addtask image_gen_fstab before do_rootfs_install
-
-do_rootfs_install[depends] = "isar-apt:do_cache_config isar-bootstrap-target:do_bootstrap"
-do_rootfs_install[deptask] = "do_deploy_deb"
-do_rootfs_install[root_cleandirs] = "${IMAGE_ROOTFS} \
-                             ${IMAGE_ROOTFS}/isar-apt"
-do_rootfs_install() {
-    setup_root_file_system --clean --keep-apt-cache \
-        --fstab "${WORKDIR}/fstab" \
-        "${IMAGE_ROOTFS}" ${IMAGE_PREINSTALL} ${IMAGE_INSTALL}
-}
-addtask rootfs_install before do_build after do_unpack
 
 do_copy_boot_files[dirs] = "${DEPLOY_DIR_IMAGE}"
 do_copy_boot_files() {
