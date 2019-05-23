@@ -154,3 +154,25 @@ Changes in v0.8
 The content of `isar-image.bbclass` was moved to the `image.bbclass` file.
 Recipes that inherit `isar-image` should be modified to inherit from `image`
 instead.
+
+### Transient package support was removed
+
+The `LOCALE_GEN` and `LOCALE_DEFAULT` variables are now handled by the
+`image-locales-extension` class within the image recipe.
+
+Setting of the root password can now be done by the `image-account-extension`
+class within the image recipe. To set the root password to empty, you can
+use this code snippet:
+
+```
+USERS += "root"
+USER_root[password] = ""
+USER_root[flags] = "allow-empty-password"
+```
+
+Otherwise set a encrypted root password like this:
+
+```
+USERS += "root"
+USER_root[password] = "$6$rounds=10000$RXeWrnFmkY$DtuS/OmsAS2cCEDo0BF5qQsizIrq6jPgXnwv3PHqREJeKd1sXdHX/ayQtuQWVDHe0KIO0/sVH8dvQm1KthF0d/"
+```
