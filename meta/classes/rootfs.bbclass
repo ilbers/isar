@@ -99,6 +99,7 @@ rootfs_install_pkgs_update() {
         -o Dir::Etc::sourceparts="-" \
         -o APT::Get::List-Cleanup="0"
 }
+
 ROOTFS_INSTALL_COMMAND += "rootfs_install_resolvconf"
 rootfs_install_resolvconf[weight] = "1"
 rootfs_install_resolvconf() {
@@ -111,6 +112,9 @@ rootfs_install_pkgs_download() {
     sudo -E chroot '${ROOTFSDIR}' \
         /usr/bin/apt-get ${ROOTFS_APT_ARGS} --download-only ${ROOTFS_PACKAGES}
 }
+
+ROOTFS_INSTALL_COMMAND_BEFORE_CLEAN ??= ""
+ROOTFS_INSTALL_COMMAND += "${ROOTFS_INSTALL_COMMAND_BEFORE_CLEAN}"
 
 ROOTFS_INSTALL_COMMAND += "${@ 'rootfs_install_clean_files' if (d.getVar('ROOTFS_CLEAN_FILES') or '').strip() else ''}"
 rootfs_install_clean_files[weight] = "2"
