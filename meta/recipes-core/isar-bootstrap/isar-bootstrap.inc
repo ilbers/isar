@@ -333,6 +333,7 @@ isar_bootstrap() {
             fi
 
             chroot "${ROOTFSDIR}" /usr/bin/apt-get update -y
+            chroot "${ROOTFSDIR}" /usr/bin/apt-get install -y -f
             chroot "${ROOTFSDIR}" /usr/bin/apt-get dist-upgrade -y \
                                   -o Debug::pkgProblemResolver=yes
 
