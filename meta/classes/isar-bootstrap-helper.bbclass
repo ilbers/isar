@@ -5,8 +5,6 @@
 #
 # SPDX-License-Identifier: MIT
 
-IMAGE_TRANSIENT_PACKAGES ??= ""
-
 def reverse_bb_array(d, varname):
     array = d.getVar(varname, True)
     if array is None:
@@ -113,19 +111,10 @@ setup_root_file_system() {
         sudo -E chroot "$ROOTFSDIR" /usr/bin/apt-get update
     fi
     sudo -E chroot "$ROOTFSDIR" \
-        /usr/bin/apt-get ${APT_ARGS} --download-only $PACKAGES \
-            ${IMAGE_TRANSIENT_PACKAGES}
+        /usr/bin/apt-get ${APT_ARGS} --download-only $PACKAGES
     [ ${CLEAN} ] && sudo rm -f ${CLEAN_FILES}
     sudo -E chroot "$ROOTFSDIR" \
         /usr/bin/apt-get ${APT_ARGS} $PACKAGES
-    for pkg in ${IMAGE_TRANSIENT_PACKAGES}; do
-        sudo -E chroot "$ROOTFSDIR" \
-            /usr/bin/apt-get ${APT_ARGS} $pkg
-    done
-    for pkg in ${@reverse_bb_array(d, "IMAGE_TRANSIENT_PACKAGES") or ""}; do
-        sudo -E chroot "$ROOTFSDIR" \
-            /usr/bin/apt-get purge --yes $pkg
-    done
     if [ ${CLEAN} ]; then
         if [ ${KEEP_APT_CACHE} -eq 1 ]; then
             mkdir -p ${WORKDIR}/apt_cache
