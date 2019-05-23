@@ -5,6 +5,7 @@
 
 #!/bin/sh
 
+set -x
 set -e
 
 ES_BUG=3
