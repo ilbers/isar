@@ -23,7 +23,7 @@ ROOTFS_ARCH = "${HOST_ARCH}"
 ROOTFS_DISTRO = "${HOST_DISTRO}"
 ROOTFSDIR = "${S}"
 ROOTFS_PACKAGES = "${SDKCHROOT_PREINSTALL} ${TOOLCHAIN}"
-ROOTFS_FEATURES += "copy-package-cache"
+ROOTFS_FEATURES += ""
 
 python() {
     if d.getVar("HOST_ARCH") not in ['i386', 'amd64']:
