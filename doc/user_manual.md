@@ -314,7 +314,7 @@ Some other variables include:
 
  - `IMAGE_INSTALL` - The list of custom packages to build and install to target image, please refer to relative chapter for more information.
  - `BB_NUMBER_THREADS` - The number of `bitbake` jobs that can be run in parallel. Please set this option according your host CPU cores number.
- - `HOST_DISTRO` - The distro to use for SDK root filesystem (so far limited only to `debian-stretch`). This variable is optional.
+ - `HOST_DISTRO` - The distro to use for SDK root filesystem. This variable is optional.
  - `HOST_ARCH` - The Debian architecture of SDK root filesystem (e.g., `amd64`). By default set to current Debian host architecture. This variable is optional.
  - `HOST_DISTRO_APT_SOURCES` - List of apt source files for SDK root filesystem. This variable is optional.
  - `HOST_DISTRO_APT_PREFERENCES` - List of apt preference files for SDK root filesystem. This variable is optional.
