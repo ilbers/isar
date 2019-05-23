@@ -27,6 +27,11 @@ BUILDROOT_DEPLOY = "${BUILDCHROOT_DIR}${PP_DEPLOY}"
 BUILDROOT_ROOTFS = "${BUILDCHROOT_DIR}${PP_ROOTFS}"
 BUILDROOT_WORK = "${BUILDCHROOT_DIR}${PP_WORK}"
 
+python(){
+    if (d.getVar('IMAGE_TRANSIENT_PACKAGES')):
+        bb.warn("IMAGE_TRANSIENT_PACKAGES is set and no longer supported")
+}
+
 def cfg_script(d):
     cf = d.getVar('DISTRO_CONFIG_SCRIPT', True) or ''
     if cf:
