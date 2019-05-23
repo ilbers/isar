@@ -314,16 +314,12 @@ Some other variables include:
 
  - `IMAGE_INSTALL` - The list of custom packages to build and install to target image, please refer to relative chapter for more information.
  - `BB_NUMBER_THREADS` - The number of `bitbake` jobs that can be run in parallel. Please set this option according your host CPU cores number.
- - `LOCALE_GEN` - A `\n` seperated list of `/etc/locale.gen` entries desired on the target.
- - `LOCALE_DEFAULT` - The default locale used for the `LANG` and `LANGUAGE` variable in `/etc/locale`.
  - `HOST_DISTRO` - The distro to use for SDK root filesystem (so far limited only to `debian-stretch`). This variable is optional.
  - `HOST_ARCH` - The Debian architecture of SDK root filesystem (e.g., `amd64`). By default set to current Debian host architecture. This variable is optional.
  - `HOST_DISTRO_APT_SOURCES` - List of apt source files for SDK root filesystem. This variable is optional.
  - `HOST_DISTRO_APT_PREFERENCES` - List of apt preference files for SDK root filesystem. This variable is optional.
  - `DISTRO_APT_PREMIRRORS` - The preferred mirror (append it to the default URI in the format `ftp.debian.org my.preferred.mirror`. This variable is optional.
  - `THIRD_PARTY_APT_KEYS` - List of gpg key URIs used to verify apt repos for apt installation after bootstrapping
- - `CFG_ROOT_PW` - The encrypted root password to be set. To encrypt password use `mkpasswd`. You find `mkpasswd` in the `whois` package of Debian. If the variable is empty, root login is passwordless.
- - `CFG_ROOT_LOCKED` - If set to `1` the root account will be locked.
 
 ---
 
@@ -496,17 +492,50 @@ Isar contains additional image type classes that can be used as reference:
 
 ## Customize and configure image
 
-Customization and configuration of an image should be done via packages, see below.
+Customization and configuration of an image can be done in two ways:
 
-Adding those configuration packages to the image can be done in two ways:
+ 1. Creating and adding a configuration package to `IMAGE_INSTALL`, or
+ 2. Changing the bitbake variables of the image recipe.
 
- 1. Simply adding the package to `IMAGE_INSTALL`, like any other isar created package, or
- 2. Adding the package to `IMAGE_TRANSIENT_PACKAGES`.
+In cases where configuration is not image specific, does not contain any secrets and can be shared between images, creating and adding a configuration package to `IMAGE_INSTALL` is the right option. This should be the case with most product specific configuration files.
 
-In most cases adding the configuration package to `IMAGE_INSTALL` is the right option.
+In cases where the configuration would contain secrets like user passwords, that would be world readable in `postinst`, etc. script files, some image extensions where created, that allow customization of those options from within the image recipe using bitbake variables. (e.g. user and group management and locale settings)
 
-In cases were the configuration script of the package has some external dependencies, that should not be part of the final image, then `IMAGE_TRANSIENT_PACKAGES` is the right option.
-Packages in the `IMAGE_TRANSIENT_PACKAGES` variable are installed to the image and purged in the next step. If such a configuration package deploys file as part of their content, then those files will be removed as well.
+### Locale configuration
+
+Two variables can be used to configure the locale installed on a image:
+
+ - `LOCALE_GEN` - A `\n` seperated list of `/etc/locale.gen` entries desired on the target.
+ - `LOCALE_DEFAULT` - The default locale used for the `LANG` and `LANGUAGE` variable in `/etc/locale`.
+
+### User and group configuration
+
+Groups can be created or modified using the `GROUPS` and `GROUP_<groupname>` variable or their flags.
+
+The `GROUPS` variable contains a space separated list of group names that should be modified or created. Each entry of this variable should have a corresponding `GROUP_<groupname>` variable.
+
+The `GROUP_<groupname>` variable contains the settings of a group named `groupname` in its flags. The following flags can be used:
+
+ - `gid` - The numeric group id.
+ - `flags` - A list of additional flags of the group. Those are the currently recognized flags:
+   - `system` - The group is created using the `--system` parameter.
+
+The `USERS` and `USER_<username>` variable works similar to the `GROUPS` and `GROUP_<groupname>` variable. The difference are the accepted flags of the `USER_<username>` variable. It accepts the following flags:
+
+ - `password` - The crypt(3) encrypted password. To encrypt a password use for example `mkpasswd` or `openssl passwd -6`. You can find `mkpasswd` in the `whois` package of Debian.
+ - `expire` - A `YYYY-MM-DD` formatted date on which the user account will be disabled. (see useradd(8))
+ - `inactive` - The number of days after a password expires until the account is permanently disabled. (see useradd(8))
+ - `uid` - The numeric user id.
+ - `gid` -  The numeric group id or group name of this users initial login group.
+ - `comment` - This users comment field. Commonly the following format `full name,room number,work phone number,home phone number,other entry`.
+ - `home` - This users home directory
+ - `shell` - This users login shell
+ - `groups` - A space separated list of groups this user is a member of.
+ - `flags` - A list of additional flags of the user:
+   - `no-create-home` - `useradd` will be called with `-M` to prevent creation of the users home directory.
+   - `create-home` - `useradd` will be called with `-m` to force creation of the users home directory.
+   - `system` - `useradd` will be called with `--system`.
+   - `allow-empty-password` - Even if the `password` flag is empty, it will still be set. This results in a login without password.
 
 ---
 
