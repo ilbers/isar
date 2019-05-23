@@ -1,9 +1,8 @@
+#!/usr/bin/env bash
 # Script for CI system build
 #
 # Alexander Smirnov <asmirnov@ilbers.de>
 # Copyright (c) 2016-2018 ilbers GmbH
-
-#!/bin/sh
 
 set -x
 set -e
