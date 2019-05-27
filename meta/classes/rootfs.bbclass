@@ -142,6 +142,10 @@ python do_rootfs_install() {
     # 'isar-apt' (sdkchroot):
     cmds = ['rootfs_prepare'] + configure_cmds + ['rootfs_do_mounts'] + install_cmds
 
+    # NOTE: The weights specify how long each task takes in seconds and are used
+    # by the MultiStageProgressReporter to render a progress bar for this task.
+    # To printout the measured weights on a run, add `debug=True` as a parameter
+    # the MultiStageProgressReporter constructor.
     stage_weights = [int(d.getVarFlag(i, 'weight', True) or "20")
                      for i in cmds]
 
