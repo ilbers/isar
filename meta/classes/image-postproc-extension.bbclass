@@ -26,8 +26,7 @@ update_etc_os_release() {
     fi
 }
 
-ROOTFS_POSTPROCESS_COMMAND =+ "image_postprocess_configure image_postprocess_mark"
-
+ROOTFS_POSTPROCESS_COMMAND =+ "image_postprocess_configure"
 image_postprocess_configure() {
     # Configure root filesystem
     if [ -n "${DISTRO_CONFIG_SCRIPT}" ]; then
@@ -39,8 +38,16 @@ image_postprocess_configure() {
    fi
 }
 
+ROOTFS_POSTPROCESS_COMMAND =+ "image_postprocess_mark"
+
 image_postprocess_mark() {
     BUILD_ID=$(get_build_id)
     update_etc_os_release \
         --build-id "${BUILD_ID}" --variant "${DESCRIPTION}"
+}
+
+ROOTFS_POSTPROCESS_COMMAND =+ "image_postprocess_machine_id"
+image_postprocess_machine_id() {
+    # systemd(1) takes care of recreating the machine-id on first boot
+    sudo rm -f '${IMAGE_ROOTFS}/etc/machine-id'
 }
