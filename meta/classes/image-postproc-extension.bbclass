@@ -51,3 +51,16 @@ image_postprocess_machine_id() {
     # systemd(1) takes care of recreating the machine-id on first boot
     sudo rm -f '${IMAGE_ROOTFS}/etc/machine-id'
 }
+
+ROOTFS_POSTPROCESS_COMMAND =+ "image_postprocess_sshd_key_regen"
+
+image_postprocess_sshd_key_regen() {
+    nhkeys=$( find ${IMAGE_ROOTFS}/etc/ssh/ -iname "ssh_host_*key*" -printf '.' | wc -c )
+    if [ $nhkeys -ne 0 -a ! -d ${IMAGE_ROOTFS}/usr/share/doc/sshd-regen-keys ]; then
+       bbwarn "Looks like you have ssh host keys in the image but did "\
+              "not install \"sshd-regen-keys\". This image should not be "\
+              "deployed more than once."
+       bberror "Install the package or forcefully remove this check!"
+       exit 1
+    fi
+}
