@@ -147,9 +147,12 @@ EOSUDO
         ${ISARROOT}/scripts/wic create ${WKS_FULL_PATH} \
             --vars "${STAGING_DIR}/${MACHINE}/imgdata/" \
             -o /tmp/${IMAGE_FULLNAME}.wic/ \
+            --bmap \
             -e ${IMAGE_BASENAME} ${WIC_CREATE_EXTRA_ARGS}
     sudo chown -R $(stat -c "%U" ${ISARROOT}) ${ISARROOT}/meta ${ISARROOT}/meta-isar ${ISARROOT}/scripts || true
-    cp -f $(ls -t -1 ${BUILDCHROOT_DIR}/tmp/${IMAGE_FULLNAME}.wic/*.direct | head -1) ${WIC_IMAGE_FILE}
+    WIC_DIRECT=$(ls -t -1 ${BUILDCHROOT_DIR}/tmp/${IMAGE_FULLNAME}.wic/*.direct | head -1)
+    cp -f ${WIC_DIRECT} ${WIC_IMAGE_FILE}
+    cp -f ${WIC_DIRECT}.bmap ${WIC_IMAGE_FILE}.bmap
 }
 
 do_wic_image[file-checksums] += "${WKS_FILE_CHECKSUM}"
