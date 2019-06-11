@@ -21,6 +21,10 @@ if [ "$host_arch" != "$target_arch" ]; then
         export ARCH=arm64
         export CROSS_COMPILE="aarch64-linux-gnu-"
         ;;
+    mipsel)
+        export ARCH=mips
+        export CROSS_COMPILE="mipsel-linux-gnu-"
+        ;;
     *)
         echo "error: unsupported architecture ($target_arch)"
         exit 1
