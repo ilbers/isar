@@ -13,7 +13,8 @@ IMAGE_INSTALL += "${@ ("linux-image-" + d.getVar("KERNEL_NAME", True)) if d.getV
 IMAGE_FULLNAME = "${PF}"
 
 # These variables are used by wic and start_vm
-KERNEL_IMAGE ?= "${PF}-vmlinuz"
+KERNEL_FILE  ?= "vmlinuz"
+KERNEL_IMAGE ?= "${PF}-${KERNEL_FILE}"
 INITRD_IMAGE ?= "${PF}-initrd.img"
 
 # Useful variables for imager implementations:
@@ -123,7 +124,7 @@ EOF
 
 do_copy_boot_files[dirs] = "${DEPLOY_DIR_IMAGE}"
 do_copy_boot_files() {
-    kernel="$(realpath -q '${IMAGE_ROOTFS}/vmlinuz')"
+    kernel="$(realpath -q '${IMAGE_ROOTFS}/${KERNEL_FILE}')"
     if [ -n "$kernel" ]; then
         cp -f "$kernel" '${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGE}'
     fi
