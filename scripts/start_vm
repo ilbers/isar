@@ -43,7 +43,7 @@ show_help() {
     echo
     echo "Parameters:"
     echo "    -a, --arch ARCH       set isar machine architecture."
-    echo "                          Supported: arm, i386, amd64, arm64."
+    echo "                          Supported: arm, i386, amd64, arm64, mipsel."
     echo "    -b, --build BUILD     set path to build directory."
     echo "    -d, --distro DISTRO   set isar Debian distribution."
     echo "                          Supported: stretch, buster"
