@@ -46,6 +46,7 @@ BBMULTICONFIG = " \
     qemui386-buster \
     qemuamd64-stretch \
     qemumipsel-stretch \
+    qemumipsel-buster \
     bananapi-stretch \
     de0-nano-soc-stretch \
     hikey-stretch \
