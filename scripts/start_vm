@@ -28,7 +28,7 @@ start_qemu() {
 	$QCPU \
 	-nographic \
 	$EXTRA_ARGS \
-        -append "$KARGS" \
+        -append "$KARGS$EXTRA_KARGS" \
 	$root
     [ $had_x -eq 0 ] && set +x
 }
@@ -125,7 +125,7 @@ case "$IMAGE_TYPE" in
     EXTRA_ARGS="$EXTRA_ARGS \
 	-kernel $QKERNEL \
 	-initrd $QINITRD"
-    KARGS="console=$MACHINE_SERIAL root=/dev/$QEMU_ROOTFS_DEV rw"
+    KARGS="console=$MACHINE_SERIAL root=/dev/$QEMU_ROOTFS_DEV rw $QEMU_KARGS"
     ;;
     wic-img)
     readonly ROOTFS_IMAGE=isar-image-base-debian-$DISTRO-qemu$ARCH.wic.img
