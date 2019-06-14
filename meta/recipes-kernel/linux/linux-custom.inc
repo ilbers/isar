@@ -55,7 +55,7 @@ dpkg_runbuild() {
 	E="${@ bb.utils.export_proxies(d)}"
 
 	export PV=${PV}
-	export KERNEL_NAME=${KERNEL_NAME}
+	export KERNEL_NAME=${KERNEL_NAME_PROVIDED}
 
 	export KBUILD_DEPENDS="${KBUILD_DEPENDS}"
 	export KERNEL_DEBIAN_DEPENDS="${KERNEL_DEBIAN_DEPENDS}"
