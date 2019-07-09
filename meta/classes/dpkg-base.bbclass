@@ -101,7 +101,7 @@ do_build() {
 CLEANFUNCS += "repo_clean"
 
 repo_clean() {
-    DEBS=$( ls ${S}/../*.deb )
+    DEBS=$( find ${S}/.. -maxdepth 1 -name "*.deb" )
     if [ -n "${DEBS}" ]; then
         for d in ${DEBS}; do
             p=$( dpkg-deb --show --showformat '${Package}' ${d} )
