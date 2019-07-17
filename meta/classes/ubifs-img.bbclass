@@ -5,7 +5,7 @@
 
 python() {
     if not d.getVar("MKUBIFS_ARGS"):
-        raise bb.parse.skiprecipe("mkubifs_args must be set")
+        raise bb.parse.SkipRecipe("mkubifs_args must be set")
 }
 
 UBIFS_IMAGE_FILE ?= "${IMAGE_FULLNAME}.ubifs.img"
