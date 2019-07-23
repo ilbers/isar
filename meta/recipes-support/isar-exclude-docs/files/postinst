@@ -1,0 +1,7 @@
+#!/bin/sh
+# we need to do this once right after install, so we can install this at any
+# time and do not need to be "the first" package
+# what we delete needs to be in sync with the dpkg configuration we ship
+
+rm -rf /usr/share/man/*
+find /usr/share/doc/ -type f ! -name "copyright" ! -name "changelog.Debian.*" -exec rm -rf {} \;
