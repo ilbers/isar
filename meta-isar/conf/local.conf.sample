@@ -161,7 +161,9 @@ CONF_VERSION = "1"
 
 #
 # The default list of extra packages to be installed.
-IMAGE_INSTALL = "hello-isar example-raw example-module-${KERNEL_NAME} enable-fsck"
+IMAGE_INSTALL = "hello-isar example-raw example-module-${KERNEL_NAME} enable-fsck isar-exclude-docs"
+## "cache_base_repo" relies on the cache ...
+#IMAGE_INSTALL += "isar-disable-apt-cache"
 
 #
 # Enable cross-compilation support
