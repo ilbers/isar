@@ -5,6 +5,8 @@ EXT4_IMAGE_FILE = "${IMAGE_FULLNAME}.ext4.img"
 
 IMAGER_INSTALL += "e2fsprogs"
 
+MKE2FS_ARGS ?=  "-t ext4"
+
 # Generate ext4 filesystem image
 do_ext4_image() {
     rm -f '${DEPLOY_DIR_IMAGE}/${EXT4_IMAGE_FILE}'
