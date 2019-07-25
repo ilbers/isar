@@ -14,12 +14,6 @@ IMAGER_INSTALL ??= ""
 IMAGER_BUILD_DEPS ??= ""
 DEPENDS += "${IMAGER_BUILD_DEPS}"
 
-python () {
-    if d.getVar('IMAGE_TYPE', True) == 'wic-img':
-        d.appendVar('IMAGER_INSTALL',
-                    ' ' + d.getVar('WIC_IMAGER_INSTALL', True))
-}
-
 do_install_imager_deps[depends] = "buildchroot-target:do_build"
 do_install_imager_deps[deptask] = "do_deploy_deb"
 do_install_imager_deps[lockfiles] += "${REPO_ISAR_DIR}/isar.lock"

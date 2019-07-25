@@ -78,6 +78,7 @@ python () {
 
 inherit buildchroot
 
+IMAGER_INSTALL += "${WIC_IMAGER_INSTALL}"
 # wic comes with reasonable defaults, and the proper interface is the wks file
 ROOTFS_EXTRA ?= "0"
 
