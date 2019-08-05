@@ -28,6 +28,9 @@ do_cache_config() {
     path_databases="${REPO_BASE_DB_DIR}/${BASE_DISTRO}"
 
     if [ ! -d "${path_databases}" ]; then
+        if [ -n "${GNUPGHOME}" ]; then
+            export GNUPGHOME="${GNUPGHOME}"
+        fi
         reprepro -b ${path_cache} \
                  --dbdir ${path_databases} \
                  export ${BASE_DISTRO_CODENAME}

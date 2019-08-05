@@ -20,6 +20,9 @@ do_cache_config() {
     path_databases="${REPO_ISAR_DB_DIR}/${DISTRO}"
 
     if [ ! -d "${path_databases}" ]; then
+        if [ -n "${GNUPGHOME}" ]; then
+            export GNUPGHOME="${GNUPGHOME}"
+        fi
         reprepro -b ${path_cache} \
                  --dbdir ${path_databases} \
                  export ${DEBDISTRONAME}

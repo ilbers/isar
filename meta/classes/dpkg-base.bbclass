@@ -120,6 +120,9 @@ repo_clean() {
 
 # Install package to Isar-apt
 do_deploy_deb() {
+    if [ -n "${GNUPGHOME}" ]; then
+        export GNUPGHOME="${GNUPGHOME}"
+    fi
     repo_clean
     reprepro -b ${REPO_ISAR_DIR}/${DISTRO} \
              --dbdir ${REPO_ISAR_DB_DIR}/${DISTRO} \

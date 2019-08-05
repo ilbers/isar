@@ -14,6 +14,10 @@ compare_pkg_md5sums() {
 populate_base_apt() {
     search_dir=$1
 
+    if [ -n "${GNUPGHOME}" ]; then
+        export GNUPGHOME="${GNUPGHOME}"
+    fi
+
     find $search_dir -name '*.deb' | while read package; do
         # NOTE: due to packages stored by reprepro are not modified, we can
         # use search by filename to check if package is already in repo. In
