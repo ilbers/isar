@@ -40,18 +40,23 @@ DISTRO_ARCH ??= "armhf"
 BBMULTICONFIG = " \
     qemuarm-stretch \
     qemuarm-buster \
+    qemuarm-bullseye \
     qemuarm64-stretch \
     qemuarm64-buster \
+    qemuarm64-bullseye \
     qemui386-stretch \
     qemui386-buster \
+    qemui386-bullseye \
     qemuamd64-stretch \
+    qemuamd64-buster \
+    qemuamd64-buster-tgz \
+    qemuamd64-bullseye \
     qemumipsel-stretch \
     qemumipsel-buster \
+    qemumipsel-bullseye \
     bananapi-stretch \
     de0-nano-soc-stretch \
     hikey-stretch \
-    qemuamd64-buster \
-    qemuamd64-buster-tgz \
     nand-ubi-demo-buster \
     rpi-stretch \
 "
