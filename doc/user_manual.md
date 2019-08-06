@@ -128,22 +128,22 @@ e.g.:
 
 ```
 MACHINE ??= "qemuarm"
-DISTRO ??= "debian-stretch"
+DISTRO ??= "debian-buster"
 DISTRO_ARCH ??= "armhf"
 ```
 
 Then, call `bitbake` with image names, e.g.:
 
 ```
-bitbake multiconfig:qemuarm-stretch:isar-image-base \
-        multiconfig:qemuarm-stretch:isar-image-debug
+bitbake multiconfig:qemuarm-buster:isar-image-base \
+        multiconfig:qemuarm-buster:isar-image-debug
 ```
 
 The following images are created:
 
 ```
-tmp/deploy/images/qemuarm/isar-image-base-qemuarm-debian-stretch.ext4.img
-tmp/deploy/images/qemuarm/isar-image-debug-qemuarm-debian-stretch.ext4.img
+tmp/deploy/images/qemuarm/isar-image-base-qemuarm-debian-buster.ext4.img
+tmp/deploy/images/qemuarm/isar-image-debug-qemuarm-debian-buster.ext4.img
 ```
 
 ### Building Target Images for Multiple Configurations
@@ -197,9 +197,9 @@ tmp/deploy/images/rpi/isar-image-base.rpi-sdimg
 A bootable disk image is generated if you set IMAGE_TYPE to 'wic-img'. Behind the scenes a tool called `wic` is used to assemble the images. It is controlled by a `.wks` file which you can choose with changing WKS_FILE. Some examples in the tree use that feature already.
 ```
  # Generate an image for the `i386` target architecture
- $ bitbake multiconfig:qemui386-stretch:isar-image-base
+ $ bitbake multiconfig:qemui386-buster:isar-image-base
  # Similarly, for the `amd64` target architecture, in this case EFI
- $ bitbake multiconfig:qemuamd64-stretch:isar-image-base
+ $ bitbake multiconfig:qemuamd64-buster:isar-image-base
 ```
 
 Variables may be used in `.wks.in` files; Isar will expand them and generate a regular `.wks` file before generating the disk image using `wic`.
@@ -212,9 +212,9 @@ enough to allow images to be testable under `qemu`.
 
 ```
 # AMD64 image, EFI
-qemu-system-x86_64 -m 256M -nographic -bios edk2/Build/OvmfX64/RELEASE_*/FV/OVMF.fd -hda tmp/deploy/images/qemuamd64/isar-image-base-debian-stretch-qemuamd64.wic.img
+qemu-system-x86_64 -m 256M -nographic -bios edk2/Build/OvmfX64/RELEASE_*/FV/OVMF.fd -hda tmp/deploy/images/qemuamd64/isar-image-base-debian-buster-qemuamd64.wic.img
 # i386 image
-qemu-system-i386 -m 256M -nographic -hda tmp/deploy/images/qemui386/isar-image-base-debian-stretch-qemui386.wic.img
+qemu-system-i386 -m 256M -nographic -hda tmp/deploy/images/qemui386/isar-image-base-debian-buster-qemui386.wic.img
 ```
 
 ---
@@ -303,7 +303,7 @@ following variables define the default configuration to build for:
  - `DISTRO_ARCH` - The Debian architecture to build for (e.g., `armhf`).
 
 If BitBake is called with multiconfig targets (e.g.,
-`multiconfig:qemuarm-stretch:isar-image-base`), the following variable defines
+`multiconfig:qemuarm-buster:isar-image-base`), the following variable defines
 all supported configurations:
 
  - `BBMULTICONFIG` - The list of the complete configuration definition files.
@@ -709,7 +709,7 @@ One may chroot into the SDK and install required target packages with the help o
  - Trigger creation of SDK root filesystem
 
 ```
-bitbake -c do_populate_sdk multiconfig:qemuarm-stretch:isar-image-base
+bitbake -c do_populate_sdk multiconfig:qemuarm-buster:isar-image-base
 ```
 
  - Mount the following directories in chroot by passing resulting rootfs as an argument to the script `mount_chroot.sh`:
@@ -727,14 +727,14 @@ mount devtmpfs $1/dev     -t devtmpfs -o mode=0755,nosuid
 mount devpts   $1/dev/pts -t devpts   -o gid=5,mode=620
 mount tmpfs    $1/dev/shm -t tmpfs    -o rw,seclabel,nosuid,nodev
 
-$ sudo scripts/mount_chroot.sh ../build/tmp/deploy/images/qemuarm/sdk-debian-stretch-armhf
+$ sudo scripts/mount_chroot.sh ../build/tmp/deploy/images/qemuarm/sdk-debian-buster-armhf
 
 ```
 
  - chroot to isar SDK rootfs:
 
 ```
-$ sudo chroot build/tmp/deploy/images/qemuarm/sdk-debian-stretch-armhf
+$ sudo chroot build/tmp/deploy/images/qemuarm/sdk-debian-buster-armhf
 ```
  - Check that cross toolchains are installed
 
@@ -791,7 +791,7 @@ BASE_REPO_KEY = "file://<absolute_path_to_your_pub_key_file>"'
  - Trigger creation of local apt caching Debian packages during image generation.
 
 ```
-bitbake -c cache_base_repo multiconfig:qemuarm-stretch:isar-image-base
+bitbake -c cache_base_repo multiconfig:qemuarm-buster:isar-image-base
 ```
 
  - Set `ISAR_USE_CACHED_BASE_REPO` in `conf/local.conf`:
@@ -810,7 +810,7 @@ sudo rm -rf tmp
  - Trigger again generation of image (now using local caching repo):
 
 ```
-bitbake multiconfig:qemuarm-stretch:isar-image-base
+bitbake multiconfig:qemuarm-buster:isar-image-base
 ```
 
 ### Limitation
@@ -831,10 +831,10 @@ Add a new sources list entry to fetch the package from, i.e. include a new apt s
 
 Add docker-ce from arm64:
 
-Create a new layer containing `conf/distro/docker-stretch.list` with the following content:
+Create a new layer containing `conf/distro/docker-buster.list` with the following content:
 
 ```
-deb [arch=arm64] https://download.docker.com/linux/debian	stretch	stable
+deb [arch=arm64] https://download.docker.com/linux/debian	buster	stable
 ```
 
 Include the layer in your project.
@@ -844,11 +844,11 @@ To the local.conf add:
 ```
 IMAGE_PREINSTALL += "docker-ce"
 THIRD_PARTY_APT_KEYS_append = " https://download.docker.com/linux/debian/gpg;md5sum=1afae06b34a13c1b3d9cb61a26285a15"
-DISTRO_APT_SOURCES_append = " conf/distro/docker-stretch.list"
+DISTRO_APT_SOURCES_append = " conf/distro/docker-buster.list"
 ```
 
 And build the corresponding image target:
 
 ```
-bitbake multiconfig:qemuarm64-stretch:isar-image-base
+bitbake multiconfig:qemuarm64-buster:isar-image-base
 ```
