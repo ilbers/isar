@@ -12,8 +12,9 @@ DEPLOY_ISAR_BOOTSTRAP = "${DEPLOY_DIR_BOOTSTRAP}/${HOST_DISTRO}-${HOST_ARCH}-${D
 ISAR_BOOTSTRAP_LOCK = "${DEPLOY_DIR_BOOTSTRAP}/${HOST_DISTRO}-${HOST_ARCH}-${DISTRO_ARCH}.lock"
 
 require isar-bootstrap.inc
-# We only build debian host buildchroot environments
-DISTRO_BOOTSTRAP_KEYS = ""
+
+HOST_DISTRO_BOOTSTRAP_KEYS ?= ""
+DISTRO_BOOTSTRAP_KEYS = "${HOST_DISTRO_BOOTSTRAP_KEYS}"
 
 do_apt_config_prepare[dirs] = "${WORKDIR}"
 do_apt_config_prepare[vardeps] += "\

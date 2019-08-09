@@ -318,6 +318,7 @@ Some other variables include:
  - `HOST_ARCH` - The Debian architecture of SDK root filesystem (e.g., `amd64`). By default set to current Debian host architecture. This variable is optional.
  - `HOST_DISTRO_APT_SOURCES` - List of apt source files for SDK root filesystem. This variable is optional.
  - `HOST_DISTRO_APT_PREFERENCES` - List of apt preference files for SDK root filesystem. This variable is optional.
+ - `HOST_DISTRO_BOOTSTRAP_KEYS` - Analogously to DISTRO_BOOTSTRAP_KEYS: List of gpg key URIs used to verify apt bootstrap repo for the host.
  - `DISTRO_APT_PREMIRRORS` - The preferred mirror (append it to the default URI in the format `ftp.debian.org my.preferred.mirror`. This variable is optional.
  - `THIRD_PARTY_APT_KEYS` - List of gpg key URIs used to verify apt repos for apt installation after bootstrapping
 
