@@ -163,13 +163,6 @@ def get_distro_have_https_source(d, is_host=False):
     return any(source[2].startswith("https://") for source in generate_distro_sources(d, is_host))
 
 def get_distro_needs_https_support(d, is_host=False):
-    distro_bootstrap_keys = d.getVar("DISTRO_BOOTSTRAP_KEYS", False)
-    if distro_bootstrap_keys and distro_bootstrap_keys != "":
-        # debootstrap falls back to https if there is no
-        # 'reliable' keyring, whatever that means, but it happened
-        # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=891009
-        return "https-support"
-
     if get_distro_have_https_source(d, is_host):
         return "https-support"
     else:
