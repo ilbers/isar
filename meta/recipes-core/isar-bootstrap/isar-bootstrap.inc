@@ -167,8 +167,9 @@ def get_distro_needs_https_support(d, is_host=False):
         return ""
 
 def get_distro_needs_gpg_support(d):
-    apt_keys = d.getVar("THIRD_PARTY_APT_KEYS")
-    if apt_keys and apt_keys != "":
+    apt_keys = d.getVar("DISTRO_BOOTSTRAP_KEYS") or ""
+    apt_keys += " " + (d.getVar("THIRD_PARTY_APT_KEYS") or "")
+    if apt_keys != " ":
         return "gnupg"
     return ""
 
