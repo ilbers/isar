@@ -35,16 +35,16 @@ DISTRO_APT_PREMIRRORS ?= "${@ "http://ftp\.(\S+\.)?debian.org/\S* file:///${REPO
 inherit base-apt-helper
 
 python () {
-    distro_bootstrap_keys = (d.getVar("DISTRO_BOOTSTRAP_KEYS", False) or "").split()
+    distro_bootstrap_keys = (d.getVar("DISTRO_BOOTSTRAP_KEYS") or "").split()
 
-    third_party_apt_keys = (d.getVar("THIRD_PARTY_APT_KEYS", False) or "").split() 
+    third_party_apt_keys = (d.getVar("THIRD_PARTY_APT_KEYS") or "").split()
 
     # The cached repo key can be both for bootstrapping and apt package
     # installation afterwards. However, debootstrap will include the key into
     # the rootfs automatically thus the right place is distro_bootstrap_keys.
 
     if bb.utils.to_boolean(d.getVar('ISAR_USE_CACHED_BASE_REPO')):
-        own_pub_key = d.getVar("BASE_REPO_KEY", False)
+        own_pub_key = d.getVar("BASE_REPO_KEY")
         if own_pub_key:
             distro_bootstrap_keys += own_pub_key.split()
 
@@ -169,7 +169,7 @@ def get_distro_needs_https_support(d, is_host=False):
         return ""
 
 def get_distro_needs_gpg_support(d):
-    apt_keys = d.getVar("THIRD_PARTY_APT_KEYS", False)
+    apt_keys = d.getVar("THIRD_PARTY_APT_KEYS")
     if apt_keys and apt_keys != "":
         return "gnupg"
     return ""
