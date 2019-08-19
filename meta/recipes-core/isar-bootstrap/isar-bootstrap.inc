@@ -32,8 +32,6 @@ HOST_DISTRO_APT_SOURCES += "conf/distro/${HOST_DISTRO}.list"
 
 DISTRO_APT_PREMIRRORS ?= "${@ "http://ftp\.(\S+\.)?debian.org/\S* file:///${REPO_BASE_DIR}/${BASE_DISTRO} \n" if bb.utils.to_boolean(d.getVar('ISAR_USE_CACHED_BASE_REPO')) else "" }"
 
-inherit base-apt-helper
-
 python () {
     distro_bootstrap_keys = (d.getVar("DISTRO_BOOTSTRAP_KEYS") or "").split()
 

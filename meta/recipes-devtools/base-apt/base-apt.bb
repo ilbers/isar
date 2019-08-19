@@ -3,8 +3,6 @@
 
 SRC_URI = "file://distributions.in"
 
-inherit base-apt-helper
-
 BASE_REPO_KEY ?= ""
 
 CACHE_CONF_DIR = "${REPO_BASE_DIR}/${BASE_DISTRO}/conf"
