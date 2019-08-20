@@ -6,6 +6,8 @@
 DESCRIPTION = "Isar development filesystem for target"
 PF = "${PN}-${DISTRO}-${DISTRO_ARCH}"
 
+BUILDCHROOT_VARIANT = "target"
+
 require buildchroot.inc
 
 BUILDCHROOT_PREINSTALL ?= "gcc \

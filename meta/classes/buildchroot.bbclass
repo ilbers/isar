@@ -19,7 +19,7 @@ python __anonymous() {
     d.setVar('BUILDCHROOT_DIR', rootfs)
 }
 
-MOUNT_LOCKFILE = "${BUILDCHROOT_DIR}/mount.lock"
+MOUNT_LOCKFILE = "${BUILDCHROOT_DIR}.lock"
 
 buildchroot_do_mounts() {
     sudo -s <<'EOSUDO'

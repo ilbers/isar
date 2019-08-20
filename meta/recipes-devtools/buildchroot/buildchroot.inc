@@ -46,3 +46,16 @@ buildchroot_install_files() {
     sudo chroot ${BUILDCHROOT_DIR} /configscript.sh $USER_ID $GROUP_ID
 
 }
+
+DEPLOY_BUILDCHROOT = "${@d.getVar('BUILDCHROOT_' + d.getVar('BUILDCHROOT_VARIANT').upper() + '_DIR')}"
+
+do_buildchroot_deploy[dirs] = "${DEPLOY_DIR_BUILDCHROOT}-${BUILDCHROOT_VARIANT}"
+do_buildchroot_deploy() {
+    ln -Tfsr "${ROOTFSDIR}" "${DEPLOY_BUILDCHROOT}"
+}
+addtask buildchroot_deploy before do_build after do_rootfs
+
+CLEANFUNCS = "clean_deploy"
+clean_deploy() {
+    rm -f "${DEPLOY_BUILDCHROOT}"
+}

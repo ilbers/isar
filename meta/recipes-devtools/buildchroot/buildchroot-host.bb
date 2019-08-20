@@ -6,6 +6,8 @@
 DESCRIPTION = "Isar development filesystem for host"
 PF = "${PN}-${HOST_DISTRO}-${HOST_ARCH}-${DISTRO_ARCH}"
 
+BUILDCHROOT_VARIANT = "host"
+
 require buildchroot.inc
 ROOTFS_ARCH = "${HOST_ARCH}"
 ROOTFS_DISTRO = "${HOST_DISTRO}"
