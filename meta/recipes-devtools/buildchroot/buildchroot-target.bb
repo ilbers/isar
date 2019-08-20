@@ -4,7 +4,6 @@
 # Copyright (C) 2015-2018 ilbers GmbH
 
 DESCRIPTION = "Isar development filesystem for target"
-PF = "${PN}-${DISTRO}-${DISTRO_ARCH}"
 
 BUILDCHROOT_VARIANT = "target"
 

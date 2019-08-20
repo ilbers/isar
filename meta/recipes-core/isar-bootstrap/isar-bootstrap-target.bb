@@ -6,7 +6,6 @@
 # SPDX-License-Identifier: MIT
 
 Description = "Minimal target Debian root file system"
-PF = "${PN}-${DISTRO}-${DISTRO_ARCH}"
 
 DEPLOY_ISAR_BOOTSTRAP = "${DEPLOY_DIR_BOOTSTRAP}/${DISTRO}-${DISTRO_ARCH}"
 ISAR_BOOTSTRAP_LOCK = "${DEPLOY_DIR_BOOTSTRAP}/${DISTRO}-${DISTRO_ARCH}.lock"

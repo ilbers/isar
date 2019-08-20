@@ -12,7 +12,6 @@ SRC_URI = " \
     file://configscript.sh \
     file://README.sdk"
 PV = "0.1"
-PF = "${PN}-${HOST_DISTRO}-${HOST_ARCH}-${DISTRO_ARCH}"
 
 TOOLCHAIN = "crossbuild-essential-${DISTRO_ARCH}"
 TOOLCHAIN_${HOST_ARCH} = "build-essential"
