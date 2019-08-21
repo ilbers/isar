@@ -60,7 +60,15 @@ unset BDIR
 
 export BUILDDIR
 
-PATH=$ISARROOT/bitbake/bin:$ISARROOT/scripts:$PATH
+for newpath in "$ISARROOT/bitbake/bin" "$ISARROOT/scripts"; do
+    # Remove any existences of $newpath from $PATH
+    PATH=$(echo $PATH | sed -re "s#(^|:)$newpath(:|$)#\2#g;s#^:##")
+
+    # Add $newpath to $PATH
+    PATH="$newpath:$PATH"
+done
+unset newpath
+
 export PATH
 
 BBPATH="${BUILDDIR}"
