@@ -11,3 +11,9 @@ all:
     - export ftp_proxy=$FTP_PROXY
     - export no_proxy=$NO_PROXY
     - scripts/ci_build.sh -q -f
+  artifacts:
+    name: "logs-$CI_JOB_ID"
+    paths:
+      - build/tmp/work/*/*/*/temp
+    when: on_failure
+    expire_in: 1 week
