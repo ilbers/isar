@@ -211,13 +211,10 @@ do_generate_keyrings() {
 }
 addtask generate_keyrings before do_build after do_unpack
 
-
-
 def get_host_release():
     import platform
     rel = platform.release()
     return rel
-
 
 do_bootstrap[vardeps] += "DISTRO_APT_PREMIRRORS"
 do_bootstrap[dirs] = "${DEPLOY_DIR_BOOTSTRAP}"
@@ -245,7 +242,6 @@ isar_bootstrap() {
     E="${@bb.utils.export_proxies(d)}"
     export IS_HOST debootstrap_args E
     sudo -E -s <<'EOSUDO'
-        ( flock 9
         set -e
         if [ ! -e "${DEPLOY_ISAR_BOOTSTRAP}" ]; then
             rm -rf "${ROOTFSDIR}"
@@ -339,7 +335,6 @@ isar_bootstrap() {
             # Finalize debootstrap by setting the link in deploy
             ln -Tfsr "${ROOTFSDIR}" "${DEPLOY_ISAR_BOOTSTRAP}"
         fi
-        ) 9>'${ISAR_BOOTSTRAP_LOCK}'
 EOSUDO
 }
 

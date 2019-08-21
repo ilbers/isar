@@ -8,7 +8,6 @@
 Description = "Minimal target Debian root file system"
 
 DEPLOY_ISAR_BOOTSTRAP = "${DEPLOY_DIR_BOOTSTRAP}/${DISTRO}-${DISTRO_ARCH}"
-ISAR_BOOTSTRAP_LOCK = "${DEPLOY_DIR_BOOTSTRAP}/${DISTRO}-${DISTRO_ARCH}.lock"
 
 require isar-bootstrap.inc
 
@@ -22,19 +21,18 @@ do_apt_config_prepare[vardeps] += "\
                                    DEPLOY_ISAR_BOOTSTRAP \
                                   "
 python do_apt_config_prepare() {
-    if not os.path.islink(d.getVar("DEPLOY_ISAR_BOOTSTRAP", True)):
-        apt_preferences_out = d.getVar("APTPREFS", True)
-        apt_preferences_list = (
-            d.getVar("DISTRO_APT_PREFERENCES", True) or ""
-        ).split()
-        aggregate_files(d, apt_preferences_list, apt_preferences_out)
+    apt_preferences_out = d.getVar("APTPREFS", True)
+    apt_preferences_list = (
+        d.getVar("DISTRO_APT_PREFERENCES", True) or ""
+    ).split()
+    aggregate_files(d, apt_preferences_list, apt_preferences_out)
 
-        apt_sources_out = d.getVar("APTSRCS", True)
-        apt_sources_init_out = d.getVar("APTSRCS_INIT", True)
-        apt_sources_list = (d.getVar("DISTRO_APT_SOURCES", True) or "").split()
+    apt_sources_out = d.getVar("APTSRCS", True)
+    apt_sources_init_out = d.getVar("APTSRCS_INIT", True)
+    apt_sources_list = (d.getVar("DISTRO_APT_SOURCES", True) or "").split()
 
-        aggregate_files(d, apt_sources_list, apt_sources_init_out)
-        aggregate_aptsources_list(d, apt_sources_list, apt_sources_out)
+    aggregate_files(d, apt_sources_list, apt_sources_init_out)
+    aggregate_aptsources_list(d, apt_sources_list, apt_sources_out)
 }
 addtask apt_config_prepare before do_bootstrap after do_unpack
 
@@ -45,4 +43,3 @@ do_bootstrap() {
     isar_bootstrap
 }
 addtask bootstrap before do_build after do_generate_keyrings
-
