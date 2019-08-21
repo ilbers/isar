@@ -56,3 +56,14 @@ sdkchroot_install_files() {
     sudo install -m 755 ${WORKDIR}/configscript.sh ${S}
     sudo chroot ${S} /configscript.sh  ${DISTRO_ARCH}
 }
+
+do_sdkchroot_deploy[dirs] = "${DEPLOY_DIR_SDKCHROOT}"
+do_sdkchroot_deploy() {
+    ln -Tfsr "${ROOTFSDIR}" "${SDKCHROOT_DIR}"
+}
+addtask sdkchroot_deploy before do_build after do_rootfs
+
+CLEANFUNCS = "clean_deploy"
+clean_deploy() {
+    rm -f "${SDKCHROOT_DIR}"
+}
