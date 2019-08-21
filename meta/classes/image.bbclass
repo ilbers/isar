@@ -1,7 +1,10 @@
 # This software is a part of ISAR.
 # Copyright (C) 2015-2017 ilbers GmbH
 
-PF = "${PN}-${DISTRO}-${MACHINE}"
+# Make workdir and stamps machine-specific without changing common PN target
+WORKDIR .= "-${MACHINE}"
+STAMP = "${STAMPS_DIR}/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}/${PV}-${PR}"
+STAMPCLEAN = "${STAMPS_DIR}/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}/*-*"
 
 IMAGE_INSTALL ?= ""
 IMAGE_TYPE    ?= "ext4-img"
@@ -10,12 +13,12 @@ IMAGE_ROOTFS ?= "${WORKDIR}/rootfs"
 IMAGE_INSTALL += "${@ ("linux-image-" + d.getVar("KERNEL_NAME", True)) if d.getVar("KERNEL_NAME", True) else ""}"
 
 # Name of the image including distro&machine names
-IMAGE_FULLNAME = "${PF}"
+IMAGE_FULLNAME = "${PN}-${DISTRO}-${MACHINE}"
 
 # These variables are used by wic and start_vm
 KERNEL_FILE  ?= "vmlinuz"
-KERNEL_IMAGE ?= "${PF}-${KERNEL_FILE}"
-INITRD_IMAGE ?= "${PF}-initrd.img"
+KERNEL_IMAGE ?= "${IMAGE_FULLNAME}-${KERNEL_FILE}"
+INITRD_IMAGE ?= "${IMAGE_FULLNAME}-initrd.img"
 
 # Useful variables for imager implementations:
 PP = "/home/builder/${PN}"
