@@ -1,0 +1,38 @@
+# This software is a part of ISAR.
+# Copyright (C) Siemens AG, 2019
+#
+# SPDX-License-Identifier: MIT
+
+#!/bin/sh
+PREREQ=""
+
+prereqs()
+{
+     echo "$PREREQ"
+}
+
+case $1 in
+prereqs)
+     prereqs
+     exit 0
+     ;;
+esac
+
+. /usr/share/initramfs-tools/scripts/functions
+. /usr/share/initramfs-tools/hook-functions
+
+if [ ! -x /sbin/fsck ]; then
+	echo "Warning: couldn't find /sbin/fsck!"
+	exit 0
+fi
+
+fsck_types="ext4"
+
+copy_exec /sbin/fsck
+copy_exec /sbin/logsave
+
+if prog="$(command -v fsck.${type})"; then
+  copy_exec "$prog"
+else
+  echo "Warning: /sbin/fsck.${type} doesn't exist, can't install to initramfs, ignoring."
+fi
