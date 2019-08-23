@@ -131,7 +131,7 @@ do_deploy_deb() {
              ${S}/../*.deb
 }
 
-addtask deploy_deb after do_dpkg_build
+addtask deploy_deb after do_dpkg_build before do_build
 do_deploy_deb[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
 do_deploy_deb[depends] = "isar-apt:do_cache_config"
 do_deploy_deb[dirs] = "${S}"
