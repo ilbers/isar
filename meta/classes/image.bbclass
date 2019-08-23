@@ -2,7 +2,7 @@
 # Copyright (C) 2015-2017 ilbers GmbH
 
 # Make workdir and stamps machine-specific without changing common PN target
-WORKDIR .= "-${MACHINE}-${IMAGE_TYPE}"
+WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}-${IMAGE_TYPE}/${PV}-${PR}"
 STAMP = "${STAMPS_DIR}/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}-${IMAGE_TYPE}/${PV}-${PR}"
 STAMPCLEAN = "${STAMPS_DIR}/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}-${IMAGE_TYPE}/*-*"
 

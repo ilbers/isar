@@ -452,7 +452,7 @@ The user may use `met-isar/recipes-core-images` as a template for new image reci
 ### General Information
 The image recipe in Isar creates a folder with target root filesystem. Its default location is:
 ```
-tmp/work/${DISTRO}-${DISTRO_ARCH}/${MACHINE}/${IMAGE}/rootfs
+tmp/work/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}-${IMAGE_TYPE}/${PV}-${PR}/rootfs
 ```
 Every image type in Isar is implemented as a `bitbake` class. The goal of these classes is to pack root filesystem folder to appropriate format.
 
