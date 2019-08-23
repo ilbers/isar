@@ -2,9 +2,9 @@
 # Copyright (C) 2015-2017 ilbers GmbH
 
 # Make workdir and stamps machine-specific without changing common PN target
-WORKDIR .= "-${MACHINE}"
-STAMP = "${STAMPS_DIR}/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}/${PV}-${PR}"
-STAMPCLEAN = "${STAMPS_DIR}/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}/*-*"
+WORKDIR .= "-${MACHINE}-${IMAGE_TYPE}"
+STAMP = "${STAMPS_DIR}/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}-${IMAGE_TYPE}/${PV}-${PR}"
+STAMPCLEAN = "${STAMPS_DIR}/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}-${IMAGE_TYPE}/*-*"
 
 IMAGE_INSTALL ?= ""
 IMAGE_TYPE    ?= "ext4-img"
