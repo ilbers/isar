@@ -35,4 +35,4 @@ do_cache_config() {
     fi
 }
 
-addtask cache_config after do_build
+addtask cache_config after do_unpack before do_build
