@@ -8,7 +8,9 @@ ISAR_CROSS_COMPILE ??= "0"
 # Add dependency from the correct buildchroot: host or target
 python __anonymous() {
     mode = d.getVar('ISAR_CROSS_COMPILE', True)
-    if mode == "0" or d.getVar('HOST_ARCH') == d.getVar('DISTRO_ARCH'):
+    distro_arch = d.getVar('DISTRO_ARCH')
+    if mode == "0" or d.getVar('HOST_ARCH') ==  distro_arch or \
+       (d.getVar('HOST_DISTRO') == "debian-stretch" and distro_arch == "i386"):
         dep = "buildchroot-target:do_build"
         rootfs = d.getVar('BUILDCHROOT_TARGET_DIR', True)
     else:
