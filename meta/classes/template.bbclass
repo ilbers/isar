@@ -7,7 +7,6 @@ TEMPLATE_FILES ?= ""
 TEMPLATE_VARS ?= "PN PV DESCRIPTION HOMEPAGE MAINTAINER DISTRO_ARCH"
 
 do_transform_template[vardeps] = "TEMPLATE_FILES ${TEMPLATE_VARS}"
-do_transform_template[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 python do_transform_template() {
     import subprocess, contextlib
 

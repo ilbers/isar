@@ -16,7 +16,6 @@ do_adjust_git() {
 }
 
 addtask adjust_git after do_unpack before do_patch
-do_adjust_git[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 
 inherit patch
 addtask patch after do_adjust_git before do_build
@@ -41,7 +40,6 @@ do_apt_fetch() {
 
 addtask apt_fetch after do_unpack before do_patch
 do_apt_fetch[lockfiles] += "${REPO_ISAR_DIR}/isar.lock"
-do_apt_fetch[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 
 def get_package_srcdir(d):
     s = os.path.abspath(d.getVar("S", True))
@@ -59,15 +57,12 @@ def get_package_srcdir(d):
 PP = "/home/builder/${PN}"
 PPS ?= "${@get_package_srcdir(d)}"
 
-do_build[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
-
 # Empty do_prepare_build() implementation, to be overwritten if needed
 do_prepare_build() {
     true
 }
 
 addtask prepare_build after do_patch do_transform_template before do_build
-do_prepare_build[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 # If Isar recipes depend on each other, they typically need the package
 # deployed to isar-apt
 do_prepare_build[deptask] = "do_deploy_deb"
@@ -131,7 +126,6 @@ do_deploy_deb() {
 }
 
 addtask deploy_deb after do_build
-do_deploy_deb[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 do_deploy_deb[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
 do_deploy_deb[depends] = "isar-apt:do_cache_config"
 do_deploy_deb[dirs] = "${S}"

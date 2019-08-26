@@ -16,7 +16,6 @@ do_install() {
 }
 
 do_install[cleandirs] = "${D}"
-do_install[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 addtask install after do_unpack before do_prepare_build
 
 do_prepare_build[cleandirs] += "${D}/debian"

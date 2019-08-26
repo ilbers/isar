@@ -78,5 +78,3 @@ python do_patch() {
         except bb.fetch2.BBFetchException as e:
             raise bb.build.FuncFailed(e)
 }
-
-do_patch[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"

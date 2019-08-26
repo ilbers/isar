@@ -163,7 +163,6 @@ python do_fetch() {
 addtask fetch before do_build
 
 do_unpack[dirs] = "${WORKDIR}"
-do_unpack[stamp-extra-info] = "${DISTRO}-${DISTRO_ARCH}"
 
 # Unpack package and put it into working directory
 python do_unpack() {
@@ -206,8 +205,8 @@ python do_clean() {
     workdir = d.expand("${WORKDIR}")
     subprocess.check_call(["sudo", "rm", "-rf", workdir])
 
-    stamppath = bb.data.expand(d.getVar('STAMP', False), d)
-    stampdirs = glob.glob(stamppath + ".*")
+    stampclean = bb.data.expand(d.getVar('STAMPCLEAN', False), d)
+    stampdirs = glob.glob(stampclean)
     subprocess.check_call(["sudo", "rm", "-rf"] + stampdirs)
 }
 
