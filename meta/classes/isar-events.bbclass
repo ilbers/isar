@@ -4,9 +4,9 @@
 # Copyright (C) 2015-2017 ilbers GmbH
 # Copyright (c) Siemens AG, 2018
 
-addhandler isar_handler
+addhandler build_completed
 
-python isar_handler() {
+python build_completed() {
     import subprocess
 
     tmpdir = d.getVar('TMPDIR', True)
@@ -25,4 +25,4 @@ python isar_handler() {
                 )
 }
 
-isar_handler[eventmask] = "bb.runqueue.runQueueExitWait bb.event.BuildCompleted"
+build_completed[eventmask] = "bb.event.BuildCompleted"
