@@ -86,10 +86,13 @@ dpkg_runbuild() {
     die "This should never be called, overwrite it in your derived class"
 }
 
-do_build() {
-    dpkg_do_mounts
-    dpkg_runbuild
-    dpkg_undo_mounts
+python do_build() {
+    lock = bb.utils.lockfile(d.getVar("REPO_ISAR_DIR") + "/isar.lock",
+                             shared=True)
+    bb.build.exec_func("dpkg_do_mounts", d)
+    bb.build.exec_func("dpkg_runbuild", d)
+    bb.build.exec_func("dpkg_undo_mounts", d)
+    bb.utils.unlockfile(lock)
 }
 
 CLEANFUNCS += "repo_clean"
