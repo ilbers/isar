@@ -189,8 +189,8 @@ def get_distro_components_argument(d, is_host):
     else:
         return ""
 
-APT_KEYS_DIR := "${WORKDIR}/aptkeys"
-DISTRO_BOOTSTRAP_KEYRING := "${WORKDIR}/distro-keyring.gpg"
+APT_KEYS_DIR = "${WORKDIR}/aptkeys"
+DISTRO_BOOTSTRAP_KEYRING = "${WORKDIR}/distro-keyring.gpg"
 
 do_generate_keyrings[cleandirs] = "${APT_KEYS_DIR}"
 do_generate_keyrings[dirs] = "${DL_DIR}"
