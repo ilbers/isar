@@ -17,6 +17,7 @@ python() {
         'rpi-rpfv',
         'amd64',
         '686-pae',
+        '4kc-malta',
     ]:
         d.setVar('ISAR_CROSS_COMPILE', '0')
 }
