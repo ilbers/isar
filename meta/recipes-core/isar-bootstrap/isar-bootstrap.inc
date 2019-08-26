@@ -205,6 +205,7 @@ do_generate_keyrings() {
     if [ -n "${@d.getVar("DISTRO_BOOTSTRAP_KEYFILES", True) or ""}" ]; then
         for keyfile in ${@d.getVar("DISTRO_BOOTSTRAP_KEYFILES", True)}; do
            sudo apt-key --keyring "${DISTRO_BOOTSTRAP_KEYRING}" add $keyfile
+           cp "$keyfile" "${APT_KEYS_DIR}"/"$(basename "$keyfile")"
         done
     fi
 }
