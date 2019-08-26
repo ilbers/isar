@@ -18,7 +18,7 @@ do_adjust_git() {
 addtask adjust_git after do_unpack before do_patch
 
 inherit patch
-addtask patch after do_adjust_git before do_build
+addtask patch after do_adjust_git before do_dpkg_build
 
 SRC_APT ?= ""
 
@@ -62,7 +62,7 @@ do_prepare_build() {
     true
 }
 
-addtask prepare_build after do_patch do_transform_template before do_build
+addtask prepare_build after do_patch do_transform_template before do_dpkg_build
 # If Isar recipes depend on each other, they typically need the package
 # deployed to isar-apt
 do_prepare_build[deptask] = "do_deploy_deb"
@@ -86,7 +86,7 @@ dpkg_runbuild() {
     die "This should never be called, overwrite it in your derived class"
 }
 
-python do_build() {
+python do_dpkg_build() {
     lock = bb.utils.lockfile(d.getVar("REPO_ISAR_DIR") + "/isar.lock",
                              shared=True)
     bb.build.exec_func("dpkg_do_mounts", d)
@@ -94,6 +94,8 @@ python do_build() {
     bb.build.exec_func("dpkg_undo_mounts", d)
     bb.utils.unlockfile(lock)
 }
+
+addtask dpkg_build before do_build
 
 CLEANFUNCS += "repo_clean"
 
@@ -128,7 +130,7 @@ do_deploy_deb() {
              ${S}/../*.deb
 }
 
-addtask deploy_deb after do_build
+addtask deploy_deb after do_dpkg_build
 do_deploy_deb[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
 do_deploy_deb[depends] = "isar-apt:do_cache_config"
 do_deploy_deb[dirs] = "${S}"
