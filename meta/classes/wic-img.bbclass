@@ -144,14 +144,17 @@ EOSUDO
     export BUILDDIR=${BUILDDIR}
     export MTOOLS_SKIP_CHECK=1
 
+    # create the temp dir in the buildchroot to ensure uniqueness
+    WICTMP=$(cd ${BUILDCHROOT_DIR}; mktemp -d -p tmp)
+
     sudo -E chroot ${BUILDCHROOT_DIR} \
         ${ISARROOT}/scripts/wic create ${WKS_FULL_PATH} \
             --vars "${STAGING_DIR}/${MACHINE}/imgdata/" \
-            -o /tmp/${IMAGE_FULLNAME}.wic/ \
+            -o /$WICTMP/${IMAGE_FULLNAME}.wic/ \
             --bmap \
             -e ${IMAGE_BASENAME} ${WIC_CREATE_EXTRA_ARGS}
     sudo chown -R $(stat -c "%U" ${ISARROOT}) ${ISARROOT}/meta ${ISARROOT}/meta-isar ${ISARROOT}/scripts || true
-    WIC_DIRECT=$(ls -t -1 ${BUILDCHROOT_DIR}/tmp/${IMAGE_FULLNAME}.wic/*.direct | head -1)
+    WIC_DIRECT=$(ls -t -1 ${BUILDCHROOT_DIR}/$WICTMP/${IMAGE_FULLNAME}.wic/*.direct | head -1)
     cp -f ${WIC_DIRECT} ${WIC_IMAGE_FILE}
     cp -f ${WIC_DIRECT}.bmap ${WIC_IMAGE_FILE}.bmap
 }
