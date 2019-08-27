@@ -780,9 +780,11 @@ Cache upstream debian packages to reduce time for further downloads and to be ab
 
  - Signing of local repo (optional)
 
-By default, the local caching repo is not gpg signed. If you want to share it in a trusted way, you may sign it.
-To do that, install `gpg` in your build environment, import the public and private keys,
-and provide the path to the public key in `conf/local.conf`, e.g.:
+By default, the local caching repo is not gpg signed. If you want to share it
+in a trusted way, you may sign it. To do that, install `gpg` in your build
+environment, import the public and private keys (see
+https://theprivacyguide.org/tutorials/gpg.html for details), and provide the
+path to the public key in `conf/local.conf`, e.g.:
 
 ```
 BASE_REPO_KEY = "file://<absolute_path_to_your_pub_key_file>"'
