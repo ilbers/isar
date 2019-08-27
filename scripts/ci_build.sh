@@ -64,14 +64,14 @@ show_help() {
     echo "    $0 [params]"
     echo
     echo "Parameters:"
-    echo "    -b, --build BUILD_DIR set path to build directory. If not set,"
-    echo "                          the build will be started in current path."
-    echo "    -c, --cross           enable cross-compilation."
-    echo "    -d, --debug           enable debug bitbake output."
-    echo "    -f, --fast            cross build reduced set of configurations."
-    echo "    -q, --quiet           suppress verbose bitbake output."
-    echo "    -r, --repro           enable use of cached base repository."
-    echo "    --help                display this message and exit."
+    echo "    -b, --build BUILD_DIR    set path to build directory. If not set,"
+    echo "                             the build will be started in current path."
+    echo "    -c, --cross              enable cross-compilation."
+    echo "    -d, --debug              enable debug bitbake output."
+    echo "    -f, --fast               cross build reduced set of configurations."
+    echo "    -q, --quiet              suppress verbose bitbake output."
+    echo "    -r, --repro [-s, --sign] enable use of cached base repository with optional signing."
+    echo "    --help                   display this message and exit."
     echo
     echo "Exit status:"
     echo " 0  if OK,"
@@ -109,6 +109,9 @@ do
         ;;
     -r|--repro)
         REPRO_BUILD="1"
+        case "$2" in
+        -s|--sign) SIGN_REPO='1'; shift ;;
+        esac
         ;;
     *)
         echo "error: invalid parameter '$key', please try '--help' to get list of supported parameters"
@@ -130,6 +133,13 @@ if [ -n "$CROSS_BUILD" ]; then
 fi
 
 if [ -n "$REPRO_BUILD" ]; then
+    if [ -n "$SIGN_REPO" ]; then
+        ISAR_TESTSUITE_GPG_PUB_KEY_FILE="$ISARROOT/testsuite/base-apt/test_pub.key"
+        ISAR_TESTSUITE_GPG_PRIV_KEY_FILE="$ISARROOT/testsuite/base-apt/test_priv.key"
+        export GNUPGHOME=$(mktemp -d)
+        gpg --import $ISAR_TESTSUITE_GPG_PUB_KEY_FILE $ISAR_TESTSUITE_GPG_PRIV_KEY_FILE
+        echo BASE_REPO_KEY=\"file://$ISAR_TESTSUITE_GPG_PUB_KEY_FILE\" >> conf/local.conf
+    fi
     # Enable use of cached base repository
     bitbake $BB_ARGS -c cache_base_repo $REPRO_TARGETS_SET
     while [ -e bitbake.sock ]; do sleep 1; done
@@ -140,6 +150,7 @@ if [ -n "$REPRO_BUILD" ]; then
     # Cleanup and disable use of cached base repository
     sudo rm -rf tmp
     sed -i -e 's/ISAR_USE_CACHED_BASE_REPO ?= "1"/#ISAR_USE_CACHED_BASE_REPO ?= "1"/g' conf/local.conf
+    sed -i -e 's/^BASE_REPO_KEY/#BASE_REPO_KEY/g' conf/local.conf
 fi
 
 sed -i -e 's/#IMAGE_INSTALL += "isar-disable-apt-cache"/IMAGE_INSTALL += "isar-disable-apt-cache"/g' conf/local.conf
