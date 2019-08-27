@@ -29,6 +29,7 @@ do_apt_fetch() {
 	if [ -z "${@d.getVar("SRC_APT", True).strip()}" ]; then
 		exit
 	fi
+	rm -rf ${S}
 	dpkg_do_mounts
 	E="${@ bb.utils.export_proxies(d)}"
 	sudo -E chroot ${BUILDCHROOT_DIR} /usr/bin/apt-get update \
