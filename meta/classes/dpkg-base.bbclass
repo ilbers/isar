@@ -23,8 +23,6 @@ addtask patch after do_adjust_git before do_build
 
 SRC_APT ?= ""
 
-do_apt_fetch[depends] = "buildchroot-target:do_build"
-
 do_apt_fetch() {
 	if [ -z "${@d.getVar("SRC_APT", True).strip()}" ]; then
 		exit

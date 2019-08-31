@@ -15,7 +15,7 @@ python __anonymous() {
         dep = "buildchroot-host:do_build"
         rootfs = d.getVar('BUILDCHROOT_HOST_DIR', True)
 
-    d.setVarFlag('do_prepare_build', 'depends', dep)
+    d.setVarFlag('do_apt_fetch', 'depends', dep)
     d.setVar('BUILDCHROOT_DIR', rootfs)
 }
 
