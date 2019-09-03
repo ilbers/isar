@@ -9,7 +9,8 @@ FILESPATH =. "${LAYERDIR_core}/recipes-bsp/u-boot/files:"
 
 DESCRIPTION ?= "Custom U-Boot"
 
-PROVIDES += "u-boot-${MACHINE} u-boot-${MACHINE}-dev u-boot-tools"
+PROVIDES += "u-boot-${MACHINE} u-boot-${MACHINE}-dev"
+PROVIDES += "${@'u-boot-tools' if d.getVar('U_BOOT_TOOLS_PACKAGE') == '1' else ''}"
 
 inherit dpkg
 
@@ -19,6 +20,8 @@ BUILD_DEPENDS ?= "bc, bison, flex, device-tree-compiler, git"
 
 TEMPLATE_FILES = "debian/control.tmpl"
 TEMPLATE_VARS += "MACHINE BUILD_DEPENDS"
+
+U_BOOT_TOOLS_PACKAGE ?= "0"
 
 do_prepare_build() {
     cp -r ${WORKDIR}/debian ${S}/
@@ -30,6 +33,16 @@ do_prepare_build() {
 
     echo "tools/env/libubootenv.a usr/lib" > \
         ${S}/debian/u-boot-${MACHINE}-dev.install
+
+    if [ "${U_BOOT_TOOLS_PACKAGE}" = "1" ]; then
+        cat <<EOF >>${S}/debian/control
+
+Package: u-boot-tools
+Architecture: linux-any
+Depends: \${shlibs:Depends}, \${misc:Depends}
+Description: ${DESCRIPTION}, companion tools
+EOF
+    fi
 }
 
 dpkg_runbuild_prepend() {
