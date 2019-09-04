@@ -1,2 +1,0 @@
-deb	http://ftp.debian.org/debian stretch-backports main
-deb-src	http://ftp.debian.org/debian stretch-backports main

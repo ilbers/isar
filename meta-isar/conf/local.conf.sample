@@ -54,7 +54,7 @@ BBMULTICONFIG = " \
     qemumipsel-stretch \
     qemumipsel-buster \
     qemumipsel-bullseye \
-    bananapi-stretch \
+    bananapi-buster \
     de0-nano-soc-stretch \
     hikey-stretch \
     nand-ubi-demo-buster \
