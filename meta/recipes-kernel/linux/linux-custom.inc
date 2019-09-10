@@ -26,6 +26,8 @@ KBUILD_DEPENDS ?= "build-essential:native libssl-dev libelf-dev bc git kmod biso
 KERNEL_DEBIAN_DEPENDS ?= "initramfs-tools | linux-initramfs-tool, kmod, linux-base (>= 4.3~)"
 KERNEL_HEADERS_DEBIAN_DEPENDS ?= "libc6, libssl1.1"
 
+KERNEL_LIBC_DEV_DEPLOY ?= "0"
+
 do_install_builddeps() {
 	dpkg_do_mounts
 	E="${@ bb.utils.export_proxies(d)}"
@@ -61,7 +63,8 @@ dpkg_runbuild() {
 	export KERNEL_HEADERS_DEBIAN_DEPENDS="${KERNEL_HEADERS_DEBIAN_DEPENDS}"
 
 	sudo -E chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} ${PP}/build-kernel.sh ${PP}/${PPS} ${DISTRO_ARCH}
-	if [ ! -f ${WORKDIR}/linux-libc-dev_${PV}*.deb ]; then
-		bbwarn "Kernel downgrade detected, not deploying linux-libc-dev"
+
+	if [ "${KERNEL_LIBC_DEV_DEPLOY}" != "1" ]; then
+		rm -f ${WORKDIR}/linux-libc-dev_${PV}*.deb
 	fi
 }
