@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: MIT
 
 CHANGELOG_V ?= "${PV}"
+DPKG_ARCH ??= "any"
 
 deb_add_changelog() {
 	timestamp=$(find ${S}/ -type f -not -path "${S}/debian/*" -printf "%T@\n"|sort -n -r|head -n 1)
@@ -40,7 +41,7 @@ Maintainer: ${MAINTAINER}
 Build-Depends: debhelper (>= ${compat})
 
 Package: ${PN}
-Architecture: any
+Architecture: ${DPKG_ARCH}
 Depends: ${DEBIAN_DEPENDS}
 Description: ${DESCRIPTION}
 EOF
