@@ -78,6 +78,9 @@ chroot_setup() {
 	# Create a policy-rc.d to stop maintainer scripts using invoke-rc.d
 	# from running init scripts. In case of maintainer scripts that do not
 	# use invoke-rc.d, add a dummy start-stop-daemon.
+	if [ -e "/${TARGET}/sbin/policy-rc.d" ]; then
+		divert "${TARGET}" /sbin/policy-rc.d
+	fi
 	cat > "/${TARGET}/usr/sbin/policy-rc.d" <<-EOF
 		#!/bin/sh
 		exit 101
@@ -114,7 +117,7 @@ chroot_cleanup() {
 
 	check_target "${TARGET}" || return 1
 
-	rm -f "/${TARGET}/usr/sbin/policy-rc.d"
+	undivert "${TARGET}" /usr/sbin/policy-rc.d
 	undivert "${TARGET}" /sbin/start-stop-daemon
 	if [ -x "/${TARGET}/sbin/initctl.REAL" ]; then
 		undivert "${TARGET}" /sbin/initctl
