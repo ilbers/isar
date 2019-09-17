@@ -43,8 +43,8 @@ do_install_builddeps() {
 	E="${@ bb.utils.export_proxies(d)}"
 	sudo -E chroot ${BUILDCHROOT_DIR} \
 		apt-get update \
-			-o Dir::Etc::sourcelist="sources.list.d/isar-apt.list" \
-			-o Dir::Etc::sourceparts="-" \
+			-o Dir::Etc::SourceList="sources.list.d/isar-apt.list" \
+			-o Dir::Etc::SourceParts="-" \
 			-o APT::Get::List-Cleanup="0"
 	sudo -E chroot ${BUILDCHROOT_DIR} \
 		apt-get install \

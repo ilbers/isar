@@ -16,13 +16,13 @@ install_cmd="apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends \
 
 # Make sure that we have latest isar-apt content.
 # Options meaning:
-#   Dir::Etc::sourcelist - specifies which source to be used
-#   Dir::Etc::sourceparts - disables looking for the other sources
+#   Dir::Etc::SourceList - specifies which source to be used
+#   Dir::Etc::SourceParts - disables looking for the other sources
 #   APT::Get::List-Cleanup - do not erase obsolete packages list for
 #                            upstream in '/var/lib/apt/lists'
 apt-get update \
-    -o Dir::Etc::sourcelist="sources.list.d/isar-apt.list" \
-    -o Dir::Etc::sourceparts="-" \
+    -o Dir::Etc::SourceList="sources.list.d/isar-apt.list" \
+    -o Dir::Etc::SourceParts="-" \
     -o APT::Get::List-Cleanup="0"
 
 # Do not set an architecture when building only 'all' (generic) packages.

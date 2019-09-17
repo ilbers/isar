@@ -96,8 +96,8 @@ rootfs_install_pkgs_update[weight] = "5"
 rootfs_install_pkgs_update[isar-lock] = "acquire-before"
 rootfs_install_pkgs_update() {
     sudo -E chroot '${ROOTFSDIR}' /usr/bin/apt-get update \
-        -o Dir::Etc::sourcelist="sources.list.d/isar-apt.list" \
-        -o Dir::Etc::sourceparts="-" \
+        -o Dir::Etc::SourceList="sources.list.d/isar-apt.list" \
+        -o Dir::Etc::SourceParts="-" \
         -o APT::Get::List-Cleanup="0"
 }
 

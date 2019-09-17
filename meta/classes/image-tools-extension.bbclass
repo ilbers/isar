@@ -27,8 +27,8 @@ do_install_imager_deps() {
     E="${@bb.utils.export_proxies(d)}"
     sudo -E chroot ${BUILDCHROOT_DIR} sh -c ' \
         apt-get update \
-            -o Dir::Etc::sourcelist="sources.list.d/isar-apt.list" \
-            -o Dir::Etc::sourceparts="-" \
+            -o Dir::Etc::SourceList="sources.list.d/isar-apt.list" \
+            -o Dir::Etc::SourceParts="-" \
             -o APT::Get::List-Cleanup="0"
         apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y \
             --allow-unauthenticated --allow-downgrades install \
