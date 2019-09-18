@@ -20,6 +20,19 @@ ROOTFSDIR = "${BUILDCHROOT_DIR}"
 ROOTFS_PACKAGES = "${BUILDCHROOT_PREINSTALL}"
 ROOTFS_CLEAN_FILES = ""
 
+BUILDCHROOT_PREINSTALL_COMMON = " \
+    make \
+    debhelper \
+    autotools-dev \
+    dpkg \
+    locales \
+    docbook-to-man \
+    apt \
+    automake \
+    devscripts \
+    equivs \
+    adduser"
+
 rootfs_do_mounts_append() {
     sudo -s <<'EOSUDO'
     mkdir -p '${BUILDCHROOT_DIR}/downloads'

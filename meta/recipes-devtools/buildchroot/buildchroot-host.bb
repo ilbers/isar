@@ -12,15 +12,7 @@ require buildchroot.inc
 ROOTFS_ARCH = "${HOST_ARCH}"
 ROOTFS_DISTRO = "${HOST_DISTRO}"
 
-BUILDCHROOT_PREINSTALL ?= "make \
-                           debhelper \
-                           autotools-dev \
-                           dpkg \
-                           locales \
-                           docbook-to-man \
-                           apt \
-                           automake \
-                           devscripts \
-                           equivs \
-                           libc6:${DISTRO_ARCH} \
-                           crossbuild-essential-${DISTRO_ARCH}"
+BUILDCHROOT_PREINSTALL ?= " \
+    ${BUILDCHROOT_PREINSTALL_COMMON} \
+    libc6:${DISTRO_ARCH} \
+    crossbuild-essential-${DISTRO_ARCH}"

@@ -10,16 +10,7 @@ BUILDCHROOT_VARIANT = "target"
 
 require buildchroot.inc
 
-BUILDCHROOT_PREINSTALL ?= "gcc \
-                           make \
-                           build-essential \
-                           debhelper \
-                           autotools-dev \
-                           dpkg \
-                           locales \
-                           docbook-to-man \
-                           apt \
-                           automake \
-                           devscripts \
-                           equivs \
-                           adduser"
+BUILDCHROOT_PREINSTALL ?= " \
+    ${BUILDCHROOT_PREINSTALL_COMMON} \
+    gcc \
+    build-essential"
