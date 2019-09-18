@@ -25,6 +25,12 @@ apt-get update \
     -o Dir::Etc::sourceparts="-" \
     -o APT::Get::List-Cleanup="0"
 
+# Do not set an architecture when building only 'all' (generic) packages.
+# This can avoid unneeded cross-build issues.
+if ! grep "^Architecture:" debian/control | grep -qv "all"; then
+	set_arch=""
+fi
+
 # Install all build deps
 mk-build-deps $set_arch -t "${install_cmd}" -i -r debian/control
 
