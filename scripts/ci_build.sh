@@ -155,6 +155,8 @@ fi
 
 sed -i -e 's/#IMAGE_INSTALL += "isar-disable-apt-cache"/IMAGE_INSTALL += "isar-disable-apt-cache"/g' conf/local.conf
 
+echo 'IMAGE_INSTALL += "cowsay"' >> conf/local.conf
+
 # Start cross build for the defined set of configurations
 sed -i -e 's/ISAR_CROSS_COMPILE ?= "0"/ISAR_CROSS_COMPILE ?= "1"/g' conf/local.conf
 bitbake $BB_ARGS $CROSS_TARGETS_SET
