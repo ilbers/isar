@@ -165,7 +165,7 @@ while [ -e bitbake.sock ]; do sleep 1; done
 bitbake $BB_ARGS -c do_populate_sdk multiconfig:qemuarm-stretch:isar-image-base
 while [ -e bitbake.sock ]; do sleep 1; done
 
-if [ ! -n "$FAST_BUILD" ]; then
+if [ -z "$FAST_BUILD" ]; then
     # Cleanup and disable cross build
     sudo rm -rf tmp
     sed -i -e 's/ISAR_CROSS_COMPILE ?= "1"/ISAR_CROSS_COMPILE ?= "0"/g' conf/local.conf
