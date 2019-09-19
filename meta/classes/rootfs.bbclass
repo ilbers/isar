@@ -83,7 +83,7 @@ rootfs_configure_isar_apt() {
         '${ROOTFSDIR}/etc/apt/sources.list.d/isar-apt.list'
 
     mkdir -p '${ROOTFSDIR}/etc/apt/preferences.d'
-    cat << EOF > '${ROOTFSDIR}/etc/apt/preferences.d/isar'
+    cat << EOF > '${ROOTFSDIR}/etc/apt/preferences.d/isar-apt'
 Package: *
 Pin: release n=${DEBDISTRONAME}
 Pin-Priority: 1000
