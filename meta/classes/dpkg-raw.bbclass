@@ -21,7 +21,8 @@ addtask install after do_unpack before do_prepare_build
 do_prepare_build[cleandirs] += "${D}/debian"
 do_prepare_build() {
 	cd ${D}
-	find . ! -type d | sed 's:^./::' > ${WORKDIR}/${PN}.install
+	find . -maxdepth 1 ! -name .. -and ! -name . -and ! -name debian | \
+		sed 's:^./::' > ${WORKDIR}/${PN}.install
 	mv ${WORKDIR}/${PN}.install ${D}/debian/
 
 	deb_debianize
