@@ -682,6 +682,14 @@ Debian cross-compilation works out of the box starting from Debian stretch distr
  - qemuarm64-buster (for host >= buster)
 
 
+## Examining and debugging package generation inside their buildchroot
+
+Just like OpenEmbedded, Isar supports a devshell target for all dpkg package
+recipes. This target opens a terminal inside the buildchroot that runs the
+package build. To invoke it, just call
+`bitbake multiconfig:${MACHINE}-${DISTRO}:<package_name> -c devshell`.
+
+
 ## Create an ISAR SDK root filesystem
 
 ### Motivation

@@ -1,10 +1,11 @@
 # This software is a part of ISAR.
-# Copyright (C) 2017-2018 Siemens AG
+# Copyright (C) 2017-2019 Siemens AG
 #
 # SPDX-License-Identifier: MIT
 
 inherit buildchroot
 inherit debianize
+inherit terminal
 
 DEPENDS ?= ""
 
@@ -134,3 +135,26 @@ addtask deploy_deb after do_dpkg_build
 do_deploy_deb[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
 do_deploy_deb[depends] = "isar-apt:do_cache_config"
 do_deploy_deb[dirs] = "${S}"
+
+python do_devshell() {
+    import sys
+
+    oe_lib_path = os.path.join(d.getVar('LAYERDIR_core'), 'lib')
+    sys.path.insert(0, oe_lib_path)
+
+    bb.build.exec_func('dpkg_do_mounts', d);
+
+    bb.utils.export_proxies(d)
+
+    buildchroot = d.getVar('BUILDCHROOT_DIR')
+    pp_pps = os.path.join(d.getVar('PP'), d.getVar('PPS'))
+    termcmd = "sudo -E chroot {0} sh -c 'cd {1}; $SHELL -i'"
+    oe_terminal(termcmd.format(buildchroot, pp_pps), "Isar devshell", d)
+
+    bb.build.exec_func('dpkg_undo_mounts', d);
+}
+
+addtask devshell after do_prepare_build
+DEVSHELL_STARTDIR ?= "${S}"
+do_devshell[dirs] = "${DEVSHELL_STARTDIR}"
+do_devshell[nostamp] = "1"

@@ -15,6 +15,8 @@ addtask install_builddeps after do_prepare_build before do_dpkg_build
 # apt and reprepro may not run in parallel, acquire the Isar lock
 do_install_builddeps[lockfiles] += "${REPO_ISAR_DIR}/isar.lock"
 
+addtask devshell after do_install_builddeps
+
 # Build package from sources using build script
 dpkg_runbuild() {
     E="${@ bb.utils.export_proxies(d)}"

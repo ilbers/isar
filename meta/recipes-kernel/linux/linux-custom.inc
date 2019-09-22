@@ -47,6 +47,8 @@ addtask install_builddeps after do_prepare_build before do_dpkg_build
 # apt and reprepro may not run in parallel, acquire the Isar lock
 do_install_builddeps[lockfiles] += "${REPO_ISAR_DIR}/isar.lock"
 
+addtask devshell after do_install_builddeps
+
 dpkg_runbuild() {
 	chmod +x ${WORKDIR}/build-kernel.sh
 	if [ -n "${KERNEL_DEFCONFIG}" ]; then
