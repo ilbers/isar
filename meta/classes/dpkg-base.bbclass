@@ -78,8 +78,10 @@ dpkg_do_mounts() {
 }
 
 dpkg_undo_mounts() {
-    sudo umount ${BUILDROOT} 2>/dev/null || true
-    sudo rmdir ${BUILDROOT} 2>/dev/null || true
+    while ! sudo umount ${BUILDROOT} 2>/dev/null; do
+        sleep 0.1
+    done
+    sudo rmdir ${BUILDROOT}
 }
 
 # Placeholder for actual dpkg_runbuild() implementation
