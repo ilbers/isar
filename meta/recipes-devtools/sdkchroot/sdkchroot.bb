@@ -22,7 +22,8 @@ ROOTFS_ARCH = "${HOST_ARCH}"
 ROOTFS_DISTRO = "${HOST_DISTRO}"
 ROOTFSDIR = "${S}"
 ROOTFS_PACKAGES = "${SDKCHROOT_PREINSTALL} ${TOOLCHAIN}"
-ROOTFS_FEATURES += "clean-package-cache"
+ROOTFS_FEATURES += "clean-package-cache generate-manifest"
+ROOTFS_MANIFEST_DEPLOY_DIR = "${DEPLOY_DIR_SDKCHROOT}"
 
 python() {
     if d.getVar("HOST_ARCH") not in ['i386', 'amd64']:
