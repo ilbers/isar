@@ -26,7 +26,7 @@ DISTRO_BOOTSTRAP_KEYFILES = ""
 THIRD_PARTY_APT_KEYFILES = ""
 DEPLOY_ISAR_BOOTSTRAP ?= ""
 DISTRO_BOOTSTRAP_BASE_PACKAGES = "locales"
-DISTRO_BOOTSTRAP_BASE_PACKAGES_append_gnupg = ",gnupg2"
+DISTRO_BOOTSTRAP_BASE_PACKAGES_append_gnupg = ",gnupg"
 DISTRO_BOOTSTRAP_BASE_PACKAGES_append_https-support = ",apt-transport-https,ca-certificates"
 HOST_DISTRO_APT_SOURCES += "conf/distro/${HOST_DISTRO}.list"
 
