@@ -444,7 +444,7 @@ Image in Isar contains the following artifacts:
 
 In image recipe, the following variable defines the list of packages that will be included to target image: `IMAGE_PREINSTALL`. These packages will be taken from `apt` source.
 
-The user may use `met-isar/recipes-core-images` as a template for new image recipes creation.
+The user may use `meta-isar/recipes-core/images` as a template for new image recipes creation.
 
 ---
 
