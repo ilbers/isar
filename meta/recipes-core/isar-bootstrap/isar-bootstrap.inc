@@ -30,8 +30,6 @@ DISTRO_BOOTSTRAP_BASE_PACKAGES_append_gnupg = ",gnupg"
 DISTRO_BOOTSTRAP_BASE_PACKAGES_append_https-support = ",apt-transport-https,ca-certificates"
 HOST_DISTRO_APT_SOURCES += "conf/distro/${HOST_DISTRO}.list"
 
-DISTRO_APT_PREMIRRORS ?= "${@ "http://ftp\.(\S+\.)?debian.org/\S* file:///${REPO_BASE_DIR}/${BASE_DISTRO} \n" if bb.utils.to_boolean(d.getVar('ISAR_USE_CACHED_BASE_REPO')) else "" }"
-
 python () {
     distro_bootstrap_keys = (d.getVar("DISTRO_BOOTSTRAP_KEYS") or "").split()
 
@@ -98,7 +96,10 @@ def parse_aptsources_list_line(source_list_line):
 def get_apt_source_mirror(d, aptsources_entry_list):
     import re
 
-    premirrors = d.getVar('DISTRO_APT_PREMIRRORS', True) or ""
+    if bb.utils.to_boolean(d.getVar('ISAR_USE_CACHED_BASE_REPO')):
+        premirrors = "\S* file://${REPO_BASE_DIR}/${BASE_DISTRO}\n"
+    else:
+        premirrors = d.getVar('DISTRO_APT_PREMIRRORS', True) or ""
     mirror_list = [entry.split()
                   for entry in premirrors.split('\\n')
                   if any(entry)]
