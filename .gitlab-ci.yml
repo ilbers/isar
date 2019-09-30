@@ -3,17 +3,38 @@ image: kasproject/kas-isar:latest
 variables:
   GIT_STRATEGY: clone
 
-all:
+.common-build: &common-build
   stage: build
-  script:
+  before_script:
     - export http_proxy=$HTTP_PROXY
     - export https_proxy=$HTTPS_PROXY
     - export ftp_proxy=$FTP_PROXY
     - export no_proxy=$NO_PROXY
-    - scripts/ci_build.sh -q -f
   artifacts:
     name: "logs-$CI_JOB_ID"
     paths:
       - build/tmp/work/*/*/*/temp
     when: on_failure
     expire_in: 1 week
+
+fast-ci:
+  <<: *common-build
+  except:
+    - schedules
+  script:
+    - scripts/ci_build.sh -q -f
+
+full-ci:
+  <<: *common-build
+  only:
+    - schedules
+  script:
+    - PREVIOUS_SHA="$(cat .CI_COMMIT_SHA || true)"
+    - if [ "$CI_COMMIT_SHA" != "$PREVIOUS_SHA" ]; then
+          echo "$CI_COMMIT_SHA" > .CI_COMMIT_SHA;
+          scripts/ci_build.sh -q -c -r -s;
+      fi
+  cache:
+    key: "$CI_COMMIT_REF_SLUG"
+    paths:
+      - .CI_COMMIT_SHA
