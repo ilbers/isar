@@ -96,7 +96,7 @@ do
         CROSS_BUILD="1"
         ;;
     -d|--debug)
-        BB_ARGS="$BB_ARGS -d"
+        BB_ARGS="$BB_ARGS -D"
         ;;
     -f|--fast)
         # Start build for the reduced set of configurations
