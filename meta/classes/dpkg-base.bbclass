@@ -1,5 +1,6 @@
 # This software is a part of ISAR.
 # Copyright (C) 2017-2019 Siemens AG
+# Copyright (C) 2019 ilbers GmbH
 #
 # SPDX-License-Identifier: MIT
 
@@ -78,8 +79,14 @@ dpkg_do_mounts() {
 }
 
 dpkg_undo_mounts() {
-    while ! sudo umount ${BUILDROOT} 2>/dev/null; do
+    i=1
+    while ! sudo umount ${BUILDROOT}; do
         sleep 0.1
+        i=`expr $i + 1`
+        if [ $i -gt 100 ]; then
+            bbwarn "${BUILDROOT}: Couldn't unmount, retrying..."
+            i=1
+        fi
     done
     sudo rmdir ${BUILDROOT}
 }
