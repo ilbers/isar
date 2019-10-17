@@ -19,6 +19,7 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 
 THISDIR = "${@os.path.dirname(d.getVar('FILE', True))}"
+FILESPATH = "${@base_set_filespath(["${FILE_DIRNAME}/${PF}","${FILE_DIRNAME}/${P}:${FILE_DIRNAME}/${PN}", "${FILE_DIRNAME}/files","${FILE_DIRNAME}"], d)}"
 
 def get_deb_host_arch():
     import subprocess
@@ -222,3 +223,21 @@ python do_cleanall() {
     except bb.fetch2.BBFetchException as e:
         bb.fatal(str(e))
 }
+
+# Derived from OpenEmbedded Core: meta/classes/utils.bbclass
+def base_set_filespath(path, d):
+    filespath = []
+    extrapaths = (d.getVar("FILESEXTRAPATHS") or "")
+    # Remove default flag which was used for checking
+    extrapaths = extrapaths.replace("__default:", "")
+    # Don't prepend empty strings to the path list
+    if extrapaths != "":
+        path = extrapaths.split(":") + path
+    # The ":" ensures we have an 'empty' override
+    overrides = (":" + (d.getVar("FILESOVERRIDES") or "")).split(":")
+    overrides.reverse()
+    for o in overrides:
+        for p in path:
+            if p != "":
+                filespath.append(os.path.join(p, o))
+    return ":".join(filespath)

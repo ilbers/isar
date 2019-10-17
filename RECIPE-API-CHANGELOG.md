@@ -183,3 +183,13 @@ Otherwise set a encrypted root password like this:
 USERS += "root"
 USER_root[password] = "$6$rounds=10000$RXeWrnFmkY$DtuS/OmsAS2cCEDo0BF5qQsizIrq6jPgXnwv3PHqREJeKd1sXdHX/ayQtuQWVDHe0KIO0/sVH8dvQm1KthF0d/"
 ```
+### Use FILESEXTRAPATHS to add custom paths to FILESPATH
+
+Direct modification of FILESPATH variable is discouraged. Use FILESEXTRAPATHS
+instead to add a custom search path for files and patches. This makes overriding
+files and patches using bbappend a lot easier.
+
+For example:
+```
+FILESEXTRAPATHS_prepend := "$THISDIR/files:"
+```
