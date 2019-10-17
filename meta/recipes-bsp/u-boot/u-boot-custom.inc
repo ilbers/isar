@@ -5,7 +5,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-FILESPATH =. "${LAYERDIR_core}/recipes-bsp/u-boot/files:"
+FILESEXTRAPATHS_prepend := "${FILE_DIRNAME}/files:"
 
 DESCRIPTION ?= "Custom U-Boot"
 

@@ -5,7 +5,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-FILESPATH =. "${LAYERDIR_core}/recipes-kernel/linux/files:"
+FILESEXTRAPATHS_prepend := "${FILE_DIRNAME}/files:"
 
 DESCRIPTION ?= "Custom kernel"
 
