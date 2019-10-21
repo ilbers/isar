@@ -5,18 +5,8 @@
 #
 # Copyright (C) 2006-2012 Richard Purdie
 #
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 2 as
-# published by the Free Software Foundation.
+# SPDX-License-Identifier: GPL-2.0-only
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 from __future__ import division
 
@@ -222,6 +212,23 @@ class TerminalFilter(object):
             sys.stdout.flush()
         self.footer_present = False
 
+    def elapsed(self, sec):
+        hrs = int(sec / 3600.0)
+        sec -= hrs * 3600
+        min = int(sec / 60.0)
+        sec -= min * 60
+        if hrs > 0:
+            return "%dh%dm%ds" % (hrs, min, sec)
+        elif min > 0:
+            return "%dm%ds" % (min, sec)
+        else:
+            return "%ds" % (sec)
+
+    def keepAlive(self, t):
+        if not self.cuu:
+            print("Bitbake still alive (%ds)" % t)
+            sys.stdout.flush()
+
     def updateFooter(self):
         if not self.cuu:
             return
@@ -258,7 +265,7 @@ class TerminalFilter(object):
             else:
                 start_time = activetasks[t].get("starttime", None)
                 if start_time:
-                    tasks.append("%s - %ds (pid %s)" % (activetasks[t]["title"], currenttime - start_time, t))
+                    tasks.append("%s - %s (pid %s)" % (activetasks[t]["title"], self.elapsed(currenttime - start_time), t))
                 else:
                     tasks.append("%s (pid %s)" % (activetasks[t]["title"], t))
 
@@ -293,8 +300,8 @@ class TerminalFilter(object):
                         if start_time:
                             pbar.start_time = start_time
                     pbar.setmessage('%s:%s' % (tasknum, pbar.msg.split(':', 1)[1]))
+                    pbar.setextra(rate)
                     if progress > -1:
-                        pbar.setextra(rate)
                         content = pbar.update(progress)
                     else:
                         content = pbar.update(1)
@@ -455,11 +462,17 @@ def main(server, eventHandler, params, tf = TerminalFilter):
     warnings = 0
     taskfailures = []
 
+    printinterval = 5000
+    lastprint = time.time()
+
     termfilter = tf(main, helper, console, errconsole, format, params.options.quiet)
     atexit.register(termfilter.finish)
 
     while True:
         try:
+            if (lastprint + printinterval) <= time.time():
+                termfilter.keepAlive(printinterval)
+                printinterval += 5000
             event = eventHandler.waitEvent(0)
             if event is None:
                 if main.shutdown > 1:
@@ -488,6 +501,8 @@ def main(server, eventHandler, params, tf = TerminalFilter):
                 continue
 
             if isinstance(event, logging.LogRecord):
+                lastprint = time.time()
+                printinterval = 5000
                 if event.levelno >= format.ERROR:
                     errors = errors + 1
                     return_value = 1
@@ -645,7 +660,6 @@ def main(server, eventHandler, params, tf = TerminalFilter):
             # ignore
             if isinstance(event, (bb.event.BuildBase,
                                   bb.event.MetadataEvent,
-                                  bb.event.StampUpdate,
                                   bb.event.ConfigParsed,
                                   bb.event.MultiConfigParsed,
                                   bb.event.RecipeParsed,
@@ -675,17 +689,27 @@ def main(server, eventHandler, params, tf = TerminalFilter):
             if params.observe_only:
                 print("\nKeyboard Interrupt, exiting observer...")
                 main.shutdown = 2
-            if not params.observe_only and main.shutdown == 1:
+
+            def state_force_shutdown():
                 print("\nSecond Keyboard Interrupt, stopping...\n")
                 _, error = server.runCommand(["stateForceShutdown"])
                 if error:
                     logger.error("Unable to cleanly stop: %s" % error)
+
+            if not params.observe_only and main.shutdown == 1:
+                state_force_shutdown()
+
             if not params.observe_only and main.shutdown == 0:
                 print("\nKeyboard Interrupt, closing down...\n")
                 interrupted = True
-                _, error = server.runCommand(["stateShutdown"])
-                if error:
-                    logger.error("Unable to cleanly shutdown: %s" % error)
+                # Capture the second KeyboardInterrupt during stateShutdown is running
+                try:
+                    _, error = server.runCommand(["stateShutdown"])
+                    if error:
+                        logger.error("Unable to cleanly shutdown: %s" % error)
+                except KeyboardInterrupt:
+                    state_force_shutdown()
+
             main.shutdown = main.shutdown + 1
             pass
         except Exception as e:

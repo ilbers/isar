@@ -183,6 +183,7 @@ Otherwise set a encrypted root password like this:
 USERS += "root"
 USER_root[password] = "$6$rounds=10000$RXeWrnFmkY$DtuS/OmsAS2cCEDo0BF5qQsizIrq6jPgXnwv3PHqREJeKd1sXdHX/ayQtuQWVDHe0KIO0/sVH8dvQm1KthF0d/"
 ```
+
 ### Use FILESEXTRAPATHS to add custom paths to FILESPATH
 
 Direct modification of FILESPATH variable is discouraged. Use FILESEXTRAPATHS
@@ -192,4 +193,19 @@ files and patches using bbappend a lot easier.
 For example:
 ```
 FILESEXTRAPATHS_prepend := "$THISDIR/files:"
+
+### multiconfig build targets were renamed
+
+bitbake was upgraded to version 1.44.0 where "multiconfig" build targets were
+renamed "mc". As an example, builds for the qemuarm-stretch machine should now
+be done as follows:
+
+```
+bitbake mc:qemuarm-stretch:isar-image-base
+```
+
+The old syntax is no longer supported and will produce an error:
+
+```
+bitbake multiconfig:qemuarm-stretch:isar-image-base
 ```

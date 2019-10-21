@@ -1,5 +1,3 @@
-# ex:ts=4:sw=4:sts=4:et
-# -*- tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
 """
 BitBake 'Data' implementations
 
@@ -22,18 +20,7 @@ the speed is more critical here.
 # Copyright (C) 2003, 2004  Chris Larson
 # Copyright (C) 2005        Holger Hans Peter Freyther
 #
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 2 as
-# published by the Free Software Foundation.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+# SPDX-License-Identifier: GPL-2.0-only
 #
 # Based on functions from the base bb module, Copyright 2003 Holger Schurig
 
@@ -143,7 +130,7 @@ def emit_var(var, o=sys.__stdout__, d = init(), all=False):
         if all:
             oval = d.getVar(var, False)
         val = d.getVar(var)
-    except (KeyboardInterrupt, bb.build.FuncFailed):
+    except (KeyboardInterrupt):
         raise
     except Exception as exc:
         o.write('# expansion of %s threw %s: %s\n' % (var, exc.__class__.__name__, str(exc)))
@@ -322,8 +309,6 @@ def build_dependencies(key, keys, shelldeps, varflagsexcl, d):
             if varflags.get("python"):
                 value = d.getVarFlag(key, "_content", False)
                 parser = bb.codeparser.PythonParser(key, logger)
-                if value and "\t" in value:
-                    logger.warning("Variable %s contains tabs, please remove these (%s)" % (key, d.getVar("FILE")))
                 parser.parse_python(value, filename=varflags.get("filename"), lineno=varflags.get("lineno"))
                 deps = deps | parser.references
                 deps = deps | (keys & parser.execs)
@@ -437,8 +422,8 @@ def generate_dependency_hash(tasklist, gendeps, lookupcache, whitelist, fn):
             var = lookupcache[dep]
             if var is not None:
                 data = data + str(var)
-        k = fn + "." + task
-        basehash[k] = hashlib.md5(data.encode("utf-8")).hexdigest()
+        k = fn + ":" + task
+        basehash[k] = hashlib.sha256(data.encode("utf-8")).hexdigest()
         taskdeps[task] = alldeps
 
     return taskdeps, basehash

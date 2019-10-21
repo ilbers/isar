@@ -22,7 +22,7 @@ class BuildTest(Test):
 
         #isar_root = dirname(__file__) + '/..'
         os.chdir(build_dir)
-        cmdline = ['bitbake', 'multiconfig:qemu' + arch + '-' + distro + ':isar-image-base']
+        cmdline = ['bitbake', 'mc:qemu' + arch + '-' + distro + ':isar-image-base']
         p1 = subprocess32.run(cmdline)
 
         if p1.returncode:

@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# ex:ts=4:sw=4:sts=4:et
-# -*- tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
 """
    class for handling .bb files
 
@@ -12,19 +9,8 @@
 #  Copyright (C) 2003, 2004  Chris Larson
 #  Copyright (C) 2003, 2004  Phil Blundell
 #
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 2 as
-# published by the Free Software Foundation.
+# SPDX-License-Identifier: GPL-2.0-only
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-
 
 import re, bb, os
 import logging
@@ -38,14 +24,15 @@ from .ConfHandler import include, init
 # For compatibility
 bb.deprecate_import(__name__, "bb.parse", ["vars_from_file"])
 
-__func_start_regexp__    = re.compile( r"(((?P<py>python)|(?P<fr>fakeroot))\s*)*(?P<func>[\w\.\-\+\{\}\$]+)?\s*\(\s*\)\s*{$" )
-__inherit_regexp__       = re.compile( r"inherit\s+(.+)" )
-__export_func_regexp__   = re.compile( r"EXPORT_FUNCTIONS\s+(.+)" )
-__addtask_regexp__       = re.compile("addtask\s+(?P<func>\w+)\s*((before\s*(?P<before>((.*(?=after))|(.*))))|(after\s*(?P<after>((.*(?=before))|(.*)))))*")
-__deltask_regexp__       = re.compile("deltask\s+(?P<func>\w+)")
-__addhandler_regexp__    = re.compile( r"addhandler\s+(.+)" )
-__def_regexp__           = re.compile( r"def\s+(\w+).*:" )
-__python_func_regexp__   = re.compile( r"(\s+.*)|(^$)|(^#)" )
+__func_start_regexp__    = re.compile(r"(((?P<py>python)|(?P<fr>fakeroot))\s*)*(?P<func>[\w\.\-\+\{\}\$]+)?\s*\(\s*\)\s*{$" )
+__inherit_regexp__       = re.compile(r"inherit\s+(.+)" )
+__export_func_regexp__   = re.compile(r"EXPORT_FUNCTIONS\s+(.+)" )
+__addtask_regexp__       = re.compile(r"addtask\s+(?P<func>\w+)\s*((before\s*(?P<before>((.*(?=after))|(.*))))|(after\s*(?P<after>((.*(?=before))|(.*)))))*")
+__deltask_regexp__       = re.compile(r"deltask\s+(?P<func>\w+)(?P<ignores>.*)")
+__addhandler_regexp__    = re.compile(r"addhandler\s+(.+)" )
+__def_regexp__           = re.compile(r"def\s+(\w+).*:" )
+__python_func_regexp__   = re.compile(r"(\s+.*)|(^$)|(^#)" )
+__python_tab_regexp__    = re.compile(r" *\t")
 
 __infunc__ = []
 __inpython__ = False
@@ -160,6 +147,16 @@ def handle(fn, d, include):
 
 def feeder(lineno, s, fn, root, statements, eof=False):
     global __func_start_regexp__, __inherit_regexp__, __export_func_regexp__, __addtask_regexp__, __addhandler_regexp__, __def_regexp__, __python_func_regexp__, __inpython__, __infunc__, __body__, bb, __residue__, __classname__
+
+    # Check tabs in python functions:
+    # - def py_funcname(): covered by __inpython__
+    # - python(): covered by '__anonymous' == __infunc__[0]
+    # - python funcname(): covered by __infunc__[3]
+    if __inpython__ or (__infunc__ and ('__anonymous' == __infunc__[0] or __infunc__[3])):
+        tab = __python_tab_regexp__.match(s)
+        if tab:
+            bb.warn('python should use 4 spaces indentation, but found tabs in %s, line %s' % (root, lineno))
+
     if __infunc__:
         if s == '}':
             __body__.append('')
@@ -225,11 +222,27 @@ def feeder(lineno, s, fn, root, statements, eof=False):
 
     m = __addtask_regexp__.match(s)
     if m:
+        if len(m.group().split()) == 2:
+            # Check and warn for "addtask task1 task2"
+            m2 = re.match(r"addtask\s+(?P<func>\w+)(?P<ignores>.*)", s)
+            if m2 and m2.group('ignores'):
+                logger.warning('addtask ignored: "%s"' % m2.group('ignores'))
+
+        # Check and warn for "addtask task1 before task2 before task3", the
+        # similar to "after"
+        taskexpression = s.split()
+        for word in ('before', 'after'):
+            if taskexpression.count(word) > 1:
+                logger.warning("addtask contained multiple '%s' keywords, only one is supported" % word)
+
         ast.handleAddTask(statements, fn, lineno, m)
         return
 
     m = __deltask_regexp__.match(s)
     if m:
+        # Check and warn "for deltask task1 task2"
+        if m.group('ignores'):
+            logger.warning('deltask ignored: "%s"' % m.group('ignores'))
         ast.handleDelTask(statements, fn, lineno, m)
         return
 

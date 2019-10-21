@@ -1,23 +1,11 @@
-# ex:ts=4:sw=4:sts=4:et
-# -*- tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
 """
 BitBake Utility Functions
 """
 
 # Copyright (C) 2004 Michael Lauer
 #
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 2 as
-# published by the Free Software Foundation.
+# SPDX-License-Identifier: GPL-2.0-only
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 import re, fcntl, os, string, stat, shutil, time
 import sys
@@ -120,6 +108,10 @@ def vercmp_part(a, b):
         if oa < ob:
             return -1
         elif oa > ob:
+            return 1
+        elif ca is None:
+            return -1
+        elif cb is None:
             return 1
         elif ca < cb:
             return -1
@@ -402,7 +394,7 @@ def better_exec(code, context, text = None, realfile = "<code>", pythonexception
         code = better_compile(code, realfile, realfile)
     try:
         exec(code, get_context(), context)
-    except (bb.BBHandledException, bb.parse.SkipRecipe, bb.build.FuncFailed, bb.data_smart.ExpansionError):
+    except (bb.BBHandledException, bb.parse.SkipRecipe, bb.data_smart.ExpansionError):
         # Error already shown so passthrough, no need for traceback
         raise
     except Exception as e:
@@ -685,7 +677,7 @@ def _check_unsafe_delete_path(path):
         return True
     return False
 
-def remove(path, recurse=False):
+def remove(path, recurse=False, ionice=False):
     """Equivalent to rm -f or rm -rf"""
     if not path:
         return
@@ -694,7 +686,10 @@ def remove(path, recurse=False):
             if _check_unsafe_delete_path(path):
                 raise Exception('bb.utils.remove: called with dangerous path "%s" and recurse=True, refusing to delete!' % path)
         # shutil.rmtree(name) would be ideal but its too slow
-        subprocess.check_call(['rm', '-rf'] + glob.glob(path))
+        cmd = []
+        if ionice:
+            cmd = ['ionice', '-c', '3']
+        subprocess.check_call(cmd + ['rm', '-rf'] + glob.glob(path))
         return
     for name in glob.glob(path):
         try:
@@ -703,20 +698,12 @@ def remove(path, recurse=False):
             if exc.errno != errno.ENOENT:
                 raise
 
-def prunedir(topdir):
+def prunedir(topdir, ionice=False):
     # Delete everything reachable from the directory named in 'topdir'.
     # CAUTION:  This is dangerous!
     if _check_unsafe_delete_path(topdir):
         raise Exception('bb.utils.prunedir: called with dangerous path "%s", refusing to delete!' % topdir)
-    for root, dirs, files in os.walk(topdir, topdown = False):
-        for name in files:
-            os.remove(os.path.join(root, name))
-        for name in dirs:
-            if os.path.islink(os.path.join(root, name)):
-                os.remove(os.path.join(root, name))
-            else:
-                os.rmdir(os.path.join(root, name))
-    os.rmdir(topdir)
+    remove(topdir, recurse=True, ionice=ionice)
 
 #
 # Could also use return re.compile("(%s)" % "|".join(map(re.escape, suffixes))).sub(lambda mo: "", var)
@@ -726,8 +713,8 @@ def prune_suffix(var, suffixes, d):
     # See if var ends with any of the suffixes listed and
     # remove it if found
     for suffix in suffixes:
-        if var.endswith(suffix):
-            return var.replace(suffix, "")
+        if suffix and var.endswith(suffix):
+            return var[:-len(suffix)]
     return var
 
 def mkdirhier(directory):
@@ -738,7 +725,7 @@ def mkdirhier(directory):
     try:
         os.makedirs(directory)
     except OSError as e:
-        if e.errno != errno.EEXIST:
+        if e.errno != errno.EEXIST or not os.path.isdir(directory):
             raise e
 
 def movefile(src, dest, newmtime = None, sstat = None):
@@ -796,7 +783,7 @@ def movefile(src, dest, newmtime = None, sstat = None):
             os.rename(src, destpath)
             renamefailed = 0
         except Exception as e:
-            if e[0] != errno.EXDEV:
+            if e.errno != errno.EXDEV:
                 # Some random error.
                 print("movefile: Failed to move", src, "to", dest, e)
                 return None
@@ -1505,6 +1492,8 @@ def ioprio_set(who, cls, value):
       NR_ioprio_set = 251
     elif _unamearch[0] == "i" and _unamearch[2:3] == "86":
       NR_ioprio_set = 289
+    elif _unamearch == "aarch64":
+      NR_ioprio_set = 30
 
     if NR_ioprio_set:
         ioprio = value | (cls << IOPRIO_CLASS_SHIFT)

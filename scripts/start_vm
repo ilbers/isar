@@ -101,7 +101,7 @@ do
     shift
 done
 
-eval $(bitbake -e multiconfig:qemu$ARCH-$DISTRO:isar-image-base | grep "^DEPLOY_DIR_IMAGE=")
+eval $(bitbake -e mc:qemu$ARCH-$DISTRO:isar-image-base | grep "^DEPLOY_DIR_IMAGE=")
 readonly IMAGE_DIR=$DEPLOY_DIR_IMAGE
 
 readonly ISARROOT="$(dirname "$0")"/..
@@ -112,13 +112,13 @@ eval "$(egrep 'MACHINE_SERIAL' $MACHINE_CONF |bb2sh)"
 readonly CONFIG_CONF=$ISARROOT/meta-isar/conf/multiconfig/qemu$ARCH-$DISTRO.conf
 eval "$(egrep 'QEMU_' $CONFIG_CONF |bb2sh)"
 
-eval $(bitbake -e multiconfig:qemu$ARCH-$DISTRO:isar-image-base | grep "^IMAGE_TYPE=")
+eval $(bitbake -e mc:qemu$ARCH-$DISTRO:isar-image-base | grep "^IMAGE_TYPE=")
 case "$IMAGE_TYPE" in
     ext4-img)
     readonly ROOTFS_IMAGE=isar-image-base-debian-$DISTRO-qemu$ARCH.ext4.img
 
-    eval $(bitbake -e multiconfig:qemu$ARCH-$DISTRO:isar-image-base | grep "^KERNEL_IMAGE=")
-    eval $(bitbake -e multiconfig:qemu$ARCH-$DISTRO:isar-image-base | grep "^INITRD_IMAGE=")
+    eval $(bitbake -e mc:qemu$ARCH-$DISTRO:isar-image-base | grep "^KERNEL_IMAGE=")
+    eval $(bitbake -e mc:qemu$ARCH-$DISTRO:isar-image-base | grep "^INITRD_IMAGE=")
     QKERNEL=$IMAGE_DIR/${KERNEL_IMAGE}
     QINITRD=/dev/null
     [ -n "$INITRD_IMAGE" ] && QINITRD=$IMAGE_DIR/${INITRD_IMAGE}

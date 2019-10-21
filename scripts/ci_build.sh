@@ -21,40 +21,40 @@ BUILD_DIR=./build
 BB_ARGS="-v"
 
 TARGETS_SET="\
-            multiconfig:qemuarm-stretch:isar-image-base \
-            multiconfig:qemuarm-buster:isar-image-base \
-            multiconfig:qemuarm-bullseye:isar-image-base \
-            multiconfig:qemuarm64-stretch:isar-image-base \
-            multiconfig:qemui386-stretch:isar-image-base \
-            multiconfig:qemui386-buster:isar-image-base \
-            multiconfig:qemui386-bullseye:isar-image-base \
-            multiconfig:qemuamd64-stretch:isar-image-base \
-            multiconfig:qemuamd64-buster:isar-image-base \
-            multiconfig:qemuamd64-buster-tgz:isar-image-base \
-            multiconfig:qemuamd64-bullseye:isar-image-base \
-            multiconfig:qemumipsel-stretch:isar-image-base \
-            multiconfig:qemumipsel-buster:isar-image-base \
-            multiconfig:qemumipsel-bullseye:isar-image-base \
-            multiconfig:nand-ubi-demo-buster:isar-image-ubi \
-            multiconfig:rpi-stretch:isar-image-base"
+            mc:qemuarm-stretch:isar-image-base \
+            mc:qemuarm-buster:isar-image-base \
+            mc:qemuarm-bullseye:isar-image-base \
+            mc:qemuarm64-stretch:isar-image-base \
+            mc:qemui386-stretch:isar-image-base \
+            mc:qemui386-buster:isar-image-base \
+            mc:qemui386-bullseye:isar-image-base \
+            mc:qemuamd64-stretch:isar-image-base \
+            mc:qemuamd64-buster:isar-image-base \
+            mc:qemuamd64-buster-tgz:isar-image-base \
+            mc:qemuamd64-bullseye:isar-image-base \
+            mc:qemumipsel-stretch:isar-image-base \
+            mc:qemumipsel-buster:isar-image-base \
+            mc:qemumipsel-bullseye:isar-image-base \
+            mc:nand-ubi-demo-buster:isar-image-ubi \
+            mc:rpi-stretch:isar-image-base"
           # qemu-user-static of <= buster too old to build that
-          # multiconfig:qemuarm64-buster:isar-image-base
-          # multiconfig:qemuarm64-bullseye:isar-image-base
+          # mc:qemuarm64-buster:isar-image-base
+          # mc:qemuarm64-bullseye:isar-image-base
 
 CROSS_TARGETS_SET="\
-                  multiconfig:qemuarm-stretch:isar-image-base \
-                  multiconfig:qemuarm-buster:isar-image-base \
-                  multiconfig:qemuarm-bullseye:isar-image-base \
-                  multiconfig:qemuarm64-stretch:isar-image-base \
-                  multiconfig:qemuamd64-stretch:isar-image-base \
-                  multiconfig:de0-nano-soc-stretch:isar-image-base \
-                  multiconfig:rpi-stretch:isar-image-base"
+                  mc:qemuarm-stretch:isar-image-base \
+                  mc:qemuarm-buster:isar-image-base \
+                  mc:qemuarm-bullseye:isar-image-base \
+                  mc:qemuarm64-stretch:isar-image-base \
+                  mc:qemuamd64-stretch:isar-image-base \
+                  mc:de0-nano-soc-stretch:isar-image-base \
+                  mc:rpi-stretch:isar-image-base"
 
 REPRO_TARGETS_SET="\
-            multiconfig:qemuarm-stretch:isar-image-base \
-            multiconfig:qemuarm64-stretch:isar-image-base \
-            multiconfig:qemuamd64-stretch:isar-image-base \
-            multiconfig:qemuarm-buster:isar-image-base"
+            mc:qemuarm-stretch:isar-image-base \
+            mc:qemuarm64-stretch:isar-image-base \
+            mc:qemuamd64-stretch:isar-image-base \
+            mc:qemuarm-buster:isar-image-base"
 
 
 show_help() {
@@ -163,7 +163,7 @@ sed -i -e 's/ISAR_CROSS_COMPILE ?= "0"/ISAR_CROSS_COMPILE ?= "1"/g' conf/local.c
 bitbake $BB_ARGS $CROSS_TARGETS_SET
 while [ -e bitbake.sock ]; do sleep 1; done
 # In addition test SDK creation
-bitbake $BB_ARGS -c do_populate_sdk multiconfig:qemuarm-stretch:isar-image-base
+bitbake $BB_ARGS -c do_populate_sdk mc:qemuarm-stretch:isar-image-base
 while [ -e bitbake.sock ]; do sleep 1; done
 
 if [ -z "$FAST_BUILD" ]; then
@@ -176,6 +176,6 @@ fi
 cp -a "${ISARROOT}/meta/classes/dpkg-base.bbclass" "${ISARROOT}/meta/classes/dpkg-base.bbclass.ci-backup"
 echo -e "do_fetch_append() {\n\n}" >> "${ISARROOT}/meta/classes/dpkg-base.bbclass"
 
-bitbake $BB_ARGS multiconfig:qemuamd64-stretch:isar-image-base
+bitbake $BB_ARGS mc:qemuamd64-stretch:isar-image-base
 
 mv "${ISARROOT}/meta/classes/dpkg-base.bbclass.ci-backup" "${ISARROOT}/meta/classes/dpkg-base.bbclass"

@@ -3,18 +3,8 @@
 #
 # Copyright (C) 2013        Intel Corporation
 #
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 2 as
-# published by the Free Software Foundation.
+# SPDX-License-Identifier: GPL-2.0-only
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 import sys
 import bb
@@ -656,6 +646,9 @@ class ORMWrapper(object):
                 Target_Installed_Package.objects.create(target = target_obj, package = packagedict[p]['object'])
 
         packagedeps_objs = []
+        pattern_so = re.compile(r'.*\.so(\.\d*)?$')
+        pattern_lib = re.compile(r'.*\-suffix(\d*)?$')
+        pattern_ko = re.compile(r'^kernel-module-.*')
         for p in packagedict:
             for (px,deptype) in packagedict[p]['depends']:
                 if deptype == 'depends':
@@ -664,6 +657,13 @@ class ORMWrapper(object):
                     tdeptype = Package_Dependency.TYPE_TRECOMMENDS
 
                 try:
+                    # Skip known non-package objects like libraries and kernel modules
+                    if pattern_so.match(px) or pattern_lib.match(px):
+                        logger.info("Toaster does not add library file dependencies to packages (%s,%s)", p, px)
+                        continue
+                    if pattern_ko.match(px):
+                        logger.info("Toaster does not add kernel module dependencies to packages (%s,%s)", p, px)
+                        continue
                     packagedeps_objs.append(Package_Dependency(
                         package = packagedict[p]['object'],
                         depends_on = packagedict[px]['object'],

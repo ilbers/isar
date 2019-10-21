@@ -10,7 +10,7 @@ import sys
 import time
 
 def get_bitbake_env(arch, distro):
-    multiconfig = 'multiconfig:qemu' + arch + '-' + distro + ':isar-image-base'
+    multiconfig = 'mc:qemu' + arch + '-' + distro + ':isar-image-base'
     output = subprocess.check_output(['bitbake', '-e', str(multiconfig)])
     return output
 

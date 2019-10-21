@@ -1,5 +1,3 @@
-# ex:ts=4:sw=4:sts=4:et
-# -*- tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
 """
 BitBake 'Fetch' implementation for svn.
 
@@ -8,18 +6,7 @@ BitBake 'Fetch' implementation for svn.
 # Copyright (C) 2003, 2004  Chris Larson
 # Copyright (C) 2004        Marcin Juszkiewicz
 #
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 2 as
-# published by the Free Software Foundation.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+# SPDX-License-Identifier: GPL-2.0-only
 #
 # Based on functions from the base bb module, Copyright 2003 Holger Schurig
 
@@ -63,6 +50,9 @@ class Svn(FetchMethod):
         relpath = self._strip_leading_slashes(ud.path)
         ud.pkgdir = os.path.join(svndir, ud.host, relpath)
         ud.moddir = os.path.join(ud.pkgdir, ud.module)
+        # Protects the repository from concurrent updates, e.g. from two
+        # recipes fetching different revisions at the same time
+        ud.svnlock = os.path.join(ud.pkgdir, "svn.lock")
 
         ud.setup_revisions(d)
 
@@ -101,6 +91,13 @@ class Svn(FetchMethod):
             svncmd = "%s log --limit 1 %s %s://%s/%s/" % (ud.basecmd, " ".join(options), proto, svnroot, ud.module)
         else:
             suffix = ""
+
+            # externals may be either 'allowed' or 'nowarn', but not both.  Allowed
+            # will not issue a warning, but will log to the debug buffer what has likely
+            # been downloaded by SVN.
+            if not ("externals" in ud.parm and ud.parm["externals"] == "allowed"):
+                options.append("--ignore-externals")
+
             if ud.revision:
                 options.append("-r %s" % ud.revision)
                 suffix = "@%s" % (ud.revision)
@@ -123,35 +120,52 @@ class Svn(FetchMethod):
 
         logger.debug(2, "Fetch: checking for module directory '" + ud.moddir + "'")
 
-        if os.access(os.path.join(ud.moddir, '.svn'), os.R_OK):
-            svnupdatecmd = self._buildsvncommand(ud, d, "update")
-            logger.info("Update " + ud.url)
-            # We need to attempt to run svn upgrade first in case its an older working format
-            try:
-                runfetchcmd(ud.basecmd + " upgrade", d, workdir=ud.moddir)
-            except FetchError:
-                pass
-            logger.debug(1, "Running %s", svnupdatecmd)
-            bb.fetch2.check_network_access(d, svnupdatecmd, ud.url)
-            runfetchcmd(svnupdatecmd, d, workdir=ud.moddir)
-        else:
-            svnfetchcmd = self._buildsvncommand(ud, d, "fetch")
-            logger.info("Fetch " + ud.url)
-            # check out sources there
-            bb.utils.mkdirhier(ud.pkgdir)
-            logger.debug(1, "Running %s", svnfetchcmd)
-            bb.fetch2.check_network_access(d, svnfetchcmd, ud.url)
-            runfetchcmd(svnfetchcmd, d, workdir=ud.pkgdir)
+        lf = bb.utils.lockfile(ud.svnlock)
 
-        scmdata = ud.parm.get("scmdata", "")
-        if scmdata == "keep":
-            tar_flags = ""
-        else:
-            tar_flags = "--exclude='.svn'"
+        try:
+            if os.access(os.path.join(ud.moddir, '.svn'), os.R_OK):
+                svnupdatecmd = self._buildsvncommand(ud, d, "update")
+                logger.info("Update " + ud.url)
+                # We need to attempt to run svn upgrade first in case its an older working format
+                try:
+                    runfetchcmd(ud.basecmd + " upgrade", d, workdir=ud.moddir)
+                except FetchError:
+                    pass
+                logger.debug(1, "Running %s", svnupdatecmd)
+                bb.fetch2.check_network_access(d, svnupdatecmd, ud.url)
+                runfetchcmd(svnupdatecmd, d, workdir=ud.moddir)
+            else:
+                svnfetchcmd = self._buildsvncommand(ud, d, "fetch")
+                logger.info("Fetch " + ud.url)
+                # check out sources there
+                bb.utils.mkdirhier(ud.pkgdir)
+                logger.debug(1, "Running %s", svnfetchcmd)
+                bb.fetch2.check_network_access(d, svnfetchcmd, ud.url)
+                runfetchcmd(svnfetchcmd, d, workdir=ud.pkgdir)
 
-        # tar them up to a defined filename
-        runfetchcmd("tar %s -czf %s %s" % (tar_flags, ud.localpath, ud.path_spec), d,
-                    cleanup=[ud.localpath], workdir=ud.pkgdir)
+            if not ("externals" in ud.parm and ud.parm["externals"] == "nowarn"):
+                # Warn the user if this had externals (won't catch them all)
+                output = runfetchcmd("svn propget svn:externals || true", d, workdir=ud.moddir)
+                if output:
+                    if "--ignore-externals" in svnfetchcmd.split():
+                        bb.warn("%s contains svn:externals." % ud.url)
+                        bb.warn("These should be added to the recipe SRC_URI as necessary.")
+                        bb.warn("svn fetch has ignored externals:\n%s" % output)
+                        bb.warn("To disable this warning add ';externals=nowarn' to the url.")
+                    else:
+                        bb.debug(1, "svn repository has externals:\n%s" % output)
+
+            scmdata = ud.parm.get("scmdata", "")
+            if scmdata == "keep":
+                tar_flags = ""
+            else:
+                tar_flags = "--exclude='.svn'"
+
+            # tar them up to a defined filename
+            runfetchcmd("tar %s -czf %s %s" % (tar_flags, ud.localpath, ud.path_spec), d,
+                        cleanup=[ud.localpath], workdir=ud.pkgdir)
+        finally:
+            bb.utils.unlockfile(lf)
 
     def clean(self, ud, d):
         """ Clean SVN specific files and dirs """

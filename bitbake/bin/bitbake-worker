@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+#
+# SPDX-License-Identifier: GPL-2.0-only
+#
 
 import os
 import sys
@@ -136,7 +139,7 @@ def sigterm_handler(signum, frame):
     os.killpg(0, signal.SIGTERM)
     sys.exit()
 
-def fork_off_task(cfg, data, databuilder, workerdata, fn, task, taskname, appends, taskdepdata, extraconfigdata, quieterrors=False, dry_run_exec=False):
+def fork_off_task(cfg, data, databuilder, workerdata, fn, task, taskname, taskhash, unihash, appends, taskdepdata, extraconfigdata, quieterrors=False, dry_run_exec=False):
     # We need to setup the environment BEFORE the fork, since
     # a fork() or exec*() activates PSEUDO...
 
@@ -231,10 +234,13 @@ def fork_off_task(cfg, data, databuilder, workerdata, fn, task, taskname, append
                     the_data.setVar(varname, value)
 
                 bb.parse.siggen.set_taskdata(workerdata["sigdata"])
+                if "newhashes" in workerdata:
+                    bb.parse.siggen.set_taskhashes(workerdata["newhashes"])
                 ret = 0
 
                 the_data = bb_cache.loadDataFull(fn, appends)
-                the_data.setVar('BB_TASKHASH', workerdata["runq_hash"][task])
+                the_data.setVar('BB_TASKHASH', taskhash)
+                the_data.setVar('BB_UNIHASH', unihash)
 
                 bb.utils.set_process_name("%s:%s" % (the_data.getVar("PN"), taskname.replace("do_", "")))
 
@@ -373,6 +379,7 @@ class BitbakeWorker(object):
                 self.handle_item(b"cookerconfig", self.handle_cookercfg)
                 self.handle_item(b"extraconfigdata", self.handle_extraconfigdata)
                 self.handle_item(b"workerdata", self.handle_workerdata)
+                self.handle_item(b"newtaskhashes", self.handle_newtaskhashes)
                 self.handle_item(b"runtask", self.handle_runtask)
                 self.handle_item(b"finishnow", self.handle_finishnow)
                 self.handle_item(b"ping", self.handle_ping)
@@ -411,6 +418,10 @@ class BitbakeWorker(object):
         bb.msg.loggerDefaultDomains = self.workerdata["logdefaultdomain"]
         for mc in self.databuilder.mcdata:
             self.databuilder.mcdata[mc].setVar("PRSERV_HOST", self.workerdata["prhost"])
+            self.databuilder.mcdata[mc].setVar("BB_HASHSERVE", self.workerdata["hashservaddr"])
+
+    def handle_newtaskhashes(self, data):
+        self.workerdata["newhashes"] = pickle.loads(data)
 
     def handle_ping(self, _):
         workerlog_write("Handling ping\n")
@@ -425,10 +436,10 @@ class BitbakeWorker(object):
         sys.exit(0)
 
     def handle_runtask(self, data):
-        fn, task, taskname, quieterrors, appends, taskdepdata, dry_run_exec = pickle.loads(data)
+        fn, task, taskname, taskhash, unihash, quieterrors, appends, taskdepdata, dry_run_exec = pickle.loads(data)
         workerlog_write("Handling runtask %s %s %s\n" % (task, fn, taskname))
 
-        pid, pipein, pipeout = fork_off_task(self.cookercfg, self.data, self.databuilder, self.workerdata, fn, task, taskname, appends, taskdepdata, self.extraconfigdata, quieterrors, dry_run_exec)
+        pid, pipein, pipeout = fork_off_task(self.cookercfg, self.data, self.databuilder, self.workerdata, fn, task, taskname, taskhash, unihash, appends, taskdepdata, self.extraconfigdata, quieterrors, dry_run_exec)
 
         self.build_pids[pid] = task
         self.build_pipes[pid] = runQueueWorkerPipe(pipein, pipeout)

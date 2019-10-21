@@ -1,23 +1,10 @@
 #
-# ex:ts=4:sw=4:sts=4:et
-# -*- tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
-#
 # BitBake Toaster Implementation
 #
 # Copyright (C) 2013        Intel Corporation
 #
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 2 as
-# published by the Free Software Foundation.
+# SPDX-License-Identifier: GPL-2.0-only
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 from __future__ import unicode_literals
 
@@ -978,12 +965,12 @@ class TargetSDKFile(models.Model):
 class Target_Image_File(models.Model):
     # valid suffixes for image files produced by a build
     SUFFIXES = {
-        'btrfs', 'cpio', 'cpio.gz', 'cpio.lz4', 'cpio.lzma', 'cpio.xz',
-        'cramfs', 'elf', 'ext2', 'ext2.bz2', 'ext2.gz', 'ext2.lzma', 'ext4',
-        'ext4.gz', 'ext3', 'ext3.gz', 'hdddirect', 'hddimg', 'iso', 'jffs2',
-        'jffs2.sum', 'multiubi', 'qcow2', 'squashfs', 'squashfs-lzo',
+        'btrfs', 'container', 'cpio', 'cpio.gz', 'cpio.lz4', 'cpio.lzma',
+        'cpio.xz', 'cramfs', 'ext2', 'ext2.bz2', 'ext2.gz', 'ext2.lzma',
+        'ext3', 'ext3.gz', 'ext4', 'ext4.gz', 'f2fs', 'hddimg', 'iso', 'jffs2',
+        'jffs2.sum', 'multiubi', 'squashfs', 'squashfs-lz4', 'squashfs-lzo',
         'squashfs-xz', 'tar', 'tar.bz2', 'tar.gz', 'tar.lz4', 'tar.xz', 'ubi',
-        'ubifs', 'vdi', 'vmdk', 'wic', 'wic.bmap', 'wic.bz2', 'wic.gz', 'wic.lzma'
+        'ubifs', 'wic', 'wic.bz2', 'wic.gz', 'wic.lzma'
     }
 
     target = models.ForeignKey(Target)

@@ -1,5 +1,3 @@
-# ex:ts=4:sw=4:sts=4:et
-# -*- tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
 """
 BitBake 'Fetch' implementations
 
@@ -10,18 +8,7 @@ BitBake build tools.
 # Copyright (C) 2003, 2004  Chris Larson
 # Copyright (C) 2012  Intel Corporation
 #
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 2 as
-# published by the Free Software Foundation.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+# SPDX-License-Identifier: GPL-2.0-only
 #
 # Based on functions from the base bb module, Copyright 2003 Holger Schurig
 
@@ -256,7 +243,7 @@ class URI(object):
 
         # Identify if the URI is relative or not
         if urlp.scheme in self._relative_schemes and \
-           re.compile("^\w+:(?!//)").match(uri):
+           re.compile(r"^\w+:(?!//)").match(uri):
             self.relative = True
 
         if not self.relative:
@@ -524,7 +511,7 @@ def fetcher_parse_save():
 def fetcher_parse_done():
     _checksum_cache.save_merge()
 
-def fetcher_compare_revisions():
+def fetcher_compare_revisions(d):
     """
     Compare the revisions in the persistant cache with current values and
     return true/false on whether they've changed.
@@ -777,7 +764,8 @@ def get_srcrev(d, method_name='sortable_revision'):
     #
     format = d.getVar('SRCREV_FORMAT')
     if not format:
-        raise FetchError("The SRCREV_FORMAT variable must be set when multiple SCMs are used.")
+        raise FetchError("The SRCREV_FORMAT variable must be set when multiple SCMs are used.\n"\
+                         "The SCMs are:\n%s" % '\n'.join(scms))
 
     name_to_rev = {}
     seenautoinc = False
@@ -855,10 +843,18 @@ def runfetchcmd(cmd, d, quiet=False, cleanup=None, log=None, workdir=None):
         if val:
             cmd = 'export ' + var + '=\"%s\"; %s' % (val, cmd)
 
+    # Ensure that a _PYTHON_SYSCONFIGDATA_NAME value set by a recipe
+    # (for example via python3native.bbclass since warrior) is not set for
+    # host Python (otherwise tools like git-make-shallow will fail)
+    cmd = 'unset _PYTHON_SYSCONFIGDATA_NAME; ' + cmd
+
     # Disable pseudo as it may affect ssh, potentially causing it to hang.
     cmd = 'export PSEUDO_DISABLED=1; ' + cmd
 
-    logger.debug(1, "Running %s", cmd)
+    if workdir:
+        logger.debug(1, "Running '%s' in %s" % (cmd, workdir))
+    else:
+        logger.debug(1, "Running %s", cmd)
 
     success = False
     error_message = ""
@@ -894,7 +890,7 @@ def check_network_access(d, info, url):
     log remote network access, and error if BB_NO_NETWORK is set or the given
     URI is untrusted
     """
-    if d.getVar("BB_NO_NETWORK") == "1":
+    if bb.utils.to_boolean(d.getVar("BB_NO_NETWORK")):
         raise NetworkAccess(url, info)
     elif not trusted_network(d, url):
         raise UntrustedUrl(url, info)
@@ -966,7 +962,8 @@ def rename_bad_checksum(ud, suffix):
 
     new_localpath = "%s_bad-checksum_%s" % (ud.localpath, suffix)
     bb.warn("Renaming %s to %s" % (ud.localpath, new_localpath))
-    bb.utils.movefile(ud.localpath, new_localpath)
+    if not bb.utils.movefile(ud.localpath, new_localpath):
+        bb.warn("Renaming %s to %s failed, grep movefile in log.do_fetch to see why" % (ud.localpath, new_localpath))
 
 
 def try_mirror_url(fetch, origud, ud, ld, check = False):
@@ -1027,7 +1024,7 @@ def try_mirror_url(fetch, origud, ud, ld, check = False):
         raise
 
     except IOError as e:
-        if e.errno in [os.errno.ESTALE]:
+        if e.errno in [errno.ESTALE]:
             logger.warning("Stale Error Observed %s." % ud.url)
             return False
         raise
@@ -1094,7 +1091,7 @@ def trusted_network(d, url):
     BB_ALLOWED_NETWORKS is set globally or for a specific recipe.
     Note: modifies SRC_URI & mirrors.
     """
-    if d.getVar('BB_NO_NETWORK') == "1":
+    if bb.utils.to_boolean(d.getVar("BB_NO_NETWORK")):
         return True
 
     pkgname = d.expand(d.getVar('PN', False))
@@ -1403,7 +1400,7 @@ class FetchMethod(object):
         Fetch urls
         Assumes localpath was called first
         """
-        raise NoMethodError(url)
+        raise NoMethodError(urldata.url)
 
     def unpack(self, urldata, rootdir, data):
         iterate = False
@@ -1469,7 +1466,7 @@ class FetchMethod(object):
                 else:
                     cmd = 'rpm2cpio.sh %s | cpio -id' % (file)
             elif file.endswith('.deb') or file.endswith('.ipk'):
-                output = subprocess.check_output('ar -t %s' % file, preexec_fn=subprocess_setup, shell=True)
+                output = subprocess.check_output(['ar', '-t', file], preexec_fn=subprocess_setup)
                 datafile = None
                 if output:
                     for line in output.decode().splitlines():
@@ -1547,7 +1544,7 @@ class FetchMethod(object):
         Check the status of a URL
         Assumes localpath was called first
         """
-        logger.info("URL %s could not be checked for status since no method exists.", url)
+        logger.info("URL %s could not be checked for status since no method exists.", urldata.url)
         return True
 
     def latest_revision(self, ud, d, name):
@@ -1555,7 +1552,7 @@ class FetchMethod(object):
         Look in the cache for the latest revision, if not present ask the SCM.
         """
         if not hasattr(self, "_latest_revision"):
-            raise ParameterError("The fetcher for this URL does not support _latest_revision", url)
+            raise ParameterError("The fetcher for this URL does not support _latest_revision", ud.url)
 
         revs = bb.persist_data.persist('BB_URI_HEADREVS', d)
         key = self.generate_revision_key(ud, d, name)
@@ -1638,7 +1635,7 @@ class Fetch(object):
             urls = self.urls
 
         network = self.d.getVar("BB_NO_NETWORK")
-        premirroronly = (self.d.getVar("BB_FETCH_PREMIRRORONLY") == "1")
+        premirroronly = bb.utils.to_boolean(self.d.getVar("BB_FETCH_PREMIRRORONLY"))
 
         for u in urls:
             ud = self.ud[u]
@@ -1716,7 +1713,7 @@ class Fetch(object):
                 update_stamp(ud, self.d)
 
             except IOError as e:
-                if e.errno in [os.errno.ESTALE]:
+                if e.errno in [errno.ESTALE]:
                     logger.error("Stale Error Observed %s." % u)
                     raise ChecksumError("Stale Error Detected")
 
@@ -1786,7 +1783,7 @@ class Fetch(object):
 
         for url in urls:
             if url not in self.ud:
-                self.ud[url] = FetchData(url, d)
+                self.ud[url] = FetchData(url, self.d)
             ud = self.ud[url]
             ud.setup_localpath(self.d)
 

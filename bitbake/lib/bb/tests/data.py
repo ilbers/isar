@@ -1,23 +1,10 @@
-# ex:ts=4:sw=4:sts=4:et
-# -*- tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
 #
 # BitBake Tests for the Data Store (data.py/data_smart.py)
 #
 # Copyright (C) 2010 Chris Larson
 # Copyright (C) 2012 Richard Purdie
 #
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 2 as
-# published by the Free Software Foundation.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+# SPDX-License-Identifier: GPL-2.0-only
 #
 
 import unittest
@@ -394,6 +381,28 @@ class TestOverrides(unittest.TestCase):
         self.d.setVar("OVERRIDES", "foo:bar:some_val")
         self.assertEqual(self.d.getVar("TEST"), " testvalue5")
 
+    def test_append_and_override_1(self):
+        self.d.setVar("TEST_append", "testvalue2")
+        self.d.setVar("TEST_bar", "testvalue3")
+        self.assertEqual(self.d.getVar("TEST"), "testvalue3testvalue2")
+
+    def test_append_and_override_2(self):
+        self.d.setVar("TEST_append_bar", "testvalue2")
+        self.assertEqual(self.d.getVar("TEST"), "testvaluetestvalue2")
+
+    def test_append_and_override_3(self):
+        self.d.setVar("TEST_bar_append", "testvalue2")
+        self.assertEqual(self.d.getVar("TEST"), "testvalue2")
+
+    # Test an override with _<numeric> in it based on a real world OE issue
+    def test_underscore_override(self):
+        self.d.setVar("TARGET_ARCH", "x86_64")
+        self.d.setVar("PN", "test-${TARGET_ARCH}")
+        self.d.setVar("VERSION", "1")
+        self.d.setVar("VERSION_pn-test-${TARGET_ARCH}", "2")
+        self.d.setVar("OVERRIDES", "pn-${PN}")
+        bb.data.expandKeys(self.d)
+        self.assertEqual(self.d.getVar("VERSION"), "2")
 
 class TestKeyExpansion(unittest.TestCase):
     def setUp(self):
@@ -470,7 +479,7 @@ class TaskHash(unittest.TestCase):
             tasklist, gendeps, lookupcache = bb.data.generate_dependencies(d)
             taskdeps, basehash = bb.data.generate_dependency_hash(tasklist, gendeps, lookupcache, set(), "somefile")
             bb.warn(str(lookupcache))
-            return basehash["somefile." + taskname]
+            return basehash["somefile:" + taskname]
 
         d = bb.data.init()
         d.setVar("__BBTASKS", ["mytask"])
