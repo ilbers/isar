@@ -9,8 +9,8 @@ ROOTFS_PACKAGES ?= ""
 # available features are:
 # 'deploy-package-cache' - copy the package cache ${WORKDIR}/apt_cache
 # 'clean-package-cache' - delete package cache from rootfs
-# 'finalize-rootfs' - delete files needed to chroot into the rootfs
 # 'generate-manifest' - generate a package manifest of the rootfs into ${ROOTFS_MANIFEST_DEPLOY_DIR}
+# 'finalize-rootfs' - delete files needed to chroot into the rootfs
 ROOTFS_FEATURES ?= ""
 
 ROOTFS_APT_ARGS="install --yes -o Debug::pkgProblemResolver=yes"
@@ -185,6 +185,15 @@ rootfs_postprocess_clean_package_cache() {
     sudo rm -rf "${ROOTFSDIR}/var/lib/apt/lists/"*
 }
 
+ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'generate-manifest', 'rootfs_generate_manifest', '', d)}"
+rootfs_generate_manifest () {
+    mkdir -p ${ROOTFS_MANIFEST_DEPLOY_DIR}
+    sudo -E chroot --userspec=$(id -u):$(id -g) '${ROOTFSDIR}' \
+        dpkg-query -W -f \
+            '${source:Package}|${source:Version}|${binary:Package}|${Version}\n' > \
+        ${ROOTFS_MANIFEST_DEPLOY_DIR}/"${PF}".manifest
+}
+
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'finalize-rootfs', 'rootfs_postprocess_finalize', '', d)}"
 rootfs_postprocess_finalize() {
     sudo -s <<'EOSUDO'
@@ -221,15 +230,6 @@ rootfs_postprocess_finalize() {
 
         rm -f "${ROOTFSDIR}/etc/apt/sources-list"
 EOSUDO
-}
-
-ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'generate-manifest', 'rootfs_generate_manifest', '', d)}"
-rootfs_generate_manifest () {
-    mkdir -p ${ROOTFS_MANIFEST_DEPLOY_DIR}
-    sudo -E chroot --userspec=$(id -u):$(id -g) '${ROOTFSDIR}' \
-        dpkg-query -W -f \
-            '${source:Package}|${source:Version}|${binary:Package}|${Version}\n' > \
-        ${ROOTFS_MANIFEST_DEPLOY_DIR}/"${PF}".manifest
 }
 
 do_rootfs_postprocess[vardeps] = "${ROOTFS_POSTPROCESS_COMMAND}"
