@@ -149,6 +149,13 @@ default).
 Changes in v0.8
 ---------------
 
+### `apt://` SRC_URIs where added and briefly changed their version picking way
+
+Recipes that use SRC_URIs with `apt://` and choose a version with `=` had a
+partial matching feature for a short time between 0.7 and 0.8. In 0.8 the
+version has to be the exact upsteam match.
+It is probably best to not specify a version if you can.
+
 ### `isar-image.bbclass` class will be deprecated in future version of isar
 
 The content of `isar-image.bbclass` was moved to the `image.bbclass` file.

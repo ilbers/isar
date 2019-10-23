@@ -35,8 +35,9 @@ do_apt_fetch() {
 		-o Dir::Etc::SourceList="sources.list.d/isar-apt.list" \
 		-o Dir::Etc::SourceParts="-" \
 		-o APT::Get::List-Cleanup="0"
+
 	sudo -E chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} \
-		sh -c 'cd ${PP} && apt-get -y source ${SRC_APT}'
+		sh -c 'cd ${PP} && apt-get -y --only-source source ${SRC_APT}'
 	dpkg_undo_mounts
 }
 
