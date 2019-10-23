@@ -5,8 +5,10 @@
 
 inherit dpkg
 
-# this will fetch and unpack the sources from upstream debian
-SRC_URI = "apt://${PN}=${PV}"
+# This will fetch and unpack the sources from upstream Debian.
+# Note that you can also choose a version but have to pick the exact one
+# i.e. "apt://hello=2.10-2".
+SRC_URI = "apt://${PN}"
 
 MAINTAINER = "isar-users <isar-users@googlegroups.com>"
 CHANGELOG_V = "${PV}-99+isar"
