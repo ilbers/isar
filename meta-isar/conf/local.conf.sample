@@ -169,6 +169,8 @@ CONF_VERSION = "1"
 IMAGE_INSTALL = "hello-isar example-raw example-module-${KERNEL_NAME} enable-fsck isar-exclude-docs"
 ## "cache_base_repo" relies on the cache ...
 #IMAGE_INSTALL += "isar-disable-apt-cache"
+## uses apt:// SRC_URI, which does not work with the cache
+#IMAGE_INSTALL += "hello"
 
 #
 # Enable cross-compilation support
