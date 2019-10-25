@@ -32,5 +32,9 @@ do_cache_base_repo() {
     if [ -d ${BUILDCHROOT_TARGET_DIR}/var/cache/apt ]; then
         populate_base_apt ${BUILDCHROOT_TARGET_DIR}/var/cache/apt
     fi
+
+    if [ -d "${DEBSRCDIR}"/"${DISTRO}" ]; then
+        populate_base_apt "${DEBSRCDIR}"/"${DISTRO}"
+    fi
 }
 addtask cache_base_repo after do_rootfs do_install_imager_deps

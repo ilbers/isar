@@ -52,4 +52,11 @@ populate_base_apt() {
             "${BASE_DISTRO_CODENAME}" \
             "${package}"
     done
+
+    find $search_dir -name '*.dsc' | while read package; do
+        repo_add_srcpackage "${REPO_BASE_DIR}"/"${BASE_DISTRO}" \
+            "${REPO_BASE_DB_DIR}"/"${BASE_DISTRO}" \
+            "${BASE_DISTRO_CODENAME}" \
+            "${package}"
+    done
 }

@@ -35,6 +35,20 @@ EOF
     fi
 }
 
+repo_add_srcpackage() {
+    local dir="$1"
+    local dbdir="$2"
+    local codename="$3"
+    shift; shift; shift
+
+    if [ -n "${GNUPGHOME}" ]; then
+        export GNUPGHOME="${GNUPGHOME}"
+    fi
+    reprepro -b "${dir}" --dbdir "${dbdir}" -C main -P source \
+        includedsc "${codename}" \
+        "$@"
+}
+
 repo_add_packages() {
     local dir="$1"
     local dbdir="$2"
