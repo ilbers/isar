@@ -169,7 +169,6 @@ if [ -n "$REPRO_BUILD" ]; then
 fi
 
 sed -i -e 's/#IMAGE_INSTALL += "isar-disable-apt-cache"/IMAGE_INSTALL += "isar-disable-apt-cache"/g' conf/local.conf
-sed -i -e 's/#IMAGE_INSTALL += "hello"/IMAGE_INSTALL += "hello"/g' conf/local.conf
 
 echo 'IMAGE_INSTALL += "cowsay"' >> conf/local.conf
 
