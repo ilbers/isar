@@ -1,1 +1,2 @@
 deb [trusted=yes] file:///base-apt/{BASE_DISTRO} {BASE_DISTRO_CODENAME} main
+deb-src [trusted=yes] file:///base-apt/{BASE_DISTRO} {BASE_DISTRO_CODENAME} main
