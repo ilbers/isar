@@ -15,6 +15,7 @@ do_install_builddeps_append() {
     sudo -E chroot ${BUILDCHROOT_DIR} \
         apt-get install -y -o Debug::pkgProblemResolver=yes \
                         --no-install-recommends --download-only ${GBP_DEPENDS}
+    deb_dl_dir_export "${BUILDCHROOT_DIR}"
     sudo -E chroot ${BUILDCHROOT_DIR} \
         apt-get install -y -o Debug::pkgProblemResolver=yes \
                         --no-install-recommends ${GBP_DEPENDS}

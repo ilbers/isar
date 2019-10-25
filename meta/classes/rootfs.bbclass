@@ -1,5 +1,7 @@
 # This software is a part of ISAR.
-# Copyright (c) Siemens AG, 2019
+# Copyright (c) Siemens AG, 2020
+
+inherit deb-dl-dir
 
 ROOTFS_ARCH ?= "${DISTRO_ARCH}"
 ROOTFS_DISTRO ?= "${DISTRO}"
@@ -119,8 +121,14 @@ rootfs_install_pkgs_download() {
         /usr/bin/apt-get ${ROOTFS_APT_ARGS} --download-only ${ROOTFS_PACKAGES}
 }
 
-ROOTFS_INSTALL_COMMAND_BEFORE_CLEAN ??= ""
-ROOTFS_INSTALL_COMMAND += "${ROOTFS_INSTALL_COMMAND_BEFORE_CLEAN}"
+ROOTFS_INSTALL_COMMAND_BEFORE_EXPORT ??= ""
+ROOTFS_INSTALL_COMMAND += "${ROOTFS_INSTALL_COMMAND_BEFORE_EXPORT}"
+
+ROOTFS_INSTALL_COMMAND += "rootfs_export_package_cache"
+rootfs_export_package_cache[weight] = "5"
+rootfs_export_package_cache() {
+    deb_dl_dir_export ${ROOTFSDIR}
+}
 
 ROOTFS_INSTALL_COMMAND += "${@ 'rootfs_install_clean_files' if (d.getVar('ROOTFS_CLEAN_FILES') or '').strip() else ''}"
 rootfs_install_clean_files[weight] = "2"

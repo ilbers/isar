@@ -25,7 +25,7 @@ def get_nopurge(d):
                                           j.split()[0].split(".")[0],
                                           j.split()[0]))))
 
-ROOTFS_INSTALL_COMMAND_BEFORE_CLEAN += "image_install_localepurge_download"
+ROOTFS_INSTALL_COMMAND_BEFORE_EXPORT += "image_install_localepurge_download"
 image_install_localepurge_download[weight] = "40"
 image_install_localepurge_download() {
     sudo -E chroot '${ROOTFSDIR}' \

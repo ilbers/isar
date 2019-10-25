@@ -34,6 +34,7 @@ do_install_imager_deps() {
             --allow-unauthenticated --allow-downgrades --download-only install \
             ${IMAGER_INSTALL}'
 
+    deb_dl_dir_export ${BUILDCHROOT_DIR}
     sudo -E chroot ${BUILDCHROOT_DIR} sh -c ' \
         apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y \
             --allow-unauthenticated --allow-downgrades install \

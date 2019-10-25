@@ -8,6 +8,7 @@ inherit buildchroot
 inherit debianize
 inherit terminal
 inherit repository
+inherit deb-dl-dir
 
 DEPENDS ?= ""
 

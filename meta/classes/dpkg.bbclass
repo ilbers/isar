@@ -9,6 +9,7 @@ do_install_builddeps() {
     E="${@ isar_export_proxies(d)}"
     sudo -E chroot ${BUILDCHROOT_DIR} /isar/deps.sh \
         ${PP}/${PPS} ${DISTRO_ARCH} --download-only
+    deb_dl_dir_export "${BUILDCHROOT_DIR}"
     sudo -E chroot ${BUILDCHROOT_DIR} /isar/deps.sh \
         ${PP}/${PPS} ${DISTRO_ARCH}
     dpkg_undo_mounts
