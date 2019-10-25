@@ -31,6 +31,11 @@ do_install_imager_deps() {
             -o Dir::Etc::SourceParts="-" \
             -o APT::Get::List-Cleanup="0"
         apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y \
+            --allow-unauthenticated --allow-downgrades --download-only install \
+            ${IMAGER_INSTALL}'
+
+    sudo -E chroot ${BUILDCHROOT_DIR} sh -c ' \
+        apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y \
             --allow-unauthenticated --allow-downgrades install \
             ${IMAGER_INSTALL}'
 }

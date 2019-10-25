@@ -7,7 +7,10 @@ inherit dpkg-base
 do_install_builddeps() {
     dpkg_do_mounts
     E="${@ isar_export_proxies(d)}"
-    sudo -E chroot ${BUILDCHROOT_DIR} /isar/deps.sh ${PP}/${PPS} ${DISTRO_ARCH}
+    sudo -E chroot ${BUILDCHROOT_DIR} /isar/deps.sh \
+        ${PP}/${PPS} ${DISTRO_ARCH} --download-only
+    sudo -E chroot ${BUILDCHROOT_DIR} /isar/deps.sh \
+        ${PP}/${PPS} ${DISTRO_ARCH}
     dpkg_undo_mounts
 }
 

@@ -14,6 +14,9 @@ do_install_builddeps_append() {
     dpkg_do_mounts
     sudo -E chroot ${BUILDCHROOT_DIR} \
         apt-get install -y -o Debug::pkgProblemResolver=yes \
+                        --no-install-recommends --download-only ${GBP_DEPENDS}
+    sudo -E chroot ${BUILDCHROOT_DIR} \
+        apt-get install -y -o Debug::pkgProblemResolver=yes \
                         --no-install-recommends ${GBP_DEPENDS}
     dpkg_undo_mounts
 }
