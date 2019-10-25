@@ -7,6 +7,7 @@
 inherit buildchroot
 inherit debianize
 inherit terminal
+inherit repository
 
 DEPENDS ?= ""
 
@@ -142,31 +143,16 @@ repo_clean() {
     DEBS=$( find ${S}/.. -maxdepth 1 -name "*.deb" || [ ! -d ${S} ] )
     if [ -n "${DEBS}" ]; then
         for d in ${DEBS}; do
-            p=$( dpkg-deb --show --showformat '${Package}' ${d} )
-            a=$( dpkg-deb --show --showformat '${Architecture}' ${d} )
-            # removing "all" means no arch
-            aarg="-A ${a}"
-            [ "${a}" = "all" ] && aarg=""
-            reprepro -b ${REPO_ISAR_DIR}/${DISTRO} \
-                     --dbdir ${REPO_ISAR_DB_DIR}/${DISTRO} \
-                     -C main ${aarg} \
-                     remove ${DEBDISTRONAME} \
-                     ${p}
+            repo_del_package "${REPO_ISAR_DIR}"/"${DISTRO}" \
+                "${REPO_ISAR_DB_DIR}"/"${DISTRO}" "${DEBDISTRONAME}" "${d}"
         done
     fi
 }
 
-# Install package to Isar-apt
 do_deploy_deb() {
-    if [ -n "${GNUPGHOME}" ]; then
-        export GNUPGHOME="${GNUPGHOME}"
-    fi
     repo_clean
-    reprepro -b ${REPO_ISAR_DIR}/${DISTRO} \
-             --dbdir ${REPO_ISAR_DB_DIR}/${DISTRO} \
-             -C main \
-             includedeb ${DEBDISTRONAME} \
-             ${S}/../*.deb
+    repo_add_packages "${REPO_ISAR_DIR}"/"${DISTRO}" \
+        "${REPO_ISAR_DB_DIR}"/"${DISTRO}" "${DEBDISTRONAME}" ${S}/../*.deb
 }
 
 addtask deploy_deb after do_dpkg_build before do_build

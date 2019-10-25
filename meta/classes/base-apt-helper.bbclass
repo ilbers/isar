@@ -1,5 +1,10 @@
 # This software is a part of ISAR.
 # Copyright (C) 2018 ilbers GmbH
+# Copyright (C) 2020 Siemens AG
+#
+# SPDX-License-Identifier: MIT
+
+inherit repository
 
 compare_pkg_md5sums() {
    pkg1=$1
@@ -13,10 +18,6 @@ compare_pkg_md5sums() {
 
 populate_base_apt() {
     search_dir=$1
-
-    if [ -n "${GNUPGHOME}" ]; then
-        export GNUPGHOME="${GNUPGHOME}"
-    fi
 
     find $search_dir -name '*.deb' | while read package; do
         # NOTE: due to packages stored by reprepro are not modified, we can
@@ -40,18 +41,15 @@ populate_base_apt() {
             compare_pkg_md5sums "$package" "$base_apt_p" && continue
 
             # md5sum differs, so remove the package from base-apt
-            name=$(echo $base_name | cut -d '_' -f 1)
-            reprepro -b ${REPO_BASE_DIR}/${BASE_DISTRO} \
-                     --dbdir ${REPO_BASE_DB_DIR}/${BASE_DISTRO} \
-                     -C main -A ${DISTRO_ARCH} \
-                     remove ${BASE_DISTRO_CODENAME} \
-                     $name
+            repo_del_package "${REPO_BASE_DIR}"/"${BASE_DISTRO}" \
+                "${REPO_BASE_DB_DIR}"/"${BASE_DISTRO}" \
+                "${BASE_DISTRO_CODENAME}" \
+                "${base_apt_p}"
         fi
 
-        reprepro -b ${REPO_BASE_DIR}/${BASE_DISTRO} \
-                 --dbdir ${REPO_BASE_DB_DIR}/${BASE_DISTRO} \
-                 -C main \
-                 includedeb ${BASE_DISTRO_CODENAME} \
-                 $package
+        repo_add_packages "${REPO_BASE_DIR}"/"${BASE_DISTRO}" \
+            "${REPO_BASE_DB_DIR}"/"${BASE_DISTRO}" \
+            "${BASE_DISTRO_CODENAME}" \
+            "${package}"
     done
 }

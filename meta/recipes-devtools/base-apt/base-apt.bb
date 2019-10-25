@@ -1,45 +1,24 @@
 # This software is a part of ISAR.
 # Copyright (C) 2018 ilbers GmbH
+# Copyright (C) 2020 Siemens AG
+#
+# SPDX-License-Identifier: MIT
 
-SRC_URI = "file://distributions.in"
+inherit repository
 
 BASE_REPO_KEY ?= ""
 KEYFILES ?= ""
 
-CACHE_CONF_DIR = "${REPO_BASE_DIR}/${BASE_DISTRO}/conf"
-do_cache_config[dirs] = "${CACHE_CONF_DIR}"
 do_cache_config[stamp-extra-info] = "${DISTRO}"
 do_cache_config[lockfiles] = "${REPO_BASE_DIR}/isar.lock"
 
 # Generate reprepro config for current distro if it doesn't exist. Once it's
 # generated, this task should do nothing.
 repo_config() {
-    if [ -n "${GNUPGHOME}" ]; then
-        export GNUPGHOME="${GNUPGHOME}"
-    fi
-
-    if [ ! -e "${CACHE_CONF_DIR}/distributions" ]; then
-        sed -e "s#{CODENAME}#"${BASE_DISTRO_CODENAME}"#g" \
-            ${WORKDIR}/distributions.in > ${CACHE_CONF_DIR}/distributions
-        if [ -n "${KEYFILES}" ]; then
-            option=""
-            for key in ${KEYFILES}; do
-                keyid=$(gpg --keyid-format 0xlong --with-colons ${key} 2>/dev/null | grep "^pub:" | awk -F':' '{print $5;}')
-                option="${option}${keyid} "
-            done
-            # To generate Release.gpg
-            echo "SignWith: ${option}" >> ${CACHE_CONF_DIR}/distributions
-        fi
-    fi
-
-    path_cache="${REPO_BASE_DIR}/${BASE_DISTRO}"
-    path_databases="${REPO_BASE_DB_DIR}/${BASE_DISTRO}"
-
-    if [ ! -d "${path_databases}" ]; then
-        reprepro -b ${path_cache} \
-                 --dbdir ${path_databases} \
-                 export ${BASE_DISTRO_CODENAME}
-    fi
+    repo_create "${REPO_BASE_DIR}"/"${BASE_DISTRO}" \
+        "${REPO_BASE_DB_DIR}"/"${BASE_DISTRO}" \
+        "${BASE_DISTRO_CODENAME}" \
+        "${KEYFILES}"
 }
 
 python do_cache_config() {

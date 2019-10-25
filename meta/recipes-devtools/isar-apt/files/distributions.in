@@ -1,3 +1,0 @@
-Codename: {DISTRO_NAME}
-Architectures: i386 armhf arm64 amd64 mipsel riscv64 source
-Components: main
