@@ -65,13 +65,29 @@ do_apt_fetch() {
         -o Dir::Etc::SourceParts="-" \
         -o APT::Get::List-Cleanup="0"
 
-    sudo -E chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} \
-        sh -c 'cd ${PP} && apt-get -y --only-source source ${SRC_APT}'
+    for uri in "${SRC_APT}"; do
+        sudo -E chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} \
+            sh -c 'mkdir -p /downloads/deb-src/"$1"/"$2" && cd /downloads/deb-src/"$1"/"$2" && apt-get -y --download-only --only-source source "$2"' my_script "${DISTRO}" "${uri}"
+        sudo -E chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} \
+            sh -c 'cp /downloads/deb-src/"$1"/"$2"/* ${PP} && cd ${PP} && apt-get -y --only-source source "$2"' my_script "${DISTRO}" "${uri}"
+    done
+
     dpkg_undo_mounts
 }
 
 addtask apt_fetch after do_unpack before do_patch
 do_apt_fetch[lockfiles] += "${REPO_ISAR_DIR}/isar.lock"
+
+addtask cleanall_apt before do_cleanall
+do_cleanall_apt[nostamp] = "1"
+do_cleanall_apt() {
+    if [ -z "${@d.getVar("SRC_APT", True).strip()}" ]; then
+        exit
+    fi
+    for uri in "${SRC_APT}"; do
+        rm -rf "${DEBSRCDIR}"/"${DISTRO}"/"$uri"
+    done
+}
 
 def get_package_srcdir(d):
     s = os.path.abspath(d.getVar("S", True))
