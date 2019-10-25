@@ -12,8 +12,7 @@ SRC_URI = " \
     file://isar-apt.conf \
     file://isar-apt-fallback.conf \
     file://locale \
-    file://chroot-setup.sh \
-    file://base-apt-sources"
+    file://chroot-setup.sh"
 PV = "1.0"
 
 DEBOOTSTRAP ?= "qemu-debootstrap"
@@ -21,7 +20,6 @@ ROOTFSDIR = "${WORKDIR}/rootfs"
 APTPREFS = "${WORKDIR}/apt-preferences"
 APTSRCS = "${WORKDIR}/apt-sources"
 APTSRCS_INIT = "${WORKDIR}/apt-sources-init"
-BASEAPTSRCS = "${WORKDIR}/base-apt-sources"
 DISTRO_BOOTSTRAP_KEYFILES = ""
 THIRD_PARTY_APT_KEYFILES = ""
 DEPLOY_ISAR_BOOTSTRAP ?= ""
@@ -266,13 +264,15 @@ isar_bootstrap() {
                              "${ROOTFSDIR}/etc/apt/preferences.d/bootstrap"
             mkdir -p "${ROOTFSDIR}/etc/apt/sources.list.d"
             if [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" ]; then
-                sed -e "s#{BASE_DISTRO}#"${BASE_DISTRO}"#g" \
-                    -e "s#{BASE_DISTRO_CODENAME}#"${BASE_DISTRO_CODENAME}"#g" \
-	            -i ${BASEAPTSRCS}
+                line="file:///base-apt/${BASE_DISTRO} ${BASE_DISTRO_CODENAME} main"
+                if [ -z "${BASE_REPO_KEY}" ]; then
+                    line="[trusted=yes] ${line}"
+                fi
+                echo "deb ${line}" >  "${ROOTFSDIR}/etc/apt/sources.list.d/base-apt.list"
+                echo "deb-src ${line}" >>  "${ROOTFSDIR}/etc/apt/sources.list.d/base-apt.list"
+
                 mkdir -p ${ROOTFSDIR}/base-apt
                 mount --bind ${REPO_BASE_DIR} ${ROOTFSDIR}/base-apt
-                install -v -m644 "${BASEAPTSRCS}" \
-                                 "${ROOTFSDIR}/etc/apt/sources.list.d/base-apt.list"
             else
                 install -v -m644 "${APTSRCS}" \
                                  "${ROOTFSDIR}/etc/apt/sources.list.d/bootstrap.list"
