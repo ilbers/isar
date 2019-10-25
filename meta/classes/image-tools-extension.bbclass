@@ -25,6 +25,7 @@ do_install_imager_deps() {
     buildchroot_do_mounts
 
     E="${@ isar_export_proxies(d)}"
+    deb_dl_dir_import ${BUILDCHROOT_DIR}
     sudo -E chroot ${BUILDCHROOT_DIR} sh -c ' \
         apt-get update \
             -o Dir::Etc::SourceList="sources.list.d/isar-apt.list" \

@@ -113,6 +113,12 @@ rootfs_install_resolvconf() {
     fi
 }
 
+ROOTFS_INSTALL_COMMAND += "rootfs_import_package_cache"
+rootfs_import_package_cache[weight] = "5"
+rootfs_import_package_cache() {
+    deb_dl_dir_import ${ROOTFSDIR}
+}
+
 ROOTFS_INSTALL_COMMAND += "rootfs_install_pkgs_download"
 rootfs_install_pkgs_download[weight] = "600"
 rootfs_install_pkgs_download[isar-apt-lock] = "release-after"

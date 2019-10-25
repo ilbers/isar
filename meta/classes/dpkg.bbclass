@@ -7,6 +7,7 @@ inherit dpkg-base
 do_install_builddeps() {
     dpkg_do_mounts
     E="${@ isar_export_proxies(d)}"
+    deb_dl_dir_import "${BUILDCHROOT_DIR}"
     sudo -E chroot ${BUILDCHROOT_DIR} /isar/deps.sh \
         ${PP}/${PPS} ${DISTRO_ARCH} --download-only
     deb_dl_dir_export "${BUILDCHROOT_DIR}"

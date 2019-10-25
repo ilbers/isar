@@ -12,6 +12,7 @@ GBP_EXTRA_OPTIONS ?= "--git-pristine-tar"
 
 do_install_builddeps_append() {
     dpkg_do_mounts
+    deb_dl_dir_import "${BUILDCHROOT_DIR}"
     sudo -E chroot ${BUILDCHROOT_DIR} \
         apt-get install -y -o Debug::pkgProblemResolver=yes \
                         --no-install-recommends --download-only ${GBP_DEPENDS}
