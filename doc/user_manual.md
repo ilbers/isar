@@ -62,20 +62,25 @@ The supported host system is >= stretch.
 
 Install the following packages:
 ```
-binfmt-support
-debootstrap
-dosfstools
-dpkg-dev
-gettext-base
-git
-mtools
-parted
-python3
-python3-distutils             # host >= buster
-qemu                          # start_vm
-qemu-user-static
-reprepro
-sudo
+apt install \
+  binfmt-support \
+  debootstrap \
+  dosfstools \
+  dpkg-dev \
+  gettext-base \
+  git \
+  mtools \
+  parted \
+  python3 \
+  qemu \
+  qemu-user-static \
+  reprepro \
+  sudo
+```
+
+If your host is >= buster, also install the following package.
+```
+apt install python3-distutils
 ```
 
 Notes:
