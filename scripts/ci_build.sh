@@ -168,8 +168,6 @@ if [ -n "$REPRO_BUILD" ]; then
     sed -i -e 's/ISAR_USE_CACHED_BASE_REPO ?= "1"/#ISAR_USE_CACHED_BASE_REPO ?= "1"/g' conf/local.conf
 fi
 
-sed -i -e 's/#IMAGE_INSTALL += "isar-disable-apt-cache"/IMAGE_INSTALL += "isar-disable-apt-cache"/g' conf/local.conf
-
 echo 'IMAGE_INSTALL += "cowsay"' >> conf/local.conf
 
 # Start cross build for the defined set of configurations
