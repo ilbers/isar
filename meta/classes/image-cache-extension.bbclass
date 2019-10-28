@@ -21,14 +21,6 @@ do_cache_base_repo() {
                 "Try it without cross-build."
     fi
 
-    if [ -d ${BUILDCHROOT_HOST_DIR}/var/cache/apt ]; then
-        populate_base_apt ${BUILDCHROOT_HOST_DIR}/var/cache/apt
-    fi
-
-    if [ -d ${BUILDCHROOT_TARGET_DIR}/var/cache/apt ]; then
-        populate_base_apt ${BUILDCHROOT_TARGET_DIR}/var/cache/apt
-    fi
-
     if [ -d "${DEBDIR}"/"${DISTRO}" ]; then
         populate_base_apt "${DEBDIR}"/"${DISTRO}"
     fi
