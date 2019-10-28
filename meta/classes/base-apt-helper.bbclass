@@ -17,9 +17,7 @@ compare_pkg_md5sums() {
 }
 
 populate_base_apt() {
-    search_dir=$1
-
-    find $search_dir -name '*.deb' | while read package; do
+    find "${DEBDIR}"/"${DISTRO}" -name '*\.deb' | while read package; do
         # NOTE: due to packages stored by reprepro are not modified, we can
         # use search by filename to check if package is already in repo. In
         # addition, md5sums are compared to ensure that the package is the
@@ -53,7 +51,7 @@ populate_base_apt() {
             "${package}"
     done
 
-    find $search_dir -name '*.dsc' | while read package; do
+    find "${DEBSRCDIR}"/"${DISTRO}" -name '*\.dsc' | while read package; do
         repo_add_srcpackage "${REPO_BASE_DIR}"/"${BASE_DISTRO}" \
             "${REPO_BASE_DB_DIR}"/"${BASE_DISTRO}" \
             "${BASE_DISTRO_CODENAME}" \

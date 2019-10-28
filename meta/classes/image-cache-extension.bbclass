@@ -21,12 +21,6 @@ do_cache_base_repo() {
                 "Try it without cross-build."
     fi
 
-    if [ -d "${DEBDIR}"/"${DISTRO}" ]; then
-        populate_base_apt "${DEBDIR}"/"${DISTRO}"
-    fi
-
-    if [ -d "${DEBSRCDIR}"/"${DISTRO}" ]; then
-        populate_base_apt "${DEBSRCDIR}"/"${DISTRO}"
-    fi
+    populate_base_apt
 }
 addtask cache_base_repo after do_rootfs do_install_imager_deps
