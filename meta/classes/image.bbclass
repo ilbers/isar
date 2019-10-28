@@ -60,7 +60,7 @@ image_do_mounts() {
 }
 
 ROOTFSDIR = "${IMAGE_ROOTFS}"
-ROOTFS_FEATURES += "copy-package-cache clean-package-cache finalize-rootfs generate-manifest"
+ROOTFS_FEATURES += "clean-package-cache finalize-rootfs generate-manifest"
 ROOTFS_PACKAGES += "${IMAGE_PREINSTALL} ${IMAGE_INSTALL}"
 ROOTFS_MANIFEST_DEPLOY_DIR ?= "${DEPLOY_DIR_IMAGE}"
 

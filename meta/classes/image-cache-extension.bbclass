@@ -21,10 +21,6 @@ do_cache_base_repo() {
                 "Try it without cross-build."
     fi
 
-    if [ -d ${WORKDIR}/apt_cache ]; then
-        populate_base_apt ${WORKDIR}/apt_cache
-    fi
-
     if [ -d ${BUILDCHROOT_HOST_DIR}/var/cache/apt ]; then
         populate_base_apt ${BUILDCHROOT_HOST_DIR}/var/cache/apt
     fi

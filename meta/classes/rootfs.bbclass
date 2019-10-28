@@ -9,7 +9,6 @@ ROOTFS_PACKAGES ?= ""
 
 # Features of the rootfs creation:
 # available features are:
-# 'copy-package-cache' - copy the package cache ${WORKDIR}/apt_cache
 # 'clean-package-cache' - delete package cache from rootfs
 # 'generate-manifest' - generate a package manifest of the rootfs into ${ROOTFS_MANIFEST_DEPLOY_DIR}
 # 'finalize-rootfs' - delete files needed to chroot into the rootfs
@@ -185,15 +184,6 @@ python do_rootfs_install() {
     progress_reporter.finish()
 }
 addtask rootfs_install before do_rootfs_postprocess after do_unpack
-
-ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'copy-package-cache', 'rootfs_postprocess_copy_package_cache', '', d)}"
-rootfs_postprocess_copy_package_cache() {
-    mkdir -p '${WORKDIR}/apt_cache'
-    sudo find '${ROOTFSDIR}/var/cache/apt/archives' \
-        -maxdepth 1 -name '*.deb' -execdir /bin/mv -t '${WORKDIR}/apt_cache' '{}' '+'
-    me="$(id -u):$(id -g)"
-    sudo chown -R "$me" '${WORKDIR}/apt_cache'
-}
 
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'clean-package-cache', 'rootfs_postprocess_clean_package_cache', '', d)}"
 rootfs_postprocess_clean_package_cache() {
