@@ -33,6 +33,10 @@ do_cache_base_repo() {
         populate_base_apt ${BUILDCHROOT_TARGET_DIR}/var/cache/apt
     fi
 
+    if [ -d "${DEBDIR}"/"${DISTRO}" ]; then
+        populate_base_apt "${DEBDIR}"/"${DISTRO}"
+    fi
+
     if [ -d "${DEBSRCDIR}"/"${DISTRO}" ]; then
         populate_base_apt "${DEBSRCDIR}"/"${DISTRO}"
     fi
