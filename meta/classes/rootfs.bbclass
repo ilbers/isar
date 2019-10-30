@@ -223,6 +223,7 @@ rootfs_postprocess_finalize() {
         rm -f "${ROOTFSDIR}/etc/apt/apt.conf.d/55isar-fallback.conf"
 
         rm -f "${ROOTFSDIR}/etc/apt/sources.list.d/isar-apt.list"
+        rm -f "${ROOTFSDIR}/etc/apt/preferences.d/isar-apt"
         rm -f "${ROOTFSDIR}/etc/apt/sources.list.d/base-apt.list"
 
         mv "${ROOTFSDIR}/etc/apt/sources-list" \
