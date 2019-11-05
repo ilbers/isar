@@ -4,12 +4,12 @@
 # Copyright (C) 2015-2017 ilbers GmbH
 # Copyright (c) Siemens AG, 2018
 
-addhandler parse_completed
+addhandler build_started
 
-python parse_completed() {
+python build_started() {
     bb.utils.remove(d.getVar('TMPDIR') + "/work/*/*/*/temp/once.*")
 }
-parse_completed[eventmask] = "bb.event.ParseCompleted"
+build_started[eventmask] = "bb.event.BuildStarted"
 
 def task_once_stamp(d):
     return "{temp}/once.{task}".format(temp=d.getVar('T'),
