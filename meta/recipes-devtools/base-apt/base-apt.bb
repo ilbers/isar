@@ -14,6 +14,10 @@ do_cache_config[lockfiles] = "${REPO_BASE_DIR}/isar.lock"
 # Generate reprepro config for current distro if it doesn't exist. Once it's
 # generated, this task should do nothing.
 repo_config() {
+    if [ -n "${GNUPGHOME}" ]; then
+        export GNUPGHOME="${GNUPGHOME}"
+    fi
+
     if [ ! -e "${CACHE_CONF_DIR}/distributions" ]; then
         sed -e "s#{CODENAME}#"${BASE_DISTRO_CODENAME}"#g" \
             ${WORKDIR}/distributions.in > ${CACHE_CONF_DIR}/distributions
@@ -32,9 +36,6 @@ repo_config() {
     path_databases="${REPO_BASE_DB_DIR}/${BASE_DISTRO}"
 
     if [ ! -d "${path_databases}" ]; then
-        if [ -n "${GNUPGHOME}" ]; then
-            export GNUPGHOME="${GNUPGHOME}"
-        fi
         reprepro -b ${path_cache} \
                  --dbdir ${path_databases} \
                  export ${BASE_DISTRO_CODENAME}
