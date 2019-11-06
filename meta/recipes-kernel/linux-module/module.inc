@@ -9,6 +9,8 @@ FILESEXTRAPATHS_prepend := "${FILE_DIRNAME}/files:"
 
 DESCRIPTION ?= "Custom kernel module ${PN}"
 
+KERNEL_NAME ?= ""
+
 PN .= "-${KERNEL_NAME}"
 
 DEPENDS += "linux-headers-${KERNEL_NAME}"
