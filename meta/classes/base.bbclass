@@ -19,7 +19,7 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 
 THISDIR = "${@os.path.dirname(d.getVar('FILE', True))}"
-FILESPATH = "${@base_set_filespath(["${FILE_DIRNAME}/${PF}","${FILE_DIRNAME}/${P}:${FILE_DIRNAME}/${PN}", "${FILE_DIRNAME}/files","${FILE_DIRNAME}"], d)}"
+FILESPATH = "${@base_set_filespath(["${FILE_DIRNAME}/${PF}", "${FILE_DIRNAME}/${P}", "${FILE_DIRNAME}/${PN}", "${FILE_DIRNAME}/files", "${FILE_DIRNAME}"], d)}"
 
 def get_deb_host_arch():
     import subprocess
