@@ -25,20 +25,20 @@ addtask patch after do_adjust_git before do_dpkg_build
 SRC_APT ?= ""
 
 do_apt_fetch() {
-	if [ -z "${@d.getVar("SRC_APT", True).strip()}" ]; then
-		exit
-	fi
-	rm -rf ${S}
-	dpkg_do_mounts
-	E="${@ bb.utils.export_proxies(d)}"
-	sudo -E chroot ${BUILDCHROOT_DIR} /usr/bin/apt-get update \
-		-o Dir::Etc::SourceList="sources.list.d/isar-apt.list" \
-		-o Dir::Etc::SourceParts="-" \
-		-o APT::Get::List-Cleanup="0"
+    if [ -z "${@d.getVar("SRC_APT", True).strip()}" ]; then
+        exit
+    fi
+    rm -rf ${S}
+    dpkg_do_mounts
+    E="${@ bb.utils.export_proxies(d)}"
+    sudo -E chroot ${BUILDCHROOT_DIR} /usr/bin/apt-get update \
+        -o Dir::Etc::SourceList="sources.list.d/isar-apt.list" \
+        -o Dir::Etc::SourceParts="-" \
+        -o APT::Get::List-Cleanup="0"
 
-	sudo -E chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} \
-		sh -c 'cd ${PP} && apt-get -y --only-source source ${SRC_APT}'
-	dpkg_undo_mounts
+    sudo -E chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} \
+        sh -c 'cd ${PP} && apt-get -y --only-source source ${SRC_APT}'
+    dpkg_undo_mounts
 }
 
 addtask apt_fetch after do_unpack before do_patch
