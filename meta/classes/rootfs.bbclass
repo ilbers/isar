@@ -105,7 +105,10 @@ rootfs_install_pkgs_update() {
 ROOTFS_INSTALL_COMMAND += "rootfs_install_resolvconf"
 rootfs_install_resolvconf[weight] = "1"
 rootfs_install_resolvconf() {
-    sudo cp -rL /etc/resolv.conf '${ROOTFSDIR}/etc'
+    if [ "${@repr(bb.utils.to_boolean(d.getVar('BB_NO_NETWORK')))}" != "True" ]
+    then
+        sudo cp -rL /etc/resolv.conf '${ROOTFSDIR}/etc'
+    fi
 }
 
 ROOTFS_INSTALL_COMMAND += "rootfs_install_pkgs_download"

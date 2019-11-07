@@ -48,8 +48,14 @@ buildchroot_do_mounts() {
                 mount --bind '${REPO_BASE_DIR}' '${BUILDCHROOT_DIR}/base-apt'
         fi
 
-        # Refresh /etc/resolv.conf at this chance
-        cp -L /etc/resolv.conf '${BUILDCHROOT_DIR}/etc'
+        # Refresh or remove /etc/resolv.conf at this chance
+        if [ "${@repr(bb.utils.to_boolean(d.getVar('BB_NO_NETWORK')))}" = 'True' ]
+        then
+            rm -rf '${BUILDCHROOT_DIR}/etc/resolv.conf'
+        else
+            cp -L /etc/resolv.conf '${BUILDCHROOT_DIR}/etc'
+        fi
+
         ) 9>'${MOUNT_LOCKFILE}'
 EOSUDO
 }
