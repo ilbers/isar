@@ -94,7 +94,7 @@ EOSUDO
 
 ROOTFS_INSTALL_COMMAND += "rootfs_install_pkgs_update"
 rootfs_install_pkgs_update[weight] = "5"
-rootfs_install_pkgs_update[isar-lock] = "acquire-before"
+rootfs_install_pkgs_update[isar-apt-lock] = "acquire-before"
 rootfs_install_pkgs_update() {
     sudo -E chroot '${ROOTFSDIR}' /usr/bin/apt-get update \
         -o Dir::Etc::SourceList="sources.list.d/isar-apt.list" \
@@ -110,7 +110,7 @@ rootfs_install_resolvconf() {
 
 ROOTFS_INSTALL_COMMAND += "rootfs_install_pkgs_download"
 rootfs_install_pkgs_download[weight] = "600"
-rootfs_install_pkgs_download[isar-lock] = "release-after"
+rootfs_install_pkgs_download[isar-apt-lock] = "release-after"
 rootfs_install_pkgs_download() {
     sudo -E chroot '${ROOTFSDIR}' \
         /usr/bin/apt-get ${ROOTFS_APT_ARGS} --download-only ${ROOTFS_PACKAGES}
@@ -157,13 +157,13 @@ python do_rootfs_install() {
     for cmd in cmds:
         progress_reporter.next_stage()
 
-        if (d.getVarFlag(cmd, 'isar-lock') or "") == "acquire-before":
+        if (d.getVarFlag(cmd, 'isar-apt-lock') or "") == "acquire-before":
             lock = bb.utils.lockfile(d.getVar("REPO_ISAR_DIR") + "/isar.lock",
                                      shared=True)
 
         bb.build.exec_func(cmd, d)
 
-        if (d.getVarFlag(cmd, 'isar-lock') or "") == "release-after":
+        if (d.getVarFlag(cmd, 'isar-apt-lock') or "") == "release-after":
             bb.utils.unlockfile(lock)
     progress_reporter.finish()
 }
