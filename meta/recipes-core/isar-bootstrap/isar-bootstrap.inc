@@ -231,14 +231,10 @@ isar_bootstrap() {
         shift
     done
     debootstrap_args="--verbose --variant=minbase --include=${DISTRO_BOOTSTRAP_BASE_PACKAGES}"
-    if [ ! "x${DISTRO_BOOTSTRAP_KEYS}" = "x" ] || \
-       [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" ]; then
+    if [ -f "${DISTRO_BOOTSTRAP_KEYRING}" ]; then
         debootstrap_args="$debootstrap_args --keyring=${DISTRO_BOOTSTRAP_KEYRING}"
-    fi
-    if [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" ]; then
-        if [ -z "${BASE_REPO_KEY}" ] ; then
-            debootstrap_args="$debootstrap_args --no-check-gpg"
-        fi
+    else
+        debootstrap_args="$debootstrap_args --no-check-gpg"
     fi
     E="${@ isar_export_proxies(d)}"
     export IS_HOST debootstrap_args E
