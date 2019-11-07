@@ -12,7 +12,7 @@ GBP_EXTRA_OPTIONS ?= "--git-pristine-tar"
 
 do_install_builddeps_append() {
     dpkg_do_mounts
-    E="${@ bb.utils.export_proxies(d)}"
+    E="${@ isar_export_proxies(d)}"
     sudo -E chroot ${BUILDCHROOT_DIR} \
         apt-get install -y -o Debug::pkgProblemResolver=yes \
                         --no-install-recommends ${GBP_DEPENDS}

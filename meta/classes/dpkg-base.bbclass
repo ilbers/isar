@@ -30,7 +30,7 @@ do_apt_fetch() {
     fi
     rm -rf ${S}
     dpkg_do_mounts
-    E="${@ bb.utils.export_proxies(d)}"
+    E="${@ isar_export_proxies(d)}"
     sudo -E chroot ${BUILDCHROOT_DIR} /usr/bin/apt-get update \
         -o Dir::Etc::SourceList="sources.list.d/isar-apt.list" \
         -o Dir::Etc::SourceParts="-" \
@@ -154,7 +154,7 @@ python do_devshell() {
 
     bb.build.exec_func('dpkg_do_mounts', d)
 
-    bb.utils.export_proxies(d)
+    isar_export_proxies(d)
 
     buildchroot = d.getVar('BUILDCHROOT_DIR')
     pp_pps = os.path.join(d.getVar('PP'), d.getVar('PPS'))

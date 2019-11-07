@@ -6,7 +6,7 @@ inherit dpkg-base
 # Install build dependencies for package
 do_install_builddeps() {
     dpkg_do_mounts
-    E="${@ bb.utils.export_proxies(d)}"
+    E="${@ isar_export_proxies(d)}"
     sudo -E chroot ${BUILDCHROOT_DIR} /isar/deps.sh ${PP}/${PPS} ${DISTRO_ARCH}
     dpkg_undo_mounts
 }
@@ -19,7 +19,7 @@ addtask devshell after do_install_builddeps
 
 # Build package from sources using build script
 dpkg_runbuild() {
-    E="${@ bb.utils.export_proxies(d)}"
+    E="${@ isar_export_proxies(d)}"
     sudo -E chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} \
          /isar/build.sh ${PP}/${PPS} ${DISTRO_ARCH}
 }

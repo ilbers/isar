@@ -40,7 +40,7 @@ KERNEL_LIBC_DEV_DEPLOY ?= "0"
 
 do_install_builddeps() {
 	dpkg_do_mounts
-	E="${@ bb.utils.export_proxies(d)}"
+	E="${@ isar_export_proxies(d)}"
 	sudo -E chroot ${BUILDCHROOT_DIR} \
 		apt-get update \
 			-o Dir::Etc::SourceList="sources.list.d/isar-apt.list" \
@@ -65,7 +65,7 @@ dpkg_runbuild() {
 		cp ${WORKDIR}/${KERNEL_DEFCONFIG} ${S}/.config
 	fi
 
-	E="${@ bb.utils.export_proxies(d)}"
+	E="${@ isar_export_proxies(d)}"
 
 	export PV=${PV}
 	export KERNEL_NAME=${KERNEL_NAME_PROVIDED}

@@ -240,7 +240,7 @@ isar_bootstrap() {
             debootstrap_args="$debootstrap_args --no-check-gpg"
         fi
     fi
-    E="${@bb.utils.export_proxies(d)}"
+    E="${@ isar_export_proxies(d)}"
     export IS_HOST debootstrap_args E
     sudo -E -s <<'EOSUDO'
         set -e

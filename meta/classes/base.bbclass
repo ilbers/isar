@@ -125,6 +125,19 @@ python() {
                 )
 }
 
+def isar_export_proxies(d):
+    deadend_proxy = 'http://this.should.fail:4242'
+    variables = ['http_proxy', 'HTTP_PROXY', 'https_proxy', 'HTTPS_PROXY',
+                    'ftp_proxy', 'FTP_PROXY' ]
+
+    if d.getVar('BB_NO_NETWORK') == "1":
+        for v in variables:
+            d.setVar(v, deadend_proxy)
+        for v in [ 'no_proxy', 'NO_PROXY' ]:
+            d.setVar(v, '')
+
+    return bb.utils.export_proxies(d)
+
 # filter out all "apt://" URIs out of SRC_URI and stick them into SRC_APT
 python() {
     src_uri = (d.getVar('SRC_URI', True) or "").split()

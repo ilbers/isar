@@ -18,7 +18,7 @@ ROOTFS_APT_ARGS="install --yes -o Debug::pkgProblemResolver=yes"
 ROOTFS_CLEAN_FILES="/etc/hostname /etc/resolv.conf"
 
 # Useful environment variables:
-export E = "${@ bb.utils.export_proxies(d)}"
+export E = "${@ isar_export_proxies(d)}"
 export DEBIAN_FRONTEND = "noninteractive"
 # To avoid Perl locale warnings:
 export LANG = "C"
