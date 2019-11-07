@@ -7,7 +7,7 @@ ROOTFS_PACKAGES ?= ""
 
 # Features of the rootfs creation:
 # available features are:
-# 'deploy-package-cache' - copy the package cache ${WORKDIR}/apt_cache
+# 'copy-package-cache' - copy the package cache ${WORKDIR}/apt_cache
 # 'clean-package-cache' - delete package cache from rootfs
 # 'generate-manifest' - generate a package manifest of the rootfs into ${ROOTFS_MANIFEST_DEPLOY_DIR}
 # 'finalize-rootfs' - delete files needed to chroot into the rootfs
