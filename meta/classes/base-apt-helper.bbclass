@@ -27,17 +27,17 @@ populate_base_apt() {
 
         # Check if this package is taken from Isar-apt, if so - ingore it.
         base_name=${package##*/}
-        isar_package=$(find ${REPO_ISAR_DIR}/${DISTRO} -name $base_name)
-        if [ -n "$isar_package" ]; then
+        isar_apt_p=$(find ${REPO_ISAR_DIR}/${DISTRO} -name $base_name)
+        if [ -n "$isar_apt_p" ]; then
             # Check if MD5 sums are identical. This helps to avoid the case
             # when packages is overridden from another repo.
-            compare_pkg_md5sums "$package" "$isar_package" && continue
+            compare_pkg_md5sums "$package" "$isar_apt_p" && continue
         fi
 
         # Check if this package is already in base-apt
-        isar_package=$(find ${REPO_BASE_DIR}/${BASE_DISTRO} -name $base_name)
-        if [ -n "$isar_package" ]; then
-            compare_pkg_md5sums "$package" "$isar_package" && continue
+        base_apt_p=$(find ${REPO_BASE_DIR}/${BASE_DISTRO} -name $base_name)
+        if [ -n "$base_apt_p" ]; then
+            compare_pkg_md5sums "$package" "$base_apt_p" && continue
 
             # md5sum differs, so remove the package from base-apt
             name=$(echo $base_name | cut -d '_' -f 1)
