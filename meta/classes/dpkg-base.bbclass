@@ -152,7 +152,7 @@ python do_devshell() {
     oe_lib_path = os.path.join(d.getVar('LAYERDIR_core'), 'lib')
     sys.path.insert(0, oe_lib_path)
 
-    bb.build.exec_func('dpkg_do_mounts', d);
+    bb.build.exec_func('dpkg_do_mounts', d)
 
     bb.utils.export_proxies(d)
 
@@ -161,7 +161,7 @@ python do_devshell() {
     termcmd = "sudo -E chroot {0} sh -c 'cd {1}; $SHELL -i'"
     oe_terminal(termcmd.format(buildchroot, pp_pps), "Isar devshell", d)
 
-    bb.build.exec_func('dpkg_undo_mounts', d);
+    bb.build.exec_func('dpkg_undo_mounts', d)
 }
 
 addtask devshell after do_prepare_build
