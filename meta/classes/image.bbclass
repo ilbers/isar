@@ -128,12 +128,12 @@ EOF
 do_copy_boot_files[dirs] = "${DEPLOY_DIR_IMAGE}"
 do_copy_boot_files() {
     kernel="$(realpath -q '${IMAGE_ROOTFS}/${KERNEL_FILE}')"
-    if [ -n "$kernel" ]; then
+    if [ -f "$kernel" ]; then
         cp -f "$kernel" '${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGE}'
     fi
 
     initrd="$(realpath -q '${IMAGE_ROOTFS}/initrd.img')"
-    if [ -n "$initrd" ]; then
+    if [ -f "$initrd" ]; then
         cp -f "$initrd" '${DEPLOY_DIR_IMAGE}/${INITRD_IMAGE}'
     fi
 
