@@ -55,7 +55,7 @@ SRC_APT ?= ""
 
 do_apt_fetch() {
     if [ -z "${@d.getVar("SRC_APT", True).strip()}" ]; then
-        exit
+        return 0
     fi
     rm -rf ${S}
     dpkg_do_mounts
@@ -82,7 +82,7 @@ addtask cleanall_apt before do_cleanall
 do_cleanall_apt[nostamp] = "1"
 do_cleanall_apt() {
     if [ -z "${@d.getVar("SRC_APT", True).strip()}" ]; then
-        exit
+        return 0
     fi
     for uri in "${SRC_APT}"; do
         rm -rf "${DEBSRCDIR}"/"${DISTRO}"/"$uri"
