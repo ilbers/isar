@@ -50,12 +50,13 @@ CROSS_TARGETS_SET="\
                   mc:de0-nano-soc-stretch:isar-image-base \
                   mc:rpi-stretch:isar-image-base"
 
-REPRO_TARGETS_SET="\
+REPRO_TARGETS_SET_SIGNED="\
             mc:qemuarm-stretch:isar-image-base \
-            mc:qemuarm64-stretch:isar-image-base \
+            mc:qemuarm64-stretch:isar-image-base"
+
+REPRO_TARGETS_SET="\
             mc:qemuamd64-stretch:isar-image-base \
             mc:qemuarm-buster:isar-image-base"
-
 
 show_help() {
     echo "This script builds the default Isar images."
@@ -70,7 +71,7 @@ show_help() {
     echo "    -d, --debug              enable debug bitbake output."
     echo "    -f, --fast               cross build reduced set of configurations."
     echo "    -q, --quiet              suppress verbose bitbake output."
-    echo "    -r, --repro [-s, --sign] enable use of cached base repository with optional signing."
+    echo "    -r, --repro              enable use of cached base repository."
     echo "    --help                   display this message and exit."
     echo
     echo "Exit status:"
@@ -109,8 +110,10 @@ do
         ;;
     -r|--repro)
         REPRO_BUILD="1"
+        # This switch is deprecated, just here to not cause failing CI on
+        # legacy configs
         case "$2" in
-        -s|--sign) SIGN_REPO='1'; shift ;;
+        -s|--sign) shift ;;
         esac
         ;;
     *)
@@ -133,24 +136,34 @@ if [ -n "$CROSS_BUILD" ]; then
 fi
 
 if [ -n "$REPRO_BUILD" ]; then
-    if [ -n "$SIGN_REPO" ]; then
-        ISAR_TESTSUITE_GPG_PUB_KEY_FILE="$ISARROOT/testsuite/base-apt/test_pub.key"
-        ISAR_TESTSUITE_GPG_PRIV_KEY_FILE="$ISARROOT/testsuite/base-apt/test_priv.key"
-        export GNUPGHOME=$(mktemp -d)
-        gpg --import $ISAR_TESTSUITE_GPG_PUB_KEY_FILE $ISAR_TESTSUITE_GPG_PRIV_KEY_FILE
-        echo BASE_REPO_KEY=\"file://$ISAR_TESTSUITE_GPG_PUB_KEY_FILE\" >> conf/local.conf
-    fi
-    # Enable use of cached base repository
+    ISAR_TESTSUITE_GPG_PUB_KEY_FILE="$ISARROOT/testsuite/base-apt/test_pub.key"
+    ISAR_TESTSUITE_GPG_PRIV_KEY_FILE="$ISARROOT/testsuite/base-apt/test_priv.key"
+    export GNUPGHOME=$(mktemp -d)
+    gpg --import $ISAR_TESTSUITE_GPG_PUB_KEY_FILE $ISAR_TESTSUITE_GPG_PRIV_KEY_FILE
+
+    # Enable use of signed cached base repository
+    echo BASE_REPO_KEY=\"file://$ISAR_TESTSUITE_GPG_PUB_KEY_FILE\" >> conf/local.conf
+    bitbake $BB_ARGS -c cache_base_repo $REPRO_TARGETS_SET_SIGNED
+    while [ -e bitbake.sock ]; do sleep 1; done
+    sudo rm -rf tmp
+    sed -i -e 's/#ISAR_USE_CACHED_BASE_REPO ?= "1"/ISAR_USE_CACHED_BASE_REPO ?= "1"/g' conf/local.conf
+    bitbake $BB_ARGS $REPRO_TARGETS_SET_SIGNED
+    while [ -e bitbake.sock ]; do sleep 1; done
+    # Cleanup and disable use of signed cached base repository
+    sudo rm -rf tmp
+    sed -i -e 's/ISAR_USE_CACHED_BASE_REPO ?= "1"/#ISAR_USE_CACHED_BASE_REPO ?= "1"/g' conf/local.conf
+    sed -i -e 's/^BASE_REPO_KEY/#BASE_REPO_KEY/g' conf/local.conf
+
+    # Enable use of unsigned cached base repository
     bitbake $BB_ARGS -c cache_base_repo $REPRO_TARGETS_SET
     while [ -e bitbake.sock ]; do sleep 1; done
     sudo rm -rf tmp
     sed -i -e 's/#ISAR_USE_CACHED_BASE_REPO ?= "1"/ISAR_USE_CACHED_BASE_REPO ?= "1"/g' conf/local.conf
     bitbake $BB_ARGS $REPRO_TARGETS_SET
     while [ -e bitbake.sock ]; do sleep 1; done
-    # Cleanup and disable use of cached base repository
+    # Cleanup and disable use of unsigned cached base repository
     sudo rm -rf tmp
     sed -i -e 's/ISAR_USE_CACHED_BASE_REPO ?= "1"/#ISAR_USE_CACHED_BASE_REPO ?= "1"/g' conf/local.conf
-    sed -i -e 's/^BASE_REPO_KEY/#BASE_REPO_KEY/g' conf/local.conf
 fi
 
 sed -i -e 's/#IMAGE_INSTALL += "isar-disable-apt-cache"/IMAGE_INSTALL += "isar-disable-apt-cache"/g' conf/local.conf

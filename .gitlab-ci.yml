@@ -32,7 +32,7 @@ full-ci:
     - PREVIOUS_SHA="$(cat .CI_COMMIT_SHA || true)"
     - if [ "$CI_COMMIT_SHA" != "$PREVIOUS_SHA" ]; then
           echo "$CI_COMMIT_SHA" > .CI_COMMIT_SHA;
-          scripts/ci_build.sh -q -c -r -s;
+          scripts/ci_build.sh -q -c -r;
       fi
   cache:
     key: "$CI_COMMIT_REF_SLUG"
