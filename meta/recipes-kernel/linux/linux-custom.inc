@@ -72,6 +72,7 @@ dpkg_runbuild() {
 
 	export KBUILD_DEPENDS="${KBUILD_DEPENDS}"
 	export KERNEL_DEBIAN_DEPENDS="${KERNEL_DEBIAN_DEPENDS}"
+	export KERNEL_FILE="${KERNEL_FILE}"
 	export KERNEL_HEADERS_DEBIAN_DEPENDS="${KERNEL_HEADERS_DEBIAN_DEPENDS}"
 
 	sudo -E chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} ${PP}/build-kernel.sh ${PP}/${PPS} ${DISTRO_ARCH}

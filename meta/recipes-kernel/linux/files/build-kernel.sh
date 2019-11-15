@@ -90,7 +90,7 @@ if [ -f /lib/modules/${PV}/.fresh-install ]; then\\
 else\\
 	change=upgrade\\
 fi\\
-linux-update-symlinks \$change ${PV} /boot/vmlinuz-${PV}\\
+linux-update-symlinks \$change ${PV} /boot/${KERNEL_FILE}-${PV}\\
 rm -f /lib/modules/${PV}/.fresh-install"
 
 # Add Debian-like link removal to postrm
@@ -100,14 +100,14 @@ sed -i "${REPACK_LINUX_IMAGE_DIR}/DEBIAN/postrm" \
 rm -f /lib/modules/${PV}/.fresh-install\\
 \\
 if [ \"\$1\" != upgrade ] && command -v linux-update-symlinks >/dev/null; then\\
-	linux-update-symlinks remove ${PV}  /boot/vmlinuz-${PV}\\
+	linux-update-symlinks remove ${PV}  /boot/${KERNEL_FILE}-${PV}\\
 fi"
 
 # Make sure arm64 kernels are decompressed
 if [ "$target_arch" = "arm64" ]; then
-	vmlinuz="${REPACK_LINUX_IMAGE_DIR}/boot/vmlinuz-${PV}"
-	mv "$vmlinuz" "$vmlinuz.gz"
-	gunzip "$vmlinuz.gz"
+	kernel_file="${REPACK_LINUX_IMAGE_DIR}/boot/${KERNEL_FILE}-${PV}"
+	mv "${kernel_file}" "${kernel_file}.gz"
+	gunzip "${kernel_file}.gz"
 fi
 
 dpkg-gencontrol -crepack/debian/control \

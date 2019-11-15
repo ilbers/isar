@@ -16,7 +16,6 @@ IMAGE_INSTALL += "${@ ("linux-image-" + d.getVar("KERNEL_NAME", True)) if d.getV
 IMAGE_FULLNAME = "${PN}-${DISTRO}-${MACHINE}"
 
 # These variables are used by wic and start_vm
-KERNEL_FILE  ?= "vmlinuz"
 KERNEL_IMAGE ?= "${IMAGE_FULLNAME}-${KERNEL_FILE}"
 INITRD_IMAGE ?= "${IMAGE_FULLNAME}-initrd.img"
 
