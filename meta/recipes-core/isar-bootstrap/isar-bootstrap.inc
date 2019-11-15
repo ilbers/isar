@@ -242,7 +242,7 @@ isar_bootstrap() {
     sudo -E -s <<'EOSUDO'
         set -e
         if [ ! -e "${DEPLOY_ISAR_BOOTSTRAP}" ]; then
-            rm -rf "${ROOTFSDIR}"
+            rm -rf --one-file-system "${ROOTFSDIR}"
 
             if [ ${IS_HOST} ]; then
                 ${DEBOOTSTRAP} $debootstrap_args \
