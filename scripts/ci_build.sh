@@ -4,7 +4,6 @@
 # Alexander Smirnov <asmirnov@ilbers.de>
 # Copyright (c) 2016-2018 ilbers GmbH
 
-set -x
 set -e
 
 ES_BUG=3
@@ -124,6 +123,9 @@ do
 
     shift
 done
+
+# the real stuff starts here, trace commands from now on
+set -x
 
 # Setup build folder for the current build
 if [ ! -d "$BUILD_DIR" ]; then
