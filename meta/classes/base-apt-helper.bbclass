@@ -21,11 +21,11 @@ populate_base_apt() {
     find $search_dir -name '*.deb' | while read package; do
         # NOTE: due to packages stored by reprepro are not modified, we can
         # use search by filename to check if package is already in repo. In
-        # addition, m5sums could be compared to ensure, that package is the
+        # addition, md5sums are compared to ensure that the package is the
         # same and should not be overwritten. This method is easier and more
         # robust than querying reprepro by name.
 
-        # Check if this package is taken from Isar-apt, if so - ingore it.
+        # Check if this package is taken from Isar-apt, if so - ignore it.
         base_name=${package##*/}
         isar_apt_p=$(find ${REPO_ISAR_DIR}/${DISTRO} -name $base_name)
         if [ -n "$isar_apt_p" ]; then
