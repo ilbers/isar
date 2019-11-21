@@ -280,6 +280,7 @@ isar_bootstrap() {
             install -v -m644 "${APTSRCS_INIT}" \
                                  "${ROOTFSDIR}/etc/apt/sources-list"
             rm -f "${ROOTFSDIR}/etc/apt/sources.list"
+            rm -rf "${ROOTFSDIR}/var/lib/apt/lists/"*
             mkdir -p "${ROOTFSDIR}/etc/apt/apt.conf.d"
             install -v -m644 "${WORKDIR}/isar-apt.conf" \
                              "${ROOTFSDIR}/etc/apt/apt.conf.d/50isar.conf"
