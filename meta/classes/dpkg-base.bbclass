@@ -10,11 +10,37 @@ inherit terminal
 
 DEPENDS ?= ""
 
-do_adjust_git() {
-    if [ -f ${S}/.git/objects/info/alternates ]; then
-        sed -i ${S}/.git/objects/info/alternates \
-            -e 's|${DL_DIR}|/downloads|'
-    fi
+python do_adjust_git() {
+    import subprocess
+
+    rootdir = d.getVar('WORKDIR', True)
+
+    for src_uri in (d.getVar("SRC_URI", True) or "").split():
+        try:
+            fetcher = bb.fetch2.Fetch([src_uri], d)
+            ud = fetcher.ud[src_uri]
+            if ud.type != 'git':
+                continue
+
+            subdir = ud.parm.get("subpath", "")
+            if subdir != "":
+                def_destsuffix = "%s/" % os.path.basename(subdir.rstrip('/'))
+            else:
+                def_destsuffix = "git/"
+
+            destsuffix = ud.parm.get("destsuffix", def_destsuffix)
+            destdir = ud.destdir = os.path.join(rootdir, destsuffix)
+
+            alternates = os.path.join(destdir, ".git/objects/info/alternates")
+
+            if os.path.exists(alternates):
+                cmd = ["sed", "-i", alternates, "-e",
+                       "s|{}|/downloads|".format(d.getVar("DL_DIR"))]
+                bb.note(' '.join(cmd))
+                if subprocess.call(cmd) != 0:
+                    bb.fatal("git alternates adjustment failed")
+        except bb.fetch2.BBFetchException as e:
+            raise bb.build.FuncFailed(e)
 }
 
 addtask adjust_git after do_unpack before do_patch
