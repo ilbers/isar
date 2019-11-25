@@ -76,23 +76,29 @@ EOF
 }
 
 deb_debianize() {
+	# create the compat-file if there is no file with that name in WORKDIR
 	if [ -f ${WORKDIR}/compat ]; then
 		install -v -m 644 ${WORKDIR}/compat ${S}/debian/compat
 	else
 		deb_create_compat
 	fi
+	# create the control-file if there is no control-file in WORKDIR
 	if [ -f ${WORKDIR}/control ]; then
 		install -v -m 644 ${WORKDIR}/control ${S}/debian/control
 	else
 		deb_create_control
 	fi
+	# create rules if WORKDIR does not contain a rules-file
 	if [ -f ${WORKDIR}/rules ]; then
 		install -v -m 755 ${WORKDIR}/rules ${S}/debian/rules
 	else
 		deb_create_rules
 	fi
+	# prepend a changelog-entry unless an existing changelog file already
+	# contains an entry with CHANGELOG_V
 	deb_add_changelog
 
+	# copy all hooks from WORKDIR into debian/, hooks are not generated
 	for t in pre post
 	do
 		for a in inst rm

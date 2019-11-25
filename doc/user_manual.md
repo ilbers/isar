@@ -590,7 +590,7 @@ Isar currently supports two ways of creating custom packages.
 
 The `deb` packages are built using `dpkg-buildpackage`, so the sources should contain the `debian` directory with necessary meta information. This way is the default way of adding software that needs to be compiled from source. The bbclass for this approach is called `dpkg`.
 
-**NOTE:** If the sources do not contain a `debian` directory your recipe can fetch, create, or ship that.
+**NOTE:** If the sources do not contain a `debian` directory your recipe can fetch, create, or ship that. You might want to read the the next section before returning here.
 
 This is also what you do if you want to rebuild/modify an upstream package.
 Isar does understand `SRC_URI` entries starting with "apt://". For an example
@@ -630,6 +630,23 @@ This approach prevents duplication of the license files in different packages.
  - `SRCREV` - Source code revision to fetch. Please check the BitBake user manual for supported download formats.
 
 The last line in the example above adds recipe to the Isar work chain.
+
+### Compilation of sources missing the debian/-directory
+
+The `debian` directory contains meta information on how to build a package from source. This is roughly speaking "configure", "compile", "install" all described in a Debian-specific way.
+Isar expects your sources to contain the `debian` folder and the above steps need to be described in it, not in a task in a recipe.
+
+So once you have sources you always need to combine them with a `debian` folder before Isar can build a package for you.
+You might be able to find a debianization for a component on the internet, i.e. Ubuntu does package an open source component while Debian does not. Your recipe could download the `debian` folder from Ubuntu and the sources from the open source project.
+
+You can write it yourself, which can be pretty easy but requires a bit of studying. <https://www.debian.org/doc/debian-policy/index.html>
+
+Isar does actually contain a helper that aims to "debianize" sources for your. If your package uses a build-system that Debian knows and follows the well known "configure", "compile", "install" scheme that debianization might just fit your needs without reading Debian manuals.
+If it does not fully fit your needs, it probably gives you a good starting point for your manual tuning.
+
+The shell function `deb_debianize` creates a `debian` folder. But it will not overwrite files that already are in WORKDIR. So you can either just call it to fully generate the `debian` folder. Or you combine it with pre-existing parts.
+
+Have a look at meta-isar/recipes-app/samefile/samefile_2.14.bb and meta/classes/debianize.bbclass for an example and the implementation.
 
 ### Packages without source
 
