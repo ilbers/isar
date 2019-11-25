@@ -179,6 +179,10 @@ ISAR_CROSS_COMPILE ?= "0"
 #
 # Uncomment this to enable use of cached base repository
 #ISAR_USE_CACHED_BASE_REPO ?= "1"
+#
+# You probably want to uncomment this as well to make sure the build
+# does not access the network
+#BB_NO_NETWORK ?= "1"
 
 # Set root password to 'root'
 # Password was encrypted using following command:

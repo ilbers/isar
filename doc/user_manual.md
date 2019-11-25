@@ -847,6 +847,7 @@ bitbake -c cache_base_repo mc:qemuarm-buster:isar-image-base
 ```
 # Uncomment this to enable use of cached base repository
 #ISAR_USE_CACHED_BASE_REPO ?= "1"
+#BB_NO_NETWORK ?= "1"
 ```
  - Remove build artifacts to use only local base-apt:
 
