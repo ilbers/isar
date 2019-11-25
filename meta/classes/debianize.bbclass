@@ -21,7 +21,15 @@ ${PN} (${CHANGELOG_V}) UNRELEASED; urgency=low
  -- ${MAINTAINER}  ${date}
 EOF
 	if [ -f ${WORKDIR}/changelog ]; then
-		echo >> ${S}/debian/changelog
+		if head -1 "${WORKDIR}"/changelog | \
+			grep -q -e "^${PN} (${CHANGELOG_V})"
+		then
+			# entry for our version already there, use unmodified
+			rm ${S}/debian/changelog
+		else
+			# prepend our entry to an existing changelog
+			echo >> ${S}/debian/changelog
+		fi
 		cat ${WORKDIR}/changelog >> ${S}/debian/changelog
 	fi
 }
