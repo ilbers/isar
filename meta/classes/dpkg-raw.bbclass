@@ -5,9 +5,6 @@
 
 inherit dpkg
 
-DEBIAN_DEPENDS ?= ""
-MAINTAINER ?= "Unknown maintainer <unknown@example.com>"
-
 D = "${S}"
 
 # Populate folder that will be picked up as package

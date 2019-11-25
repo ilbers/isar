@@ -5,6 +5,9 @@
 
 CHANGELOG_V ?= "${PV}"
 DPKG_ARCH ??= "any"
+DEBIAN_DEPENDS ?= ""
+DESCRIPTION ?= "must not be empty"
+MAINTAINER ?= "Unknown maintainer <unknown@example.com>"
 
 deb_add_changelog() {
 	timestamp=$(find ${S}/ -type f -not -path "${S}/debian/*" -printf "%T@\n"|sort -n -r|head -n 1)
