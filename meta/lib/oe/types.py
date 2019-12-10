@@ -156,7 +156,8 @@ def path(value, relativeto='', normalize='true', mustexist='false'):
 
     if boolean(mustexist):
         try:
-            open(value, 'r')
+            with open(value, 'r'):
+                pass
         except IOError as exc:
             if exc.errno == errno.ENOENT:
                 raise ValueError("{0}: {1}".format(value, os.strerror(errno.ENOENT)))
