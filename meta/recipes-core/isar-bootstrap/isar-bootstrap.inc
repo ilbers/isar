@@ -28,6 +28,8 @@ DISTRO_BOOTSTRAP_BASE_PACKAGES_append_gnupg = ",gnupg"
 DISTRO_BOOTSTRAP_BASE_PACKAGES_append_https-support = ",apt-transport-https,ca-certificates"
 HOST_DISTRO_APT_SOURCES += "conf/distro/${HOST_DISTRO}.list"
 
+inherit deb-dl-dir
+
 python () {
     distro_bootstrap_keys = (d.getVar("DISTRO_BOOTSTRAP_KEYS") or "").split()
 
@@ -237,11 +239,12 @@ isar_bootstrap() {
     fi
     E="${@ isar_export_proxies(d)}"
     export IS_HOST debootstrap_args E
-    sudo -E -s <<'EOSUDO'
-        set -e
-        if [ ! -e "${DEPLOY_ISAR_BOOTSTRAP}" ]; then
-            rm -rf --one-file-system "${ROOTFSDIR}"
+    if [ ! -e "${DEPLOY_ISAR_BOOTSTRAP}" ]; then
+        sudo rm -rf --one-file-system "${ROOTFSDIR}"
+        deb_dl_dir_import "${ROOTFSDIR}"
 
+        sudo -E -s <<'EOSUDO'
+            set -e
             if [ ${IS_HOST} ]; then
                 ${DEBOOTSTRAP} $debootstrap_args \
                                ${@get_distro_components_argument(d, True)} \
@@ -333,8 +336,9 @@ isar_bootstrap() {
 
             # Finalize debootstrap by setting the link in deploy
             ln -Tfsr "${ROOTFSDIR}" "${DEPLOY_ISAR_BOOTSTRAP}"
-        fi
 EOSUDO
+    fi
+    deb_dl_dir_export "${ROOTFSDIR}"
 }
 
 CLEANFUNCS = "clean_deploy"
