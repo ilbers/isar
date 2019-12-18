@@ -56,6 +56,8 @@ IMAGE_ACCOUNTS_USERS =+ "${@gen_accounts_array(d, 'USERS', 'USER', ['password', 
 # groupname:groupid:flag1,flag2
 IMAGE_ACCOUNTS_GROUPS =+ "${@gen_accounts_array(d, 'GROUPS', 'GROUP', ['gid', 'flags'])}"
 
+do_rootfs_install[vardeps] += "${IMAGE_ACCOUNTS_GROUPS} ${IMAGE_ACCOUNTS_USERS}"
+
 ROOTFS_CONFIGURE_COMMAND += "image_configure_accounts"
 image_configure_accounts[weight] = "3"
 image_configure_accounts() {
