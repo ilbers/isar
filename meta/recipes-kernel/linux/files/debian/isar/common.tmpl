@@ -1,0 +1,49 @@
+#!/bin/bash
+# Copyright (c) Mentor Graphics, a Siemens business, 2019
+# SPDX-License-Identifier: MIT
+
+# Isar settings
+ARCH=${KERNEL_ARCH}
+KERNEL_PKG_IMAGE=linux-image-${KERNEL_NAME_PROVIDED}
+KERNEL_PKG_KERN_HEADERS=linux-headers-${KERNEL_NAME_PROVIDED}
+KERNEL_PKG_LIBC_HEADERS=linux-libc-dev
+
+# Constants
+KCONF=.config
+
+# Target directories
+deb_top_dir=${S}/debian
+deb_img_dir=${deb_top_dir}/${KERNEL_PKG_IMAGE}
+deb_dbg_dir=${deb_img_dir}-dbg
+deb_kern_hdr_dir=${deb_top_dir}/${KERNEL_PKG_KERN_HEADERS}
+deb_libc_hdr_dir=${deb_top_dir}/${KERNEL_PKG_LIBC_HEADERS}
+
+# Array of packages to be generated
+declare -A kern_pkgs
+
+main() {
+    local target=${1}
+
+    if [ ! -f ${S}/debian/isar/${target} ]; then
+        echo "error: ${target} is not a supported build target!" >&2
+        return 1
+    fi
+
+    # create do_<x> variables for each package to be generated
+    for p in $(unset DEB_HOST_ARCH; dh_listpackages); do
+        kern_pkgs["${p}"]="1"
+    done
+
+    # variables to be exported
+    export ARCH
+
+    # are we cross-compiling?
+    BUILD_ARCH=$(dpkg-architecture -qDEB_BUILD_ARCH)
+    if [ "${BUILD_ARCH}" = "${DISTRO_ARCH}" ]; then
+        # no, make sure CROSS_COMPILE isn't set
+        unset CROSS_COMPILE
+    fi
+
+    # call the actual target script
+    do_${target} || return ${?}
+}

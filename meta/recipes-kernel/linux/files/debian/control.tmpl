@@ -1,0 +1,37 @@
+Source: linux-${KERNEL_NAME_PROVIDED}
+Section: kernel
+Priority: optional
+Maintainer: ${MAINTAINER}
+Build-Depends: bc, kmod, cpio, ${KBUILD_DEPENDS}
+Homepage: http://www.kernel.org/
+
+Package: linux-image-${KERNEL_NAME_PROVIDED}
+Architecture: any
+Depends: ${KERNEL_DEBIAN_DEPENDS}
+Description: ${KERNEL_NAME_PROVIDED} Linux kernel, version @KR@
+ This package contains the Linux kernel, modules and corresponding other
+ files, version: @KR@.
+
+Package: linux-headers-${KERNEL_NAME_PROVIDED}
+Architecture: any
+Depends: ${KERNEL_HEADERS_DEBIAN_DEPENDS}, ${perl:Depends}, ${shlib:Depends}
+Description: ${KERNEL_NAME_PROVIDED} Linux kernel headers for @KR@
+ This package provides kernel header files for @KR@ on ${DISTRO_ARCH}
+ .
+ This is useful for people who need to build external modules
+
+Package: linux-libc-dev
+Build-Profiles: <!nolibcdev>
+Section: devel
+Provides: linux-kernel-headers
+Architecture: any
+Description: Linux support headers for userspace development
+ This package provides userspaces headers from the Linux kernel.  These headers
+ are used by the installed headers for GNU glibc and other system libraries.
+
+Package: linux-image-${KERNEL_NAME_PROVIDED}-dbg
+Section: debug
+Architecture: any
+Description: Linux kernel debugging symbols for @KR@
+ This package will come in handy if you need to debug the kernel. It provides
+ all the necessary debug symbols for the kernel and its modules.

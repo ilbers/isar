@@ -1,0 +1,21 @@
+#!/bin/bash
+# Copyright (c) Mentor Graphics, a Siemens business, 2019
+# SPDX-License-Identifier: MIT
+
+# Load common stuff
+. ${S}/debian/isar/common || exit ${?}
+
+do_clean() {
+
+    # Trace what we do here
+    set -x
+
+    rm -rf ${deb_img_dir} ${deb_dbg_dir}
+    rm -rf ${deb_kern_hdrdir}
+    rm -rf ${deb_libc_hdr_dir}
+
+    # Stop tracing
+    set +x
+}
+
+main clean ${*}

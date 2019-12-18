@@ -1,0 +1,36 @@
+#!/bin/sh -e
+# based on https://salsa.debian.org/kernel-team/linux/blob/479cb120ecb2b3f2c4d929a7b57860248d6f79bd/debian/templates/image.postrm.in
+# SPDX-License-Identifier: GPL-2.0-only
+
+# Tell initramfs builder whether it's wanted
+export INITRD=Yes
+
+version=@KR@
+image_path=/boot/${KERNEL_FILE}-${version}
+
+rm -f /lib/modules/$version/.fresh-install
+
+if [ "$1" != upgrade ] && command -v linux-update-symlinks >/dev/null; then
+    linux-update-symlinks remove $version $image_path
+fi
+
+if [ -d /etc/kernel/postrm.d ]; then
+    DEB_MAINT_PARAMS="$*" run-parts --report --exit-on-error --arg=$version \
+	      --arg=$image_path /etc/kernel/postrm.d
+fi
+
+if [ "$1" = purge ]; then
+    for extra_file in modules.dep modules.isapnpmap modules.pcimap \
+                      modules.usbmap modules.parportmap \
+                      modules.generic_string modules.ieee1394map \
+                      modules.ieee1394map modules.pnpbiosmap \
+                      modules.alias modules.ccwmap modules.inputmap \
+                      modules.symbols modules.ofmap \
+                      modules.seriomap modules.\*.bin \
+		      modules.softdep modules.devname; do
+	eval rm -f /lib/modules/$version/$extra_file
+    done
+    rmdir /lib/modules/$version || true
+fi
+
+exit 0

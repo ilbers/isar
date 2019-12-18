@@ -2,89 +2,181 @@
 #
 # This software is a part of ISAR.
 # Copyright (c) Siemens AG, 2018
+# Copyright (c) Mentor Graphics, a Siemens business, 2019
 #
 # SPDX-License-Identifier: MIT
 
-FILESEXTRAPATHS_prepend := "${FILE_DIRNAME}/files:"
+# Settings that would typically be done from the custom kernel recipe
+# -------------------------------------------------------------------
 
+CHANGELOG_V = "${PV}+${PR}"
 DESCRIPTION ?= "Custom kernel"
+MAINTAINER ?= "isar-users <isar-users@googlegroups.com>"
 
-KERNEL_NAME_PROVIDED ?= "${@ d.getVar('PN', True).partition('linux-')[2]}"
+KBUILD_DEPENDS ?= "build-essential:native, \
+                   libelf-dev:native, \
+                   libncurses-dev:native, \
+                   libssl-dev:native, \
+                   bc, \
+                   bison, \
+                   cpio, \
+                   flex, \
+                   git, \
+                   kmod, \
+                   libssl-dev,"
+
+KERNEL_DEBIAN_DEPENDS ?= "initramfs-tools | linux-initramfs-tool, \
+                          kmod, \
+                          linux-base (>= 4.3~),"
+
+KERNEL_HEADERS_DEBIAN_DEPENDS ?= "libc6, \
+                                  libssl1.1,"
+
+KERNEL_LIBC_DEV_DEPLOY ?= "0"
+
+# Settings that may be changed on a per distro, machine or layer basis
+# --------------------------------------------------------------------
+
+LINUX_VERSION_EXTENSION ?= ""
+
 KERNEL_DEFCONFIG ?= ""
 
+# Add our template meta-data to the sources
+FILESEXTRAPATHS_prepend := "${FILE_DIRNAME}/files:"
+SRC_URI += "file://debian"
+
+# Variables and files that make our templates
+# -------------------------------------------
+
+TEMPLATE_FILES += "                  \
+    debian/control.tmpl              \
+    debian/isar/build.tmpl           \
+    debian/isar/clean.tmpl           \
+    debian/isar/common.tmpl          \
+    debian/isar/install.tmpl         \
+    debian/isar/version.cfg.tmpl     \
+    debian/linux-image.postinst.tmpl \
+    debian/linux-image.postrm.tmpl   \
+    debian/linux-image.preinst.tmpl  \
+    debian/linux-image.prerm.tmpl    \
+    debian/rules.tmpl                \
+"
+
+TEMPLATE_VARS += "                \
+    HOST_ARCH                     \
+    KBUILD_DEPENDS                \
+    KERNEL_ARCH                   \
+    KERNEL_DEBIAN_DEPENDS         \
+    KERNEL_BUILD_DIR              \
+    KERNEL_FILE                   \
+    KERNEL_HEADERS_DEBIAN_DEPENDS \
+    LINUX_VERSION_EXTENSION       \
+    KERNEL_NAME_PROVIDED          \
+"
+
+inherit dpkg
+inherit template
+
+# Derive name of the kernel packages from the name of this recipe
+KERNEL_NAME_PROVIDED ?= "${@ d.getVar('PN', True).partition('linux-')[2]}"
+
+# Make bitbake know we will be producing linux-image and linux-headers packages
 python() {
     kernel_name = d.getVar("KERNEL_NAME_PROVIDED", True)
     d.setVar('PROVIDES', 'linux-image-' + kernel_name + ' ' + \
                          'linux-headers-' + kernel_name)
 }
 
-inherit dpkg-base
+def get_kernel_arch(d):
+    distro_arch = d.getVar("DISTRO_ARCH")
+    if distro_arch == "amd64":
+        kernel_arch = "x86"
+    elif distro_arch == "arm64":
+        kernel_arch = "arm64"
+    elif distro_arch == "armhf":
+        kernel_arch = "arm"
+    elif distro_arch == "mipsel":
+        kernel_arch = "mips"
+    else:
+        kernel_arch = ""
+    return kernel_arch
 
-SRC_URI += "file://build-kernel.sh"
+KERNEL_ARCH ??= "${@get_kernel_arch(d)}"
 
-KBUILD_DEPENDS ?= " \
-    build-essential:native \
-    libssl-dev \
-    libelf-dev \
-    bc \
-    git \
-    kmod \
-    bison \
-    flex \
-    cpio \
-    libncurses-dev"
-KERNEL_DEBIAN_DEPENDS ?= "initramfs-tools | linux-initramfs-tool, kmod, linux-base (>= 4.3~)"
-KERNEL_HEADERS_DEBIAN_DEPENDS ?= "libc6, libssl1.1"
+def config_fragments(d):
+    fragments = []
+    sources = d.getVar("SRC_URI").split()
+    for s in sources:
+        _, _, local, _, _, parm = bb.fetch.decodeurl(s)
+        apply = parm.get("apply")
+        if apply == "no":
+            continue
+        base, ext = os.path.splitext(os.path.basename(local))
+        if ext and ext in (".cfg"):
+            fragments.append(local)
+    return fragments
 
-KERNEL_LIBC_DEV_DEPLOY ?= "0"
+do_prepare_build_prepend() {
+	# copy meta-data over to source tree
+	rm -rf ${S}/debian
+	cp -r ${WORKDIR}/debian ${S}/
 
-do_install_builddeps() {
-	dpkg_do_mounts
-	E="${@ isar_export_proxies(d)}"
-	sudo -E chroot ${BUILDCHROOT_DIR} \
-		apt-get update \
-			-o Dir::Etc::SourceList="sources.list.d/isar-apt.list" \
-			-o Dir::Etc::SourceParts="-" \
-			-o APT::Get::List-Cleanup="0"
-	sudo -E chroot ${BUILDCHROOT_DIR} \
-		apt-get install \
-			-y -o Debug::pkgProblemResolver=yes \
-			--no-install-recommends ${KBUILD_DEPENDS}
-	dpkg_undo_mounts
+	# remove templates from the source tree
+	find ${S}/debian -name *.tmpl | xargs rm -f
+
+	# rename install/remove hooks to match user-specified name for our linux-image package
+	mv ${S}/debian/linux-image.postinst ${S}/debian/linux-image-${KERNEL_NAME_PROVIDED}.postinst
+	mv ${S}/debian/linux-image.postrm ${S}/debian/linux-image-${KERNEL_NAME_PROVIDED}.postrm
+	mv ${S}/debian/linux-image.preinst ${S}/debian/linux-image-${KERNEL_NAME_PROVIDED}.preinst
+	mv ${S}/debian/linux-image.prerm ${S}/debian/linux-image-${KERNEL_NAME_PROVIDED}.prerm
+
+	# produce a changelog for our kernel build
+	deb_add_changelog
 }
 
-addtask install_builddeps after do_prepare_build before do_dpkg_build
-# apt and reprepro may not run in parallel, acquire the Isar lock
-do_install_builddeps[lockfiles] += "${REPO_ISAR_DIR}/isar.lock"
+# build directory for our "full" kernel build
+KERNEL_BUILD_DIR = "build-full"
 
-addtask devshell after do_install_builddeps
-
-dpkg_runbuild() {
-	chmod +x ${WORKDIR}/build-kernel.sh
-	KERNEL_CONFIG_TARGET="${KERNEL_DEFCONFIG}"
+dpkg_configure_kernel() {
+	config_target="${KERNEL_DEFCONFIG}"
+	rm -rf ${S}/${KERNEL_BUILD_DIR} && mkdir -p ${S}/${KERNEL_BUILD_DIR}
 	if [ -n "${KERNEL_DEFCONFIG}" ]; then
 		if [ -e "${WORKDIR}/${KERNEL_DEFCONFIG}" ]; then
-			cp ${WORKDIR}/${KERNEL_DEFCONFIG} ${S}/.config
-			KERNEL_CONFIG_TARGET="olddefconfig"
+			cp ${WORKDIR}/${KERNEL_DEFCONFIG} ${S}/${KERNEL_BUILD_DIR}/.config
+			config_target="olddefconfig"
 		fi
 	else
-		KERNEL_CONFIG_TARGET="defconfig"
+		config_target="defconfig"
 	fi
 
-	E="${@ isar_export_proxies(d)}"
+	# copy config fragments over to the kernel tree
+	src_frags="${@ " ".join(config_fragments(d)) }"
+	out_frags="${@ " ".join(map(lambda frag: 'debian/fragments/' + frag, config_fragments(d))) }"
+	if [ -n "${LINUX_VERSION_EXTENSION}" ]; then
+		out_frags="${out_frags} debian/isar/version.cfg"
+	fi
+	rm -rf ${S}/debian/fragments
+	if [ -n "${src_frags}" ]; then
+		mkdir -p ${S}/debian/fragments
+		(cd ${WORKDIR} && cp ${src_frags} ${S}/debian/fragments/)
+	fi
 
-	export PV=${PV}
-	export KERNEL_NAME=${KERNEL_NAME_PROVIDED}
+	sudo -E chroot --userspec=$(id -u):$(id -g) ${BUILDCHROOT_DIR} sh -c " \
+		export ARCH=${KERNEL_ARCH} &&                                  \
+		cd ${PP}/${PPS} &&                                             \
+		make O=${KERNEL_BUILD_DIR} ${config_target} &&                 \
+		./scripts/kconfig/merge_config.sh                              \
+			-O ${KERNEL_BUILD_DIR}/                                \
+			${KERNEL_BUILD_DIR}/.config                            \
+			${out_frags}                                           \
+        "
+}
 
-	export KBUILD_DEPENDS="${KBUILD_DEPENDS}"
-	export KERNEL_CONFIG_TARGET
-	export KERNEL_DEBIAN_DEPENDS="${KERNEL_DEBIAN_DEPENDS}"
-	export KERNEL_FILE="${KERNEL_FILE}"
-	export KERNEL_HEADERS_DEBIAN_DEPENDS="${KERNEL_HEADERS_DEBIAN_DEPENDS}"
-
-	sudo -E chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} ${PP}/build-kernel.sh ${PP}/${PPS} ${DISTRO_ARCH}
-
+dpkg_runbuild_prepend() {
+	profiles="${BASE_DISTRO}"
 	if [ "${KERNEL_LIBC_DEV_DEPLOY}" != "1" ]; then
-		rm -f ${WORKDIR}/linux-libc-dev_${PV}*.deb
+		profiles="${profiles} nolibcdev"
 	fi
+	export DEB_BUILD_PROFILES="${profiles}"
+	dpkg_configure_kernel
 }

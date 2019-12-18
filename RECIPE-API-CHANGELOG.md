@@ -193,6 +193,7 @@ files and patches using bbappend a lot easier.
 For example:
 ```
 FILESEXTRAPATHS_prepend := "$THISDIR/files:"
+```
 
 ### multiconfig build targets were renamed
 
@@ -209,3 +210,17 @@ The old syntax is no longer supported and will produce an error:
 ```
 bitbake multiconfig:qemuarm-stretch:isar-image-base
 ```
+
+### Support for kernel config fragments
+
+Kernels built via linux-custom.inc will now get configuration fragments listed
+in SRC_URI automatically applied. Config fragment files need to end on .cfg.
+If such a file should not by applied, append `;apply=no` to the respective
+SRC_URI entry.
+
+### Control over kernel's LOCALVERSION via LINUX_VERSION_EXTENSION
+
+In order to get a LOCALVERSION appendix into both the kernel config and the
+version information of the self-built packages, the LINUX_VERSION_EXTENSION is
+now available. It remains empty by default unless a recipe sets it. The
+appended version usually starts with a "-".

@@ -1,0 +1,191 @@
+#!/bin/bash
+# Copyright (c) Mentor Graphics, a Siemens business, 2019
+# SPDX-License-Identifier: MIT
+
+# Load common stuff
+. ${S}/debian/isar/common || exit ${?}
+
+# Stop on error
+set -e
+
+do_install() {
+
+    # check if our kernel was configured
+    if [ ! -f "${O}/.config" ]; then
+        echo "error: kernel not configured!" >&2
+        return 1
+    fi
+
+    # load its configuration
+    . ${O}/.config
+
+    kimage="$(${MAKE} O=${O} -s --no-print-directory image_name)"
+    krel="$(${MAKE} O=${O} -s --no-print-directory kernelrelease)"
+    case "${ARCH}" in
+        mips|powerpc) kimage_path="boot/vmlinux-${krel}"    ;;
+                  um) kimage_path="usr/bin/vmlinux-${krel}" ;;
+                   *) kimage_path="boot/vmlinuz-${krel}"    ;;
+    esac
+
+    print_settings
+
+    # Trace what we do here
+    set -x
+
+    install_image
+    install_hooks
+    install_dtbs
+    install_kmods
+    install_headers
+
+    # Stop tracing
+    set +x
+}
+
+print_settings() {
+    cat <<EOF
+Install settings:
+-----------------
+kimage=${kimage}
+kimage_path=${kimage_path}
+
+EOF
+}
+
+install_image() {
+    install -m 755 -d ${deb_img_dir}/$(dirname ${kimage_path})
+    cp ${O}/${kimage} ${deb_img_dir}/${kimage_path}
+
+    # Make sure arm64 kernels are decompressed
+    if [ "${ARCH}" = "arm64" ]; then
+        mv ${deb_img_dir}/${kimage_path} ${deb_img_dir}/${kimage_path}.gz
+        gunzip -f ${deb_img_dir}/${kimage_path}.gz
+    fi
+
+    install_image_debug
+}
+
+install_image_debug() {
+    # Different tools want the image in different locations
+    # perf
+    mkdir -p ${deb_dbg_dir}/usr/lib/debug/lib/modules/${krel}/
+    cp ${O}/vmlinux ${deb_dbg_dir}/usr/lib/debug/lib/modules/${krel}/
+    # systemtap
+    mkdir -p ${deb_dbg_dir}/usr/lib/debug/boot/
+    ln -s ../lib/modules/$version/vmlinux ${deb_dbg_dir}/usr/lib/debug/boot/vmlinux-${krel}
+    # kdump-tools
+    ln -s lib/modules/${krel}/vmlinux ${deb_dbg_dir}/usr/lib/debug/vmlinux-${krel}
+}
+
+install_hooks() {
+    install -m 755 -d ${deb_img_dir}/etc/kernel/install.d
+    install -m 755 -d ${deb_img_dir}/etc/kernel/postinst.d
+    install -m 755 -d ${deb_img_dir}/etc/kernel/postrm.d
+    install -m 755 -d ${deb_img_dir}/etc/kernel/prerm.d
+
+    initrd="No"
+    [ -z "${CONFIG_BLK_DEV_INITRD}" ] || initrd="Yes"
+
+    for script in postinst postrm preinst prerm; do
+        sed -i -e "s,INITRD=[A-Za-z0-9]*,INITRD=${initrd},g" ${S}/debian/linux-image*.${script}
+        sed -i -e "s,version=.*,version=${krel},g" ${S}/debian/linux-image*.${script}
+    done
+}
+
+install_dtbs() {
+    [ -n "${CONFIG_OF}" ] || return 0
+    ${MAKE} O=${O} INSTALL_DTBS_PATH=${deb_img_dir}/usr/lib/linux-image-${krel} dtbs_install
+}
+
+install_kmods() {
+    [ -n "${CONFIG_MODULES}" ] || return 0
+    ${MAKE} O=${O} INSTALL_MOD_PATH=${deb_img_dir} modules_install
+    touch ${deb_img_dir}/lib/modules/${krel}/.fresh-install
+    rm -fv ${deb_img_dir}/lib/modules/${krel}/build
+    rm -fv ${deb_img_dir}/lib/modules/${krel}/source
+    install_kmods_debug
+}
+
+kmods_sign() {
+    [ -n "${CONFIG_MODULE_SIG_ALL}" ] || return 0
+    ${MAKE} O=${O} INSTALL_MOD_PATH=${deb_img_dir} modules_sign
+}
+
+install_kmods_debug() {
+    [ -n "${CONFIG_DEBUG_INFO}" ] || return 0
+
+    kmod_inst_dir=${deb_img_dir}/lib/modules
+    kmod_debug_dir=${deb_dbg_dir}/usr/lib/debug
+
+    # copy kernels modules to usr/lib/debug
+    mkdir -p ${kmod_debug_dir}
+    tar -C ${kmod_inst_dir}/ -cO --exclude='modules.*' . | tar -C ${kmod_debug_dir}/ -xf -
+    # strip everything but debug sections for modules in usr/lib/debug
+    find ${kmod_debug_dir} -name *.ko -exec ${CROSS_COMPILE}objcopy --only-keep-debug {} \;
+    # and strip debug sections from modules in lib/modules
+    find ${kmod_inst_dir} -name *.ko -exec ${CROSS_COMPILE}objcopy --strip-debug {} \;
+
+    # re-sign stripped kernel modules
+    kmods_sign
+}
+
+headers_check() {
+    ${MAKE} O=${O} headers_check
+}
+
+libc_headers() {
+    mkdir -p ${deb_libc_hdr_dir}
+    ${MAKE} O=${O} headers_install INSTALL_HDR_PATH=${deb_libc_hdr_dir}/usr
+    host_arch=$(dpkg-architecture -a${DISTRO_ARCH} -qDEB_HOST_MULTIARCH)
+    mkdir ${deb_libc_hdr_dir}/usr/include/${host_arch}
+    mv ${deb_libc_hdr_dir}/usr/include/asm ${deb_libc_hdr_dir}/usr/include/${host_arch}/
+}
+
+kernel_tools() {
+    # remove object files
+    find ${destdir}/scripts -type f -name '*.o' |xargs rm -f
+}
+
+kernel_headers() {
+    kernel_headers_dir="usr/src/linux-headers-${krel}"
+    destdir=${deb_kern_hdr_dir}/${kernel_headers_dir}
+    src_hdr_files=$(mktemp)
+    obj_hdr_files=$(mktemp)
+
+    mkdir -p ${destdir}
+    mkdir -p ${deb_kern_hdr_dir}/lib/modules/${krel}
+
+    (cd ${S}; find . -name 'Makefile*' -o -name 'Kconfig*' -o -name '*.pl') >>${src_hdr_files}
+    (cd ${S}; find arch/*/include include scripts -type f -o -type l) >>${src_hdr_files}
+    (cd ${S}; find arch/${ARCH} -name module.lds -o -name Kbuild.platforms -o -name Platform) >>${src_hdr_files}
+    (cd ${S}; find $(find arch/${ARCH} -name include -o -name scripts -type d) -type f) >>${src_hdr_files}
+
+    (cd ${O}; find arch/${ARCH}/include Module.symvers include scripts -type f) >>${obj_hdr_files}
+    if [ -n "${CONFIG_STACK_VALIDATION}" ]; then
+        (cd ${O}; find tools/objtool -type f -executable) >>${obj_hdr_files}
+    fi
+    if [ -n "${CONFIG_GCC_PLUGINS}" ]; then
+        (cd ${O}; find scripts/gcc-plugins -name *.so -o -name gcc-common.h) >>${obj_hdr_files}
+    fi
+
+    # deploy files that were matched above
+    tar -C ${S} -cf - -T - <${src_hdr_files} | tar -C ${destdir} -xf -
+    tar -C ${O} -cf - -T - <${obj_hdr_files} | tar -C ${destdir} -xf -
+
+    # add the kernel config
+    cp ${O}/${KCONF} ${destdir}/.config
+
+    # handle kernel development tools
+    kernel_tools
+
+    # create symlinks
+    ln -sf /${kernel_headers_dir} ${deb_kern_hdr_dir}/lib/modules/${krel}/build
+}
+
+install_headers() {
+    headers_check
+    [ -z ${kern_pkgs["linux-libc-headers"]} ] || libc_headers
+    kernel_headers
+}
+
+main install ${*}
