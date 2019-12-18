@@ -61,8 +61,14 @@ addtask devshell after do_install_builddeps
 
 dpkg_runbuild() {
 	chmod +x ${WORKDIR}/build-kernel.sh
+	KERNEL_CONFIG_TARGET="${KERNEL_DEFCONFIG}"
 	if [ -n "${KERNEL_DEFCONFIG}" ]; then
-		cp ${WORKDIR}/${KERNEL_DEFCONFIG} ${S}/.config
+		if [ -e "${WORKDIR}/${KERNEL_DEFCONFIG}" ]; then
+			cp ${WORKDIR}/${KERNEL_DEFCONFIG} ${S}/.config
+			KERNEL_CONFIG_TARGET="olddefconfig"
+		fi
+	else
+		KERNEL_CONFIG_TARGET="defconfig"
 	fi
 
 	E="${@ isar_export_proxies(d)}"
@@ -71,6 +77,7 @@ dpkg_runbuild() {
 	export KERNEL_NAME=${KERNEL_NAME_PROVIDED}
 
 	export KBUILD_DEPENDS="${KBUILD_DEPENDS}"
+	export KERNEL_CONFIG_TARGET
 	export KERNEL_DEBIAN_DEPENDS="${KERNEL_DEBIAN_DEPENDS}"
 	export KERNEL_FILE="${KERNEL_FILE}"
 	export KERNEL_HEADERS_DEBIAN_DEPENDS="${KERNEL_HEADERS_DEBIAN_DEPENDS}"
