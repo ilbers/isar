@@ -270,7 +270,7 @@ isar_bootstrap() {
                     -e "s#{BASE_DISTRO_CODENAME}#"${BASE_DISTRO_CODENAME}"#g" \
 	            -i ${BASEAPTSRCS}
                 mkdir -p ${ROOTFSDIR}/base-apt
-                sudo mount --bind ${REPO_BASE_DIR} ${ROOTFSDIR}/base-apt
+                mount --bind ${REPO_BASE_DIR} ${ROOTFSDIR}/base-apt
                 install -v -m644 "${BASEAPTSRCS}" \
                                  "${ROOTFSDIR}/etc/apt/sources.list.d/base-apt.list"
             else
@@ -288,7 +288,7 @@ isar_bootstrap() {
             do
                 kfn="$(basename $keyfile)"
                 cp $keyfile "${ROOTFSDIR}/tmp/$kfn"
-                sudo -E chroot "${ROOTFSDIR}" /usr/bin/apt-key \
+                chroot "${ROOTFSDIR}" /usr/bin/apt-key \
                    --keyring ${THIRD_PARTY_APT_KEYRING} add "/tmp/$kfn"
                 rm "${ROOTFSDIR}/tmp/$kfn"
             done
