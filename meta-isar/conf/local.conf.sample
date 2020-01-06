@@ -59,6 +59,7 @@ BBMULTICONFIG = " \
     de0-nano-soc-stretch \
     hikey-stretch \
     nand-ubi-demo-buster \
+    nanopi-neo-buster \
     rpi-stretch \
     sifive-fu540-sid-ports \
 "

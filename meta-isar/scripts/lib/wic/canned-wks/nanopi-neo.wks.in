@@ -1,0 +1,10 @@
+#
+# Copyright (c) Siemens AG, 2018
+#
+# SPDX-License-Identifier: MIT
+
+part u-boot --source rawcopy --sourceparams "file=/usr/lib/u-boot/nanopi_neo/u-boot-sunxi-with-spl.bin" --no-table --align 8
+
+part / --source rootfs-u-boot --ondisk mmcblk0 --fstype ext4 --label platform --align 1024 --active
+
+bootloader --append "rw rootwait"
