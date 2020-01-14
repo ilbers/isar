@@ -20,6 +20,10 @@ do_install() {
     . ${O}/.config
 
     kimage="$(${MAKE} O=${O} -s --no-print-directory image_name)"
+    # ARM/ARM64 kernels < 4.12 do not include the path to the kernel
+    if [ ! -e ${O}/${kimage} ]; then
+        kimage="arch/${ARCH}/boot/${kimage}"
+    fi
     krel="$(${MAKE} O=${O} -s --no-print-directory kernelrelease)"
     case "${ARCH}" in
         mips|powerpc) kimage_path="boot/vmlinux-${krel}"    ;;
