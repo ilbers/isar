@@ -89,7 +89,7 @@ python() {
 
 def get_kernel_arch(d):
     distro_arch = d.getVar("DISTRO_ARCH")
-    if distro_arch == "amd64":
+    if distro_arch in ["amd64", "i386"]:
         kernel_arch = "x86"
     elif distro_arch == "arm64":
         kernel_arch = "arm64"
