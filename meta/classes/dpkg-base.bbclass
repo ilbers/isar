@@ -42,7 +42,7 @@ python do_adjust_git() {
                 if subprocess.call(cmd) != 0:
                     bb.fatal("git alternates adjustment failed")
         except bb.fetch2.BBFetchException as e:
-            raise bb.build.FuncFailed(e)
+            bb.fatal(str(e))
 }
 
 addtask adjust_git after do_unpack before do_patch

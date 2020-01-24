@@ -171,7 +171,7 @@ python do_fetch() {
         fetcher = bb.fetch2.Fetch(src_uri, d)
         fetcher.download()
     except bb.fetch2.BBFetchException as e:
-        raise bb.build.FuncFailed(e)
+        bb.fatal(str(e))
 }
 
 addtask fetch before do_build
@@ -190,7 +190,7 @@ python do_unpack() {
         fetcher = bb.fetch2.Fetch(src_uri, d)
         fetcher.unpack(rootdir)
     except bb.fetch2.BBFetchException as e:
-        raise bb.build.FuncFailed(e)
+        bb.fatal(str(e))
 }
 
 addtask unpack after do_fetch before do_build
