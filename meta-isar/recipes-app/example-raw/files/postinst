@@ -2,4 +2,20 @@
 
 set -e
 
+if ! getent group isar >/dev/null; then
+	addgroup --quiet --system isar
+fi
+
+if ! getent passwd isar >/dev/null; then
+	useradd --system --gid isar --create-home \
+		--home /var/lib/isar --no-user-group \
+		--comment "My isar user" \
+		isar
+fi
+
+# since the homedir was part of the package, useradd did not include skel
+cp -RTn /etc/skel ~isar
+
+chown -R isar:isar ~isar
+
 echo "isar" > /etc/hostname

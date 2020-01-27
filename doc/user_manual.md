@@ -547,6 +547,18 @@ The `USERS` and `USER_<username>` variable works similar to the `GROUPS` and `GR
    - `system` - `useradd` will be called with `--system`.
    - `allow-empty-password` - Even if the `password` flag is empty, it will still be set. This results in a login without password.
 
+#### Home directory contents prefilling
+
+To cover all users simply use `/etc/skel`. Files in there will be available in every home directory under correct permissions.
+If you have just one user you might end up abusing this for large content, that is a waste of space.
+
+To place content into specific homes drop those files into position and create the user and possibly group in `postinst`. Now you can chown the contents because the user is known.
+If you want that user to have the prefilled content combined with `/etc/skel` you need to either create the user in `preinst` or combine in `postinst`.
+
+The regular user and group configuration will still apply later, it will just change an existing user.
+
+meta-isar/recipes-app/example-raw contains an example
+
 ---
 
 ## Create a Custom Image Recipe

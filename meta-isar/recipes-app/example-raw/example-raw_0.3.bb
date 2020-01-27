@@ -31,4 +31,14 @@ do_install() {
 	echo "# empty config file" > ${WORKDIR}/${PN}.conf
 	install -v -d ${D}/etc/
 	install -v -m 644 ${WORKDIR}/${PN}.conf ${D}/etc/${PN}.conf
+
+	bbnote "A HOME entry for everyone ... created after this is installed"
+	echo "hello skel" > ${WORKDIR}/${PN}-isar-skel.txt
+	install -v -d ${D}/etc/skel/
+	install -v -m 644 ${WORKDIR}/${PN}-isar-skel.txt ${S}/etc/skel/
+
+	bbnote "A user-specific HOME entry"
+	echo "hello isar" > ${WORKDIR}/${PN}-isar.txt
+	install -v -d ${D}/var/lib/isar/
+	install -v -m 644 ${WORKDIR}/${PN}-isar.txt ${S}/var/lib/isar/
 }
