@@ -132,7 +132,7 @@ do_wic_image() {
     buildchroot_do_mounts
     sudo -s <<'EOSUDO'
         ( flock 9
-        for dir in ${BBLAYERS} ${STAGING_DIR} ${ISARROOT}/scripts; do
+        for dir in ${BBLAYERS} ${STAGING_DIR} ${ISARROOT}/scripts ${ISARROOT}/bitbake; do
             mkdir -p ${BUILDCHROOT_DIR}/$dir
             if ! mountpoint ${BUILDCHROOT_DIR}/$dir >/dev/null 2>&1; then
                 mount --bind --make-private $dir ${BUILDCHROOT_DIR}/$dir
@@ -148,11 +148,25 @@ EOSUDO
     WICTMP=$(cd ${BUILDCHROOT_DIR}; mktemp -d -p tmp)
 
     sudo -E chroot ${BUILDCHROOT_DIR} \
-        ${ISARROOT}/scripts/wic create ${WKS_FULL_PATH} \
-            --vars "${STAGING_DIR}/${MACHINE}/imgdata/" \
-            -o /$WICTMP/${IMAGE_FULLNAME}.wic/ \
+        sh -c ' \
+          ISARROOT="$1"
+          WKS_FULL_PATH="$2"
+          STAGING_DIR="$3"
+          MACHINE="$4"
+          WICTMP="$5"
+          IMAGE_FULLNAME="$6"
+          IMAGE_BASENAME="$7"
+          shift 7
+
+          export PATH="$ISARROOT/bitbake/bin:$PATH"
+          "$ISARROOT"/scripts/wic create "$WKS_FULL_PATH" \
+            --vars "$STAGING_DIR/$MACHINE/imgdata/" \
+            -o "/$WICTMP/${IMAGE_FULLNAME}.wic/" \
             --bmap \
-            -e ${IMAGE_BASENAME} ${WIC_CREATE_EXTRA_ARGS}
+            -e "$IMAGE_BASENAME" $@' \
+              my_script "${ISARROOT}" "${WKS_FULL_PATH}" "${STAGING_DIR}" \
+              "${MACHINE}" "${WICTMP}" "${IMAGE_FULLNAME}" "${IMAGE_BASENAME}" \
+              ${WIC_CREATE_EXTRA_ARGS}
     sudo chown -R $(stat -c "%U" ${ISARROOT}) ${ISARROOT}/meta ${ISARROOT}/meta-isar ${ISARROOT}/scripts || true
     WIC_DIRECT=$(ls -t -1 ${BUILDCHROOT_DIR}/$WICTMP/${IMAGE_FULLNAME}.wic/*.direct | head -1)
     sudo chown -R $(id -u):$(id -g) ${BUILDCHROOT_DIR}/${WICTMP}
