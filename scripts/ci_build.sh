@@ -50,7 +50,7 @@ CROSS_TARGETS_SET="\
                   mc:rpi-stretch:isar-image-base"
 
 REPRO_TARGETS_SET_SIGNED="\
-            mc:qemuarm-stretch:isar-image-base \
+            mc:de0-nano-soc-stretch:isar-image-base \
             mc:qemuarm64-stretch:isar-image-base"
 
 REPRO_TARGETS_SET="\
