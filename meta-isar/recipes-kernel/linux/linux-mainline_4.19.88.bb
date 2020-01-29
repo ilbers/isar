@@ -28,8 +28,10 @@ LINUX_VERSION_EXTENSION = "-isar"
 
 # For testing purposes only
 dpkg_configure_kernel_append() {
-    grep "# CONFIG_UBIFS_FS is not set" ${S}/${KERNEL_BUILD_DIR}/.config || \
-        bbfatal "Self-check failed: CONFIG_UBIFS_FS still enabled"
+    if ! grep "# CONFIG_MTD is not set" ${S}/${KERNEL_BUILD_DIR}/.config; then
+        grep "# CONFIG_UBIFS_FS is not set" ${S}/${KERNEL_BUILD_DIR}/.config || \
+            bbfatal "Self-check failed: CONFIG_UBIFS_FS still enabled"
+    fi
     grep "CONFIG_ROOT_NFS=y" ${S}/${KERNEL_BUILD_DIR}/.config || \
         bbfatal "Self-check failed: CONFIG_ROOT_NFS not enabled"
 }
