@@ -17,6 +17,21 @@ BOOT_CMD=$(mktemp)
 
 KERNEL_VERSION=$(linux-version list | linux-version sort --reverse | head -1)
 
+case $(uname -m) in
+	aarch64)
+		KERNEL_FILE="vmlinuz"
+		BOOT="booti"
+		;;
+	mips|riscv64)
+		KERNEL_FILE="vmlinux"
+		BOOT="booti"
+		;;
+	*)
+		KERNEL_FILE="vmlinuz"
+		BOOT="bootz"
+		;;
+esac
+
 echo "${SCRIPT_PREPEND}" >> ${BOOT_CMD}
 
 echo "setenv bootargs ${KERNEL_ARGS}" >> ${BOOT_CMD}
@@ -24,7 +39,7 @@ echo "setenv bootargs ${KERNEL_ARGS}" >> ${BOOT_CMD}
 echo "load \${devtype} \${devnum}:${ROOT_PARTITION} \${fdt_addr_r}" \
      "/usr/lib/linux-image-${KERNEL_VERSION}/\${fdtfile}" >> ${BOOT_CMD}
 echo "load \${devtype} \${devnum}:\${distro_bootpart} \${kernel_addr_r}" \
-     "/boot/vmlinuz-${KERNEL_VERSION}" >> ${BOOT_CMD}
+     "/boot/${KERNEL_FILE}-${KERNEL_VERSION}" >> ${BOOT_CMD}
 
 case "${NO_INITRD}" in
 yes|1)
@@ -51,11 +66,6 @@ if [ -n "${OVERLAYS}" ]; then
 		     >> ${BOOT_CMD}
 		echo "fdt apply \${overlay_addr_r}" >> ${BOOT_CMD}
 	done
-fi
-
-BOOT="bootz"
-if [ "$(uname -m)" = "aarch64" ]; then
-	BOOT="booti"
 fi
 
 echo "${BOOT} \${kernel_addr_r} ${INITRD_ADDR} \${fdt_addr_r}" >> ${BOOT_CMD}
