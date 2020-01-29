@@ -17,6 +17,9 @@ endif
 ifeq ($(DEB_HOST_GNU_CPU), aarch64)
 export ARCH=arm64
 endif
+ifeq ($(DEB_HOST_GNU_CPU), riscv64)
+export ARCH=riscv
+endif
 ifneq (,$(findstring 86,$(DEB_HOST_GNU_CPU)))
 export ARCH=x86
 endif
