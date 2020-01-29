@@ -127,7 +127,10 @@ EOF
 
 do_copy_boot_files[dirs] = "${DEPLOY_DIR_IMAGE}"
 do_copy_boot_files() {
-    kernel="$(realpath -q '${IMAGE_ROOTFS}/${KERNEL_FILE}')"
+    kernel="$(realpath -q '${IMAGE_ROOTFS}/vmlinuz')"
+    if [ ! -f "$kernel" ]; then
+        kernel="$(realpath -q '${IMAGE_ROOTFS}/vmlinux')"
+    fi
     if [ -f "$kernel" ]; then
         cp -f "$kernel" '${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGE}'
     fi
