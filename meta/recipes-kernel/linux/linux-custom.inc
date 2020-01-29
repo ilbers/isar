@@ -97,6 +97,8 @@ def get_kernel_arch(d):
         kernel_arch = "arm"
     elif distro_arch == "mipsel":
         kernel_arch = "mips"
+    elif distro_arch == "riscv64":
+        kernel_arch = "riscv"
     else:
         kernel_arch = ""
     return kernel_arch

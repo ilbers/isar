@@ -26,9 +26,9 @@ do_install() {
     fi
     krel="$(${MAKE} O=${O} -s --no-print-directory kernelrelease)"
     case "${ARCH}" in
-        mips|powerpc) kimage_path="boot/vmlinux-${krel}"    ;;
-                  um) kimage_path="usr/bin/vmlinux-${krel}" ;;
-                   *) kimage_path="boot/vmlinuz-${krel}"    ;;
+        mips|powerpc|riscv) kimage_path="boot/vmlinux-${krel}"    ;;
+                        um) kimage_path="usr/bin/vmlinux-${krel}" ;;
+                         *) kimage_path="boot/vmlinuz-${krel}"    ;;
     esac
 
     print_settings
@@ -60,8 +60,8 @@ install_image() {
     install -m 755 -d ${deb_img_dir}/$(dirname ${kimage_path})
     cp ${O}/${kimage} ${deb_img_dir}/${kimage_path}
 
-    # Make sure arm64 kernels are decompressed
-    if [ "${ARCH}" = "arm64" ]; then
+    # Make sure arm64 and riscv kernels are decompressed
+    if [ "${ARCH}" = "arm64" -o "${ARCH}" = "riscv" ]; then
         mv ${deb_img_dir}/${kimage_path} ${deb_img_dir}/${kimage_path}.gz
         gunzip -f ${deb_img_dir}/${kimage_path}.gz
     fi
