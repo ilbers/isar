@@ -60,6 +60,7 @@ BBMULTICONFIG = " \
     hikey-stretch \
     nand-ubi-demo-buster \
     rpi-stretch \
+    sifive-fu540-sid-ports \
 "
 
 #
