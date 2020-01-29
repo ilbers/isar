@@ -107,10 +107,7 @@ readonly IMAGE_DIR=$DEPLOY_DIR_IMAGE
 readonly ISARROOT="$(dirname "$0")"/..
 
 readonly MACHINE_CONF=$ISARROOT/meta-isar/conf/machine/qemu$ARCH.conf
-eval "$(egrep 'MACHINE_SERIAL' $MACHINE_CONF |bb2sh)"
-
-readonly CONFIG_CONF=$ISARROOT/meta-isar/conf/multiconfig/qemu$ARCH-$DISTRO.conf
-eval "$(egrep 'QEMU_' $CONFIG_CONF |bb2sh)"
+eval "$(egrep 'MACHINE_SERIAL|QEMU_' $MACHINE_CONF |bb2sh)"
 
 eval $(bitbake -e mc:qemu$ARCH-$DISTRO:isar-image-base | grep "^IMAGE_TYPE=")
 case "$IMAGE_TYPE" in
