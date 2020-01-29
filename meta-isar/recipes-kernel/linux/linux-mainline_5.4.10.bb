@@ -10,15 +10,12 @@ require recipes-kernel/linux/linux-custom.inc
 ARCHIVE_VERSION = "${@ d.getVar('PV')[:-2] if d.getVar('PV').endswith('.0') else d.getVar('PV') }"
 
 SRC_URI += " \
-    https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-${ARCHIVE_VERSION}.tar.xz \
+    https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-${ARCHIVE_VERSION}.tar.xz \
     file://x86_64_defconfig \
     file://no-ubifs-fs.cfg \
     file://no-root-nfs.cfg;apply=no"
 
-SRC_URI[sha256sum] = "c1923b6bd166e6dd07be860c15f59e8273aaa8692bc2a1fce1d31b826b9b3fbe"
-
-SRC_URI_append_de0-nano-soc = " \
-    file://0001-ARM-dts-socfpga-Rename-socfpga_cyclone5_de0_-sockit-.patch"
+SRC_URI[sha256sum] = "f23c0218a5e3b363bb5a880972f507bb4dc4a290a787a7da08be07ea12042edd"
 
 S = "${WORKDIR}/linux-${ARCHIVE_VERSION}"
 
