@@ -43,7 +43,7 @@ show_help() {
     echo
     echo "Parameters:"
     echo "    -a, --arch ARCH       set isar machine architecture."
-    echo "                          Supported: arm, i386, amd64, arm64, mipsel."
+    echo "                          Supported: arm, i386, amd64, arm64, mipsel, riscv64."
     echo "    -b, --build BUILD     set path to build directory."
     echo "    -d, --distro DISTRO   set isar Debian distribution."
     echo "                          Supported: stretch, buster"
@@ -119,6 +119,10 @@ case "$IMAGE_TYPE" in
     QKERNEL=$IMAGE_DIR/${KERNEL_IMAGE}
     QINITRD=/dev/null
     [ -n "$INITRD_IMAGE" ] && QINITRD=$IMAGE_DIR/${INITRD_IMAGE}
+    if [ "$ARCH" = "riscv64" ]; then
+        EXTRA_ARGS="$EXTRA_ARGS -device loader,file=$QKERNEL,addr=0x80200000"
+        QKERNEL="/usr/lib/riscv64-linux-gnu/opensbi/qemu/virt/fw_jump.elf"
+    fi
     EXTRA_ARGS="$EXTRA_ARGS \
 	-kernel $QKERNEL \
 	-initrd $QINITRD"
