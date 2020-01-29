@@ -18,6 +18,7 @@ python() {
         'amd64',
         '686-pae',
         '4kc-malta',
+        'riscv64',
     ]:
         d.setVar('ISAR_CROSS_COMPILE', '0')
 }
