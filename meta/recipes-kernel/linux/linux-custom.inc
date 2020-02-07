@@ -39,7 +39,7 @@ KERNEL_LIBC_DEV_DEPLOY ?= "0"
 
 LINUX_VERSION_EXTENSION ?= ""
 
-KERNEL_DEFCONFIG ?= ""
+KERNEL_DEFCONFIG ??= ""
 
 # Add our template meta-data to the sources
 FILESEXTRAPATHS_prepend := "${FILE_DIRNAME}/files:"
