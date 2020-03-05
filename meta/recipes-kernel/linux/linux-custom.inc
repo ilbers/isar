@@ -22,8 +22,7 @@ KBUILD_DEPENDS ?= "build-essential:native, \
                    cpio, \
                    flex, \
                    git, \
-                   kmod, \
-                   libssl-dev,"
+                   kmod,"
 
 KERNEL_DEBIAN_DEPENDS ?= "initramfs-tools | linux-initramfs-tool, \
                           kmod, \
