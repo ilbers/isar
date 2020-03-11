@@ -6,6 +6,8 @@
 
 inherit repository
 
+SRC_URI = "file://distributions.in"
+
 BASE_REPO_KEY ?= ""
 KEYFILES ?= ""
 
@@ -50,6 +52,7 @@ repo() {
     repo_create "${REPO_BASE_DIR}"/"${BASE_DISTRO}" \
         "${REPO_BASE_DB_DIR}"/"${BASE_DISTRO}" \
         "${BASE_DISTRO_CODENAME}" \
+        "${WORKDIR}/distributions.in" \
         "${KEYFILES}"
 
     if [ -d '${BUILDCHROOT_HOST_DIR}/var/cache/apt' ] &&

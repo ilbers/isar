@@ -6,6 +6,8 @@
 
 inherit repository
 
+SRC_URI = "file://distributions.in"
+
 do_cache_config[stamp-extra-info] = "${DISTRO}"
 do_cache_config[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
 
@@ -14,7 +16,8 @@ do_cache_config[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
 do_cache_config() {
     repo_create "${REPO_ISAR_DIR}"/"${DISTRO}" \
         "${REPO_ISAR_DB_DIR}"/"${DISTRO}" \
-        "${DEBDISTRONAME}"
+        "${DEBDISTRONAME}" \
+        "${WORKDIR}/distributions.in"
 }
 
 addtask cache_config after do_unpack before do_build

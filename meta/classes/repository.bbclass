@@ -8,7 +8,8 @@ repo_create() {
     local dir="$1"
     local dbdir="$2"
     local codename="$3"
-    local keyfiles="$4"
+    local distros_in="$4"
+    local keyfiles="$5"
 
     if [ -n "${GNUPGHOME}" ]; then
         export GNUPGHOME="${GNUPGHOME}"
@@ -16,11 +17,8 @@ repo_create() {
 
     if [ ! -f "${dir}"/conf/distributions ]; then
         mkdir -p "${dir}"/conf/
-        cat <<EOF > "${dir}"/conf/distributions
-Codename: ${codename}
-Architectures: i386 armhf arm64 amd64 mipsel riscv64 source
-Components: main
-EOF
+        sed -e "s#{CODENAME}#${codename}#g" ${distros_in} \
+            >"${dir}"/conf/distributions
         if [ -n "${keyfiles}" ] ; then
 	    local option=""
 	    for key in ${keyfiles}; do
