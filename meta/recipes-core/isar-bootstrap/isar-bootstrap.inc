@@ -25,7 +25,7 @@ THIRD_PARTY_APT_KEYFILES = ""
 DEPLOY_ISAR_BOOTSTRAP ?= ""
 DISTRO_BOOTSTRAP_BASE_PACKAGES = "locales"
 DISTRO_BOOTSTRAP_BASE_PACKAGES_append_gnupg = ",gnupg"
-DISTRO_BOOTSTRAP_BASE_PACKAGES_append_https-support = ",apt-transport-https,ca-certificates"
+DISTRO_BOOTSTRAP_BASE_PACKAGES_append_https-support = "${@https_support(d)}"
 HOST_DISTRO_APT_SOURCES += "conf/distro/${HOST_DISTRO}.list"
 
 inherit deb-dl-dir
@@ -160,6 +160,12 @@ def get_distro_primary_source_entry(d, is_host=False):
 
 def get_distro_have_https_source(d, is_host=False):
     return any(source[2].startswith("https://") for source in generate_distro_sources(d, is_host))
+
+def https_support(d, is_host=False):
+    if get_distro_suite(d, is_host) == "stretch":
+        return ",apt-transport-https,ca-certificates"
+    else:
+        return ",ca-certificates"
 
 def get_distro_needs_https_support(d, is_host=False):
     if get_distro_have_https_source(d, is_host):
