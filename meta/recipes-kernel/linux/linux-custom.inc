@@ -145,6 +145,8 @@ dpkg_configure_kernel() {
 		if [ -e "${WORKDIR}/${KERNEL_DEFCONFIG}" ]; then
 			cp ${WORKDIR}/${KERNEL_DEFCONFIG} ${S}/${KERNEL_BUILD_DIR}/.config
 			config_target="olddefconfig"
+		else
+			config_target="defconfig KBUILD_DEFCONFIG=${KERNEL_DEFCONFIG}"
 		fi
 	else
 		config_target="defconfig"
