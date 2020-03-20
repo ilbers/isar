@@ -32,8 +32,12 @@ deb_dl_dir_export() {
         while read p; do
             # skip files from a previous export
             [ -f "${pc}/${p##*/}" ] && continue
-            repo_contains_package "${REPO_ISAR_DIR}"/"${DISTRO}" "${p}" && \
-                continue
+            # can not reuse bitbake function here, this is basically
+            # "repo_contains_package"
+            package=$(find "${REPO_ISAR_DIR}"/"${DISTRO}" -name ${p##*/})
+            if [ -n "$package" ]; then
+                cmp --silent "$package" "$p" && continue
+            fi
             sudo cp -n "${p}" "${pc}"
         done
         sudo chown -R $(id -u):$(id -g) "${pc}"
