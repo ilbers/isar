@@ -20,7 +20,8 @@ TEMPLATE_FILES = "ubinize.cfg.tmpl fitimage.its.tmpl"
 
 KERNEL_IMG = "${PP_DEPLOY}/${KERNEL_IMAGE}"
 INITRD_IMG = "${PP_DEPLOY}/${INITRD_IMAGE}"
-DTB_IMG = "${PP_DEPLOY}/${DTB_FILE}"
+# only one dtb file supported, pick the first
+DTB_IMG = "${PP_DEPLOY}/${@(d.getVar('DTB_FILES').split() or [''])[0]}"
 
 UBIFS_IMG = "${PP_DEPLOY}/${UBIFS_IMAGE_FILE}"
 FIT_IMG = "${PP_DEPLOY}/${FIT_IMAGE_FILE}"

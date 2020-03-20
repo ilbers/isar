@@ -231,3 +231,8 @@ That task used to be at the end of a cache-warming build, a follow-up build
 with `ISAR_USE_CACHED_BASE_REPO` did use that. Now we cache all downloads
 anyway, if `ISAR_USE_CACHED_BASE_REPO` is set a build will use all the
 downloads from previous builds for the cache.
+
+### Renamed DTB_FILE to DTB_FILES, adding support for multiple entries
+
+DTB_FILES now allows to specify multiple DTBs that should be deployed for
+consumption by imaging classes.

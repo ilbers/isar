@@ -19,6 +19,9 @@ IMAGE_FULLNAME = "${PN}-${DISTRO}-${MACHINE}"
 KERNEL_IMAGE ?= "${IMAGE_FULLNAME}-${KERNEL_FILE}"
 INITRD_IMAGE ?= "${IMAGE_FULLNAME}-initrd.img"
 
+# This defines the deployed dtbs for reuse by imagers
+DTB_FILES ?= ""
+
 # Useful variables for imager implementations:
 PP = "/home/builder/${PN}"
 PP_DEPLOY = "${PP}/deploy"
@@ -139,17 +142,16 @@ do_copy_boot_files() {
         cp -f "$initrd" '${DEPLOY_DIR_IMAGE}/${INITRD_IMAGE}'
     fi
 
-    # Check DTB_FILE via inline python to handle unset case:
-    if [ -n "${@d.getVar('DTB_FILE', True) or ""}" ]; then
+    for file in ${DTB_FILES}; do
         dtb="$(find '${IMAGE_ROOTFS}/usr/lib' -type f \
-                    -iwholename '*linux-image-*/${DTB_FILE}' | head -1)"
+                    -iwholename '*linux-image-*/'${file} | head -1)"
 
         if [ -z "$dtb" -o ! -e "$dtb" ]; then
-            die "${DTB_FILE} not found"
+            die "${file} not found"
         fi
 
-        cp -f "$dtb" "${DEPLOY_DIR_IMAGE}/${DTB_FILE}"
-    fi
+        cp -f "$dtb" "${DEPLOY_DIR_IMAGE}/"
+    done
 }
 addtask copy_boot_files before do_rootfs_postprocess after do_rootfs_install
 
