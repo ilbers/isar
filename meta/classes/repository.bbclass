@@ -81,3 +81,22 @@ repo_del_package() {
         remove "${codename}" \
         "${p}"
 }
+
+repo_contains_package() {
+    local dir="$1"
+    local file="$2"
+    local package
+
+    package=$(find ${dir} -name ${file##*/})
+    if [ -n "$package" ]; then
+        local md1=$(md5sum "$package" | cut -d ' ' -f 1)
+        local md2=$(sudo md5sum "$file" | cut -d ' ' -f 1)
+
+        # yes
+        [ "${md1}" = "${md2}" ] && return 0
+        # yes but not the exact same file
+        return 1
+    fi
+    # no
+    return 2
+}
