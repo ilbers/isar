@@ -10,7 +10,10 @@ deb_dl_dir_import() {
     export rootfs="${1}"
     [ ! -d "${pc}" ] && return 0
     sudo mkdir -p "${rootfs}"/var/cache/apt/archives/
-    flock -s "${pc}".lock -c ' \
+    flock -s "${pc}".lock -c '
+        set -e
+        printenv | grep -q BB_VERBOSE_LOGS && set -x
+
         sudo find "${pc}" -type f -iname '*\.deb' -exec \
             cp -n --no-preserve=owner -t "${rootfs}"/var/cache/apt/archives/ '{}' +
     '
@@ -20,9 +23,12 @@ deb_dl_dir_export() {
     export pc="${DEBDIR}/${DISTRO}/"
     export rootfs="${1}"
     mkdir -p "${pc}"
-    flock "${pc}".lock -c ' \
+    flock "${pc}".lock -c '
+        set -e
+        printenv | grep -q BB_VERBOSE_LOGS && set -x
+
         find "${rootfs}"/var/cache/apt/archives/ \
-            -type f -iname '*\.deb' |\
+            -maxdepth 1 -type f -iname '*\.deb' |\
         while read p; do
             # skip files from a previous export
             [ -f "${pc}/${p##*/}" ] && continue
