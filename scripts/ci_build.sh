@@ -145,7 +145,7 @@ if [ -n "$REPRO_BUILD" ]; then
 
     # Enable use of signed cached base repository
     echo BASE_REPO_KEY=\"file://$ISAR_TESTSUITE_GPG_PUB_KEY_FILE\" >> conf/local.conf
-    bitbake $BB_ARGS -c cache_base_repo $REPRO_TARGETS_SET_SIGNED
+    bitbake $BB_ARGS $REPRO_TARGETS_SET_SIGNED
     while [ -e bitbake.sock ]; do sleep 1; done
     sudo rm -rf tmp
     sed -i -e 's/#ISAR_USE_CACHED_BASE_REPO ?= "1"/ISAR_USE_CACHED_BASE_REPO ?= "1"/g' conf/local.conf
@@ -159,7 +159,7 @@ if [ -n "$REPRO_BUILD" ]; then
     sed -i -e 's/^BASE_REPO_KEY/#BASE_REPO_KEY/g' conf/local.conf
 
     # Enable use of unsigned cached base repository
-    bitbake $BB_ARGS -c cache_base_repo $REPRO_TARGETS_SET
+    bitbake $BB_ARGS $REPRO_TARGETS_SET
     while [ -e bitbake.sock ]; do sleep 1; done
     sudo rm -rf tmp
     sed -i -e 's/#ISAR_USE_CACHED_BASE_REPO ?= "1"/ISAR_USE_CACHED_BASE_REPO ?= "1"/g' conf/local.conf

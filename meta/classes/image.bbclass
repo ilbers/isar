@@ -66,7 +66,6 @@ ROOTFS_MANIFEST_DEPLOY_DIR ?= "${DEPLOY_DIR_IMAGE}"
 
 inherit rootfs
 inherit image-sdk-extension
-inherit image-cache-extension
 inherit image-tools-extension
 inherit image-postproc-extension
 inherit image-locales-extension

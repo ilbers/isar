@@ -836,10 +836,10 @@ path to the public key in `conf/local.conf`, e.g.:
 BASE_REPO_KEY = "file://<absolute_path_to_your_pub_key_file>"'
 ```
 
- - Trigger creation of local apt caching Debian packages during image generation.
+ - Trigger the download and caching of all required files by doing a warm-up build.
 
 ```
-bitbake -c cache_base_repo mc:qemuarm-buster:isar-image-base
+bitbake mc:qemuarm-buster:isar-image-base
 ```
 
  - Set `ISAR_USE_CACHED_BASE_REPO` in `conf/local.conf`:
@@ -849,14 +849,14 @@ bitbake -c cache_base_repo mc:qemuarm-buster:isar-image-base
 #ISAR_USE_CACHED_BASE_REPO ?= "1"
 #BB_NO_NETWORK ?= "1"
 ```
- - Remove build artifacts to use only local base-apt:
+ - Remove build artifacts to use only local base-apt, in fact toggling ISAR_USE_CACHED_BASE_REPO should trigger a full rebuild as well. This is just the way to be extra sure that only the download cache is used.
 
 ```
 sudo rm -rf tmp
 
 ```
 
- - Trigger again generation of image (now using local caching repo):
+ - Trigger the generation of your image again (now a local repo will be created out of the download cache from the last run):
 
 ```
 bitbake mc:qemuarm-buster:isar-image-base
