@@ -17,10 +17,6 @@ populate_base_apt() {
         # same and should not be overwritten. This method is easier and more
         # robust than querying reprepro by name.
 
-        # Check if this package is taken from Isar-apt, if so - ingore it.
-        repo_contains_package "${REPO_ISAR_DIR}/${DISTRO}" "${package}" && \
-            continue
-
         # Check if this package is already in base-apt
         ret=0
         repo_contains_package "${REPO_BASE_DIR}/${BASE_DISTRO}" "${package}" ||
