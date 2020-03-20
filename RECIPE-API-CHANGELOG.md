@@ -224,3 +224,10 @@ In order to get a LOCALVERSION appendix into both the kernel config and the
 version information of the self-built packages, the LINUX_VERSION_EXTENSION is
 now available. It remains empty by default unless a recipe sets it. The
 appended version usually starts with a "-".
+
+### Image task `cache_base_repo` was removed
+
+That task used to be at the end of a cache-warming build, a follow-up build
+with `ISAR_USE_CACHED_BASE_REPO` did use that. Now we cache all downloads
+anyway, if `ISAR_USE_CACHED_BASE_REPO` is set a build will use all the
+downloads from previous builds for the cache.
