@@ -46,7 +46,6 @@ EOSUDO
 ROOTFS_POSTPROCESS_COMMAND =+ "buildchroot_install_files"
 buildchroot_install_files() {
     sudo mkdir -p "${BUILDCHROOT_DIR}/home/builder"
-    sudo mkdir -p "${BUILDCHROOT_DIR}/isar-apt"
     # Install package builder script
     sudo chmod -R a+rw "${BUILDCHROOT_DIR}/home/builder"
     sudo install -m 755 -d ${BUILDCHROOT_DIR}/isar
