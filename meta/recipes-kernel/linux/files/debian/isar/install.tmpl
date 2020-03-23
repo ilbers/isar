@@ -37,6 +37,10 @@ do_install() {
     set -x
 
     install_image
+    if [ "${ARCH}" != "um" ]; then
+        install_config
+        install_map
+    fi
     install_hooks
     install_dtbs
     install_kmods
@@ -67,6 +71,14 @@ install_image() {
     fi
 
     install_image_debug
+}
+
+install_config() {
+    install -m 644 ${O}/.config ${deb_img_dir}/$(dirname ${kimage_path})/config-${krel}
+}
+
+install_map() {
+    install -m 644 ${O}/System.map ${deb_img_dir}/$(dirname ${kimage_path})/System.map-${krel}
 }
 
 install_image_debug() {
