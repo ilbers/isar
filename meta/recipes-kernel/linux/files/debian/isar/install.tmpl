@@ -62,7 +62,7 @@ EOF
 
 install_image() {
     install -m 755 -d ${deb_img_dir}/$(dirname ${kimage_path})
-    cp ${O}/${kimage} ${deb_img_dir}/${kimage_path}
+    install -m 644 ${O}/${kimage} ${deb_img_dir}/${kimage_path}
 
     # Make sure arm64 and riscv kernels are decompressed
     if [ "${ARCH}" = "arm64" -o "${ARCH}" = "riscv" ]; then
@@ -85,7 +85,7 @@ install_image_debug() {
     # Different tools want the image in different locations
     # perf
     mkdir -p ${deb_dbg_dir}/usr/lib/debug/lib/modules/${krel}/
-    cp ${O}/vmlinux ${deb_dbg_dir}/usr/lib/debug/lib/modules/${krel}/
+    install -m 644 ${O}/vmlinux ${deb_dbg_dir}/usr/lib/debug/lib/modules/${krel}/
     # systemtap
     mkdir -p ${deb_dbg_dir}/usr/lib/debug/boot/
     ln -s ../lib/modules/$version/vmlinux ${deb_dbg_dir}/usr/lib/debug/boot/vmlinux-${krel}
