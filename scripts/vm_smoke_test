@@ -4,9 +4,14 @@
 # Copyright (C) 2015-2018 ilbers GmbH
 
 CONSOLE_OUTPUT=/tmp/isar_console
+QEMU_OUTPUT=/tmp/qemu_output
 PID_FILE=/tmp/qemu.pid
 VERBOSE=1
-TIMEOUT=300
+QEMU_STARTUP_TIMEOUT=120 # s
+QEMU_STARTUP_POLLING_INTERVAL=1 # s
+GREETING_TIMEOUT=1200 # s
+GREETING_POLLING_INTERVAL=2 # s
+GREETING_REGEXP="Debian GNU/Linux \d+ isar"
 
 # Error codes:
 ES_OK=0
@@ -21,18 +26,10 @@ dump_boot_log() {
     echo "\n8<--"
 }
 
-check_login_prompt() {
-    echo -n "Check login prompt: "
-
-    str=$(grep "isar login: " $CONSOLE_OUTPUT)
-
-    if [ -n "$str" ]; then
-        echo "PASSED"
-    else
-        echo "FAIL"
-        RET=$ES_FAIL
-        FAIL=1
-    fi
+dump_qemu_log() {
+    echo "QEMU log:\n8<--"
+    cat $QEMU_OUTPUT
+    echo "\n8<--"
 }
 
 check_example_module() {
@@ -56,31 +53,48 @@ run_test () {
     echo "-------------------------------------------------"
     echo "Testing Isar [$DISTRO] image for [$ARCH] machine:"
 
-    start_vm -a $ARCH -d $DISTRO -o $CONSOLE_OUTPUT -p $PID_FILE > /dev/null 2>&1 &
+    start_vm -a $ARCH -d $DISTRO -o $CONSOLE_OUTPUT -p $PID_FILE > $QEMU_OUTPUT 2>&1 &
     sleep 5
 
+    FAIL=1
     if [ -z `ps -p $! -o pid=` ]; then
         echo "QEMU start: FAILED"
-        RET=$ES_FAIL
-        echo "Command output:\n8<--"
-        start_vm -a $ARCH -d $DISTRO -o $CONSOLE_OUTPUT -p $PID_FILE
-        echo "\n8<--"
+        dump_qemu_log
     else
-        sleep $TIMEOUT
+        i=0
+        while [ $i -lt $QEMU_STARTUP_TIMEOUT ]; do
+            if [ -f "$CONSOLE_OUTPUT" ]; then
+                break
+            fi
+            i=$((i+$QEMU_STARTUP_POLLING_INTERVAL))
+            sleep $QEMU_STARTUP_POLLING_INTERVAL
+        done
+        if [ ! -f "$CONSOLE_OUTPUT" ]; then
+            echo "Console output file hasn't been created"
+            dump_qemu_log
+        else
+            i=0
+            while [ $i -lt $GREETING_TIMEOUT ]; do
+                str=$(grep -P "$GREETING_REGEXP" $CONSOLE_OUTPUT)
+                if [ -n "$str" ]; then
+                    echo "Check greeting: PASSED"
+                    FAIL=0
+                    check_example_module
+                    break
+                fi
+                i=$((i+$GREETING_POLLING_INTERVAL))
+                sleep $GREETING_POLLING_INTERVAL
+            done
+
+            [ $VERBOSE -eq 1 -o $FAIL -eq 1 ] && dump_boot_log
+            [ $FAIL -eq 1 ] && RET=$ES_FAIL
+            rm $CONSOLE_OUTPUT
+        fi
         kill `cat $PID_FILE`
-
-        FAIL=0
-
-        check_login_prompt
-
-        check_example_module
-
-        [ $VERBOSE -eq 1 -o $FAIL -eq 1 ] && dump_boot_log
-
-        rm $CONSOLE_OUTPUT
+        # Pidfile is cleaned up by QEMU
     fi
 
-    rm $PID_FILE
+    rm $QEMU_OUTPUT
 }
 
 show_help() {
