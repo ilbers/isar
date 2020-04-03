@@ -5,6 +5,7 @@
 
 CHANGELOG_V ?= "${PV}"
 DPKG_ARCH ??= "any"
+DEBIAN_BUILD_DEPENDS ?= ""
 DEBIAN_DEPENDS ?= ""
 DESCRIPTION ?= "must not be empty"
 MAINTAINER ?= "Unknown maintainer <unknown@example.com>"
@@ -49,7 +50,7 @@ Section: misc
 Priority: optional
 Standards-Version: 3.9.6
 Maintainer: ${MAINTAINER}
-Build-Depends: debhelper (>= ${compat})
+Build-Depends: debhelper (>= ${compat}), ${DEBIAN_BUILD_DEPENDS}
 
 Package: ${PN}
 Architecture: ${DPKG_ARCH}

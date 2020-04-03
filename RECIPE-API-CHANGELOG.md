@@ -236,3 +236,8 @@ downloads from previous builds for the cache.
 
 DTB_FILES now allows to specify multiple DTBs that should be deployed for
 consumption by imaging classes.
+
+### Add DEBIAN_BUILD_DEPENDS as deb_debianize parameter
+
+Additional build dependencies of auto-debianized packages can now be defined
+by setting DEBIAN_BUILD_DEPENDS.
