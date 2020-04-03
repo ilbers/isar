@@ -35,10 +35,10 @@ do_install() {
 	bbnote "A HOME entry for everyone ... created after this is installed"
 	echo "hello skel" > ${WORKDIR}/${PN}-isar-skel.txt
 	install -v -d ${D}/etc/skel/
-	install -v -m 644 ${WORKDIR}/${PN}-isar-skel.txt ${S}/etc/skel/
+	install -v -m 644 ${WORKDIR}/${PN}-isar-skel.txt ${D}/etc/skel/
 
 	bbnote "A user-specific HOME entry"
 	echo "hello isar" > ${WORKDIR}/${PN}-isar.txt
 	install -v -d ${D}/var/lib/isar/
-	install -v -m 644 ${WORKDIR}/${PN}-isar.txt ${S}/var/lib/isar/
+	install -v -m 644 ${WORKDIR}/${PN}-isar.txt ${D}/var/lib/isar/
 }
