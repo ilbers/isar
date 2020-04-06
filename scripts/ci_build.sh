@@ -212,3 +212,15 @@ echo -e "do_fetch_append() {\n\n}" >> "${ISARROOT}/meta/classes/dpkg-base.bbclas
 bitbake $BB_ARGS mc:qemuamd64-stretch:isar-image-base
 
 mv "${ISARROOT}/meta/classes/dpkg-base.bbclass.ci-backup" "${ISARROOT}/meta/classes/dpkg-base.bbclass"
+
+# Test wic --exclude-path
+cp -a "${ISARROOT}/meta-isar/scripts/lib/wic/canned-wks/sdimage-efi.wks" "${ISARROOT}/meta-isar/scripts/lib/wic/canned-wks/sdimage-efi.wks.ci-backup"
+mv ${BUILDDIR}/tmp/deploy/images/qemuamd64/isar-image-base-debian-stretch-qemuamd64.wic.img \
+    ${BUILDDIR}/tmp/deploy/images/qemuamd64/isar-image-base-debian-stretch-qemuamd64.wic.img.ci-backup
+sed -i -e 's/part \/ /part \/ --exclude-path usr /g' "${ISARROOT}/meta-isar/scripts/lib/wic/canned-wks/sdimage-efi.wks"
+
+bitbake $BB_ARGS mc:qemuamd64-stretch:isar-image-base
+
+mv "${ISARROOT}/meta-isar/scripts/lib/wic/canned-wks/sdimage-efi.wks.ci-backup" "${ISARROOT}/meta-isar/scripts/lib/wic/canned-wks/sdimage-efi.wks"
+mv ${BUILDDIR}/tmp/deploy/images/qemuamd64/isar-image-base-debian-stretch-qemuamd64.wic.img.ci-backup \
+    ${BUILDDIR}/tmp/deploy/images/qemuamd64/isar-image-base-debian-stretch-qemuamd64.wic.img
