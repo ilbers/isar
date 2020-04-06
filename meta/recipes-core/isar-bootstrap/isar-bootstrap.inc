@@ -26,7 +26,6 @@ DEPLOY_ISAR_BOOTSTRAP ?= ""
 DISTRO_BOOTSTRAP_BASE_PACKAGES = "locales"
 DISTRO_BOOTSTRAP_BASE_PACKAGES_append_gnupg = ",gnupg"
 DISTRO_BOOTSTRAP_BASE_PACKAGES_append_https-support = "${@https_support(d)}"
-HOST_DISTRO_APT_SOURCES += "conf/distro/${HOST_DISTRO}.list"
 
 inherit deb-dl-dir
 
