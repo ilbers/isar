@@ -241,3 +241,8 @@ consumption by imaging classes.
 
 Additional build dependencies of auto-debianized packages can now be defined
 by setting DEBIAN_BUILD_DEPENDS.
+
+### Separation of ${S} and ${D} in dpkg-raw
+
+${S} can now be used for checking out sources without being linked implicitly
+with ${D} which needs to be filled explicitly in do_install as before.
