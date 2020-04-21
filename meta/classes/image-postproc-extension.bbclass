@@ -4,10 +4,12 @@
 update_etc_os_release() {
     OS_RELEASE_BUILD_ID=""
     OS_RELEASE_VARIANT=""
+    OS_RELEASE_VARIANT_VERSION=""
     while true; do
         case "$1" in
         --build-id) OS_RELEASE_BUILD_ID=$2; shift ;;
         --variant) OS_RELEASE_VARIANT=$2; shift ;;
+        --version) OS_RELEASE_VARIANT_VERSION=$2; shift ;;
         -*) bbfatal "$0: invalid option specified: $1" ;;
         *) break ;;
         esac
@@ -22,6 +24,11 @@ update_etc_os_release() {
     if [ -n "${OS_RELEASE_VARIANT}" ]; then
         sudo sed -i '/^VARIANT=.*/d' '${IMAGE_ROOTFS}/etc/os-release'
         echo "VARIANT=\"${OS_RELEASE_VARIANT}\"" | \
+            sudo tee -a '${IMAGE_ROOTFS}/etc/os-release'
+    fi
+    if [ -n "${OS_RELEASE_VARIANT_VERSION}" ]; then
+        sudo sed -i '/^ISAR_IMAGE_VERSION=.*/d' '${IMAGE_ROOTFS}/etc/os-release'
+        echo "VARIANT_VERSION=\"${PV}\"" | \
             sudo tee -a '${IMAGE_ROOTFS}/etc/os-release'
     fi
 }
@@ -43,7 +50,7 @@ ROOTFS_POSTPROCESS_COMMAND =+ "image_postprocess_mark"
 image_postprocess_mark() {
     BUILD_ID=$(get_build_id)
     update_etc_os_release \
-        --build-id "${BUILD_ID}" --variant "${DESCRIPTION}"
+        --build-id "${BUILD_ID}" --variant "${DESCRIPTION}" --version "${PV}"
 }
 
 ROOTFS_POSTPROCESS_COMMAND =+ "image_postprocess_machine_id"
