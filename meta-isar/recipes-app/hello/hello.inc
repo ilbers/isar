@@ -11,7 +11,7 @@ inherit dpkg
 SRC_URI = "apt://${PN}"
 
 MAINTAINER = "isar-users <isar-users@googlegroups.com>"
-CHANGELOG_V = "${PV}-99+isar"
+CHANGELOG_V = "<orig-version>+isar"
 
 do_prepare_build() {
 	deb_add_changelog
