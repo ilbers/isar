@@ -34,9 +34,8 @@ ${PN} (${changelog_v}) UNRELEASED; urgency=low
  -- ${MAINTAINER}  ${date}
 EOF
 	if [ -f ${WORKDIR}/changelog ]; then
-		if head -1 "${WORKDIR}"/changelog | \
-			grep -q -e "^${PN} (${changelog_v})"
-		then
+		latest_version=$(dpkg-parsechangelog -l ${WORKDIR}/changelog -S Version)
+		if [ "${latest_version}" = "${changelog_v}" ]; then
 			# entry for our version already there, use unmodified
 			rm ${S}/debian/changelog
 		else
