@@ -35,8 +35,13 @@ fi
 
 # Install all build deps
 if [ "$3" = "--download-only" ]; then
-    mk-build-deps $set_arch -t "${install_cmd}" -i -r debian/control 2>&1 \
-        | grep "mk-build-deps: Unable to install all build-dep packages"
+    # this will not return 0 even when it worked
+    mk-build-deps $set_arch -t "${install_cmd}" -i -r debian/control &> \
+        mk-build-deps.output || true
+    cat mk-build-deps.output
+    # we assume success when we find this
+    grep "mk-build-deps: Unable to install all build-dep packages" mk-build-deps.output
+    rm -f mk-build-deps.output
 else
     mk-build-deps $set_arch -t "${install_cmd}" -i -r debian/control
 
