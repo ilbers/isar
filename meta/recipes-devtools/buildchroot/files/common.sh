@@ -18,7 +18,6 @@ fi
 # Create human-readable names
 target_arch=$2
 
-debian_version=$(cut -c1 /etc/debian_version)
 set_arch="--host-arch $target_arch"
 
 # Go to build directory
