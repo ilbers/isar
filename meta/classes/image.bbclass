@@ -99,7 +99,7 @@ get_build_id() {
 		       "considered in the build_id. Consider changing" \
 		       "ISAR_RELEASE_CMD."
 	fi
-	if ! ${ISAR_RELEASE_CMD} 2>/dev/null; then
+	if ! ( ${ISAR_RELEASE_CMD} ) 2>/dev/null; then
 		bbwarn "\"${ISAR_RELEASE_CMD}\" failed, returning empty build_id."
 		echo ""
 	fi
