@@ -123,7 +123,7 @@ rootfs_install_pkgs_download[weight] = "600"
 rootfs_install_pkgs_download[isar-apt-lock] = "release-after"
 rootfs_install_pkgs_download() {
     sudo -E chroot '${ROOTFSDIR}' \
-        /usr/bin/apt-get ${ROOTFS_APT_ARGS} --download-only ${ROOTFS_PACKAGES}
+        /usr/bin/apt-get ${ROOTFS_APT_ARGS} -o Acquire::Retries=3 --download-only ${ROOTFS_PACKAGES}
 }
 
 ROOTFS_INSTALL_COMMAND_BEFORE_EXPORT ??= ""
