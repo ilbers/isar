@@ -3,12 +3,12 @@
 #
 # SPDX-License-Identifier: MIT
 
-CHANGELOG_V ?= "${PV}"
+CHANGELOG_V ??= "${PV}"
 DPKG_ARCH ??= "any"
-DEBIAN_BUILD_DEPENDS ?= ""
-DEBIAN_DEPENDS ?= ""
-DESCRIPTION ?= "must not be empty"
-MAINTAINER ?= "Unknown maintainer <unknown@example.com>"
+DEBIAN_BUILD_DEPENDS ??= ""
+DEBIAN_DEPENDS ??= ""
+DESCRIPTION ??= "must not be empty"
+MAINTAINER ??= "Unknown maintainer <unknown@example.com>"
 
 deb_add_changelog() {
 	changelog_v="${CHANGELOG_V}"
