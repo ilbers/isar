@@ -22,7 +22,7 @@ do_build() {
     set -x
 
     # Build the Linux kernel
-    ${MAKE} O=${KERNEL_BUILD_DIR} -j $(nproc) || exit ${?}
+    ${MAKE} O=${KERNEL_BUILD_DIR} ${PARALLEL_MAKE} || exit ${?}
 
     # Stop tracing
     set +x

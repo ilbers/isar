@@ -4,10 +4,9 @@ ifneq ($(DEB_BUILD_GNU_TYPE),$(DEB_HOST_GNU_TYPE))
 export CROSS_COMPILE=$(DEB_HOST_GNU_TYPE)-
 endif
 
-PARALLEL_BUILD=-j $(shell echo $$(($$(nproc) * 2)))
-
 override_dh_auto_build:
-	CFLAGS= LDFLAGS= $(MAKE) $(PARALLEL_BUILD) PLATFORM=sifive/fu540 FW_PAYLOAD_PATH=/usr/lib/u-boot/sifive_fu540/u-boot.bin
+	CFLAGS= LDFLAGS= $(MAKE) $(PARALLEL_MAKE) PLATFORM=sifive/fu540 \
+		FW_PAYLOAD_PATH=/usr/lib/u-boot/sifive_fu540/u-boot.bin
 
 %:
 	dh $@

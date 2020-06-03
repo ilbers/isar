@@ -12,12 +12,10 @@ export CROSS_COMPILE=$(DEB_HOST_GNU_TYPE)-
 SET_CROSS_BUILD_TOOLS=CROSS_BUILD_TOOLS=y
 endif
 
-PARALLEL_BUILD=-j $(shell echo $$(($$(nproc) * 2)))
-
 override_dh_auto_build:
-	$(MAKE) $(PARALLEL_BUILD) $(U_BOOT_CONFIG)
-	$(MAKE) $(PARALLEL_BUILD) ${U_BOOT_BIN}
-	$(MAKE) $(PARALLEL_BUILD) $(SET_CROSS_BUILD_TOOLS) NO_SDL=1 tools-only envtools
+	$(MAKE) $(PARALLEL_MAKE) $(U_BOOT_CONFIG)
+	$(MAKE) $(PARALLEL_MAKE) ${U_BOOT_BIN}
+	$(MAKE) $(PARALLEL_MAKE) $(SET_CROSS_BUILD_TOOLS) NO_SDL=1 tools-only envtools
 
 override_dh_auto_install:
 	mv tools/env/lib.a tools/env/libubootenv.a
