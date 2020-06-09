@@ -13,7 +13,7 @@ do_install() {
 }
 
 do_install[cleandirs] = "${D}"
-addtask install after do_unpack before do_prepare_build
+addtask install after do_patch do_transform_template before do_prepare_build
 
 do_prepare_build[cleandirs] += "${S}/debian"
 do_prepare_build() {
