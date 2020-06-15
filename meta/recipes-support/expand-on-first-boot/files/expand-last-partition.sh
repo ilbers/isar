@@ -17,12 +17,20 @@ if [ "${ROOT_DEV}" = "${BOOT_DEV}" ]; then
 	exit 1
 fi
 
-LAST_PART="$(sfdisk -d ${BOOT_DEV} 2>/dev/null | tail -1 | cut -d ' ' -f 1)"
+LAST_PART="$(sfdisk -d "${BOOT_DEV}" 2>/dev/null | tail -1 | cut -d ' ' -f 1)"
 
-# Remove all hints to the current medium (last-lba) and last partition size,
-# then ask sfdisk to recreate the partitioning
-sfdisk -d "${BOOT_DEV}" 2>/dev/null | grep -v last-lba | \
-	sed 's|\('"${LAST_PART}"' .*, \)size=[^,]*, |\1|' | \
+# Transform the partition table as follows:
+#
+# - Remove any 'last-lba' header so sfdisk uses the entire available space.
+# - If this partition table is MBR and an extended partition container (EBR)
+#   exists, we assume this needs to be expanded as well; remove its size
+#   field so sfdisk expands it.
+# - For the previously fetched last partition, also remove the size field so
+#   sfdisk expands it.
+sfdisk -d "${BOOT_DEV}" 2>/dev/null | \
+	grep -v last-lba | \
+	sed 's|^\(.*, \)size=[^,]*, \(type=[f5]\)$|\1\2|' | \
+	sed 's|^\('"${LAST_PART}"' .*, \)size=[^,]*, |\1|' | \
 	sfdisk --force "${BOOT_DEV}"
 
 # Inform the kernel about the partitioning change
