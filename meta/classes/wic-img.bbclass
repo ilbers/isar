@@ -176,6 +176,5 @@ EOSUDO
 }
 
 do_wic_image[file-checksums] += "${WKS_FILE_CHECKSUM}"
-do_wic_image[depends] = "buildchroot-target:do_build"
 
 addtask wic_image before do_image after do_image_tools
