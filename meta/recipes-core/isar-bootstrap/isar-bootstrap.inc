@@ -86,7 +86,10 @@ def parse_aptsources_list_line(source_list_line):
 
     source, s = re.split("\s+", s, maxsplit=1)
 
-    suite, s = re.split("\s+", s, maxsplit=1)
+    if s.startswith("/"):
+        suite = ""
+    else:
+        suite, s = re.split("\s+", s, maxsplit=1)
 
     components = " ".join(s.split())
 
