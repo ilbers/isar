@@ -248,12 +248,16 @@ python do_rootfs_postprocess() {
     # removed on a previous execution of this task:
     bb.build.exec_func('rootfs_do_qemu', d)
 
+    progress_reporter = bb.progress.ProgressHandler(d)
+    progress_reporter.update(0)
+
     cmds = d.getVar("ROOTFS_POSTPROCESS_COMMAND")
     if cmds is None or not cmds.strip():
         return
     cmds = cmds.split()
-    for cmd in cmds:
+    for i, cmd in enumerate(cmds):
         bb.build.exec_func(cmd, d)
+        progress_reporter.update(int(i / len(cmds) * 100))
 }
 addtask rootfs_postprocess before do_rootfs
 
