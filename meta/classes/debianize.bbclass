@@ -47,7 +47,7 @@ EOF
 }
 
 deb_create_compat() {
-	echo 9 > ${S}/debian/compat
+	echo 10 > ${S}/debian/compat
 }
 
 deb_create_control() {
