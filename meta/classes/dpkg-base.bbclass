@@ -154,20 +154,26 @@ python do_dpkg_build() {
 
 addtask dpkg_build before do_build
 
-CLEANFUNCS += "repo_clean"
+CLEANFUNCS += "deb_clean"
 
-repo_clean() {
+deb_clean() {
     DEBS=$( find ${S}/.. -maxdepth 1 -name "*.deb" || [ ! -d ${S} ] )
     if [ -n "${DEBS}" ]; then
         for d in ${DEBS}; do
             repo_del_package "${REPO_ISAR_DIR}"/"${DISTRO}" \
                 "${REPO_ISAR_DB_DIR}"/"${DISTRO}" "${DEBDISTRONAME}" "${d}"
+            package=$(basename "${d}")
+            package_remove="/usr/bin/apt-get remove -y ${package%%_*}"
+            sudo -E chroot ${BUILDCHROOT_DIR} ${package_remove} || true
+            if [ "${BUILDCHROOT_DIR}" != "${BUILDCHROOT_TARGET_DIR}" ]; then
+                    sudo -E chroot ${BUILDCHROOT_TARGET_DIR} ${package_remove} || true
+            fi
         done
     fi
 }
 
 do_deploy_deb() {
-    repo_clean
+    deb_clean
     repo_add_packages "${REPO_ISAR_DIR}"/"${DISTRO}" \
         "${REPO_ISAR_DB_DIR}"/"${DISTRO}" "${DEBDISTRONAME}" ${S}/../*.deb
 }
