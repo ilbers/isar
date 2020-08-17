@@ -8,13 +8,18 @@
 #
 
 import sys
-import gi
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gdk, GObject
-from multiprocessing import Queue
+
+try:
+    import gi
+    gi.require_version('Gtk', '3.0')
+    from gi.repository import Gtk, Gdk, GObject
+except ValueError:
+    sys.exit("FATAL: Gtk version needs to be 3.0")
+except ImportError:
+    sys.exit("FATAL: Gtk ui could not load the required gi python module")
+
 import threading
 from xmlrpc import client
-import time
 import bb
 import bb.event
 
@@ -202,7 +207,7 @@ def main(server, eventHandler, params):
         if error:
             print("Error running command '%s': %s" % (cmdline, error))
             return 1
-        elif ret != True:
+        elif not ret:
             print("Error running command '%s': returned %s" % (cmdline, ret))
             return 1
     except client.Fault as x:
