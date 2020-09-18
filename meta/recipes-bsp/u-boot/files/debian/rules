@@ -15,6 +15,7 @@ endif
 override_dh_auto_build:
 	$(MAKE) $(PARALLEL_MAKE) $(U_BOOT_CONFIG)
 	$(MAKE) $(PARALLEL_MAKE) ${U_BOOT_BIN}
+	./scripts/get_default_envs.sh >u-boot-initial-env
 	$(MAKE) $(PARALLEL_MAKE) $(SET_CROSS_BUILD_TOOLS) NO_SDL=1 tools-only envtools
 
 override_dh_auto_install:

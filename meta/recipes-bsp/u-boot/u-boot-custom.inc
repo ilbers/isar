@@ -11,6 +11,8 @@ DESCRIPTION ?= "Custom U-Boot"
 
 PROVIDES += "u-boot-${MACHINE} u-boot-${MACHINE}-dev"
 PROVIDES += "${@'u-boot-tools' if d.getVar('U_BOOT_TOOLS_PACKAGE') == '1' else ''}"
+PROVIDES += "${@('u-boot-config u-boot-' + d.getVar('MACHINE') + '-config') \
+    if d.getVar('U_BOOT_CONFIG_PACKAGE') == '1' else ''}"
 
 inherit dpkg
 
@@ -22,6 +24,7 @@ TEMPLATE_FILES = "debian/control.tmpl"
 TEMPLATE_VARS += "MACHINE BUILD_DEPENDS"
 
 U_BOOT_TOOLS_PACKAGE ?= "0"
+U_BOOT_CONFIG_PACKAGE ?= "0"
 
 do_prepare_build() {
     cp -r ${WORKDIR}/debian ${S}/
@@ -41,6 +44,24 @@ Package: u-boot-tools
 Architecture: linux-any
 Depends: \${shlibs:Depends}, \${misc:Depends}
 Description: ${DESCRIPTION}, companion tools
+EOF
+    fi
+
+    if [ "${U_BOOT_CONFIG_PACKAGE}" = "1" ]; then
+        cp ${WORKDIR}/fw_env.config ${S}/ || \
+            die "U_BOOT_CONFIG_PACKAGE requires a fw_env.config in SRC_URI"
+
+        cat <<EOF >>${S}/debian/control
+
+Package: u-boot-${MACHINE}-config
+Provides: u-boot-config
+Architecture: ${DISTRO_ARCH}
+Description: ${DESCRIPTION}, environment configuration
+EOF
+
+        cat <<EOF >>${S}/debian/u-boot-${MACHINE}-config.install
+u-boot-initial-env /etc
+fw_env.config      /etc
 EOF
     fi
 }
