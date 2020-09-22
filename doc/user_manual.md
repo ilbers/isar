@@ -723,6 +723,19 @@ Debian cross-compilation works out of the box starting from Debian stretch distr
 
 Experimental support for riscv64 is available as well.
 
+### Cross-building for a compat architecture
+
+Some architectures, under Isar amd64 and arm64 so far, support running 32-bit
+legacy applications on 64-bit kernels. Debian supports this via the multiarch
+concept.
+
+Isar can build 32-bit packages as part of a 64-bit image build and also enable
+the image with the necessary packages. To activate the compat mode of a build,
+set `ISAR_ENABLE_COMPAT_ARCH = "1"` in `local.conf`. Packages that shall be
+built for the compat arch need to be tagged individually by setting
+`PACKAGE_ARCH = "${COMPAT_DISTRO_ARCH}"` in the package recipe. Non-tagged
+packages will continue to be built for the primary target architecture.
+
 
 ## Examining and debugging package generation inside their buildchroot
 
