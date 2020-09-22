@@ -150,8 +150,8 @@ if [ -n "$CROSS_BUILD" ]; then
 fi
 
 if [ -n "$REPRO_BUILD" ]; then
-    ISAR_TESTSUITE_GPG_PUB_KEY_FILE="$ISARROOT/testsuite/base-apt/test_pub.key"
-    ISAR_TESTSUITE_GPG_PRIV_KEY_FILE="$ISARROOT/testsuite/base-apt/test_priv.key"
+    ISAR_TESTSUITE_GPG_PUB_KEY_FILE="$TESTSUITEDIR/base-apt/test_pub.key"
+    ISAR_TESTSUITE_GPG_PRIV_KEY_FILE="$TESTSUITEDIR/base-apt/test_priv.key"
     export GNUPGHOME=$(mktemp -d)
     gpg --import $ISAR_TESTSUITE_GPG_PUB_KEY_FILE $ISAR_TESTSUITE_GPG_PRIV_KEY_FILE
 
@@ -212,21 +212,23 @@ if [ -z "$FAST_BUILD" ]; then
     while [ -e bitbake.sock ]; do sleep 1; done
 fi
 
-cp -a "${ISARROOT}/meta/classes/dpkg-base.bbclass" "${ISARROOT}/meta/classes/dpkg-base.bbclass.ci-backup"
-echo -e "do_fetch_append() {\n\n}" >> "${ISARROOT}/meta/classes/dpkg-base.bbclass"
+eval $(bitbake -e | grep "^LAYERDIR_core=")
+eval $(bitbake -e | grep "^LAYERDIR_isar=")
+cp -a "${LAYERDIR_core}/classes/dpkg-base.bbclass" "${LAYERDIR_core}/classes/dpkg-base.bbclass.ci-backup"
+echo -e "do_fetch_append() {\n\n}" >> "${LAYERDIR_core}/classes/dpkg-base.bbclass"
 
 bitbake $BB_ARGS mc:qemuamd64-stretch:isar-image-base
 
-mv "${ISARROOT}/meta/classes/dpkg-base.bbclass.ci-backup" "${ISARROOT}/meta/classes/dpkg-base.bbclass"
+mv "${LAYERDIR_core}/classes/dpkg-base.bbclass.ci-backup" "${LAYERDIR_core}/classes/dpkg-base.bbclass"
 
 # Test wic --exclude-path
-cp -a "${ISARROOT}/meta-isar/scripts/lib/wic/canned-wks/sdimage-efi.wks" "${ISARROOT}/meta-isar/scripts/lib/wic/canned-wks/sdimage-efi.wks.ci-backup"
+cp -a "${LAYERDIR_isar}/scripts/lib/wic/canned-wks/sdimage-efi.wks" "${LAYERDIR_isar}/scripts/lib/wic/canned-wks/sdimage-efi.wks.ci-backup"
 mv ${BUILDDIR}/tmp/deploy/images/qemuamd64/isar-image-base-debian-stretch-qemuamd64.wic.img \
     ${BUILDDIR}/tmp/deploy/images/qemuamd64/isar-image-base-debian-stretch-qemuamd64.wic.img.ci-backup
-sed -i -e 's/part \/ /part \/ --exclude-path usr /g' "${ISARROOT}/meta-isar/scripts/lib/wic/canned-wks/sdimage-efi.wks"
+sed -i -e 's/part \/ /part \/ --exclude-path usr /g' "${LAYERDIR_isar}/scripts/lib/wic/canned-wks/sdimage-efi.wks"
 
 bitbake $BB_ARGS mc:qemuamd64-stretch:isar-image-base
 
-mv "${ISARROOT}/meta-isar/scripts/lib/wic/canned-wks/sdimage-efi.wks.ci-backup" "${ISARROOT}/meta-isar/scripts/lib/wic/canned-wks/sdimage-efi.wks"
+mv "${LAYERDIR_isar}/scripts/lib/wic/canned-wks/sdimage-efi.wks.ci-backup" "${LAYERDIR_isar}/scripts/lib/wic/canned-wks/sdimage-efi.wks"
 mv ${BUILDDIR}/tmp/deploy/images/qemuamd64/isar-image-base-debian-stretch-qemuamd64.wic.img.ci-backup \
     ${BUILDDIR}/tmp/deploy/images/qemuamd64/isar-image-base-debian-stretch-qemuamd64.wic.img

@@ -59,8 +59,11 @@ fi
 unset BDIR
 
 export BUILDDIR
+export BITBAKEDIR="${ISARROOT}/bitbake"
+export SCRIPTSDIR="${ISARROOT}/scripts"
+export TESTSUITEDIR="${ISARROOT}/testsuite"
 
-for newpath in "$ISARROOT/bitbake/bin" "$ISARROOT/scripts"; do
+for newpath in "$BITBAKEDIR/bin" "$SCRIPTSDIR"; do
     # Remove any existences of $newpath from $PATH
     PATH=$(echo $PATH | sed -re "s#(^|:)$newpath(:|$)#\2#g;s#^:##")
 
@@ -74,5 +77,5 @@ export PATH
 BBPATH="${BUILDDIR}"
 export BBPATH
 
-BB_ENV_EXTRAWHITE="BUILDDIR ISARROOT http_proxy https_proxy ftp_proxy no_proxy GNUPGHOME"
+BB_ENV_EXTRAWHITE="BUILDDIR BITBAKEDIR SCRIPTSDIR TESTSUITEDIR http_proxy https_proxy ftp_proxy no_proxy GNUPGHOME"
 export BB_ENV_EXTRAWHITE

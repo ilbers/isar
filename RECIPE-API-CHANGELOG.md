@@ -246,3 +246,9 @@ by setting DEBIAN_BUILD_DEPENDS.
 
 ${S} can now be used for checking out sources without being linked implicitly
 with ${D} which needs to be filled explicitly in do_install as before.
+
+### Remove ISARROOT from bitbake environment
+
+ISARROOT variable is now removed from the bitbake environment. It is unset
+after the initial setup. It is replaced with dedicated variables like
+BITBAKEDIR, SCRIPTSDIR and TESTSUITEDIR.

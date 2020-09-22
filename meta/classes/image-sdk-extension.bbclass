@@ -19,7 +19,7 @@ do_populate_sdk() {
     sudo rm -f ${SDKCHROOT_DIR}/chroot-setup.sh ${SDKCHROOT_DIR}/configscript.sh
 
     # Copy mount_chroot.sh for convenience
-    sudo cp ${ISARROOT}/scripts/mount_chroot.sh ${SDKCHROOT_DIR}
+    sudo cp ${SCRIPTSDIR}/mount_chroot.sh ${SDKCHROOT_DIR}
 
     # Create SDK archive
     cd -P ${SDKCHROOT_DIR}/..

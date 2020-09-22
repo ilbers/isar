@@ -86,7 +86,7 @@ STAGING_DATADIR ?= "/usr/lib/"
 STAGING_LIBDIR ?= "/usr/lib/"
 STAGING_DIR ?= "${TMPDIR}"
 IMAGE_BASENAME ?= "${PN}-${DISTRO}"
-FAKEROOTCMD ?= "${ISARROOT}/scripts/wic_fakeroot"
+FAKEROOTCMD ?= "${SCRIPTSDIR}/wic_fakeroot"
 RECIPE_SYSROOT_NATIVE ?= "/"
 BUILDCHROOT_DIR = "${BUILDCHROOT_TARGET_DIR}"
 
@@ -132,7 +132,7 @@ do_wic_image() {
     buildchroot_do_mounts
     sudo -s <<'EOSUDO'
         ( flock 9
-        for dir in ${BBLAYERS} ${STAGING_DIR} ${ISARROOT}/scripts ${ISARROOT}/bitbake; do
+        for dir in ${BBLAYERS} ${STAGING_DIR} ${SCRIPTSDIR} ${BITBAKEDIR}; do
             mkdir -p ${BUILDCHROOT_DIR}/$dir
             if ! mountpoint ${BUILDCHROOT_DIR}/$dir >/dev/null 2>&1; then
                 mount --bind --make-private $dir ${BUILDCHROOT_DIR}/$dir
@@ -149,25 +149,26 @@ EOSUDO
 
     sudo -E chroot ${BUILDCHROOT_DIR} \
         sh -c ' \
-          ISARROOT="$1"
-          WKS_FULL_PATH="$2"
-          STAGING_DIR="$3"
-          MACHINE="$4"
-          WICTMP="$5"
-          IMAGE_FULLNAME="$6"
-          IMAGE_BASENAME="$7"
-          shift 7
+          BITBAKEDIR="$1"
+          SCRIPTSDIR="$2"
+          WKS_FULL_PATH="$3"
+          STAGING_DIR="$4"
+          MACHINE="$5"
+          WICTMP="$6"
+          IMAGE_FULLNAME="$7"
+          IMAGE_BASENAME="$8"
+          shift 8
 
-          export PATH="$ISARROOT/bitbake/bin:$PATH"
-          "$ISARROOT"/scripts/wic create "$WKS_FULL_PATH" \
+          export PATH="$BITBAKEDIR/bin:$PATH"
+          "$SCRIPTSDIR"/wic create "$WKS_FULL_PATH" \
             --vars "$STAGING_DIR/$MACHINE/imgdata/" \
             -o "/$WICTMP/${IMAGE_FULLNAME}.wic/" \
             --bmap \
             -e "$IMAGE_BASENAME" $@' \
-              my_script "${ISARROOT}" "${WKS_FULL_PATH}" "${STAGING_DIR}" \
+              my_script "${BITBAKEDIR}" "${SCRIPTSDIR}" "${WKS_FULL_PATH}" "${STAGING_DIR}" \
               "${MACHINE}" "${WICTMP}" "${IMAGE_FULLNAME}" "${IMAGE_BASENAME}" \
               ${WIC_CREATE_EXTRA_ARGS}
-    sudo chown -R $(stat -c "%U" ${ISARROOT}) ${ISARROOT}/meta ${ISARROOT}/meta-isar ${ISARROOT}/scripts || true
+    sudo chown -R $(stat -c "%U" ${LAYERDIR_core}) ${LAYERDIR_core} ${LAYERDIR_isar} ${SCRIPTSDIR} || true
     WIC_DIRECT=$(ls -t -1 ${BUILDCHROOT_DIR}/$WICTMP/${IMAGE_FULLNAME}.wic/*.direct | head -1)
     sudo chown -R $(id -u):$(id -g) ${BUILDCHROOT_DIR}/${WICTMP}
     mv -f ${WIC_DIRECT} ${WIC_IMAGE_FILE}

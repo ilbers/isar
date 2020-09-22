@@ -55,5 +55,6 @@ export ISARROOT
     unset ISARROOT
     return 1
 }
+unset ISARROOT
 
 [ -z "$BUILDDIR" ] || cd "$BUILDDIR"
