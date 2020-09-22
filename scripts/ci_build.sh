@@ -139,6 +139,12 @@ if [ ! -d "$BUILD_DIR" ]; then
 fi
 source isar-init-build-env "$BUILD_DIR"
 
+cat >>conf/local.conf <<EOF
+ISAR_ENABLE_COMPAT_ARCH_amd64 = "1"
+ISAR_ENABLE_COMPAT_ARCH_arm64 = "1"
+ISAR_ENABLE_COMPAT_ARCH_debian-stretch_amd64 = "0"
+EOF
+
 if [ -n "$CROSS_BUILD" ]; then
     sed -i -e 's/ISAR_CROSS_COMPILE ?= "0"/ISAR_CROSS_COMPILE ?= "1"/g' conf/local.conf
 fi
