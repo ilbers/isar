@@ -16,3 +16,5 @@ if test -n $SSHD_ENABLED; then
     echo "Reenabling ssh server ..."
     systemctl enable --no-reload ssh
 fi
+
+sync
