@@ -173,7 +173,6 @@ IMAGE_INSTALL = "hello-isar example-raw example-module-${KERNEL_NAME} enable-fsc
 
 #
 # Enable cross-compilation support
-# NOTE: this works on build host >= stretch for armhf, arm64 and amd64 targets for now.
 ISAR_CROSS_COMPILE ?= "0"
 
 #
