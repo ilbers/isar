@@ -222,7 +222,7 @@ def get_host_release():
     rel = platform.release()
     return rel
 
-do_bootstrap[vardeps] += "DISTRO_APT_PREMIRRORS"
+do_bootstrap[vardeps] += "DISTRO_APT_PREMIRRORS ISAR_ENABLE_COMPAT_ARCH"
 do_bootstrap[dirs] = "${DEPLOY_DIR_BOOTSTRAP}"
 do_bootstrap[depends] = "base-apt:do_cache"
 
@@ -236,6 +236,14 @@ isar_bootstrap() {
         esac
         shift
     done
+    if [ "${ISAR_ENABLE_COMPAT_ARCH}" = "1" ]; then
+        if [ -z "${COMPAT_DISTRO_ARCH}" ]; then
+            bbfatal "${DISTRO_ARCH} does not have a compat arch"
+        fi
+        if [ "${@get_distro_suite(d, True)}-${COMPAT_DISTRO_ARCH}" = "stretch-i386" ]; then
+            bbfatal "compat arch build for stretch-i386 not supported"
+        fi
+    fi
     debootstrap_args="--verbose --variant=minbase --include=${DISTRO_BOOTSTRAP_BASE_PACKAGES}"
     if [ -f "${DISTRO_BOOTSTRAP_KEYRING}" ]; then
         debootstrap_args="$debootstrap_args --keyring=${DISTRO_BOOTSTRAP_KEYRING}"
@@ -328,6 +336,10 @@ isar_bootstrap() {
 
             if [ ${IS_HOST} ]; then
                 chroot "${ROOTFSDIR}" /usr/bin/dpkg --add-architecture ${DISTRO_ARCH}
+            fi
+
+            if [ "${ISAR_ENABLE_COMPAT_ARCH}" = "1" ]; then
+                chroot "${ROOTFSDIR}" /usr/bin/dpkg --add-architecture ${COMPAT_DISTRO_ARCH}
             fi
 
             chroot "${ROOTFSDIR}" /usr/bin/apt-get update -y

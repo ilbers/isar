@@ -22,7 +22,12 @@ ROOTFS_CLEAN_FILES = ""
 ROOTFS_MANIFEST_DEPLOY_DIR = "${DEPLOY_DIR_BUILDCHROOT}"
 ROOTFS_FEATURES += "generate-manifest"
 
+BUILDCHROOT_COMPAT_PREINSTALL_compat-arch = " \
+    libc6:${COMPAT_DISTRO_ARCH} \
+    crossbuild-essential-${COMPAT_DISTRO_ARCH}"
+
 BUILDCHROOT_PREINSTALL_COMMON = " \
+    ${BUILDCHROOT_COMPAT_PREINSTALL} \
     make \
     debhelper \
     autotools-dev \

@@ -177,6 +177,11 @@ IMAGE_INSTALL = "hello-isar example-raw example-module-${KERNEL_NAME} enable-fsc
 ISAR_CROSS_COMPILE ?= "0"
 
 #
+# Uncomment to enable 32-bit compat architecture support
+# NOTE: this works for amd64 and arm64 targets so far
+#ISAR_ENABLE_COMPAT_ARCH ?= "1"
+
+#
 # Uncomment this to enable use of cached base repository
 #ISAR_USE_CACHED_BASE_REPO ?= "1"
 #

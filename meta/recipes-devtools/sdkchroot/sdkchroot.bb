@@ -16,6 +16,7 @@ PV = "0.1"
 TOOLCHAIN = "crossbuild-essential-${DISTRO_ARCH}"
 TOOLCHAIN_${HOST_ARCH} = "build-essential"
 TOOLCHAIN_i386 = "build-essential"
+TOOLCHAIN_append_compat-arch = " crossbuild-essential-${COMPAT_DISTRO_ARCH}"
 
 inherit rootfs
 ROOTFS_ARCH = "${HOST_ARCH}"

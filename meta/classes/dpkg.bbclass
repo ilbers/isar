@@ -3,16 +3,18 @@
 
 inherit dpkg-base
 
+PACKAGE_ARCH ?= "${DISTRO_ARCH}"
+
 # Install build dependencies for package
 do_install_builddeps() {
     dpkg_do_mounts
     E="${@ isar_export_proxies(d)}"
     deb_dl_dir_import "${BUILDCHROOT_DIR}"
     sudo -E chroot ${BUILDCHROOT_DIR} /isar/deps.sh \
-        ${PP}/${PPS} ${DISTRO_ARCH} --download-only
+        ${PP}/${PPS} ${PACKAGE_ARCH} --download-only
     deb_dl_dir_export "${BUILDCHROOT_DIR}"
     sudo -E chroot ${BUILDCHROOT_DIR} /isar/deps.sh \
-        ${PP}/${PPS} ${DISTRO_ARCH}
+        ${PP}/${PPS} ${PACKAGE_ARCH}
     dpkg_undo_mounts
 }
 
@@ -27,5 +29,5 @@ dpkg_runbuild() {
     E="${@ isar_export_proxies(d)}"
     export PARALLEL_MAKE="${PARALLEL_MAKE}"
     sudo -E chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} \
-         /isar/build.sh ${PP}/${PPS} ${DISTRO_ARCH}
+         /isar/build.sh ${PP}/${PPS} ${PACKAGE_ARCH}
 }
