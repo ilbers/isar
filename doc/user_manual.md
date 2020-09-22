@@ -714,10 +714,14 @@ put into Isar apt.
 
 Debian cross-compilation works out of the box starting from Debian stretch distribution. Currently the following build configurations are supported in Isar:
 
- - qemuarm-stretch
- - qemuarm-buster
- - qemuarm64-stretch
- - qemuarm64-buster (for host >= buster)
+ - stretch armhf
+ - stretch arm64
+ - stretch mipsel
+ - buster armhf
+ - buster arm64 (for host >= buster)
+ - buster mipsel (for host >= buster)
+
+Experimental support for riscv64 is available as well.
 
 
 ## Examining and debugging package generation inside their buildchroot
