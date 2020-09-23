@@ -227,7 +227,7 @@ def get_host_release():
 
 do_bootstrap[vardeps] += "DISTRO_APT_PREMIRRORS ISAR_ENABLE_COMPAT_ARCH"
 do_bootstrap[dirs] = "${DEPLOY_DIR_BOOTSTRAP}"
-do_bootstrap[depends] = "base-apt:do_cache"
+do_bootstrap[depends] = "base-apt:do_cache isar-apt:do_cache_config"
 
 isar_bootstrap() {
     IS_HOST=""
