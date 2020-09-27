@@ -278,3 +278,7 @@ part / --source rootfs --ondisk sda --fstype ext4 --label platform --align 1024 
 ```
 In this case we can either drop the /boot mountpoint or use some other mountpoint
 like /boot/efi to avoid such issues.
+
+### Deprecate BUILD_DEPENDS in u-boot-custom.inc
+
+Use DEBIAN_BUILD_DEPENDS instead, to align with deb_debianize.

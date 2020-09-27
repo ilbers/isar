@@ -18,10 +18,16 @@ inherit dpkg
 
 SRC_URI += "file://debian/"
 
-BUILD_DEPENDS ?= "bc, bison, flex, device-tree-compiler, git"
+python() {
+    if d.getVar('BUILD_DEPENDS'):
+        bb.warn("u-boot-custom: Deprecated use of BUILD_DEPENDS, please switch to DEBIAN_BUILD_DEPENDS")
+        d.setVar('DEBIAN_BUILD_DEPENDS', d.getVar('BUILD_DEPENDS'))
+}
+
+DEBIAN_BUILD_DEPENDS ?= "bc, bison, flex, device-tree-compiler, git"
 
 TEMPLATE_FILES = "debian/control.tmpl"
-TEMPLATE_VARS += "MACHINE BUILD_DEPENDS"
+TEMPLATE_VARS += "MACHINE DEBIAN_BUILD_DEPENDS"
 
 U_BOOT_TOOLS_PACKAGE ?= "0"
 U_BOOT_CONFIG_PACKAGE ?= "0"
