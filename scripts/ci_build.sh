@@ -49,6 +49,7 @@ CROSS_TARGETS_SET="\
                   mc:qemuarm64-stretch:isar-image-base \
                   mc:qemuamd64-stretch:isar-image-base \
                   mc:de0-nano-soc-buster:isar-image-base \
+                  mc:stm32mp15x-buster:isar-image-base \
                   mc:rpi-stretch:isar-image-base"
 
 CROSS_TARGETS_SET_BULLSEYE="\
