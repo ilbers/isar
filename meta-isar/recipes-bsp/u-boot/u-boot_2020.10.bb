@@ -1,5 +1,5 @@
 #
-# Copyright (c) Siemens AG, 2018
+# Copyright (c) Siemens AG, 2018-2020
 #
 # SPDX-License-Identifier: MIT
 
@@ -8,7 +8,7 @@ require recipes-bsp/u-boot/u-boot-custom.inc
 SRC_URI += " \
     https://ftp.denx.de/pub/u-boot/u-boot-${PV}.tar.bz2 \
     "
-SRC_URI[sha256sum] = "839bf23cfe8ce613a77e583a60375179d0ad324e92c82fbdd07bebf0fd142268"
+SRC_URI[sha256sum] = "0d481bbdc05c0ee74908ec2f56a6daa53166cc6a78a0e4fac2ac5d025770a622"
 
 # Just for testing purposes, distro package would be recent enough
 U_BOOT_TOOLS_PACKAGE = "1"
