@@ -19,3 +19,6 @@ cp -RTn /etc/skel ~isar
 chown -R isar:isar ~isar
 
 echo "isar" > /etc/hostname
+
+# this helps with ttys not know to this file (removed upstream with bullseye)
+rm -f /etc/securetty
