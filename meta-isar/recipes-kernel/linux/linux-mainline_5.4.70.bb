@@ -1,7 +1,7 @@
 # Example recipe for building the mainline kernel
 #
 # This software is a part of ISAR.
-# Copyright (c) Siemens AG, 2018
+# Copyright (c) Siemens AG, 2018-2020
 #
 # SPDX-License-Identifier: MIT
 
@@ -15,7 +15,7 @@ SRC_URI += " \
     file://no-ubifs-fs.cfg \
     file://no-root-nfs.cfg;apply=no"
 
-SRC_URI[sha256sum] = "f23c0218a5e3b363bb5a880972f507bb4dc4a290a787a7da08be07ea12042edd"
+SRC_URI[sha256sum] = "c0b3d8085c5ba235df38b00b740e053659709e8a5ca21957a239f6bc22c45007"
 
 S = "${WORKDIR}/linux-${ARCHIVE_VERSION}"
 
