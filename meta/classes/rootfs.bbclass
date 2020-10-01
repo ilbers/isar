@@ -11,6 +11,7 @@ ROOTFS_PACKAGES ?= ""
 # available features are:
 # 'clean-package-cache' - delete package cache from rootfs
 # 'generate-manifest' - generate a package manifest of the rootfs into ${ROOTFS_MANIFEST_DEPLOY_DIR}
+# 'export-dpkg-status' - exports /var/lib/dpkg/status file to ${ROOTFS_DPKGSTATUS_DEPLOY_DIR}
 # 'finalize-rootfs' - delete files needed to chroot into the rootfs
 ROOTFS_FEATURES ?= ""
 
@@ -199,6 +200,13 @@ rootfs_generate_manifest () {
         dpkg-query -W -f \
             '${source:Package}|${source:Version}|${binary:Package}|${Version}\n' > \
         ${ROOTFS_MANIFEST_DEPLOY_DIR}/"${PF}".manifest
+}
+
+ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'export-dpkg-status', 'rootfs_export_dpkg_status', '', d)}"
+rootfs_export_dpkg_status() {
+    mkdir -p ${ROOTFS_DPKGSTATUS_DEPLOY_DIR}
+    cp '${ROOTFSDIR}'/var/lib/dpkg/status \
+       '${ROOTFS_DPKGSTATUS_DEPLOY_DIR}'/'${PF}'.dpkg_status
 }
 
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'finalize-rootfs', 'rootfs_postprocess_finalize', '', d)}"
