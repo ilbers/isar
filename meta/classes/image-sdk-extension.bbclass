@@ -5,11 +5,19 @@
 #
 # This class extends the image.bbclass to supply the creation of a sdk
 
+SDK_INCLUDE_ISAR_APT ?= "0"
+
 do_populate_sdk[stamp-extra-info] = "${DISTRO}-${MACHINE}"
 do_populate_sdk[depends] = "sdkchroot:do_build"
+do_populate_sdk[vardeps] += "SDK_INCLUDE_ISAR_APT"
 do_populate_sdk() {
-    # Copy isar-apt with deployed Isar packages
-    sudo cp -Trpfx ${REPO_ISAR_DIR}/${DISTRO}  ${SDKCHROOT_DIR}/isar-apt
+    if [ "${SDK_INCLUDE_ISAR_APT}" = "1" ]; then
+        # Copy isar-apt with deployed Isar packages
+        sudo cp -Trpfx ${REPO_ISAR_DIR}/${DISTRO} ${SDKCHROOT_DIR}/isar-apt
+    else
+        # Remove isar-apt repo entry
+        sudo rm -f ${SDKCHROOT_DIR}/etc/apt/sources.list.d/isar-apt.list
+    fi
 
     sudo umount -R ${SDKCHROOT_DIR}/dev || true
     sudo umount ${SDKCHROOT_DIR}/proc || true

@@ -48,9 +48,11 @@ SDK_PREINSTALL += " \
     devscripts \
     equivs"
 
+SDK_INCLUDE_ISAR_APT ?= "0"
+
 S = "${WORKDIR}/rootfs"
 
-ROOTFS_CONFIGURE_COMMAND += "rootfs_configure_isar_apt_dir"
+ROOTFS_CONFIGURE_COMMAND += "${@'rootfs_configure_isar_apt_dir' if d.getVar('SDK_INCLUDE_ISAR_APT') == '1' else ''}"
 rootfs_configure_isar_apt_dir() {
     # Copy isar-apt instead of mounting:
     sudo cp -Trpfx ${REPO_ISAR_DIR}/${DISTRO} ${ROOTFSDIR}/isar-apt
