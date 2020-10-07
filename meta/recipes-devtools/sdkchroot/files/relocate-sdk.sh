@@ -38,4 +38,7 @@ for binary in $(find ${sdkroot}/usr/bin ${sdkroot}/usr/sbin ${sdkroot}/usr/lib/g
 	fi
 done
 
+sed -i 's|^GCC_SYSROOT=.*|GCC_SYSROOT="'"${new_sdkroot}"'"|' \
+    ${sdkroot}/usr/bin/gcc-sysroot-wrapper.sh
+
 echo "done"

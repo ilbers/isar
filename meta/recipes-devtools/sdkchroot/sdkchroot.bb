@@ -11,6 +11,7 @@ LIC_FILES_CHKSUM = "file://${LAYERDIR_core}/licenses/COPYING.GPLv2;md5=751419260
 SRC_URI = " \
     file://configscript.sh \
     file://relocate-sdk.sh \
+    file://gcc-sysroot-wrapper.sh \
     file://README.sdk"
 PV = "0.1"
 
@@ -63,6 +64,7 @@ sdkchroot_install_files() {
     # Configure root filesystem
     sudo install -m 644 ${WORKDIR}/README.sdk ${S}
     sudo install -m 755 ${WORKDIR}/relocate-sdk.sh ${S}
+    sudo install -m 755 ${WORKDIR}/gcc-sysroot-wrapper.sh ${S}/usr/bin
     sudo install -m 755 ${WORKDIR}/configscript.sh ${S}
     sudo chroot ${S} /configscript.sh  ${DISTRO_ARCH}
 }
