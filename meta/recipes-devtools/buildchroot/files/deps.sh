@@ -33,17 +33,20 @@ if ! grep "^Architecture:" debian/control | grep -qv "all"; then
     set_arch=""
 fi
 
+control_file=$(pwd)/debian/control
+cd ..
+
 # Install all build deps
 if [ "$3" = "--download-only" ]; then
     # this will not return 0 even when it worked
-    mk-build-deps $set_arch -t "${install_cmd}" -i -r debian/control &> \
+    mk-build-deps $set_arch -t "${install_cmd}" -i -r $control_file &> \
         mk-build-deps.output || true
     cat mk-build-deps.output
     # we assume success when we find this
     grep "mk-build-deps: Unable to install all build-dep packages" mk-build-deps.output
     rm -f mk-build-deps.output
 else
-    mk-build-deps $set_arch -t "${install_cmd}" -i -r debian/control
+    mk-build-deps $set_arch -t "${install_cmd}" -i -r $control_file
 
     # Upgrade any already installed packages in case we are partially rebuilding
     apt-get upgrade -y --allow-downgrades
