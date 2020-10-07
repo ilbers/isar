@@ -19,6 +19,6 @@ BUILDCHROOT_PREINSTALL ?= " \
 BUILDCHROOT_PREINSTALL_riscv64 ?= " \
     ${BUILDCHROOT_PREINSTALL_COMMON} \
     libc6:${DISTRO_ARCH} \
-    gcc-riscv64-linux-gnu:native \
-    g++-riscv64-linux-gnu:native \
-    dpkg-cross:native"
+    gcc-riscv64-linux-gnu \
+    g++-riscv64-linux-gnu \
+    dpkg-cross"
