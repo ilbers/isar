@@ -18,6 +18,20 @@ do_populate_sdk() {
     # Remove setup scripts
     sudo rm -f ${SDKCHROOT_DIR}/chroot-setup.sh ${SDKCHROOT_DIR}/configscript.sh
 
+    # Make all links relative
+    for link in $(find ${SDKCHROOT_DIR}/ -type l); do
+        target=$(readlink $link)
+
+        if [ "${target#/}" != "${target}" ]; then
+            basedir=$(dirname $link)
+            new_target=$(realpath --no-symlinks -m --relative-to=$basedir ${SDKCHROOT_DIR}/${target})
+
+            # remove first to allow rewriting directory links
+            sudo rm $link
+            sudo ln -s $new_target $link
+        fi
+    done
+
     # Copy mount_chroot.sh for convenience
     sudo cp ${SCRIPTSDIR}/mount_chroot.sh ${SDKCHROOT_DIR}
 
