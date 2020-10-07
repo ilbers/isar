@@ -14,8 +14,8 @@ deb_dl_dir_import() {
         set -e
         printenv | grep -q BB_VERBOSE_LOGS && set -x
 
-        sudo find "${pc}" -type f -iname '*\.deb' -exec \
-            cp -n --no-preserve=owner -t "${rootfs}"/var/cache/apt/archives/ '{}' +
+        sudo find "${pc}" -type f -iname "*\.deb" -exec \
+            cp -n --no-preserve=owner -t "${rootfs}"/var/cache/apt/archives/ {} +
     '
 }
 
