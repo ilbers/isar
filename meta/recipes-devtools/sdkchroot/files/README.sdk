@@ -1,42 +1,43 @@
-Building applications for targets in ISAR takes a lot of time as they are built under QEMU.
-SDK helps to develop applications for target platform in crossbuild environment.
+ISAR Target SDK
+===============
 
-SDK contains cross-toolchain for target architecture and a copy of isar-apt repo with
-locally prebuilt target debian packages.
+This SDK helps to develop applications for an ISAR target platform in a
+crossbuild environment. It contains a cross-toolchain and development packages
+corresponding to the original target.
 
- - First one have to mount the system directories for proper operation in chroot environement.
-Just call supplied with sdk tarball  in  udo rootfs as an argument to the script `mount_chroot.sh`:
+The SDK can be used in two ways, described in the following.
 
-$ sudo mount_chroot.sh  <sdk_rootfs>
 
- - chroot to isar SDK rootfs:
+Option 1 (recommended): Use cross-compiler in host environment
+--------------------------------------------------------------
+
+After unpacking the SDK at the desired location, it has to be relocated once:
+
+$ <sdk_rootfs>/relocate-sdk.sh
+
+Now you can add <sdk_rootfs>/usr/bin to the local path or adjust your project
+to call the cross-compiler from the SDK.
+
+
+Option 2 (fallback): Build inside chroot
+----------------------------------------
+
+First you have to mount the system directories for proper operation into the
+chroot environment. Call the helper script supplied with SDK tarball:
+
+$ sudo <sdk_rootfs>/mount_chroot.sh <sdk_rootfs>
+
+Bind-mount the project into the rootfs:
+
+$ sudo mount -o bind /path/to/project <sdk_rootfs>/mnt
+
+If you have relocated the SDK previously for using option 1, you need to call
+this next:
+
+$ <sdk_rootfs>/relocate-sdk.sh --restore-chroot
+
+Then chroot into the SDK rootfs:
 
 $ sudo chroot <sdk_rootfs>
 
- - Check that cross toolchains are installed
-
-:~# dpkg -l | grep crossbuild-essential-armhf
-ii  crossbuild-essential-armhf           12.3                   all          Informational list of cross-build-essential packages
-
- - Install needed prebuilt target packages.
-
-:~# apt-get update
-:~# apt-get install libhello-dev:armhf
-
- - Check the contents of the installed target package
-
-:~# dpkg -L libhello-dev
-/.
-/usr
-/usr/include
-/usr/include/hello.h
-/usr/lib
-/usr/lib/arm-linux-gnueabihf
-/usr/lib/arm-linux-gnueabihf/libhello.a
-/usr/lib/arm-linux-gnueabihf/libhello.la
-/usr/share
-/usr/share/doc
-/usr/share/doc/libhello-dev
-/usr/share/doc/libhello-dev/changelog.gz
-/usr/share/doc/libhello-dev/copyright
-~#
+Now you can build the project under /mnt.
