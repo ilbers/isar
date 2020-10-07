@@ -13,6 +13,10 @@ SRC_URI = " \
     file://README.sdk"
 PV = "0.1"
 
+SDK_INSTALL ?= ""
+
+DEPENDS += "${SDK_INSTALL}"
+
 TOOLCHAIN = "crossbuild-essential-${DISTRO_ARCH}"
 TOOLCHAIN_${HOST_ARCH} = "build-essential"
 TOOLCHAIN_i386 = "build-essential"
@@ -22,7 +26,7 @@ inherit rootfs
 ROOTFS_ARCH = "${HOST_ARCH}"
 ROOTFS_DISTRO = "${HOST_DISTRO}"
 ROOTFSDIR = "${S}"
-ROOTFS_PACKAGES = "${SDKCHROOT_PREINSTALL} ${TOOLCHAIN}"
+ROOTFS_PACKAGES = "${SDK_PREINSTALL} ${SDK_INSTALL} ${TOOLCHAIN}"
 ROOTFS_FEATURES += "clean-package-cache generate-manifest"
 ROOTFS_MANIFEST_DEPLOY_DIR = "${DEPLOY_DIR_SDKCHROOT}"
 
@@ -32,15 +36,16 @@ python() {
             d.getVar("ROOTFS_ARCH")))
 }
 
-SDKCHROOT_PREINSTALL := "debhelper \
-                           autotools-dev \
-                           dpkg \
-                           locales \
-                           docbook-to-man \
-                           apt \
-                           automake \
-                           devscripts \
-                           equivs"
+SDK_PREINSTALL += " \
+    debhelper \
+    autotools-dev \
+    dpkg \
+    locales \
+    docbook-to-man \
+    apt \
+    automake \
+    devscripts \
+    equivs"
 
 S = "${WORKDIR}/rootfs"
 

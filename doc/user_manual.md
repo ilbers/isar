@@ -761,6 +761,7 @@ target binary artifacts. Developer chroots to sdk rootfs and develops applicatio
 
 User manually triggers creation of SDK root filesystem for his target platform by launching the task `do_populate_sdk` for target image, f.e.
 `bitbake -c do_populate_sdk mc:${MACHINE}-${DISTRO}:isar-image-base`.
+Packages that should be additionally installed into the SDK can be appended to `SDK_PREINSTALL` (external repositories) and `SDK_INSTALL` (self-built).
 
 The resulting SDK rootfs is archived into `tmp/deploy/images/${MACHINE}/sdk-${DISTRO}-${DISTRO_ARCH}.tar.xz`.
 It is additionally available for direct use under `tmp/deploy/images/${MACHINE}/sdk-${DISTRO}-${DISTRO_ARCH}/`.
