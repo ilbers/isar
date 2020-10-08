@@ -154,6 +154,8 @@ python do_dpkg_build() {
 
 addtask dpkg_build before do_build
 
+KEEP_INSTALLED_ON_CLEAN ?= "0"
+
 CLEANFUNCS += "deb_clean"
 
 deb_clean() {
@@ -162,6 +164,9 @@ deb_clean() {
         for d in ${DEBS}; do
             repo_del_package "${REPO_ISAR_DIR}"/"${DISTRO}" \
                 "${REPO_ISAR_DB_DIR}"/"${DISTRO}" "${DEBDISTRONAME}" "${d}"
+            if [ "${KEEP_INSTALLED_ON_CLEAN}" = "1" ]; then
+                continue;
+            fi
             package=$(basename "${d}")
             package_remove="/usr/bin/apt-get remove -y ${package%%_*}"
             sudo -E chroot ${BUILDCHROOT_DIR} ${package_remove} || true
