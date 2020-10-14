@@ -203,3 +203,6 @@ USER_isar[gid] = "isar"
 USER_isar[home] = "/var/lib/isar"
 USER_isar[comment] = "My isar user"
 USER_isar[flags] = "system create-home"
+
+# Uncomment the below line to debug WIC.
+# WIC_CREATE_EXTRA_ARGS += "-D"
