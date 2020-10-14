@@ -131,8 +131,13 @@ class BootimgPcbiosIsarPlugin(SourcePlugin):
             syslinux_conf += "DEFAULT boot\n"
             syslinux_conf += "LABEL boot\n"
 
-            kernel = get_bitbake_var("KERNEL_IMAGE")
-            initrd = get_bitbake_var("INITRD_IMAGE")
+            kernel_file = get_bitbake_var("KERNEL_FILE")
+            kernel_name = get_bitbake_var("KERNEL_NAME")
+            rootfs_dir = get_bitbake_var("IMAGE_ROOTFS")
+            kernel = os.path.basename(os.path.realpath(os.path.join(rootfs_dir, kernel_file)))
+            kernel_version = kernel.strip('-' + kernel_name).strip(kernel_file + '-')
+            initrd = "initrd.img-%s-%s" % (kernel_version, kernel_name)
+
             syslinux_conf += "KERNEL " + kernel + "\n"
 
             syslinux_conf += "APPEND label=boot root=%s initrd=%s %s\n" % \
@@ -156,15 +161,25 @@ class BootimgPcbiosIsarPlugin(SourcePlugin):
         syslinux_dir = cls._get_syslinux_dir(bootimg_dir)
 
         staging_kernel_dir = kernel_dir
-        kernel = get_bitbake_var("KERNEL_IMAGE")
-        initrd = get_bitbake_var("INITRD_IMAGE")
+        kernel_file = get_bitbake_var("KERNEL_FILE")
+        kernel_name = get_bitbake_var("KERNEL_NAME")
+        rootfs_dir = rootfs_dir['ROOTFS_DIR']
+        kernel = os.path.basename(os.path.realpath(os.path.join(rootfs_dir, kernel_file)))
+        kernel_version = kernel.strip('-' + kernel_name).strip(kernel_file + '-')
+        initrd = "initrd.img-%s-%s" % (kernel_version, kernel_name)
+        config = "config-%s-%s" % (kernel_version, kernel_name)
+        mapfile = "System.map-%s-%s" % (kernel_version, kernel_name)
 
         hdddir = "%s/hdd/boot" % cr_workdir
 
-        cmds = ("install -m 0644 %s/%s %s/%s" %
-                (staging_kernel_dir, kernel, hdddir, kernel),
-                "install -m 0644 %s/%s %s/%s" %
-                (staging_kernel_dir, initrd, hdddir, initrd),
+        cmds = ("install -m 0644 %s/%s/%s %s/%s" %
+                (rootfs_dir, "boot", kernel, hdddir, kernel),
+                "install -m 0644 %s/%s/%s %s/%s" %
+                (rootfs_dir, "boot", initrd, hdddir, initrd),
+                "install -m 0644 %s/%s/%s %s/%s" %
+                (rootfs_dir, "boot", config, hdddir, config),
+                "install -m 0644 %s/%s/%s %s/%s" %
+                (rootfs_dir, "boot", mapfile, hdddir, mapfile),
                 "install -m 444 %s/modules/bios/ldlinux.c32 %s/ldlinux.c32" %
                 (syslinux_dir, hdddir),
                 "install -m 0644 %s/modules/bios/vesamenu.c32 %s/vesamenu.c32" %
