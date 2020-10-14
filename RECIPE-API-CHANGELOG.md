@@ -252,3 +252,29 @@ with ${D} which needs to be filled explicitly in do_install as before.
 ISARROOT variable is now removed from the bitbake environment. It is unset
 after the initial setup. It is replaced with dedicated variables like
 BITBAKEDIR, SCRIPTSDIR and TESTSUITEDIR.
+
+### Wic adds /boot mountpoint to fstab
+
+In the older version of wic, any mount point named /boot is skipped from adding
+into the fstab entry.
+
+With the latest wic, this is not the case. /boot mount point, if any, is added
+to /etc/fstab for automount.
+
+Any wks file which assumed that /boot would be skipped from /etc/fstab should
+now be corrected. Otherwise, it might conflict with the original /boot contents,
+i.e kernel initrd & config files will be unavailable after boot.
+
+Below is an example wks entry that might cause an issue.
+The efi partition created using bootimg-efi-isar plugin has only the efi stub in
+it. The kernel and initrd are present in the root(/) partition.
+Now with the latest wic which adds the /boot mount point to fstab, the /boot
+contents of "part /" would be unavailable after boot. This would break the
+kernel updates done via apt-get.
+
+```
+part /boot --source bootimg-efi-isar --sourceparams "loader=grub-efi" --ondisk sda --label efi --part-type EF00 --align 1024
+part / --source rootfs --ondisk sda --fstype ext4 --label platform --align 1024 --use-uuid
+```
+In this case we can either drop the /boot mountpoint or use some other mountpoint
+like /boot/efi to avoid such issues.

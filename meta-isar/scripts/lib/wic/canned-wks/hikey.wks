@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-part /boot --source bootimg-efi-isar --sourceparams "loader=grub-efi" --ondisk mmcblk1 --label efi --part-type EF00 --align 1024
+part --source bootimg-efi-isar --sourceparams "loader=grub-efi" --ondisk mmcblk1 --label efi --part-type EF00 --align 1024
 
 part / --source rootfs --ondisk mmcblk1 --fstype ext4 --label platform --align 1024 --use-uuid
 
