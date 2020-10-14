@@ -31,7 +31,7 @@ import shutil
 from wic import WicError
 from wic.engine import get_custom_config
 from wic.pluginbase import SourcePlugin
-from wic.utils.misc import (exec_cmd, get_bitbake_var, BOOTDD_EXTRA_SPACE)
+from wic.misc import (exec_cmd, get_bitbake_var, BOOTDD_EXTRA_SPACE)
 
 logger = logging.getLogger('wic')
 

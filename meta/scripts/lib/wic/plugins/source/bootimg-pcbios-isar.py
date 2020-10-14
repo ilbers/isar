@@ -29,9 +29,8 @@ import os
 
 from wic import WicError
 from wic.engine import get_custom_config
-from wic.utils import runner
 from wic.pluginbase import SourcePlugin
-from wic.utils.misc import (exec_cmd, exec_native_cmd,
+from wic.misc import (exec_cmd, exec_native_cmd,
                             get_bitbake_var, BOOTDD_EXTRA_SPACE)
 
 logger = logging.getLogger('wic')
@@ -83,10 +82,8 @@ class BootimgPcbiosIsarPlugin(SourcePlugin):
         logger.debug("Installing MBR on disk %s as %s with size %s bytes",
                      disk_name, full_path, disk.min_size)
 
-        rcode = runner.show(['dd', 'if=%s' % mbrfile,
-                             'of=%s' % full_path, 'conv=notrunc'])
-        if rcode != 0:
-            raise WicError("Unable to set MBR to %s" % full_path)
+        dd_cmd = "dd if=%s of=%s conv=notrunc" % (mbrfile, full_path)
+        exec_cmd(dd_cmd, native_sysroot)
 
     @classmethod
     def do_configure_partition(cls, part, source_params, creator, cr_workdir,

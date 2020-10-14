@@ -18,7 +18,7 @@ import os
 
 from wic import WicError
 from wic.plugins.source.rootfs import RootfsPlugin
-from wic.utils.misc import exec_cmd
+from wic.misc import exec_cmd
 
 logger = logging.getLogger('wic')
 
