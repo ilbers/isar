@@ -1,21 +1,7 @@
-# ex:ts=4:sw=4:sts=4:et
-# -*- tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
 #
 # Copyright (c) 2014, Intel Corporation.
-# All rights reserved.
 #
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 2 as
-# published by the Free Software Foundation.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+# SPDX-License-Identifier: GPL-2.0-only
 #
 # DESCRIPTION
 # This implements the 'bootimg-pcbios' source plugin class for 'wic'
@@ -26,13 +12,13 @@
 
 import logging
 import os
+import re
 
 from wic import WicError
 from wic.engine import get_custom_config
-from wic.utils import runner
 from wic.pluginbase import SourcePlugin
-from wic.utils.misc import (exec_cmd, exec_native_cmd,
-                            get_bitbake_var, BOOTDD_EXTRA_SPACE)
+from wic.misc import (exec_cmd, exec_native_cmd,
+                      get_bitbake_var, BOOTDD_EXTRA_SPACE)
 
 logger = logging.getLogger('wic')
 
@@ -44,19 +30,22 @@ class BootimgPcbiosPlugin(SourcePlugin):
     name = 'bootimg-pcbios'
 
     @classmethod
-    def _get_syslinux_dir(cls, bootimg_dir):
+    def _get_bootimg_dir(cls, bootimg_dir, dirname):
         """
-        Get path to syslinux from either default bootimg_dir
-        or wic-tools STAGING_DIR.
+        Check if dirname exists in default bootimg_dir or in STAGING_DIR.
         """
-        for path in (bootimg_dir, get_bitbake_var("STAGING_DATADIR", "wic-tools")):
-            if not path:
-                continue
-            syslinux_dir = os.path.join(path, 'syslinux')
-            if os.path.exists(syslinux_dir):
-                return syslinux_dir
+        staging_datadir = get_bitbake_var("STAGING_DATADIR")
+        for result in (bootimg_dir, staging_datadir):
+            if os.path.exists("%s/%s" % (result, dirname)):
+                return result
 
-        raise WicError("Couldn't find syslinux directory, exiting")
+        # STAGING_DATADIR is expanded with MLPREFIX if multilib is enabled
+        # but dependency syslinux is still populated to original STAGING_DATADIR
+        nonarch_datadir = re.sub('/[^/]*recipe-sysroot', '/recipe-sysroot', staging_datadir)
+        if os.path.exists(os.path.join(nonarch_datadir, dirname)):
+            return nonarch_datadir
+
+        raise WicError("Couldn't find correct bootimg_dir, exiting")
 
     @classmethod
     def do_install_disk(cls, disk, disk_name, creator, workdir, oe_builddir,
@@ -65,11 +54,12 @@ class BootimgPcbiosPlugin(SourcePlugin):
         Called after all partitions have been prepared and assembled into a
         disk image.  In this case, we install the MBR.
         """
-        syslinux_dir = cls._get_syslinux_dir(bootimg_dir)
+        bootimg_dir = cls._get_bootimg_dir(bootimg_dir, 'syslinux')
+        mbrfile = "%s/syslinux/" % bootimg_dir
         if creator.ptable_format == 'msdos':
-            mbrfile = os.path.join(syslinux_dir, "mbr.bin")
+            mbrfile += "mbr.bin"
         elif creator.ptable_format == 'gpt':
-            mbrfile = os.path.join(syslinux_dir, "gptmbr.bin")
+            mbrfile += "gptmbr.bin"
         else:
             raise WicError("Unsupported partition table: %s" %
                            creator.ptable_format)
@@ -83,10 +73,8 @@ class BootimgPcbiosPlugin(SourcePlugin):
         logger.debug("Installing MBR on disk %s as %s with size %s bytes",
                      disk_name, full_path, disk.min_size)
 
-        rcode = runner.show(['dd', 'if=%s' % mbrfile,
-                             'of=%s' % full_path, 'conv=notrunc'])
-        if rcode != 0:
-            raise WicError("Unable to set MBR to %s" % full_path)
+        dd_cmd = "dd if=%s of=%s conv=notrunc" % (mbrfile, full_path)
+        exec_cmd(dd_cmd, native_sysroot)
 
     @classmethod
     def do_configure_partition(cls, part, source_params, creator, cr_workdir,
@@ -155,22 +143,28 @@ class BootimgPcbiosPlugin(SourcePlugin):
         'prepares' the partition to be incorporated into the image.
         In this case, prepare content for legacy bios boot partition.
         """
-        syslinux_dir = cls._get_syslinux_dir(bootimg_dir)
+        bootimg_dir = cls._get_bootimg_dir(bootimg_dir, 'syslinux')
 
         staging_kernel_dir = kernel_dir
 
         hdddir = "%s/hdd/boot" % cr_workdir
 
-        cmds = ("install -m 0644 %s/bzImage %s/vmlinuz" %
-                (staging_kernel_dir, hdddir),
-                "install -m 444 %s/ldlinux.sys %s/ldlinux.sys" %
-                (syslinux_dir, hdddir),
-                "install -m 0644 %s/vesamenu.c32 %s/vesamenu.c32" %
-                (syslinux_dir, hdddir),
-                "install -m 444 %s/libcom32.c32 %s/libcom32.c32" %
-                (syslinux_dir, hdddir),
-                "install -m 444 %s/libutil.c32 %s/libutil.c32" %
-                (syslinux_dir, hdddir))
+        kernel = get_bitbake_var("KERNEL_IMAGETYPE")
+        if get_bitbake_var("INITRAMFS_IMAGE_BUNDLE") == "1":
+            if get_bitbake_var("INITRAMFS_IMAGE"):
+                kernel = "%s-%s.bin" % \
+                    (get_bitbake_var("KERNEL_IMAGETYPE"), get_bitbake_var("INITRAMFS_LINK_NAME"))
+
+        cmds = ("install -m 0644 %s/%s %s/vmlinuz" %
+                (staging_kernel_dir, kernel, hdddir),
+                "install -m 444 %s/syslinux/ldlinux.sys %s/ldlinux.sys" %
+                (bootimg_dir, hdddir),
+                "install -m 0644 %s/syslinux/vesamenu.c32 %s/vesamenu.c32" %
+                (bootimg_dir, hdddir),
+                "install -m 444 %s/syslinux/libcom32.c32 %s/libcom32.c32" %
+                (bootimg_dir, hdddir),
+                "install -m 444 %s/syslinux/libutil.c32 %s/libutil.c32" %
+                (bootimg_dir, hdddir))
 
         for install_cmd in cmds:
             exec_cmd(install_cmd)
@@ -190,9 +184,10 @@ class BootimgPcbiosPlugin(SourcePlugin):
                      extra_blocks, part.mountpoint, blocks)
 
         # dosfs image, created by mkdosfs
-        bootimg = "%s/boot.img" % cr_workdir
+        bootimg = "%s/boot%s.img" % (cr_workdir, part.lineno)
 
-        dosfs_cmd = "mkdosfs -n boot -S 512 -C %s %d" % (bootimg, blocks)
+        dosfs_cmd = "mkdosfs -n boot -i %s -S 512 -C %s %d" % \
+                    (part.fsuuid, bootimg, blocks)
         exec_native_cmd(dosfs_cmd, native_sysroot)
 
         mcopy_cmd = "mcopy -i %s -s %s/* ::/" % (bootimg, hdddir)

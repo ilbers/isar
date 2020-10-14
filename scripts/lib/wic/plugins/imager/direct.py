@@ -1,21 +1,7 @@
-# ex:ts=4:sw=4:sts=4:et
-# -*- tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
 #
 # Copyright (c) 2013, Intel Corporation.
-# All rights reserved.
 #
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 2 as
-# published by the Free Software Foundation.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+# SPDX-License-Identifier: GPL-2.0-only
 #
 # DESCRIPTION
 # This implements the 'direct' imager plugin class for 'wic'
@@ -26,17 +12,20 @@
 
 import logging
 import os
+import random
 import shutil
 import tempfile
 import uuid
 
 from time import strftime
 
+from oe.path import copyhardlinktree
+
 from wic import WicError
 from wic.filemap import sparse_copy
 from wic.ksparser import KickStart, KickStartError
 from wic.pluginbase import PluginMgr, ImagerPlugin
-from wic.utils.misc import get_bitbake_var, exec_cmd, exec_native_cmd
+from wic.misc import get_bitbake_var, exec_cmd, exec_native_cmd
 
 logger = logging.getLogger('wic')
 
@@ -68,6 +57,8 @@ class DirectPlugin(ImagerPlugin):
         self.outdir = options.outdir
         self.compressor = options.compressor
         self.bmap = options.bmap
+        self.no_fstab_update = options.no_fstab_update
+        self.original_fstab = None
 
         self.name = "%s-%s" % (os.path.splitext(os.path.basename(wks_file))[0],
                                strftime("%Y%m%d%H%M"))
@@ -113,26 +104,38 @@ class DirectPlugin(ImagerPlugin):
 
         with open(fstab_path) as fstab:
             fstab_lines = fstab.readlines()
+            self.original_fstab = fstab_lines.copy()
 
         if self._update_fstab(fstab_lines, self.parts):
-            shutil.copyfile(fstab_path, fstab_path + ".orig")
-
             with open(fstab_path, "w") as fstab:
                 fstab.writelines(fstab_lines)
-
-            return fstab_path
+        else:
+            self.original_fstab = None
 
     def _update_fstab(self, fstab_lines, parts):
         """Assume partition order same as in wks"""
         updated = False
         for part in parts:
             if not part.realnum or not part.mountpoint \
-               or part.mountpoint in ("/", "/boot"):
+               or part.mountpoint == "/":
                 continue
 
-            # mmc device partitions are named mmcblk0p1, mmcblk0p2..
-            prefix = 'p' if  part.disk.startswith('mmcblk') else ''
-            device_name = "/dev/%s%s%d" % (part.disk, prefix, part.realnum)
+            if part.use_uuid:
+                if part.fsuuid:
+                    # FAT UUID is different from others
+                    if len(part.fsuuid) == 10:
+                        device_name = "UUID=%s-%s" % \
+                                       (part.fsuuid[2:6], part.fsuuid[6:])
+                    else:
+                        device_name = "UUID=%s" % part.fsuuid
+                else:
+                    device_name = "PARTUUID=%s" % part.uuid
+            elif part.use_label:
+                device_name = "LABEL=%s" % part.label
+            else:
+                # mmc device partitions are named mmcblk0p1, mmcblk0p2..
+                prefix = 'p' if  part.disk.startswith('mmcblk') else ''
+                device_name = "/dev/%s%s%d" % (part.disk, prefix, part.realnum)
 
             opts = part.fsopts if part.fsopts else "defaults"
             line = "\t".join([device_name, part.mountpoint, part.fstype,
@@ -156,7 +159,8 @@ class DirectPlugin(ImagerPlugin):
         filesystems from the artifacts directly and combine them into
         a partitioned image.
         """
-        fstab_path = self._write_fstab(self.rootfs_dir.get("ROOTFS_DIR"))
+        if not self.no_fstab_update:
+            self._write_fstab(self.rootfs_dir.get("ROOTFS_DIR"))
 
         for part in self.parts:
             # get rootfs size from bitbake variable if it's not set in .ks file
@@ -173,10 +177,6 @@ class DirectPlugin(ImagerPlugin):
                         part.size = int(round(float(rsize_bb)))
 
         self._image.prepare(self)
-
-        if fstab_path:
-            shutil.move(fstab_path + ".orig", fstab_path)
-
         self._image.layout_partitions()
         self._image.create()
 
@@ -205,8 +205,10 @@ class DirectPlugin(ImagerPlugin):
         # Generate .bmap
         if self.bmap:
             logger.debug("Generating bmap file for %s", disk_name)
-            exec_native_cmd("bmaptool create %s -o %s.bmap" % (full_path, full_path),
-                            self.native_sysroot)
+            python = os.path.join(self.native_sysroot, 'usr/bin/python3-native/python3')
+            bmaptool = os.path.join(self.native_sysroot, 'usr/bin/bmaptool')
+            exec_native_cmd("%s %s create %s -o %s.bmap" % \
+                            (python, bmaptool, full_path, full_path), self.native_sysroot)
         # Compress the image
         if self.compressor:
             logger.debug("Compressing disk %s with %s", disk_name, self.compressor)
@@ -233,7 +235,8 @@ class DirectPlugin(ImagerPlugin):
                 suffix = ':'
             else:
                 suffix = '["%s"]:' % (part.mountpoint or part.label)
-            msg += '  ROOTFS_DIR%s%s\n' % (suffix.ljust(20), part.rootfs_dir)
+            rootdir = part.rootfs_dir
+            msg += '  ROOTFS_DIR%s%s\n' % (suffix.ljust(20), rootdir)
 
         msg += '  BOOTIMG_DIR:                  %s\n' % self.bootimg_dir
         msg += '  KERNEL_DIR:                   %s\n' % self.kernel_dir
@@ -270,6 +273,12 @@ class DirectPlugin(ImagerPlugin):
             if os.path.isfile(path):
                 shutil.move(path, os.path.join(self.outdir, fname))
 
+        #Restore original fstab
+        if self.original_fstab:
+            fstab_path = self.rootfs_dir.get("ROOTFS_DIR") + "/etc/fstab"
+            with open(fstab_path, "w") as fstab:
+                fstab.writelines(self.original_fstab)
+
         # remove work directory
         shutil.rmtree(self.workdir, ignore_errors=True)
 
@@ -291,18 +300,23 @@ class PartitionedImage():
         self.path = path  # Path to the image file
         self.numpart = 0  # Number of allocated partitions
         self.realpart = 0 # Number of partitions in the partition table
+        self.primary_part_num = 0  # Number of primary partitions (msdos)
+        self.extendedpart = 0      # Create extended partition before this logical partition (msdos)
+        self.extended_size_sec = 0 # Size of exteded partition (msdos)
+        self.logical_part_cnt = 0  # Number of total logical paritions (msdos)
         self.offset = 0   # Offset of next partition (in sectors)
         self.min_size = 0 # Minimum required disk size to fit
                           # all partitions (in bytes)
         self.ptable_format = ptable_format  # Partition table format
         # Disk system identifier
-        self.identifier = int.from_bytes(os.urandom(4), 'little')
+        self.identifier = random.SystemRandom().randint(1, 0xffffffff)
 
         self.partitions = partitions
         self.partimages = []
         # Size of a sector used in calculations
         self.sector_size = SECTOR_SIZE
         self.native_sysroot = native_sysroot
+        num_real_partitions = len([p for p in self.partitions if not p.no_table])
 
         # calculate the real partition number, accounting for partitions not
         # in the partition table and logical partitions
@@ -312,18 +326,23 @@ class PartitionedImage():
                 part.realnum = 0
             else:
                 realnum += 1
-                if self.ptable_format == 'msdos' and realnum > 3:
+                if self.ptable_format == 'msdos' and realnum > 3 and num_real_partitions > 4:
                     part.realnum = realnum + 1
                     continue
                 part.realnum = realnum
 
-        # generate parition UUIDs
+        # generate parition and filesystem UUIDs
         for part in self.partitions:
             if not part.uuid and part.use_uuid:
                 if self.ptable_format == 'gpt':
                     part.uuid = str(uuid.uuid4())
                 else: # msdos partition table
-                    part.uuid = '%0x-%02d' % (self.identifier, part.realnum)
+                    part.uuid = '%08x-%02d' % (self.identifier, part.realnum)
+            if not part.fsuuid:
+                if part.fstype == 'vfat' or part.fstype == 'msdos':
+                    part.fsuuid = '0x' + str(uuid.uuid4())[:8].upper()
+                else:
+                    part.fsuuid = str(uuid.uuid4())
 
     def prepare(self, imager):
         """Prepare an image. Call prepare method of all image partitions."""
@@ -352,6 +371,10 @@ class PartitionedImage():
         for num in range(len(self.partitions)):
             part = self.partitions[num]
 
+            if self.ptable_format == 'msdos' and part.part_name:
+                raise WicError("setting custom partition name is not " \
+                               "implemented for msdos partitions")
+
             if self.ptable_format == 'msdos' and part.part_type:
                 # The --part-type can also be implemented for MBR partitions,
                 # in which case it would map to the 1-byte "partition type"
@@ -373,12 +396,16 @@ class PartitionedImage():
                 # Skip one sector required for the partitioning scheme overhead
                 self.offset += overhead
 
-            if self.realpart > 3 and num_real_partitions > 4:
+            if self.ptable_format == "msdos":
+                if self.primary_part_num > 3 or \
+                   (self.extendedpart == 0 and self.primary_part_num >= 3 and num_real_partitions > 4):
+                    part.type = 'logical'
                 # Reserve a sector for EBR for every logical partition
                 # before alignment is performed.
-                if self.ptable_format == "msdos":
-                    self.offset += 1
+                if part.type == 'logical':
+                    self.offset += 2
 
+            align_sectors = 0
             if part.align:
                 # If not first partition and we do have alignment set we need
                 # to align the partition.
@@ -401,21 +428,43 @@ class PartitionedImage():
                     # increase the offset so we actually start the partition on right alignment
                     self.offset += align_sectors
 
+            if part.offset is not None:
+                offset = part.offset // self.sector_size
+
+                if offset * self.sector_size != part.offset:
+                    raise WicError("Could not place %s%s at offset %d with sector size %d" % (part.disk, self.numpart, part.offset, self.sector_size))
+
+                delta = offset - self.offset
+                if delta < 0:
+                    raise WicError("Could not place %s%s at offset %d: next free sector is %d (delta: %d)" % (part.disk, self.numpart, part.offset, self.offset, delta))
+
+                logger.debug("Skipping %d sectors to place %s%s at offset %dK",
+                             delta, part.disk, self.numpart, part.offset)
+
+                self.offset = offset
+
             part.start = self.offset
             self.offset += part.size_sec
 
-            part.type = 'primary'
             if not part.no_table:
                 part.num = self.realpart
             else:
                 part.num = 0
 
-            if self.ptable_format == "msdos":
-                # only count the partitions that are in partition table
-                if num_real_partitions > 4:
-                    if self.realpart > 3:
-                        part.type = 'logical'
-                        part.num = self.realpart + 1
+            if self.ptable_format == "msdos" and not part.no_table:
+                if part.type == 'logical':
+                    self.logical_part_cnt += 1
+                    part.num = self.logical_part_cnt + 4
+                    if self.extendedpart == 0:
+                        # Create extended partition as a primary partition
+                        self.primary_part_num += 1
+                        self.extendedpart = part.num
+                    else:
+                        self.extended_size_sec += align_sectors
+                    self.extended_size_sec += part.size_sec + 2
+                else:
+                    self.primary_part_num += 1
+                    part.num = self.primary_part_num
 
             logger.debug("Assigned %s to %s%d, sectors range %d-%d size %d "
                          "sectors (%d bytes).", part.mountpoint, part.disk,
@@ -465,7 +514,7 @@ class PartitionedImage():
             if part.num == 0:
                 continue
 
-            if self.ptable_format == "msdos" and part.num == 5:
+            if self.ptable_format == "msdos" and part.num == self.extendedpart:
                 # Create an extended partition (note: extended
                 # partition is described in MBR and contains all
                 # logical partitions). The logical partitions save a
@@ -478,8 +527,8 @@ class PartitionedImage():
                 # add a sector at the back, so that there is enough
                 # room for all logical partitions.
                 self._create_partition(self.path, "extended",
-                                       None, part.start - 1,
-                                       self.offset - part.start + 1)
+                                       None, part.start - 2,
+                                       self.extended_size_sec)
 
             if part.fstype == "swap":
                 parted_fs_type = "linux-swap"
@@ -487,8 +536,8 @@ class PartitionedImage():
                 parted_fs_type = "fat32"
             elif part.fstype == "msdos":
                 parted_fs_type = "fat16"
-            elif part.fstype == "ontrackdm6aux3":
-                parted_fs_type = "ontrackdm6aux3"
+                if not part.system_id:
+                    part.system_id = '0x6' # FAT16
             else:
                 # Type for ext2/ext3/ext4/btrfs
                 parted_fs_type = "ext2"
@@ -504,6 +553,13 @@ class PartitionedImage():
 
             self._create_partition(self.path, part.type,
                                    parted_fs_type, part.start, part.size_sec)
+
+            if part.part_name:
+                logger.debug("partition %d: set name to %s",
+                             part.num, part.part_name)
+                exec_native_cmd("sgdisk --change-name=%d:%s %s" % \
+                                         (part.num, part.part_name,
+                                          self.path), self.native_sysroot)
 
             if part.part_type:
                 logger.debug("partition %d: set type UID to %s",
@@ -538,21 +594,8 @@ class PartitionedImage():
                                 (self.path, part.num, part.system_id),
                                 self.native_sysroot)
 
-            # Parted defaults to enabling the lba flag for fat16 partitions,
-            # which causes compatibility issues with some firmware (and really
-            # isn't necessary).
-            if parted_fs_type == "fat16":
-                if self.ptable_format == 'msdos':
-                    logger.debug("Disable 'lba' flag for partition '%s' on disk '%s'",
-                                 part.num, self.path)
-                    exec_native_cmd("parted -s %s set %d lba off" % \
-                                    (self.path, part.num),
-                                    self.native_sysroot)
-
     def cleanup(self):
-        # remove partition images
-        for image in set(self.partimages):
-            os.remove(image)
+        pass
 
     def assemble(self):
         logger.debug("Installing partitions")
@@ -561,7 +604,7 @@ class PartitionedImage():
             source = part.source_file
             if source:
                 # install source_file contents into a partition
-                sparse_copy(source, self.path, part.start * self.sector_size)
+                sparse_copy(source, self.path, seek=part.start * self.sector_size)
 
                 logger.debug("Installed %s in partition %d, sectors %d-%d, "
                              "size %d sectors", source, part.num, part.start,

@@ -1,21 +1,7 @@
-# ex:ts=4:sw=4:sts=4:et
-# -*- tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
 #
 # Copyright (c) 2013, Intel Corporation.
-# All rights reserved.
 #
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 2 as
-# published by the Free Software Foundation.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+# SPDX-License-Identifier: GPL-2.0-only
 #
 # DESCRIPTION
 # This module provides a place to collect various wic-related utils
@@ -29,12 +15,12 @@
 import logging
 import os
 import re
+import subprocess
 
 from collections import defaultdict
 from distutils import spawn
 
 from wic import WicError
-from wic.utils import runner
 
 logger = logging.getLogger('wic')
 
@@ -43,6 +29,9 @@ NATIVE_RECIPES = {"bmaptool": "bmap-tools",
                   "grub-mkimage": "grub-efi",
                   "isohybrid": "syslinux",
                   "mcopy": "mtools",
+                  "mdel" : "mtools",
+                  "mdeltree" : "mtools",
+                  "mdir" : "mtools",
                   "mkdosfs": "dosfstools",
                   "mkisofs": "cdrtools",
                   "mkfs.btrfs": "btrfs-tools",
@@ -52,14 +41,48 @@ NATIVE_RECIPES = {"bmaptool": "bmap-tools",
                   "mkfs.vfat": "dosfstools",
                   "mksquashfs": "squashfs-tools",
                   "mkswap": "util-linux",
-                  "mmd": "syslinux",
+                  "mmd": "mtools",
                   "parted": "parted",
                   "sfdisk": "util-linux",
                   "sgdisk": "gptfdisk",
-                  "syslinux": "syslinux"
+                  "syslinux": "syslinux",
+                  "tar": "tar"
                  }
 
-def _exec_cmd(cmd_and_args, as_shell=False, catch=3):
+def runtool(cmdln_or_args):
+    """ wrapper for most of the subprocess calls
+    input:
+        cmdln_or_args: can be both args and cmdln str (shell=True)
+    return:
+        rc, output
+    """
+    if isinstance(cmdln_or_args, list):
+        cmd = cmdln_or_args[0]
+        shell = False
+    else:
+        import shlex
+        cmd = shlex.split(cmdln_or_args)[0]
+        shell = True
+
+    sout = subprocess.PIPE
+    serr = subprocess.STDOUT
+
+    try:
+        process = subprocess.Popen(cmdln_or_args, stdout=sout,
+                                   stderr=serr, shell=shell)
+        sout, serr = process.communicate()
+        # combine stdout and stderr, filter None out and decode
+        out = ''.join([out.decode('utf-8') for out in [sout, serr] if out])
+    except OSError as err:
+        if err.errno == 2:
+            # [Errno 2] No such file or directory
+            raise WicError('Cannot run command: %s, lost dependency?' % cmd)
+        else:
+            raise # relay
+
+    return process.returncode, out
+
+def _exec_cmd(cmd_and_args, as_shell=False):
     """
     Execute command, catching stderr, stdout
 
@@ -70,9 +93,9 @@ def _exec_cmd(cmd_and_args, as_shell=False, catch=3):
     logger.debug(args)
 
     if as_shell:
-        ret, out = runner.runtool(cmd_and_args, catch)
+        ret, out = runtool(cmd_and_args)
     else:
-        ret, out = runner.runtool(args, catch)
+        ret, out = runtool(args)
     out = out.strip()
     if ret != 0:
         raise WicError("_exec_cmd: %s returned '%s' instead of 0\noutput: %s" % \
@@ -84,14 +107,23 @@ def _exec_cmd(cmd_and_args, as_shell=False, catch=3):
     return ret, out
 
 
-def exec_cmd(cmd_and_args, as_shell=False, catch=3):
+def exec_cmd(cmd_and_args, as_shell=False):
     """
     Execute command, return output
     """
-    return _exec_cmd(cmd_and_args, as_shell, catch)[1]
+    return _exec_cmd(cmd_and_args, as_shell)[1]
 
+def find_executable(cmd, paths):
+    recipe = cmd
+    if recipe in NATIVE_RECIPES:
+        recipe =  NATIVE_RECIPES[recipe]
+    provided = get_bitbake_var("ASSUME_PROVIDED")
+    if provided and "%s-native" % recipe in provided:
+        return True
 
-def exec_native_cmd(cmd_and_args, native_sysroot, catch=3, pseudo=""):
+    return spawn.find_executable(cmd, paths)
+
+def exec_native_cmd(cmd_and_args, native_sysroot, pseudo=""):
     """
     Execute native command, catching stderr, stdout
 
@@ -106,19 +138,17 @@ def exec_native_cmd(cmd_and_args, native_sysroot, catch=3, pseudo=""):
     if pseudo:
         cmd_and_args = pseudo + cmd_and_args
 
-    wtools_sysroot = get_bitbake_var("RECIPE_SYSROOT_NATIVE", "wic-tools")
+    native_paths = "%s/sbin:%s/usr/sbin:%s/usr/bin:%s/bin" % \
+                   (native_sysroot, native_sysroot,
+                    native_sysroot, native_sysroot)
 
-    native_paths = \
-            "%s/sbin:%s/usr/sbin:%s/usr/bin:%s/sbin:%s/usr/sbin:%s/usr/bin" % \
-            (wtools_sysroot, wtools_sysroot, wtools_sysroot,
-             native_sysroot, native_sysroot, native_sysroot)
     native_cmd_and_args = "export PATH=%s:$PATH;%s" % \
-                           (native_paths, cmd_and_args)
+                   (native_paths, cmd_and_args)
     logger.debug("exec_native_cmd: %s", native_cmd_and_args)
 
     # If the command isn't in the native sysroot say we failed.
-    if spawn.find_executable(args[0], native_paths):
-        ret, out = _exec_cmd(native_cmd_and_args, True, catch)
+    if find_executable(args[0], native_paths):
+        ret, out = _exec_cmd(native_cmd_and_args, True)
     else:
         ret = 127
         out = "can't find native executable %s in %s" % (args[0], native_paths)
@@ -131,8 +161,8 @@ def exec_native_cmd(cmd_and_args, native_sysroot, catch=3, pseudo=""):
               "was not found (see details above).\n\n" % prog
         recipe = NATIVE_RECIPES.get(prog)
         if recipe:
-            msg += "Please bake it with 'bitbake %s-native' "\
-                   "and try again.\n" % recipe
+            msg += "Please make sure wic-tools have %s-native in its DEPENDS, "\
+                   "build it with 'bitbake wic-tools' and try again.\n" % recipe
         else:
             msg += "Wic failed to find a recipe to build native %s. Please "\
                    "file a bug against wic.\n" % prog
@@ -153,7 +183,7 @@ class BitbakeVars(defaultdict):
         self.default_image = None
         self.vars_dir = None
 
-    def _parse_line(self, line, image, matcher=re.compile(r"^(\w+)=(.+)")):
+    def _parse_line(self, line, image, matcher=re.compile(r"^([a-zA-Z0-9\-_+./~]+)=(.*)")):
         """
         Parse one line from bitbake -e output or from .env file.
         Put result key-value pair into the storage.

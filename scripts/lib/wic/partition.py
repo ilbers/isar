@@ -1,21 +1,7 @@
-# ex:ts=4:sw=4:sts=4:et
-# -*- tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
 #
 # Copyright (c) 2013-2016 Intel Corporation.
-# All rights reserved.
 #
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 2 as
-# published by the Free Software Foundation.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+# SPDX-License-Identifier: GPL-2.0-only
 #
 # DESCRIPTION
 # This module provides the OpenEmbedded partition object definitions.
@@ -26,10 +12,10 @@
 
 import logging
 import os
-import tempfile
+import uuid
 
 from wic import WicError
-from wic.utils.misc import exec_cmd, exec_native_cmd, get_bitbake_var
+from wic.misc import exec_cmd, exec_native_cmd, get_bitbake_var
 from wic.pluginbase import PluginMgr
 
 logger = logging.getLogger('wic')
@@ -44,13 +30,19 @@ class Partition():
         self.device = None
         self.extra_space = args.extra_space
         self.exclude_path = args.exclude_path
+        self.include_path = args.include_path
+        self.change_directory = args.change_directory
         self.fsopts = args.fsopts
         self.fstype = args.fstype
         self.label = args.label
+        self.use_label = args.use_label
+        self.mkfs_extraopts = args.mkfs_extraopts
         self.mountpoint = args.mountpoint
         self.no_table = args.no_table
         self.num = None
+        self.offset = args.offset
         self.overhead_factor = args.overhead_factor
+        self.part_name = args.part_name
         self.part_type = args.part_type
         self.rootfs_dir = args.rootfs_dir
         self.size = args.size
@@ -60,10 +52,11 @@ class Partition():
         self.system_id = args.system_id
         self.use_uuid = args.use_uuid
         self.uuid = args.uuid
+        self.fsuuid = args.fsuuid
+        self.type = args.type
 
         self.lineno = lineno
         self.source_file = ""
-        self.sourceparams_dict = {}
 
     def get_extra_block_count(self, current_blocks):
         """
@@ -136,22 +129,24 @@ class Partition():
                                "specify a non-zero --size/--fixed-size for that "
                                "partition." % self.mountpoint)
 
-            if self.fstype and self.fstype == "swap":
+            if self.fstype == "swap":
                 self.prepare_swap_partition(cr_workdir, oe_builddir,
                                             native_sysroot)
                 self.source_file = "%s/fs.%s" % (cr_workdir, self.fstype)
-            elif self.fstype:
+            else:
+                if self.fstype == 'squashfs':
+                    raise WicError("It's not possible to create empty squashfs "
+                                   "partition '%s'" % (self.mountpoint))
+
                 rootfs = "%s/fs_%s.%s.%s" % (cr_workdir, self.label,
                                              self.lineno, self.fstype)
                 if os.path.isfile(rootfs):
                     os.remove(rootfs)
-                for prefix in ("ext", "btrfs", "vfat", "squashfs"):
-                    if self.fstype.startswith(prefix):
-                        method = getattr(self,
-                                         "prepare_empty_partition_" + prefix)
-                        method(rootfs, oe_builddir, native_sysroot)
-                        self.source_file = rootfs
-                        break
+
+                prefix = "ext" if self.fstype.startswith("ext") else self.fstype
+                method = getattr(self, "prepare_empty_partition_" + prefix)
+                method(rootfs, oe_builddir, native_sysroot)
+                self.source_file = rootfs
             return
 
         plugins = PluginMgr.get_plugins('source')
@@ -168,7 +163,7 @@ class Partition():
             # Split sourceparams string of the form key1=val1[,key2=val2,...]
             # into a dict.  Also accepts valueless keys i.e. without =
             splitted = self.sourceparams.split(',')
-            srcparams_dict = dict(par.split('=') for par in splitted if par)
+            srcparams_dict = dict(par.split('=', 1) for par in splitted if par)
 
         plugin = PluginMgr.get_plugins('source')[self.source]
         plugin.do_configure_partition(self, srcparams_dict, creator,
@@ -178,6 +173,9 @@ class Partition():
                                   cr_workdir, oe_builddir, bootimg_dir,
                                   kernel_dir, native_sysroot)
         plugin.do_prepare_partition(self, srcparams_dict, creator,
+                                    cr_workdir, oe_builddir, bootimg_dir,
+                                    kernel_dir, rootfs_dir, native_sysroot)
+        plugin.do_post_partition(self, srcparams_dict, creator,
                                     cr_workdir, oe_builddir, bootimg_dir,
                                     kernel_dir, rootfs_dir, native_sysroot)
 
@@ -193,74 +191,57 @@ class Partition():
                            "larger (%d kB) than its allowed size %d kB" %
                            (self.mountpoint, self.size, self.fixed_size))
 
-    def prepare_rootfs_from_fs_image(self, cr_workdir, oe_builddir,
-                                     rootfs_dir):
-        """
-        Handle an already-created partition e.g. xxx.ext3
-        """
-        rootfs = oe_builddir
-        du_cmd = "du -Lbks %s" % rootfs
-        out = exec_cmd(du_cmd)
-        rootfs_size = out.split()[0]
-
-        self.size = int(rootfs_size)
-        self.source_file = rootfs
-
     def prepare_rootfs(self, cr_workdir, oe_builddir, rootfs_dir,
-                       native_sysroot):
+                       native_sysroot, real_rootfs = True, pseudo_dir = None):
         """
         Prepare content for a rootfs partition i.e. create a partition
         and fill it from a /rootfs dir.
 
-        Currently handles ext2/3/4, btrfs and vfat.
+        Currently handles ext2/3/4, btrfs, vfat and squashfs.
         """
         p_prefix = os.environ.get("PSEUDO_PREFIX", "%s/usr" % native_sysroot)
-        p_localstatedir = os.environ.get("PSEUDO_LOCALSTATEDIR",
-                                         "%s/../pseudo" % rootfs_dir)
-        p_passwd = os.environ.get("PSEUDO_PASSWD", rootfs_dir)
-        p_nosymlinkexp = os.environ.get("PSEUDO_NOSYMLINKEXP", "1")
-        pseudo = "export PSEUDO_PREFIX=%s;" % p_prefix
-        pseudo += "export PSEUDO_LOCALSTATEDIR=%s;" % p_localstatedir
-        pseudo += "export PSEUDO_PASSWD=%s;" % p_passwd
-        pseudo += "export PSEUDO_NOSYMLINKEXP=%s;" % p_nosymlinkexp
-        pseudo += "%s " % get_bitbake_var("FAKEROOTCMD")
+        if (pseudo_dir):
+            pseudo = "export PSEUDO_PREFIX=%s;" % p_prefix
+            pseudo += "export PSEUDO_LOCALSTATEDIR=%s;" % pseudo_dir
+            pseudo += "export PSEUDO_PASSWD=%s;" % rootfs_dir
+            pseudo += "export PSEUDO_NOSYMLINKEXP=1;"
+            pseudo += "%s " % get_bitbake_var("FAKEROOTCMD")
+        else:
+            pseudo = None
 
         rootfs = "%s/rootfs_%s.%s.%s" % (cr_workdir, self.label,
                                          self.lineno, self.fstype)
         if os.path.isfile(rootfs):
             os.remove(rootfs)
 
-        if not self.fstype:
-            raise WicError("File system for partition %s not specified in "
-                           "kickstart, use --fstype option" % self.mountpoint)
-
-        # Get rootfs size from bitbake variable if it's not set in .ks file
-        if not self.size:
-            # Bitbake variable ROOTFS_SIZE is calculated in
-            # Image._get_rootfs_size method from meta/lib/oe/image.py
-            # using IMAGE_ROOTFS_SIZE, IMAGE_ROOTFS_ALIGNMENT,
-            # IMAGE_OVERHEAD_FACTOR and IMAGE_ROOTFS_EXTRA_SPACE
+        if not self.size and real_rootfs:
+            # The rootfs size is not set in .ks file so try to get it
+            # from bitbake variable
             rsize_bb = get_bitbake_var('ROOTFS_SIZE')
-            if rsize_bb:
-                logger.warning('overhead-factor was specified, but size was not,'
-                               ' so bitbake variables will be used for the size.'
-                               ' In this case both IMAGE_OVERHEAD_FACTOR and '
-                               '--overhead-factor will be applied')
+            rdir = get_bitbake_var('IMAGE_ROOTFS')
+            if rsize_bb and rdir == rootfs_dir:
+                # Bitbake variable ROOTFS_SIZE is calculated in
+                # Image._get_rootfs_size method from meta/lib/oe/image.py
+                # using IMAGE_ROOTFS_SIZE, IMAGE_ROOTFS_ALIGNMENT,
+                # IMAGE_OVERHEAD_FACTOR and IMAGE_ROOTFS_EXTRA_SPACE
                 self.size = int(round(float(rsize_bb)))
-
-        for prefix in ("ext", "btrfs", "vfat", "squashfs"):
-            if self.fstype.startswith(prefix):
-                method = getattr(self, "prepare_rootfs_" + prefix)
-                method(rootfs, oe_builddir, rootfs_dir, native_sysroot, pseudo)
-
-                self.source_file = rootfs
-
-                # get the rootfs size in the right units for kickstart (kB)
-                du_cmd = "du -Lbks %s" % rootfs
+            else:
+                # Bitbake variable ROOTFS_SIZE is not defined so compute it
+                # from the rootfs_dir size using the same logic found in
+                # get_rootfs_size() from meta/classes/image.bbclass
+                du_cmd = "du -ks %s" % rootfs_dir
                 out = exec_cmd(du_cmd)
                 self.size = int(out.split()[0])
 
-                break
+        prefix = "ext" if self.fstype.startswith("ext") else self.fstype
+        method = getattr(self, "prepare_rootfs_" + prefix)
+        method(rootfs, oe_builddir, rootfs_dir, native_sysroot, pseudo)
+        self.source_file = rootfs
+
+        # get the rootfs size in the right units for kickstart (kB)
+        du_cmd = "du -Lbks %s" % rootfs
+        out = exec_cmd(du_cmd)
+        self.size = int(out.split()[0])
 
     def prepare_rootfs_ext(self, rootfs, oe_builddir, rootfs_dir,
                            native_sysroot, pseudo):
@@ -276,25 +257,23 @@ class Partition():
         with open(rootfs, 'w') as sparse:
             os.ftruncate(sparse.fileno(), rootfs_size * 1024)
 
-        extra_imagecmd = "-i 8192"
+        extraopts = self.mkfs_extraopts or "-F -i 8192"
 
         label_str = ""
         if self.label:
             label_str = "-L %s" % self.label
 
-        mkfs_cmd = "mkfs.%s -F %s %s %s -d %s" % \
-            (self.fstype, extra_imagecmd, rootfs, label_str, rootfs_dir)
+        mkfs_cmd = "mkfs.%s %s %s %s -U %s -d %s" % \
+            (self.fstype, extraopts, rootfs, label_str, self.fsuuid, rootfs_dir)
         exec_native_cmd(mkfs_cmd, native_sysroot, pseudo=pseudo)
 
-        mkfs_cmd = "fsck.%s -fy %s" % (self.fstype, rootfs)
+        mkfs_cmd = "fsck.%s -pvfD %s" % (self.fstype, rootfs)
         exec_native_cmd(mkfs_cmd, native_sysroot, pseudo=pseudo)
 
     def prepare_rootfs_btrfs(self, rootfs, oe_builddir, rootfs_dir,
                              native_sysroot, pseudo):
         """
         Prepare content for a btrfs rootfs partition.
-
-        Currently handles ext2/3/4 and btrfs.
         """
         du_cmd = "du -ks %s" % rootfs_dir
         out = exec_cmd(du_cmd)
@@ -309,14 +288,15 @@ class Partition():
         if self.label:
             label_str = "-L %s" % self.label
 
-        mkfs_cmd = "mkfs.%s -b %d -r %s %s %s" % \
-            (self.fstype, rootfs_size * 1024, rootfs_dir, label_str, rootfs)
+        mkfs_cmd = "mkfs.%s -b %d -r %s %s %s -U %s %s" % \
+            (self.fstype, rootfs_size * 1024, rootfs_dir, label_str,
+             self.mkfs_extraopts, self.fsuuid, rootfs)
         exec_native_cmd(mkfs_cmd, native_sysroot, pseudo=pseudo)
 
-    def prepare_rootfs_vfat(self, rootfs, oe_builddir, rootfs_dir,
-                            native_sysroot, pseudo):
+    def prepare_rootfs_msdos(self, rootfs, oe_builddir, rootfs_dir,
+                             native_sysroot, pseudo):
         """
-        Prepare content for a vfat rootfs partition.
+        Prepare content for a msdos/vfat rootfs partition.
         """
         du_cmd = "du -bks %s" % rootfs_dir
         out = exec_cmd(du_cmd)
@@ -328,7 +308,15 @@ class Partition():
         if self.label:
             label_str = "-n %s" % self.label
 
-        dosfs_cmd = "mkdosfs %s -S 512 -C %s %d" % (label_str, rootfs, rootfs_size)
+        size_str = ""
+        if self.fstype == 'msdos':
+            size_str = "-F 16" # FAT 16
+
+        extraopts = self.mkfs_extraopts or '-S 512'
+
+        dosfs_cmd = "mkdosfs %s -i %s %s %s -C %s %d" % \
+                    (label_str, self.fsuuid, size_str, extraopts, rootfs,
+                     rootfs_size)
         exec_native_cmd(dosfs_cmd, native_sysroot)
 
         mcopy_cmd = "mcopy -i %s -s %s/* ::/" % (rootfs, rootfs_dir)
@@ -337,13 +325,16 @@ class Partition():
         chmod_cmd = "chmod 644 %s" % rootfs
         exec_cmd(chmod_cmd)
 
+    prepare_rootfs_vfat = prepare_rootfs_msdos
+
     def prepare_rootfs_squashfs(self, rootfs, oe_builddir, rootfs_dir,
                                 native_sysroot, pseudo):
         """
         Prepare content for a squashfs rootfs partition.
         """
-        squashfs_cmd = "mksquashfs %s %s -noappend" % \
-                       (rootfs_dir, rootfs)
+        extraopts = self.mkfs_extraopts or '-noappend'
+        squashfs_cmd = "mksquashfs %s %s %s" % \
+                       (rootfs_dir, rootfs, extraopts)
         exec_native_cmd(squashfs_cmd, native_sysroot, pseudo=pseudo)
 
     def prepare_empty_partition_ext(self, rootfs, oe_builddir,
@@ -355,14 +346,14 @@ class Partition():
         with open(rootfs, 'w') as sparse:
             os.ftruncate(sparse.fileno(), size * 1024)
 
-        extra_imagecmd = "-i 8192"
+        extraopts = self.mkfs_extraopts or "-i 8192"
 
         label_str = ""
         if self.label:
             label_str = "-L %s" % self.label
 
-        mkfs_cmd = "mkfs.%s -F %s %s %s" % \
-            (self.fstype, extra_imagecmd, label_str, rootfs)
+        mkfs_cmd = "mkfs.%s -F %s %s -U %s %s" % \
+            (self.fstype, extraopts, label_str, self.fsuuid, rootfs)
         exec_native_cmd(mkfs_cmd, native_sysroot)
 
     def prepare_empty_partition_btrfs(self, rootfs, oe_builddir,
@@ -378,12 +369,13 @@ class Partition():
         if self.label:
             label_str = "-L %s" % self.label
 
-        mkfs_cmd = "mkfs.%s -b %d %s %s" % \
-            (self.fstype, self.size * 1024, label_str, rootfs)
+        mkfs_cmd = "mkfs.%s -b %d %s -U %s %s %s" % \
+                   (self.fstype, self.size * 1024, label_str, self.fsuuid,
+                    self.mkfs_extraopts, rootfs)
         exec_native_cmd(mkfs_cmd, native_sysroot)
 
-    def prepare_empty_partition_vfat(self, rootfs, oe_builddir,
-                                     native_sysroot):
+    def prepare_empty_partition_msdos(self, rootfs, oe_builddir,
+                                      native_sysroot):
         """
         Prepare an empty vfat partition.
         """
@@ -393,40 +385,22 @@ class Partition():
         if self.label:
             label_str = "-n %s" % self.label
 
-        dosfs_cmd = "mkdosfs %s -S 512 -C %s %d" % (label_str, rootfs, blocks)
+        size_str = ""
+        if self.fstype == 'msdos':
+            size_str = "-F 16" # FAT 16
+
+        extraopts = self.mkfs_extraopts or '-S 512'
+
+        dosfs_cmd = "mkdosfs %s -i %s %s %s -C %s %d" % \
+                    (label_str, self.fsuuid, extraopts, size_str, rootfs,
+                     blocks)
+
         exec_native_cmd(dosfs_cmd, native_sysroot)
 
         chmod_cmd = "chmod 644 %s" % rootfs
         exec_cmd(chmod_cmd)
 
-    def prepare_empty_partition_squashfs(self, cr_workdir, oe_builddir,
-                                         native_sysroot):
-        """
-        Prepare an empty squashfs partition.
-        """
-        logger.warning("Creating of an empty squashfs %s partition was attempted. "
-                       "Proceeding as requested.", self.mountpoint)
-
-        path = "%s/fs_%s.%s" % (cr_workdir, self.label, self.fstype)
-        if os.path.isfile(path):
-            os.remove(path)
-
-        # it is not possible to create a squashfs without source data,
-        # thus prepare an empty temp dir that is used as source
-        tmpdir = tempfile.mkdtemp()
-
-        squashfs_cmd = "mksquashfs %s %s -noappend" % \
-                       (tmpdir, path)
-        exec_native_cmd(squashfs_cmd, native_sysroot)
-
-        os.rmdir(tmpdir)
-
-        # get the rootfs size in the right units for kickstart (kB)
-        du_cmd = "du -Lbks %s" % path
-        out = exec_cmd(du_cmd)
-        fs_size = out.split()[0]
-
-        self.size = int(fs_size)
+    prepare_empty_partition_vfat = prepare_empty_partition_msdos
 
     def prepare_swap_partition(self, cr_workdir, oe_builddir, native_sysroot):
         """
@@ -437,9 +411,9 @@ class Partition():
         with open(path, 'w') as sparse:
             os.ftruncate(sparse.fileno(), self.size * 1024)
 
-        import uuid
         label_str = ""
         if self.label:
             label_str = "-L %s" % self.label
-        mkswap_cmd = "mkswap %s -U %s %s" % (label_str, str(uuid.uuid1()), path)
+
+        mkswap_cmd = "mkswap %s -U %s %s" % (label_str, self.fsuuid, path)
         exec_native_cmd(mkswap_cmd, native_sysroot)

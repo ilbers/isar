@@ -1,18 +1,5 @@
-# ex:ts=4:sw=4:sts=4:et
-# -*- tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
-
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 2 as
-# published by the Free Software Foundation.
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+# SPDX-License-Identifier: GPL-2.0-only
 #
 # DESCRIPTION
 # This implements the 'isoimage-isohybrid' source plugin class for 'wic'
@@ -29,7 +16,7 @@ import shutil
 from wic import WicError
 from wic.engine import get_custom_config
 from wic.pluginbase import SourcePlugin
-from wic.utils.misc import exec_cmd, exec_native_cmd, get_bitbake_var
+from wic.misc import exec_cmd, exec_native_cmd, get_bitbake_var
 
 logger = logging.getLogger('wic')
 
@@ -47,7 +34,7 @@ class IsoImagePlugin(SourcePlugin):
 
     Example kickstart file:
     part /boot --source isoimage-isohybrid --sourceparams="loader=grub-efi, \\
-    image_name= IsoImage" --ondisk cd --label LIVECD --fstype=ext2
+    image_name= IsoImage" --ondisk cd --label LIVECD
     bootloader  --timeout=10  --append=" "
 
     In --sourceparams "loader" specifies the bootloader used for booting in EFI
@@ -83,8 +70,13 @@ class IsoImagePlugin(SourcePlugin):
         syslinux_conf += "DEFAULT boot\n"
         syslinux_conf += "LABEL boot\n"
 
-        kernel = "/bzImage"
-        syslinux_conf += "KERNEL " + kernel + "\n"
+        kernel = get_bitbake_var("KERNEL_IMAGETYPE")
+        if get_bitbake_var("INITRAMFS_IMAGE_BUNDLE") == "1":
+            if get_bitbake_var("INITRAMFS_IMAGE"):
+                kernel = "%s-%s.bin" % \
+                    (get_bitbake_var("KERNEL_IMAGETYPE"), get_bitbake_var("INITRAMFS_LINK_NAME"))
+
+        syslinux_conf += "KERNEL /" + kernel + "\n"
         syslinux_conf += "APPEND initrd=/initrd LABEL=boot %s\n" \
                              % bootloader.append
 
@@ -95,7 +87,7 @@ class IsoImagePlugin(SourcePlugin):
             cfg.write(syslinux_conf)
 
     @classmethod
-    def do_configure_grubefi(cls, part, creator, cr_workdir):
+    def do_configure_grubefi(cls, part, creator, target_dir):
         """
         Create loader-specific (grub-efi) config
         """
@@ -109,7 +101,7 @@ class IsoImagePlugin(SourcePlugin):
                 raise WicError("configfile is specified "
                                "but failed to get it from %s", configfile)
         else:
-            splash = os.path.join(cr_workdir, "EFI/boot/splash.jpg")
+            splash = os.path.join(target_dir, "splash.jpg")
             if os.path.exists(splash):
                 splashline = "menu background splash.jpg"
             else:
@@ -127,9 +119,13 @@ class IsoImagePlugin(SourcePlugin):
             grubefi_conf += "\n"
             grubefi_conf += "menuentry 'boot'{\n"
 
-            kernel = "/bzImage"
+            kernel = get_bitbake_var("KERNEL_IMAGETYPE")
+            if get_bitbake_var("INITRAMFS_IMAGE_BUNDLE") == "1":
+                if get_bitbake_var("INITRAMFS_IMAGE"):
+                    kernel = "%s-%s.bin" % \
+                        (get_bitbake_var("KERNEL_IMAGETYPE"), get_bitbake_var("INITRAMFS_LINK_NAME"))
 
-            grubefi_conf += "linux %s rootwait %s\n" \
+            grubefi_conf += "linux /%s rootwait %s\n" \
                             % (kernel, bootloader.append)
             grubefi_conf += "initrd /initrd \n"
             grubefi_conf += "}\n"
@@ -137,9 +133,10 @@ class IsoImagePlugin(SourcePlugin):
             if splashline:
                 grubefi_conf += "%s\n" % splashline
 
-        logger.debug("Writing grubefi config %s/EFI/BOOT/grub.cfg", cr_workdir)
+        cfg_path = os.path.join(target_dir, "grub.cfg")
+        logger.debug("Writing grubefi config %s", cfg_path)
 
-        with open("%s/EFI/BOOT/grub.cfg" % cr_workdir, "w") as cfg:
+        with open(cfg_path, "w") as cfg:
             cfg.write(grubefi_conf)
 
     @staticmethod
@@ -162,13 +159,14 @@ class IsoImagePlugin(SourcePlugin):
             if not image_type:
                 raise WicError("Couldn't find INITRAMFS_FSTYPES, exiting.")
 
-            target_arch = get_bitbake_var("TRANSLATED_TARGET_ARCH")
-            if not target_arch:
-                raise WicError("Couldn't find TRANSLATED_TARGET_ARCH, exiting.")
+            machine = os.path.basename(initrd_dir)
 
-            initrd = glob.glob('%s/%s*%s.%s' % (initrd_dir, image_name, target_arch, image_type))[0]
+            pattern = '%s/%s*%s.%s' % (initrd_dir, image_name, machine, image_type)
+            files = glob.glob(pattern)
+            if files:
+                initrd = files[0]
 
-        if not os.path.exists(initrd):
+        if not initrd or not os.path.exists(initrd):
             # Create initrd from rootfs directory
             initrd = "%s/initrd.cpio.gz" % cr_workdir
             initrd_dir = "%s/INITRD" % cr_workdir
@@ -189,10 +187,9 @@ class IsoImagePlugin(SourcePlugin):
             else:
                 raise WicError("Couldn't find or build initrd, exiting.")
 
-            exec_cmd("cd %s && find . | cpio -o -H newc -R +0:+0 >./initrd.cpio " \
-                    % initrd_dir, as_shell=True)
-            exec_cmd("gzip -f -9 -c %s/initrd.cpio > %s" \
-                    % (cr_workdir, initrd), as_shell=True)
+            exec_cmd("cd %s && find . | cpio -o -H newc -R root:root >%s/initrd.cpio " \
+                     % (initrd_dir, cr_workdir), as_shell=True)
+            exec_cmd("gzip -f -9 %s/initrd.cpio" % cr_workdir, as_shell=True)
             shutil.rmtree(initrd_dir)
 
         return initrd
@@ -206,8 +203,8 @@ class IsoImagePlugin(SourcePlugin):
         """
         isodir = "%s/ISO/" % cr_workdir
 
-        if os.path.exists(cr_workdir):
-            shutil.rmtree(cr_workdir)
+        if os.path.exists(isodir):
+            shutil.rmtree(isodir)
 
         install_cmd = "install -d %s " % isodir
         exec_cmd(install_cmd)
@@ -251,33 +248,8 @@ class IsoImagePlugin(SourcePlugin):
             raise WicError("Couldn't find IMAGE_ROOTFS, exiting.")
 
         part.rootfs_dir = rootfs_dir
-
-        # Prepare rootfs.img
         deploy_dir = get_bitbake_var("DEPLOY_DIR_IMAGE")
         img_iso_dir = get_bitbake_var("ISODIR")
-        rootfs_img = "%s/rootfs.img" % img_iso_dir
-        if not os.path.isfile(rootfs_img):
-            # check if rootfs.img is in deploydir
-            deploy_dir = get_bitbake_var("DEPLOY_DIR_IMAGE")
-            image_name = get_bitbake_var("IMAGE_LINK_NAME")
-            rootfs_img = "%s/%s.%s" \
-                % (deploy_dir, image_name, part.fstype)
-
-        if not os.path.isfile(rootfs_img):
-            # create image file with type specified by --fstype
-            # which contains rootfs
-            du_cmd = "du -bks %s" % rootfs_dir
-            out = exec_cmd(du_cmd)
-            part.size = int(out.split()[0])
-            part.extra_space = 0
-            part.overhead_factor = 1.2
-            part.prepare_rootfs(cr_workdir, oe_builddir, rootfs_dir, \
-                                native_sysroot)
-            rootfs_img = part.source_file
-
-        install_cmd = "install -m 0644 %s %s/rootfs.img" \
-            % (rootfs_img, isodir)
-        exec_cmd(install_cmd)
 
         # Remove the temporary file created by part.prepare_rootfs()
         if os.path.isfile(part.source_file):
@@ -305,27 +277,25 @@ class IsoImagePlugin(SourcePlugin):
         if os.path.isfile("%s/initrd.cpio.gz" % cr_workdir):
             os.remove("%s/initrd.cpio.gz" % cr_workdir)
 
-        # Install bzImage
-        install_cmd = "install -m 0644 %s/bzImage %s/bzImage" % \
-                      (kernel_dir, isodir)
+        kernel = get_bitbake_var("KERNEL_IMAGETYPE")
+        if get_bitbake_var("INITRAMFS_IMAGE_BUNDLE") == "1":
+            if get_bitbake_var("INITRAMFS_IMAGE"):
+                kernel = "%s-%s.bin" % \
+                    (get_bitbake_var("KERNEL_IMAGETYPE"), get_bitbake_var("INITRAMFS_LINK_NAME"))
+
+        install_cmd = "install -m 0644 %s/%s %s/%s" % \
+                      (kernel_dir, kernel, isodir, kernel)
         exec_cmd(install_cmd)
 
         #Create bootloader for efi boot
         try:
+            target_dir = "%s/EFI/BOOT" % isodir
+            if os.path.exists(target_dir):
+                shutil.rmtree(target_dir)
+
+            os.makedirs(target_dir)
+
             if source_params['loader'] == 'grub-efi':
-                # Builds grub.cfg if ISODIR didn't exist or
-                # didn't contains grub.cfg
-                bootimg_dir = img_iso_dir
-                if not os.path.exists("%s/EFI/BOOT" % bootimg_dir):
-                    bootimg_dir = "%s/bootimg" % cr_workdir
-                    if os.path.exists(bootimg_dir):
-                        shutil.rmtree(bootimg_dir)
-                    install_cmd = "install -d %s/EFI/BOOT" % bootimg_dir
-                    exec_cmd(install_cmd)
-
-                if not os.path.isfile("%s/EFI/BOOT/boot.cfg" % bootimg_dir):
-                    cls.do_configure_grubefi(part, creator, bootimg_dir)
-
                 # Builds bootx64.efi/bootia32.efi if ISODIR didn't exist or
                 # didn't contains it
                 target_arch = get_bitbake_var("TARGET_SYS")
@@ -333,52 +303,31 @@ class IsoImagePlugin(SourcePlugin):
                     raise WicError("Coludn't find target architecture")
 
                 if re.match("x86_64", target_arch):
-                    grub_target = 'x86_64-efi'
-                    grub_image = "bootx64.efi"
+                    grub_src_image = "grub-efi-bootx64.efi"
+                    grub_dest_image = "bootx64.efi"
                 elif re.match('i.86', target_arch):
-                    grub_target = 'i386-efi'
-                    grub_image = "bootia32.efi"
+                    grub_src_image = "grub-efi-bootia32.efi"
+                    grub_dest_image = "bootia32.efi"
                 else:
                     raise WicError("grub-efi is incompatible with target %s" %
                                    target_arch)
 
-                if not os.path.isfile("%s/EFI/BOOT/%s" \
-                                % (bootimg_dir, grub_image)):
-                    grub_path = get_bitbake_var("STAGING_LIBDIR", "wic-tools")
-                    if not grub_path:
-                        raise WicError("Couldn't find STAGING_LIBDIR, exiting.")
+                grub_target = os.path.join(target_dir, grub_dest_image)
+                if not os.path.isfile(grub_target):
+                    grub_src = os.path.join(deploy_dir, grub_src_image)
+                    if not os.path.exists(grub_src):
+                        raise WicError("Grub loader %s is not found in %s. "
+                                       "Please build grub-efi first" % (grub_src_image, deploy_dir))
+                    shutil.copy(grub_src, grub_target)
 
-                    grub_core = "%s/grub/%s" % (grub_path, grub_target)
-                    if not os.path.exists(grub_core):
-                        raise WicError("Please build grub-efi first")
-
-                    grub_cmd = "grub-mkimage -p '/EFI/BOOT' "
-                    grub_cmd += "-d %s "  % grub_core
-                    grub_cmd += "-O %s -o %s/EFI/BOOT/%s " \
-                                % (grub_target, bootimg_dir, grub_image)
-                    grub_cmd += "part_gpt part_msdos ntfs ntfscomp fat ext2 "
-                    grub_cmd += "normal chain boot configfile linux multiboot "
-                    grub_cmd += "search efi_gop efi_uga font gfxterm gfxmenu "
-                    grub_cmd += "terminal minicmd test iorw loadenv echo help "
-                    grub_cmd += "reboot serial terminfo iso9660 loopback tar "
-                    grub_cmd += "memdisk ls search_fs_uuid udf btrfs xfs lvm "
-                    grub_cmd += "reiserfs ata "
-                    exec_native_cmd(grub_cmd, native_sysroot)
+                if not os.path.isfile(os.path.join(target_dir, "boot.cfg")):
+                    cls.do_configure_grubefi(part, creator, target_dir)
 
             else:
                 raise WicError("unrecognized bootimg-efi loader: %s" %
                                source_params['loader'])
         except KeyError:
             raise WicError("bootimg-efi requires a loader, none specified")
-
-        if os.path.exists("%s/EFI/BOOT" % isodir):
-            shutil.rmtree("%s/EFI/BOOT" % isodir)
-
-        shutil.copytree(bootimg_dir+"/EFI/BOOT", isodir+"/EFI/BOOT")
-
-        # If exists, remove cr_workdir/bootimg temporary folder
-        if os.path.exists("%s/bootimg" % cr_workdir):
-            shutil.rmtree("%s/bootimg" % cr_workdir)
 
         # Create efi.img that contains bootloader files for EFI booting
         # if ISODIR didn't exist or didn't contains it
@@ -387,19 +336,23 @@ class IsoImagePlugin(SourcePlugin):
                 (img_iso_dir, isodir)
             exec_cmd(install_cmd)
         else:
+            # Default to 100 blocks of extra space for file system overhead
+            esp_extra_blocks = int(source_params.get('esp_extra_blocks', '100'))
+
             du_cmd = "du -bks %s/EFI" % isodir
             out = exec_cmd(du_cmd)
             blocks = int(out.split()[0])
-            # Add some extra space for file system overhead
-            blocks += 100
+            blocks += esp_extra_blocks
             logger.debug("Added 100 extra blocks to %s to get to %d "
                          "total blocks", part.mountpoint, blocks)
 
             # dosfs image for EFI boot
             bootimg = "%s/efi.img" % isodir
 
-            dosfs_cmd = 'mkfs.vfat -n "EFIimg" -S 512 -C %s %d' \
-                        % (bootimg, blocks)
+            esp_label = source_params.get('esp_label', 'EFIimg')
+
+            dosfs_cmd = 'mkfs.vfat -n \'%s\' -S 512 -C %s %d' \
+                        % (esp_label, bootimg, blocks)
             exec_native_cmd(dosfs_cmd, native_sysroot)
 
             mmd_cmd = "mmd -i %s ::/EFI" % bootimg
@@ -413,7 +366,7 @@ class IsoImagePlugin(SourcePlugin):
             exec_cmd(chmod_cmd)
 
         # Prepare files for legacy boot
-        syslinux_dir = get_bitbake_var("STAGING_DATADIR", "wic-tools")
+        syslinux_dir = get_bitbake_var("STAGING_DATADIR")
         if not syslinux_dir:
             raise WicError("Couldn't find STAGING_DATADIR, exiting.")
 
