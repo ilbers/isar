@@ -25,6 +25,11 @@ cmd = args[0]
 #    rootfs/root ...
 assert os.geteuid() == 0, "wic_fakeroot must be run as root!"
 
+# Check if we are calling the pseudo command itself. Return 0
+# for standalone pseudo operations.
+if cmd.startswith('-'):
+    sys.exit(0)
+
 # e2fsck <= 1.43.5 returns 1 on non-errors (stretch and before affected)
 # treat 1 as safe ... the filesystem was successfully repaired and is OK
 if cmd.startswith('fsck.'):

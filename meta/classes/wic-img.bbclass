@@ -144,6 +144,7 @@ EOSUDO
     export BUILDDIR=${BUILDDIR}
     export MTOOLS_SKIP_CHECK=1
     mkdir -p ${IMAGE_ROOTFS}/../pseudo
+    touch ${IMAGE_ROOTFS}/../pseudo/files.db
 
     # create the temp dir in the buildchroot to ensure uniqueness
     WICTMP=$(cd ${BUILDCHROOT_DIR}; mktemp -d -p tmp)
