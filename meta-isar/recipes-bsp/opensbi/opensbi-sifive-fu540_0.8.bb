@@ -12,12 +12,12 @@ SRC_URI[sha256sum] = "17e048ac765e92e15f7436b604452614cf88dc2bcbbaab18cdc024f3fd
 
 S = "${WORKDIR}/opensbi-${PV}"
 
+DEBIAN_BUILD_DEPENDS = "u-boot-sifive"
+
 do_prepare_build[cleandirs] += "${S}/debian"
 do_prepare_build() {
     cp ${WORKDIR}/sifive-fu540-rules ${WORKDIR}/rules
     deb_debianize
-
-    sed -i 's/\(Build-Depends:.*\)/\1, u-boot-sifive/' ${S}/debian/control
 
     echo "build/platform/sifive/fu540/firmware/fw_payload.bin /usr/lib/opensbi/sifive-fu540/" > ${S}/debian/install
 }
