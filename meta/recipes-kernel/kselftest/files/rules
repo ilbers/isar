@@ -1,0 +1,41 @@
+#!/usr/bin/make -f
+
+# Debian rules for Kselftest build
+#
+# This software is a part of ISAR.
+# Copyright (c) Mentor, A Siemens Business
+#
+# SPDX-License-Identifier: MIT
+
+deb_top_dir:=$(CURDIR)/debian
+kselftest_install_dir :=$(deb_top_dir)/kselftest/usr/libexec/kselftest
+export CROSS_COMPILE=$(DEB_HOST_GNU_TYPE)-
+
+ifeq ($(DEB_HOST_GNU_CPU), arm)
+export ARCH=arm
+endif
+ifeq ($(DEB_HOST_GNU_CPU), aarch64)
+export ARCH=arm64
+endif
+ifeq ($(DEB_HOST_GNU_CPU), riscv64)
+export ARCH=riscv
+endif
+ifneq (,$(findstring 86,$(DEB_HOST_GNU_CPU)))
+export ARCH=x86
+endif
+
+PARALLEL_BUILD=-j $(shell echo $$(($$(nproc) * 2)))
+
+override_dh_auto_build:
+	$(MAKE) defconfig
+	$(MAKE) $(PARALLEL_BUILD) -C tools/testing/selftests/ ${KSELFTEST_ARGS}
+
+override_dh_auto_install:
+	mkdir -p ${kselftest_install_dir}
+	cd tools/testing/selftests/ && KSFT_INSTALL_PATH=${kselftest_install_dir} $(MAKE) $(PARALLEL_BUILD) install ${KSELFTEST_ARGS}
+
+override_dh_auto_clean:
+	rm -rf ${deb_top_dir}/kselftest/
+
+%:
+	CFLAGS= LDFLAGS= dh $@ --parallel

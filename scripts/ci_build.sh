@@ -166,6 +166,7 @@ cat >>conf/local.conf <<EOF
 ISAR_ENABLE_COMPAT_ARCH_amd64 = "1"
 ISAR_ENABLE_COMPAT_ARCH_arm64 = "1"
 ISAR_ENABLE_COMPAT_ARCH_debian-stretch_amd64 = "0"
+IMAGE_INSTALL += "kselftest"
 EOF
 
 if [ -n "$CROSS_BUILD" ]; then
