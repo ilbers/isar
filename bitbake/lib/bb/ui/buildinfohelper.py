@@ -62,6 +62,12 @@ class ORMWrapper(object):
     """
 
     def __init__(self):
+        """
+        Initialize layer objects.
+
+        Args:
+            self: (todo): write your description
+        """
         self.layer_version_objects = []
         self.layer_version_built = []
         self.task_objects = {}
@@ -69,6 +75,11 @@ class ORMWrapper(object):
 
     @staticmethod
     def _build_key(**kwargs):
+        """
+        Build a unique key for the model.
+
+        Args:
+        """
         key = "0"
         for k in sorted(kwargs.keys()):
             if isinstance(kwargs[k], models.Model):
@@ -122,12 +133,35 @@ class ORMWrapper(object):
         return target.get_similar_target_with_image_files()
 
     def get_similar_target_with_sdk_files(self, target):
+        """
+        Gets the most similar target files.
+
+        Args:
+            self: (todo): write your description
+            target: (todo): write your description
+        """
         return target.get_similar_target_with_sdk_files()
 
     def clone_image_artifacts(self, target_from, target_to):
+        """
+        Clone all artifacts to target_from.
+
+        Args:
+            self: (todo): write your description
+            target_from: (todo): write your description
+            target_to: (todo): write your description
+        """
         target_to.clone_image_artifacts_from(target_from)
 
     def clone_sdk_artifacts(self, target_from, target_to):
+        """
+        Clone this target_from_from_artifacts.
+
+        Args:
+            self: (todo): write your description
+            target_from: (todo): write your description
+            target_to: (todo): write your description
+        """
         target_to.clone_sdk_artifacts_from(target_from)
 
     def _timestamp_to_datetime(self, secs):
@@ -144,6 +178,13 @@ class ORMWrapper(object):
     # we do not follow the python conventions for continuation indentation due to long lines here
 
     def get_or_create_build_object(self, brbe):
+        """
+        Get a build a buildrequest object.
+
+        Args:
+            self: (todo): write your description
+            brbe: (str): write your description
+        """
         prj = None
         buildrequest = None
         if brbe is not None:
@@ -180,6 +221,14 @@ class ORMWrapper(object):
         return build
 
     def update_build(self, build, data_dict):
+        """
+        Updates the build
+
+        Args:
+            self: (todo): write your description
+            build: (todo): write your description
+            data_dict: (dict): write your description
+        """
         for key in data_dict:
             setattr(build, key, data_dict[key])
         build.save()
@@ -207,6 +256,16 @@ class ORMWrapper(object):
         return result
 
     def update_build_stats_and_outcome(self, build, errors, warnings, taskfailures):
+        """
+        Update the current build stats and exit.
+
+        Args:
+            self: (todo): write your description
+            build: (todo): write your description
+            errors: (todo): write your description
+            warnings: (dict): write your description
+            taskfailures: (todo): write your description
+        """
         assert isinstance(build,Build)
         assert isinstance(errors, int)
         assert isinstance(warnings, int)
@@ -230,10 +289,26 @@ class ORMWrapper(object):
         signal_runbuilds()
 
     def update_target_set_license_manifest(self, target, license_manifest_path):
+        """
+        Update the given manifest.
+
+        Args:
+            self: (todo): write your description
+            target: (todo): write your description
+            license_manifest_path: (str): write your description
+        """
         target.license_manifest_path = license_manifest_path
         target.save()
 
     def update_target_set_package_manifest(self, target, package_manifest_path):
+        """
+        Update the manifest to the package.
+
+        Args:
+            self: (todo): write your description
+            target: (todo): write your description
+            package_manifest_path: (str): write your description
+        """
         target.package_manifest_path = package_manifest_path
         target.save()
 
@@ -262,6 +337,14 @@ class ORMWrapper(object):
         task_to_update.save()
 
     def get_update_task_object(self, task_information, must_exist = False):
+        """
+        Get a task object.
+
+        Args:
+            self: (todo): write your description
+            task_information: (todo): write your description
+            must_exist: (str): write your description
+        """
         assert 'build' in task_information
         assert 'recipe' in task_information
         assert 'task_name' in task_information
@@ -303,6 +386,14 @@ class ORMWrapper(object):
 
 
     def get_update_recipe_object(self, recipe_information, must_exist = False):
+        """
+        Get the recipe object for a recipe.
+
+        Args:
+            self: (todo): write your description
+            recipe_information: (str): write your description
+            must_exist: (str): write your description
+        """
         assert 'layer_version' in recipe_information
         assert 'file_path' in recipe_information
         assert 'pathflags' in recipe_information
@@ -311,6 +402,12 @@ class ORMWrapper(object):
 
 
         def update_recipe_obj(recipe_object):
+            """
+            Update the recipe object.
+
+            Args:
+                recipe_object: (todo): write your description
+            """
             object_changed = False
             for v in vars(recipe_object):
                 if v in recipe_information.keys():
@@ -352,6 +449,15 @@ class ORMWrapper(object):
         return built_recipe
 
     def get_update_layer_version_object(self, build_obj, layer_obj, layer_version_information):
+        """
+        Get a new version of the given layer.
+
+        Args:
+            self: (todo): write your description
+            build_obj: (todo): write your description
+            layer_obj: (todo): write your description
+            layer_version_information: (str): write your description
+        """
         if isinstance(layer_obj, Layer_Version):
             # We already found our layer version for this build so just
             # update it with the new build information
@@ -405,6 +511,14 @@ class ORMWrapper(object):
         return layer_version_object
 
     def get_update_layer_object(self, layer_information, brbe):
+        """
+        Get the layer object.
+
+        Args:
+            self: (todo): write your description
+            layer_information: (todo): write your description
+            brbe: (str): write your description
+        """
         assert 'name' in layer_information
         assert 'layer_index_url' in layer_information
 
@@ -457,6 +571,15 @@ class ORMWrapper(object):
                           pformat(layer_information))
 
     def save_target_file_information(self, build_obj, target_obj, filedata):
+        """
+        Save target information.
+
+        Args:
+            self: (todo): write your description
+            build_obj: (todo): write your description
+            target_obj: (str): write your description
+            filedata: (str): write your description
+        """
         assert isinstance(build_obj, Build)
         assert isinstance(target_obj, Target)
         dirs = filedata['dirs']
@@ -568,6 +691,18 @@ class ORMWrapper(object):
 
 
     def save_target_package_information(self, build_obj, target_obj, packagedict, pkgpnmap, recipes, built_package=False):
+        """
+        Save build information to build information.
+
+        Args:
+            self: (todo): write your description
+            build_obj: (str): write your description
+            target_obj: (str): write your description
+            packagedict: (str): write your description
+            pkgpnmap: (str): write your description
+            recipes: (str): write your description
+            built_package: (str): write your description
+        """
         assert isinstance(build_obj, Build)
         assert isinstance(target_obj, Target)
 
@@ -682,6 +817,15 @@ class ORMWrapper(object):
             logger.warning("buildinfohelper: target_package_info could not identify recipes: \n%s", errormsg)
 
     def save_target_image_file_information(self, target_obj, file_name, file_size):
+        """
+        Saves target information.
+
+        Args:
+            self: (todo): write your description
+            target_obj: (str): write your description
+            file_name: (str): write your description
+            file_size: (int): write your description
+        """
         Target_Image_File.objects.create(target=target_obj,
             file_name=file_name, file_size=file_size)
 
@@ -701,6 +845,13 @@ class ORMWrapper(object):
             file_size=file_size)
 
     def create_logmessage(self, log_information):
+        """
+        Create a logmessage object
+
+        Args:
+            self: (todo): write your description
+            log_information: (todo): write your description
+        """
         assert 'build' in log_information
         assert 'level' in log_information
         assert 'message' in log_information
@@ -719,6 +870,16 @@ class ORMWrapper(object):
 
     def save_build_package_information(self, build_obj, package_info, recipes,
                                        built_package):
+        """
+        Save build information.
+
+        Args:
+            self: (todo): write your description
+            build_obj: (todo): write your description
+            package_info: (todo): write your description
+            recipes: (todo): write your description
+            built_package: (str): write your description
+        """
         # assert isinstance(build_obj, Build)
 
         if not 'PN' in package_info.keys():
@@ -771,6 +932,12 @@ class ORMWrapper(object):
             Package_File.objects.bulk_create(packagefile_objects)
 
         def _po_byname(p):
+            """
+            Creates a po file.
+
+            Args:
+                p: (todo): write your description
+            """
             if built_package:
                 pkg, created = Package.objects.get_or_create(build=build_obj,
                                                              name=p)
@@ -815,6 +982,14 @@ class ORMWrapper(object):
         return bp_object
 
     def save_build_variables(self, build_obj, vardump):
+        """
+        Save build variables.
+
+        Args:
+            self: (todo): write your description
+            build_obj: (bool): write your description
+            vardump: (todo): write your description
+        """
         assert isinstance(build_obj, Build)
 
         for k in vardump:
@@ -855,6 +1030,12 @@ class MockEvent(object):
         be used, out of data that is not coming via an actual event
     """
     def __init__(self):
+        """
+        Initialize the task.
+
+        Args:
+            self: (todo): write your description
+        """
         self.msg = None
         self.levelno = None
         self.taskname = None
@@ -887,6 +1068,15 @@ class BuildInfoHelper(object):
     # we do not follow the python conventions for continuation indentation due to long lines here
 
     def __init__(self, server, has_build_history = False, brbe = None):
+        """
+        Initialize the simulation.
+
+        Args:
+            self: (todo): write your description
+            server: (todo): write your description
+            has_build_history: (todo): write your description
+            brbe: (str): write your description
+        """
         self.internal_state = {}
         self.internal_state['taskdata'] = {}
         self.internal_state['targets'] = []
@@ -959,6 +1149,14 @@ class BuildInfoHelper(object):
             self.orm_wrapper.update_build(self.internal_state['build'], build_info)
 
     def _get_task_information(self, event, recipe):
+        """
+        Get information about a task.
+
+        Args:
+            self: (todo): write your description
+            event: (str): write your description
+            recipe: (str): write your description
+        """
         assert 'taskname' in vars(event)
         self._ensure_build()
 
@@ -983,6 +1181,12 @@ class BuildInfoHelper(object):
         self._ensure_build()
 
         def _sort_longest_path(layer_version):
+            """
+            Sort the longest version of layer_version.
+
+            Args:
+                layer_version: (todo): write your description
+            """
             assert isinstance(layer_version, Layer_Version)
             return len(layer_version.local_path)
 
@@ -1013,9 +1217,22 @@ class BuildInfoHelper(object):
         return None
 
     def _get_layer_version_for_path(self, path):
+        """
+        Get layer_layer_version_version for a layer.
+
+        Args:
+            self: (todo): write your description
+            path: (str): write your description
+        """
         self._ensure_build()
 
         def _slkey_interactive(layer_version):
+            """
+            Interactive version of layer_version.
+
+            Args:
+                layer_version: (str): write your description
+            """
             assert isinstance(layer_version, Layer_Version)
             return len(layer_version.local_path)
 
@@ -1041,6 +1258,13 @@ class BuildInfoHelper(object):
         return unknown_layer_version_obj
 
     def _get_recipe_information_from_taskfile(self, taskfile):
+        """
+        Get information about a dicts.
+
+        Args:
+            self: (todo): write your description
+            taskfile: (str): write your description
+        """
         localfilepath = taskfile.split(":")[-1]
         filepath_flags = ":".join(sorted(taskfile.split(":")[:-1]))
         layer_version_obj = self._get_layer_version_for_path(localfilepath)
@@ -1060,6 +1284,13 @@ class BuildInfoHelper(object):
         return recipe_info
 
     def _get_path_information(self, task_object):
+        """
+        Return a list of path information about a task.
+
+        Args:
+            self: (todo): write your description
+            task_object: (str): write your description
+        """
         self._ensure_build()
 
         assert isinstance(task_object, Task)
@@ -1085,6 +1316,12 @@ class BuildInfoHelper(object):
     ## external available methods to store information
     @staticmethod
     def _get_data_from_event(event):
+        """
+        Extract event data from event.
+
+        Args:
+            event: (str): write your description
+        """
         evdata = None
         if '_localdata' in vars(event):
             evdata = event._localdata
@@ -1095,6 +1332,13 @@ class BuildInfoHelper(object):
         return evdata
 
     def store_layer_info(self, event):
+        """
+        Store the layer info of the layer.
+
+        Args:
+            self: (todo): write your description
+            event: (todo): write your description
+        """
         layerinfos = BuildInfoHelper._get_data_from_event(event)
         self.internal_state['lvs'] = {}
         for layer in layerinfos:
@@ -1105,9 +1349,22 @@ class BuildInfoHelper(object):
                 logger.warning("buildinfohelper: cannot identify layer exception:%s ", nee)
 
     def store_started_build(self):
+        """
+        Stores the build.
+
+        Args:
+            self: (todo): write your description
+        """
         self._ensure_build()
 
     def save_build_log_file_path(self, build_log_path):
+        """
+        Save log path
+
+        Args:
+            self: (todo): write your description
+            build_log_path: (str): write your description
+        """
         self._ensure_build()
 
         if not self.internal_state['build'].cooker_log_path:
@@ -1115,6 +1372,13 @@ class BuildInfoHelper(object):
             self.orm_wrapper.update_build(self.internal_state['build'], data_dict)
 
     def save_build_targets(self, event):
+        """
+        Save build_targets
+
+        Args:
+            self: (todo): write your description
+            event: (todo): write your description
+        """
         self._ensure_build()
 
         # create target information
@@ -1126,6 +1390,12 @@ class BuildInfoHelper(object):
         self.internal_state['targets'] = self.orm_wrapper.get_or_create_targets(target_information)
 
     def save_build_layers_and_variables(self):
+        """
+        Save layers and layers. layers.
+
+        Args:
+            self: (todo): write your description
+        """
         self._ensure_build()
 
         build_obj = self.internal_state['build']
@@ -1191,6 +1461,13 @@ class BuildInfoHelper(object):
             self.internal_state['build'].save()
 
     def update_target_image_file(self, event):
+        """
+        Update target image target
+
+        Args:
+            self: (todo): write your description
+            event: (str): write your description
+        """
         evdata = BuildInfoHelper._get_data_from_event(event)
 
         for t in self.internal_state['targets']:
@@ -1201,6 +1478,13 @@ class BuildInfoHelper(object):
                         self.orm_wrapper.save_target_image_file_information(t, output, evdata[output])
 
     def update_artifact_image_file(self, event):
+        """
+        Update an artifact image file
+
+        Args:
+            self: (todo): write your description
+            event: (todo): write your description
+        """
         self._ensure_build()
         evdata = BuildInfoHelper._get_data_from_event(event)
         for artifact_path in evdata.keys():
@@ -1209,11 +1493,28 @@ class BuildInfoHelper(object):
                 evdata[artifact_path])
 
     def update_build_information(self, event, errors, warnings, taskfailures):
+        """
+        Update information about the build information.
+
+        Args:
+            self: (todo): write your description
+            event: (todo): write your description
+            errors: (todo): write your description
+            warnings: (todo): write your description
+            taskfailures: (todo): write your description
+        """
         self._ensure_build()
         self.orm_wrapper.update_build_stats_and_outcome(
             self.internal_state['build'], errors, warnings, taskfailures)
 
     def store_started_task(self, event):
+        """
+        Stores the task queue
+
+        Args:
+            self: (todo): write your description
+            event: (todo): write your description
+        """
         assert isinstance(event, (bb.runqueue.sceneQueueTaskStarted, bb.runqueue.runQueueTaskStarted, bb.runqueue.runQueueTaskSkipped))
         assert 'taskfile' in vars(event)
         localfilepath = event.taskfile.split(":")[-1]
@@ -1254,6 +1555,13 @@ class BuildInfoHelper(object):
 
 
     def store_tasks_stats(self, event):
+        """
+        Stores all the stats of the event.
+
+        Args:
+            self: (todo): write your description
+            event: (todo): write your description
+        """
         self._ensure_build()
         task_data = BuildInfoHelper._get_data_from_event(event)
 
@@ -1262,6 +1570,13 @@ class BuildInfoHelper(object):
             self.orm_wrapper.update_task_object(build, task_name, recipe_name, task_stats)
 
     def update_and_store_task(self, event):
+        """
+        Updates the task store and store information.
+
+        Args:
+            self: (todo): write your description
+            event: (todo): write your description
+        """
         assert 'taskfile' in vars(event)
         localfilepath = event.taskfile.split(":")[-1]
         assert localfilepath.startswith("/")
@@ -1324,6 +1639,13 @@ class BuildInfoHelper(object):
 
 
     def store_missed_state_tasks(self, event):
+        """
+        Stores all recipes and store
+
+        Args:
+            self: (todo): write your description
+            event: (todo): write your description
+        """
         for (fn, taskname, taskhash, sstatefile) in BuildInfoHelper._get_data_from_event(event)['missed']:
 
             # identifier = fn + taskname + "_setscene"
@@ -1358,6 +1680,13 @@ class BuildInfoHelper(object):
 
 
     def store_target_package_data(self, event):
+        """
+        Stores target data
+
+        Args:
+            self: (todo): write your description
+            event: (str): write your description
+        """
         self._ensure_build()
 
         # for all image targets
@@ -1399,6 +1728,13 @@ class BuildInfoHelper(object):
         signal_runbuilds()
 
     def store_dependency_information(self, event):
+        """
+        Store all dependency information.
+
+        Args:
+            self: (todo): write your description
+            event: (todo): write your description
+        """
         assert '_depgraph' in vars(event)
         assert 'layer-priorities' in event._depgraph
         assert 'pn' in event._depgraph
@@ -1508,6 +1844,12 @@ class BuildInfoHelper(object):
 
         # save all task information
         def _save_a_task(taskdesc):
+            """
+            Save a task object
+
+            Args:
+                taskdesc: (todo): write your description
+            """
             spec = re.split(r'\.', taskdesc)
             pn = ".".join(spec[0:-1])
             taskname = spec[-1]
@@ -1542,6 +1884,13 @@ class BuildInfoHelper(object):
 
 
     def store_build_package_information(self, event):
+        """
+        Stores build information.
+
+        Args:
+            self: (todo): write your description
+            event: (todo): write your description
+        """
         self._ensure_build()
 
         package_info = BuildInfoHelper._get_data_from_event(event)
@@ -1558,6 +1907,13 @@ class BuildInfoHelper(object):
             built_package=False)
 
     def _store_build_done(self, errorcode):
+        """
+        Stores the build state
+
+        Args:
+            self: (todo): write your description
+            errorcode: (str): write your description
+        """
         logger.info("Build exited with errorcode %d", errorcode)
 
         if not self.brbe:
@@ -1588,6 +1944,13 @@ class BuildInfoHelper(object):
         signal_runbuilds()
 
     def store_log_error(self, text):
+        """
+        Store mockekekevent
+
+        Args:
+            self: (todo): write your description
+            text: (str): write your description
+        """
         mockevent = MockEvent()
         mockevent.levelno = formatter.ERROR
         mockevent.msg = text
@@ -1596,6 +1959,14 @@ class BuildInfoHelper(object):
         self.store_log_event(mockevent)
 
     def store_log_exception(self, text, backtrace = ""):
+        """
+        Store an exception on the exception.
+
+        Args:
+            self: (todo): write your description
+            text: (str): write your description
+            backtrace: (todo): write your description
+        """
         mockevent = MockEvent()
         mockevent.levelno = -1
         mockevent.msg = text
@@ -1604,6 +1975,14 @@ class BuildInfoHelper(object):
         self.store_log_event(mockevent)
 
     def store_log_event(self, event,cli_backlog=True):
+        """
+        Process log event
+
+        Args:
+            self: (todo): write your description
+            event: (todo): write your description
+            cli_backlog: (todo): write your description
+        """
         self._ensure_build()
 
         if event.levelno < formatter.WARNING:
@@ -1982,6 +2361,13 @@ class BuildInfoHelper(object):
                         sdk_target)
 
     def close(self, errorcode):
+        """
+        Close the connection.
+
+        Args:
+            self: (todo): write your description
+            errorcode: (int): write your description
+        """
         self._store_build_done(errorcode)
 
         if 'backlog' in self.internal_state:

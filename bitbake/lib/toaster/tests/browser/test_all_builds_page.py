@@ -23,6 +23,12 @@ class TestAllBuildsPage(SeleniumTestCase):
     CLI_BUILDS_PROJECT_NAME = 'command line builds'
 
     def setUp(self):
+        """
+        Sets up the project
+
+        Args:
+            self: (todo): write your description
+        """
         bbv = BitbakeVersion.objects.create(name='bbv1', giturl='/tmp/',
                                             branch='master', dirpath='')
         release = Release.objects.create(name='release1',

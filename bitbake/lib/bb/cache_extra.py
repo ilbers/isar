@@ -30,6 +30,14 @@ class HobRecipeInfo(RecipeInfoCommon):
             'prevision', 'files_info']
 
     def __init__(self, filename, metadata):
+        """
+        Initialize a bugzilla summary.
+
+        Args:
+            self: (todo): write your description
+            filename: (str): write your description
+            metadata: (dict): write your description
+        """
 
         self.summary = self.getvar('SUMMARY', metadata)
         self.license = self.getvar('LICENSE', metadata)
@@ -42,6 +50,13 @@ class HobRecipeInfo(RecipeInfoCommon):
 
     @classmethod
     def init_cacheData(cls, cachedata):
+        """
+        Initialize summary data.
+
+        Args:
+            cls: (todo): write your description
+            cachedata: (todo): write your description
+        """
         # CacheData in Hob RecipeInfo Class
         cachedata.summary = {}
         cachedata.license = {}
@@ -53,6 +68,14 @@ class HobRecipeInfo(RecipeInfoCommon):
         cachedata.files_info = {}
 
     def add_cacheData(self, cachedata, fn):
+        """
+        Add cached data to the cached page.
+
+        Args:
+            self: (todo): write your description
+            cachedata: (todo): write your description
+            fn: (todo): write your description
+        """
         cachedata.summary[fn] = self.summary
         cachedata.license[fn] = self.license
         cachedata.section[fn] = self.section

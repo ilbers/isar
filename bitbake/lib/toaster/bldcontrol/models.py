@@ -46,6 +46,13 @@ class BuildEnvironment(models.Model):
     updated     = models.DateTimeField(auto_now = True)
 
     def get_artifact(self, path):
+        """
+        Returns the path of the given path.
+
+        Args:
+            self: (todo): write your description
+            path: (str): write your description
+        """
         if self.betype == BuildEnvironment.TYPE_LOCAL:
             return open(path, "r")
         raise NotImplementedError("FIXME: artifact download not implemented "\
@@ -53,6 +60,13 @@ class BuildEnvironment(models.Model):
                                   self.get_betype_display())
 
     def has_artifact(self, path):
+        """
+        Returns true if the given path exists.
+
+        Args:
+            self: (todo): write your description
+            path: (str): write your description
+        """
         import os
         if self.betype == BuildEnvironment.TYPE_LOCAL:
             return os.path.exists(path)
@@ -94,11 +108,23 @@ class BuildRequest(models.Model):
     updated     = models.DateTimeField(auto_now = True)
 
     def __init__(self, *args, **kwargs):
+        """
+        Initialize the state.
+
+        Args:
+            self: (todo): write your description
+        """
         super(BuildRequest, self).__init__(*args, **kwargs)
         # Save the old state in case it's about to be modified
         self.old_state = self.state
 
     def save(self, *args, **kwargs):
+        """
+        Custom save method.
+
+        Args:
+            self: (todo): write your description
+        """
         # Check that the state we're trying to set is not going backwards
         # e.g. from REQ_FAILED to REQ_INPROGRESS
         if self.old_state != self.state and self.old_state > self.state:
@@ -115,16 +141,40 @@ class BuildRequest(models.Model):
 
 
     def get_duration(self):
+        """
+        Returns the number of seconds.
+
+        Args:
+            self: (todo): write your description
+        """
         return (self.updated - self.created).total_seconds()
 
     def get_sorted_target_list(self):
+        """
+        Return a list of target names.
+
+        Args:
+            self: (todo): write your description
+        """
         tgts = self.brtarget_set.order_by( 'target' );
         return( tgts );
 
     def get_machine(self):
+        """
+        Returns the machine machine
+
+        Args:
+            self: (todo): write your description
+        """
         return self.brvariable_set.get(name="MACHINE").value
 
     def __str__(self):
+        """
+        Return the string
+
+        Args:
+            self: (todo): write your description
+        """
         return force_text('%s %s' % (self.project, self.get_state_display()))
 
 # These tables specify the settings for running an actual build.
@@ -163,4 +213,10 @@ class BRError(models.Model):
     traceback   = models.TextField()
 
     def __str__(self):
+        """
+        Returns a string representation.
+
+        Args:
+            self: (todo): write your description
+        """
         return "%s (%s)" % (self.errmsg, self.req)

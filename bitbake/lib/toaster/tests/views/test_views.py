@@ -38,6 +38,12 @@ class ViewTests(TestCase):
     fixtures = ['toastergui-unittest-data']
 
     def setUp(self):
+        """
+        Sets the recipe to the recipe
+
+        Args:
+            self: (todo): write your description
+        """
 
         self.project = Project.objects.first()
         self.recipe1 = Recipe.objects.get(pk=2)

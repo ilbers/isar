@@ -16,6 +16,14 @@ from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 
 class BBUIEventQueue:
     def __init__(self, BBServer, clientinfo=("localhost, 0")):
+        """
+        Initialize the connection.
+
+        Args:
+            self: (todo): write your description
+            BBServer: (todo): write your description
+            clientinfo: (todo): write your description
+        """
 
         self.eventQueue = []
         self.eventQueueLock = threading.Lock()
@@ -66,6 +74,12 @@ class BBUIEventQueue:
         self.t.start()
 
     def getEvent(self):
+        """
+        Return the next item from the queue.
+
+        Args:
+            self: (todo): write your description
+        """
 
         self.eventQueueLock.acquire()
 
@@ -82,19 +96,46 @@ class BBUIEventQueue:
         return item
 
     def waitEvent(self, delay):
+        """
+        Waits for the specified number of seconds.
+
+        Args:
+            self: (todo): write your description
+            delay: (todo): write your description
+        """
         self.eventQueueNotify.wait(delay)
         return self.getEvent()
 
     def queue_event(self, event):
+        """
+        Queue an event.
+
+        Args:
+            self: (todo): write your description
+            event: (todo): write your description
+        """
         self.eventQueueLock.acquire()
         self.eventQueue.append(event)
         self.eventQueueNotify.set()
         self.eventQueueLock.release()
 
     def send_event(self, event):
+        """
+        Send an event to the queue.
+
+        Args:
+            self: (todo): write your description
+            event: (todo): write your description
+        """
         self.queue_event(pickle.loads(event))
 
     def startCallbackHandler(self):
+        """
+        Starts the server.
+
+        Args:
+            self: (todo): write your description
+        """
 
         self.server.timeout = 1
         bb.utils.set_process_name("UIEventQueue")
@@ -120,6 +161,13 @@ class BBUIEventQueue:
 class UIXMLRPCServer (SimpleXMLRPCServer):
 
     def __init__( self, interface ):
+        """
+        Initialize the interface.
+
+        Args:
+            self: (todo): write your description
+            interface: (str): write your description
+        """
         self.quit = False
         SimpleXMLRPCServer.__init__( self,
                                     interface,
@@ -127,6 +175,12 @@ class UIXMLRPCServer (SimpleXMLRPCServer):
                                     logRequests=False, allow_none=True, use_builtin_types=True)
 
     def get_request(self):
+        """
+        Get a request.
+
+        Args:
+            self: (todo): write your description
+        """
         while not self.quit:
             try:
                 sock, addr = self.socket.accept()
@@ -137,11 +191,26 @@ class UIXMLRPCServer (SimpleXMLRPCServer):
         return (None, None)
 
     def close_request(self, request):
+        """
+        Close the request.
+
+        Args:
+            self: (todo): write your description
+            request: (todo): write your description
+        """
         if request is None:
             return
         SimpleXMLRPCServer.close_request(self, request)
 
     def process_request(self, request, client_address):
+        """
+        Process a request.
+
+        Args:
+            self: (str): write your description
+            request: (todo): write your description
+            client_address: (str): write your description
+        """
         if request is None:
             return
         SimpleXMLRPCServer.process_request(self, request, client_address)

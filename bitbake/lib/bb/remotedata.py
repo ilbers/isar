@@ -14,21 +14,47 @@ import bb.data
 class RemoteDatastores:
     """Used on the server side to manage references to server-side datastores"""
     def __init__(self, cooker):
+        """
+        Initialize datastores.
+
+        Args:
+            self: (todo): write your description
+            cooker: (todo): write your description
+        """
         self.cooker = cooker
         self.datastores = {}
         self.locked = []
         self.nextindex = 1
 
     def __len__(self):
+        """
+        Returns the number of datastores.
+
+        Args:
+            self: (todo): write your description
+        """
         return len(self.datastores)
 
     def __getitem__(self, key):
+        """
+        Get datastores for the key.
+
+        Args:
+            self: (todo): write your description
+            key: (str): write your description
+        """
         if key is None:
             return self.cooker.data
         else:
             return self.datastores[key]
 
     def items(self):
+        """
+        Returns a list of datastores.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.datastores.items()
 
     def store(self, d, locked=False):
@@ -90,6 +116,12 @@ class RemoteDatastores:
         """Prepare a datastore object for sending over IPC from the client end"""
         # FIXME content might be a dict, need to turn that into a list as well
         def copy_dicts(dct):
+            """
+            Copy a copy of dicts
+
+            Args:
+                dct: (array): write your description
+            """
             if '_remote_data' in dct:
                 dsindex = dct['_remote_data']['_content'].dsindex
                 newdct = dct.copy()

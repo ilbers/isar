@@ -24,6 +24,12 @@ class TestJsUnitTests(SeleniumTestCase):
     fixtures = ['toastergui-unittest-data']
 
     def test_that_js_unit_tests_pass(self):
+        """
+        Test if javascript javascript javascript.
+
+        Args:
+            self: (todo): write your description
+        """
         url = reverse('js-unit-tests')
         self.get(url)
         self.wait_until_present('#qunit-testresult .failed')

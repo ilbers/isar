@@ -18,12 +18,31 @@ import bb.pysh.sherrors as sherrors
     
 class IORedirect:
     def __init__(self, op, filename, io_number=None):
+        """
+        Initialize a file.
+
+        Args:
+            self: (todo): write your description
+            op: (todo): write your description
+            filename: (str): write your description
+            io_number: (int): write your description
+        """
         self.op = op
         self.filename = filename
         self.io_number = io_number
         
 class HereDocument:
     def __init__(self, op, name, content, io_number=None):
+        """
+        Initialize the message.
+
+        Args:
+            self: (todo): write your description
+            op: (todo): write your description
+            name: (str): write your description
+            content: (str): write your description
+            io_number: (int): write your description
+        """
         self.op = op
         self.name = name
         self.content = content
@@ -48,64 +67,162 @@ class SimpleCommand:
     assigns contains (name, value) pairs.
     """
     def __init__(self, words, redirs, assigns):
+        """
+        Initialize a list of words.
+
+        Args:
+            self: (todo): write your description
+            words: (todo): write your description
+            redirs: (str): write your description
+            assigns: (str): write your description
+        """
         self.words = list(words)
         self.redirs = list(redirs)
         self.assigns = list(assigns)
 
 class Pipeline:
     def __init__(self, commands, reverse_status=False):
+        """
+        Initialize a list of commands.
+
+        Args:
+            self: (todo): write your description
+            commands: (todo): write your description
+            reverse_status: (bool): write your description
+        """
         self.commands = list(commands)
         assert self.commands    #Grammar forbids this
         self.reverse_status = reverse_status
         
 class AndOr:
     def __init__(self, op, left, right):
+        """
+        Initialize an operator.
+
+        Args:
+            self: (todo): write your description
+            op: (todo): write your description
+            left: (float): write your description
+            right: (float): write your description
+        """
         self.op = str(op)
         self.left = left
         self.right = right
         
 class ForLoop:
     def __init__(self, name, items, cmds):
+        """
+        Initialize a list.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            items: (todo): write your description
+            cmds: (todo): write your description
+        """
         self.name = str(name)
         self.items = list(items)
         self.cmds = list(cmds)
         
 class WhileLoop:
     def __init__(self, condition, cmds):
+        """
+        Initialize the specified condition.
+
+        Args:
+            self: (todo): write your description
+            condition: (dict): write your description
+            cmds: (todo): write your description
+        """
         self.condition = list(condition)
         self.cmds = list(cmds)
         
 class UntilLoop:
     def __init__(self, condition, cmds):
+        """
+        Initialize the specified condition.
+
+        Args:
+            self: (todo): write your description
+            condition: (dict): write your description
+            cmds: (todo): write your description
+        """
         self.condition = list(condition)
         self.cmds = list(cmds)
 
 class FunDef:
     def __init__(self, name, body):
+        """
+        Initialize a new instance.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            body: (str): write your description
+        """
         self.name = str(name)
         self.body = body
         
 class BraceGroup:
     def __init__(self, cmds):
+        """
+        Initialize the given command.
+
+        Args:
+            self: (todo): write your description
+            cmds: (todo): write your description
+        """
         self.cmds = list(cmds)
         
 class IfCond:
     def __init__(self, cond, if_cmds, else_cmds):
+        """
+        Initialize a new command.
+
+        Args:
+            self: (todo): write your description
+            cond: (todo): write your description
+            if_cmds: (todo): write your description
+            else_cmds: (bool): write your description
+        """
         self.cond = list(cond)
         self.if_cmds = if_cmds
         self.else_cmds = else_cmds
 
 class Case:
     def __init__(self, name, items):
+        """
+        Initialize an item.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            items: (todo): write your description
+        """
         self.name = name
         self.items = items
         
 class SubShell:
     def __init__(self, cmds):
+        """
+        Initialize the given command.
+
+        Args:
+            self: (todo): write your description
+            cmds: (todo): write your description
+        """
         self.cmds = cmds
 
 class RedirectList:
     def __init__(self, cmd, redirs):
+        """
+        Initialize a command
+
+        Args:
+            self: (todo): write your description
+            cmd: (int): write your description
+            redirs: (str): write your description
+        """
         self.cmd = cmd
         self.redirs = list(redirs)
         
@@ -634,6 +751,12 @@ def p_empty(p):
     
 # Error rule for syntax errors
 def p_error(p):
+    """
+    Display error message
+
+    Args:
+        p: (todo): write your description
+    """
     msg = []
     w = msg.append
     if p:
@@ -742,6 +865,14 @@ def format_commands(v):
 def print_commands(cmds, output=sys.stdout):
     """Pretty print a command tree."""
     def print_tree(cmd, spaces, output):
+        """
+        Prints the given command.
+
+        Args:
+            cmd: (str): write your description
+            spaces: (str): write your description
+            output: (str): write your description
+        """
         if isinstance(cmd, list):
             for c in cmd:
                 print_tree(c, spaces + 3, output)              
@@ -758,6 +889,12 @@ def stringify_commands(cmds):
     Returned string is not pretty and is currently used for unit tests only.
     """   
     def stringify(value):
+        """
+        Stringify a list to string.
+
+        Args:
+            value: (str): write your description
+        """
         output = []
         if isinstance(value, list):
             formatted = []

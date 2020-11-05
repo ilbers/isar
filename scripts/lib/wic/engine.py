@@ -54,6 +54,12 @@ SCRIPTS_CANNED_IMAGE_DIR = "scripts/" + CANNED_IMAGE_DIR
 WIC_DIR = "wic"
 
 def build_canned_image_list(path):
+    """
+    Build image list.
+
+    Args:
+        path: (str): write your description
+    """
     layers_path = get_bitbake_var("BBLAYERS")
     canned_wks_layer_dirs = []
 

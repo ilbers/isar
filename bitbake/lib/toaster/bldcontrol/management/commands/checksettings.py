@@ -16,6 +16,12 @@ import warnings
 
 
 def DN(path):
+    """
+    Return a path.
+
+    Args:
+        path: (str): write your description
+    """
     if path is None:
         return ""
     else:
@@ -27,10 +33,22 @@ class Command(BaseCommand):
     help = "Verifies that the configured settings are valid and usable, or prompts the user to fix the settings."
 
     def __init__(self, *args, **kwargs):
+        """
+        Initialize a new instance.
+
+        Args:
+            self: (todo): write your description
+        """
         super(Command, self).__init__(*args, **kwargs)
         self.guesspath = DN(DN(DN(DN(DN(DN(DN(__file__)))))))
 
     def _verify_build_environment(self):
+        """
+        Verify that the environment variables.
+
+        Args:
+            self: (todo): write your description
+        """
         # provide a local build env. This will be extended later to include non local
         if BuildEnvironment.objects.count() == 0:
             BuildEnvironment.objects.create(betype=BuildEnvironment.TYPE_LOCAL)
@@ -39,9 +57,19 @@ class Command(BaseCommand):
         for be in BuildEnvironment.objects.all():
             be.needs_import = False
             def _verify_be():
+                """
+                Verify the status of the configured ports have changed.
+
+                Args:
+                """
                 is_changed = False
 
                 def _update_sourcedir():
+                    """
+                    Update the current environment
+
+                    Args:
+                    """
                     be.sourcedir = os.environ.get('TOASTER_DIR')
                     return True
 
@@ -58,6 +86,11 @@ class Command(BaseCommand):
                     return True
 
                 def _update_builddir():
+                    """
+                    Determinedir.
+
+                    Args:
+                    """
                     be.builddir = os.environ.get('TOASTER_DIR')+"/build"
                     return True
 
@@ -138,6 +171,12 @@ class Command(BaseCommand):
         return 0
 
     def _verify_default_settings(self):
+        """
+        Verifies settings.
+
+        Args:
+            self: (todo): write your description
+        """
         # verify that default settings are there
         if ToasterSetting.objects.filter(name='DEFAULT_RELEASE').count() != 1:
             ToasterSetting.objects.filter(name='DEFAULT_RELEASE').delete()
@@ -145,6 +184,12 @@ class Command(BaseCommand):
         return 0
 
     def _verify_builds_in_progress(self):
+        """
+        Verify that the status.
+
+        Args:
+            self: (todo): write your description
+        """
         # we are just starting up. we must not have any builds in progress, or build environments taken
         for b in BuildRequest.objects.filter(state=BuildRequest.REQ_INPROGRESS):
             BRError.objects.create(req=b, errtype="toaster",
@@ -164,6 +209,13 @@ class Command(BaseCommand):
 
 
     def handle(self, **options):
+        """
+        Handles the command.
+
+        Args:
+            self: (todo): write your description
+            options: (todo): write your description
+        """
         retval = 0
         retval += self._verify_build_environment()
         retval += self._verify_default_settings()

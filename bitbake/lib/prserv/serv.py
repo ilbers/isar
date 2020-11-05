@@ -24,6 +24,14 @@ if sys.hexversion < 0x020600F0:
 
 class Handler(SimpleXMLRPCRequestHandler):
     def _dispatch(self,method,params):
+        """
+        Dispatch the given method.
+
+        Args:
+            self: (todo): write your description
+            method: (str): write your description
+            params: (dict): write your description
+        """
         try:
             value=self.server.funcs[method](*params)
         except:
@@ -103,19 +111,53 @@ class PRServer(SimpleXMLRPCServer):
             self.table.sync_if_dirty()
 
     def sigint_handler(self, signum, stack):
+        """
+        Sends a signal handler.
+
+        Args:
+            self: (todo): write your description
+            signum: (int): write your description
+            stack: (str): write your description
+        """
         if self.table:
             self.table.sync()
 
     def sigterm_handler(self, signum, stack):
+        """
+        Handle a signal handler.
+
+        Args:
+            self: (todo): write your description
+            signum: (int): write your description
+            stack: (list): write your description
+        """
         if self.table:
             self.table.sync()
         self.quit()
         self.requestqueue.put((None, None))
 
     def process_request(self, request, client_address):
+        """
+        Process a request.
+
+        Args:
+            self: (str): write your description
+            request: (todo): write your description
+            client_address: (str): write your description
+        """
         self.requestqueue.put((request, client_address))
 
     def export(self, version=None, pkgarch=None, checksum=None, colinfo=True):
+        """
+        Export the contents of the database.
+
+        Args:
+            self: (todo): write your description
+            version: (str): write your description
+            pkgarch: (str): write your description
+            checksum: (bool): write your description
+            colinfo: (todo): write your description
+        """
         try:
             return self.table.export(version, pkgarch, checksum, colinfo)
         except sqlite3.Error as exc:
@@ -143,15 +185,46 @@ class PRServer(SimpleXMLRPCServer):
             buff.close()
 
     def importone(self, version, pkgarch, checksum, value):
+        """
+        Import a single record.
+
+        Args:
+            self: (todo): write your description
+            version: (todo): write your description
+            pkgarch: (str): write your description
+            checksum: (bool): write your description
+            value: (str): write your description
+        """
         return self.table.importone(version, pkgarch, checksum, value)
 
     def ping(self):
+        """
+        Returns true if the connection.
+
+        Args:
+            self: (todo): write your description
+        """
         return not self.quitflag
 
     def getinfo(self):
+        """
+        Returns the info object.
+
+        Args:
+            self: (todo): write your description
+        """
         return (self.host, self.port)
 
     def getPR(self, version, pkgarch, checksum):
+        """
+        Return the checksum of the given version.
+
+        Args:
+            self: (todo): write your description
+            version: (str): write your description
+            pkgarch: (int): write your description
+            checksum: (bool): write your description
+        """
         try:
             return self.table.getValue(version, pkgarch, checksum)
         except prserv.NotFoundError:
@@ -162,12 +235,24 @@ class PRServer(SimpleXMLRPCServer):
             return None
 
     def quit(self):
+        """
+        Closes the connection.
+
+        Args:
+            self: (todo): write your description
+        """
         self.quitflag=True
         os.write(self.quitpipeout, b"q")
         os.close(self.quitpipeout)
         return
 
     def work_forever(self,):
+        """
+        Starts the server.
+
+        Args:
+            self: (todo): write your description
+        """
         self.quitflag = False
         # This timeout applies to the poll in TCPServer, we need the select 
         # below to wake on our quit pipe closing. We only ever call into handle_request
@@ -198,6 +283,12 @@ class PRServer(SimpleXMLRPCServer):
         return
 
     def start(self):
+        """
+        Start the daemon.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.daemon:
             pid = self.daemonize()
         else:
@@ -209,6 +300,12 @@ class PRServer(SimpleXMLRPCServer):
                      (self.dbfile, self.host, self.port, str(pid)))
 
     def delpid(self):
+        """
+        Remove the pid file.
+
+        Args:
+            self: (todo): write your description
+        """
         os.remove(self.pidfile)
 
     def daemonize(self):
@@ -240,6 +337,12 @@ class PRServer(SimpleXMLRPCServer):
         os._exit(0)
 
     def fork(self):
+        """
+        Clean up the child process.
+
+        Args:
+            self: (todo): write your description
+        """
         try:
             pid = os.fork()
             if pid > 0:
@@ -252,6 +355,12 @@ class PRServer(SimpleXMLRPCServer):
         os._exit(0)
 
     def cleanup_handles(self):
+        """
+        Cleanup the pid file.
+
+        Args:
+            self: (todo): write your description
+        """
         signal.signal(signal.SIGINT, self.sigint_handler)
         signal.signal(signal.SIGTERM, self.sigterm_handler)
         os.chdir("/")
@@ -301,6 +410,15 @@ class PRServer(SimpleXMLRPCServer):
 
 class PRServSingleton(object):
     def __init__(self, dbfile, logfile, interface):
+        """
+        Initialize the interface
+
+        Args:
+            self: (todo): write your description
+            dbfile: (str): write your description
+            logfile: (todo): write your description
+            interface: (str): write your description
+        """
         self.dbfile = dbfile
         self.logfile = logfile
         self.interface = interface
@@ -308,15 +426,35 @@ class PRServSingleton(object):
         self.port = None
 
     def start(self):
+        """
+        Starts the thread.
+
+        Args:
+            self: (todo): write your description
+        """
         self.prserv = PRServer(self.dbfile, self.logfile, self.interface, daemon=False)
         self.prserv.start()
         self.host, self.port = self.prserv.getinfo()
 
     def getinfo(self):
+        """
+        Returns the info object.
+
+        Args:
+            self: (todo): write your description
+        """
         return (self.host, self.port)
 
 class PRServerConnection(object):
     def __init__(self, host, port):
+        """
+        Initialize the server.
+
+        Args:
+            self: (todo): write your description
+            host: (str): write your description
+            port: (int): write your description
+        """
         if is_local_special(host, port):
             host, port = singleton.getinfo()
         self.host = host
@@ -324,6 +462,12 @@ class PRServerConnection(object):
         self.connection, self.transport = bb.server.xmlrpcclient._create_server(self.host, self.port)
 
     def terminate(self):
+        """
+        Terminate the connection.
+
+        Args:
+            self: (todo): write your description
+        """
         try:
             logger.info("Terminating PRServer...")
             self.connection.quit()
@@ -331,24 +475,80 @@ class PRServerConnection(object):
             sys.stderr.write("%s\n" % str(exc))
 
     def getPR(self, version, pkgarch, checksum):
+        """
+        Get the checksum of the given version.
+
+        Args:
+            self: (todo): write your description
+            version: (str): write your description
+            pkgarch: (int): write your description
+            checksum: (bool): write your description
+        """
         return self.connection.getPR(version, pkgarch, checksum)
 
     def ping(self):
+        """
+        Ping the connection.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.connection.ping()
 
     def export(self,version=None, pkgarch=None, checksum=None, colinfo=True):
+        """
+        Exports the given version.
+
+        Args:
+            self: (todo): write your description
+            version: (str): write your description
+            pkgarch: (str): write your description
+            checksum: (bool): write your description
+            colinfo: (todo): write your description
+        """
         return self.connection.export(version, pkgarch, checksum, colinfo)
 
     def dump_db(self):
+        """
+        Dump database.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.connection.dump_db()
 
     def importone(self, version, pkgarch, checksum, value):
+        """
+        Import a single version.
+
+        Args:
+            self: (todo): write your description
+            version: (todo): write your description
+            pkgarch: (str): write your description
+            checksum: (bool): write your description
+            value: (str): write your description
+        """
         return self.connection.importone(version, pkgarch, checksum, value)
 
     def getinfo(self):
+        """
+        Return the host information.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.host, self.port
 
 def start_daemon(dbfile, host, port, logfile):
+    """
+    Start a daemon process
+
+    Args:
+        dbfile: (str): write your description
+        host: (str): write your description
+        port: (int): write your description
+        logfile: (str): write your description
+    """
     ip = socket.gethostbyname(host)
     pidfile = PIDPREFIX % (ip, port)
     try:
@@ -375,6 +575,13 @@ def start_daemon(dbfile, host, port, logfile):
     return 0
 
 def stop_daemon(host, port):
+    """
+    Stop the daemon
+
+    Args:
+        host: (str): write your description
+        port: (int): write your description
+    """
     import glob
     ip = socket.gethostbyname(host)
     pidfile = PIDPREFIX % (ip, port)
@@ -430,6 +637,12 @@ def stop_daemon(host, port):
     return 0
 
 def is_running(pid):
+    """
+    Check if a process is running.
+
+    Args:
+        pid: (int): write your description
+    """
     try:
         os.kill(pid, 0)
     except OSError as err:
@@ -438,6 +651,13 @@ def is_running(pid):
     return True
 
 def is_local_special(host, port):
+    """
+    Return true if host is a local false otherwise false otherwise.
+
+    Args:
+        host: (str): write your description
+        port: (int): write your description
+    """
     if host.strip().upper() == 'localhost'.upper() and (not port):
         return True
     else:
@@ -447,6 +667,12 @@ class PRServiceConfigError(Exception):
     pass
 
 def auto_start(d):
+    """
+    Return a connection to the database.
+
+    Args:
+        d: (todo): write your description
+    """
     global singleton
 
     # Shutdown any existing PR Server
@@ -489,6 +715,11 @@ def auto_start(d):
         raise PRServiceConfigError
 
 def auto_shutdown():
+    """
+    Terminate the connection.
+
+    Args:
+    """
     global singleton
     if singleton:
         host, port = singleton.getinfo()
@@ -504,5 +735,12 @@ def auto_shutdown():
         singleton = None
 
 def ping(host, port):
+    """
+    Ping a host to a host.
+
+    Args:
+        host: (str): write your description
+        port: (int): write your description
+    """
     conn=PRServerConnection(host, port)
     return conn.ping()

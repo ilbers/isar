@@ -24,6 +24,14 @@ from bb.fetch2 import logger
 
 class Bzr(FetchMethod):
     def supports(self, ud, d):
+        """
+        Determine if d is a dt type.
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+        """
         return ud.type in ['bzr']
 
     def urldata_init(self, ud, d):
@@ -99,6 +107,12 @@ class Bzr(FetchMethod):
                     d, cleanup=[ud.localpath], workdir=ud.pkgdir)
 
     def supports_srcrev(self):
+        """
+        Determine if this source has a valid.
+
+        Args:
+            self: (todo): write your description
+        """
         return True
 
     def _revision_key(self, ud, d, name):
@@ -127,4 +141,12 @@ class Bzr(FetchMethod):
         return False, self._build_revision(ud, d)
 
     def _build_revision(self, ud, d):
+        """
+        Builds the revision.
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+        """
         return ud.revision

@@ -28,6 +28,18 @@ class RunQueueTests(unittest.TestCase):
     b1_sstatevalid = "b1:do_package b1:do_package_qa b1:do_packagedata b1:do_package_write_ipk b1:do_package_write_rpm b1:do_populate_lic b1:do_populate_sysroot"
 
     def run_bitbakecmd(self, cmd, builddir, sstatevalid="", slowtasks="", extraenv=None, cleanup=False):
+        """
+        Run a command in - memory
+
+        Args:
+            self: (todo): write your description
+            cmd: (str): write your description
+            builddir: (str): write your description
+            sstatevalid: (str): write your description
+            slowtasks: (bool): write your description
+            extraenv: (dict): write your description
+            cleanup: (bool): write your description
+        """
         env = os.environ.copy()
         env["BBPATH"] = os.path.realpath(os.path.join(os.path.dirname(__file__), "runqueue-tests"))
         env["BB_ENV_EXTRAWHITE"] = "SSTATEVALID SLOWTASKS"
@@ -52,6 +64,12 @@ class RunQueueTests(unittest.TestCase):
         return tasks
 
     def test_no_setscenevalid(self):
+        """
+        Runs the set of test sets in test sets.
+
+        Args:
+            self: (todo): write your description
+        """
         with tempfile.TemporaryDirectory(prefix="runqueuetest") as tempdir:
             cmd = ["bitbake", "a1"]
             sstatevalid = ""
@@ -60,6 +78,12 @@ class RunQueueTests(unittest.TestCase):
             self.assertEqual(set(tasks), set(expected))
 
     def test_single_setscenevalid(self):
+        """
+        Generate a set of sets of sets of sets.
+
+        Args:
+            self: (todo): write your description
+        """
         with tempfile.TemporaryDirectory(prefix="runqueuetest") as tempdir:
             cmd = ["bitbake", "a1"]
             sstatevalid = "a1:do_package"
@@ -70,6 +94,12 @@ class RunQueueTests(unittest.TestCase):
             self.assertEqual(set(tasks), set(expected))
 
     def test_intermediate_setscenevalid(self):
+        """
+        Test for test sets of sets of sets of sets of sets.
+
+        Args:
+            self: (todo): write your description
+        """
         with tempfile.TemporaryDirectory(prefix="runqueuetest") as tempdir:
             cmd = ["bitbake", "a1"]
             sstatevalid = "a1:do_package a1:do_populate_sysroot"
@@ -79,6 +109,12 @@ class RunQueueTests(unittest.TestCase):
             self.assertEqual(set(tasks), set(expected))
 
     def test_intermediate_notcovered(self):
+        """
+        Test the test test test test sets of the test.
+
+        Args:
+            self: (todo): write your description
+        """
         with tempfile.TemporaryDirectory(prefix="runqueuetest") as tempdir:
             cmd = ["bitbake", "a1"]
             sstatevalid = "a1:do_package_qa a1:do_packagedata a1:do_package_write_ipk a1:do_package_write_rpm a1:do_populate_lic a1:do_populate_sysroot"
@@ -88,6 +124,12 @@ class RunQueueTests(unittest.TestCase):
             self.assertEqual(set(tasks), set(expected))
 
     def test_all_setscenevalid(self):
+        """
+        Run all test sets on all sets.
+
+        Args:
+            self: (todo): write your description
+        """
         with tempfile.TemporaryDirectory(prefix="runqueuetest") as tempdir:
             cmd = ["bitbake", "a1"]
             sstatevalid = self.a1_sstatevalid
@@ -97,6 +139,12 @@ class RunQueueTests(unittest.TestCase):
             self.assertEqual(set(tasks), set(expected))
 
     def test_no_settasks(self):
+        """
+        Test the test test tasks.
+
+        Args:
+            self: (todo): write your description
+        """
         with tempfile.TemporaryDirectory(prefix="runqueuetest") as tempdir:
             cmd = ["bitbake", "a1", "-c", "patch"]
             sstatevalid = self.a1_sstatevalid
@@ -105,6 +153,12 @@ class RunQueueTests(unittest.TestCase):
             self.assertEqual(set(tasks), set(expected))
 
     def test_mix_covered_notcovered(self):
+        """
+        Test whether a temp temp temp temp temp temp temp.
+
+        Args:
+            self: (todo): write your description
+        """
         with tempfile.TemporaryDirectory(prefix="runqueuetest") as tempdir:
             cmd = ["bitbake", "a1:do_patch", "a1:do_populate_sysroot"]
             sstatevalid = self.a1_sstatevalid
@@ -115,6 +169,12 @@ class RunQueueTests(unittest.TestCase):
 
     # Test targets with intermediate setscene tasks alongside a target with no intermediate setscene tasks
     def test_mixed_direct_tasks_setscene_tasks(self):
+        """
+        Runs the raw sets of tasks. mixed tasks.
+
+        Args:
+            self: (todo): write your description
+        """
         with tempfile.TemporaryDirectory(prefix="runqueuetest") as tempdir:
             cmd = ["bitbake", "c1:do_patch", "a1"]
             sstatevalid = self.a1_sstatevalid
@@ -127,6 +187,12 @@ class RunQueueTests(unittest.TestCase):
     # started running which tests for a bug where tasks were being lost from the buildable list of real
     # tasks if they weren't in tasks_covered or tasks_notcovered
     def test_slow_setscene(self):
+        """
+        Runs the test sets of sets of sets.
+
+        Args:
+            self: (todo): write your description
+        """
         with tempfile.TemporaryDirectory(prefix="runqueuetest") as tempdir:
             cmd = ["bitbake", "a1"]
             sstatevalid = "a1:do_package"
@@ -138,6 +204,12 @@ class RunQueueTests(unittest.TestCase):
             self.assertEqual(set(tasks), set(expected))
 
     def test_setscenewhitelist(self):
+        """
+        Test the set of sets of sets of sets.
+
+        Args:
+            self: (todo): write your description
+        """
         with tempfile.TemporaryDirectory(prefix="runqueuetest") as tempdir:
             cmd = ["bitbake", "a1"]
             extraenv = {
@@ -152,6 +224,12 @@ class RunQueueTests(unittest.TestCase):
 
     # Tests for problems with dependencies between setscene tasks
     def test_no_setscenevalid_harddeps(self):
+        """
+        Generate test sets for test sets.
+
+        Args:
+            self: (todo): write your description
+        """
         with tempfile.TemporaryDirectory(prefix="runqueuetest") as tempdir:
             cmd = ["bitbake", "d1"]
             sstatevalid = ""
@@ -164,6 +242,12 @@ class RunQueueTests(unittest.TestCase):
             self.assertEqual(set(tasks), set(expected))
 
     def test_no_setscenevalid_withdeps(self):
+        """
+        Runs test sets of test sets in the test sets.
+
+        Args:
+            self: (todo): write your description
+        """
         with tempfile.TemporaryDirectory(prefix="runqueuetest") as tempdir:
             cmd = ["bitbake", "b1"]
             sstatevalid = ""
@@ -174,6 +258,12 @@ class RunQueueTests(unittest.TestCase):
             self.assertEqual(set(tasks), set(expected))
 
     def test_single_a1_setscenevalid_withdeps(self):
+        """
+        This function to see if the test sets aretasks. hqualbake.
+
+        Args:
+            self: (todo): write your description
+        """
         with tempfile.TemporaryDirectory(prefix="runqueuetest") as tempdir:
             cmd = ["bitbake", "b1"]
             sstatevalid = "a1:do_package"
@@ -184,6 +274,12 @@ class RunQueueTests(unittest.TestCase):
             self.assertEqual(set(tasks), set(expected))
 
     def test_single_b1_setscenevalid_withdeps(self):
+        """
+        Compare two sets of sets of test sets.
+
+        Args:
+            self: (todo): write your description
+        """
         with tempfile.TemporaryDirectory(prefix="runqueuetest") as tempdir:
             cmd = ["bitbake", "b1"]
             sstatevalid = "b1:do_package"
@@ -195,6 +291,12 @@ class RunQueueTests(unittest.TestCase):
             self.assertEqual(set(tasks), set(expected))
 
     def test_intermediate_setscenevalid_withdeps(self):
+        """
+        Generate sets of - test sets of sets.
+
+        Args:
+            self: (todo): write your description
+        """
         with tempfile.TemporaryDirectory(prefix="runqueuetest") as tempdir:
             cmd = ["bitbake", "b1"]
             sstatevalid = "a1:do_package a1:do_populate_sysroot b1:do_package"
@@ -205,6 +307,12 @@ class RunQueueTests(unittest.TestCase):
             self.assertEqual(set(tasks), set(expected))
 
     def test_all_setscenevalid_withdeps(self):
+        """
+        Run all sets of the test sets of all sets.
+
+        Args:
+            self: (todo): write your description
+        """
         with tempfile.TemporaryDirectory(prefix="runqueuetest") as tempdir:
             cmd = ["bitbake", "b1"]
             sstatevalid = self.a1_sstatevalid + " " + self.b1_sstatevalid
@@ -215,6 +323,12 @@ class RunQueueTests(unittest.TestCase):
             self.assertEqual(set(tasks), set(expected))
 
     def test_multiconfig_setscene_optimise(self):
+        """
+        This function will set_multiconfig on the network
+
+        Args:
+            self: (todo): write your description
+        """
         with tempfile.TemporaryDirectory(prefix="runqueuetest") as tempdir:
             extraenv = {
                 "BBMULTICONFIG" : "mc1 mc2",
@@ -236,6 +350,12 @@ class RunQueueTests(unittest.TestCase):
 
     @unittest.skipIf(sys.version_info < (3, 5, 0), 'Python 3.5 or later required')
     def test_hashserv_single(self):
+        """
+        Runs a hash of the state of a set of the state.
+
+        Args:
+            self: (todo): write your description
+        """
         with tempfile.TemporaryDirectory(prefix="runqueuetest") as tempdir:
             extraenv = {
                 "BB_HASHSERVE" : "auto",
@@ -262,6 +382,12 @@ class RunQueueTests(unittest.TestCase):
 
     @unittest.skipIf(sys.version_info < (3, 5, 0), 'Python 3.5 or later required')
     def test_hashserv_double(self):
+        """
+        Test the set of the state
+
+        Args:
+            self: (todo): write your description
+        """
         with tempfile.TemporaryDirectory(prefix="runqueuetest") as tempdir:
             extraenv = {
                 "BB_HASHSERVE" : "auto",
@@ -287,6 +413,12 @@ class RunQueueTests(unittest.TestCase):
 
     @unittest.skipIf(sys.version_info < (3, 5, 0), 'Python 3.5 or later required')
     def test_hashserv_multiple_setscene(self):
+        """
+        Runs a set of hashserv sets.
+
+        Args:
+            self: (todo): write your description
+        """
         # Runs e1:do_package_setscene twice
         with tempfile.TemporaryDirectory(prefix="runqueuetest") as tempdir:
             extraenv = {
@@ -316,6 +448,13 @@ class RunQueueTests(unittest.TestCase):
             self.shutdown(tempdir)
 
     def shutdown(self, tempdir):
+        """
+        Shutdown the temp file.
+
+        Args:
+            self: (todo): write your description
+            tempdir: (str): write your description
+        """
         # Wait for the hashserve socket to disappear else we'll see races with the tempdir cleanup
         while os.path.exists(tempdir + "/hashserve.sock"):
             time.sleep(0.5)

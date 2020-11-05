@@ -17,6 +17,12 @@ logger = logging.getLogger('bitbake-layers')
 
 
 def plugin_init(plugins):
+    """
+    Initialize the plugin.
+
+    Args:
+        plugins: (todo): write your description
+    """
     return ActionPlugin()
 
 
@@ -136,6 +142,12 @@ build results (as the layer priority order has effectively changed).
 
         # Ensure a specified path matches our list of layers
         def layer_path_match(path):
+            """
+            Return the layer path of the given path.
+
+            Args:
+                path: (str): write your description
+            """
             for layerdir in layers:
                 if path.startswith(os.path.join(layerdir, '')):
                     return layerdir
@@ -230,6 +242,13 @@ build results (as the layer priority order has effectively changed).
                                 logger.warning("File %s does not match the flattened layer's BBFILES setting, you may need to edit conf/layer.conf or move the file elsewhere" % f1full)
 
     def get_file_layer(self, filename):
+        """
+        Gets the layer.
+
+        Args:
+            self: (todo): write your description
+            filename: (str): write your description
+        """
         layerdir = self.get_file_layerdir(filename)
         if layerdir:
             return self.get_layer_name(layerdir)
@@ -237,10 +256,25 @@ build results (as the layer priority order has effectively changed).
             return '?'
 
     def get_file_layerdir(self, filename):
+        """
+        Get a layerdir.
+
+        Args:
+            self: (todo): write your description
+            filename: (str): write your description
+        """
         layer = bb.utils.get_file_layer(filename, self.tinfoil.config_data)
         return self.bbfile_collections.get(layer, None)
 
     def apply_append(self, appendname, recipename):
+        """
+        Append a recipe to a recipe.
+
+        Args:
+            self: (todo): write your description
+            appendname: (str): write your description
+            recipename: (str): write your description
+        """
         with open(appendname, 'r') as appendfile:
             with open(recipename, 'a') as recipefile:
                 recipefile.write('\n')
@@ -248,6 +282,13 @@ build results (as the layer priority order has effectively changed).
                 recipefile.writelines(appendfile.readlines())
 
     def register_commands(self, sp):
+        """
+        Register commands to - commands
+
+        Args:
+            self: (todo): write your description
+            sp: (todo): write your description
+        """
         parser_add_layer = self.add_command(sp, 'add-layer', self.do_add_layer, parserecipes=False)
         parser_add_layer.add_argument('layerdir', nargs='+', help='Layer directory/directories to add')
 

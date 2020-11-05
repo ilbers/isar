@@ -35,6 +35,12 @@ import pytz
 # development/debugging support
 verbose = 2
 def _log(msg):
+    """
+    Log a message
+
+    Args:
+        msg: (str): write your description
+    """
     if 1 == verbose:
         print(msg)
     elif 2 == verbose:
@@ -46,12 +52,25 @@ logger = logging.getLogger("toaster")
 
 
 def error_response(error):
+    """
+    Return an error response.
+
+    Args:
+        error: (todo): write your description
+    """
     return JsonResponse({"error": error})
 
 
 class XhrBuildRequest(View):
 
     def get(self, request, *args, **kwargs):
+        """
+        Perform a get request.
+
+        Args:
+            self: (todo): write your description
+            request: (todo): write your description
+        """
         return HttpResponse()
 
     @staticmethod
@@ -143,6 +162,13 @@ class XhrBuildRequest(View):
 class XhrProjectUpdate(View):
 
     def get(self, request, *args, **kwargs):
+        """
+        Perform a get request.
+
+        Args:
+            self: (todo): write your description
+            request: (todo): write your description
+        """
         return HttpResponse()
 
     def post(self, request, *args, **kwargs):
@@ -186,6 +212,13 @@ class XhrProjectUpdate(View):
 class XhrSetDefaultImageUrl(View):
 
     def get(self, request, *args, **kwargs):
+        """
+        Perform a get request.
+
+        Args:
+            self: (todo): write your description
+            request: (todo): write your description
+        """
         return HttpResponse()
 
     def post(self, request, *args, **kwargs):
@@ -236,6 +269,13 @@ class XhrSetDefaultImageUrl(View):
 #
 
 def scan_layer_content(layer,layer_version):
+    """
+    Scan the layer files.
+
+    Args:
+        layer: (todo): write your description
+        layer_version: (str): write your description
+    """
     # if this is a local layer directory, we can immediately scan its content
     if layer.local_source_dir:
         try:
@@ -714,6 +754,13 @@ class XhrCustomRecipeId(View):
                                         "not found" % recipe_id)
 
     def get(self, request, *args, **kwargs):
+        """
+        Get a specific recipe.
+
+        Args:
+            self: (todo): write your description
+            request: (todo): write your description
+        """
         custom_recipe, error = self._get_ci_recipe(kwargs['recipe_id'])
         if error:
             return error
@@ -727,6 +774,13 @@ class XhrCustomRecipeId(View):
             return JsonResponse({"error": "ok", "info": info})
 
     def delete(self, request, *args, **kwargs):
+        """
+        Delete a recipe.
+
+        Args:
+            self: (todo): write your description
+            request: (todo): write your description
+        """
         custom_recipe, error = self._get_ci_recipe(kwargs['recipe_id'])
         if error:
             return error
@@ -756,6 +810,12 @@ class XhrCustomRecipePackages(View):
     """
     @staticmethod
     def _get_package(package_id):
+        """
+        Get a package.
+
+        Args:
+            package_id: (str): write your description
+        """
         try:
             package = CustomImagePackage.objects.get(pk=package_id)
             return package, None
@@ -821,6 +881,13 @@ class XhrCustomRecipePackages(View):
         return rev_deps
 
     def get(self, request, *args, **kwargs):
+        """
+        Get packages.
+
+        Args:
+            self: (todo): write your description
+            request: (todo): write your description
+        """
         recipe, error = XhrCustomRecipeId._get_ci_recipe(
             kwargs['recipe_id'])
         if error:
@@ -899,6 +966,13 @@ class XhrCustomRecipePackages(View):
                  filtered_filesizeformat(total_size_reverse_deps)})
 
     def put(self, request, *args, **kwargs):
+        """
+        Updates a put request.
+
+        Args:
+            self: (todo): write your description
+            request: (todo): write your description
+        """
         recipe, error = XhrCustomRecipeId._get_ci_recipe(kwargs['recipe_id'])
         package, error = self._get_package(kwargs['package_id'])
         if error:
@@ -948,6 +1022,13 @@ class XhrCustomRecipePackages(View):
         return JsonResponse({"error": "ok"})
 
     def delete(self, request, *args, **kwargs):
+        """
+        Handles the specified package.
+
+        Args:
+            self: (todo): write your description
+            request: (todo): write your description
+        """
         recipe, error = XhrCustomRecipeId._get_ci_recipe(kwargs['recipe_id'])
         package, error = self._get_package(kwargs['package_id'])
         if error:
@@ -1144,6 +1225,13 @@ class XhrProject(View):
         return JsonResponse(data)
 
     def put(self, request, *args, **kwargs):
+        """
+        Handles the http put request.
+
+        Args:
+            self: (todo): write your description
+            request: (todo): write your description
+        """
         # TODO create new project api
         return HttpResponse()
 

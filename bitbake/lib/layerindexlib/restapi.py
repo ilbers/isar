@@ -14,10 +14,22 @@ import layerindexlib.plugin
 logger = logging.getLogger('BitBake.layerindexlib.restapi')
 
 def plugin_init(plugins):
+    """
+    Initialize the plugin.
+
+    Args:
+        plugins: (todo): write your description
+    """
     return RestApiPlugin()
 
 class RestApiPlugin(layerindexlib.plugin.IndexPlugin):
     def __init__(self):
+        """
+        Initialize the object
+
+        Args:
+            self: (todo): write your description
+        """
         self.type = "restapi"
 
     def load_index(self, url, load):
@@ -78,6 +90,14 @@ class RestApiPlugin(layerindexlib.plugin.IndexPlugin):
 
 
         def load_cache(path, index, branches=[]):
+            """
+            Load a cached json file.
+
+            Args:
+                path: (str): write your description
+                index: (todo): write your description
+                branches: (todo): write your description
+            """
             logger.debug(1, 'Loading json file %s' % path)
             with open(path, 'rt', encoding='utf-8') as f:
                 pindex = json.load(f)
@@ -138,6 +158,15 @@ class RestApiPlugin(layerindexlib.plugin.IndexPlugin):
         """
 
         def _get_json_response(apiurl=None, username=None, password=None, retry=True):
+            """
+            Get the json api response
+
+            Args:
+                apiurl: (str): write your description
+                username: (str): write your description
+                password: (str): write your description
+                retry: (todo): write your description
+            """
             assert apiurl is not None
 
             logger.debug(1, "fetching %s" % apiurl)
@@ -289,6 +318,13 @@ class RestApiPlugin(layerindexlib.plugin.IndexPlugin):
 
 
         def filter_item(layerbranchid, objects):
+            """
+            Filter items in an item.
+
+            Args:
+                layerbranchid: (todo): write your description
+                objects: (list): write your description
+            """
             filtered = []
             for obj in getattr(index, objects, None):
                 try:

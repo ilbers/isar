@@ -16,6 +16,12 @@ class FuntionalTestBasic(SeleniumFunctionalTestCase):
 
 #   testcase (1514)
     def test_create_slenium_project(self):
+        """
+        This method to see if it exists
+
+        Args:
+            self: (todo): write your description
+        """
         project_name = 'selenium-project'
         self.get('')
         self.driver.find_element_by_link_text("To start building, create your first Toaster project").click()
@@ -31,6 +37,12 @@ class FuntionalTestBasic(SeleniumFunctionalTestCase):
 
  #  testcase (1515)
     def test_verify_left_bar_menu(self):
+        """
+        Verify the left bar
+
+        Args:
+            self: (todo): write your description
+        """
         self.get('')
         self.wait_until_visible('#projectstable')
         self.find_element_by_link_text_in_table('projectstable', 'selenium-project').click()
@@ -76,6 +88,12 @@ class FuntionalTestBasic(SeleniumFunctionalTestCase):
 
 #   testcase (1516)
     def test_review_configuration_information(self):
+        """
+        Find and update the configuration of the element
+
+        Args:
+            self: (todo): write your description
+        """
         self.get('')
         self.driver.find_element_by_xpath("//div[@id='global-nav']/ul/li/a[@href="+'"'+'/toastergui/projects/'+'"'+"]").click()
         self.wait_until_visible('#projectstable')
@@ -121,6 +139,12 @@ class FuntionalTestBasic(SeleniumFunctionalTestCase):
 
 #   testcase (1517)
     def test_verify_machine_information(self):
+        """
+        Test if the status of the element
+
+        Args:
+            self: (todo): write your description
+        """
         self.get('')
         self.driver.find_element_by_xpath("//div[@id='global-nav']/ul/li/a[@href="+'"'+'/toastergui/projects/'+'"'+"]").click()
         self.wait_until_visible('#projectstable')
@@ -138,6 +162,12 @@ class FuntionalTestBasic(SeleniumFunctionalTestCase):
 
 #   testcase (1518)
     def test_verify_most_built_recipes_information(self):
+        """
+        Find all information about the built - in element is built.
+
+        Args:
+            self: (todo): write your description
+        """
         self.get('')
         self.driver.find_element_by_xpath("//div[@id='global-nav']/ul/li/a[@href="+'"'+'/toastergui/projects/'+'"'+"]").click()
         self.wait_until_visible('#projectstable')
@@ -153,6 +183,12 @@ class FuntionalTestBasic(SeleniumFunctionalTestCase):
 
 #   testcase (1519)
     def test_verify_project_release_information(self):
+        """
+        Test for information about information * project information.
+
+        Args:
+            self: (todo): write your description
+        """
         self.get('')
         self.driver.find_element_by_xpath("//div[@id='global-nav']/ul/li/a[@href="+'"'+'/toastergui/projects/'+'"'+"]").click()
         self.wait_until_visible('#projectstable')
@@ -165,6 +201,12 @@ class FuntionalTestBasic(SeleniumFunctionalTestCase):
 
 #   testcase (1520)
     def test_verify_layer_information(self):
+        """
+        Verify information about the impact layer.
+
+        Args:
+            self: (todo): write your description
+        """
         self.get('')
         self.driver.find_element_by_xpath("//div[@id='global-nav']/ul/li/a[@href="+'"'+'/toastergui/projects/'+'"'+"]").click()
         self.wait_until_visible('#projectstable')
@@ -196,6 +238,12 @@ class FuntionalTestBasic(SeleniumFunctionalTestCase):
 
 #   testcase (1521)
     def test_verify_project_detail_links(self):
+        """
+        Find the project links.
+
+        Args:
+            self: (todo): write your description
+        """
         self.get('')
         self.driver.find_element_by_xpath("//div[@id='global-nav']/ul/li/a[@href="+'"'+'/toastergui/projects/'+'"'+"]").click()
         self.wait_until_visible('#projectstable')

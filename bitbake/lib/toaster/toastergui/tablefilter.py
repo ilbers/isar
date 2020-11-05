@@ -19,6 +19,14 @@ class TableFilter(object):
     """
 
     def __init__(self, name, title):
+        """
+        Initialize the widget.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            title: (str): write your description
+        """
         self.name = name
         self.title = title
         self.__filter_action_map = {}
@@ -27,10 +35,24 @@ class TableFilter(object):
         self.__filter_action_keys = []
 
     def add_action(self, action):
+        """
+        Add a new action.
+
+        Args:
+            self: (todo): write your description
+            action: (str): write your description
+        """
         self.__filter_action_keys.append(action.name)
         self.__filter_action_map[action.name] = action
 
     def get_action(self, action_name):
+        """
+        Get an action object.
+
+        Args:
+            self: (todo): write your description
+            action_name: (str): write your description
+        """
         return self.__filter_action_map[action_name]
 
     def to_json(self, queryset):
@@ -105,6 +127,15 @@ class TableFilterAction(object):
     """
 
     def __init__(self, name, title, criteria):
+        """
+        Initialize a new criteria.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            title: (str): write your description
+            criteria: (todo): write your description
+        """
         self.name = name
         self.title = title
         self.criteria = criteria
@@ -121,6 +152,13 @@ class TableFilterAction(object):
         pass
 
     def filter(self, queryset):
+        """
+        Filter the queryset by queryset.
+
+        Args:
+            self: (todo): write your description
+            queryset: (todo): write your description
+        """
         if self.criteria:
             return queryset.filter(self.criteria)
         else:
@@ -142,6 +180,12 @@ class TableFilterActionToggle(TableFilterAction):
     """
 
     def __init__(self, *args):
+        """
+        Initialize the filter
+
+        Args:
+            self: (todo): write your description
+        """
         super(TableFilterActionToggle, self).__init__(*args)
         self.type = 'toggle'
 
@@ -261,6 +305,12 @@ class TableFilterMap(object):
     """
 
     def __init__(self):
+        """
+        Initialize the filter
+
+        Args:
+            self: (todo): write your description
+        """
         self.__filters = {}
 
     def add_filter(self, filter_name, table_filter):
@@ -268,9 +318,23 @@ class TableFilterMap(object):
         self.__filters[filter_name] = table_filter
 
     def get_filter(self, filter_name):
+        """
+        Get a filter by name.
+
+        Args:
+            self: (str): write your description
+            filter_name: (str): write your description
+        """
         return self.__filters[filter_name]
 
     def to_json(self, queryset):
+        """
+        Convert the queryset to json.
+
+        Args:
+            self: (todo): write your description
+            queryset: (str): write your description
+        """
         data = {}
 
         for filter_name, table_filter in self.__filters.items():

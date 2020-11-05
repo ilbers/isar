@@ -89,9 +89,21 @@ import re, types, sys, os.path
 # Compatibility function for python 2.6/3.0
 if sys.version_info[0] < 3:
     def func_code(f):
+        """
+        Decorator function f
+
+        Args:
+            f: (todo): write your description
+        """
         return f.func_code
 else:
     def func_code(f):
+        """
+        Decorator for function
+
+        Args:
+            f: (todo): write your description
+        """
         return f.__code__
 
 # Compatibility
@@ -102,6 +114,11 @@ except AttributeError:
 
 # Python 2.x/3.0 compatibility.
 def load_ply_lex():
+    """
+    Load lexaslex lexicon instance.
+
+    Args:
+    """
     if sys.version_info[0] < 3:
         import lex
     else:
@@ -116,15 +133,43 @@ def load_ply_lex():
 
 class PlyLogger(object):
     def __init__(self,f):
+        """
+        Initialize f from f
+
+        Args:
+            self: (todo): write your description
+            f: (int): write your description
+        """
         self.f = f
     def debug(self,msg,*args,**kwargs):
+        """
+        Print a debug message
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         self.f.write((msg % args) + "\n")
     info     = debug
 
     def warning(self,msg,*args,**kwargs):
+        """
+        Log warning
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         self.f.write("WARNING: "+ (msg % args) + "\n")
 
     def error(self,msg,*args,**kwargs):
+        """
+        Log an error message
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         self.f.write("ERROR: " + (msg % args) + "\n")
 
     critical = debug
@@ -132,8 +177,21 @@ class PlyLogger(object):
 # Null logger is used when no output is generated. Does nothing.
 class NullLogger(object):
     def __getattribute__(self,name):
+        """
+        Returns the value of the given name.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+        """
         return self
     def __call__(self,*args,**kwargs):
+        """
+        Calls the call with the given arguments.
+
+        Args:
+            self: (todo): write your description
+        """
         return self
         
 # Exception raised for yacc-related errors
@@ -141,6 +199,12 @@ class YaccError(Exception):   pass
 
 # Format the result message that the parser produces when running in debug mode.
 def format_result(r):
+    """
+    Format a result string representation of a result.
+
+    Args:
+        r: (todo): write your description
+    """
     repr_str = repr(r)
     if '\n' in repr_str: repr_str = repr(repr_str)
     if len(repr_str) > resultlimit:
@@ -151,6 +215,12 @@ def format_result(r):
 
 # Format stack entries when the parser is running in debug mode
 def format_stack_entry(r):
+    """
+    Return a formatted stack entry for an rdict.
+
+    Args:
+        r: (todo): write your description
+    """
     repr_str = repr(r)
     if '\n' in repr_str: repr_str = repr(repr_str)
     if len(repr_str) < 16:
@@ -176,7 +246,19 @@ def format_stack_entry(r):
 #        .endlexpos  = Ending lex position (optional, set automatically)
 
 class YaccSymbol:
+    """
+    The string representation of the : str.
+
+    Args:
+        self: (todo): write your description
+    """
     def __str__(self):    return self.type
+    """
+    Return a repr representation of this object.
+
+    Args:
+        self: (todo): write your description
+    """
     def __repr__(self):   return str(self)
 
 # This class is a wrapper around the objects actually passed to each
@@ -190,45 +272,124 @@ class YaccSymbol:
 
 class YaccProduction:
     def __init__(self,s,stack=None):
+        """
+        !
+
+        Args:
+            self: (todo): write your description
+            s: (int): write your description
+            stack: (todo): write your description
+        """
         self.slice = s
         self.stack = stack
         self.lexer = None
         self.parser= None
     def __getitem__(self,n):
+        """
+        Return the index of a slice.
+
+        Args:
+            self: (todo): write your description
+            n: (todo): write your description
+        """
         if isinstance(n,slice):
             return [self[i] for i in range(*(n.indices(len(self.slice))))]
         if n >= 0: return self.slice[n].value
         else: return self.stack[n].value
 
     def __setitem__(self,n,v):
+        """
+        Set the value of a variable
+
+        Args:
+            self: (todo): write your description
+            n: (todo): write your description
+            v: (todo): write your description
+        """
         self.slice[n].value = v
 
     def __getslice__(self,i,j):
+        """
+        Return a list at i j.
+
+        Args:
+            self: (todo): write your description
+            i: (todo): write your description
+            j: (todo): write your description
+        """
         return [s.value for s in self.slice[i:j]]
 
     def __len__(self):
+        """
+        Returns the length of the slice.
+
+        Args:
+            self: (todo): write your description
+        """
         return len(self.slice)
 
     def lineno(self,n):
+        """
+        Return the next n rows at the end.
+
+        Args:
+            self: (todo): write your description
+            n: (int): write your description
+        """
         return getattr(self.slice[n],"lineno",0)
 
     def set_lineno(self,n,lineno):
+        """
+        Set the current n th line number.
+
+        Args:
+            self: (todo): write your description
+            n: (todo): write your description
+            lineno: (todo): write your description
+        """
         self.slice[n].lineno = lineno
 
     def linespan(self,n):
+        """
+        Return the startline of the startline.
+
+        Args:
+            self: (todo): write your description
+            n: (todo): write your description
+        """
         startline = getattr(self.slice[n],"lineno",0)
         endline = getattr(self.slice[n],"endlineno",startline)
         return startline,endline
 
     def lexpos(self,n):
+        """
+        Return the position of n.
+
+        Args:
+            self: (todo): write your description
+            n: (todo): write your description
+        """
         return getattr(self.slice[n],"lexpos",0)
 
     def lexspan(self,n):
+        """
+        Return a list of all the start endpos.
+
+        Args:
+            self: (todo): write your description
+            n: (todo): write your description
+        """
         startpos = getattr(self.slice[n],"lexpos",0)
         endpos = getattr(self.slice[n],"endlexpos",startpos)
         return startpos,endpos
 
     def error(self):
+        """
+        Return the error message.
+
+        Args:
+            self: (todo): write your description
+        """
        raise SyntaxError
 
 
@@ -240,15 +401,35 @@ class YaccProduction:
 
 class LRParser:
     def __init__(self,lrtab,errorf):
+        """
+        Initialize the simulation.
+
+        Args:
+            self: (todo): write your description
+            lrtab: (todo): write your description
+            errorf: (str): write your description
+        """
         self.productions = lrtab.lr_productions
         self.action      = lrtab.lr_action
         self.goto        = lrtab.lr_goto
         self.errorfunc   = errorf
 
     def errok(self):
+        """
+        !
+
+        Args:
+            self: (todo): write your description
+        """
         self.errorok     = 1
 
     def restart(self):
+        """
+        Restart the symbol
+
+        Args:
+            self: (todo): write your description
+        """
         del self.statestack[:]
         del self.symstack[:]
         sym = YaccSymbol()
@@ -257,6 +438,17 @@ class LRParser:
         self.statestack.append(0)
 
     def parse(self,input=None,lexer=None,debug=0,tracking=0,tokenfunc=None):
+        """
+        Parse an input string.
+
+        Args:
+            self: (todo): write your description
+            input: (str): write your description
+            lexer: (str): write your description
+            debug: (bool): write your description
+            tracking: (str): write your description
+            tokenfunc: (str): write your description
+        """
         if debug or yaccdevel:
             if isinstance(debug,int):
                 debug = PlyLogger(sys.stderr)
@@ -282,6 +474,17 @@ class LRParser:
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     def parsedebug(self,input=None,lexer=None,debug=None,tracking=0,tokenfunc=None):
+        """
+        Parses an action.
+
+        Args:
+            self: (todo): write your description
+            input: (str): write your description
+            lexer: (todo): write your description
+            debug: (todo): write your description
+            tracking: (str): write your description
+            tokenfunc: (str): write your description
+        """
         lookahead = None                 # Current lookahead symbol
         lookaheadstack = [ ]             # Stack of lookahead symbols
         actions = self.action            # Local reference to action table (to avoid lookup on self.)
@@ -597,6 +800,17 @@ class LRParser:
 
 
     def parseopt(self,input=None,lexer=None,debug=0,tracking=0,tokenfunc=None):
+        """
+        Parse an input string.
+
+        Args:
+            self: (todo): write your description
+            input: (str): write your description
+            lexer: (todo): write your description
+            debug: (bool): write your description
+            tracking: (str): write your description
+            tokenfunc: (str): write your description
+        """
         lookahead = None                 # Current lookahead symbol
         lookaheadstack = [ ]             # Stack of lookahead symbols
         actions = self.action            # Local reference to action table (to avoid lookup on self.)
@@ -869,6 +1083,17 @@ class LRParser:
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     def parseopt_notrack(self,input=None,lexer=None,debug=0,tracking=0,tokenfunc=None):
+        """
+        Parse an input string.
+
+        Args:
+            self: (todo): write your description
+            input: (todo): write your description
+            lexer: (todo): write your description
+            debug: (bool): write your description
+            tracking: (str): write your description
+            tokenfunc: (str): write your description
+        """
         lookahead = None                 # Current lookahead symbol
         lookaheadstack = [ ]             # Stack of lookahead symbols
         actions = self.action            # Local reference to action table (to avoid lookup on self.)
@@ -1154,6 +1379,19 @@ _is_identifier = re.compile(r'^[a-zA-Z0-9_-]+$')
 class Production(object):
     reduced = 0
     def __init__(self,number,name,prod,precedence=('right',0),func=None,file='',line=0):
+        """
+        Initialize a file.
+
+        Args:
+            self: (todo): write your description
+            number: (int): write your description
+            name: (str): write your description
+            prod: (str): write your description
+            precedence: (todo): write your description
+            func: (callable): write your description
+            file: (str): write your description
+            line: (str): write your description
+        """
         self.name     = name
         self.prod     = tuple(prod)
         self.number   = number
@@ -1184,22 +1422,60 @@ class Production(object):
             self.str = "%s -> <empty>" % self.name
 
     def __str__(self):
+        """
+        Returns the string representation of the string.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.str
 
     def __repr__(self):
+        """
+        Return a repr representation of - repr string.
+
+        Args:
+            self: (todo): write your description
+        """
         return "Production("+str(self)+")"
 
     def __len__(self):
+        """
+        Returns the number of bytes
+
+        Args:
+            self: (todo): write your description
+        """
         return len(self.prod)
 
     def __nonzero__(self):
+        """
+        Returns the number of non - zero elements.
+
+        Args:
+            self: (todo): write your description
+        """
         return 1
 
     def __getitem__(self,index):
+        """
+        Return the item at index
+
+        Args:
+            self: (todo): write your description
+            index: (int): write your description
+        """
         return self.prod[index]
             
     # Return the nth lr_item from the production (or None if at the end)
     def lr_item(self,n):
+        """
+        Return the number of items.
+
+        Args:
+            self: (todo): write your description
+            n: (todo): write your description
+        """
         if n > len(self.prod): return None
         p = LRItem(self,n)
 
@@ -1217,6 +1493,13 @@ class Production(object):
     
     # Bind the production function name to a callable
     def bind(self,pdict):
+        """
+        Bind a function to callable.
+
+        Args:
+            self: (todo): write your description
+            pdict: (dict): write your description
+        """
         if self.func:
             self.callable = pdict[self.func]
 
@@ -1226,6 +1509,18 @@ class Production(object):
 # debugging information.
 class MiniProduction(object):
     def __init__(self,str,name,len,func,file,line):
+        """
+        Initialize a file.
+
+        Args:
+            self: (todo): write your description
+            str: (todo): write your description
+            name: (str): write your description
+            len: (todo): write your description
+            func: (callable): write your description
+            file: (str): write your description
+            line: (str): write your description
+        """
         self.name     = name
         self.len      = len
         self.func     = func
@@ -1234,12 +1529,31 @@ class MiniProduction(object):
         self.line     = line
         self.str      = str
     def __str__(self):
+        """
+        Returns the string representation of the string.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.str
     def __repr__(self):
+        """
+        Return a human - readable representation of this object.
+
+        Args:
+            self: (todo): write your description
+        """
         return "MiniProduction(%s)" % self.str
 
     # Bind the production function name to a callable
     def bind(self,pdict):
+        """
+        Bind a function to callable.
+
+        Args:
+            self: (todo): write your description
+            pdict: (dict): write your description
+        """
         if self.func:
             self.callable = pdict[self.func]
 
@@ -1270,6 +1584,14 @@ class MiniProduction(object):
 
 class LRItem(object):
     def __init__(self,p,n):
+        """
+        Initialize the projection.
+
+        Args:
+            self: (todo): write your description
+            p: (int): write your description
+            n: (int): write your description
+        """
         self.name       = p.name
         self.prod       = list(p.prod)
         self.number     = p.number
@@ -1281,6 +1603,12 @@ class LRItem(object):
         self.usyms      = p.usyms
 
     def __str__(self):
+        """
+        Return a string representation of this parameter.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.prod:
             s = "%s -> %s" % (self.name," ".join(self.prod))
         else:
@@ -1288,6 +1616,12 @@ class LRItem(object):
         return s
 
     def __repr__(self):
+        """
+        Return a repr representation of - repr string.
+
+        Args:
+            self: (todo): write your description
+        """
         return "LRItem("+str(self)+")"
 
 # -----------------------------------------------------------------------------
@@ -1296,6 +1630,13 @@ class LRItem(object):
 # Return the rightmost terminal from a list of symbols.  Used in add_production()
 # -----------------------------------------------------------------------------
 def rightmost_terminal(symbols, terminals):
+    """
+    Return the right terminal of the given symbols.
+
+    Args:
+        symbols: (todo): write your description
+        terminals: (bool): write your description
+    """
     i = len(symbols) - 1
     while i >= 0:
         if symbols[i] in terminals:
@@ -1315,6 +1656,13 @@ class GrammarError(YaccError): pass
 
 class Grammar(object):
     def __init__(self,terminals):
+        """
+        Initialize the instance variables.
+
+        Args:
+            self: (todo): write your description
+            terminals: (list): write your description
+        """
         self.Productions  = [None]  # A list of all of the productions.  The first
                                     # entry is always reserved for the purpose of
                                     # building an augmented grammar
@@ -1351,9 +1699,22 @@ class Grammar(object):
 
 
     def __len__(self):
+        """
+        Returns the number of bytes in bytes.
+
+        Args:
+            self: (todo): write your description
+        """
         return len(self.Productions)
 
     def __getitem__(self,index):
+        """
+        Return the item at index.
+
+        Args:
+            self: (todo): write your description
+            index: (int): write your description
+        """
         return self.Productions[index]
 
     # -----------------------------------------------------------------------------
@@ -1365,6 +1726,15 @@ class Grammar(object):
     # -----------------------------------------------------------------------------
 
     def set_precedence(self,term,assoc,level):
+        """
+        Set precedence.
+
+        Args:
+            self: (todo): write your description
+            term: (str): write your description
+            assoc: (todo): write your description
+            level: (str): write your description
+        """
         assert self.Productions == [None],"Must call set_precedence() before add_production()"
         if term in self.Precedence:
             raise GrammarError("Precedence already specified for terminal '%s'" % term)
@@ -1390,6 +1760,17 @@ class Grammar(object):
     # -----------------------------------------------------------------------------
 
     def add_production(self,prodname,syms,func=None,file='',line=0):
+        """
+        Add a new gram file.
+
+        Args:
+            self: (todo): write your description
+            prodname: (str): write your description
+            syms: (todo): write your description
+            func: (callable): write your description
+            file: (str): write your description
+            line: (str): write your description
+        """
 
         if prodname in self.Terminals:
             raise GrammarError("%s:%d: Illegal rule name '%s'. Already defined as a token" % (file,line,prodname))
@@ -1473,6 +1854,13 @@ class Grammar(object):
     # -----------------------------------------------------------------------------
 
     def set_start(self,start=None):
+        """
+        Set the start of this gram instance.
+
+        Args:
+            self: (todo): write your description
+            start: (todo): write your description
+        """
         if not start:
             start = self.Productions[1].name
         if start not in self.Nonterminals:
@@ -1489,9 +1877,21 @@ class Grammar(object):
     # -----------------------------------------------------------------------------
 
     def find_unreachable(self):
+        """
+        Return a list of reachable reachable objects.
+
+        Args:
+            self: (todo): write your description
+        """
         
         # Mark all symbols that are reachable from a symbol s
         def mark_reachable_from(s):
+            """
+            Return a list of reachable reachable from a string.
+
+            Args:
+                s: (todo): write your description
+            """
             if reachable[s]:
                 # We've already reached symbol s.
                 return
@@ -1518,6 +1918,12 @@ class Grammar(object):
     # -----------------------------------------------------------------------------
 
     def infinite_cycles(self):
+        """
+        Return a dictionary of infos.
+
+        Args:
+            self: (todo): write your description
+        """
         terminates = {}
 
         # Terminals:
@@ -1583,6 +1989,12 @@ class Grammar(object):
     # and prod is the production where the symbol was used. 
     # -----------------------------------------------------------------------------
     def undefined_symbols(self):
+        """
+        Undefined symbols.
+
+        Args:
+            self: (todo): write your description
+        """
         result = []
         for p in self.Productions:
             if not p: continue
@@ -1599,6 +2011,12 @@ class Grammar(object):
     # a list of all symbols.
     # -----------------------------------------------------------------------------
     def unused_terminals(self):
+        """
+        Returns a list of all unused unused unused unused tokens.
+
+        Args:
+            self: (todo): write your description
+        """
         unused_tok = []
         for s,v in self.Terminals.items():
             if s != 'error' and not v:
@@ -1614,6 +2032,12 @@ class Grammar(object):
     # ------------------------------------------------------------------------------
 
     def unused_rules(self):
+        """
+        Return a list of rules.
+
+        Args:
+            self: (todo): write your description
+        """
         unused_prod = []
         for s,v in self.Nonterminals.items():
             if not v:
@@ -1631,6 +2055,12 @@ class Grammar(object):
     # -----------------------------------------------------------------------------
 
     def unused_precedence(self):
+        """
+        Returns a list of precedence instances.
+
+        Args:
+            self: (todo): write your description
+        """
         unused = []
         for termname in self.Precedence:
             if not (termname in self.Terminals or termname in self.UsedPrecedence):
@@ -1647,6 +2077,13 @@ class Grammar(object):
     # Afterward (e.g., when called from compute_follow()), it will be complete.
     # -------------------------------------------------------------------------
     def _first(self,beta):
+        """
+        Returns the first beta of beta.
+
+        Args:
+            self: (todo): write your description
+            beta: (float): write your description
+        """
 
         # We are computing First(x1,x2,x3,...,xn)
         result = [ ]
@@ -1681,6 +2118,12 @@ class Grammar(object):
     # Compute the value of FIRST1(X) for all symbols
     # -------------------------------------------------------------------------
     def compute_first(self):
+        """
+        Compute the first nonterminals.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.First:
             return self.First
 
@@ -1718,6 +2161,13 @@ class Grammar(object):
     # non-terminal.  See the Dragon book, 2nd Ed. p. 189.
     # ---------------------------------------------------------------------
     def compute_follow(self,start=None):
+        """
+        Compute a list of followers.
+
+        Args:
+            self: (todo): write your description
+            start: (int): write your description
+        """
         # If already computed, return the result
         if self.Follow:
             return self.Follow
@@ -1777,6 +2227,12 @@ class Grammar(object):
     # -----------------------------------------------------------------------------
 
     def build_lritems(self):
+        """
+        Build lrized lri.
+
+        Args:
+            self: (todo): write your description
+        """
         for p in self.Productions:
             lastlri = p
             i = 0
@@ -1815,12 +2271,25 @@ class VersionError(YaccError): pass
 
 class LRTable(object):
     def __init__(self):
+        """
+        Initialize learning rate.
+
+        Args:
+            self: (todo): write your description
+        """
         self.lr_action = None
         self.lr_goto = None
         self.lr_productions = None
         self.lr_method = None
 
     def read_table(self,module):
+        """
+        Read a table
+
+        Args:
+            self: (todo): write your description
+            module: (todo): write your description
+        """
         if isinstance(module,types.ModuleType):
             parsetab = module
         else:
@@ -1845,6 +2314,13 @@ class LRTable(object):
         return parsetab._lr_signature
 
     def read_pickle(self,filename):
+        """
+        Read pickle from a pickle file.
+
+        Args:
+            self: (todo): write your description
+            filename: (str): write your description
+        """
         try:
             import cPickle as pickle
         except ImportError:
@@ -1870,6 +2346,13 @@ class LRTable(object):
 
     # Bind all production function names to callable objects in pdict
     def bind_callables(self,pdict):
+        """
+        Bind all the given a dictionary.
+
+        Args:
+            self: (todo): write your description
+            pdict: (dict): write your description
+        """
         for p in self.lr_productions:
             p.bind(pdict)
     
@@ -1898,6 +2381,14 @@ class LRTable(object):
 # ------------------------------------------------------------------------------
 
 def digraph(X,R,FP):
+    """
+    Digraph n - grams of x.
+
+    Args:
+        X: (todo): write your description
+        R: (todo): write your description
+        FP: (todo): write your description
+    """
     N = { }
     for x in X:
        N[x] = 0
@@ -1908,6 +2399,18 @@ def digraph(X,R,FP):
     return F
 
 def traverse(x,N,stack,F,X,R,FP):
+    """
+    Traverse the stack.
+
+    Args:
+        x: (todo): write your description
+        N: (todo): write your description
+        stack: (todo): write your description
+        F: (todo): write your description
+        X: (todo): write your description
+        R: (todo): write your description
+        FP: (int): write your description
+    """
     stack.append(x)
     d = len(stack)
     N[x] = d
@@ -1940,6 +2443,15 @@ class LALRError(YaccError): pass
 
 class LRGeneratedTable(LRTable):
     def __init__(self,grammar,method='LALR',log=None):
+        """
+        Initialize the simulation.
+
+        Args:
+            self: (todo): write your description
+            grammar: (todo): write your description
+            method: (str): write your description
+            log: (todo): write your description
+        """
         if method not in ['SLR','LALR']:
             raise LALRError("Unsupported method %s" % method)
 
@@ -1977,6 +2489,13 @@ class LRGeneratedTable(LRTable):
     # Compute the LR(0) closure operation on I, where I is a set of LR(0) items.
 
     def lr0_closure(self,I):
+        """
+        Generate a list of customers between two nodes.
+
+        Args:
+            self: (todo): write your description
+            I: (todo): write your description
+        """
         self._add_count += 1
 
         # Add everything in I to J
@@ -2002,6 +2521,14 @@ class LRGeneratedTable(LRTable):
     # id(obj) instead of element-wise comparison.
 
     def lr0_goto(self,I,x):
+        """
+        Goto goto goto.
+
+        Args:
+            self: (todo): write your description
+            I: (array): write your description
+            x: (array): write your description
+        """
         # First we look for a previously cached entry
         g = self.lr_goto_cache.get((id(I),x),None)
         if g: return g
@@ -2036,6 +2563,12 @@ class LRGeneratedTable(LRTable):
 
     # Compute the LR(0) sets of item function
     def lr0_items(self):
+        """
+        Generate a list of the items ini.
+
+        Args:
+            self: (todo): write your description
+        """
 
         C = [ self.lr0_closure([self.grammar.Productions[0].lr_next]) ]
         i = 0
@@ -2093,6 +2626,12 @@ class LRGeneratedTable(LRTable):
     # -----------------------------------------------------------------------------
 
     def compute_nullable_nonterminals(self):
+        """
+        Compute nullable nonterminals.
+
+        Args:
+            self: (todo): write your description
+        """
         nullable = {}
         num_nullable = 0
         while 1:
@@ -2120,6 +2659,13 @@ class LRGeneratedTable(LRTable):
     # -----------------------------------------------------------------------------
 
     def find_nonterminal_transitions(self,C):
+        """
+        Returns a list of the nonterminal transition.
+
+        Args:
+            self: (todo): write your description
+            C: (todo): write your description
+        """
          trans = []
          for state in range(len(C)):
              for p in C[state]:
@@ -2140,6 +2686,15 @@ class LRGeneratedTable(LRTable):
     # -----------------------------------------------------------------------------
 
     def dr_relation(self,C,trans,nullable):
+        """
+        Add a set of constraints to the set of constraints.
+
+        Args:
+            self: (todo): write your description
+            C: (todo): write your description
+            trans: (todo): write your description
+            nullable: (bool): write your description
+        """
         dr_set = { }
         state,N = trans
         terms = []
@@ -2164,6 +2719,15 @@ class LRGeneratedTable(LRTable):
     # -----------------------------------------------------------------------------
 
     def reads_relation(self,C, trans, empty):
+        """
+        Add a list of a set of a set.
+
+        Args:
+            self: (todo): write your description
+            C: (todo): write your description
+            trans: (todo): write your description
+            empty: (todo): write your description
+        """
         # Look for empty transitions
         rel = []
         state, N = trans
@@ -2207,6 +2771,15 @@ class LRGeneratedTable(LRTable):
     # -----------------------------------------------------------------------------
 
     def compute_lookback_includes(self,C,trans,nullable):
+        """
+        Compute lookback for a set of cidhash.
+
+        Args:
+            self: (todo): write your description
+            C: (todo): write your description
+            trans: (todo): write your description
+            nullable: (bool): write your description
+        """
 
         lookdict = {}          # Dictionary of lookback relations
         includedict = {}       # Dictionary of include relations
@@ -2281,6 +2854,15 @@ class LRGeneratedTable(LRTable):
     # -----------------------------------------------------------------------------
 
     def compute_read_sets(self,C, ntrans, nullable):
+        """
+        Computes the number of a list of c.
+
+        Args:
+            self: (todo): write your description
+            C: (str): write your description
+            ntrans: (str): write your description
+            nullable: (str): write your description
+        """
         FP = lambda x: self.dr_relation(C,x,nullable)
         R =  lambda x: self.reads_relation(C,x,nullable)
         F = digraph(ntrans,R,FP)
@@ -2303,6 +2885,15 @@ class LRGeneratedTable(LRTable):
     # -----------------------------------------------------------------------------
 
     def compute_follow_sets(self,ntrans,readsets,inclsets):
+        """
+        Compute the followers of a list of ngrams.
+
+        Args:
+            self: (todo): write your description
+            ntrans: (todo): write your description
+            readsets: (todo): write your description
+            inclsets: (dict): write your description
+        """
          FP = lambda x: readsets[x]
          R  = lambda x: inclsets.get(x,[])
          F = digraph(ntrans,R,FP)
@@ -2321,6 +2912,14 @@ class LRGeneratedTable(LRTable):
     # -----------------------------------------------------------------------------
 
     def add_lookaheads(self,lookbacks,followset):
+        """
+        Add lookup.
+
+        Args:
+            self: (todo): write your description
+            lookbacks: (dict): write your description
+            followset: (dict): write your description
+        """
         for trans,lb in lookbacks.items():
             # Loop over productions in lookback
             for state,p in lb:
@@ -2338,6 +2937,13 @@ class LRGeneratedTable(LRTable):
     # -----------------------------------------------------------------------------
 
     def add_lalr_lookaheads(self,C):
+        """
+        Add lalr lookup.
+
+        Args:
+            self: (todo): write your description
+            C: (todo): write your description
+        """
         # Determine all of the nullable nonterminals
         nullable = self.compute_nullable_nonterminals()
 
@@ -2362,6 +2968,12 @@ class LRGeneratedTable(LRTable):
     # This function constructs the parse tables for SLR or LALR
     # -----------------------------------------------------------------------------
     def lr_parse_table(self):
+        """
+        Parse the exced table.
+
+        Args:
+            self: (todo): write your description
+        """
         Productions = self.grammar.Productions
         Precedence  = self.grammar.Precedence
         goto   = self.lr_goto         # Goto array
@@ -2545,6 +3157,15 @@ class LRGeneratedTable(LRTable):
     # -----------------------------------------------------------------------------
 
     def write_table(self,modulename,outputdir='',signature=""):
+        """
+        Write modulename to a file.
+
+        Args:
+            self: (todo): write your description
+            modulename: (str): write your description
+            outputdir: (str): write your description
+            signature: (str): write your description
+        """
         basemodulename = modulename.split(".")[-1]
         filename = os.path.join(outputdir,basemodulename) + ".py"
         try:
@@ -2666,6 +3287,14 @@ del _lr_goto_items
     # -----------------------------------------------------------------------------
 
     def pickle_table(self,filename,signature=""):
+        """
+        Dump pickle file.
+
+        Args:
+            self: (todo): write your description
+            filename: (str): write your description
+            signature: (todo): write your description
+        """
         try:
             import cPickle as pickle
         except ImportError:
@@ -2702,6 +3331,12 @@ del _lr_goto_items
 # -----------------------------------------------------------------------------
 
 def get_caller_module_dict(levels):
+    """
+    Returns a dictionary of modules from a module.
+
+    Args:
+        levels: (todo): write your description
+    """
     try:
         raise RuntimeError
     except RuntimeError:
@@ -2722,6 +3357,14 @@ def get_caller_module_dict(levels):
 # This takes a raw grammar rule string and parses it into production data
 # -----------------------------------------------------------------------------
 def parse_grammar(doc,file,line):
+    """
+    Parse a grammar file.
+
+    Args:
+        doc: (str): write your description
+        file: (str): write your description
+        line: (str): write your description
+    """
     grammar = []
     # Split the doc string into lines
     pstrings = doc.splitlines()
@@ -2763,6 +3406,14 @@ def parse_grammar(doc,file,line):
 # -----------------------------------------------------------------------------
 class ParserReflect(object):
     def __init__(self,pdict,log=None):
+        """
+        Initialize a logger
+
+        Args:
+            self: (todo): write your description
+            pdict: (dict): write your description
+            log: (todo): write your description
+        """
         self.pdict      = pdict
         self.start      = None
         self.error_func = None
@@ -2778,6 +3429,12 @@ class ParserReflect(object):
 
     # Get all of the basic information
     def get_all(self):
+        """
+        Get all start tokens
+
+        Args:
+            self: (todo): write your description
+        """
         self.get_start()
         self.get_error_func()
         self.get_tokens()
@@ -2786,6 +3443,12 @@ class ParserReflect(object):
         
     # Validate all of the information
     def validate_all(self):
+        """
+        Validate all the validation functions.
+
+        Args:
+            self: (todo): write your description
+        """
         self.validate_start()
         self.validate_error_func()
         self.validate_tokens()
@@ -2796,6 +3459,12 @@ class ParserReflect(object):
 
     # Compute a signature over the grammar
     def signature(self):
+        """
+        Return md5 signature.
+
+        Args:
+            self: (todo): write your description
+        """
         try:
             from hashlib import md5
         except ImportError:
@@ -2827,6 +3496,12 @@ class ParserReflect(object):
     # -----------------------------------------------------------------------------
 
     def validate_files(self):
+        """
+        Validate files exist.
+
+        Args:
+            self: (todo): write your description
+        """
         # Match def p_funcname(
         fre = re.compile(r'\s*def\s+(p_[a-zA-Z_0-9]*)\(')
 
@@ -2855,20 +3530,44 @@ class ParserReflect(object):
 
     # Get the start symbol
     def get_start(self):
+        """
+        Get start and start
+
+        Args:
+            self: (todo): write your description
+        """
         self.start = self.pdict.get('start')
 
     # Validate the start symbol
     def validate_start(self):
+        """
+        Validate start and end.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.start is not None:
             if not isinstance(self.start,str):
                 self.log.error("'start' must be a string")
 
     # Look for error handler
     def get_error_func(self):
+        """
+        Return the error function
+
+        Args:
+            self: (todo): write your description
+        """
         self.error_func = self.pdict.get('p_error')
 
     # Validate the error function
     def validate_error_func(self):
+        """
+        Check if the given error occurs.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.error_func:
             if isinstance(self.error_func,types.FunctionType):
                 ismethod = 0
@@ -2889,6 +3588,12 @@ class ParserReflect(object):
 
     # Get the tokens map
     def get_tokens(self):
+        """
+        Return the tokens.
+
+        Args:
+            self: (todo): write your description
+        """
         tokens = self.pdict.get("tokens",None)
         if not tokens:
             self.log.error("No token list is defined")
@@ -2909,6 +3614,12 @@ class ParserReflect(object):
 
     # Validate the tokens
     def validate_tokens(self):
+        """
+        Validate tokens.
+
+        Args:
+            self: (todo): write your description
+        """
         # Validate the tokens.
         if 'error' in self.tokens:
             self.log.error("Illegal token name 'error'. Is a reserved word")
@@ -2923,10 +3634,22 @@ class ParserReflect(object):
 
     # Get the precedence map (if any)
     def get_precedence(self):
+        """
+        Get precedence
+
+        Args:
+            self: (todo): write your description
+        """
         self.prec = self.pdict.get("precedence",None)
 
     # Validate and parse the precedence map
     def validate_precedence(self):
+        """
+        Validate precedence.
+
+        Args:
+            self: (todo): write your description
+        """
         preclist = []
         if self.prec:
             if not isinstance(self.prec,(list,tuple)):
@@ -2958,6 +3681,12 @@ class ParserReflect(object):
 
     # Get all p_functions from the grammar
     def get_pfunctions(self):
+        """
+        Return a list of docstring.
+
+        Args:
+            self: (todo): write your description
+        """
         p_functions = []
         for name, item in self.pdict.items():
             if name[:2] != 'p_': continue
@@ -2974,6 +3703,12 @@ class ParserReflect(object):
 
     # Validate all of the p_functions
     def validate_pfunctions(self):
+        """
+        Validate the docstring.
+
+        Args:
+            self: (todo): write your description
+        """
         grammar = []
         # Check for non-empty symbols
         if len(self.pfuncs) == 0:
@@ -3038,6 +3773,27 @@ class ParserReflect(object):
 def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, start=None, 
          check_recursion=1, optimize=0, write_tables=1, debugfile=debug_file,outputdir='',
          debuglog=None, errorlog = None, picklefile=None):
+    """
+    Yaccarser : class : meth : pickle.
+
+    Args:
+        method: (str): write your description
+        debug: (bool): write your description
+        yaccdebug: (bool): write your description
+        module: (todo): write your description
+        tabmodule: (todo): write your description
+        tab_module: (todo): write your description
+        start: (todo): write your description
+        check_recursion: (bool): write your description
+        optimize: (todo): write your description
+        write_tables: (bool): write your description
+        debugfile: (str): write your description
+        debug_file: (str): write your description
+        outputdir: (str): write your description
+        debuglog: (bool): write your description
+        errorlog: (todo): write your description
+        picklefile: (str): write your description
+    """
 
     global parse                 # Reference to the parsing method of the last built parser
 

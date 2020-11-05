@@ -27,21 +27,45 @@ import os
 class ProjectFilters(object):
     @staticmethod
     def in_project(project_layers):
+        """
+        Check if the given project_layers.
+
+        Args:
+            project_layers: (todo): write your description
+        """
         return Q(layer_version__in=project_layers)
 
     @staticmethod
     def not_in_project(project_layers):
+        """
+        Return true if project is in project
+
+        Args:
+            project_layers: (str): write your description
+        """
         return ~(ProjectFilters.in_project(project_layers))
 
 class LayersTable(ToasterTable):
     """Table of layers in Toaster"""
 
     def __init__(self, *args, **kwargs):
+        """
+        Initialize layers.
+
+        Args:
+            self: (todo): write your description
+        """
         super(LayersTable, self).__init__(*args, **kwargs)
         self.default_orderby = "layer__name"
         self.title = "Compatible layers"
 
     def get_context_data(self, **kwargs):
+        """
+        Returns context data to context.
+
+        Args:
+            self: (todo): write your description
+        """
         context = super(LayersTable, self).get_context_data(**kwargs)
 
         project = Project.objects.get(pk=kwargs['pid'])
@@ -50,6 +74,12 @@ class LayersTable(ToasterTable):
         return context
 
     def setup_filters(self, *args, **kwargs):
+        """
+        Setup filters
+
+        Args:
+            self: (todo): write your description
+        """
         project = Project.objects.get(pk=kwargs['pid'])
         self.project_layers = ProjectLayer.objects.filter(project=project)
 
@@ -77,6 +107,12 @@ class LayersTable(ToasterTable):
         self.add_filter(in_current_project_filter)
 
     def setup_queryset(self, *args, **kwargs):
+        """
+        Setup queryset
+
+        Args:
+            self: (todo): write your description
+        """
         prj = Project.objects.get(pk = kwargs['pid'])
         compatible_layers = prj.get_all_compatible_layer_versions()
 
@@ -86,6 +122,12 @@ class LayersTable(ToasterTable):
         self.queryset = compatible_layers.order_by(self.default_orderby)
 
     def setup_columns(self, *args, **kwargs):
+        """
+        Setup the columns
+
+        Args:
+            self: (todo): write your description
+        """
 
         layer_link_template = '''
         <a href="{% url 'layerdetails' extra.pid data.id %}">
@@ -192,17 +234,35 @@ class MachinesTable(ToasterTable):
     """Table of Machines in Toaster"""
 
     def __init__(self, *args, **kwargs):
+        """
+        Initialize state.
+
+        Args:
+            self: (todo): write your description
+        """
         super(MachinesTable, self).__init__(*args, **kwargs)
         self.empty_state = "Toaster has no machine information for this project. Sadly, 			   machine information cannot be obtained from builds, so this 				  page will remain empty."
         self.title = "Compatible machines"
         self.default_orderby = "name"
 
     def get_context_data(self, **kwargs):
+        """
+        Add the context data to the template.
+
+        Args:
+            self: (todo): write your description
+        """
         context = super(MachinesTable, self).get_context_data(**kwargs)
         context['project'] = Project.objects.get(pk=kwargs['pid'])
         return context
 
     def setup_filters(self, *args, **kwargs):
+        """
+        Setup filters
+
+        Args:
+            self: (todo): write your description
+        """
         project = Project.objects.get(pk=kwargs['pid'])
 
         in_current_project_filter = TableFilter(
@@ -227,6 +287,12 @@ class MachinesTable(ToasterTable):
         self.add_filter(in_current_project_filter)
 
     def setup_queryset(self, *args, **kwargs):
+        """
+        Setup queryset
+
+        Args:
+            self: (todo): write your description
+        """
         prj = Project.objects.get(pk = kwargs['pid'])
         self.queryset = prj.get_all_compatible_machines()
         self.queryset = self.queryset.order_by(self.default_orderby)
@@ -236,6 +302,12 @@ class MachinesTable(ToasterTable):
                 prj.get_project_layer_versions(pk=True)
 
     def setup_columns(self, *args, **kwargs):
+        """
+        Setup columns
+
+        Args:
+            self: (todo): write your description
+        """
 
         self.add_column(title="Machine",
                         hideable=False,
@@ -280,15 +352,33 @@ class LayerMachinesTable(MachinesTable):
     """ Smaller version of the Machines table for use in layer details """
 
     def __init__(self, *args, **kwargs):
+        """
+        Initialize the table.
+
+        Args:
+            self: (todo): write your description
+        """
         super(LayerMachinesTable, self).__init__(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
+        """
+        Returns the context data to the template.
+
+        Args:
+            self: (todo): write your description
+        """
         context = super(LayerMachinesTable, self).get_context_data(**kwargs)
         context['layerversion'] = Layer_Version.objects.get(pk=kwargs['layerid'])
         return context
 
 
     def setup_queryset(self, *args, **kwargs):
+        """
+        Set up queryset.
+
+        Args:
+            self: (todo): write your description
+        """
         MachinesTable.setup_queryset(self, *args, **kwargs)
 
         self.queryset = self.queryset.filter(layer_version__pk=int(kwargs['layerid']))
@@ -296,6 +386,12 @@ class LayerMachinesTable(MachinesTable):
         self.static_context_extra['in_prj'] = ProjectLayer.objects.filter(Q(project=kwargs['pid']) & Q(layercommit=kwargs['layerid'])).count()
 
     def setup_columns(self, *args, **kwargs):
+        """
+        Setup columns
+
+        Args:
+            self: (todo): write your description
+        """
         self.add_column(title="Machine",
                         hideable=False,
                         orderable=True,
@@ -319,6 +415,12 @@ class RecipesTable(ToasterTable):
     """Table of All Recipes in Toaster"""
 
     def __init__(self, *args, **kwargs):
+        """
+        Initialize the initial state.
+
+        Args:
+            self: (todo): write your description
+        """
         super(RecipesTable, self).__init__(*args, **kwargs)
         self.empty_state = "Toaster has no recipe information. To generate recipe information you need to run a build."
 
@@ -332,6 +434,12 @@ class RecipesTable(ToasterTable):
             build_col['static_data_template'] = '{% include "recipe_add_btn.html" %}'
 
     def get_context_data(self, **kwargs):
+        """
+        Returns context data to context
+
+        Args:
+            self: (todo): write your description
+        """
         project = Project.objects.get(pk=kwargs['pid'])
         context = super(RecipesTable, self).get_context_data(**kwargs)
 
@@ -341,6 +449,12 @@ class RecipesTable(ToasterTable):
         return context
 
     def setup_filters(self, *args, **kwargs):
+        """
+        Setup filters
+
+        Args:
+            self: (todo): write your description
+        """
         table_filter = TableFilter(
             'in_current_project',
             'Filter by project recipes'
@@ -363,6 +477,12 @@ class RecipesTable(ToasterTable):
         self.add_filter(table_filter)
 
     def setup_queryset(self, *args, **kwargs):
+        """
+        Setup queryset.
+
+        Args:
+            self: (todo): write your description
+        """
         prj = Project.objects.get(pk = kwargs['pid'])
 
         # Project layers used by the filters
@@ -375,6 +495,12 @@ class RecipesTable(ToasterTable):
 
 
     def setup_columns(self, *args, **kwargs):
+        """
+        Setup columns
+
+        Args:
+            self: (todo): write your description
+        """
 
         self.add_column(title="Version",
                         hidden=False,
@@ -438,16 +564,34 @@ class LayerRecipesTable(RecipesTable):
     """ Smaller version of the Recipes table for use in layer details """
 
     def __init__(self, *args, **kwargs):
+        """
+        Initialize the table.
+
+        Args:
+            self: (todo): write your description
+        """
         super(LayerRecipesTable, self).__init__(*args, **kwargs)
         self.default_orderby = "name"
 
     def get_context_data(self, **kwargs):
+        """
+        Add the context data to context.
+
+        Args:
+            self: (todo): write your description
+        """
         context = super(LayerRecipesTable, self).get_context_data(**kwargs)
         context['layerversion'] = Layer_Version.objects.get(pk=kwargs['layerid'])
         return context
 
 
     def setup_queryset(self, *args, **kwargs):
+        """
+        Set up queryset.
+
+        Args:
+            self: (todo): write your description
+        """
         self.queryset = \
                 Recipe.objects.filter(layer_version__pk=int(kwargs['layerid']))
 
@@ -455,6 +599,12 @@ class LayerRecipesTable(RecipesTable):
         self.static_context_extra['in_prj'] = ProjectLayer.objects.filter(Q(project=kwargs['pid']) & Q(layercommit=kwargs['layerid'])).count()
 
     def setup_columns(self, *args, **kwargs):
+        """
+        Setup columns
+
+        Args:
+            self: (todo): write your description
+        """
         self.add_column(title="Recipe",
                         help_text="Information about a single piece of software, including where to download the source, configuration options, how to compile the source files and how to package the compiled output",
                         hideable=False,
@@ -480,11 +630,23 @@ class LayerRecipesTable(RecipesTable):
 class CustomImagesTable(ToasterTable):
     """ Table to display your custom images """
     def __init__(self, *args, **kwargs):
+        """
+        Initialize the extension.
+
+        Args:
+            self: (todo): write your description
+        """
         super(CustomImagesTable, self).__init__(*args, **kwargs)
         self.title = "Custom images"
         self.default_orderby = "name"
 
     def get_context_data(self, **kwargs):
+        """
+        Add the context data to the template.
+
+        Args:
+            self: (todo): write your description
+        """
         context = super(CustomImagesTable, self).get_context_data(**kwargs)
 
         empty_state_template = '''
@@ -501,11 +663,23 @@ class CustomImagesTable(ToasterTable):
         return context
 
     def setup_queryset(self, *args, **kwargs):
+        """
+        Return queryset queryset.
+
+        Args:
+            self: (todo): write your description
+        """
         prj = Project.objects.get(pk = kwargs['pid'])
         self.queryset = CustomImageRecipe.objects.filter(project=prj)
         self.queryset = self.queryset.order_by(self.default_orderby)
 
     def setup_columns(self, *args, **kwargs):
+        """
+        Setup the columns.
+
+        Args:
+            self: (todo): write your description
+        """
 
         name_link_template = '''
         <a href="{% url 'customrecipe' extra.pid data.id %}">
@@ -558,11 +732,23 @@ class ImageRecipesTable(RecipesTable):
     """ A subset of the recipes table which displayed just image recipes """
 
     def __init__(self, *args, **kwargs):
+        """
+        Initialize this class
+
+        Args:
+            self: (todo): write your description
+        """
         super(ImageRecipesTable, self).__init__(*args, **kwargs)
         self.title = "Compatible image recipes"
         self.default_orderby = "name"
 
     def setup_queryset(self, *args, **kwargs):
+        """
+        Filter queryset queryset.
+
+        Args:
+            self: (todo): write your description
+        """
         super(ImageRecipesTable, self).setup_queryset(*args, **kwargs)
 
         custom_image_recipes = CustomImageRecipe.objects.filter(
@@ -573,6 +759,12 @@ class ImageRecipesTable(RecipesTable):
 
 
     def setup_columns(self, *args, **kwargs):
+        """
+        Setup the columns.
+
+        Args:
+            self: (todo): write your description
+        """
 
         name_link_template = '''
         <a href="{% url 'recipedetails' extra.pid data.pk %}">{{data.name}}</a>
@@ -596,10 +788,22 @@ class ImageRecipesTable(RecipesTable):
 class NewCustomImagesTable(ImageRecipesTable):
     """ Table which displays Images recipes which can be customised """
     def __init__(self, *args, **kwargs):
+        """
+        A method to initialize all tables.
+
+        Args:
+            self: (todo): write your description
+        """
         super(NewCustomImagesTable, self).__init__(*args, **kwargs)
         self.title = "Select the image recipe you want to customise"
 
     def setup_queryset(self, *args, **kwargs):
+        """
+        Initialize queryset is published.
+
+        Args:
+            self: (todo): write your description
+        """
         super(ImageRecipesTable, self).setup_queryset(*args, **kwargs)
         prj = Project.objects.get(pk = kwargs['pid'])
         self.static_context_extra['current_layers'] = \
@@ -608,6 +812,12 @@ class NewCustomImagesTable(ImageRecipesTable):
         self.queryset = self.queryset.filter(is_image=True)
 
     def setup_columns(self, *args, **kwargs):
+        """
+        Setup the columns
+
+        Args:
+            self: (todo): write your description
+        """
 
         name_link_template = '''
         <a href="{% url 'recipedetails' extra.pid data.pk %}">{{data.name}}</a>
@@ -635,11 +845,23 @@ class NewCustomImagesTable(ImageRecipesTable):
 class SoftwareRecipesTable(RecipesTable):
     """ Displays just the software recipes """
     def __init__(self, *args, **kwargs):
+        """
+        Initialize all classes.
+
+        Args:
+            self: (todo): write your description
+        """
         super(SoftwareRecipesTable, self).__init__(*args, **kwargs)
         self.title = "Compatible software recipes"
         self.default_orderby = "name"
 
     def setup_queryset(self, *args, **kwargs):
+        """
+        Set up queryset.
+
+        Args:
+            self: (todo): write your description
+        """
         super(SoftwareRecipesTable, self).setup_queryset(*args, **kwargs)
 
         self.queryset = self.queryset.filter(is_image=False)
@@ -647,6 +869,12 @@ class SoftwareRecipesTable(RecipesTable):
 
 
     def setup_columns(self, *args, **kwargs):
+        """
+        Setup columns
+
+        Args:
+            self: (todo): write your description
+        """
         self.add_column(title="Software recipe",
                         help_text="Information about a single piece of "
                         "software, including where to download the source, "
@@ -665,6 +893,12 @@ class PackagesTable(ToasterTable):
     build"""
 
     def __init__(self, *args, **kwargs):
+        """
+        Initialize extensions.
+
+        Args:
+            self: (todo): write your description
+        """
         super(PackagesTable, self).__init__(*args, **kwargs)
         self.title = "Packages included"
         self.packages = None
@@ -710,6 +944,12 @@ class PackagesTable(ToasterTable):
         return context
 
     def setup_queryset(self, *args, **kwargs):
+        """
+        Sets up the queryset.
+
+        Args:
+            self: (todo): write your description
+        """
         recipe = Recipe.objects.get(pk=kwargs['recipe_id'])
         self.static_context_extra['target_name'] = recipe.name
 
@@ -717,6 +957,12 @@ class PackagesTable(ToasterTable):
         self.queryset = self.queryset.order_by('name')
 
     def setup_columns(self, *args, **kwargs):
+        """
+        Setup columns
+
+        Args:
+            self: (todo): write your description
+        """
         self.add_column(title="Package",
                         hideable=False,
                         orderable=True,
@@ -764,10 +1010,22 @@ class SelectPackagesTable(PackagesTable):
     """ Table to display the packages to add and remove from an image """
 
     def __init__(self, *args, **kwargs):
+        """
+        Initialize the title.
+
+        Args:
+            self: (todo): write your description
+        """
         super(SelectPackagesTable, self).__init__(*args, **kwargs)
         self.title = "Add | Remove packages"
 
     def setup_queryset(self, *args, **kwargs):
+        """
+        Initialize static recipe.
+
+        Args:
+            self: (todo): write your description
+        """
         self.cust_recipe =\
             CustomImageRecipe.objects.get(pk=kwargs['custrecipeid'])
         prj = Project.objects.get(pk = kwargs['pid'])
@@ -800,6 +1058,12 @@ class SelectPackagesTable(PackagesTable):
                 current_packages.values_list('pk', flat=True)
 
     def get_context_data(self, **kwargs):
+        """
+        Returns the context data to provide a dict.
+
+        Args:
+            self: (todo): write your description
+        """
         # to reuse the Super class map the custrecipeid to the recipe_id
         kwargs['recipe_id'] = kwargs['custrecipeid']
         context = super(SelectPackagesTable, self).get_context_data(**kwargs)
@@ -813,6 +1077,12 @@ class SelectPackagesTable(PackagesTable):
 
 
     def setup_columns(self, *args, **kwargs):
+        """
+        Setup column columns
+
+        Args:
+            self: (todo): write your description
+        """
         super(SelectPackagesTable, self).setup_columns(*args, **kwargs)
 
         add_remove_template = '{% include "pkg_add_rm_btn.html" %}'
@@ -826,6 +1096,12 @@ class SelectPackagesTable(PackagesTable):
                         filter_name='in_current_image_filter')
 
     def setup_filters(self, *args, **kwargs):
+        """
+        Setup filters
+
+        Args:
+            self: (todo): write your description
+        """
         in_current_image_filter = TableFilter(
             'in_current_image_filter',
             'Filter by added packages'
@@ -851,15 +1127,33 @@ class ProjectsTable(ToasterTable):
     """Table of projects in Toaster"""
 
     def __init__(self, *args, **kwargs):
+        """
+        Initialize the context.
+
+        Args:
+            self: (todo): write your description
+        """
         super(ProjectsTable, self).__init__(*args, **kwargs)
         self.default_orderby = '-updated'
         self.title = 'All projects'
         self.static_context_extra['Build'] = Build
 
     def get_context_data(self, **kwargs):
+        """
+        Returns the context data to provide to the template.
+
+        Args:
+            self: (todo): write your description
+        """
         return super(ProjectsTable, self).get_context_data(**kwargs)
 
     def setup_queryset(self, *args, **kwargs):
+        """
+        Setup queryset
+
+        Args:
+            self: (todo): write your description
+        """
         queryset = Project.objects.all()
 
         # annotate each project with its number of builds
@@ -879,6 +1173,12 @@ class ProjectsTable(ToasterTable):
     # machine, number of builds, last build outcome, recipe (name),  errors,
     # warnings, image files
     def setup_columns(self, *args, **kwargs):
+        """
+        Add columns
+
+        Args:
+            self: (todo): write your description
+        """
         name_template = '''
         {% load project_url_tag %}
         <span data-project-field="name">
@@ -1064,6 +1364,12 @@ class BuildsTable(ToasterTable):
     """Table of builds in Toaster"""
 
     def __init__(self, *args, **kwargs):
+        """
+        Initialize static files.
+
+        Args:
+            self: (todo): write your description
+        """
         super(BuildsTable, self).__init__(*args, **kwargs)
         self.default_orderby = '-completed_on'
         self.static_context_extra['Build'] = Build
@@ -1086,6 +1392,12 @@ class BuildsTable(ToasterTable):
         return Build.objects.all()
 
     def get_context_data(self, **kwargs):
+        """
+        Add the context data to the template.
+
+        Args:
+            self: (todo): write your description
+        """
         context = super(BuildsTable, self).get_context_data(**kwargs)
 
         # should be set in subclasses
@@ -1139,6 +1451,12 @@ class BuildsTable(ToasterTable):
         self.queryset = queryset
 
     def setup_columns(self, *args, **kwargs):
+        """
+        Add columns
+
+        Args:
+            self: (todo): write your description
+        """
         outcome_template = '''
         {% if data.outcome == data.SUCCEEDED %}
             <span class="glyphicon glyphicon-ok-circle"></span>
@@ -1312,6 +1630,12 @@ class BuildsTable(ToasterTable):
                         static_data_template=image_files_template)
 
     def setup_filters(self, *args, **kwargs):
+        """
+        Setup filters
+
+        Args:
+            self: (todo): write your description
+        """
         # outcomes
         outcome_filter = TableFilter(
             'outcome_filter',
@@ -1425,6 +1749,12 @@ class AllBuildsTable(BuildsTable):
     """ Builds page for all builds """
 
     def __init__(self, *args, **kwargs):
+        """
+        Initialize all tables
+
+        Args:
+            self: (todo): write your description
+        """
         super(AllBuildsTable, self).__init__(*args, **kwargs)
         self.title = 'All builds'
         self.mrb_type = 'all'
@@ -1468,6 +1798,12 @@ class ProjectBuildsTable(BuildsTable):
     """
 
     def __init__(self, *args, **kwargs):
+        """
+        Initialize mrb
+
+        Args:
+            self: (todo): write your description
+        """
         super(ProjectBuildsTable, self).__init__(*args, **kwargs)
         self.title = 'All project builds'
         self.mrb_type = 'project'
@@ -1534,17 +1870,35 @@ class DistrosTable(ToasterTable):
     """Table of Distros in Toaster"""
 
     def __init__(self, *args, **kwargs):
+        """
+        Initialize the state.
+
+        Args:
+            self: (todo): write your description
+        """
         super(DistrosTable, self).__init__(*args, **kwargs)
         self.empty_state = "Toaster has no distro information for this project. Sadly, 			   distro information cannot be obtained from builds, so this 				  page will remain empty."
         self.title = "Compatible Distros"
         self.default_orderby = "name"
 
     def get_context_data(self, **kwargs):
+        """
+        Returns the context data to provide to the template.
+
+        Args:
+            self: (todo): write your description
+        """
         context = super(DistrosTable, self).get_context_data(**kwargs)
         context['project'] = Project.objects.get(pk=kwargs['pid'])
         return context
 
     def setup_filters(self, *args, **kwargs):
+        """
+        Setup filters
+
+        Args:
+            self: (todo): write your description
+        """
         project = Project.objects.get(pk=kwargs['pid'])
 
         in_current_project_filter = TableFilter(
@@ -1569,6 +1923,12 @@ class DistrosTable(ToasterTable):
         self.add_filter(in_current_project_filter)
 
     def setup_queryset(self, *args, **kwargs):
+        """
+        Setup queryset
+
+        Args:
+            self: (todo): write your description
+        """
         prj = Project.objects.get(pk = kwargs['pid'])
         self.queryset = prj.get_all_compatible_distros()
         self.queryset = self.queryset.order_by(self.default_orderby)
@@ -1578,6 +1938,12 @@ class DistrosTable(ToasterTable):
                 prj.get_project_layer_versions(pk=True)
 
     def setup_columns(self, *args, **kwargs):
+        """
+        Setup columns
+
+        Args:
+            self: (todo): write your description
+        """
 
         self.add_column(title="Distro",
                         hideable=False,

@@ -23,10 +23,23 @@ from bb.msg import BBLogFormatter
 class EventQueueStubBase(object):
     """ Base class for EventQueueStub classes """
     def __init__(self):
+        """
+        Initialize a new event.
+
+        Args:
+            self: (todo): write your description
+        """
         self.event_calls = []
         return
 
     def _store_event_data_string(self, event):
+        """
+        Store the event string.
+
+        Args:
+            self: (todo): write your description
+            event: (todo): write your description
+        """
         if isinstance(event, logging.LogRecord):
             formatter = BBLogFormatter("%(levelname)s: %(message)s")
             self.event_calls.append(formatter.format(event))
@@ -38,9 +51,22 @@ class EventQueueStubBase(object):
 class EventQueueStub(EventQueueStubBase):
     """ Class used as specification for UI event handler queue stub objects """
     def __init__(self):
+        """
+        Initialize the event queue.
+
+        Args:
+            self: (todo): write your description
+        """
         super(EventQueueStub, self).__init__()
 
     def send(self, event):
+        """
+        Send the event.
+
+        Args:
+            self: (todo): write your description
+            event: (str): write your description
+        """
         super(EventQueueStub, self)._store_event_data_string(event)
 
 
@@ -48,9 +74,22 @@ class PickleEventQueueStub(EventQueueStubBase):
     """ Class used as specification for UI event handler queue stub objects
         with sendpickle method """
     def __init__(self):
+        """
+        Initialize the event queue.
+
+        Args:
+            self: (todo): write your description
+        """
         super(PickleEventQueueStub, self).__init__()
 
     def sendpickle(self, pickled_event):
+        """
+        Send the pickled event.
+
+        Args:
+            self: (todo): write your description
+            pickled_event: (todo): write your description
+        """
         event = pickle.loads(pickled_event)
         super(PickleEventQueueStub, self)._store_event_data_string(event)
 
@@ -58,6 +97,12 @@ class PickleEventQueueStub(EventQueueStubBase):
 class UIClientStub(object):
     """ Class used as specification for UI event handler stub objects """
     def __init__(self):
+        """
+        Initialize the event
+
+        Args:
+            self: (todo): write your description
+        """
         self.event = None
 
 
@@ -66,6 +111,12 @@ class EventHandlingTest(unittest.TestCase):
 
 
     def setUp(self):
+        """
+        Set the ui client.
+
+        Args:
+            self: (todo): write your description
+        """
         self._test_process = Mock()
         ui_client1 = UIClientStub()
         ui_client2 = UIClientStub()
@@ -405,6 +456,12 @@ class EventHandlingTest(unittest.TestCase):
         """ Create UI event handler mockups used in enable and disable
             threadlock tests """
         def ui1_event_send(event):
+            """
+            Sends a ui event handler
+
+            Args:
+                event: (todo): write your description
+            """
             if type(event) is bb.event.ConfigParsed:
                 self._threadlock_test_calls.append("w1_ui1")
             if type(event) is bb.event.OperationStarted:
@@ -412,6 +469,12 @@ class EventHandlingTest(unittest.TestCase):
             time.sleep(2)
 
         def ui2_event_send(event):
+            """
+            Sends a ui2 event handler
+
+            Args:
+                event: (todo): write your description
+            """
             if type(event) is bb.event.ConfigParsed:
                 self._threadlock_test_calls.append("w1_ui2")
             if type(event) is bb.event.OperationStarted:
@@ -480,6 +543,12 @@ class EventClassesTest(unittest.TestCase):
     _worker_pid = 54321
 
     def setUp(self):
+        """
+        Sets the pid.
+
+        Args:
+            self: (todo): write your description
+        """
         bb.event.worker_pid = EventClassesTest._worker_pid
 
     def test_Event(self):
@@ -861,10 +930,24 @@ class EventClassesTest(unittest.TestCase):
         self.assertEqual(event.pid, EventClassesTest._worker_pid)
 
     def _throw_zero_division_exception(self):
+        """
+        : return : class : 1
+
+        Args:
+            self: (todo): write your description
+        """
         a = 1 / 0
         return
 
     def _worker_handler(self, event, d):
+        """
+        Decorator to register an event.
+
+        Args:
+            self: (todo): write your description
+            event: (todo): write your description
+            d: (todo): write your description
+        """
         self._returned_event = event
         return
 

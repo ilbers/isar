@@ -175,6 +175,12 @@ class Svn(FetchMethod):
         
 
     def supports_srcrev(self):
+        """
+        Determine if this source has a valid.
+
+        Args:
+            self: (todo): write your description
+        """
         return True
 
     def _revision_key(self, ud, d, name):
@@ -205,4 +211,12 @@ class Svn(FetchMethod):
         return False, self._build_revision(ud, d)
 
     def _build_revision(self, ud, d):
+        """
+        Builds the revision.
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+        """
         return ud.revision

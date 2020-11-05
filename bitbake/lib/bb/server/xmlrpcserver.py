@@ -25,10 +25,25 @@ import bb
 # ("service unavailable") is returned to the client.
 class BitBakeXMLRPCRequestHandler(SimpleXMLRPCRequestHandler):
     def __init__(self, request, client_address, server):
+        """
+        Initialize a request.
+
+        Args:
+            self: (todo): write your description
+            request: (dict): write your description
+            client_address: (todo): write your description
+            server: (todo): write your description
+        """
         self.server = server
         SimpleXMLRPCRequestHandler.__init__(self, request, client_address, server)
 
     def do_POST(self):
+        """
+        Handle post request.
+
+        Args:
+            self: (todo): write your description
+        """
         try:
             remote_token = self.headers["Bitbake-token"]
         except:
@@ -43,6 +58,12 @@ class BitBakeXMLRPCRequestHandler(SimpleXMLRPCRequestHandler):
             SimpleXMLRPCRequestHandler.do_POST(self)
 
     def report_503(self):
+        """
+        Sends a report.
+
+        Args:
+            self: (todo): write your description
+        """
         self.send_response(503)
         response = 'No more client allowed'
         self.send_header("Content-type", "text/plain")
@@ -55,6 +76,15 @@ class BitBakeXMLRPCServer(SimpleXMLRPCServer):
     # allow_reuse_address = True
 
     def __init__(self, interface, cooker, parent):
+        """
+        Initialize the interface
+
+        Args:
+            self: (todo): write your description
+            interface: (str): write your description
+            cooker: (todo): write your description
+            parent: (todo): write your description
+        """
         # Use auto port configuration
         if (interface[1] == -1):
             interface = (interface[0], 0)
@@ -83,15 +113,35 @@ class BitBakeXMLRPCServer(SimpleXMLRPCServer):
                 self.register_function(method, name[len(prefix):])
 
     def get_timeout(self, delay):
+        """
+        Get the number of seconds from the given delay.
+
+        Args:
+            self: (todo): write your description
+            delay: (int): write your description
+        """
         socktimeout = self.socket.gettimeout() or delay
         return min(socktimeout, delay)
 
     def handle_requests(self):
+        """
+        Handles requests.
+
+        Args:
+            self: (todo): write your description
+        """
         self._handle_request_noblock()
 
 class BitBakeXMLRPCServerCommands():
 
     def __init__(self, server):
+        """
+        Initialize the server.
+
+        Args:
+            self: (todo): write your description
+            server: (todo): write your description
+        """
         self.server = server
         self.has_client = False
 
@@ -123,6 +173,12 @@ class BitBakeXMLRPCServerCommands():
         return self.server.cooker.command.runCommand(command, self.server.readonly)
 
     def getEventHandle(self):
+        """
+        Returns the handle for the event.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.event_handle
 
     def terminateServer(self):
@@ -134,6 +190,12 @@ class BitBakeXMLRPCServerCommands():
         return
 
     def addClient(self):
+        """
+        Add a new token to the client.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.server.parent.haveui:
             return None
         token = hashlib.md5(str(time.time()).encode("utf-8")).hexdigest()
@@ -142,6 +204,12 @@ class BitBakeXMLRPCServerCommands():
         return token
 
     def removeClient(self):
+        """
+        Removes a client.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.server.parent.haveui:
             self.server.connection_token = None
             self.server.parent.haveui = False

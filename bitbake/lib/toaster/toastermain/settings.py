@@ -149,6 +149,13 @@ SECRET_KEY = 'NOT_SUITABLE_FOR_HOSTED_DEPLOYMENT'
 
 class InvalidString(str):
     def __mod__(self, other):
+        """
+        Modifies the current template.
+
+        Args:
+            self: (todo): write your description
+            other: (todo): write your description
+        """
         from django.template.base import TemplateSyntaxError
         raise TemplateSyntaxError(
             "Undefined variable or unknown value for: \"%s\"" % other)
@@ -346,6 +353,13 @@ if DEBUG and SQL_DEBUG:
 # If we're using sqlite, we need to tweak the performance a bit
 from django.db.backends.signals import connection_created
 def activate_synchronous_off(sender, connection, **kwargs):
+    """
+    Activates the synchronously.
+
+    Args:
+        sender: (todo): write your description
+        connection: (todo): write your description
+    """
     if connection.vendor == 'sqlite':
         cursor = connection.cursor()
         cursor.execute('PRAGMA synchronous = 0;')

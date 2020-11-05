@@ -30,6 +30,11 @@ logger = logging.getLogger("toaster")
 # (bitbake needs access to the database)
 
 def load_build_environment():
+    """
+    Load the build environment.
+
+    Args:
+    """
     call_command('loaddata', 'settings.xml', app_label="orm")
     call_command('loaddata', 'poky.xml', app_label="orm")
 
@@ -91,6 +96,13 @@ class BuildTest(unittest.TestCase):
     BUILDDIR = "/tmp/build/"
 
     def build(self, target):
+        """
+        Build a build.
+
+        Args:
+            self: (todo): write your description
+            target: (dict): write your description
+        """
         # So that the buildinfo helper uses the test database'
         self.assertEqual(
             os.environ.get('DJANGO_SETTINGS_MODULE', ''),

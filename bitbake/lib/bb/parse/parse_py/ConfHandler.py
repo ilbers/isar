@@ -48,12 +48,25 @@ __unset_regexp__ = re.compile( r"unset\s+([a-zA-Z0-9\-_+.${}/~]+)$" )
 __unset_flag_regexp__ = re.compile( r"unset\s+([a-zA-Z0-9\-_+.${}/~]+)\[([a-zA-Z0-9\-_+.]+)\]$" )
 
 def init(data):
+    """
+    Initialize the directory.
+
+    Args:
+        data: (todo): write your description
+    """
     topdir = data.getVar('TOPDIR', False)
     if not topdir:
         data.setVar('TOPDIR', os.getcwd())
 
 
 def supports(fn, d):
+    """
+    Determine if fn fn fn fn fn fn fn fn fn fn fn fn.
+
+    Args:
+        fn: (todo): write your description
+        d: (todo): write your description
+    """
     return fn[-5:] == ".conf"
 
 def include(parentfn, fns, lineno, data, error_out):
@@ -111,6 +124,14 @@ def include_single_file(parentfn, fn, lineno, data, error_out):
 confFilters = []
 
 def handle(fn, data, include):
+    """
+    Process ast.
+
+    Args:
+        fn: (todo): write your description
+        data: (todo): write your description
+        include: (list): write your description
+    """
     init(data)
 
     if include == 0:
@@ -158,6 +179,15 @@ def handle(fn, data, include):
     return data
 
 def feeder(lineno, s, fn, statements):
+    """
+    Feed the given bel statement.
+
+    Args:
+        lineno: (str): write your description
+        s: (todo): write your description
+        fn: (todo): write your description
+        statements: (list): write your description
+    """
     m = __config_regexp__.match(s)
     if m:
         groupd = m.groupdict()

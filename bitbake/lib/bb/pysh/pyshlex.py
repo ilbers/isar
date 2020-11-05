@@ -21,11 +21,23 @@ class NeedMore(Exception):
     pass
 
 def is_blank(c):
+    """
+    Return true if c is blank.
+
+    Args:
+        c: (array): write your description
+    """
     return c in (' ', '\t')
     
 _RE_DIGITS = re.compile(r'^\d+$')
 
 def are_digits(s):
+    """
+    Returns a string s is_digits
+
+    Args:
+        s: (todo): write your description
+    """
     return _RE_DIGITS.search(s) is not None
 
 _OPERATORS = dict([
@@ -49,6 +61,11 @@ _OPERATORS = dict([
 
 #Make a function to silence pychecker "Local variable shadows global"
 def make_partial_ops():
+    """
+    Make a list of partial partial partial partial partial operations.
+
+    Args:
+    """
     partials = {}
     for k in _OPERATORS:
         for i in range(1, len(k)+1):
@@ -90,14 +107,33 @@ _RESERVEDS = dict([
 ])
     
 def get_reserved(s):
+    """
+    Get a string representation of s
+
+    Args:
+        s: (str): write your description
+    """
     return _RESERVEDS.get(s)
     
 _RE_NAME = re.compile(r'^[0-9a-zA-Z_]+$')
 
 def is_name(s):
+    """
+    Return true if s is a name.
+
+    Args:
+        s: (str): write your description
+    """
     return _RE_NAME.search(s) is not None
 
 def find_chars(seq, chars):
+    """
+    Finds all chars found in seq.
+
+    Args:
+        seq: (todo): write your description
+        chars: (str): write your description
+    """
     for i,v in enumerate(seq):
         if v in chars:
             return i,v
@@ -127,6 +163,13 @@ class WordLexer:
     }
         
     def __init__(self, heredoc = False):
+        """
+        Initialize the buffer.
+
+        Args:
+            self: (todo): write your description
+            heredoc: (todo): write your description
+        """
         # _buffer is the unprocessed input characters buffer
         self._buffer = []
         # _stack is empty or contains a quoted list being processed
@@ -152,6 +195,14 @@ class WordLexer:
         return result, remaining
         
     def _is_escapable(self, c, delim=None):
+        """
+        Return true if the current stack is an instruction.
+
+        Args:
+            self: (todo): write your description
+            c: (todo): write your description
+            delim: (int): write your description
+        """
         if delim is None:
             if self._heredoc:
                 # Backslashes works as if they were double quoted in unquoted
@@ -166,6 +217,15 @@ class WordLexer:
         return escapables is None or c in escapables
         
     def _parse_squote(self, buf, result, eof):
+        """
+        Parse the next result.
+
+        Args:
+            self: (todo): write your description
+            buf: (todo): write your description
+            result: (todo): write your description
+            eof: (todo): write your description
+        """
         if not buf:
             raise NeedMore()
         try:
@@ -177,6 +237,15 @@ class WordLexer:
         return pos+1, True
         
     def _parse_bquote(self, buf, result, eof):
+        """
+        Parse the result.
+
+        Args:
+            self: (todo): write your description
+            buf: (todo): write your description
+            result: (todo): write your description
+            eof: (todo): write your description
+        """
         if not buf:
             raise NeedMore()
             
@@ -193,6 +262,15 @@ class WordLexer:
         return 1, True
         
     def _parse_dquote(self, buf, result, eof):
+        """
+        Parse a result.
+
+        Args:
+            self: (todo): write your description
+            buf: (todo): write your description
+            result: (todo): write your description
+            eof: (todo): write your description
+        """
         if not buf:
             raise NeedMore()
         pos, sep = find_chars(buf, '$\\`"')
@@ -208,6 +286,15 @@ class WordLexer:
             return pos, False
             
     def _parse_command(self, buf, result, eof):
+        """
+        Parse a command.
+
+        Args:
+            self: (todo): write your description
+            buf: (todo): write your description
+            result: (todo): write your description
+            eof: (todo): write your description
+        """
         if not buf:
             raise NeedMore()
 
@@ -226,6 +313,15 @@ class WordLexer:
             return pos, False
             
     def _parse_parameter(self, buf, result, eof):
+        """
+        Parse the next result.
+
+        Args:
+            self: (todo): write your description
+            buf: (todo): write your description
+            result: (todo): write your description
+            eof: (todo): write your description
+        """
         if not buf:
             raise NeedMore()
             
@@ -241,6 +337,15 @@ class WordLexer:
             return pos, False
             
     def _parse_dollar(self, buf, result, eof):
+        """
+        Parse the next result.
+
+        Args:
+            self: (todo): write your description
+            buf: (todo): write your description
+            result: (todo): write your description
+            eof: (todo): write your description
+        """
         sep = result[0]
         if sep=='$':            
             if not buf:
@@ -293,6 +398,13 @@ class WordLexer:
         return pos, closed
 
     def _parse(self, eof):
+        """
+        Parses of the stack.
+
+        Args:
+            self: (todo): write your description
+            eof: (str): write your description
+        """
         buf = self._buffer
         stack = self._stack
         recurse = False
@@ -340,6 +452,12 @@ def normalize_wordtree(wtree):
     parent sequence.
     """
     def normalize(wtree):
+        """
+        Normalize a list.
+
+        Args:
+            wtree: (todo): write your description
+        """
         result = []
         for part in wtree[1:-1]:
             if isinstance(part, list):
@@ -388,6 +506,13 @@ def make_wordtree(token, here_document=False):
 def wordtree_as_string(wtree):
     """Rewrite an expression tree generated by make_wordtree as string."""
     def visit(node, output):
+        """
+        Recursively call output.
+
+        Args:
+            node: (todo): write your description
+            output: (todo): write your description
+        """
         for child in node:
             if isinstance(child, list):
                 visit(child, output)
@@ -404,6 +529,12 @@ def unquote_wordtree(wtree):
     sequences are joined as such.
     """
     def unquote(wtree):
+        """
+        Unquote the quoted string.
+
+        Args:
+            wtree: (str): write your description
+        """
         unquoted = []
         if wtree[0] in ('', "'", '"', '\\'):
             wtree = wtree[1:-1]
@@ -422,6 +553,14 @@ class HereDocLexer:
     not included to the closing delimiter line included.
     """
     def __init__(self, op, delim):
+        """
+        Initialize the buffer.
+
+        Args:
+            self: (todo): write your description
+            op: (todo): write your description
+            delim: (int): write your description
+        """
         assert op in ('<<', '<<-')
         if not delim:
             raise ShellSyntaxError('invalid here document delimiter %s' % str(delim))
@@ -443,6 +582,13 @@ class HereDocLexer:
         return token, remaining
     
     def _parse(self, eof):
+        """
+        Parse the next line.
+
+        Args:
+            self: (todo): write your description
+            eof: (str): write your description
+        """
         while 1:
             #Look for first unescaped newline. Quotes may be ignored
             escaped = False
@@ -484,10 +630,23 @@ class Token:
     WORD = 'WORD'
     
     def __init__(self):
+        """
+        Initialize the object
+
+        Args:
+            self: (todo): write your description
+        """
         self.value = ''
         self.type = None
         
     def __getitem__(self, key):
+        """
+        Return an item from the item.
+
+        Args:
+            self: (todo): write your description
+            key: (str): write your description
+        """
         #Behave like a two elements tuple
         if key==0:
             return self.type
@@ -498,6 +657,14 @@ class Token:
                
 class HereDoc:
     def __init__(self, op, name=None):
+        """
+        Initialize a new instance.
+
+        Args:
+            self: (todo): write your description
+            op: (todo): write your description
+            name: (str): write your description
+        """
         self.op = op
         self.name = name
         self.pendings = []
@@ -545,6 +712,13 @@ class Lexer:
     RE_BACKQUOTE_END = re.compile(r'(?<!\\)(`)')
 
     def __init__(self, parent_state = None):
+        """
+        Initializes the state.
+
+        Args:
+            self: (todo): write your description
+            parent_state: (todo): write your description
+        """
         self._input = []
         self._pos = 0
         
@@ -578,6 +752,13 @@ class Lexer:
         return ''.join(self._input)
         
     def _parse(self, eof):            
+        """
+        Parse an input string.
+
+        Args:
+            self: (todo): write your description
+            eof: (str): write your description
+        """
         while self._state:
             if self._pos>=len(self._input):
                 if not eof:
@@ -607,6 +788,12 @@ class Lexer:
             raise ShellSyntaxError('missing here-document delimiter')
                 
     def _parse_normal(self):
+        """
+        Parse an input.
+
+        Args:
+            self: (todo): write your description
+        """
         c = self._input[self._pos]
         if c=='\n':
             self._push_token(c)
@@ -640,6 +827,13 @@ class Lexer:
             self._token += c          
                 
     def _parse_op(self, eof):
+        """
+        Parse the next token.
+
+        Args:
+            self: (todo): write your description
+            eof: (todo): write your description
+        """
         assert self._token
         
         while 1:
@@ -662,6 +856,12 @@ class Lexer:
                 break
                 
     def _parse_comment(self):
+        """
+        Parse comment.
+
+        Args:
+            self: (todo): write your description
+        """
         while 1:
             if self._pos>=len(self._input):
                 raise NeedMore()
@@ -695,6 +895,13 @@ class Lexer:
         self._state = self.ST_NORMAL
         
     def _parse_heredoc(self, eof):
+        """
+        Parse an input string.
+
+        Args:
+            self: (todo): write your description
+            eof: (todo): write your description
+        """
         assert not self._token
         
         if self._herelexer is None:
@@ -722,6 +929,13 @@ class Lexer:
             self._push_token(delim)
                      
     def _push_token(self, delim):
+        """
+        Parses a token.
+
+        Args:
+            self: (todo): write your description
+            delim: (str): write your description
+        """
         if not self._token:
             return 0
             
@@ -814,6 +1028,13 @@ class Lexer:
         return 1
                         
     def on_token(self, token):
+        """
+        Set the token for the given token.
+
+        Args:
+            self: (todo): write your description
+            token: (str): write your description
+        """
         raise NotImplementedError
                  
 
@@ -835,12 +1056,25 @@ tokens += _RESERVEDS.values()
 class PLYLexer(Lexer):
     """Bridge Lexer and PLY lexer interface."""
     def __init__(self):
+        """
+        Initialize a new tokens.
+
+        Args:
+            self: (todo): write your description
+        """
         Lexer.__init__(self)
         self._tokens = []
         self._current = 0
         self.lineno = 0
 
     def on_token(self, token):
+        """
+        Handle a token.
+
+        Args:
+            self: (todo): write your description
+            token: (str): write your description
+        """
         value, type = token
 
         self.lineno = 0
@@ -854,10 +1088,22 @@ class PLYLexer(Lexer):
         self._tokens.append(t)
         
     def is_empty(self):
+        """
+        Returns true if all the values
+
+        Args:
+            self: (todo): write your description
+        """
         return not bool(self._tokens)
         
     #PLY compliant interface
     def token(self):
+        """
+        Returns the current token.
+
+        Args:
+            self: (todo): write your description
+        """
         if self._current>=len(self._tokens):
             return None
         t = self._tokens[self._current]

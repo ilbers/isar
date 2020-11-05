@@ -62,6 +62,13 @@ from   bb.fetch2 import logger
 class ClearCase(FetchMethod):
     """Class to fetch urls via 'clearcase'"""
     def init(self, d):
+        """
+        Initialize the object.
+
+        Args:
+            self: (todo): write your description
+            d: (int): write your description
+        """
         pass
 
     def supports(self, ud, d):
@@ -71,6 +78,13 @@ class ClearCase(FetchMethod):
         return ud.type in ['ccrc']
 
     def debug(self, msg):
+        """
+        Log a debug message
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         logger.debug(1, "ClearCase: %s", msg)
 
     def urldata_init(self, ud, d):
@@ -188,6 +202,14 @@ class ClearCase(FetchMethod):
             f.write(config_spec)
 
     def _remove_view(self, ud, d):
+        """
+        Remove a view
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+        """
         if os.path.exists(ud.viewdir):
             cmd = self._build_ccase_command(ud, 'rmview');
             logger.info("cleaning up [VOB=%s label=%s view=%s]", ud.vob, ud.label, ud.viewname)
@@ -196,6 +218,14 @@ class ClearCase(FetchMethod):
             logger.info("rmview output: %s", output)
 
     def need_update(self, ud, d):
+        """
+        Determine if uuid is already set
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+        """
         if ("LATEST" in ud.label) or (ud.customspec and "LATEST" in ud.customspec):
             ud.identifier += "-%s" % d.getVar("DATETIME",d, True)
             return True
@@ -204,9 +234,24 @@ class ClearCase(FetchMethod):
         return True
 
     def supports_srcrev(self):
+        """
+        Determine if this source has a valid.
+
+        Args:
+            self: (todo): write your description
+        """
         return True
 
     def sortable_revision(self, ud, d, name):
+        """
+        Determineable revision.
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+            name: (str): write your description
+        """
         return False, ud.identifier
 
     def download(self, ud, d):
@@ -244,5 +289,13 @@ class ClearCase(FetchMethod):
         self.clean(ud, d);
 
     def clean(self, ud, d):
+        """
+        Clean up the given uppercase.
+
+        Args:
+            self: (todo): write your description
+            ud: (list): write your description
+            d: (list): write your description
+        """
         self._remove_view(ud, d)
         bb.utils.remove(ud.configspecfile)

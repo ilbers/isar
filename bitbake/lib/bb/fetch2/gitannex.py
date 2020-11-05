@@ -22,11 +22,28 @@ class GitANNEX(Git):
         return ud.type in ['gitannex']
 
     def urldata_init(self, ud, d):
+        """
+        Initialize the udf file.
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+        """
         super(GitANNEX, self).urldata_init(ud, d)
         if ud.shallow:
             ud.shallow_extra_refs += ['refs/heads/git-annex', 'refs/heads/synced/*']
 
     def uses_annex(self, ud, d, wd):
+        """
+        Return true if the given uuid
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+            wd: (todo): write your description
+        """
         for name in ud.names:
             try:
                 runfetchcmd("%s rev-list git-annex" % (ud.basecmd), d, quiet=True, workdir=wd)
@@ -37,6 +54,15 @@ class GitANNEX(Git):
         return False
 
     def update_annex(self, ud, d, wd):
+        """
+        .. versionadded
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+            wd: (todo): write your description
+        """
         try:
             runfetchcmd("%s annex get --all" % (ud.basecmd), d, quiet=True, workdir=wd)
         except bb.fetch.FetchError:
@@ -46,6 +72,14 @@ class GitANNEX(Git):
         return True
 
     def download(self, ud, d):
+        """
+        Download a file.
+
+        Args:
+            self: (todo): write your description
+            ud: (int): write your description
+            d: (int): write your description
+        """
         Git.download(self, ud, d)
 
         if not ud.shallow or ud.localpath != ud.fullshallow:
@@ -53,6 +87,15 @@ class GitANNEX(Git):
                 self.update_annex(ud, d, ud.clonedir)
 
     def clone_shallow_local(self, ud, dest, d):
+        """
+        Clone a local repository.
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            dest: (todo): write your description
+            d: (todo): write your description
+        """
         super(GitANNEX, self).clone_shallow_local(ud, dest, d)
 
         try:
@@ -65,6 +108,15 @@ class GitANNEX(Git):
             runfetchcmd("chmod u+w -R %s/.git/annex" % (dest), d, quiet=True, workdir=dest)
 
     def unpack(self, ud, destdir, d):
+        """
+        Unpack a file or directory.
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            destdir: (str): write your description
+            d: (todo): write your description
+        """
         Git.unpack(self, ud, destdir, d)
 
         try:

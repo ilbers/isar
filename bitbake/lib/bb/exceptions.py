@@ -14,6 +14,13 @@ class TracebackEntry(namedtuple.abc):
     _header = '  File "{0.filename}", line {0.lineno}, in {0.function}{0.args}'
 
     def format(self, formatter=None):
+        """
+        Formats the formatter.
+
+        Args:
+            self: (todo): write your description
+            formatter: (todo): write your description
+        """
         if not self.code_context:
             return self._header.format(self) + '\n'
 
@@ -30,6 +37,12 @@ class TracebackEntry(namedtuple.abc):
         return formatted
 
     def __str__(self):
+        """
+        Return a string representation of this object.
+
+        Args:
+            self: (todo): write your description
+        """
         return ''.join(self.format())
 
 def _get_frame_args(frame):
@@ -59,6 +72,13 @@ def _get_frame_args(frame):
     return formatted, cls
 
 def extract_traceback(tb, context=1):
+    """
+    Extracts traceback information.
+
+    Args:
+        tb: (todo): write your description
+        context: (todo): write your description
+    """
     frames = inspect.getinnerframes(tb, context)
     for frame, filename, lineno, function, code_context, index in frames:
         formatted_args, cls = _get_frame_args(frame)
@@ -68,6 +88,14 @@ def extract_traceback(tb, context=1):
                              code_context, index)
 
 def format_extracted(extracted, formatter=None, limit=None):
+    """
+    Formats a formatted extensions.
+
+    Args:
+        extracted: (todo): write your description
+        formatter: (todo): write your description
+        limit: (int): write your description
+    """
     if limit:
         extracted = extracted[-limit:]
 
@@ -78,6 +106,17 @@ def format_extracted(extracted, formatter=None, limit=None):
 
 
 def format_exception(etype, value, tb, context=1, limit=None, formatter=None):
+    """
+    Formats a traceback to be used bytestring.
+
+    Args:
+        etype: (str): write your description
+        value: (str): write your description
+        tb: (todo): write your description
+        context: (todo): write your description
+        limit: (int): write your description
+        formatter: (todo): write your description
+    """
     formatted = ['Traceback (most recent call last):\n']
 
     if hasattr(tb, 'tb_next'):
@@ -88,6 +127,12 @@ def format_exception(etype, value, tb, context=1, limit=None, formatter=None):
     return formatted
 
 def to_string(exc):
+    """
+    Convert a string to a string.
+
+    Args:
+        exc: (todo): write your description
+    """
     if isinstance(exc, SystemExit):
         if not isinstance(exc.code, str):
             return 'Exited with "%d"' % exc.code

@@ -30,6 +30,12 @@ import pickle
 
 class DumpCache(object):
     def __init__(self):
+        """
+        Parse command line arguments.
+
+        Args:
+            self: (todo): write your description
+        """
         parser = argparse.ArgumentParser(
             description="bb_cache.dat's dumper",
             epilog="Use %(prog)s --help to get help")
@@ -45,6 +51,12 @@ class DumpCache(object):
         self.args = parser.parse_args()
 
     def main(self):
+        """
+        Main function.
+
+        Args:
+            self: (todo): write your description
+        """
         with open(self.args.cachefile[0], "rb") as cachefile:
             pickled = pickle.Unpickler(cachefile)
             while True:

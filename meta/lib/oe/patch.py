@@ -9,23 +9,57 @@ import oe.types
 
 class NotFoundError(bb.BBHandledException):
     def __init__(self, path):
+        """
+        Initialize a path.
+
+        Args:
+            self: (todo): write your description
+            path: (str): write your description
+        """
         self.path = path
 
     def __str__(self):
+        """
+        Return a string representation of this path.
+
+        Args:
+            self: (todo): write your description
+        """
         return "Error: %s not found." % self.path
 
 class CmdError(bb.BBHandledException):
     def __init__(self, command, exitstatus, output):
+        """
+        Initialize a command.
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            exitstatus: (str): write your description
+            output: (str): write your description
+        """
         self.command = command
         self.status = exitstatus
         self.output = output
 
     def __str__(self):
+        """
+        Returns a string representation of the command.
+
+        Args:
+            self: (todo): write your description
+        """
         return "Command Error: '%s' exited with %d  Output:\n%s" % \
                 (self.command, self.status, self.output)
 
 
 def runcmd(args, dir = None):
+    """
+    Run a subprocess.
+
+    Args:
+        dir: (str): write your description
+    """
     import pipes
     import subprocess
 
@@ -56,9 +90,22 @@ def runcmd(args, dir = None):
 
 class PatchError(Exception):
     def __init__(self, msg):
+        """
+        Init the message
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         self.msg = msg
 
     def __str__(self):
+        """
+        : return : class
+
+        Args:
+            self: (todo): write your description
+        """
         return "Patch Error: %s" % self.msg
 
 class PatchSet(object):
@@ -67,12 +114,26 @@ class PatchSet(object):
     }
 
     def __init__(self, dir, d):
+        """
+        Initialize a directory.
+
+        Args:
+            self: (todo): write your description
+            dir: (todo): write your description
+            d: (int): write your description
+        """
         self.dir = dir
         self.d = d
         self.patches = []
         self._current = None
 
     def current(self):
+        """
+        Return the current value of the current node.
+
+        Args:
+            self: (todo): write your description
+        """
         return self._current
 
     def Clean(self):
@@ -83,6 +144,14 @@ class PatchSet(object):
         raise NotImplementedError()
 
     def Import(self, patch, force):
+        """
+        Reset a local md5 file.
+
+        Args:
+            self: (todo): write your description
+            patch: (dict): write your description
+            force: (bool): write your description
+        """
         if not patch.get("file"):
             if not patch.get("remote"):
                 raise PatchError("Patch file must be specified in patch import.")
@@ -99,12 +168,34 @@ class PatchSet(object):
         patch["filemd5"] = bb.utils.md5_file(patch["file"])
 
     def Push(self, force):
+        """
+        Synchronously.
+
+        Args:
+            self: (todo): write your description
+            force: (bool): write your description
+        """
         raise NotImplementedError()
 
     def Pop(self, force):
+        """
+        Removes the given force.
+
+        Args:
+            self: (todo): write your description
+            force: (bool): write your description
+        """
         raise NotImplementedError()
 
     def Refresh(self, remote = None, all = None):
+        """
+        Create a new remote instance.
+
+        Args:
+            self: (todo): write your description
+            remote: (str): write your description
+            all: (todo): write your description
+        """
         raise NotImplementedError()
 
     @staticmethod
@@ -121,6 +212,12 @@ class PatchSet(object):
         """
 
         def patchedpath(patchline):
+            """
+            Parsepath for a filepthpath.
+
+            Args:
+                patchline: (str): write your description
+            """
             filepth = patchline.split()[1]
             if filepth.endswith('/dev/null'):
                 return '/dev/null'
@@ -180,24 +277,54 @@ class PatchSet(object):
 
 class PatchTree(PatchSet):
     def __init__(self, dir, d):
+        """
+        Initialize a directory.
+
+        Args:
+            self: (todo): write your description
+            dir: (todo): write your description
+            d: (int): write your description
+        """
         PatchSet.__init__(self, dir, d)
         self.patchdir = os.path.join(self.dir, 'patches')
         self.seriespath = os.path.join(self.dir, 'patches', 'series')
         bb.utils.mkdirhier(self.patchdir)
 
     def _appendPatchFile(self, patch, strippath):
+        """
+        Append a series to series.
+
+        Args:
+            self: (todo): write your description
+            patch: (str): write your description
+            strippath: (str): write your description
+        """
         with open(self.seriespath, 'a') as f:
             f.write(os.path.basename(patch) + "," + strippath + "\n")
         shellcmd = ["cat", patch, ">" , self.patchdir + "/" + os.path.basename(patch)]
         runcmd(["sh", "-c", " ".join(shellcmd)], self.dir)
 
     def _removePatch(self, p):
+        """
+        Remove a patch from p.
+
+        Args:
+            self: (todo): write your description
+            p: (str): write your description
+        """
         patch = {}
         patch['file'] = p.split(",")[0]
         patch['strippath'] = p.split(",")[1]
         self._applypatch(patch, False, True)
 
     def _removePatchFile(self, all = False):
+        """
+        Remove all series from the series.
+
+        Args:
+            self: (todo): write your description
+            all: (todo): write your description
+        """
         if not os.path.exists(self.seriespath):
             return
         with open(self.seriespath, 'r+') as f:
@@ -224,6 +351,16 @@ class PatchTree(PatchSet):
         self.patches.insert(i, patch)
 
     def _applypatch(self, patch, force = False, reverse = False, run = True):
+        """
+        Apply the specified command on the specified command
+
+        Args:
+            self: (todo): write your description
+            patch: (todo): write your description
+            force: (bool): write your description
+            reverse: (bool): write your description
+            run: (todo): write your description
+        """
         shellcmd = ["cat", patch['file'], "|", "patch", "--no-backup-if-mismatch", "-p", patch['strippath']]
         if reverse:
             shellcmd.append('-R')
@@ -252,6 +389,15 @@ class PatchTree(PatchSet):
         return output
 
     def Push(self, force = False, all = False, run = True):
+        """
+        Push all patches.
+
+        Args:
+            self: (todo): write your description
+            force: (bool): write your description
+            all: (int): write your description
+            run: (int): write your description
+        """
         bb.note("self._current is %s" % self._current)
         bb.note("patches is %s" % self.patches)
         if all:
@@ -272,6 +418,14 @@ class PatchTree(PatchSet):
             return ret
 
     def Pop(self, force = None, all = None):
+        """
+        Removes the current item.
+
+        Args:
+            self: (todo): write your description
+            force: (bool): write your description
+            all: (todo): write your description
+        """
         if all:
             self._removePatchFile(True)
             self._current = None
@@ -293,6 +447,14 @@ class GitApplyTree(PatchTree):
     ignore_commit_prefix = '%% ignore'
 
     def __init__(self, dir, d):
+        """
+        Initialize the directory.
+
+        Args:
+            self: (todo): write your description
+            dir: (todo): write your description
+            d: (todo): write your description
+        """
         PatchTree.__init__(self, dir, d)
         self.commituser = d.getVar('PATCH_GIT_USER_NAME')
         self.commitemail = d.getVar('PATCH_GIT_USER_EMAIL')
@@ -319,6 +481,12 @@ class GitApplyTree(PatchTree):
 
     @staticmethod
     def decodeAuthor(line):
+        """
+        Parse an email address.
+
+        Args:
+            line: (str): write your description
+        """
         from email.header import decode_header
         authorval = line.split(':', 1)[1].strip().replace('"', '')
         result =  decode_header(authorval)[0][0]
@@ -328,6 +496,12 @@ class GitApplyTree(PatchTree):
 
     @staticmethod
     def interpretPatchHeader(headerlines):
+        """
+        Parses header of the headerlines.
+
+        Args:
+            headerlines: (todo): write your description
+        """
         import re
         author_re = re.compile(r'[\S ]+ <\S+@\S+\.\S+>')
         from_commit_re = re.compile(r'^From [a-z0-9]{40} .*')
@@ -383,6 +557,15 @@ class GitApplyTree(PatchTree):
 
     @staticmethod
     def gitCommandUserOptions(cmd, commituser=None, commitemail=None, d=None):
+        """
+        Commit the current commit.
+
+        Args:
+            cmd: (str): write your description
+            commituser: (todo): write your description
+            commitemail: (str): write your description
+            d: (todo): write your description
+        """
         if d:
             commituser = d.getVar('PATCH_GIT_USER_NAME')
             commitemail = d.getVar('PATCH_GIT_USER_EMAIL')
@@ -439,6 +622,15 @@ class GitApplyTree(PatchTree):
 
     @staticmethod
     def extractPatches(tree, startcommit, outdir, paths=None):
+        """
+        Extract a list of the files in the repository.
+
+        Args:
+            tree: (todo): write your description
+            startcommit: (todo): write your description
+            outdir: (str): write your description
+            paths: (str): write your description
+        """
         import tempfile
         import shutil
         import re
@@ -481,9 +673,29 @@ class GitApplyTree(PatchTree):
             shutil.rmtree(tempdir)
 
     def _applypatch(self, patch, force = False, reverse = False, run = True):
+        """
+        Apply hook on a hook.
+
+        Args:
+            self: (todo): write your description
+            patch: (todo): write your description
+            force: (bool): write your description
+            reverse: (bool): write your description
+            run: (todo): write your description
+        """
         import shutil
 
         def _applypatchhelper(shellcmd, patch, force = False, reverse = False, run = True):
+            """
+            Apply the given command on the specified shell.
+
+            Args:
+                shellcmd: (todo): write your description
+                patch: (str): write your description
+                force: (bool): write your description
+                reverse: (bool): write your description
+                run: (todo): write your description
+            """
             if reverse:
                 shellcmd.append('-R')
 
@@ -564,16 +776,38 @@ class GitApplyTree(PatchTree):
 
 class QuiltTree(PatchSet):
     def _runcmd(self, args, run = True):
+        """
+        Run a command.
+
+        Args:
+            self: (todo): write your description
+            run: (todo): write your description
+        """
         quiltrc = self.d.getVar('QUILTRCFILE')
         if not run:
             return ["quilt"] + ["--quiltrc"] + [quiltrc] + args
         runcmd(["quilt"] + ["--quiltrc"] + [quiltrc] + args, self.dir)
 
     def _quiltpatchpath(self, file):
+        """
+        Return the given file
+
+        Args:
+            self: (todo): write your description
+            file: (str): write your description
+        """
         return os.path.join(self.dir, "patches", os.path.basename(file))
 
 
     def __init__(self, dir, d):
+        """
+        Initialize a directory.
+
+        Args:
+            self: (todo): write your description
+            dir: (todo): write your description
+            d: (int): write your description
+        """
         PatchSet.__init__(self, dir, d)
         self.initialized = False
         p = os.path.join(self.dir, 'patches')
@@ -581,6 +815,12 @@ class QuiltTree(PatchSet):
             os.makedirs(p)
 
     def Clean(self):
+        """
+        Closes the build.
+
+        Args:
+            self: (todo): write your description
+        """
         try:
             self._runcmd(["pop", "-a", "-f"])
             oe.path.remove(os.path.join(self.dir, "patches","series"))
@@ -589,6 +829,12 @@ class QuiltTree(PatchSet):
         self.initialized = True
 
     def InitFromDir(self):
+        """
+        Initialize series from series.
+
+        Args:
+            self: (todo): write your description
+        """
         # read series -> self.patches
         seriespath = os.path.join(self.dir, 'patches', 'series')
         if not os.path.exists(self.dir):
@@ -620,6 +866,14 @@ class QuiltTree(PatchSet):
         self.initialized = True
 
     def Import(self, patch, force = None):
+        """
+        Create a md5 file.
+
+        Args:
+            self: (todo): write your description
+            patch: (str): write your description
+            force: (bool): write your description
+        """
         if not self.initialized:
             self.InitFromDir()
         PatchSet.Import(self, patch, force)
@@ -637,6 +891,15 @@ class QuiltTree(PatchSet):
 
 
     def Push(self, force = False, all = False, run = True):
+        """
+        Remove all currently running changes.
+
+        Args:
+            self: (todo): write your description
+            force: (bool): write your description
+            all: (int): write your description
+            run: (int): write your description
+        """
         # quilt push [-f]
 
         args = ["push"]
@@ -655,6 +918,14 @@ class QuiltTree(PatchSet):
             self._current = 0
 
     def Pop(self, force = None, all = None):
+        """
+        Removes the currently running command.
+
+        Args:
+            self: (todo): write your description
+            force: (bool): write your description
+            all: (todo): write your description
+        """
         # quilt pop [-f]
         args = ["pop"]
         if force:
@@ -671,6 +942,12 @@ class QuiltTree(PatchSet):
             self._current = self._current - 1
 
     def Refresh(self, **kwargs):
+        """
+        Execute a single patch.
+
+        Args:
+            self: (todo): write your description
+        """
         if kwargs.get("remote"):
             patch = self.patches[kwargs["patch"]]
             if not patch:
@@ -695,23 +972,63 @@ class QuiltTree(PatchSet):
 
 class Resolver(object):
     def __init__(self, patchset, terminal):
+        """
+        Initialize the given set of__.
+
+        Args:
+            self: (todo): write your description
+            patchset: (todo): write your description
+            terminal: (todo): write your description
+        """
         raise NotImplementedError()
 
     def Resolve(self):
+        """
+        Recursively resolve.
+
+        Args:
+            self: (todo): write your description
+        """
         raise NotImplementedError()
 
     def Revert(self):
+        """
+        Returns the rever of this rever.
+
+        Args:
+            self: (todo): write your description
+        """
         raise NotImplementedError()
 
     def Finalize(self):
+        """
+        Trigize the stream.
+
+        Args:
+            self: (todo): write your description
+        """
         raise NotImplementedError()
 
 class NOOPResolver(Resolver):
     def __init__(self, patchset, terminal):
+        """
+        Initialize the terminal.
+
+        Args:
+            self: (todo): write your description
+            patchset: (todo): write your description
+            terminal: (todo): write your description
+        """
         self.patchset = patchset
         self.terminal = terminal
 
     def Resolve(self):
+        """
+        Change the working directory.
+
+        Args:
+            self: (todo): write your description
+        """
         olddir = os.path.abspath(os.curdir)
         os.chdir(self.patchset.dir)
         try:
@@ -726,12 +1043,26 @@ class NOOPResolver(Resolver):
 # files (the urls).
 class UserResolver(Resolver):
     def __init__(self, patchset, terminal):
+        """
+        Initialize the terminal.
+
+        Args:
+            self: (todo): write your description
+            patchset: (todo): write your description
+            terminal: (todo): write your description
+        """
         self.patchset = patchset
         self.terminal = terminal
 
     # Force a push in the patchset, then drop to a shell for the user to
     # resolve any rejected hunks
     def Resolve(self):
+        """
+        Resolve the patches.
+
+        Args:
+            self: (todo): write your description
+        """
         olddir = os.path.abspath(os.curdir)
         os.chdir(self.patchset.dir)
         try:
@@ -807,6 +1138,14 @@ def patch_path(url, fetch, workdir, expand=True):
     return local
 
 def src_patches(d, all=False, expand=True):
+    """
+    Return a list of patches that match d.
+
+    Args:
+        d: (todo): write your description
+        all: (todo): write your description
+        expand: (todo): write your description
+    """
     workdir = d.getVar('WORKDIR')
     fetch = bb.fetch2.Fetch([], d)
     patches = []
@@ -853,6 +1192,13 @@ def src_patches(d, all=False, expand=True):
 
 
 def should_apply(parm, d):
+    """
+    Determine if the given parm should be applied.
+
+    Args:
+        parm: (array): write your description
+        d: (todo): write your description
+    """
     import bb.utils
     if "mindate" in parm or "maxdate" in parm:
         pn = d.getVar('PN')

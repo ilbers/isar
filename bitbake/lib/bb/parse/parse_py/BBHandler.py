@@ -46,6 +46,15 @@ def supports(fn, d):
     return os.path.splitext(fn)[-1] in [".bb", ".bbclass", ".inc"]
 
 def inherit(files, fn, lineno, d):
+    """
+    Inheritize files.
+
+    Args:
+        files: (list): write your description
+        fn: (todo): write your description
+        lineno: (todo): write your description
+        d: (todo): write your description
+    """
     __inherit_cache = d.getVar('__inherit_cache', False) or []
     files = d.expand(files).split()
     for file in files:
@@ -69,6 +78,14 @@ def inherit(files, fn, lineno, d):
             __inherit_cache = d.getVar('__inherit_cache', False) or []
 
 def get_statements(filename, absolute_filename, base_name):
+    """
+    Return statements from file.
+
+    Args:
+        filename: (str): write your description
+        absolute_filename: (str): write your description
+        base_name: (str): write your description
+    """
     global cached_statements
 
     try:
@@ -94,6 +111,14 @@ def get_statements(filename, absolute_filename, base_name):
         return statements
 
 def handle(fn, d, include):
+    """
+    Process a d. d
+
+    Args:
+        fn: (todo): write your description
+        d: (todo): write your description
+        include: (list): write your description
+    """
     global __func_start_regexp__, __inherit_regexp__, __export_func_regexp__, __addtask_regexp__, __addhandler_regexp__, __infunc__, __body__, __residue__, __classname__
     __body__ = []
     __infunc__ = []
@@ -146,6 +171,17 @@ def handle(fn, d, include):
     return d
 
 def feeder(lineno, s, fn, root, statements, eof=False):
+    """
+    Given a function.
+
+    Args:
+        lineno: (str): write your description
+        s: (str): write your description
+        fn: (todo): write your description
+        root: (todo): write your description
+        statements: (list): write your description
+        eof: (todo): write your description
+    """
     global __func_start_regexp__, __inherit_regexp__, __export_func_regexp__, __addtask_regexp__, __addhandler_regexp__, __def_regexp__, __python_func_regexp__, __inpython__, __infunc__, __body__, bb, __residue__, __classname__
 
     # Check tabs in python functions:

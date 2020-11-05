@@ -16,6 +16,12 @@ import logging
 class LayerIndexCookerTest(LayersTest):
 
     def setUp(self):
+        """
+        Sets the layers.
+
+        Args:
+            self: (todo): write your description
+        """
         LayersTest.setUp(self)
 
         # Note this is NOT a comprehensive test of cooker, as we can't easily
@@ -36,9 +42,21 @@ class LayerIndexCookerTest(LayersTest):
         self.layerindex.load_layerindex('cooker://', load=['layerDependencies'])
 
     def test_layerindex_is_empty(self):
+        """
+        Check if the layer is empty.
+
+        Args:
+            self: (todo): write your description
+        """
         self.assertFalse(self.layerindex.is_empty(), msg="Layerindex is not empty!")
 
     def test_dependency_resolution(self):
+        """
+        Test for missing dependencies of the dependencies.
+
+        Args:
+            self: (todo): write your description
+        """
         # Verify depth first searching...
         (dependencies, invalidnames) = self.layerindex.find_dependencies(names=['meta-python'])
 
@@ -74,7 +92,20 @@ class LayerIndexCookerTest(LayersTest):
             self.assertEqual(layerBranch.layer.name, "meta-python", msg='Last dependency not meta-python')
 
     def test_find_collection(self):
+        """
+        Run test test test test case.
+
+        Args:
+            self: (todo): write your description
+        """
         def _check(collection, expected):
+            """
+            Check if the collection has expected todo.
+
+            Args:
+                collection: (todo): write your description
+                expected: (todo): write your description
+            """
             self.logger.debug(1, "Looking for collection %s..." % collection)
             result = self.layerindex.find_collection(collection)
             if expected:
@@ -93,7 +124,20 @@ class LayerIndexCookerTest(LayersTest):
             _check(collection, result)
 
     def test_find_layerbranch(self):
+        """
+        Find the branches of a layer.
+
+        Args:
+            self: (todo): write your description
+        """
         def _check(name, expected):
+            """
+            Check that the layerindexerror.
+
+            Args:
+                name: (str): write your description
+                expected: (todo): write your description
+            """
             self.logger.debug(1, "Looking for layerbranch %s..." % name)
             result = self.layerindex.find_layerbranch(name)
             if expected:

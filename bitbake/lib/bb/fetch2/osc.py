@@ -27,6 +27,14 @@ class Osc(FetchMethod):
         return ud.type in ['osc']
 
     def urldata_init(self, ud, d):
+        """
+        Initialize a module.
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+        """
         if not "module" in ud.parm:
             raise MissingParameterError('module', ud.url)
 
@@ -106,6 +114,12 @@ class Osc(FetchMethod):
                     cleanup=[ud.localpath], workdir=os.path.join(ud.pkgdir + ud.path))
 
     def supports_srcrev(self):
+        """
+        Determine whether the given sourcerev.
+
+        Args:
+            self: (todo): write your description
+        """
         return False
 
     def generate_config(self, ud, d):

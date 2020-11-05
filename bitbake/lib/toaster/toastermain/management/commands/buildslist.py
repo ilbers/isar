@@ -13,5 +13,12 @@ class Command(BaseCommand):
     help    = "Lists current builds"
 
     def handle(self,**options):
+        """
+        Executes all permissions.
+
+        Args:
+            self: (todo): write your description
+            options: (todo): write your description
+        """
         for b in Build.objects.all():
             print("%d: %s %s %s" % (b.pk, b.machine, b.distro, ",".join([x.target for x in b.target_set.all()])))

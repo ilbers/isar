@@ -27,6 +27,12 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def _selectBuildEnvironment(self):
+        """
+        Select environment variables.
+
+        Args:
+            self: (todo): write your description
+        """
         bec = getBuildEnvironmentController(lock=BuildEnvironment.LOCK_FREE)
         bec.be.lock = BuildEnvironment.LOCK_LOCK
         bec.be.save()
@@ -34,10 +40,22 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def _selectBuildRequest(self):
+        """
+        Returns a select request.
+
+        Args:
+            self: (todo): write your description
+        """
         br = BuildRequest.objects.filter(state=BuildRequest.REQ_QUEUED).first()
         return br
 
     def schedule(self):
+        """
+        Schedules a schedule.
+
+        Args:
+            self: (todo): write your description
+        """
         try:
             # select the build environment and the request to build
             br = self._selectBuildRequest()
@@ -93,6 +111,12 @@ class Command(BaseCommand):
             br.build.save()
 
     def archive(self):
+        """
+        Archives all changes to the archive.
+
+        Args:
+            self: (todo): write your description
+        """
         for br in BuildRequest.objects.filter(state=BuildRequest.REQ_ARCHIVE):
             if br.build is None:
                 br.state = BuildRequest.REQ_FAILED
@@ -101,6 +125,12 @@ class Command(BaseCommand):
             br.save()
 
     def cleanup(self):
+        """
+        Cleans up the buildrequest.
+
+        Args:
+            self: (todo): write your description
+        """
         from django.utils import timezone
         from datetime import timedelta
         # environments locked for more than 30 seconds
@@ -165,6 +195,12 @@ class Command(BaseCommand):
             br.environment.save()
 
     def runbuild(self):
+        """
+        Run the simulation
+
+        Args:
+            self: (todo): write your description
+        """
         try:
             self.cleanup()
         except Exception as e:
@@ -181,6 +217,13 @@ class Command(BaseCommand):
             logger.warn("runbuilds: schedule exception %s" % str(e))
 
     def handle(self, **options):
+        """
+        Handle the daemon.
+
+        Args:
+            self: (todo): write your description
+            options: (todo): write your description
+        """
         pidfile_path = os.path.join(os.environ.get("BUILDDIR", "."),
                                     ".runbuilds.pid")
 

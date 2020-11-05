@@ -24,6 +24,12 @@ class SeleniumFunctionalTestCase(SeleniumTestCaseBase):
 
     @classmethod
     def setUpClass(cls):
+        """
+        Sets the environment.
+
+        Args:
+            cls: (todo): write your description
+        """
         # So that the buildinfo helper uses the test database'
         if os.environ.get('DJANGO_SETTINGS_MODULE', '') != \
             'toastermain.settings_test':
@@ -46,6 +52,12 @@ class SeleniumFunctionalTestCase(SeleniumTestCaseBase):
 
     @classmethod
     def tearDownClass(cls):
+        """
+        Tear down the pid.
+
+        Args:
+            cls: (todo): write your description
+        """
         super(SeleniumFunctionalTestCase, cls).tearDownClass()
 
         # XXX: source toaster stop gets blocked, to review why?
@@ -62,6 +74,12 @@ class SeleniumFunctionalTestCase(SeleniumTestCaseBase):
 
 
     def get_URL(self):
+        """
+        Returns the url of the project
+
+        Args:
+            self: (todo): write your description
+        """
          rc=self.get_page_source()
          project_url=re.search("(projectPageUrl\s:\s\")(.*)(\",)",rc)
          return project_url.group(2)
@@ -81,6 +99,14 @@ class SeleniumFunctionalTestCase(SeleniumTestCaseBase):
         return element
 
     def get_table_element(self, table_id, *coordinate):
+        """
+        Return the element matching element matching the provided table.
+
+        Args:
+            self: (todo): write your description
+            table_id: (str): write your description
+            coordinate: (str): write your description
+        """
         if len(coordinate) == 0:
 #return whole-table element
             element_xpath = "//*[@id='" + table_id + "']"

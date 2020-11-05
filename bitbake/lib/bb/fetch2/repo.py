@@ -78,10 +78,32 @@ class Repo(FetchMethod):
         runfetchcmd("tar %s -czf %s %s" % (tar_flags, ud.localpath, os.path.join(".", "*") ), d, workdir=codir)
 
     def supports_srcrev(self):
+        """
+        Determine whether the given sourcerev.
+
+        Args:
+            self: (todo): write your description
+        """
         return False
 
     def _build_revision(self, ud, d):
+        """
+        Builds the revision for a given dd.
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+        """
         return ud.manifest
 
     def _want_sortable_revision(self, ud, d):
+        """
+        Determine if a given dt is a valid.
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+        """
         return False

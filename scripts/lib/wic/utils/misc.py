@@ -147,6 +147,12 @@ class BitbakeVars(defaultdict):
     Container for Bitbake variables.
     """
     def __init__(self):
+        """
+        Initialize this instance.
+
+        Args:
+            self: (todo): write your description
+        """
         defaultdict.__init__(self, dict)
 
         # default_image and vars_dir attributes should be set from outside

@@ -19,42 +19,111 @@ logger = logging.getLogger('hashserv.server')
 
 class Measurement(object):
     def __init__(self, sample):
+        """
+        Initialize the sample
+
+        Args:
+            self: (todo): write your description
+            sample: (todo): write your description
+        """
         self.sample = sample
 
     def start(self):
+        """
+        Starts the timer.
+
+        Args:
+            self: (todo): write your description
+        """
         self.start_time = time.perf_counter()
 
     def end(self):
+        """
+        Add a new counter.
+
+        Args:
+            self: (todo): write your description
+        """
         self.sample.add(time.perf_counter() - self.start_time)
 
     def __enter__(self):
+        """
+        Enter the start and stop the call.
+
+        Args:
+            self: (todo): write your description
+        """
         self.start()
         return self
 
     def __exit__(self, *args, **kwargs):
+        """
+        Wrapper around exit.
+
+        Args:
+            self: (todo): write your description
+        """
         self.end()
 
 
 class Sample(object):
     def __init__(self, stats):
+        """
+        Initialize the statistics.
+
+        Args:
+            self: (todo): write your description
+            stats: (list): write your description
+        """
         self.stats = stats
         self.num_samples = 0
         self.elapsed = 0
 
     def measure(self):
+        """
+        Return the measurement.
+
+        Args:
+            self: (todo): write your description
+        """
         return Measurement(self)
 
     def __enter__(self):
+        """
+        Decor function.
+
+        Args:
+            self: (todo): write your description
+        """
         return self
 
     def __exit__(self, *args, **kwargs):
+        """
+        Wrapper around exit.
+
+        Args:
+            self: (todo): write your description
+        """
         self.end()
 
     def add(self, elapsed):
+        """
+        Add a new elapsed elapsed time.
+
+        Args:
+            self: (todo): write your description
+            elapsed: (todo): write your description
+        """
         self.num_samples += 1
         self.elapsed += elapsed
 
     def end(self):
+        """
+        End the current time.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.num_samples:
             self.stats.add(self.elapsed)
             self.num_samples = 0
@@ -63,9 +132,21 @@ class Sample(object):
 
 class Stats(object):
     def __init__(self):
+        """
+        Reset the internal state.
+
+        Args:
+            self: (todo): write your description
+        """
         self.reset()
 
     def reset(self):
+        """
+        Reset the progress bar.
+
+        Args:
+            self: (todo): write your description
+        """
         self.num = 0
         self.total_time = 0
         self.max_time = 0
@@ -74,6 +155,13 @@ class Stats(object):
         self.current_elapsed = None
 
     def add(self, elapsed):
+        """
+        Add a new elapsed time.
+
+        Args:
+            self: (todo): write your description
+            elapsed: (todo): write your description
+        """
         self.num += 1
         if self.num == 1:
             self.m = elapsed
@@ -89,32 +177,72 @@ class Stats(object):
             self.max_time = elapsed
 
     def start_sample(self):
+        """
+        Return the sample.
+
+        Args:
+            self: (todo): write your description
+        """
         return Sample(self)
 
     @property
     def average(self):
+        """
+        The average of the current time
+
+        Args:
+            self: (todo): write your description
+        """
         if self.num == 0:
             return 0
         return self.total_time / self.num
 
     @property
     def stdev(self):
+        """
+        Return the standard deviation.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.num <= 1:
             return 0
         return math.sqrt(self.s / (self.num - 1))
 
     def todict(self):
+        """
+        Return a dict representation of this object.
+
+        Args:
+            self: (todo): write your description
+        """
         return {k: getattr(self, k) for k in ('num', 'total_time', 'max_time', 'average', 'stdev')}
 
 
 class ServerClient(object):
     def __init__(self, reader, writer, db, request_stats):
+        """
+        Initialize the database.
+
+        Args:
+            self: (todo): write your description
+            reader: (todo): write your description
+            writer: (todo): write your description
+            db: (todo): write your description
+            request_stats: (str): write your description
+        """
         self.reader = reader
         self.writer = writer
         self.db = db
         self.request_stats = request_stats
 
     async def process_requests(self):
+          """
+          Process the requests.
+
+          Args:
+              self: (todo): write your description
+          """
         try:
             self.addr = self.writer.get_extra_info('peername')
             logger.debug('Client %r connected' % (self.addr,))
@@ -172,9 +300,22 @@ class ServerClient(object):
             self.writer.close()
 
     def write_message(self, msg):
+        """
+        Writes a message to json.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         self.writer.write(('%s\n' % json.dumps(msg)).encode('utf-8'))
 
     async def read_message(self):
+          """
+          Read a message from the server.
+
+          Args:
+              self: (todo): write your description
+          """
         l = await self.reader.readline()
         if not l:
             return None
@@ -191,6 +332,13 @@ class ServerClient(object):
             raise e
 
     async def handle_get(self, request):
+          """
+          Handles get request.
+
+          Args:
+              self: (todo): write your description
+              request: (todo): write your description
+          """
         method = request['method']
         taskhash = request['taskhash']
 
@@ -204,6 +352,13 @@ class ServerClient(object):
             self.write_message(None)
 
     async def handle_get_stream(self, request):
+          """
+          Handles a get request.
+
+          Args:
+              self: (todo): write your description
+              request: (todo): write your description
+          """
         self.write_message('ok')
 
         while True:
@@ -242,6 +397,13 @@ class ServerClient(object):
             await self.writer.drain()
 
     async def handle_report(self, data):
+          """
+          Handle report report
+
+          Args:
+              self: (todo): write your description
+              data: (todo): write your description
+          """
         with closing(self.db.cursor()) as cursor:
             cursor.execute('''
                 -- Find tasks with a matching outhash (that is, tasks that
@@ -304,6 +466,13 @@ class ServerClient(object):
         self.write_message(d)
 
     async def handle_get_stats(self, request):
+          """
+          Handles get requests.
+
+          Args:
+              self: (todo): write your description
+              request: (todo): write your description
+          """
         d = {
             'requests': self.request_stats.todict(),
         }
@@ -311,6 +480,13 @@ class ServerClient(object):
         self.write_message(d)
 
     async def handle_reset_stats(self, request):
+          """
+          Reset the stats.
+
+          Args:
+              self: (todo): write your description
+              request: (todo): write your description
+          """
         d = {
             'requests': self.request_stats.todict(),
         }
@@ -319,6 +495,14 @@ class ServerClient(object):
         self.write_message(d)
 
     def query_equivalent(self, method, taskhash):
+        """
+        Query the number of the rows.
+
+        Args:
+            self: (todo): write your description
+            method: (str): write your description
+            taskhash: (todo): write your description
+        """
         # This is part of the inner loop and must be as fast as possible
         try:
             cursor = self.db.cursor()
@@ -331,6 +515,14 @@ class ServerClient(object):
 
 class Server(object):
     def __init__(self, db, loop=None):
+        """
+        Initialize the connection.
+
+        Args:
+            self: (todo): write your description
+            db: (todo): write your description
+            loop: (str): write your description
+        """
         self.request_stats = Stats()
         self.db = db
 
@@ -344,6 +536,14 @@ class Server(object):
         self._cleanup_socket = None
 
     def start_tcp_server(self, host, port):
+        """
+        Starts a tcp server.
+
+        Args:
+            self: (todo): write your description
+            host: (str): write your description
+            port: (int): write your description
+        """
         self.server = self.loop.run_until_complete(
             asyncio.start_server(self.handle_client, host, port, loop=self.loop)
         )
@@ -362,7 +562,19 @@ class Server(object):
             self.address = "%s:%d" % (name[0], name[1])
 
     def start_unix_server(self, path):
+        """
+        Starts a server.
+
+        Args:
+            self: (todo): write your description
+            path: (str): write your description
+        """
         def cleanup():
+            """
+            Cleanup the directory.
+
+            Args:
+            """
             os.unlink(path)
 
         cwd = os.getcwd()
@@ -381,6 +593,14 @@ class Server(object):
         self.address = "unix://%s" % os.path.abspath(path)
 
     async def handle_client(self, reader, writer):
+          """
+          Handle a client request.
+
+          Args:
+              self: (todo): write your description
+              reader: (todo): write your description
+              writer: (bool): write your description
+          """
         # writer.transport.set_write_buffer_limits(0)
         try:
             client = ServerClient(reader, writer, self.db, self.request_stats)
@@ -393,7 +613,18 @@ class Server(object):
         logger.info('Client disconnected')
 
     def serve_forever(self):
+        """
+        Main server.
+
+        Args:
+            self: (todo): write your description
+        """
         def signal_handler():
+            """
+            Signal signal.
+
+            Args:
+            """
             self.loop.stop()
 
         self.loop.add_signal_handler(signal.SIGTERM, signal_handler)

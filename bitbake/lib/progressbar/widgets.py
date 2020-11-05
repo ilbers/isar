@@ -36,6 +36,13 @@ else:
 
 
 def format_updatable(updatable, pbar):
+    """
+    Format an iterable object.
+
+    Args:
+        updatable: (todo): write your description
+        pbar: (todo): write your description
+    """
     if hasattr(updatable, 'update'): return updatable.update(pbar)
     else: return updatable
 
@@ -86,6 +93,13 @@ class Timer(Widget):
     TIME_SENSITIVE = True
 
     def __init__(self, format='Elapsed Time: %s'):
+        """
+        Initialize format_string.
+
+        Args:
+            self: (todo): write your description
+            format: (str): write your description
+        """
         self.format_string = format
 
     @staticmethod
@@ -135,6 +149,14 @@ class AdaptiveETA(Timer):
     NUM_SAMPLES = 10
 
     def _update_samples(self, currval, elapsed):
+        """
+        Updates samples.
+
+        Args:
+            self: (todo): write your description
+            currval: (array): write your description
+            elapsed: (todo): write your description
+        """
         sample = (currval, elapsed)
         if not hasattr(self, 'samples'):
             self.samples = [sample] * (self.NUM_SAMPLES + 1)
@@ -143,6 +165,15 @@ class AdaptiveETA(Timer):
         return self.samples.pop(0)
 
     def _eta(self, maxval, currval, elapsed):
+        """
+        Return the number of the given value.
+
+        Args:
+            self: (todo): write your description
+            maxval: (int): write your description
+            currval: (todo): write your description
+            elapsed: (todo): write your description
+        """
         return elapsed * maxval / float(currval) - elapsed
 
     def update(self, pbar):
@@ -172,6 +203,13 @@ class FileTransferSpeed(Widget):
     __slots__ = ('unit',)
 
     def __init__(self, unit='B'):
+        """
+        Initialize a unit
+
+        Args:
+            self: (todo): write your description
+            unit: (str): write your description
+        """
         self.unit = unit
 
     def update(self, pbar):
@@ -195,6 +233,13 @@ class AnimatedMarker(Widget):
     __slots__ = ('markers', 'curmark')
 
     def __init__(self, markers='|/-\\'):
+        """
+        Initialize the marker.
+
+        Args:
+            self: (todo): write your description
+            markers: (list): write your description
+        """
         self.markers = markers
         self.curmark = -1
 
@@ -217,9 +262,23 @@ class Counter(Widget):
     __slots__ = ('format_string',)
 
     def __init__(self, format='%d'):
+        """
+        Initialize format_string.
+
+        Args:
+            self: (todo): write your description
+            format: (str): write your description
+        """
         self.format_string = format
 
     def update(self, pbar):
+        """
+        Updates the progress bar
+
+        Args:
+            self: (todo): write your description
+            pbar: (array): write your description
+        """
         return self.format_string % pbar.currval
 
 
@@ -227,6 +286,13 @@ class Percentage(Widget):
     """Displays the current percentage as a number with a percent sign."""
 
     def update(self, pbar):
+        """
+        Updates the progress bar.
+
+        Args:
+            self: (todo): write your description
+            pbar: (array): write your description
+        """
         return '%3d%%' % pbar.percentage()
 
 
@@ -245,9 +311,23 @@ class FormatLabel(Timer):
 
     __slots__ = ('format_string',)
     def __init__(self, format):
+        """
+        Set the format.
+
+        Args:
+            self: (todo): write your description
+            format: (str): write your description
+        """
         self.format_string = format
 
     def update(self, pbar):
+        """
+        Updates the context with the context.
+
+        Args:
+            self: (todo): write your description
+            pbar: (array): write your description
+        """
         context = {}
         for name, (key, transform) in self.mapping.items():
             try:
@@ -268,9 +348,23 @@ class SimpleProgress(Widget):
     __slots__ = ('sep',)
 
     def __init__(self, sep=' of '):
+        """
+        !
+
+        Args:
+            self: (todo): write your description
+            sep: (str): write your description
+        """
         self.sep = sep
 
     def update(self, pbar):
+        """
+        Updates the progress bar
+
+        Args:
+            self: (todo): write your description
+            pbar: (array): write your description
+        """
         return '%d%s%d' % (pbar.currval, self.sep, pbar.maxval)
 
 
@@ -364,10 +458,25 @@ class BouncingSlider(Bar):
     BouncingBar from a newer version of this module and RotatingMarker.
     """
     def __init__(self, marker='<=>'):
+        """
+        Initialize the marker.
+
+        Args:
+            self: (todo): write your description
+            marker: (array): write your description
+        """
         self.curmark = -1
         self.forward = True
         Bar.__init__(self, marker=marker)
     def update(self, pbar, width):
+        """
+        Updates the progress bar
+
+        Args:
+            self: (todo): write your description
+            pbar: (array): write your description
+            width: (int): write your description
+        """
         left, marker, right = (format_updatable(i, pbar) for i in
                                (self.left, self.marker, self.right))
 

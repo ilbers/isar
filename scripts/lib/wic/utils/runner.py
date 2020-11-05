@@ -107,8 +107,21 @@ def show(cmdln_or_args):
     return rcode
 
 def outs(cmdln_or_args, catch=1):
+    """
+    Run a command.
+
+    Args:
+        cmdln_or_args: (dict): write your description
+        catch: (list): write your description
+    """
     # get the outputs of tools
     return runtool(cmdln_or_args, catch)[1].strip()
 
 def quiet(cmdln_or_args):
+    """
+    Quiet command.
+
+    Args:
+        cmdln_or_args: (dict): write your description
+    """
     return runtool(cmdln_or_args, catch=0)[0]

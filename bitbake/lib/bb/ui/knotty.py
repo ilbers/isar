@@ -32,6 +32,17 @@ interactive = sys.stdout.isatty()
 
 class BBProgress(progressbar.ProgressBar):
     def __init__(self, msg, maxval, widgets=None, extrapos=-1, resize_handler=None):
+        """
+        Initialize progress bar.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+            maxval: (float): write your description
+            widgets: (todo): write your description
+            extrapos: (str): write your description
+            resize_handler: (int): write your description
+        """
         self.msg = msg
         self.extrapos = extrapos
         if not widgets:
@@ -46,20 +57,48 @@ class BBProgress(progressbar.ProgressBar):
         progressbar.ProgressBar.__init__(self, maxval, [self.msg + ": "] + widgets, fd=sys.stdout)
 
     def _handle_resize(self, signum=None, frame=None):
+        """
+        Handle progress bar.
+
+        Args:
+            self: (todo): write your description
+            signum: (int): write your description
+            frame: (todo): write your description
+        """
         progressbar.ProgressBar._handle_resize(self, signum, frame)
         if self._resize_default:
             self._resize_default(signum, frame)
 
     def finish(self):
+        """
+        Resizes the progress bar.
+
+        Args:
+            self: (todo): write your description
+        """
         progressbar.ProgressBar.finish(self)
         if self._resize_default:
             signal.signal(signal.SIGWINCH, self._resize_default)
 
     def setmessage(self, msg):
+        """
+        Set the message to a message
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         self.msg = msg
         self.widgets[0] = msg
 
     def setextra(self, extra):
+        """
+        Set extra extra extra extra extra extra extra parameters ---------- extra : none
+
+        Args:
+            self: (todo): write your description
+            extra: (str): write your description
+        """
         if self.extrapos > -1:
             if extra:
                 extrastr = str(extra)
@@ -70,6 +109,12 @@ class BBProgress(progressbar.ProgressBar):
             self.widgets[self.extrapos] = extrastr
 
     def _need_update(self):
+        """
+        Determine if the update has changed.
+
+        Args:
+            self: (todo): write your description
+        """
         # We always want the bar to print when update() is called
         return True
 
@@ -77,19 +122,47 @@ class NonInteractiveProgress(object):
     fobj = sys.stdout
 
     def __init__(self, msg, maxval):
+        """
+        Initialize a message
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+            maxval: (float): write your description
+        """
         self.msg = msg
         self.maxval = maxval
         self.finished = False
 
     def start(self, update=True):
+        """
+        Starts a message.
+
+        Args:
+            self: (todo): write your description
+            update: (todo): write your description
+        """
         self.fobj.write("%s..." % self.msg)
         self.fobj.flush()
         return self
 
     def update(self, value):
+        """
+        Updates the value of the field.
+
+        Args:
+            self: (todo): write your description
+            value: (todo): write your description
+        """
         pass
 
     def finish(self):
+        """
+        Finishes the stream.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.finished:
             return
         self.fobj.write("done.\n")
@@ -97,12 +170,27 @@ class NonInteractiveProgress(object):
         self.finished = True
 
 def new_progress(msg, maxval):
+    """
+    Return a new progress bar.
+
+    Args:
+        msg: (str): write your description
+        maxval: (int): write your description
+    """
     if interactive:
         return BBProgress(msg, maxval)
     else:
         return NonInteractiveProgress(msg, maxval)
 
 def pluralise(singular, plural, qty):
+    """
+    Return the plural of plural.
+
+    Args:
+        singular: (str): write your description
+        plural: (str): write your description
+        qty: (todo): write your description
+    """
     if(qty == 1):
         return singular % qty
     else:
@@ -111,10 +199,25 @@ def pluralise(singular, plural, qty):
 
 class InteractConsoleLogFilter(logging.Filter):
     def __init__(self, tf, format):
+        """
+        Initialize the tf.
+
+        Args:
+            self: (todo): write your description
+            tf: (int): write your description
+            format: (str): write your description
+        """
         self.tf = tf
         self.format = format
 
     def filter(self, record):
+        """
+        Filter log messages to the logger.
+
+        Args:
+            self: (todo): write your description
+            record: (todo): write your description
+        """
         if record.levelno == self.format.NOTE and (record.msg.startswith("Running") or record.msg.startswith("recipe ")):
             return False
         self.tf.clearFooter()
@@ -125,12 +228,32 @@ class TerminalFilter(object):
     columns = 80
 
     def sigwinch_handle(self, signum, frame):
+        """
+        Handle sigwin signal.
+
+        Args:
+            self: (todo): write your description
+            signum: (int): write your description
+            frame: (todo): write your description
+        """
         self.rows, self.columns = self.getTerminalColumns()
         if self._sigwinch_default:
             self._sigwinch_default(signum, frame)
 
     def getTerminalColumns(self):
+        """
+        Get the columns from the file descriptor.
+
+        Args:
+            self: (todo): write your description
+        """
         def ioctl_GWINSZ(fd):
+            """
+            Return the ictl packet. io io.
+
+            Args:
+                fd: (todo): write your description
+            """
             try:
                 cr = struct.unpack('hh', fcntl.ioctl(fd, self.termios.TIOCGWINSZ, '1234'))
             except:
@@ -152,6 +275,18 @@ class TerminalFilter(object):
         return cr
 
     def __init__(self, main, helper, console, errconsole, format, quiet):
+        """
+        Initialize the console.
+
+        Args:
+            self: (todo): write your description
+            main: (todo): write your description
+            helper: (todo): write your description
+            console: (todo): write your description
+            errconsole: (todo): write your description
+            format: (str): write your description
+            quiet: (bool): write your description
+        """
         self.main = main
         self.helper = helper
         self.cuu = None
@@ -205,6 +340,12 @@ class TerminalFilter(object):
         self.main_progress = None
 
     def clearFooter(self):
+        """
+        Clears the buffer.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.footer_present:
             lines = self.footer_present
             sys.stdout.buffer.write(self.curses.tparm(self.cuu, lines))
@@ -213,6 +354,13 @@ class TerminalFilter(object):
         self.footer_present = False
 
     def elapsed(self, sec):
+        """
+        Return a string representation of seconds.
+
+        Args:
+            self: (todo): write your description
+            sec: (todo): write your description
+        """
         hrs = int(sec / 3600.0)
         sec -= hrs * 3600
         min = int(sec / 60.0)
@@ -225,11 +373,24 @@ class TerminalFilter(object):
             return "%ds" % (sec)
 
     def keepAlive(self, t):
+        """
+        Keeps the next line.
+
+        Args:
+            self: (todo): write your description
+            t: (bool): write your description
+        """
         if not self.cuu:
             print("Bitbake still alive (%ds)" % t)
             sys.stdout.flush()
 
     def updateFooter(self):
+        """
+        Updates progress bar.
+
+        Args:
+            self: (todo): write your description
+        """
         if not self.cuu:
             return
         activetasks = self.helper.running_tasks
@@ -315,11 +476,26 @@ class TerminalFilter(object):
         self.lastcount = self.helper.tasknumber_current
 
     def finish(self):
+        """
+        Finishes the terminal.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.stdinbackup:
             fd = sys.stdin.fileno()
             self.termios.tcsetattr(fd, self.termios.TCSADRAIN, self.stdinbackup)
 
 def print_event_log(event, includelogs, loglines, termfilter):
+    """
+    Print log log messages
+
+    Args:
+        event: (todo): write your description
+        includelogs: (list): write your description
+        loglines: (bool): write your description
+        termfilter: (todo): write your description
+    """
     # FIXME refactor this out further
     logfile = event.logfile
     if logfile and os.path.exists(logfile):
@@ -346,6 +522,13 @@ def print_event_log(event, includelogs, loglines, termfilter):
                     print(line)
 
 def _log_settings_from_server(server, observe_only):
+    """
+    Get the logger settings.
+
+    Args:
+        server: (todo): write your description
+        observe_only: (bool): write your description
+    """
     # Get values of variables which control our output
     includelogs, error = server.runCommand(["getVariable", "BBINCLUDELOGS"])
     if error:
@@ -376,6 +559,16 @@ _evt_list = [ "bb.runqueue.runQueueExitWait", "bb.event.LogExecTTY", "logging.Lo
               "bb.build.TaskProgress", "bb.event.ProcessStarted", "bb.event.ProcessProgress", "bb.event.ProcessFinished"]
 
 def main(server, eventHandler, params, tf = TerminalFilter):
+    """
+    Main function.
+
+    Args:
+        server: (todo): write your description
+        eventHandler: (todo): write your description
+        params: (dict): write your description
+        tf: (int): write your description
+        TerminalFilter: (str): write your description
+    """
 
     if not params.observe_only:
         params.updateToServer(server, os.environ.copy())
@@ -691,6 +884,11 @@ def main(server, eventHandler, params, tf = TerminalFilter):
                 main.shutdown = 2
 
             def state_force_shutdown():
+                """
+                Shutdown the server.
+
+                Args:
+                """
                 print("\nSecond Keyboard Interrupt, stopping...\n")
                 _, error = server.runCommand(["stateForceShutdown"])
                 if error:

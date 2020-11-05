@@ -39,6 +39,16 @@ class HTML5TreeBuilder(HTMLTreeBuilder):
 
     def prepare_markup(self, markup, user_specified_encoding,
                        document_declared_encoding=None, exclude_encodings=None):
+        """
+        Prepare markup document.
+
+        Args:
+            self: (todo): write your description
+            markup: (todo): write your description
+            user_specified_encoding: (todo): write your description
+            document_declared_encoding: (todo): write your description
+            exclude_encodings: (bool): write your description
+        """
         # Store the user-specified encoding for use later on.
         self.user_specified_encoding = user_specified_encoding
 
@@ -51,6 +61,13 @@ class HTML5TreeBuilder(HTMLTreeBuilder):
 
     # These methods are defined by Beautiful Soup.
     def feed(self, markup):
+        """
+        Parse the given markdown document.
+
+        Args:
+            self: (todo): write your description
+            markup: (todo): write your description
+        """
         if self.soup.parse_only is not None:
             warnings.warn("You provided a value for parse_only, but the html5lib tree builder doesn't support parse_only. The entire document will be parsed.")
         parser = html5lib.HTMLParser(tree=self.create_treebuilder)
@@ -65,6 +82,13 @@ class HTML5TreeBuilder(HTMLTreeBuilder):
             doc.original_encoding = parser.tokenizer.stream.charEncoding[0]
 
     def create_treebuilder(self, namespaceHTMLElements):
+        """
+        Create a new treebuilderbuilder element
+
+        Args:
+            self: (todo): write your description
+            namespaceHTMLElements: (str): write your description
+        """
         self.underlying_builder = TreeBuilderForHtml5lib(
             self.soup, namespaceHTMLElements)
         return self.underlying_builder
@@ -77,14 +101,35 @@ class HTML5TreeBuilder(HTMLTreeBuilder):
 class TreeBuilderForHtml5lib(treebuildersbase.TreeBuilder):
 
     def __init__(self, soup, namespaceHTMLElements):
+        """
+        Initialize the elementtree
+
+        Args:
+            self: (todo): write your description
+            soup: (str): write your description
+            namespaceHTMLElements: (str): write your description
+        """
         self.soup = soup
         super(TreeBuilderForHtml5lib, self).__init__(namespaceHTMLElements)
 
     def documentClass(self):
+        """
+        Return the html element
+
+        Args:
+            self: (todo): write your description
+        """
         self.soup.reset()
         return Element(self.soup, self.soup, None)
 
     def insertDoctype(self, token):
+        """
+        Inserts a new public type.
+
+        Args:
+            self: (todo): write your description
+            token: (str): write your description
+        """
         name = token["name"]
         publicId = token["publicId"]
         systemId = token["systemId"]
@@ -93,34 +138,95 @@ class TreeBuilderForHtml5lib(treebuildersbase.TreeBuilder):
         self.soup.object_was_parsed(doctype)
 
     def elementClass(self, name, namespace):
+        """
+        Create a new element
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            namespace: (str): write your description
+        """
         tag = self.soup.new_tag(name, namespace)
         return Element(tag, self.soup, namespace)
 
     def commentClass(self, data):
+        """
+        Parse a comment
+
+        Args:
+            self: (todo): write your description
+            data: (array): write your description
+        """
         return TextNode(Comment(data), self.soup)
 
     def fragmentClass(self):
+        """
+        Return the soup element
+
+        Args:
+            self: (todo): write your description
+        """
         self.soup = BeautifulSoup("")
         self.soup.name = "[document_fragment]"
         return Element(self.soup, self.soup, None)
 
     def appendChild(self, node):
+        """
+        Add a new child to this element.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         # XXX This code is not covered by the BS4 tests.
         self.soup.append(node.element)
 
     def getDocument(self):
+        """
+        Returns the html document
+
+        Args:
+            self: (todo): write your description
+        """
         return self.soup
 
     def getFragment(self):
+        """
+        : return : class :.
+
+        Args:
+            self: (todo): write your description
+        """
         return treebuildersbase.TreeBuilder.getFragment(self).element
 
 class AttrList(object):
     def __init__(self, element):
+        """
+        Initialize an element.
+
+        Args:
+            self: (todo): write your description
+            element: (todo): write your description
+        """
         self.element = element
         self.attrs = dict(self.element.attrs)
     def __iter__(self):
+        """
+        Return an iterator over all the attributes.
+
+        Args:
+            self: (todo): write your description
+        """
         return list(self.attrs.items()).__iter__()
     def __setitem__(self, name, value):
+        """
+        Sets a list of an element.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            value: (str): write your description
+        """
         # If this attribute is a multi-valued attribute for this element,
         # turn its value into a list.
         list_attr = HTML5TreeBuilder.cdata_list_attributes
@@ -133,25 +239,73 @@ class AttrList(object):
                 value = whitespace_re.split(value)
         self.element[name] = value
     def items(self):
+        """
+        Returns an iterable of items.
+
+        Args:
+            self: (todo): write your description
+        """
         return list(self.attrs.items())
     def keys(self):
+        """
+        Returns the list of all the keys.
+
+        Args:
+            self: (todo): write your description
+        """
         return list(self.attrs.keys())
     def __len__(self):
+        """
+        Returns the length of the field.
+
+        Args:
+            self: (todo): write your description
+        """
         return len(self.attrs)
     def __getitem__(self, name):
+        """
+        Return the value from the given name.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+        """
         return self.attrs[name]
     def __contains__(self, name):
+        """
+        Returns true if the given attribute exists.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+        """
         return name in list(self.attrs.keys())
 
 
 class Element(treebuildersbase.Node):
     def __init__(self, element, soup, namespace):
+        """
+        Initialize the element.
+
+        Args:
+            self: (todo): write your description
+            element: (todo): write your description
+            soup: (str): write your description
+            namespace: (str): write your description
+        """
         treebuildersbase.Node.__init__(self, element.name)
         self.element = element
         self.soup = soup
         self.namespace = namespace
 
     def appendChild(self, node):
+        """
+        Append child todo.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         string_child = child = None
         if isinstance(node, str):
             # Some other piece of code decided to pass in a string
@@ -204,9 +358,22 @@ class Element(treebuildersbase.Node):
                 most_recent_element=most_recent_element)
 
     def getAttributes(self):
+        """
+        : return : class : rtuple
+
+        Args:
+            self: (todo): write your description
+        """
         return AttrList(self.element)
 
     def setAttributes(self, attributes):
+        """
+        Sets attributes of this element.
+
+        Args:
+            self: (todo): write your description
+            attributes: (dict): write your description
+        """
 
         if attributes is not None and len(attributes) > 0:
 
@@ -231,6 +398,14 @@ class Element(treebuildersbase.Node):
     attributes = property(getAttributes, setAttributes)
 
     def insertText(self, data, insertBefore=None):
+        """
+        Insert text into the html and adds new text.
+
+        Args:
+            self: (todo): write your description
+            data: (todo): write your description
+            insertBefore: (todo): write your description
+        """
         if insertBefore:
             text = TextNode(self.soup.new_string(data), self.soup)
             self.insertBefore(data, insertBefore)
@@ -238,6 +413,14 @@ class Element(treebuildersbase.Node):
             self.appendChild(data)
 
     def insertBefore(self, node, refNode):
+        """
+        Inserts the child node * node.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+            refNode: (todo): write your description
+        """
         index = self.element.index(refNode.element)
         if (node.element.__class__ == NavigableString and self.element.contents
             and self.element.contents[index-1].__class__ == NavigableString):
@@ -250,6 +433,13 @@ class Element(treebuildersbase.Node):
             node.parent = self
 
     def removeChild(self, node):
+        """
+        Removes the given node from the node.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         node.element.extract()
 
     def reparentChildren(self, new_parent):
@@ -312,6 +502,12 @@ class Element(treebuildersbase.Node):
         # print "TO", new_parent_element
 
     def cloneNode(self):
+        """
+        Return a copy of - wise.
+
+        Args:
+            self: (todo): write your description
+        """
         tag = self.soup.new_tag(self.element.name, self.namespace)
         node = Element(tag, self.soup, self.namespace)
         for key,value in self.attributes:
@@ -319,9 +515,21 @@ class Element(treebuildersbase.Node):
         return node
 
     def hasContent(self):
+        """
+        The content :
+
+        Args:
+            self: (todo): write your description
+        """
         return self.element.contents
 
     def getNameTuple(self):
+        """
+        Return the name of the name.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.namespace == None:
             return namespaces["html"], self.name
         else:
@@ -331,9 +539,23 @@ class Element(treebuildersbase.Node):
 
 class TextNode(Element):
     def __init__(self, element, soup):
+        """
+        Initialize a new element
+
+        Args:
+            self: (todo): write your description
+            element: (todo): write your description
+            soup: (str): write your description
+        """
         treebuildersbase.Node.__init__(self, None)
         self.element = element
         self.soup = soup
 
     def cloneNode(self):
+        """
+        Create a new node.
+
+        Args:
+            self: (todo): write your description
+        """
         raise NotImplementedError

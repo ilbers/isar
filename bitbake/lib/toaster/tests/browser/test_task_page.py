@@ -20,6 +20,12 @@ class TestTaskPage(SeleniumTestCase):
     TASK_NAME = 'do_da_doo_ron_ron'
 
     def setUp(self):
+        """
+        Sets the task
+
+        Args:
+            self: (todo): write your description
+        """
         now = timezone.now()
 
         project = Project.objects.get_or_create_default_project()

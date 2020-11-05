@@ -33,21 +33,51 @@ logger = logging.getLogger("BitBake.RunQueue")
 __find_sha256__ = re.compile( r'(?i)(?<![a-z0-9])[a-f0-9]{64}(?![a-z0-9])' )
 
 def fn_from_tid(tid):
+    """
+    Return the tid from tid from a tid
+
+    Args:
+        tid: (str): write your description
+    """
      return tid.rsplit(":", 1)[0]
 
 def taskname_from_tid(tid):
+    """
+    Return a taskname from tid.
+
+    Args:
+        tid: (str): write your description
+    """
     return tid.rsplit(":", 1)[1]
 
 def mc_from_tid(tid):
+    """
+    Return the representative id from_tid
+
+    Args:
+        tid: (str): write your description
+    """
     if tid.startswith('mc:'):
         return tid.split(':')[1]
     return ""
 
 def split_tid(tid):
+    """
+    Split a task id from a task id
+
+    Args:
+        tid: (str): write your description
+    """
     (mc, fn, taskname, _) = split_tid_mcfn(tid)
     return (mc, fn, taskname)
 
 def split_tid_mcfn(tid):
+    """
+    Split a task id and the - zid.
+
+    Args:
+        tid: (str): write your description
+    """
     if tid.startswith('mc:'):
         elems = tid.split(':')
         mc = elems[1]
@@ -64,6 +94,14 @@ def split_tid_mcfn(tid):
     return (mc, fn, taskname, mcfn)
 
 def build_tid(mc, fn, taskname):
+    """
+    Generate a task id
+
+    Args:
+        mc: (todo): write your description
+        fn: (todo): write your description
+        taskname: (str): write your description
+    """
     if mc:
         return "mc:" + mc + ":" + fn + ":" + taskname
     return fn + ":" + taskname
@@ -71,6 +109,13 @@ def build_tid(mc, fn, taskname):
 # Index used to pair up potentially matching multiconfig tasks
 # We match on PN, taskname and hash being equal
 def pending_hash_index(tid, rqdata):
+    """
+    Return the hash index for a task
+
+    Args:
+        tid: (str): write your description
+        rqdata: (array): write your description
+    """
     (mc, fn, taskname, taskfn) = split_tid_mcfn(tid)
     pn = rqdata.dataCaches[mc].pkg_fn[taskfn]
     h = rqdata.runtaskentries[tid].unihash
@@ -81,6 +126,13 @@ class RunQueueStats:
     Holds statistics on the tasks handled by the associated runQueue
     """
     def __init__(self, total):
+        """
+        Initialize the progress bars.
+
+        Args:
+            self: (todo): write your description
+            total: (int): write your description
+        """
         self.completed = 0
         self.skipped = 0
         self.failed = 0
@@ -88,23 +140,53 @@ class RunQueueStats:
         self.total = total
 
     def copy(self):
+        """
+        Returns a copy of this instance.
+
+        Args:
+            self: (todo): write your description
+        """
         obj = self.__class__(self.total)
         obj.__dict__.update(self.__dict__)
         return obj
 
     def taskFailed(self):
+        """
+        Called when the task is complete.
+
+        Args:
+            self: (todo): write your description
+        """
         self.active = self.active - 1
         self.failed = self.failed + 1
 
     def taskCompleted(self):
+        """
+        This method is called when a task.
+
+        Args:
+            self: (todo): write your description
+        """
         self.active = self.active - 1
         self.completed = self.completed + 1
 
     def taskSkipped(self):
+        """
+        Task to the active
+
+        Args:
+            self: (todo): write your description
+        """
         self.active = self.active + 1
         self.skipped = self.skipped + 1
 
     def taskActive(self):
+        """
+        This method is called by the active task is active.
+
+        Args:
+            self: (todo): write your description
+        """
         self.active = self.active + 1
 
 # These values indicate the next step due to be run in the
@@ -206,20 +288,48 @@ class RunQueueScheduler(object):
             return self.next_buildable_task()
 
     def newbuildable(self, task):
+        """
+        Add a new task.
+
+        Args:
+            self: (todo): write your description
+            task: (todo): write your description
+        """
         self.buildable.add(task)
         # Once tasks are running we don't need to worry about them again
         self.buildable.difference_update(self.rq.runq_running)
 
     def removebuildable(self, task):
+        """
+        Removes a task from the task.
+
+        Args:
+            self: (todo): write your description
+            task: (todo): write your description
+        """
         self.buildable.remove(task)
 
     def describe_task(self, taskid):
+        """
+        Return a task.
+
+        Args:
+            self: (todo): write your description
+            taskid: (str): write your description
+        """
         result = 'ID %s' % taskid
         if self.rev_prio_map:
             result = result + (' pri %d' % self.rev_prio_map[taskid])
         return result
 
     def dump_prio(self, comment):
+        """
+        Dump the current comment.
+
+        Args:
+            self: (todo): write your description
+            comment: (str): write your description
+        """
         bb.debug(3, '%s (most important first):\n%s' %
                  (comment,
                   '\n'.join(['%d. %s' % (index + 1, self.describe_task(taskid)) for
@@ -264,6 +374,14 @@ class RunQueueSchedulerCompletion(RunQueueSchedulerSpeed):
     name = "completion"
 
     def __init__(self, runqueue, rqdata):
+        """
+        Initialize the queue.
+
+        Args:
+            self: (todo): write your description
+            runqueue: (todo): write your description
+            rqdata: (todo): write your description
+        """
         super(RunQueueSchedulerCompletion, self).__init__(runqueue, rqdata)
 
         # Extract list of tasks for each recipe, with tasks sorted
@@ -351,6 +469,12 @@ class RunQueueSchedulerCompletion(RunQueueSchedulerSpeed):
 
 class RunTaskEntry(object):
     def __init__(self):
+        """
+        Initialize this task.
+
+        Args:
+            self: (todo): write your description
+        """
         self.depends = set()
         self.revdeps = set()
         self.hash = None
@@ -363,6 +487,18 @@ class RunQueueData:
     BitBake Run Queue implementation
     """
     def __init__(self, rq, cooker, cfgData, dataCaches, taskData, targets):
+        """
+        Initialize data
+
+        Args:
+            self: (todo): write your description
+            rq: (int): write your description
+            cooker: (todo): write your description
+            cfgData: (todo): write your description
+            dataCaches: (todo): write your description
+            taskData: (bool): write your description
+            targets: (todo): write your description
+        """
         self.cooker = cooker
         self.dataCaches = dataCaches
         self.taskData = taskData
@@ -380,9 +516,22 @@ class RunQueueData:
         self.reset()
 
     def reset(self):
+        """
+        Reset the internal state.
+
+        Args:
+            self: (todo): write your description
+        """
         self.runtaskentries = {}
 
     def runq_depends_names(self, ids):
+        """
+        Returns a list of the names in a list of ids.
+
+        Args:
+            self: (todo): write your description
+            ids: (list): write your description
+        """
         import re
         ret = []
         for id in ids:
@@ -392,15 +541,45 @@ class RunQueueData:
         return ret
 
     def get_task_hash(self, tid):
+        """
+        Return the hash of a task.
+
+        Args:
+            self: (todo): write your description
+            tid: (str): write your description
+        """
         return self.runtaskentries[tid].hash
 
     def get_task_unihash(self, tid):
+        """
+        Return a deferred.
+
+        Args:
+            self: (todo): write your description
+            tid: (str): write your description
+        """
         return self.runtaskentries[tid].unihash
 
     def get_user_idstring(self, tid, task_name_suffix = ""):
+        """
+        Return the user id of a task id.
+
+        Args:
+            self: (todo): write your description
+            tid: (int): write your description
+            task_name_suffix: (str): write your description
+        """
         return tid + task_name_suffix
 
     def get_short_user_idstring(self, task, task_name_suffix = ""):
+        """
+        Returns short short short short short name for a task.
+
+        Args:
+            self: (todo): write your description
+            task: (todo): write your description
+            task_name_suffix: (str): write your description
+        """
         (mc, fn, taskname, taskfn) = split_tid_mcfn(task)
         pn = self.dataCaches[mc].pkg_fn[taskfn]
         taskname = taskname_from_tid(task) + task_name_suffix
@@ -454,6 +633,13 @@ class RunQueueData:
             return False
 
         def find_chains(tid, prev_chain):
+            """
+            Find chains of chains.
+
+            Args:
+                tid: (str): write your description
+                prev_chain: (todo): write your description
+            """
             prev_chain.append(tid)
             total_deps = []
             total_deps.extend(self.runtaskentries[tid].revdeps)
@@ -596,6 +782,15 @@ class RunQueueData:
         # rdeptast, recrdeptask, idepends).
 
         def add_build_dependencies(depids, tasknames, depends, mc):
+            """
+            Add build_targets.
+
+            Args:
+                depids: (todo): write your description
+                tasknames: (str): write your description
+                depends: (todo): write your description
+                mc: (todo): write your description
+            """
             for depname in depids:
                 # Won't be in build_targets if ASSUME_PROVIDED
                 if depname not in taskData[mc].build_targets or not taskData[mc].build_targets[depname]:
@@ -609,6 +804,15 @@ class RunQueueData:
                         depends.add(t)
 
         def add_runtime_dependencies(depids, tasknames, depends, mc):
+            """
+            Add runtime dependencies.
+
+            Args:
+                depids: (todo): write your description
+                tasknames: (str): write your description
+                depends: (todo): write your description
+                mc: (todo): write your description
+            """
             for depname in depids:
                 if depname not in taskData[mc].run_targets or not taskData[mc].run_targets[depname]:
                     continue
@@ -621,6 +825,13 @@ class RunQueueData:
                         depends.add(t)
 
         def add_mc_dependencies(mc, tid):
+            """
+            Add dependency dependency dependency dependency to dependency
+
+            Args:
+                mc: (todo): write your description
+                tid: (str): write your description
+            """
             mcdeps = taskData[mc].get_mcdepends()
             for dep in mcdeps:
                 mcdependency = dep.split(':')
@@ -852,6 +1063,13 @@ class RunQueueData:
                 mark_active(depend, depth+1)
 
         def invalidate_task(tid, error_nostamp):
+            """
+            Invalidate a task
+
+            Args:
+                tid: (str): write your description
+                error_nostamp: (todo): write your description
+            """
             (mc, fn, taskname, taskfn) = split_tid_mcfn(tid)
             taskdep = self.dataCaches[mc].task_deps[taskfn]
             if fn + ":" + taskname not in taskData[mc].taskentries:
@@ -1182,6 +1400,13 @@ class RunQueueData:
         return len(self.runtaskentries)
 
     def prepare_task_hash(self, tid):
+        """
+        Prepare the task hash.
+
+        Args:
+            self: (todo): write your description
+            tid: (str): write your description
+        """
         procdep = []
         for dep in self.runtaskentries[tid].depends:
             procdep.append(dep)
@@ -1201,11 +1426,30 @@ class RunQueueData:
 
 class RunQueueWorker():
     def __init__(self, process, pipe):
+        """
+        Initialize a new process.
+
+        Args:
+            self: (todo): write your description
+            process: (todo): write your description
+            pipe: (str): write your description
+        """
         self.process = process
         self.pipe = pipe
 
 class RunQueue:
     def __init__(self, cooker, cfgData, dataCaches, taskData, targets):
+        """
+        Initialize the task.
+
+        Args:
+            self: (todo): write your description
+            cooker: (todo): write your description
+            cfgData: (todo): write your description
+            dataCaches: (todo): write your description
+            taskData: (bool): write your description
+            targets: (todo): write your description
+        """
 
         self.cooker = cooker
         self.cfgData = cfgData
@@ -1231,6 +1475,15 @@ class RunQueue:
         self.fakeworker = {}
 
     def _start_worker(self, mc, fakeroot = False, rqexec = None):
+        """
+        Start the worker process.
+
+        Args:
+            self: (todo): write your description
+            mc: (todo): write your description
+            fakeroot: (todo): write your description
+            rqexec: (todo): write your description
+        """
         logger.debug(1, "Starting bitbake-worker")
         magic = "decafbad"
         if self.cooker.configuration.profile:
@@ -1274,6 +1527,13 @@ class RunQueue:
         return RunQueueWorker(worker, workerpipe)
 
     def _teardown_worker(self, worker):
+        """
+        Teardown worker.
+
+        Args:
+            self: (todo): write your description
+            worker: (str): write your description
+        """
         if not worker:
             return
         logger.debug(1, "Teardown for bitbake-worker")
@@ -1291,6 +1551,12 @@ class RunQueue:
         worker.pipe.close()
 
     def start_worker(self):
+        """
+        Start the worker threads.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.worker:
             self.teardown_workers()
         self.teardown = False
@@ -1298,10 +1564,24 @@ class RunQueue:
             self.worker[mc] = self._start_worker(mc)
 
     def start_fakeworker(self, rqexec, mc):
+        """
+        Starts the worker.
+
+        Args:
+            self: (todo): write your description
+            rqexec: (str): write your description
+            mc: (todo): write your description
+        """
         if not mc in self.fakeworker:
             self.fakeworker[mc] = self._start_worker(mc, True, rqexec)
 
     def teardown_workers(self):
+        """
+        Teardown all workers.
+
+        Args:
+            self: (todo): write your description
+        """
         self.teardown = True
         for mc in self.worker:
             self._teardown_worker(self.worker[mc])
@@ -1311,12 +1591,24 @@ class RunQueue:
         self.fakeworker = {}
 
     def read_workers(self):
+        """
+        Read all workers in the workers.
+
+        Args:
+            self: (todo): write your description
+        """
         for mc in self.worker:
             self.worker[mc].pipe.read()
         for mc in self.fakeworker:
             self.fakeworker[mc].pipe.read()
 
     def active_fds(self):
+        """
+        Return a list of all active workers.
+
+        Args:
+            self: (todo): write your description
+        """
         fds = []
         for mc in self.worker:
             fds.append(self.worker[mc].pipe.input)
@@ -1325,7 +1617,23 @@ class RunQueue:
         return fds
 
     def check_stamp_task(self, tid, taskname = None, recurse = False, cache = None):
+        """
+        Checks if a task against a task
+
+        Args:
+            self: (todo): write your description
+            tid: (str): write your description
+            taskname: (str): write your description
+            recurse: (bool): write your description
+            cache: (bool): write your description
+        """
         def get_timestamp(f):
+            """
+            Get the timestamp of a file.
+
+            Args:
+                f: (int): write your description
+            """
             try:
                 if not os.access(f, os.F_OK):
                     return None
@@ -1398,6 +1706,16 @@ class RunQueue:
         return iscurrent
 
     def validate_hashes(self, tocheck, data, currentcount=0, siginfo=False):
+        """
+        Validate hashes.
+
+        Args:
+            self: (todo): write your description
+            tocheck: (bool): write your description
+            data: (array): write your description
+            currentcount: (str): write your description
+            siginfo: (todo): write your description
+        """
         valid = set()
         if self.hashvalidate:
             sq_data = {}
@@ -1415,6 +1733,16 @@ class RunQueue:
         return valid
 
     def validate_hash(self, sq_data, d, siginfo, currentcount):
+        """
+        Validate the hash.
+
+        Args:
+            self: (todo): write your description
+            sq_data: (todo): write your description
+            d: (todo): write your description
+            siginfo: (todo): write your description
+            currentcount: (str): write your description
+        """
         locs = {"sq_data" : sq_data, "d" : d, "siginfo" : siginfo, "currentcount" : currentcount}
 
         # Metadata has **kwargs so args can be added, sq_data can also gain new fields
@@ -1522,6 +1850,12 @@ class RunQueue:
         return retval
 
     def execute_runqueue(self):
+        """
+        Execute the workers.
+
+        Args:
+            self: (todo): write your description
+        """
         # Catch unexpected exceptions and ensure we exit when an error occurs, not loop.
         try:
             return self._execute_runqueue()
@@ -1546,6 +1880,13 @@ class RunQueue:
             raise
 
     def finish_runqueue(self, now = False):
+        """
+        Finishes the queue.
+
+        Args:
+            self: (todo): write your description
+            now: (todo): write your description
+        """
         if not self.rqexe:
             self.state = runQueueComplete
             return
@@ -1556,6 +1897,14 @@ class RunQueue:
             self.rqexe.finish()
 
     def rq_dump_sigfn(self, fn, options):
+        """
+        Dump a sig sig sigfn.
+
+        Args:
+            self: (todo): write your description
+            fn: (todo): write your description
+            options: (dict): write your description
+        """
         bb_cache = bb.cache.NoCache(self.cooker.databuilder)
         the_data = bb_cache.loadDataFull(fn, self.cooker.collection.get_file_appends(fn))
         siggen = bb.parse.siggen
@@ -1563,6 +1912,13 @@ class RunQueue:
         siggen.dump_sigfn(fn, dataCaches, options)
 
     def dump_signatures(self, options):
+        """
+        Return a list of signatures for a list of signatures.
+
+        Args:
+            self: (todo): write your description
+            options: (dict): write your description
+        """
         fns = set()
         bb.note("Reparsing files to collect dependency data")
 
@@ -1591,6 +1947,12 @@ class RunQueue:
         return
 
     def print_diffscenetasks(self):
+        """
+        Print the differences between all tasks.
+
+        Args:
+            self: (todo): write your description
+        """
 
         noexec = []
         tocheck = set()
@@ -1655,9 +2017,24 @@ class RunQueue:
         return invalidtasks.difference(found)
 
     def write_diffscenetasks(self, invalidtasks):
+        """
+        Compute differences between two diffs
+
+        Args:
+            self: (todo): write your description
+            invalidtasks: (int): write your description
+        """
 
         # Define recursion callback
         def recursecb(key, hash1, hash2):
+            """
+            Retrieve the hash of a key.
+
+            Args:
+                key: (str): write your description
+                hash1: (todo): write your description
+                hash2: (todo): write your description
+            """
             hashes = [hash1, hash2]
             hashfiles = bb.siggen.find_siginfo(key, None, hashes, self.cfgData)
 
@@ -1693,6 +2070,13 @@ class RunQueue:
 class RunQueueExecute:
 
     def __init__(self, rq):
+        """
+        Initialize the queue.
+
+        Args:
+            self: (todo): write your description
+            rq: (int): write your description
+        """
         self.rq = rq
         self.cooker = rq.cooker
         self.cfgData = rq.cfgData
@@ -1763,6 +2147,14 @@ class RunQueueExecute:
         build_scenequeue_data(self.sqdata, self.rqdata, self.rq, self.cooker, self.stampcache, self)
 
     def runqueue_process_waitpid(self, task, status):
+        """
+        Runs a task in the queue
+
+        Args:
+            self: (todo): write your description
+            task: (todo): write your description
+            status: (str): write your description
+        """
 
         # self.build_stamps[pid] may not exist when use shared work directory.
         if task in self.build_stamps:
@@ -1783,6 +2175,12 @@ class RunQueueExecute:
         return True
 
     def finish_now(self):
+        """
+        Finish_nowledged
+
+        Args:
+            self: (todo): write your description
+        """
         for mc in self.rq.worker:
             try:
                 self.rq.worker[mc].process.stdin.write(b"<finishnow></finishnow>")
@@ -1806,6 +2204,12 @@ class RunQueueExecute:
         return
 
     def finish(self):
+        """
+        Finishes the queue.
+
+        Args:
+            self: (todo): write your description
+        """
         self.rq.state = runQueueCleanUp
 
         active = self.stats.active + self.sq_stats.active
@@ -1823,6 +2227,14 @@ class RunQueueExecute:
 
     # Used by setscene only
     def check_dependencies(self, task, taskdeps):
+        """
+        Check for missing dependency dependencies.
+
+        Args:
+            self: (todo): write your description
+            task: (str): write your description
+            taskdeps: (todo): write your description
+        """
         if not self.rq.depvalidate:
             return False
 
@@ -1841,11 +2253,23 @@ class RunQueueExecute:
         return valid
 
     def can_start_task(self):
+        """
+        Return true if task can tasks.
+
+        Args:
+            self: (todo): write your description
+        """
         active = self.stats.active + self.sq_stats.active
         can_start = active < self.number_tasks
         return can_start
 
     def get_schedulers(self):
+        """
+        Return a set of schedulers.
+
+        Args:
+            self: (todo): write your description
+        """
         schedulers = set(obj for obj in globals().values()
                              if type(obj) is type and
                                 issubclass(obj, RunQueueScheduler))
@@ -1868,6 +2292,13 @@ class RunQueueExecute:
         return schedulers
 
     def setbuildable(self, task):
+        """
+        Sets the task that will be run.
+
+        Args:
+            self: (todo): write your description
+            task: (todo): write your description
+        """
         self.runq_buildable.add(task)
         self.sched.newbuildable(task)
 
@@ -1893,6 +2324,13 @@ class RunQueueExecute:
                 logger.debug(1, "Marking task %s as buildable", revdep)
 
     def task_complete(self, task):
+        """
+        Pushes tasks
+
+        Args:
+            self: (todo): write your description
+            task: (todo): write your description
+        """
         self.stats.taskCompleted()
         bb.event.fire(runQueueTaskCompleted(task, self.stats, self.rq), self.cfgData)
         self.task_completeoutright(task)
@@ -1909,6 +2347,14 @@ class RunQueueExecute:
             self.rq.state = runQueueCleanUp
 
     def task_skip(self, task, reason):
+        """
+        Skip the task to be executed
+
+        Args:
+            self: (todo): write your description
+            task: (todo): write your description
+            reason: (str): write your description
+        """
         self.runq_running.add(task)
         self.setbuildable(task)
         bb.event.fire(runQueueTaskSkipped(task, self.stats, self.rq, reason), self.cfgData)
@@ -1917,6 +2363,12 @@ class RunQueueExecute:
         self.stats.taskCompleted()
 
     def summarise_scenequeue_errors(self):
+        """
+        Summarize stats
+
+        Args:
+            self: (todo): write your description
+        """
         err = False
         if not self.sqdone:
             logger.debug(1, 'We could skip tasks %s', "\n".join(sorted(self.scenequeue_covered)))
@@ -2170,6 +2622,15 @@ class RunQueueExecute:
         return True
 
     def filtermcdeps(self, task, mc, deps):
+        """
+        Return a set of filtered by task.
+
+        Args:
+            self: (todo): write your description
+            task: (array): write your description
+            mc: (array): write your description
+            deps: (float): write your description
+        """
         ret = set()
         for dep in deps:
             thismc = mc_from_tid(dep)
@@ -2181,6 +2642,13 @@ class RunQueueExecute:
     # We filter out multiconfig dependencies from taskdepdata we pass to the tasks
     # as most code can't handle them
     def build_taskdepdata(self, task):
+        """
+        Build a dict of dicts of - > dicts.
+
+        Args:
+            self: (todo): write your description
+            task: (todo): write your description
+        """
         taskdepdata = {}
         mc = mc_from_tid(task)
         next = self.rqdata.runtaskentries[task].depends.copy()
@@ -2206,6 +2674,12 @@ class RunQueueExecute:
         return taskdepdata
 
     def update_holdofftasks(self):
+        """
+        Updates the workers in the queue.
+
+        Args:
+            self: (todo): write your description
+        """
 
         if not self.holdoff_need_update:
             return
@@ -2246,6 +2720,12 @@ class RunQueueExecute:
         self.holdoff_need_update = False
 
     def process_possible_migrations(self):
+        """
+        Process migrations in the queue.
+
+        Args:
+            self: (todo): write your description
+        """
 
         changed = set()
         for tid, unihash in self.updated_taskhash_queue.copy():
@@ -2369,6 +2849,14 @@ class RunQueueExecute:
             self.holdoff_need_update = True
 
     def scenequeue_updatecounters(self, task, fail=False):
+        """
+        Update the stats of the task
+
+        Args:
+            self: (todo): write your description
+            task: (todo): write your description
+            fail: (todo): write your description
+        """
 
         for dep in sorted(self.sqdata.sq_deps[task]):
             if fail and task in self.sqdata.sq_harddeps and dep in self.sqdata.sq_harddeps[task]:
@@ -2407,6 +2895,13 @@ class RunQueueExecute:
         self.scenequeue_updatecounters(task)
 
     def sq_check_taskfail(self, task):
+        """
+        Check for missing task status
+
+        Args:
+            self: (todo): write your description
+            task: (str): write your description
+        """
         if self.rqdata.setscenewhitelist is not None:
             realtask = task.split('_setscene')[0]
             (mc, fn, taskname, taskfn) = split_tid_mcfn(realtask)
@@ -2416,11 +2911,26 @@ class RunQueueExecute:
                 self.rq.state = runQueueCleanUp
 
     def sq_task_complete(self, task):
+        """
+        Called when task
+
+        Args:
+            self: (todo): write your description
+            task: (todo): write your description
+        """
         self.sq_stats.taskCompleted()
         bb.event.fire(sceneQueueTaskCompleted(task, self.sq_stats, self.rq), self.cfgData)
         self.sq_task_completeoutright(task)
 
     def sq_task_fail(self, task, result):
+        """
+        Called when the task
+
+        Args:
+            self: (todo): write your description
+            task: (todo): write your description
+            result: (todo): write your description
+        """
         self.sq_stats.taskFailed()
         bb.event.fire(sceneQueueTaskFailed(task, self.sq_stats, result, self), self.cfgData)
         self.scenequeue_notcovered.add(task)
@@ -2428,6 +2938,13 @@ class RunQueueExecute:
         self.sq_check_taskfail(task)
 
     def sq_task_failoutright(self, task):
+        """
+        Updates the task to the queue.
+
+        Args:
+            self: (todo): write your description
+            task: (todo): write your description
+        """
         self.sq_running.add(task)
         self.sq_buildable.add(task)
         self.sq_stats.taskSkipped()
@@ -2436,6 +2953,13 @@ class RunQueueExecute:
         self.scenequeue_updatecounters(task, True)
 
     def sq_task_skip(self, task):
+        """
+        Called when a task has failed.
+
+        Args:
+            self: (todo): write your description
+            task: (todo): write your description
+        """
         self.sq_running.add(task)
         self.sq_buildable.add(task)
         self.sq_task_completeoutright(task)
@@ -2443,7 +2967,20 @@ class RunQueueExecute:
         self.sq_stats.taskCompleted()
 
     def sq_build_taskdepdata(self, task):
+        """
+        Build a dict of - chain task.
+
+        Args:
+            self: (todo): write your description
+            task: (todo): write your description
+        """
         def getsetscenedeps(tid):
+            """
+            Return a list of all the dependencyeps for a task.
+
+            Args:
+                tid: (str): write your description
+            """
             deps = set()
             (mc, fn, taskname, _) = split_tid_mcfn(tid)
             realtid = tid + "_setscene"
@@ -2481,6 +3018,13 @@ class RunQueueExecute:
         return taskdepdata
 
     def check_setscenewhitelist(self, tid):
+        """
+        Checks if a list of task id
+
+        Args:
+            self: (todo): write your description
+            tid: (str): write your description
+        """
         # Check task that is going to run against the whitelist
         (mc, fn, taskname, taskfn) = split_tid_mcfn(tid)
         # Ignore covered tasks
@@ -2506,6 +3050,12 @@ class RunQueueExecute:
 
 class SQData(object):
     def __init__(self):
+        """
+        Initialize the dependency
+
+        Args:
+            self: (todo): write your description
+        """
         # SceneQueue dependencies
         self.sq_deps = {}
         # SceneQueue reverse dependencies
@@ -2522,6 +3072,17 @@ class SQData(object):
         self.sq_covered_tasks = {}
 
 def build_scenequeue_data(sqdata, rqdata, rq, cooker, stampcache, sqrq):
+    """
+    Build the scenequeuequeue.
+
+    Args:
+        sqdata: (todo): write your description
+        rqdata: (todo): write your description
+        rq: (todo): write your description
+        cooker: (str): write your description
+        stampcache: (todo): write your description
+        sqrq: (todo): write your description
+    """
 
     sq_revdeps = {}
     sq_revdeps_squash = {}
@@ -2560,6 +3121,12 @@ def build_scenequeue_data(sqdata, rqdata, rq, cooker, stampcache, sqrq):
     rqdata.init_progress_reporter.next_stage()
 
     def process_endpoints(endpoints):
+        """
+        Process endpoint isendpoints
+
+        Args:
+            endpoints: (dict): write your description
+        """
         newendpoints = {}
         for point, task in endpoints.items():
             tasks = set()
@@ -2695,6 +3262,18 @@ def build_scenequeue_data(sqdata, rqdata, rq, cooker, stampcache, sqrq):
     update_scenequeue_data(sqdata.sq_revdeps, sqdata, rqdata, rq, cooker, stampcache, sqrq)
 
 def update_scenequeue_data(tids, sqdata, rqdata, rq, cooker, stampcache, sqrq):
+    """
+    Updates the scene data.
+
+    Args:
+        tids: (str): write your description
+        sqdata: (todo): write your description
+        rqdata: (todo): write your description
+        rq: (todo): write your description
+        cooker: (str): write your description
+        stampcache: (todo): write your description
+        sqrq: (todo): write your description
+    """
 
     tocheck = set()
 
@@ -2758,6 +3337,13 @@ class TaskFailure(Exception):
     Exception raised when a task in a runqueue fails
     """
     def __init__(self, x):
+        """
+        Initialize the object
+
+        Args:
+            self: (todo): write your description
+            x: (int): write your description
+        """
         self.args = x
 
 
@@ -2767,6 +3353,13 @@ class runQueueExitWait(bb.event.Event):
     """
 
     def __init__(self, remain):
+        """
+        Initialize event
+
+        Args:
+            self: (todo): write your description
+            remain: (str): write your description
+        """
         self.remain = remain
         self.message = "Waiting for %s active tasks to finish" % remain
         bb.event.Event.__init__(self)
@@ -2776,6 +3369,15 @@ class runQueueEvent(bb.event.Event):
     Base runQueue event class
     """
     def __init__(self, task, stats, rq):
+        """
+        Initialize a task.
+
+        Args:
+            self: (todo): write your description
+            task: (str): write your description
+            stats: (list): write your description
+            rq: (int): write your description
+        """
         self.taskid = task
         self.taskstring = task
         self.taskname = taskname_from_tid(task)
@@ -2789,6 +3391,16 @@ class sceneQueueEvent(runQueueEvent):
     Base sceneQueue event class
     """
     def __init__(self, task, stats, rq, noexec=False):
+        """
+        Initialize the task.
+
+        Args:
+            self: (todo): write your description
+            task: (str): write your description
+            stats: (list): write your description
+            rq: (int): write your description
+            noexec: (todo): write your description
+        """
         runQueueEvent.__init__(self, task, stats, rq)
         self.taskstring = task + "_setscene"
         self.taskname = taskname_from_tid(task) + "_setscene"
@@ -2800,6 +3412,16 @@ class runQueueTaskStarted(runQueueEvent):
     Event notifying a task was started
     """
     def __init__(self, task, stats, rq, noexec=False):
+        """
+        Initialize the task.
+
+        Args:
+            self: (todo): write your description
+            task: (str): write your description
+            stats: (list): write your description
+            rq: (int): write your description
+            noexec: (todo): write your description
+        """
         runQueueEvent.__init__(self, task, stats, rq)
         self.noexec = noexec
 
@@ -2808,6 +3430,16 @@ class sceneQueueTaskStarted(sceneQueueEvent):
     Event notifying a setscene task was started
     """
     def __init__(self, task, stats, rq, noexec=False):
+        """
+        Initialize the task.
+
+        Args:
+            self: (todo): write your description
+            task: (str): write your description
+            stats: (list): write your description
+            rq: (int): write your description
+            noexec: (todo): write your description
+        """
         sceneQueueEvent.__init__(self, task, stats, rq)
         self.noexec = noexec
 
@@ -2816,10 +3448,26 @@ class runQueueTaskFailed(runQueueEvent):
     Event notifying a task failed
     """
     def __init__(self, task, stats, exitcode, rq):
+        """
+        Initialize the task.
+
+        Args:
+            self: (todo): write your description
+            task: (str): write your description
+            stats: (list): write your description
+            exitcode: (int): write your description
+            rq: (int): write your description
+        """
         runQueueEvent.__init__(self, task, stats, rq)
         self.exitcode = exitcode
 
     def __str__(self):
+        """
+        Return a string representation of this task.
+
+        Args:
+            self: (todo): write your description
+        """
         return "Task (%s) failed with exit code '%s'" % (self.taskstring, self.exitcode)
 
 class sceneQueueTaskFailed(sceneQueueEvent):
@@ -2827,10 +3475,26 @@ class sceneQueueTaskFailed(sceneQueueEvent):
     Event notifying a setscene task failed
     """
     def __init__(self, task, stats, exitcode, rq):
+        """
+        Initialize the task.
+
+        Args:
+            self: (todo): write your description
+            task: (str): write your description
+            stats: (list): write your description
+            exitcode: (int): write your description
+            rq: (int): write your description
+        """
         sceneQueueEvent.__init__(self, task, stats, rq)
         self.exitcode = exitcode
 
     def __str__(self):
+        """
+        Return a string representation of this task.
+
+        Args:
+            self: (todo): write your description
+        """
         return "Setscene task (%s) failed with exit code '%s' - real task will be run instead" % (self.taskstring, self.exitcode)
 
 class sceneQueueComplete(sceneQueueEvent):
@@ -2838,6 +3502,14 @@ class sceneQueueComplete(sceneQueueEvent):
     Event when all the sceneQueue tasks are complete
     """
     def __init__(self, stats, rq):
+        """
+        Initialize the stats
+
+        Args:
+            self: (todo): write your description
+            stats: (list): write your description
+            rq: (int): write your description
+        """
         self.stats = stats.copy()
         bb.event.Event.__init__(self)
 
@@ -2856,6 +3528,16 @@ class runQueueTaskSkipped(runQueueEvent):
     Event notifying a task was skipped
     """
     def __init__(self, task, stats, rq, reason):
+        """
+        Initialize the task.
+
+        Args:
+            self: (todo): write your description
+            task: (str): write your description
+            stats: (list): write your description
+            rq: (int): write your description
+            reason: (str): write your description
+        """
         runQueueEvent.__init__(self, task, stats, rq)
         self.reason = reason
 
@@ -2864,6 +3546,14 @@ class taskUniHashUpdate(bb.event.Event):
     Base runQueue event class
     """
     def __init__(self, task, unihash):
+        """
+        Initialize the task
+
+        Args:
+            self: (todo): write your description
+            task: (str): write your description
+            unihash: (todo): write your description
+        """
         self.taskid = task
         self.unihash = unihash
         bb.event.Event.__init__(self)
@@ -2873,6 +3563,17 @@ class runQueuePipe():
     Abstraction for a pipe between a worker thread and the server
     """
     def __init__(self, pipein, pipeout, d, rq, rqexec):
+        """
+        Initialize the pipe.
+
+        Args:
+            self: (todo): write your description
+            pipein: (str): write your description
+            pipeout: (str): write your description
+            d: (int): write your description
+            rq: (int): write your description
+            rqexec: (todo): write your description
+        """
         self.input = pipein
         if pipeout:
             pipeout.close()
@@ -2883,9 +3584,22 @@ class runQueuePipe():
         self.rqexec = rqexec
 
     def setrunqueueexec(self, rqexec):
+        """
+        Set the given rqexec.
+
+        Args:
+            self: (todo): write your description
+            rqexec: (todo): write your description
+        """
         self.rqexec = rqexec
 
     def read(self):
+        """
+        The worker threads.
+
+        Args:
+            self: (todo): write your description
+        """
         for workers, name in [(self.rq.worker, "Worker"), (self.rq.fakeworker, "Fakeroot")]:
             for worker in workers.values():
                 worker.process.poll()
@@ -2928,6 +3642,12 @@ class runQueuePipe():
         return (end > start)
 
     def close(self):
+        """
+        Closes all the queue.
+
+        Args:
+            self: (todo): write your description
+        """
         while self.read():
             continue
         if len(self.queue) > 0:
@@ -2935,6 +3655,12 @@ class runQueuePipe():
         self.input.close()
 
 def get_setscene_enforce_whitelist(d):
+    """
+    Retrieve whitelist whitelist from whitelist.
+
+    Args:
+        d: (todo): write your description
+    """
     if d.getVar('BB_SETSCENE_ENFORCE') != '1':
         return None
     whitelist = (d.getVar("BB_SETSCENE_ENFORCE_WHITELIST") or "").split()
@@ -2949,6 +3675,14 @@ def get_setscene_enforce_whitelist(d):
     return outlist
 
 def check_setscene_enforce_whitelist(pn, taskname, whitelist):
+    """
+    Return true if the whitelist already exists.
+
+    Args:
+        pn: (todo): write your description
+        taskname: (str): write your description
+        whitelist: (list): write your description
+    """
     import fnmatch
     if whitelist is not None:
         item = '%s:%s' % (pn, taskname)

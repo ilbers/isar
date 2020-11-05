@@ -33,6 +33,11 @@ from wic.pluginbase import PluginMgr, PLUGIN_TYPES
 logger = logging.getLogger('wic')
 
 def subcommand_error(args):
+    """
+    Subcommand command.
+
+    Args:
+    """
     logger.info("invalid subcommand %s", args[0])
 
 

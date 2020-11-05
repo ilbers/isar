@@ -10,6 +10,12 @@ from avocado import Test
 class BuildTest(Test):
 
     def test(self):
+        """
+        Run the test.
+
+        Args:
+            self: (todo): write your description
+        """
         # TODO: add default values
         build_dir = self.params.get('build_dir', default='.')
         arch = self.params.get('arch', default='arm')

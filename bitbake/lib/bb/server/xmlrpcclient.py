@@ -19,12 +19,26 @@ from bb.ui import uievent
 
 class BBTransport(xmlrpc.client.Transport):
     def __init__(self, timeout):
+        """
+        Establish a new connection.
+
+        Args:
+            self: (todo): write your description
+            timeout: (int): write your description
+        """
         self.timeout = timeout
         self.connection_token = None
         xmlrpc.client.Transport.__init__(self)
 
     # Modified from default to pass timeout to HTTPConnection
     def make_connection(self, host):
+        """
+        Make a http connection.
+
+        Args:
+            self: (todo): write your description
+            host: (str): write your description
+        """
         #return an existing connection if possible.  This allows
         #HTTP/1.1 keep-alive.
         if self._connection and host == self._connection[0]:
@@ -37,19 +51,49 @@ class BBTransport(xmlrpc.client.Transport):
         return self._connection[1]
 
     def set_connection_token(self, token):
+        """
+        Set the connection token.
+
+        Args:
+            self: (todo): write your description
+            token: (str): write your description
+        """
         self.connection_token = token
 
     def send_content(self, h, body):
+        """
+        Send a message to the h
+
+        Args:
+            self: (todo): write your description
+            h: (todo): write your description
+            body: (str): write your description
+        """
         if self.connection_token:
             h.putheader("Bitbake-token", self.connection_token)
         xmlrpc.client.Transport.send_content(self, h, body)
 
 def _create_server(host, port, timeout = 60):
+    """
+    Create a server.
+
+    Args:
+        host: (str): write your description
+        port: (int): write your description
+        timeout: (float): write your description
+    """
     t = BBTransport(timeout)
     s = xmlrpc.client.ServerProxy("http://%s:%d/" % (host, port), transport=t, allow_none=True, use_builtin_types=True)
     return s, t
 
 def check_connection(remote, timeout):
+    """
+    Check if a connection is established.
+
+    Args:
+        remote: (str): write your description
+        timeout: (int): write your description
+    """
     try:
         host, port = remote.split(":")
         port = int(port)
@@ -68,6 +112,17 @@ def check_connection(remote, timeout):
 
 class BitBakeXMLRPCServerConnection(object):
     def __init__(self, host, port, clientinfo=("localhost", 0), observer_only = False, featureset = None):
+        """
+        Initialize the client.
+
+        Args:
+            self: (todo): write your description
+            host: (str): write your description
+            port: (int): write your description
+            clientinfo: (todo): write your description
+            observer_only: (todo): write your description
+            featureset: (todo): write your description
+        """
         self.connection, self.transport = _create_server(host, port)
         self.clientinfo = clientinfo
         self.observer_only = observer_only
@@ -86,6 +141,13 @@ class BitBakeXMLRPCServerConnection(object):
             raise BaseException(error)
 
     def connect(self, token = None):
+        """
+        Connect to the server.
+
+        Args:
+            self: (todo): write your description
+            token: (str): write your description
+        """
         if token is None:
             if self.observer_only:
                 token = "observer"
@@ -99,10 +161,22 @@ class BitBakeXMLRPCServerConnection(object):
         return self
 
     def removeClient(self):
+        """
+        Removes an observer.
+
+        Args:
+            self: (todo): write your description
+        """
         if not self.observer_only:
             self.connection.removeClient()
 
     def terminate(self):
+        """
+        Terminate the socket.
+
+        Args:
+            self: (todo): write your description
+        """
         # Don't wait for server indefinitely
         socket.setdefaulttimeout(2)
         try:
@@ -115,6 +189,15 @@ class BitBakeXMLRPCServerConnection(object):
             pass
 
 def connectXMLRPC(remote, featureset, observer_only = False, token = None):
+    """
+    Connect to a connection.
+
+    Args:
+        remote: (str): write your description
+        featureset: (bool): write your description
+        observer_only: (todo): write your description
+        token: (str): write your description
+    """
     # The format of "remote" must be "server:port"
     try:
         [host, port] = remote.split(":")

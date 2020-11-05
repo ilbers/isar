@@ -46,6 +46,12 @@ class RootfsPlugin(SourcePlugin):
 
     @staticmethod
     def __get_rootfs_dir(rootfs_dir):
+        """
+        Get the root directory of the root directory.
+
+        Args:
+            rootfs_dir: (str): write your description
+        """
         if os.path.isdir(rootfs_dir):
             return rootfs_dir
 

@@ -19,10 +19,22 @@ logger = logging.getLogger('BitBake.layerindexlib.cooker')
 import bb.utils
 
 def plugin_init(plugins):
+    """
+    Return a plugin instance.
+
+    Args:
+        plugins: (todo): write your description
+    """
     return CookerPlugin()
 
 class CookerPlugin(layerindexlib.plugin.IndexPlugin):
     def __init__(self):
+        """
+        Initialize the connection.
+
+        Args:
+            self: (todo): write your description
+        """
         self.type = "cooker"
 
         self.server_connection = None
@@ -30,6 +42,15 @@ class CookerPlugin(layerindexlib.plugin.IndexPlugin):
         self.server = None
 
     def _run_command(self, command, path, default=None):
+        """
+        Run a command on the given path.
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            path: (str): write your description
+            default: (todo): write your description
+        """
         try:
             result, _ = bb.process.run(command, cwd=path)
             result = result.strip()
@@ -38,6 +59,13 @@ class CookerPlugin(layerindexlib.plugin.IndexPlugin):
         return result
 
     def _handle_git_remote(self, remote):
+        """
+        Determine the git repo.
+
+        Args:
+            self: (todo): write your description
+            remote: (str): write your description
+        """
         if "://" not in remote:
             if ':' in remote:
                 # This is assumed to be ssh
@@ -200,6 +228,15 @@ class CookerPlugin(layerindexlib.plugin.IndexPlugin):
                 collection = index.layerBranches[layerBranchId].collection
 
                 def add_dependency(layerDependencyId, index, deps, required):
+                    """
+                    Add a dependency to the dependency layer
+
+                    Args:
+                        layerDependencyId: (todo): write your description
+                        index: (todo): write your description
+                        deps: (float): write your description
+                        required: (bool): write your description
+                    """
                     try:
                         depDict = bb.utils.explode_dep_versions2(deps)
                     except bb.utils.VersionStringException as vse:

@@ -90,6 +90,12 @@ class InotifyBindingNotFoundError(PyinotifyError):
     Raised when no inotify support couldn't be found.
     """
     def __init__(self):
+        """
+        Initialize pyinotify
+
+        Args:
+            self: (todo): write your description
+        """
         err = "Couldn't find any inotify binding"
         PyinotifyError.__init__(self, err)
 
@@ -122,37 +128,90 @@ class INotifyWrapper:
         return self._get_errno()
 
     def str_errno(self):
+        """
+        Return an error string from the string.
+
+        Args:
+            self: (todo): write your description
+        """
         code = self.get_errno()
         if code is None:
             return 'Errno: no errno support'
         return 'Errno=%s (%s)' % (os.strerror(code), errno.errorcode[code])
 
     def inotify_init(self):
+        """
+        Inotify the__.
+
+        Args:
+            self: (todo): write your description
+        """
         return self._inotify_init()
 
     def inotify_add_watch(self, fd, pathname, mask):
+        """
+        Inotify watch.
+
+        Args:
+            self: (todo): write your description
+            fd: (todo): write your description
+            pathname: (str): write your description
+            mask: (int): write your description
+        """
         # Unicode strings must be encoded to string prior to calling this
         # method.
         assert isinstance(pathname, str)
         return self._inotify_add_watch(fd, pathname, mask)
 
     def inotify_rm_watch(self, fd, wd):
+        """
+        Inotify the watch watch watch.
+
+        Args:
+            self: (todo): write your description
+            fd: (todo): write your description
+            wd: (todo): write your description
+        """
         return self._inotify_rm_watch(fd, wd)
 
 
 class _INotifySyscallsWrapper(INotifyWrapper):
     def __init__(self):
+        """
+        Initialize the cache.
+
+        Args:
+            self: (todo): write your description
+        """
         # Stores the last errno value.
         self._last_errno = None
 
     def init(self):
+        """
+        Inotify sys.
+
+        Args:
+            self: (todo): write your description
+        """
         assert inotify_syscalls
         return True
 
     def _get_errno(self):
+        """
+        Returns the error message.
+
+        Args:
+            self: (todo): write your description
+        """
         return self._last_errno
 
     def _inotify_init(self):
+        """
+        Inotify syscalls_init is true.
+
+        Args:
+            self: (todo): write your description
+        """
         try:
             fd = inotify_syscalls.inotify_init()
         except IOError as err:
@@ -161,6 +220,15 @@ class _INotifySyscallsWrapper(INotifyWrapper):
         return fd
 
     def _inotify_add_watch(self, fd, pathname, mask):
+        """
+        Inotify watch for watch.
+
+        Args:
+            self: (todo): write your description
+            fd: (todo): write your description
+            pathname: (str): write your description
+            mask: (array): write your description
+        """
         try:
             wd = inotify_syscalls.inotify_add_watch(fd, pathname, mask)
         except IOError as err:
@@ -169,6 +237,14 @@ class _INotifySyscallsWrapper(INotifyWrapper):
         return wd
 
     def _inotify_rm_watch(self, fd, wd):
+        """
+        Inotify watch watch watch watch.
+
+        Args:
+            self: (todo): write your description
+            fd: (todo): write your description
+            wd: (todo): write your description
+        """
         try:
             ret = inotify_syscalls.inotify_rm_watch(fd, wd)
         except IOError as err:
@@ -179,10 +255,22 @@ class _INotifySyscallsWrapper(INotifyWrapper):
 
 class _CtypesLibcINotifyWrapper(INotifyWrapper):
     def __init__(self):
+        """
+        Initialize the library.
+
+        Args:
+            self: (todo): write your description
+        """
         self._libc = None
         self._get_errno_func = None
 
     def init(self):
+        """
+        Initialize the library.
+
+        Args:
+            self: (todo): write your description
+        """
         assert ctypes
 
         try_libc_name = 'c'
@@ -214,14 +302,35 @@ class _CtypesLibcINotifyWrapper(INotifyWrapper):
         return True
 
     def _get_errno(self):
+        """
+        Returns the error message.
+
+        Args:
+            self: (todo): write your description
+        """
         assert self._get_errno_func
         return self._get_errno_func()
 
     def _inotify_init(self):
+        """
+        Inotify init.
+
+        Args:
+            self: (todo): write your description
+        """
         assert self._libc is not None
         return self._libc.inotify_init()
 
     def _inotify_add_watch(self, fd, pathname, mask):
+        """
+        Inotify watch.
+
+        Args:
+            self: (todo): write your description
+            fd: (todo): write your description
+            pathname: (str): write your description
+            mask: (array): write your description
+        """
         assert self._libc is not None
         # Encodes path to a bytes string. This conversion seems required because
         # ctypes.create_string_buffer seems to manipulate bytes internally.
@@ -232,6 +341,14 @@ class _CtypesLibcINotifyWrapper(INotifyWrapper):
         return self._libc.inotify_add_watch(fd, pathname, mask)
 
     def _inotify_rm_watch(self, fd, wd):
+        """
+        Releasesify the watch watch watch for the given file descriptor.
+
+        Args:
+            self: (todo): write your description
+            fd: (todo): write your description
+            wd: (todo): write your description
+        """
         assert self._libc is not None
         return self._libc.inotify_rm_watch(fd, wd)
 
@@ -261,6 +378,13 @@ class ProcINotify:
       - Update max_queued_events attribute: max_queued_events.value = 42
     """
     def __init__(self, attr):
+        """
+        Initialize an attribute.
+
+        Args:
+            self: (todo): write your description
+            attr: (todo): write your description
+        """
         self._base = "/proc/sys/fs/inotify"
         self._attr = attr
 
@@ -289,6 +413,12 @@ class ProcINotify:
     value = property(get_val, set_val)
 
     def __repr__(self):
+        """
+        Return a human - readable representation.
+
+        Args:
+            self: (todo): write your description
+        """
         return '<%s=%d>' % (self._attr, self.get_val())
 
 
@@ -483,6 +613,12 @@ class _Event:
         return s
 
     def __str__(self):
+        """
+        Return a human - readable representation of the object.
+
+        Args:
+            self: (todo): write your description
+        """
         return repr(self)
 
 
@@ -517,6 +653,12 @@ class _RawEvent(_Event):
         log.debug(str(self))
 
     def __str__(self):
+        """
+        The string representation of the event.
+
+        Args:
+            self: (todo): write your description
+        """
         if self._str is None:
             self._str = _Event.__str__(self)
         return self._str
@@ -620,6 +762,12 @@ class _ProcessEvent:
         return self.process_default(event)
 
     def __repr__(self):
+        """
+        Return a human - readable representation of this object.
+
+        Args:
+            self: (todo): write your description
+        """
         return '<%s>' % self.__class__.__name__
 
 
@@ -882,6 +1030,13 @@ class ProcessEvent(_ProcessEvent):
         pass
 
     def __call__(self, event):
+        """
+        Calls the event.
+
+        Args:
+            self: (todo): write your description
+            event: (todo): write your description
+        """
         stop_chaining = False
         if self.pevent is not None:
             # By default methods return None so we set as guideline
@@ -894,6 +1049,12 @@ class ProcessEvent(_ProcessEvent):
             return _ProcessEvent.__call__(self, event)
 
     def nested_pevent(self):
+        """
+        Return the pevent of this node.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.pevent
 
     def process_IN_Q_OVERFLOW(self, event):
@@ -964,6 +1125,13 @@ class ChainIfTrue(ProcessEvent):
         self._func = func
 
     def process_default(self, event):
+        """
+        Process the default function.
+
+        Args:
+            self: (todo): write your description
+            event: (todo): write your description
+        """
         return not self._func(event)
 
 
@@ -993,6 +1161,12 @@ class Stats(ProcessEvent):
             self._stats_lock.release()
 
     def _stats_copy(self):
+        """
+        Return a copy of the statistics.
+
+        Args:
+            self: (todo): write your description
+        """
         self._stats_lock.acquire()
         try:
             return self._stats.copy()
@@ -1000,6 +1174,12 @@ class Stats(ProcessEvent):
             self._stats_lock.release()
 
     def __repr__(self):
+        """
+        Return a human - readable representation of the object.
+
+        Args:
+            self: (todo): write your description
+        """
         stats = self._stats_copy()
 
         elapsed = int(time.time() - self._start_time)
@@ -1036,6 +1216,13 @@ class Stats(ProcessEvent):
         os.close(fd)
 
     def __str__(self, scale=45):
+        """
+        Return a string representation of the field.
+
+        Args:
+            self: (todo): write your description
+            scale: (float): write your description
+        """
         stats = self._stats_copy()
         if not stats:
             return ''
@@ -1045,6 +1232,12 @@ class Stats(ProcessEvent):
         fmt = '%%-26s%%-%ds%%s' % (len(output_format.field_value('@' * scale))
                                    + 1)
         def func(x):
+            """
+            Returns the function that returns the result.
+
+            Args:
+                x: (int): write your description
+            """
             return fmt % (output_format.field_name(x[0]),
                           output_format.field_value('@' * int(x[1] * unity)),
                           output_format.simple('%d' % x[1], 'yellow'))
@@ -1136,6 +1329,12 @@ class Notifier:
         self._eventq.append(event)
 
     def proc_fun(self):
+        """
+        Returns the default function.
+
+        Args:
+            self: (todo): write your description
+        """
         return self._default_proc_fun
 
     def coalesce_events(self, coalesce=True):
@@ -1279,6 +1478,11 @@ class Notifier:
             raise NotifierError(err)
 
         def fork_daemon():
+            """
+            Fork - fork.
+
+            Args:
+            """
             # Adapted from Chad J. Schroeder's recipe
             # @see http://code.activestate.com/recipes/278731/
             pid = os.fork()
@@ -1318,6 +1522,13 @@ class Notifier:
             atexit.register(lambda : os.unlink(pid_file))
 
     def _sleep(self, ref_time):
+        """
+        Sleep until the given amount.
+
+        Args:
+            self: (todo): write your description
+            ref_time: (todo): write your description
+        """
         # Only consider sleeping if read_freq is > 0
         if self._read_freq > 0:
             cur_time = time.time()
@@ -1532,6 +1743,12 @@ class TornadoAsyncNotifier(Notifier):
         ioloop.add_handler(self._fd, self.handle_read, ioloop.READ)
 
     def stop(self):
+        """
+        Stop the event loop.
+
+        Args:
+            self: (todo): write your description
+        """
         self.io_loop.remove_handler(self._fd)
         Notifier.stop(self)
 
@@ -1573,10 +1790,22 @@ class AsyncioNotifier(Notifier):
         loop.add_reader(self._fd, self.handle_read)
 
     def stop(self):
+        """
+        Stop the event loop.
+
+        Args:
+            self: (todo): write your description
+        """
         self.loop.remove_reader(self._fd)
         Notifier.stop(self)
 
     def handle_read(self, *args, **kwargs):
+        """
+        Handle read events.
+
+        Args:
+            self: (todo): write your description
+        """
         self.read_events()
         self.process_events()
         if self.handle_read_callback is not None:
@@ -1669,6 +1898,13 @@ class ExcludeFilter:
             self._lregex.append(re.compile(regex, re.UNICODE))
 
     def _load_patterns_from_file(self, filename):
+        """
+        Load patterns from file.
+
+        Args:
+            self: (todo): write your description
+            filename: (str): write your description
+        """
         lst = []
         with open(filename, 'r') as file_obj:
             for line in file_obj.readlines():
@@ -1680,6 +1916,14 @@ class ExcludeFilter:
         return lst
 
     def _match(self, regex, path):
+        """
+        Match the first matching regular expression.
+
+        Args:
+            self: (todo): write your description
+            regex: (str): write your description
+            path: (str): write your description
+        """
         return regex.match(path) is not None
 
     def __call__(self, path):
@@ -1825,6 +2069,14 @@ class WatchManager:
         return wd
 
     def __glob(self, path, do_glob):
+        """
+        Returns a list of the given path.
+
+        Args:
+            self: (todo): write your description
+            path: (str): write your description
+            do_glob: (todo): write your description
+        """
         if do_glob:
             return glob.iglob(path)
         else:
@@ -2154,6 +2406,12 @@ class WatchManager:
         mask |= IN_CREATE | IN_DELETE
 
         def cmp_name(event):
+            """
+            Determine name of an event.
+
+            Args:
+                event: (todo): write your description
+            """
             if getattr(event, 'name') is None:
                 return False
             return basename == event.name
@@ -2164,9 +2422,22 @@ class WatchManager:
                               exclude_filter=lambda path: False)
 
     def get_ignore_events(self):
+        """
+        Return a list of events that have been registered.
+
+        Args:
+            self: (todo): write your description
+        """
         return self._ignore_events
 
     def set_ignore_events(self, nval):
+        """
+        Set the events to the events.
+
+        Args:
+            self: (todo): write your description
+            nval: (todo): write your description
+        """
         self._ignore_events = nval
 
     ignore_events = property(get_ignore_events, set_ignore_events,
@@ -2178,9 +2449,24 @@ class RawOutputFormat:
     Format string representations.
     """
     def __init__(self, format=None):
+        """
+        Initialize the format.
+
+        Args:
+            self: (todo): write your description
+            format: (str): write your description
+        """
         self.format = format or {}
 
     def simple(self, s, attribute):
+        """
+        Simple simple simple simple format string.
+
+        Args:
+            self: (todo): write your description
+            s: (int): write your description
+            attribute: (str): write your description
+        """
         if not isinstance(s, str):
             s = str(s)
         return (self.format.get(attribute, '') + s +
@@ -2209,6 +2495,12 @@ class ColoredOutputFormat(RawOutputFormat):
     Format colored string representations.
     """
     def __init__(self):
+        """
+        Initialize a function
+
+        Args:
+            self: (todo): write your description
+        """
         f = {'normal': '\033[0m',
              'black': '\033[30m',
              'red': '\033[31m',
@@ -2322,6 +2614,12 @@ def command_line():
     cb_fun = None
     if options.stats:
         def cb(s):
+            """
+            Prints a callback.
+
+            Args:
+                s: (todo): write your description
+            """
             sys.stdout.write(repr(s.proc_fun()))
             sys.stdout.write('\n')
             sys.stdout.write(str(s.proc_fun()))
@@ -2332,6 +2630,12 @@ def command_line():
     # External command
     if options.command:
         def cb(s):
+            """
+            Wrapper for the callback.
+
+            Args:
+                s: (int): write your description
+            """
             subprocess.Popen(options.command, shell=True)
         cb_fun = cb
 

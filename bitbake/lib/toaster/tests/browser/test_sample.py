@@ -23,6 +23,12 @@ class TestSample(SeleniumTestCase):
     """ Test landing page shows the Toaster brand """
 
     def test_landing_page_has_brand(self):
+        """
+        Check if the link contains the link pages.
+
+        Args:
+            self: (todo): write your description
+        """
         url = reverse('landing')
         self.get(url)
         brand_link = self.find('.toaster-navbar-brand a.brand')

@@ -18,6 +18,12 @@ class TestMostRecentBuildsStates(SeleniumTestCase):
     """ Test states update correctly in most recent builds area """
 
     def _create_build_request(self):
+        """
+        Creates a buildrequest.
+
+        Args:
+            self: (todo): write your description
+        """
         project = Project.objects.get_or_create_default_project()
 
         now = timezone.now()
@@ -35,6 +41,13 @@ class TestMostRecentBuildsStates(SeleniumTestCase):
         return Recipe.objects.create(name='foo', layer_version=layer_version)
 
     def _check_build_states(self, build_request):
+        """
+        Check the build status.
+
+        Args:
+            self: (todo): write your description
+            build_request: (todo): write your description
+        """
         recipes_to_parse = 10
         url = reverse('all-builds')
         self.get(url)

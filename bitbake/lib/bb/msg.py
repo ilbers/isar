@@ -67,6 +67,13 @@ class BBLogFormatter(logging.Formatter):
     RST = '\033[0m'
 
     def getLevelName(self, levelno):
+        """
+        Return the level of the logging level
+
+        Args:
+            self: (todo): write your description
+            levelno: (str): write your description
+        """
         try:
             return self.levelnames[levelno]
         except KeyError:
@@ -74,6 +81,13 @@ class BBLogFormatter(logging.Formatter):
             return value
 
     def format(self, record):
+        """
+        Format record.
+
+        Args:
+            self: (todo): write your description
+            record: (todo): write your description
+        """
         record.levelname = self.getLevelName(record.levelno)
         if record.levelno == self.PLAIN:
             msg = record.getMessage()
@@ -90,6 +104,13 @@ class BBLogFormatter(logging.Formatter):
         return msg
 
     def colorize(self, record):
+        """
+        Colorize record.
+
+        Args:
+            self: (todo): write your description
+            record: (todo): write your description
+        """
         color = self.COLORS[record.levelno]
         if self.color_enabled and color is not None:
             record = copy.copy(record)
@@ -98,10 +119,25 @@ class BBLogFormatter(logging.Formatter):
         return record
 
     def enable_color(self):
+        """
+        Enable the color.
+
+        Args:
+            self: (todo): write your description
+        """
         self.color_enabled = True
 
 class BBLogFilter(object):
     def __init__(self, handler, level, debug_domains):
+        """
+        Initialize the logging.
+
+        Args:
+            self: (todo): write your description
+            handler: (todo): write your description
+            level: (int): write your description
+            debug_domains: (bool): write your description
+        """
         self.stdlevel = level
         self.debug_domains = debug_domains
         loglevel = level
@@ -112,6 +148,13 @@ class BBLogFilter(object):
         handler.addFilter(self)
 
     def filter(self, record):
+        """
+        Returns true if the given record is filtered.
+
+        Args:
+            self: (todo): write your description
+            record: (todo): write your description
+        """
         if record.levelno >= self.stdlevel:
             return True
         if record.name in self.debug_domains and record.levelno >= self.debug_domains[record.name]:
@@ -120,6 +163,13 @@ class BBLogFilter(object):
 
 class BBLogFilterStdErr(BBLogFilter):
     def filter(self, record):
+        """
+        Filter logrecord filter.
+
+        Args:
+            self: (todo): write your description
+            record: (todo): write your description
+        """
         if not BBLogFilter.filter(self, record):
             return False
         if record.levelno >= logging.ERROR:
@@ -128,6 +178,13 @@ class BBLogFilterStdErr(BBLogFilter):
 
 class BBLogFilterStdOut(BBLogFilter):
     def filter(self, record):
+        """
+        Applies a record to log.
+
+        Args:
+            self: (todo): write your description
+            record: (todo): write your description
+        """
         if not BBLogFilter.filter(self, record):
             return False
         if record.levelno < logging.ERROR:
@@ -156,6 +213,11 @@ def init_msgconfig(verbose, debug, debug_domains=None):
         bb.msg.loggerDefaultDomains = []
 
 def constructLogOptions():
+    """
+    Return a dictionary of log level values.
+
+    Args:
+    """
     debug = loggerDefaultDebugLevel
     verbose = loggerDefaultVerbose
     domains = loggerDefaultDomains
@@ -174,6 +236,15 @@ def constructLogOptions():
     return level, debug_domains
 
 def addDefaultlogFilter(handler, cls = BBLogFilter, forcelevel=None):
+    """
+    Add a logger to the logger.
+
+    Args:
+        handler: (todo): write your description
+        cls: (todo): write your description
+        BBLogFilter: (str): write your description
+        forcelevel: (bool): write your description
+    """
     level, debug_domains = constructLogOptions()
 
     if forcelevel is not None:
@@ -186,6 +257,13 @@ def addDefaultlogFilter(handler, cls = BBLogFilter, forcelevel=None):
 #
 
 def fatal(msgdomain, msg):
+    """
+    Log a message
+
+    Args:
+        msgdomain: (str): write your description
+        msg: (str): write your description
+    """
     if msgdomain:
         logger = logging.getLogger("BitBake.%s" % msgdomain)
     else:
@@ -209,6 +287,12 @@ def logger_create(name, output=sys.stderr, level=logging.INFO, preserve_handlers
     return logger
 
 def has_console_handler(logger):
+    """
+    Returns true if the console has console console.
+
+    Args:
+        logger: (todo): write your description
+    """
     for handler in logger.handlers:
         if isinstance(handler, logging.StreamHandler):
             if handler.stream in [sys.stderr, sys.stdout]:

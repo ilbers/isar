@@ -46,6 +46,12 @@ class GitSM(Git):
         subrevision = {}
 
         def parse_gitmodules(gitmodules):
+            """
+            Parse the gitmodules.
+
+            Args:
+                gitmodules: (str): write your description
+            """
             modules = {}
             module = ""
             for line in gitmodules.splitlines():
@@ -136,6 +142,14 @@ class GitSM(Git):
         return submodules != []
 
     def need_update(self, ud, d):
+        """
+        Return true if a source is ready to be updated.
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+        """
         if Git.need_update(self, ud, d):
             return True
 
@@ -153,7 +167,25 @@ class GitSM(Git):
         return False
 
     def download(self, ud, d):
+        """
+        Download a submodule
+
+        Args:
+            self: (todo): write your description
+            ud: (int): write your description
+            d: (int): write your description
+        """
         def download_submodule(ud, url, module, modpath, d):
+            """
+            Download a submodule
+
+            Args:
+                ud: (str): write your description
+                url: (str): write your description
+                module: (todo): write your description
+                modpath: (str): write your description
+                d: (str): write your description
+            """
             url += ";bareclone=1;nobranch=1"
 
             # Is the following still needed?
@@ -173,7 +205,26 @@ class GitSM(Git):
         self.process_submodules(ud, ud.clonedir, download_submodule, d)
 
     def unpack(self, ud, destdir, d):
+        """
+        Unpack a single module
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            destdir: (str): write your description
+            d: (todo): write your description
+        """
         def unpack_submodules(ud, url, module, modpath, d):
+            """
+            Unpack all submodules of a module
+
+            Args:
+                ud: (todo): write your description
+                url: (str): write your description
+                module: (todo): write your description
+                modpath: (str): write your description
+                d: (todo): write your description
+            """
             url += ";bareclone=1;nobranch=1"
 
             # Figure out where we clone over the bare submodules...

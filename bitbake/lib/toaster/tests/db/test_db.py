@@ -37,6 +37,12 @@ from django.test import TestCase
 
 @contextmanager
 def capture(command, *args, **kwargs):
+    """
+    Captures the given command.
+
+    Args:
+        command: (str): write your description
+    """
     out, sys.stdout = sys.stdout, StringIO()
     command(*args, **kwargs)
     sys.stdout.seek(0)
@@ -45,6 +51,11 @@ def capture(command, *args, **kwargs):
 
 
 def makemigrations():
+    """
+    Create migrations.
+
+    Args:
+    """
     management.call_command('makemigrations')
 
 

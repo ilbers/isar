@@ -94,6 +94,12 @@ class COWTestCase(unittest.TestCase):
         self.assertEqual(False, 'e' in b_2)
 
     def testCow(self):
+        """
+        Create a dictionary
+
+        Args:
+            self: (todo): write your description
+        """
         from bb.COW import COWDictBase
         c = COWDictBase.copy()
         c['123'] = 1027

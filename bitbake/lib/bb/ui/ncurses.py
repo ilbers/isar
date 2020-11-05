@@ -65,6 +65,22 @@ class NCursesUI:
     class Window:
         """Base Window Class"""
         def __init__( self, x, y, width, height, fg=curses.COLOR_BLACK, bg=curses.COLOR_WHITE ):
+            """
+            Make a new window.
+
+            Args:
+                self: (todo): write your description
+                x: (int): write your description
+                y: (int): write your description
+                width: (int): write your description
+                height: (int): write your description
+                fg: (list): write your description
+                curses: (todo): write your description
+                COLOR_BLACK: (todo): write your description
+                bg: (todo): write your description
+                curses: (todo): write your description
+                COLOR_WHITE: (str): write your description
+            """
             self.win = curses.newwin( height, width, y, x )
             self.dimensions = ( x, y, width, height )
             """
@@ -80,32 +96,91 @@ class NCursesUI:
             self.win.noutrefresh()
 
         def erase( self ):
+            """
+            Erases the window.
+
+            Args:
+                self: (todo): write your description
+            """
             self.win.erase()
 
         def setScrolling( self, b = True ):
+            """
+            Sets the window to the cursor.
+
+            Args:
+                self: (todo): write your description
+                b: (todo): write your description
+            """
             self.win.scrollok( b )
             self.win.idlok( b )
 
         def setBoxed( self ):
+            """
+            Sets the box box.
+
+            Args:
+                self: (todo): write your description
+            """
             self.boxed = True
             self.win.box()
             self.win.noutrefresh()
 
         def setText( self, x, y, text, *args ):
+            """
+            Sets text at x and y.
+
+            Args:
+                self: (todo): write your description
+                x: (todo): write your description
+                y: (todo): write your description
+                text: (str): write your description
+            """
             self.win.addstr( y, x, text, *args )
             self.win.noutrefresh()
 
         def appendText( self, text, *args ):
+            """
+            Add text
+
+            Args:
+                self: (todo): write your description
+                text: (str): write your description
+            """
             self.win.addstr( text, *args )
             self.win.noutrefresh()
 
         def drawHline( self, y ):
+            """
+            Draws a line at y.
+
+            Args:
+                self: (todo): write your description
+                y: (int): write your description
+            """
             self.win.hline( y, 0, curses.ACS_HLINE, self.dimensions[WIDTH] )
             self.win.noutrefresh()
 
     class DecoratedWindow( Window ):
         """Base class for windows with a box and a title bar"""
         def __init__( self, title, x, y, width, height, fg=curses.COLOR_BLACK, bg=curses.COLOR_WHITE ):
+            """
+            Initialize a window.
+
+            Args:
+                self: (todo): write your description
+                title: (str): write your description
+                x: (int): write your description
+                y: (int): write your description
+                width: (int): write your description
+                height: (int): write your description
+                fg: (list): write your description
+                curses: (todo): write your description
+                COLOR_BLACK: (todo): write your description
+                bg: (todo): write your description
+                curses: (todo): write your description
+                COLOR_WHITE: (str): write your description
+            """
             NCursesUI.Window.__init__( self, x+1, y+3, width-2, height-4, fg, bg )
             self.decoration = NCursesUI.Window( x, y, width, height, fg, bg )
             self.decoration.setBoxed()
@@ -113,6 +188,13 @@ class NCursesUI:
             self.setTitle( title )
 
         def setTitle( self, title ):
+            """
+            Sets the text for this widget.
+
+            Args:
+                self: (todo): write your description
+                title: (todo): write your description
+            """
             self.decoration.setText( 1, 1, title.center( self.dimensions[WIDTH]-2 ), curses.A_BOLD )
 
     #-------------------------------------------------------------------------#
@@ -134,9 +216,27 @@ class NCursesUI:
     #-------------------------------------------------------------------------#
         """Thread Activity Window"""
         def __init__( self, x, y, width, height ):
+            """
+            Initialize window at x y position.
+
+            Args:
+                self: (todo): write your description
+                x: (int): write your description
+                y: (int): write your description
+                width: (int): write your description
+                height: (int): write your description
+            """
             NCursesUI.DecoratedWindow.__init__( self, "Thread Activity", x, y, width, height )
 
         def setStatus( self, thread, text ):
+            """
+            Sets the text for the thread
+
+            Args:
+                self: (todo): write your description
+                thread: (todo): write your description
+                text: (str): write your description
+            """
             line = "%02d: %s" % ( thread, text )
             width = self.dimensions[WIDTH]
             if ( len(line) > width ):
@@ -150,16 +250,40 @@ class NCursesUI:
     #-------------------------------------------------------------------------#
         """Main Window"""
         def __init__( self, x, y, width, height ):
+            """
+            Initialize the window.
+
+            Args:
+                self: (todo): write your description
+                x: (int): write your description
+                y: (int): write your description
+                width: (int): write your description
+                height: (int): write your description
+            """
             self.StatusPosition = width - MAXSTATUSLENGTH
             NCursesUI.DecoratedWindow.__init__( self, None, x, y, width, height )
             curses.nl()
 
         def setTitle( self, title ):
+            """
+            Sets the text for this widget. : param title | <int >
+
+            Args:
+                self: (todo): write your description
+                title: (str): write your description
+            """
             title = "BitBake %s" % bb.__version__
             self.decoration.setText( 2, 1, title, curses.A_BOLD )
             self.decoration.setText( self.StatusPosition - 8, 1, "Status:", curses.A_BOLD )
 
         def setStatus(self, status):
+            """
+            Sets the status of the text.
+
+            Args:
+                self: (todo): write your description
+                status: (str): write your description
+            """
             while len(status) < MAXSTATUSLENGTH:
                 status = status + " "
             self.decoration.setText( self.StatusPosition, 1, status, curses.A_BOLD )
@@ -170,6 +294,16 @@ class NCursesUI:
     #-------------------------------------------------------------------------#
         """Interactive Command Line Output"""
         def __init__( self, x, y, width, height ):
+            """
+            Initialize window at x y position.
+
+            Args:
+                self: (todo): write your description
+                x: (int): write your description
+                y: (int): write your description
+                width: (int): write your description
+                height: (int): write your description
+            """
             NCursesUI.DecoratedWindow.__init__( self, "Command Line Window", x, y, width, height )
 
     #-------------------------------------------------------------------------#
@@ -177,6 +311,16 @@ class NCursesUI:
     #-------------------------------------------------------------------------#
         """Interactive Command Line Input"""
         def __init__( self, x, y, width, height ):
+            """
+            Draw a window at the given location.
+
+            Args:
+                self: (todo): write your description
+                x: (int): write your description
+                y: (int): write your description
+                width: (int): write your description
+                height: (int): write your description
+            """
             NCursesUI.Window.__init__( self, x, y, width, height )
 
 # put that to the top again from curses.textpad import Textbox
@@ -187,6 +331,16 @@ class NCursesUI:
 
     #-------------------------------------------------------------------------#
     def main(self, stdscr, server, eventHandler, params):
+        """
+        Main function.
+
+        Args:
+            self: (todo): write your description
+            stdscr: (todo): write your description
+            server: (todo): write your description
+            eventHandler: (todo): write your description
+            params: (dict): write your description
+        """
     #-------------------------------------------------------------------------#
         height, width = stdscr.getmaxyx()
 
@@ -352,6 +506,14 @@ class NCursesUI:
                 pass
 
 def main(server, eventHandler, params):
+    """
+    Main function.
+
+    Args:
+        server: (todo): write your description
+        eventHandler: (todo): write your description
+        params: (dict): write your description
+    """
     if not os.isatty(sys.stdout.fileno()):
         print("FATAL: Unable to run 'ncurses' UI without a TTY.")
         return

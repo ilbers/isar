@@ -22,6 +22,12 @@ class TestLayerDetailsPage(SeleniumTestCase):
     """ Test layerdetails page works correctly """
 
     def __init__(self, *args, **kwargs):
+        """
+        Initialize layer
+
+        Args:
+            self: (todo): write your description
+        """
         super(TestLayerDetailsPage, self).__init__(*args, **kwargs)
 
         self.initial_values = None
@@ -29,6 +35,12 @@ class TestLayerDetailsPage(SeleniumTestCase):
         self.imported_layer_version = None
 
     def setUp(self):
+        """
+        Create a new release.
+
+        Args:
+            self: (todo): write your description
+        """
         release = Release.objects.create(
             name='baz',
             bitbake_version=BitbakeVersion.objects.create(name='v1')
@@ -175,6 +187,12 @@ class TestLayerDetailsPage(SeleniumTestCase):
                         (expected_text, notification.text))
 
     def test_addrm_to_project(self):
+        """
+        This method to update the test layer
+
+        Args:
+            self: (todo): write your description
+        """
         self.get(self.url)
 
         # Add the layer

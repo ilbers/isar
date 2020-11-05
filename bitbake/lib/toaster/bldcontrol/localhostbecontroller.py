@@ -37,11 +37,28 @@ class LocalhostBEController(BuildEnvironmentController):
     """
 
     def __init__(self, be):
+        """
+        Initialize pokydir
+
+        Args:
+            self: (todo): write your description
+            be: (int): write your description
+        """
         super(LocalhostBEController, self).__init__(be)
         self.pokydirname = None
         self.islayerset = False
 
     def _shellcmd(self, command, cwd=None, nowait=False,env=None):
+        """
+        Execute a shell.
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            cwd: (todo): write your description
+            nowait: (bool): write your description
+            env: (todo): write your description
+        """
         if cwd is None:
             cwd = self.be.sourcedir
         if env is None:
@@ -77,6 +94,17 @@ class LocalhostBEController(BuildEnvironmentController):
         return local_checkout_path
 
     def setCloneStatus(self,bitbake,status,total,current,repo_name):
+        """
+        Sets the status of the repository.
+
+        Args:
+            self: (todo): write your description
+            bitbake: (str): write your description
+            status: (str): write your description
+            total: (str): write your description
+            current: (str): write your description
+            repo_name: (str): write your description
+        """
         bitbake.req.build.repos_cloned=current
         bitbake.req.build.repos_to_clone=total
         bitbake.req.build.progress_item=repo_name
@@ -315,10 +343,27 @@ class LocalhostBEController(BuildEnvironmentController):
 
 
     def readServerLogFile(self):
+        """
+        Read the contents of the builddir.
+
+        Args:
+            self: (todo): write your description
+        """
         return open(os.path.join(self.be.builddir, "toaster_server.log"), "r").read()
 
 
     def triggerBuild(self, bitbake, layers, variables, targets, brbe):
+        """
+        Called when the module.
+
+        Args:
+            self: (todo): write your description
+            bitbake: (int): write your description
+            layers: (list): write your description
+            variables: (str): write your description
+            targets: (list): write your description
+            brbe: (todo): write your description
+        """
         layers = self.setLayers(bitbake, layers, targets)
         is_merged_attr = bitbake.req.project.merged_attr
 

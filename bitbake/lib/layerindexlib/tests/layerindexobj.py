@@ -14,6 +14,12 @@ import logging
 
 class LayerIndexObjectsTest(LayersTest):
     def setUp(self):
+        """
+        Sets the layers layer for the layer.
+
+        Args:
+            self: (todo): write your description
+        """
         from layerindexlib import LayerIndexObj, Branch, LayerItem, LayerBranch, LayerDependency, Recipe, Machine, Distro
 
         LayersTest.setUp(self)
@@ -94,6 +100,12 @@ class LayerIndexObjectsTest(LayersTest):
                                         layerBranchId, 1, required=False)
 
     def test_branch(self):
+        """
+        Test if the branch exists.
+
+        Args:
+            self: (todo): write your description
+        """
         branch = self.index.branches[1]
         self.assertEqual(branch.id, 1)
         self.assertEqual(branch.name, 'test_branch')
@@ -101,6 +113,12 @@ class LayerIndexObjectsTest(LayersTest):
         self.assertEqual(branch.bitbake_branch, 'bb_test_branch')
 
     def test_layerItem(self):
+        """
+        Obtain the layer layer and store
+
+        Args:
+            self: (todo): write your description
+        """
         layerItem = self.index.layerItems[1]
         self.assertEqual(layerItem.id, 1)
         self.assertEqual(layerItem.name, 'test_layerItem')
@@ -124,6 +142,12 @@ class LayerIndexObjectsTest(LayersTest):
         self.assertIsNotNone(layerItem.updated)
 
     def test_layerBranch(self):
+        """
+        Method to see if a new layer.
+
+        Args:
+            self: (todo): write your description
+        """
         layerBranch = self.index.layerBranches[1]
         self.assertEqual(layerBranch.id, 1)
         self.assertEqual(layerBranch.collection, 'test_collection')
@@ -149,6 +173,12 @@ class LayerIndexObjectsTest(LayersTest):
         self.assertEqual(layerBranch.branch, self.index.branches[1])
 
     def test_layerDependency(self):
+        """
+        This function is called when the layer has been executed.
+
+        Args:
+            self: (todo): write your description
+        """
         layerDependency = self.index.layerDependencies[1]
         self.assertEqual(layerDependency.id, 1)
         self.assertEqual(layerDependency.layerbranch_id, 2)
@@ -172,6 +202,12 @@ class LayerIndexObjectsTest(LayersTest):
         self.assertEqual(layerDependency.dependency_layerBranch, self.index.layerBranches[1])
 
     def test_recipe(self):
+        """
+        Determine the recipes.
+
+        Args:
+            self: (todo): write your description
+        """
         recipe = self.index.recipes[1]
         self.assertEqual(recipe.id, 1)
         self.assertEqual(recipe.layerbranch_id, 1)
@@ -194,6 +230,12 @@ class LayerIndexObjectsTest(LayersTest):
         self.assertEqual(recipe.inherits, "")
 
     def test_machine(self):
+        """
+        Runs the machine.
+
+        Args:
+            self: (todo): write your description
+        """
         machine = self.index.machines[1]
         self.assertEqual(machine.id, 1)
         self.assertEqual(machine.layerbranch_id, 1)
@@ -205,6 +247,12 @@ class LayerIndexObjectsTest(LayersTest):
         self.assertIsNotNone(machine.updated)
 
     def test_distro(self):
+        """
+        Method to calculate the distribution.
+
+        Args:
+            self: (todo): write your description
+        """
         distro = self.index.distros[1]
         self.assertEqual(distro.id, 1)
         self.assertEqual(distro.layerbranch_id, 1)

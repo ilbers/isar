@@ -37,6 +37,13 @@ logger = logging.getLogger('wic')
 class Partition():
 
     def __init__(self, args, lineno):
+        """
+        Initialize the device
+
+        Args:
+            self: (todo): write your description
+            lineno: (int): write your description
+        """
         self.args = args
         self.active = args.active
         self.align = args.align

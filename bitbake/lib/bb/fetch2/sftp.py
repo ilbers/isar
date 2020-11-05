@@ -63,9 +63,24 @@ class SFTP(FetchMethod):
         return ud.type in ['sftp']
 
     def recommends_checksum(self, urldata):
+        """
+        Returns true if the checksum of the checksum.
+
+        Args:
+            self: (todo): write your description
+            urldata: (str): write your description
+        """
         return True
 
     def urldata_init(self, ud, d):
+        """
+        Initialize a udf file.
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+        """
         if 'protocol' in ud.parm and ud.parm['protocol'] == 'git':
             raise bb.fetch2.ParameterError(
                 "Invalid protocol - if you wish to fetch from a " +

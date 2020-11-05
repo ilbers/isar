@@ -30,6 +30,11 @@ import bb.fetch2
 # otherwise the process will never properly exit
 _server_connections = []
 def _terminate_connections():
+    """
+    Terminate all connections.
+
+    Args:
+    """
     for connection in _server_connections:
         connection.terminate()
 atexit.register(_terminate_connections)
@@ -37,8 +42,21 @@ atexit.register(_terminate_connections)
 class TinfoilUIException(Exception):
     """Exception raised when the UI returns non-zero from its main function"""
     def __init__(self, returncode):
+        """
+        Initialize the returncode.
+
+        Args:
+            self: (todo): write your description
+            returncode: (int): write your description
+        """
         self.returncode = returncode
     def __repr__(self):
+        """
+        Return a repr representation of - repr__ representation.
+
+        Args:
+            self: (todo): write your description
+        """
         return 'UI module main returned %d' % self.returncode
 
 class TinfoilCommandFailed(Exception):
@@ -48,9 +66,24 @@ class TinfoilDataStoreConnector:
     """Connector object used to enable access to datastore objects via tinfoil"""
 
     def __init__(self, tinfoil, dsindex):
+        """
+        Set tinfo object
+
+        Args:
+            self: (todo): write your description
+            tinfoil: (todo): write your description
+            dsindex: (int): write your description
+        """
         self.tinfoil = tinfoil
         self.dsindex = dsindex
     def getVar(self, name):
+        """
+        Return the value of a variable.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+        """
         value = self.tinfoil.run_command('dataStoreConnectorFindVar', self.dsindex, name)
         overrides = None
         if isinstance(value, dict):
@@ -62,14 +95,44 @@ class TinfoilDataStoreConnector:
                 del value['_connector_overrides']
         return value, overrides
     def getKeys(self):
+        """
+        Return a list of keys
+
+        Args:
+            self: (todo): write your description
+        """
         return set(self.tinfoil.run_command('dataStoreConnectorGetKeys', self.dsindex))
     def getVarHistory(self, name):
+        """
+        Get the history of a variable
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+        """
         return self.tinfoil.run_command('dataStoreConnectorGetVarHistory', self.dsindex, name)
     def expandPythonRef(self, varname, expr, d):
+        """
+        Expand a datastore expression.
+
+        Args:
+            self: (todo): write your description
+            varname: (str): write your description
+            expr: (todo): write your description
+            d: (todo): write your description
+        """
         ds = bb.remotedata.RemoteDatastores.transmit_datastore(d)
         ret = self.tinfoil.run_command('dataStoreConnectorExpandPythonRef', ds, varname, expr)
         return ret
     def setVar(self, varname, value):
+        """
+        Set variable name
+
+        Args:
+            self: (todo): write your description
+            varname: (str): write your description
+            value: (todo): write your description
+        """
         if self.dsindex is None:
             self.tinfoil.run_command('setVariable', varname, value)
         else:
@@ -77,6 +140,15 @@ class TinfoilDataStoreConnector:
             # be redirected to local side
             return True
     def setVarFlag(self, varname, flagname, value):
+        """
+        Sets a variable name for the given variable
+
+        Args:
+            self: (todo): write your description
+            varname: (str): write your description
+            flagname: (str): write your description
+            value: (todo): write your description
+        """
         if self.dsindex is None:
             self.tinfoil.run_command('dataStoreConnectorSetVarFlag', self.dsindex, varname, flagname, value)
         else:
@@ -84,6 +156,13 @@ class TinfoilDataStoreConnector:
             # be redirected to local side
             return True
     def delVar(self, varname):
+        """
+        Deletes a variable
+
+        Args:
+            self: (todo): write your description
+            varname: (str): write your description
+        """
         if self.dsindex is None:
             self.tinfoil.run_command('dataStoreConnectorDelVar', self.dsindex, varname)
         else:
@@ -91,6 +170,14 @@ class TinfoilDataStoreConnector:
             # be redirected to local side
             return True
     def delVarFlag(self, varname, flagname):
+        """
+        Delete a variable
+
+        Args:
+            self: (todo): write your description
+            varname: (str): write your description
+            flagname: (str): write your description
+        """
         if self.dsindex is None:
             self.tinfoil.run_command('dataStoreConnectorDelVar', self.dsindex, varname, flagname)
         else:
@@ -98,6 +185,14 @@ class TinfoilDataStoreConnector:
             # be redirected to local side
             return True
     def renameVar(self, name, newname):
+        """
+        Rename a variable
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            newname: (str): write your description
+        """
         if self.dsindex is None:
             self.tinfoil.run_command('dataStoreConnectorRenameVar', self.dsindex, name, newname)
         else:
@@ -114,10 +209,31 @@ class TinfoilCookerAdapter:
     class TinfoilCookerCollectionAdapter:
         """ cooker.collection adapter """
         def __init__(self, tinfoil):
+            """
+            Initialize tinfo object.
+
+            Args:
+                self: (todo): write your description
+                tinfoil: (todo): write your description
+            """
             self.tinfoil = tinfoil
         def get_file_appends(self, fn):
+            """
+            Returns the file_appends.
+
+            Args:
+                self: (str): write your description
+                fn: (str): write your description
+            """
             return self.tinfoil.get_file_appends(fn)
         def __getattr__(self, name):
+            """
+            Get the attribute of the given attribute.
+
+            Args:
+                self: (todo): write your description
+                name: (str): write your description
+            """
             if name == 'overlayed':
                 return self.tinfoil.get_overlayed_recipes()
             elif name == 'bbappends':
@@ -128,10 +244,23 @@ class TinfoilCookerAdapter:
     class TinfoilRecipeCacheAdapter:
         """ cooker.recipecache adapter """
         def __init__(self, tinfoil):
+            """
+            Initialize a tinfo object.
+
+            Args:
+                self: (todo): write your description
+                tinfoil: (todo): write your description
+            """
             self.tinfoil = tinfoil
             self._cache = {}
 
         def get_pkg_pn_fn(self):
+            """
+            Get packages that package name.
+
+            Args:
+                self: (todo): write your description
+            """
             pkg_pn = defaultdict(list, self.tinfoil.run_command('getRecipes') or [])
             pkg_fn = {}
             for pn, fnlist in pkg_pn.items():
@@ -141,6 +270,13 @@ class TinfoilCookerAdapter:
             self._cache['pkg_fn'] = pkg_fn
 
         def __getattr__(self, name):
+            """
+            Returns the value of a package attribute.
+
+            Args:
+                self: (todo): write your description
+                name: (str): write your description
+            """
             # Grab these only when they are requested since they aren't always used
             if name in self._cache:
                 return self._cache[name]
@@ -179,6 +315,13 @@ class TinfoilCookerAdapter:
             return attrvalue
 
     def __init__(self, tinfoil):
+        """
+        Initialize a cache.
+
+        Args:
+            self: (todo): write your description
+            tinfoil: (todo): write your description
+        """
         self.tinfoil = tinfoil
         self.collection = self.TinfoilCookerCollectionAdapter(tinfoil)
         self.recipecaches = {}
@@ -186,6 +329,13 @@ class TinfoilCookerAdapter:
         self.recipecaches[''] = self.TinfoilRecipeCacheAdapter(tinfoil)
         self._cache = {}
     def __getattr__(self, name):
+        """
+        Get a regexes object for a given name.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+        """
         # Grab these only when they are requested since they aren't always used
         if name in self._cache:
             return self._cache[name]
@@ -205,6 +355,13 @@ class TinfoilCookerAdapter:
         return attrvalue
 
     def findBestProvider(self, pn):
+        """
+        Find best best match.
+
+        Args:
+            self: (todo): write your description
+            pn: (int): write your description
+        """
         return self.tinfoil.find_best_provider(pn)
 
 
@@ -218,6 +375,17 @@ class TinfoilRecipeInfo:
     Tinfoil.parse_recipe().
     """
     def __init__(self, recipecache, d, pn, fn, fns):
+        """
+        Initialize the cache.
+
+        Args:
+            self: (todo): write your description
+            recipecache: (todo): write your description
+            d: (int): write your description
+            pn: (int): write your description
+            fn: (int): write your description
+            fns: (int): write your description
+        """
         self._recipecache = recipecache
         self._d = d
         self.pn = pn
@@ -231,6 +399,13 @@ class TinfoilRecipeInfo:
         self._cached_packages_dynamic = None
 
     def __getattr__(self, name):
+        """
+        Return a list of packages that match the specified package name.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+        """
         if name == 'alternates':
             return [x for x in self.fns if x != self.fn]
         elif name == 'rdepends':
@@ -281,6 +456,12 @@ class TinfoilRecipeInfo:
             clsname = os.path.splitext(os.path.basename(clsfile))[0]
             yield clsname
     def __str__(self):
+        """
+        Return the string representation of this object.
+
+        Args:
+            self: (todo): write your description
+        """
         return '%s' % self.pn
 
 
@@ -323,9 +504,24 @@ class Tinfoil:
                     self.localhandlers.append(handler)
 
     def __enter__(self):
+        """
+        Decor function.
+
+        Args:
+            self: (todo): write your description
+        """
         return self
 
     def __exit__(self, type, value, traceback):
+        """
+        Triggers the given callable.
+
+        Args:
+            self: (todo): write your description
+            type: (todo): write your description
+            value: (todo): write your description
+            traceback: (todo): write your description
+        """
         self.shutdown()
 
     def prepare(self, config_only=False, config_params=None, quiet=0, extra_features=None):
@@ -502,15 +698,41 @@ class Tinfoil:
         return OrderedDict(self.run_command('getSkippedRecipes'))
 
     def get_all_providers(self):
+        """
+        Return all providers.
+
+        Args:
+            self: (todo): write your description
+        """
         return defaultdict(list, self.run_command('allProviders'))
 
     def find_providers(self):
+        """
+        Return the providers list of - providers.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.run_command('findProviders')
 
     def find_best_provider(self, pn):
+        """
+        Find the best provider provider
+
+        Args:
+            self: (todo): write your description
+            pn: (todo): write your description
+        """
         return self.run_command('findBestProvider', pn)
 
     def get_runtime_providers(self, rdep):
+        """
+        Returns a list of an rep runtime.
+
+        Args:
+            self: (todo): write your description
+            rdep: (todo): write your description
+        """
         return self.run_command('getRuntimeProviders', rdep)
 
     def get_recipe_file(self, pn):
@@ -869,6 +1091,14 @@ class Tinfoil:
 class TinfoilConfigParameters(BitBakeConfigParameters):
 
     def __init__(self, config_only, **options):
+        """
+        Initialize the config_only.
+
+        Args:
+            self: (todo): write your description
+            config_only: (todo): write your description
+            options: (dict): write your description
+        """
         self.initial_options = options
         # Apply some sane defaults
         if not 'parse_only' in options:
@@ -883,6 +1113,13 @@ class TinfoilConfigParameters(BitBakeConfigParameters):
         super(TinfoilConfigParameters, self).__init__()
 
     def parseCommandLine(self, argv=None):
+        """
+        Parse command line options.
+
+        Args:
+            self: (todo): write your description
+            argv: (list): write your description
+        """
         # We don't want any parameters parsed from the command line
         opts = super(TinfoilConfigParameters, self).parseCommandLine([])
         for key, val in self.initial_options.items():

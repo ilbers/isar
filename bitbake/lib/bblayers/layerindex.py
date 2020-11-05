@@ -15,6 +15,12 @@ logger = logging.getLogger('bitbake-layers')
 
 
 def plugin_init(plugins):
+    """
+    Initialize a plugin.
+
+    Args:
+        plugins: (todo): write your description
+    """
     return LayerIndexPlugin()
 
 
@@ -25,6 +31,16 @@ class LayerIndexPlugin(ActionPlugin):
     """
 
     def get_fetch_layer(self, fetchdir, url, subdir, fetch_layer):
+        """
+        Download the layer.
+
+        Args:
+            self: (todo): write your description
+            fetchdir: (str): write your description
+            url: (str): write your description
+            subdir: (str): write your description
+            fetch_layer: (str): write your description
+        """
         layername = self.get_layer_name(url)
         if os.path.splitext(layername)[1] == '.git':
             layername = os.path.splitext(layername)[0]
@@ -52,6 +68,13 @@ class LayerIndexPlugin(ActionPlugin):
 """
 
         def _construct_url(baseurls, branches):
+            """
+            Construct baseurl string.
+
+            Args:
+                baseurls: (str): write your description
+                branches: (todo): write your description
+            """
             urls = []
             for baseurl in baseurls:
                 if baseurl[-1] != '/':
@@ -201,6 +224,13 @@ class LayerIndexPlugin(ActionPlugin):
         self.do_layerindex_fetch(args)
 
     def register_commands(self, sp):
+        """
+        Register the commands to the parser.
+
+        Args:
+            self: (todo): write your description
+            sp: (todo): write your description
+        """
         parser_layerindex_fetch = self.add_command(sp, 'layerindex-fetch', self.do_layerindex_fetch, parserecipes=False)
         parser_layerindex_fetch.add_argument('-n', '--show-only', help='show dependencies and do nothing else', action='store_true')
         parser_layerindex_fetch.add_argument('-b', '--branch', help='branch name to fetch')

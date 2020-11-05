@@ -85,6 +85,14 @@ class SourceGenerator(NodeVisitor):
     """
 
     def __init__(self, indent_with, add_line_information=False):
+        """
+        Initialize a new indentation.
+
+        Args:
+            self: (todo): write your description
+            indent_with: (todo): write your description
+            add_line_information: (todo): write your description
+        """
         self.result = []
         self.indent_with = indent_with
         self.add_line_information = add_line_information
@@ -92,6 +100,13 @@ class SourceGenerator(NodeVisitor):
         self.new_lines = 0
 
     def write(self, x):
+        """
+        Write a string to the output.
+
+        Args:
+            self: (todo): write your description
+            x: (todo): write your description
+        """
         if self.new_lines:
             if self.result:
                 self.result.append('\n' * self.new_lines)
@@ -100,12 +115,27 @@ class SourceGenerator(NodeVisitor):
         self.result.append(x)
 
     def newline(self, node=None, extra=0):
+        """
+        Create a new line.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+            extra: (dict): write your description
+        """
         self.new_lines = max(self.new_lines, 1 + extra)
         if node is not None and self.add_line_information:
             self.write('# line: %s' % node.lineno)
             self.new_lines = 1
 
     def body(self, statements):
+        """
+        Add the header.
+
+        Args:
+            self: (todo): write your description
+            statements: (list): write your description
+        """
         self.new_line = True
         self.indentation += 1
         for stmt in statements:
@@ -113,6 +143,13 @@ class SourceGenerator(NodeVisitor):
         self.indentation -= 1
 
     def body_or_else(self, node):
+        """
+        Handle or update a new body.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.body(node.body)
         if node.orelse:
             self.newline()
@@ -120,8 +157,20 @@ class SourceGenerator(NodeVisitor):
             self.body(node.orelse)
 
     def signature(self, node):
+        """
+        Writes signature.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         want_comma = []
         def write_comma():
+            """
+            Writes a write_comma.
+
+            Args:
+            """
             if want_comma:
                 self.write(', ')
             else:
@@ -142,6 +191,13 @@ class SourceGenerator(NodeVisitor):
             self.write('**' + node.kwarg)
 
     def decorators(self, node):
+        """
+        Decorator to all decorators.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         for decorator in node.decorator_list:
             self.newline(decorator)
             self.write('@')
@@ -150,6 +206,13 @@ class SourceGenerator(NodeVisitor):
     # Statements
 
     def visit_Assign(self, node):
+        """
+        Assign assignment.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.newline(node)
         for idx, target in enumerate(node.targets):
             if idx:
@@ -159,12 +222,26 @@ class SourceGenerator(NodeVisitor):
         self.visit(node.value)
 
     def visit_AugAssign(self, node):
+        """
+        Visit an astroid.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.newline(node)
         self.visit(node.target)
         self.write(BINOP_SYMBOLS[type(node.op)] + '=')
         self.visit(node.value)
 
     def visit_ImportFrom(self, node):
+        """
+        Visit an import statement.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.newline(node)
         self.write('from %s%s import ' % ('.' * node.level, node.module))
         for idx, item in enumerate(node.names):
@@ -173,16 +250,37 @@ class SourceGenerator(NodeVisitor):
             self.write(item)
 
     def visit_Import(self, node):
+        """
+        Visit an import node.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.newline(node)
         for item in node.names:
             self.write('import ')
             self.visit(item)
 
     def visit_Expr(self, node):
+        """
+        Visit a visitor node.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.newline(node)
         self.generic_visit(node)
 
     def visit_FunctionDef(self, node):
+        """
+        Visitor for function name.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.newline(extra=1)
         self.decorators(node)
         self.newline(node)
@@ -192,8 +290,20 @@ class SourceGenerator(NodeVisitor):
         self.body(node.body)
 
     def visit_ClassDef(self, node):
+        """
+        Visit a class definition.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         have_args = []
         def paren_or_comma():
+            """
+            Set or write or write or write or write or write or write if it.
+
+            Args:
+            """
             if have_args:
                 self.write(', ')
             else:
@@ -226,6 +336,13 @@ class SourceGenerator(NodeVisitor):
         self.body(node.body)
 
     def visit_If(self, node):
+        """
+        Handles an ast.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.newline(node)
         self.write('if ')
         self.visit(node.test)
@@ -247,6 +364,13 @@ class SourceGenerator(NodeVisitor):
                 break
 
     def visit_For(self, node):
+        """
+        Visit an astroid.
+
+        Args:
+            self: (todo): write your description
+            node: (str): write your description
+        """
         self.newline(node)
         self.write('for ')
         self.visit(node.target)
@@ -256,6 +380,13 @@ class SourceGenerator(NodeVisitor):
         self.body_or_else(node)
 
     def visit_While(self, node):
+        """
+        Visit statement.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.newline(node)
         self.write('while ')
         self.visit(node.test)
@@ -263,6 +394,13 @@ class SourceGenerator(NodeVisitor):
         self.body_or_else(node)
 
     def visit_With(self, node):
+        """
+        Create an astroid.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.newline(node)
         self.write('with ')
         self.visit(node.context_expr)
@@ -273,10 +411,24 @@ class SourceGenerator(NodeVisitor):
         self.body(node.body)
 
     def visit_Pass(self, node):
+        """
+        Called when an ast node
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.newline(node)
         self.write('pass')
 
     def visit_Print(self, node):
+        """
+        Print a summary node as a human - readable string.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         # XXX: python 2.6 only
         self.newline(node)
         self.write('print ')
@@ -294,6 +446,13 @@ class SourceGenerator(NodeVisitor):
             self.write(',')
 
     def visit_Delete(self, node):
+        """
+        Delete a node from the cache.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.newline(node)
         self.write('del ')
         for idx, target in enumerate(node):
@@ -302,6 +461,13 @@ class SourceGenerator(NodeVisitor):
             self.visit(target)
 
     def visit_TryExcept(self, node):
+        """
+        Visit handler.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.newline(node)
         self.write('try:')
         self.body(node.body)
@@ -309,6 +475,13 @@ class SourceGenerator(NodeVisitor):
             self.visit(handler)
 
     def visit_TryFinally(self, node):
+        """
+        Visit an ast node.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.newline(node)
         self.write('try:')
         self.body(node.body)
@@ -317,27 +490,69 @@ class SourceGenerator(NodeVisitor):
         self.body(node.finalbody)
 
     def visit_Global(self, node):
+        """
+        Visit an astroid.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.newline(node)
         self.write('global ' + ', '.join(node.names))
 
     def visit_Nonlocal(self, node):
+        """
+        Visit an ast node.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.newline(node)
         self.write('nonlocal ' + ', '.join(node.names))
 
     def visit_Return(self, node):
+        """
+        Visit statement
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.newline(node)
         self.write('return ')
         self.visit(node.value)
 
     def visit_Break(self, node):
+        """
+        Visit a breakpoint node
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.newline(node)
         self.write('break')
 
     def visit_Continue(self, node):
+        """
+        Visit a function
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.newline(node)
         self.write('continue')
 
     def visit_Raise(self, node):
+        """
+        Visit an astise statement
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         # XXX: Python 2.6 / 3.0 compatibility
         self.newline(node)
         self.write('raise')
@@ -359,12 +574,31 @@ class SourceGenerator(NodeVisitor):
     # Expressions
 
     def visit_Attribute(self, node):
+        """
+        Visit an attribute node.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.visit(node.value)
         self.write('.' + node.attr)
 
     def visit_Call(self, node):
+        """
+        Call function call.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         want_comma = []
         def write_comma():
+            """
+            Writes a write_comma.
+
+            Args:
+            """
             if want_comma:
                 self.write(', ')
             else:
@@ -390,18 +624,53 @@ class SourceGenerator(NodeVisitor):
         self.write(')')
 
     def visit_Name(self, node):
+        """
+        Change the name of node.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.write(node.id)
 
     def visit_Str(self, node):
+        """
+        Recursively print an ast node.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.write(repr(node.s))
 
     def visit_Bytes(self, node):
+        """
+        Recursively write bytes to the stream.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.write(repr(node.s))
 
     def visit_Num(self, node):
+        """
+        Visitor for write an ast node.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.write(repr(node.n))
 
     def visit_Tuple(self, node):
+        """
+        Handle a tuple.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.write('(')
         idx = -1
         for idx, item in enumerate(node.elts):
@@ -411,7 +680,21 @@ class SourceGenerator(NodeVisitor):
         self.write(idx and ')' or ',)')
 
     def sequence_visit(left, right):
+        """
+        Visitor for sequence.
+
+        Args:
+            left: (todo): write your description
+            right: (todo): write your description
+        """
         def visit(self, node):
+            """
+            Visit an ast node.
+
+            Args:
+                self: (todo): write your description
+                node: (todo): write your description
+            """
             self.write(left)
             for idx, item in enumerate(node.elts):
                 if idx:
@@ -425,6 +708,13 @@ class SourceGenerator(NodeVisitor):
     del sequence_visit
 
     def visit_Dict(self, node):
+        """
+        Dump dictionary keys.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.write('{')
         for idx, (key, value) in enumerate(zip(node.keys, node.values)):
             if idx:
@@ -435,11 +725,25 @@ class SourceGenerator(NodeVisitor):
         self.write('}')
 
     def visit_BinOp(self, node):
+        """
+        Visit binary operator.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.visit(node.left)
         self.write(' %s ' % BINOP_SYMBOLS[type(node.op)])
         self.visit(node.right)
 
     def visit_BoolOp(self, node):
+        """
+        Bool op.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.write('(')
         for idx, value in enumerate(node.values):
             if idx:
@@ -448,6 +752,13 @@ class SourceGenerator(NodeVisitor):
         self.write(')')
 
     def visit_Compare(self, node):
+        """
+        Recursively
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.write('(')
         self.write(node.left)
         for op, right in zip(node.ops, node.comparators):
@@ -456,6 +767,13 @@ class SourceGenerator(NodeVisitor):
         self.write(')')
 
     def visit_UnaryOp(self, node):
+        """
+        Handle op and write operation.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.write('(')
         op = UNARYOP_SYMBOLS[type(node.op)]
         self.write(op)
@@ -465,12 +783,26 @@ class SourceGenerator(NodeVisitor):
         self.write(')')
 
     def visit_Subscript(self, node):
+        """
+        Visit a subscript node.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.visit(node.value)
         self.write('[')
         self.visit(node.slice)
         self.write(']')
 
     def visit_Slice(self, node):
+        """
+        Visit an ast node.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         if node.lower is not None:
             self.visit(node.lower)
         self.write(':')
@@ -482,26 +814,68 @@ class SourceGenerator(NodeVisitor):
                 self.visit(node.step)
 
     def visit_ExtSlice(self, node):
+        """
+        Recursively write an ast node.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         for idx, item in node.dims:
             if idx:
                 self.write(', ')
             self.visit(item)
 
     def visit_Yield(self, node):
+        """
+        Implement generator.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.write('yield ')
         self.visit(node.value)
 
     def visit_Lambda(self, node):
+        """
+        Visit lambda function.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.write('lambda ')
         self.signature(node.args)
         self.write(': ')
         self.visit(node.body)
 
     def visit_Ellipsis(self, node):
+        """
+        Add an astroid node.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.write('Ellipsis')
 
     def generator_visit(left, right):
+        """
+        Generate a generator that left todo.
+
+        Args:
+            left: (todo): write your description
+            right: (todo): write your description
+        """
         def visit(self, node):
+            """
+            Visition.
+
+            Args:
+                self: (todo): write your description
+                node: (todo): write your description
+            """
             self.write(left)
             self.visit(node.elt)
             for comprehension in node.generators:
@@ -515,6 +889,13 @@ class SourceGenerator(NodeVisitor):
     del generator_visit
 
     def visit_DictComp(self, node):
+        """
+        Dump dictionary comprehension.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.write('{')
         self.visit(node.key)
         self.write(': ')
@@ -524,6 +905,13 @@ class SourceGenerator(NodeVisitor):
         self.write('}')
 
     def visit_IfExp(self, node):
+        """
+        Visitor.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.visit(node.body)
         self.write(' if ')
         self.visit(node.test)
@@ -531,10 +919,24 @@ class SourceGenerator(NodeVisitor):
         self.visit(node.orelse)
 
     def visit_Starred(self, node):
+        """
+        Visit a lookreduce }
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.write('*')
         self.visit(node.value)
 
     def visit_Repr(self, node):
+        """
+        Visit a variable
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         # XXX: python 2.6 only
         self.write('`')
         self.visit(node.value)
@@ -543,11 +945,25 @@ class SourceGenerator(NodeVisitor):
     # Helper Nodes
 
     def visit_alias(self, node):
+        """
+        Add an astroid.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.write(node.name)
         if node.asname is not None:
             self.write(' as ' + node.asname)
 
     def visit_comprehension(self, node):
+        """
+        Visition.
+
+        Args:
+            self: (todo): write your description
+            node: (str): write your description
+        """
         self.write(' for ')
         self.visit(node.target)
         self.write(' in ')
@@ -558,6 +974,13 @@ class SourceGenerator(NodeVisitor):
                 self.visit(if_)
 
     def visit_excepthandler(self, node):
+        """
+        Visit an wrapped function as an astroid.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         self.newline(node)
         self.write('except')
         if node.type is not None:

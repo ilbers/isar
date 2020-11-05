@@ -19,6 +19,15 @@ class LayersTypeAhead(ToasterTypeAhead):
     configuration """
 
     def apply_search(self, search_term, prj, request):
+        """
+        Perform a search to the model.
+
+        Args:
+            self: (todo): write your description
+            search_term: (str): write your description
+            prj: (todo): write your description
+            request: (todo): write your description
+        """
         layers = prj.get_all_compatible_layer_versions()
         layers = layers.order_by('layer__name')
 
@@ -64,6 +73,15 @@ class MachinesTypeAhead(ToasterTypeAhead):
     configuration """
 
     def apply_search(self, search_term, prj, request):
+        """
+        Apply a search.
+
+        Args:
+            self: (todo): write your description
+            search_term: (str): write your description
+            prj: (todo): write your description
+            request: (todo): write your description
+        """
         machines = prj.get_available_machines()
         machines = machines.order_by("name")
 
@@ -94,9 +112,24 @@ class DistrosTypeAhead(ToasterTypeAhead):
     """ Typeahead for all the distros available in the current project's
     configuration """
     def __init__(self):
+        """
+        Initialize the object
+
+        Args:
+            self: (todo): write your description
+        """
         super(DistrosTypeAhead, self).__init__()
 
     def apply_search(self, search_term, prj, request):
+        """
+        Apply a search.
+
+        Args:
+            self: (todo): write your description
+            search_term: (str): write your description
+            prj: (todo): write your description
+            request: (todo): write your description
+        """
         distros = prj.get_available_distros()
         distros = distros.order_by("name")
 
@@ -124,6 +157,15 @@ class RecipesTypeAhead(ToasterTypeAhead):
     """ Typeahead for all the recipes available in the current project's
     configuration """
     def apply_search(self, search_term, prj, request):
+        """
+        Applies a search.
+
+        Args:
+            self: (todo): write your description
+            search_term: (str): write your description
+            prj: (todo): write your description
+            request: (todo): write your description
+        """
         recipes = prj.get_available_recipes()
         recipes = recipes.order_by("name")
 
@@ -154,6 +196,15 @@ class RecipesTypeAhead(ToasterTypeAhead):
 class ProjectsTypeAhead(ToasterTypeAhead):
     """ Typeahead for all the projects, except for command line builds """
     def apply_search(self, search_term, prj, request):
+        """
+        Apply a search to the given search.
+
+        Args:
+            self: (todo): write your description
+            search_term: (str): write your description
+            prj: (todo): write your description
+            request: (todo): write your description
+        """
         projects = Project.objects.exclude(is_default=True).order_by("name")
 
         primary_results = projects.filter(name__istartswith=search_term)
@@ -177,6 +228,15 @@ class ProjectsTypeAhead(ToasterTypeAhead):
 
 class GitRevisionTypeAhead(ToasterTypeAhead):
     def apply_search(self, search_term, prj, request):
+        """
+        Perform git search. git repository.
+
+        Args:
+            self: (todo): write your description
+            search_term: (str): write your description
+            prj: (todo): write your description
+            request: (todo): write your description
+        """
         results = []
         git_url = request.GET.get('git_url')
         ls_remote = cache.get(git_url)

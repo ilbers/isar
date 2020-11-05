@@ -26,6 +26,12 @@ def re_match_strings(target, strings):
 
 class TaskEntry:
     def __init__(self):
+        """
+        Initialize the game
+
+        Args:
+            self: (todo): write your description
+        """
         self.tdepends = []
         self.idepends = []
         self.irdepends = []
@@ -35,6 +41,15 @@ class TaskData:
     BitBake Task Data implementation
     """
     def __init__(self, abort = True, skiplist = None, allowincomplete = False):
+        """
+        Initialize the task.
+
+        Args:
+            self: (todo): write your description
+            abort: (str): write your description
+            skiplist: (list): write your description
+            allowincomplete: (bool): write your description
+        """
         self.build_targets = {}
         self.run_targets = {}
 
@@ -78,6 +93,12 @@ class TaskData:
         self.add_extra_deps(fn, dataCache)
 
         def add_mcdepends(task):
+            """
+            Add mcdepends.
+
+            Args:
+                task: (todo): write your description
+            """
             for dep in task_deps['mcdepends'][task].split():
                 if len(dep.split(':')) != 5:
                     bb.msg.fatal("TaskData", "Error for %s:%s[%s], multiconfig dependency %s does not contain exactly four  ':' characters.\n Task '%s' should be specified in the form 'mc:fromMC:toMC:packagename:task'" % (fn, task, 'mcdepends', dep, 'mcdepends'))
@@ -86,6 +107,15 @@ class TaskData:
 
         # Common code for dep_name/depends = 'depends'/idepends and 'rdepends'/irdepends
         def handle_deps(task, dep_name, depends, seen):
+            """
+            Handle a list of dependencies.
+
+            Args:
+                task: (todo): write your description
+                dep_name: (str): write your description
+                depends: (todo): write your description
+                seen: (todo): write your description
+            """
             if dep_name in task_deps and task in task_deps[dep_name]:
                 ids = []
                 for dep in task_deps[dep_name][task].split():
@@ -161,6 +191,14 @@ class TaskData:
                 return
 
     def add_extra_deps(self, fn, dataCache):
+        """
+        Add extra data dictionary of this function.
+
+        Args:
+            self: (todo): write your description
+            fn: (todo): write your description
+            dataCache: (todo): write your description
+        """
         func = dataCache.extradepsfunc.get(fn, None)
         if func:
             bb.providers.buildWorldTargetList(dataCache)
@@ -309,6 +347,14 @@ class TaskData:
         return reasons
 
     def get_close_matches(self, item, provider_list):
+        """
+        Return the list of the most recent matches that item.
+
+        Args:
+            self: (todo): write your description
+            item: (str): write your description
+            provider_list: (list): write your description
+        """
         import difflib
         if self.skiplist:
             skipped = []
@@ -320,6 +366,15 @@ class TaskData:
         return difflib.get_close_matches(item, full_list, cutoff=0.7)
 
     def add_provider(self, cfgData, dataCache, item):
+        """
+        Add an item to the provider.
+
+        Args:
+            self: (todo): write your description
+            cfgData: (todo): write your description
+            dataCache: (todo): write your description
+            item: (todo): write your description
+        """
         try:
             self.add_provider_internal(cfgData, dataCache, item)
         except bb.providers.NoProvider:
@@ -527,6 +582,13 @@ class TaskData:
         # self.dump_data()
 
     def get_providermap(self, prefix=None):
+        """
+        Get providermap provider
+
+        Args:
+            self: (todo): write your description
+            prefix: (str): write your description
+        """
         provmap = {}
         for name in self.build_targets:
             if prefix and not name.startswith(prefix):
@@ -538,6 +600,12 @@ class TaskData:
         return provmap
 
     def get_mcdepends(self):
+        """
+        Returns the mcd : rtype : list
+
+        Args:
+            self: (todo): write your description
+        """
         return self.mcdepends
 
     def dump_data(self):

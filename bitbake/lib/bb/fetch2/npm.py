@@ -35,6 +35,11 @@ from   bb.fetch2 import UnpackError
 from   bb.fetch2 import ParameterError
 
 def subprocess_setup():
+    """
+    Sets up the signal
+
+    Args:
+    """
     # Python installs a SIGPIPE handler by default. This is usually not what
     # non-Python subprocesses expect.
     # SIGPIPE errors are known issues with gzip/bash
@@ -44,6 +49,13 @@ class Npm(FetchMethod):
 
     """Class to fetch urls via 'npm'"""
     def init(self, d):
+        """
+        Initialize the object.
+
+        Args:
+            self: (todo): write your description
+            d: (int): write your description
+        """
         pass
 
     def supports(self, ud, d):
@@ -53,9 +65,24 @@ class Npm(FetchMethod):
         return ud.type in ['npm']
 
     def debug(self, msg):
+        """
+        Log a debug message
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         logger.debug(1, "NpmFetch: %s", msg)
 
     def clean(self, ud, d):
+        """
+        Cleanup package
+
+        Args:
+            self: (todo): write your description
+            ud: (list): write your description
+            d: (list): write your description
+        """
         logger.debug(2, "Calling cleanup %s" % ud.pkgname)
         bb.utils.remove(ud.localpath, False)
         bb.utils.remove(ud.pkgdatadir, True)
@@ -97,6 +124,14 @@ class Npm(FetchMethod):
         ud.mirrortarballs = [mirrortarball]
 
     def need_update(self, ud, d):
+        """
+        Determine if a file exists
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+        """
         if os.path.exists(ud.localpath):
             return False
         return True
@@ -116,6 +151,18 @@ class Npm(FetchMethod):
         return filename.rstrip()
 
     def _unpackdep(self, ud, pkg, data, destdir, dldir, d):
+        """
+        Unpack a package
+
+        Args:
+            self: (todo): write your description
+            ud: (int): write your description
+            pkg: (todo): write your description
+            data: (array): write your description
+            destdir: (str): write your description
+            dldir: (str): write your description
+            d: (todo): write your description
+        """
         file = data[pkg]['tgz']
         logger.debug(2, "file to extract is %s" % file)
         if file.endswith('.tgz') or file.endswith('.tar.gz') or file.endswith('.tar.Z'):
@@ -142,6 +189,15 @@ class Npm(FetchMethod):
 
 
     def unpack(self, ud, destdir, d):
+        """
+        Unpack the contents of this function.
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            destdir: (str): write your description
+            d: (todo): write your description
+        """
         dldir = d.getVar("DL_DIR")
         with open("%s/npm/%s" % (dldir, ud.bbnpmmanifest)) as datafile:
             workobj = json.load(datafile)
@@ -166,6 +222,19 @@ class Npm(FetchMethod):
             return pdata
 
     def _getdependencies(self, pkg, data, version, d, ud, optional=False, fetchedlist=None):
+        """
+        Return list of dependencies
+
+        Args:
+            self: (todo): write your description
+            pkg: (str): write your description
+            data: (todo): write your description
+            version: (str): write your description
+            d: (str): write your description
+            ud: (str): write your description
+            optional: (todo): write your description
+            fetchedlist: (list): write your description
+        """
         if fetchedlist is None:
             fetchedlist = []
         pkgfullname = pkg
@@ -215,6 +284,20 @@ class Npm(FetchMethod):
             self._getdependencies(dep, data[pkg]['deps'], version, d, ud, fetchedlist=fetchedlist)
 
     def _getshrinkeddependencies(self, pkg, data, version, d, ud, lockdown, manifest, toplevel=True):
+        """
+        Generate the merkink of packages for a given package.
+
+        Args:
+            self: (todo): write your description
+            pkg: (todo): write your description
+            data: (dict): write your description
+            version: (str): write your description
+            d: (todo): write your description
+            ud: (todo): write your description
+            lockdown: (todo): write your description
+            manifest: (todo): write your description
+            toplevel: (todo): write your description
+        """
         logger.debug(2, "NPM shrinkwrap file is %s" % data)
         if toplevel:
             name = data.get('name', None)
@@ -288,6 +371,14 @@ class Npm(FetchMethod):
             json.dump(jsondepobj, outfile)
 
     def build_mirror_data(self, ud, d):
+        """
+        Builds a single package
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+        """
         # Generate a mirror tarball if needed
         if ud.write_tarballs and not os.path.exists(ud.fullmirror):
             # it's possible that this symlink points to read-only filesystem with PREMIRROR

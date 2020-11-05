@@ -23,34 +23,90 @@ class BitbakeController(object):
     """
 
     def __init__(self, be):
+        """
+        Initialize the server.
+
+        Args:
+            self: (todo): write your description
+            be: (int): write your description
+        """
         import bb.server.xmlrpcclient
         self.connection = bb.server.xmlrpcclient._create_server(be.bbaddress,
                                                           int(be.bbport))[0]
 
     def _runCommand(self, command):
+        """
+        Run a command on the given command.
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+        """
         result, error = self.connection.runCommand(command)
         if error:
             raise Exception(error)
         return result
 
     def disconnect(self):
+        """
+        Disconnect from the client.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.connection.removeClient()
 
     def setVariable(self, name, value):
+        """
+        Set a variable variable
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            value: (todo): write your description
+        """
         return self._runCommand(["setVariable", name, value])
 
     def getVariable(self, name):
+        """
+        Get a variable with the given name.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+        """
         return self._runCommand(["getVariable", name])
 
     def triggerEvent(self, event):
+        """
+        Trigger an event.
+
+        Args:
+            self: (todo): write your description
+            event: (todo): write your description
+        """
         return self._runCommand(["triggerEvent", event])
 
     def build(self, targets, task = None):
+        """
+        Build a task object.
+
+        Args:
+            self: (todo): write your description
+            targets: (list): write your description
+            task: (todo): write your description
+        """
         if task is None:
             task = "build"
         return self._runCommand(["buildTargets", targets, task])
 
     def forceShutDown(self):
+        """
+        Returns a list of watcher.
+
+        Args:
+            self: (todo): write your description
+        """
         return self._runCommand(["stateForceShutdown"])
 
 
@@ -117,6 +173,16 @@ class BuildEnvironmentController(object):
         raise NotImplementedError("Must return the REST URL of the artifact")
 
     def triggerBuild(self, bitbake, layers, variables, targets):
+        """
+        Displays the given bitbake.
+
+        Args:
+            self: (todo): write your description
+            bitbake: (int): write your description
+            layers: (list): write your description
+            variables: (str): write your description
+            targets: (list): write your description
+        """
         raise NotImplementedError("Must override BE release")
 
 class ShellCmdException(Exception):

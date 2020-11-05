@@ -11,16 +11,35 @@ import select
 logger = logging.getLogger('BitBake.Process')
 
 def subprocess_setup():
+    """
+    Sets up the signal
+
+    Args:
+    """
     # Python installs a SIGPIPE handler by default. This is usually not what
     # non-Python subprocesses expect.
     signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
 class CmdError(RuntimeError):
     def __init__(self, command, msg=None):
+        """
+        Create a new command.
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            msg: (str): write your description
+        """
         self.command = command
         self.msg = msg
 
     def __str__(self):
+        """
+        Return a string representation of the message.
+
+        Args:
+            self: (todo): write your description
+        """
         if not isinstance(self.command, str):
             cmd = subprocess.list2cmdline(self.command)
         else:
@@ -33,16 +52,38 @@ class CmdError(RuntimeError):
 
 class NotFoundError(CmdError):
     def __str__(self):
+        """
+        Return the string representation of the instruction.
+
+        Args:
+            self: (todo): write your description
+        """
         return CmdError.__str__(self) + ": command not found"
 
 class ExecutionError(CmdError):
     def __init__(self, command, exitcode, stdout = None, stderr = None):
+        """
+        Execute the command.
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            exitcode: (int): write your description
+            stdout: (todo): write your description
+            stderr: (todo): write your description
+        """
         CmdError.__init__(self, command)
         self.exitcode = exitcode
         self.stdout = stdout
         self.stderr = stderr
 
     def __str__(self):
+        """
+        Return the exit string of the process.
+
+        Args:
+            self: (todo): write your description
+        """
         message = ""
         if self.stderr:
             message += self.stderr
@@ -64,11 +105,26 @@ class Popen(subprocess.Popen):
     }
 
     def __init__(self, *args, **kwargs):
+        """
+        Initialize a subprocess.
+
+        Args:
+            self: (todo): write your description
+        """
         options = dict(self.defaults)
         options.update(kwargs)
         subprocess.Popen.__init__(self, *args, **options)
 
 def _logged_communicate(pipe, log, input, extrafiles):
+    """
+    Logged data to stdin.
+
+    Args:
+        pipe: (todo): write your description
+        log: (todo): write your description
+        input: (str): write your description
+        extrafiles: (list): write your description
+    """
     if pipe.stdin:
         if input is not None:
             pipe.stdin.write(input)
@@ -88,6 +144,12 @@ def _logged_communicate(pipe, log, input, extrafiles):
         rin.append(fobj)
 
     def readextras(selected):
+        """
+        Recompress files
+
+        Args:
+            selected: (bool): write your description
+        """
         for fobj, func in extrafiles:
             if fobj in selected:
                 try:
@@ -99,6 +161,15 @@ def _logged_communicate(pipe, log, input, extrafiles):
                     func(data)
 
     def read_all_pipes(log, rin, outdata, errdata):
+        """
+        Reads all pending pipes
+
+        Args:
+            log: (todo): write your description
+            rin: (int): write your description
+            outdata: (todo): write your description
+            errdata: (todo): write your description
+        """
         rlist = rin
         stdoutbuf = b""
         stderrbuf = b""

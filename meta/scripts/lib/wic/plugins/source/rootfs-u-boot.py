@@ -34,6 +34,21 @@ class RootfsUBootPlugin(RootfsPlugin):
     def do_prepare_partition(cls, part, source_params, cr, cr_workdir,
                              oe_builddir, bootimg_dir, kernel_dir,
                              krootfs_dir, native_sysroot):
+        """
+        Prepare the partition.
+
+        Args:
+            cls: (todo): write your description
+            part: (todo): write your description
+            source_params: (dict): write your description
+            cr: (todo): write your description
+            cr_workdir: (str): write your description
+            oe_builddir: (str): write your description
+            bootimg_dir: (str): write your description
+            kernel_dir: (str): write your description
+            krootfs_dir: (str): write your description
+            native_sysroot: (str): write your description
+        """
         # Prologue from RootfsPlugin.do_prepare_partition, retrieves the
         # rootfs directory
         if part.rootfs_dir is None:

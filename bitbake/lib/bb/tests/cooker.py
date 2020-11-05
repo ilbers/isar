@@ -14,6 +14,12 @@ import logging
 # Cooker tests
 class CookerTest(unittest.TestCase):
     def setUp(self):
+        """
+        Sets the working copy.
+
+        Args:
+            self: (todo): write your description
+        """
         # At least one variable needs to be set
         self.d = bb.data.init()
         topdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "testdata/cooker")
@@ -24,6 +30,14 @@ class CookerTest(unittest.TestCase):
            No bb files matched ...'''
 
         def append_collection(topdir, path, d):
+            """
+            Add a new collection.
+
+            Args:
+                topdir: (str): write your description
+                path: (str): write your description
+                d: (todo): write your description
+            """
             collection = path.split('/')[-1]
             pattern = "^" + topdir + "/" + path + "/"
             regex = re.compile(pattern)
@@ -50,10 +64,23 @@ class CookerTest(unittest.TestCase):
 
         class LogHandler(logging.Handler):
             def __init__(self):
+                """
+                Initialize the logger.
+
+                Args:
+                    self: (todo): write your description
+                """
                 logging.Handler.__init__(self)
                 self.logdata = []
 
             def emit(self, record):
+                """
+                Emit a record.
+
+                Args:
+                    self: (todo): write your description
+                    record: (todo): write your description
+                """
                 self.logdata.append(record.getMessage())
 
         # Move cooker to use my special logging

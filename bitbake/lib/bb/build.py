@@ -31,6 +31,12 @@ logger = logging.getLogger('BitBake.Build')
 __mtime_cache = {}
 
 def cached_mtime_noerror(f):
+    """
+    Cached cache time.
+
+    Args:
+        f: (todo): write your description
+    """
     if f not in __mtime_cache:
         try:
             __mtime_cache[f] = os.stat(f)[stat.ST_MTIME]
@@ -39,6 +45,11 @@ def cached_mtime_noerror(f):
     return __mtime_cache[f]
 
 def reset_cache():
+    """
+    Reset the cache.
+
+    Args:
+    """
     global __mtime_cache
     __mtime_cache = {}
 
@@ -58,6 +69,15 @@ class TaskBase(event.Event):
     """Base class for task events"""
 
     def __init__(self, t, logfile, d):
+        """
+        Initialize log file
+
+        Args:
+            self: (todo): write your description
+            t: (int): write your description
+            logfile: (todo): write your description
+            d: (todo): write your description
+        """
         self._task = t
         self._package = d.getVar("PF")
         self._mc = d.getVar("BB_CURRENT_MC")
@@ -69,12 +89,31 @@ class TaskBase(event.Event):
         self._message = "recipe %s: task %s: %s" % (d.getVar("PF"), t, self.getDisplayName())
 
     def getTask(self):
+        """
+        Returns a task object.
+
+        Args:
+            self: (todo): write your description
+        """
         return self._task
 
     def setTask(self, task):
+        """
+        Sets the task s task.
+
+        Args:
+            self: (todo): write your description
+            task: (todo): write your description
+        """
         self._task = task
 
     def getDisplayName(self):
+        """
+        Returns the name of the display
+
+        Args:
+            self: (todo): write your description
+        """
         return bb.event.getName(self)[4:]
 
     task = property(getTask, setTask, None, "task property")
@@ -82,6 +121,16 @@ class TaskBase(event.Event):
 class TaskStarted(TaskBase):
     """Task execution started"""
     def __init__(self, t, logfile, taskflags, d):
+        """
+        Initialize logging. dt.
+
+        Args:
+            self: (todo): write your description
+            t: (int): write your description
+            logfile: (todo): write your description
+            taskflags: (int): write your description
+            d: (int): write your description
+        """
         super(TaskStarted, self).__init__(t, logfile, d)
         self.taskflags = taskflags
 
@@ -92,18 +141,42 @@ class TaskFailed(TaskBase):
     """Task execution failed"""
 
     def __init__(self, task, logfile, metadata, errprinted = False):
+        """
+        Initialize the task.
+
+        Args:
+            self: (todo): write your description
+            task: (str): write your description
+            logfile: (todo): write your description
+            metadata: (dict): write your description
+            errprinted: (int): write your description
+        """
         self.errprinted = errprinted
         super(TaskFailed, self).__init__(task, logfile, metadata)
 
 class TaskFailedSilent(TaskBase):
     """Task execution failed (silently)"""
     def getDisplayName(self):
+        """
+        Returns the name of the display
+
+        Args:
+            self: (todo): write your description
+        """
         # Don't need to tell the user it was silent
         return "Failed"
 
 class TaskInvalid(TaskBase):
 
     def __init__(self, task, metadata):
+        """
+        Initialize task.
+
+        Args:
+            self: (todo): write your description
+            task: (str): write your description
+            metadata: (dict): write your description
+        """
         super(TaskInvalid, self).__init__(task, None, metadata)
         self._message = "No such task '%s'" % task
 
@@ -122,6 +195,14 @@ class TaskProgress(event.Event):
     user if specified.
     """
     def __init__(self, progress, rate=None):
+        """
+        Initialize the progress.
+
+        Args:
+            self: (todo): write your description
+            progress: (bool): write your description
+            rate: (todo): write your description
+        """
         self.progress = progress
         self.rate = rate
         event.Event.__init__(self)
@@ -129,25 +210,65 @@ class TaskProgress(event.Event):
 
 class LogTee(object):
     def __init__(self, logger, outfile):
+        """
+        Initialize a logger.
+
+        Args:
+            self: (todo): write your description
+            logger: (todo): write your description
+            outfile: (str): write your description
+        """
         self.outfile = outfile
         self.logger = logger
         self.name = self.outfile.name
 
     def write(self, string):
+        """
+        Write string to the output stream.
+
+        Args:
+            self: (todo): write your description
+            string: (str): write your description
+        """
         self.logger.plain(string)
         self.outfile.write(string)
 
     def __enter__(self):
+        """
+        Enter outfile.
+
+        Args:
+            self: (todo): write your description
+        """
         self.outfile.__enter__()
         return self
 
     def __exit__(self, *excinfo):
+        """
+        Exit the exit code.
+
+        Args:
+            self: (todo): write your description
+            excinfo: (todo): write your description
+        """
         self.outfile.__exit__(*excinfo)
 
     def __repr__(self):
+        """
+        Return a human - friendly name.
+
+        Args:
+            self: (todo): write your description
+        """
         return '<LogTee {0}>'.format(self.name)
 
     def flush(self):
+        """
+        Flush the file.
+
+        Args:
+            self: (todo): write your description
+        """
         self.outfile.flush()
 
 
@@ -156,19 +277,51 @@ class StdoutNoopContextManager:
     This class acts like sys.stdout, but adds noop __enter__ and __exit__ methods.
     """
     def __enter__(self):
+        """
+        Determine command.
+
+        Args:
+            self: (todo): write your description
+        """
         return sys.stdout
 
     def __exit__(self, *exc_info):
+        """
+        Calls the given exception.
+
+        Args:
+            self: (todo): write your description
+            exc_info: (todo): write your description
+        """
         pass
 
     def write(self, string):
+        """
+        Write string to sys. stdout.
+
+        Args:
+            self: (todo): write your description
+            string: (str): write your description
+        """
         return sys.stdout.write(string)
 
     def flush(self):
+        """
+        Flush the stream to stdout.
+
+        Args:
+            self: (todo): write your description
+        """
         sys.stdout.flush()
 
     @property
     def name(self):
+        """
+        Return the name of the program.
+
+        Args:
+            self: (todo): write your description
+        """
         return sys.stdout.name
 
 
@@ -300,6 +453,11 @@ def exec_func_python(func, d, runfile, cwd=None):
                 bb.warn("%s: Cannot restore cwd %s: %s" % (func, olddir, e))
 
 def shell_trap_code():
+    """
+    Return a string containing a - shell code.
+
+    Args:
+    """
     return '''#!/bin/sh\n
 # Emit a useful diagnostic if something fails:
 bb_exit_handler() {
@@ -318,6 +476,15 @@ set -e
 '''
 
 def create_progress_handler(func, progress, logfile, d):
+    """
+    Decorator for logging.
+
+    Args:
+        func: (todo): write your description
+        progress: (str): write your description
+        logfile: (str): write your description
+        d: (todo): write your description
+    """
     if progress == 'percent':
         # Use default regex
         return bb.progress.BasicProgressHandler(d, outfile=logfile)
@@ -336,6 +503,13 @@ def create_progress_handler(func, progress, logfile, d):
         _, cls, otherargs = parts[0], parts[1], (parts[2] or None) if parts[2:] else None
         if cls:
             def resolve(x, y):
+                """
+                Resolve x and y.
+
+                Args:
+                    x: (dict): write your description
+                    y: (int): write your description
+                """
                 if not x:
                     return None
                 if isinstance(x, ModuleType):
@@ -400,6 +574,12 @@ exit $ret
 
     fifobuffer = bytearray()
     def readfifo(data):
+        """
+        Reads data from socket.
+
+        Args:
+            data: (array): write your description
+        """
         nonlocal fifobuffer
         fifobuffer.extend(data)
         while fifobuffer:
@@ -454,6 +634,14 @@ exit $ret
     bb.debug(2, "Shell function %s finished" % func)
 
 def _task_data(fn, task, d):
+    """
+    Create a task data
+
+    Args:
+        fn: (todo): write your description
+        task: (todo): write your description
+        d: (todo): write your description
+    """
     localdata = bb.data.createCopy(d)
     localdata.setVar('BB_FILENAME', fn)
     localdata.setVar('BB_CURRENTTASK', task[3:])
@@ -527,9 +715,22 @@ def _exec_task(fn, task, d, quieterr):
 
     class ErrorCheckHandler(logging.Handler):
         def __init__(self):
+            """
+            Initialize the logger
+
+            Args:
+                self: (todo): write your description
+            """
             self.triggered = False
             logging.Handler.__init__(self, logging.ERROR)
         def emit(self, record):
+            """
+            Emit a record.
+
+            Args:
+                self: (todo): write your description
+                record: (todo): write your description
+            """
             if getattr(record, 'forcelog', False):
                 self.triggered = False
             else:
@@ -622,6 +823,15 @@ def _exec_task(fn, task, d, quieterr):
     return 0
 
 def exec_task(fn, task, d, profile = False):
+    """
+    Execute a function asynchronously.
+
+    Args:
+        fn: (str): write your description
+        task: (todo): write your description
+        d: (todo): write your description
+        profile: (str): write your description
+    """
     try:
         quieterr = False
         if d.getVarFlag(task, "quieterrors", False) is not None:
@@ -779,6 +989,13 @@ def stampfile(taskname, d, file_name = None, noextra=False):
     return stamp_internal(taskname, d, file_name, noextra=noextra)
 
 def add_tasks(tasklist, d):
+    """
+    Add a list of the task list.
+
+    Args:
+        tasklist: (list): write your description
+        d: (todo): write your description
+    """
     task_deps = d.getVar('_task_deps', False)
     if not task_deps:
         task_deps = {}
@@ -797,6 +1014,12 @@ def add_tasks(tasklist, d):
 
         flags = d.getVarFlags(task)
         def getTask(name):
+            """
+            Get a task.
+
+            Args:
+                name: (str): write your description
+            """
             if not name in task_deps:
                 task_deps[name] = {}
             if name in flags:
@@ -826,6 +1049,15 @@ def add_tasks(tasklist, d):
     d.setVar('_task_deps', task_deps)
 
 def addtask(task, before, after, d):
+    """
+    Add a new task. : param task.
+
+    Args:
+        task: (todo): write your description
+        before: (str): write your description
+        after: (str): write your description
+        d: (todo): write your description
+    """
     if task[:3] != "do_":
         task = "do_" + task
 
@@ -850,6 +1082,13 @@ def addtask(task, before, after, d):
                 d.setVarFlag(entry, "deps", [task] + existing)
 
 def deltask(task, d):
+    """
+    Deltask the delt.
+
+    Args:
+        task: (todo): write your description
+        d: (todo): write your description
+    """
     if task[:3] != "do_":
         task = "do_" + task
 
@@ -897,6 +1136,14 @@ def tasksbetween(task_start, task_end, d):
     outtasks = []
     tasks = list(filter(lambda k: d.getVarFlag(k, "task"), d.keys()))
     def follow_chain(task, endtask, chain=None):
+        """
+        Follow the chain of tasks to the chain.
+
+        Args:
+            task: (todo): write your description
+            endtask: (todo): write your description
+            chain: (todo): write your description
+        """
         if not chain:
             chain = []
         chain.append(task)

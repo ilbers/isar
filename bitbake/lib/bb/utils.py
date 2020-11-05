@@ -36,6 +36,11 @@ python_extensions = importlib.machinery.all_suffixes()
 
 
 def clean_context():
+    """
+    Return the context.
+
+    Args:
+    """
     return {
         "os": os,
         "bb": bb,
@@ -43,10 +48,21 @@ def clean_context():
     }
 
 def get_context():
+    """
+    Returns the current context.
+
+    Args:
+    """
     return _context
     
 
 def set_context(ctx):
+    """
+    Set context.
+
+    Args:
+        ctx: (todo): write your description
+    """
     _context = ctx
 
 # Context used in better_exec, eval
@@ -56,6 +72,12 @@ class VersionStringException(Exception):
     """Exception raised when an invalid version specification is found"""
 
 def explode_version(s):
+    """
+    Explode a string.
+
+    Args:
+        s: (todo): write your description
+    """
     r = []
     alpha_regexp = re.compile(r'^([a-zA-Z]+)(.*)$')
     numeric_regexp = re.compile(r'^(\d+)(.*)$')
@@ -92,6 +114,13 @@ def split_version(s):
     return (e, v, r)
 
 def vercmp_part(a, b):
+    """
+    Verifies the version of the part of - a - byte integer.
+
+    Args:
+        a: (todo): write your description
+        b: (todo): write your description
+    """
     va = explode_version(a)
     vb = explode_version(b)
     while True:
@@ -119,6 +148,13 @@ def vercmp_part(a, b):
             return 1
 
 def vercmp(ta, tb):
+    """
+    Calculate the comparison of two components.
+
+    Args:
+        ta: (array): write your description
+        tb: (todo): write your description
+    """
     (ea, va, ra) = ta
     (eb, vb, rb) = tb
 
@@ -130,6 +166,13 @@ def vercmp(ta, tb):
     return r
 
 def vercmp_string(a, b):
+    """
+    Returns a version strings.
+
+    Args:
+        a: (todo): write your description
+        b: (todo): write your description
+    """
     ta = split_version(a)
     tb = split_version(b)
     return vercmp(ta, tb)
@@ -248,6 +291,12 @@ def explode_dep_versions2(s, *, sort=True):
     return r
 
 def explode_dep_versions(s):
+    """
+    Explode versions of python versions.
+
+    Args:
+        s: (todo): write your description
+    """
     r = explode_dep_versions2(s)
     for d in r:
         if not r[d]:
@@ -329,6 +378,17 @@ def better_compile(text, file, realfile, mode = "exec", lineno = 0):
         raise e
 
 def _print_exception(t, value, tb, realfile, text, context):
+    """
+    Prints the traceback information.
+
+    Args:
+        t: (todo): write your description
+        value: (str): write your description
+        tb: (todo): write your description
+        realfile: (str): write your description
+        text: (str): write your description
+        context: (todo): write your description
+    """
     error = []
     try:
         exception = traceback.format_exception_only(t, value)
@@ -410,9 +470,24 @@ def better_exec(code, context, text = None, realfile = "<code>", pythonexception
         raise e
 
 def simple_exec(code, context):
+    """
+    Simple simple simple simple simple python code.
+
+    Args:
+        code: (str): write your description
+        context: (todo): write your description
+    """
     exec(code, get_context(), context)
 
 def better_eval(source, locals, extraglobals = None):
+    """
+    Evaluate source.
+
+    Args:
+        source: (str): write your description
+        locals: (todo): write your description
+        extraglobals: (todo): write your description
+    """
     ctx = get_context()
     if extraglobals:
         ctx = copy.copy(ctx)
@@ -435,7 +510,20 @@ def fileslocked(files):
 
 @contextmanager
 def timeout(seconds):
+    """
+    A context manager that timeout seconds.
+
+    Args:
+        seconds: (float): write your description
+    """
     def timeout_handler(signum, frame):
+        """
+        Called when a signal is received.
+
+        Args:
+            signum: (int): write your description
+            frame: (todo): write your description
+        """
         pass
 
     original_handler = signal.signal(signal.SIGALRM, timeout_handler)
@@ -699,6 +787,13 @@ def remove(path, recurse=False, ionice=False):
                 raise
 
 def prunedir(topdir, ionice=False):
+    """
+    Remove a directory.
+
+    Args:
+        topdir: (str): write your description
+        ionice: (todo): write your description
+    """
     # Delete everything reachable from the directory named in 'topdir'.
     # CAUTION:  This is dangerous!
     if _check_unsafe_delete_path(topdir):
@@ -710,6 +805,14 @@ def prunedir(topdir, ionice=False):
 # but thats possibly insane and suffixes is probably going to be small
 #
 def prune_suffix(var, suffixes, d):
+    """
+    Prune the suffixes in the suffix.
+
+    Args:
+        var: (str): write your description
+        suffixes: (str): write your description
+        d: (int): write your description
+    """
     # See if var ends with any of the suffixes listed and
     # remove it if found
     for suffix in suffixes:
@@ -952,6 +1055,13 @@ def which(path, item, direction = 0, history = False, executable=False):
     return ""
 
 def to_boolean(string, default=None):
+    """
+    Convert string to boolean.
+
+    Args:
+        string: (str): write your description
+        default: (todo): write your description
+    """
     if not string:
         return default
 
@@ -995,6 +1105,16 @@ def contains(variable, checkvalues, truevalue, falsevalue, d):
     return falsevalue
 
 def contains_any(variable, checkvalues, truevalue, falsevalue, d):
+    """
+    Returns true if variable contains any of the variables.
+
+    Args:
+        variable: (str): write your description
+        checkvalues: (str): write your description
+        truevalue: (todo): write your description
+        falsevalue: (todo): write your description
+        d: (todo): write your description
+    """
     val = d.getVar(variable)
     if not val:
         return falsevalue
@@ -1032,12 +1152,30 @@ def filter(variable, checkvalues, d):
     return ' '.join(sorted(checkvalues & val))
 
 def cpu_count():
+    """
+    Returns the number of cpus.
+
+    Args:
+    """
     return multiprocessing.cpu_count()
 
 def nonblockingfd(fd):
+    """
+    Non - safe non - blocking.
+
+    Args:
+        fd: (todo): write your description
+    """
     fcntl.fcntl(fd, fcntl.F_SETFL, fcntl.fcntl(fd, fcntl.F_GETFL) | os.O_NONBLOCK)
 
 def process_profilelog(fn, pout = None):
+    """
+    Process a log file
+
+    Args:
+        fn: (todo): write your description
+        pout: (todo): write your description
+    """
     # Either call with a list of filenames and set pout or a filename and optionally pout.
     if not pout:
         pout = fn + '.processed'
@@ -1061,6 +1199,11 @@ def process_profilelog(fn, pout = None):
 # Was present to work around multiprocessing pool bugs in python < 2.7.3
 #
 def multiprocessingpool(*args, **kwargs):
+    """
+    Multiprocessing pool.
+
+    Args:
+    """
 
     import multiprocessing.pool
     #import multiprocessing.util
@@ -1068,7 +1211,20 @@ def multiprocessingpool(*args, **kwargs):
     # Deal with a multiprocessing bug where signals to the processes would be delayed until the work
     # completes. Putting in a timeout means the signals (like SIGINT/SIGTERM) get processed.
     def wrapper(func):
+        """
+        Wrap a function to wrap a timeout.
+
+        Args:
+            func: (callable): write your description
+        """
         def wrap(self, timeout=None):
+            """
+            Wrap a function with a timeout.
+
+            Args:
+                self: (todo): write your description
+                timeout: (float): write your description
+            """
             return func(self, timeout=timeout if timeout is not None else 1e100)
         return wrap
     multiprocessing.pool.IMapIterator.next = wrapper(multiprocessing.pool.IMapIterator.next)
@@ -1166,6 +1322,11 @@ def edit_metadata(meta_lines, variables, varfunc, match_overrides=False):
     var_end = ''
 
     def handle_var_end():
+        """
+        Handle a variable endpoint.
+
+        Args:
+        """
         prerun_newlines = newlines[:]
         op = varset_start[len(in_var):].strip()
         (newvalue, newop, indent, minbreak) = varfunc(in_var, full_value, op, newlines)
@@ -1322,18 +1483,36 @@ def edit_bblayers_conf(bblayers_conf, add, remove, edit_cb=None):
     import fnmatch
 
     def remove_trailing_sep(pth):
+        """
+        Removes pthiling pthpthpthpthon.
+
+        Args:
+            pth: (todo): write your description
+        """
         if pth and pth[-1] == os.sep:
             pth = pth[:-1]
         return pth
 
     approved = bb.utils.approved_variables()
     def canonicalise_path(pth):
+        """
+        Return canonical path of path.
+
+        Args:
+            pth: (todo): write your description
+        """
         pth = remove_trailing_sep(pth)
         if 'HOME' in approved and '~' in pth:
             pth = os.path.expanduser(pth)
         return pth
 
     def layerlist_param(value):
+        """
+        Return layerlist from layerlist.
+
+        Args:
+            value: (todo): write your description
+        """
         if not value:
             return []
         elif isinstance(value, list):
@@ -1351,6 +1530,15 @@ def edit_bblayers_conf(bblayers_conf, add, remove, edit_cb=None):
     orig_bblayers = []
 
     def handle_bblayers_firstpass(varname, origvalue, op, newlines):
+        """
+        Handles a tuple of tuples.
+
+        Args:
+            varname: (str): write your description
+            origvalue: (str): write your description
+            op: (todo): write your description
+            newlines: (list): write your description
+        """
         bblayercalls.append(op)
         if op == '=':
             del orig_bblayers[:]
@@ -1358,6 +1546,15 @@ def edit_bblayers_conf(bblayers_conf, add, remove, edit_cb=None):
         return (origvalue, None, 2, False)
 
     def handle_bblayers(varname, origvalue, op, newlines):
+        """
+        Handle layers that are a layer layers.
+
+        Args:
+            varname: (str): write your description
+            origvalue: (str): write your description
+            op: (todo): write your description
+            newlines: (list): write your description
+        """
         updated = False
         bblayers = [remove_trailing_sep(x) for x in origvalue.split()]
         if removelayers:
@@ -1437,6 +1634,12 @@ def get_file_layer(filename, d):
         collection_res[collection] = d.getVar('BBFILE_PATTERN_%s' % collection) or ''
 
     def path_to_layer(path):
+        """
+        Convert a layer from path todo to the path.
+
+        Args:
+            path: (str): write your description
+        """
         # Use longest path so we handle nested layers
         matchlen = 0
         match = None
@@ -1487,6 +1690,14 @@ IOPRIO_WHO_PROCESS = 1
 IOPRIO_CLASS_SHIFT = 13
 
 def ioprio_set(who, cls, value):
+    """
+    Set the happy set of the given cls.
+
+    Args:
+        who: (todo): write your description
+        cls: (todo): write your description
+        value: (todo): write your description
+    """
     NR_ioprio_set = None
     if _unamearch == "x86_64":
       NR_ioprio_set = 251
@@ -1504,6 +1715,12 @@ def ioprio_set(who, cls, value):
         bb.warn("Unable to set IO Prio for arch %s" % _unamearch)
 
 def set_process_name(name):
+    """
+    Set process name.
+
+    Args:
+        name: (str): write your description
+    """
     from ctypes import cdll, byref, create_string_buffer
     # This is nice to have for debugging, not essential
     try:
@@ -1515,6 +1732,12 @@ def set_process_name(name):
 
 # export common proxies variables from datastore to environment
 def export_proxies(d):
+    """
+    Export proxies from a dictionary.
+
+    Args:
+        d: (todo): write your description
+    """
     import os
 
     variables = ['http_proxy', 'HTTP_PROXY', 'https_proxy', 'HTTPS_PROXY',
@@ -1535,7 +1758,21 @@ def export_proxies(d):
 
 
 def load_plugins(logger, plugins, pluginpath):
+    """
+    Loads all the given by plugin.
+
+    Args:
+        logger: (todo): write your description
+        plugins: (list): write your description
+        pluginpath: (str): write your description
+    """
     def load_plugin(name):
+        """
+        Load a plugin.
+
+        Args:
+            name: (str): write your description
+        """
         logger.debug(1, 'Loading plugin %s' % name)
         spec = importlib.machinery.PathFinder.find_spec(name, path=[pluginpath] )
         if spec:
@@ -1560,9 +1797,29 @@ def load_plugins(logger, plugins, pluginpath):
 class LogCatcher(logging.Handler):
     """Logging handler for collecting logged messages so you can check them later"""
     def __init__(self):
+        """
+        Initialize the logger.
+
+        Args:
+            self: (todo): write your description
+        """
         self.messages = []
         logging.Handler.__init__(self, logging.WARNING)
     def emit(self, record):
+        """
+        Emit a record.
+
+        Args:
+            self: (todo): write your description
+            record: (todo): write your description
+        """
         self.messages.append(bb.build.logformatter.format(record))
     def contains(self, message):
+        """
+        Returns true if the given message is contained in the queue.
+
+        Args:
+            self: (todo): write your description
+            message: (str): write your description
+        """
         return (message in self.messages)

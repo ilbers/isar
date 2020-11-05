@@ -60,12 +60,35 @@ class SSH(FetchMethod):
     '''Class to fetch a module or modules via Secure Shell'''
 
     def supports(self, urldata, d):
+        """
+        Return true if url pattern matches pattern.
+
+        Args:
+            self: (todo): write your description
+            urldata: (str): write your description
+            d: (todo): write your description
+        """
         return __pattern__.match(urldata.url) != None
 
     def supports_checksum(self, urldata):
+        """
+        Returns true if the checksum is valid.
+
+        Args:
+            self: (todo): write your description
+            urldata: (str): write your description
+        """
         return False
 
     def urldata_init(self, urldata, d):
+        """
+        Download a urldata.
+
+        Args:
+            self: (todo): write your description
+            urldata: (str): write your description
+            d: (todo): write your description
+        """
         if 'protocol' in urldata.parm and urldata.parm['protocol'] == 'git':
             raise bb.fetch2.ParameterError(
                 "Invalid protocol - if you wish to fetch from a git " +
@@ -78,6 +101,14 @@ class SSH(FetchMethod):
                 os.path.basename(os.path.normpath(path)))
 
     def download(self, urldata, d):
+        """
+        Download a network.
+
+        Args:
+            self: (todo): write your description
+            urldata: (str): write your description
+            d: (todo): write your description
+        """
         dldir = d.getVar('DL_DIR')
 
         m = __pattern__.match(urldata.url)

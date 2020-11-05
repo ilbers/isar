@@ -17,6 +17,11 @@ from bb.fetch2 import FetchMethod
 import bb
 
 def skipIfNoNetwork():
+    """
+    Return true if the network interfaces.
+
+    Args:
+    """
     if os.environ.get("BB_SKIP_NETTESTS") == "yes":
         return unittest.skip("Network tests being skipped")
     return lambda f: f
@@ -257,6 +262,12 @@ class URITest(unittest.TestCase):
     }
 
     def test_uri(self):
+        """
+        Test for a uri.
+
+        Args:
+            self: (todo): write your description
+        """
         for test_uri, ref in self.test_uris.items():
             uri = URI(test_uri)
 
@@ -279,6 +290,12 @@ class URITest(unittest.TestCase):
             self.assertEqual(uri.relative, ref['relative'])
 
     def test_dict(self):
+        """
+        Return a dict with the json data.
+
+        Args:
+            self: (todo): write your description
+        """
         for test in self.test_uris.values():
             uri = URI()
 
@@ -340,6 +357,12 @@ class URITest(unittest.TestCase):
 class FetcherTest(unittest.TestCase):
 
     def setUp(self):
+        """
+        Set the dld file.
+
+        Args:
+            self: (todo): write your description
+        """
         self.origdir = os.getcwd()
         self.d = bb.data.init()
         self.tempdir = tempfile.mkdtemp()
@@ -352,6 +375,12 @@ class FetcherTest(unittest.TestCase):
         self.d.setVar("PERSISTENT_DIR", persistdir)
 
     def tearDown(self):
+        """
+        Create a tempfile.
+
+        Args:
+            self: (todo): write your description
+        """
         os.chdir(self.origdir)
         if os.environ.get("BB_TMPDIR_NOCLEAN") == "yes":
             print("Not cleaning up %s. Please remove manually." % self.tempdir)
@@ -407,6 +436,12 @@ class MirrorUriTest(FetcherTest):
                 "http://.*/.* file:///someotherpath/downloads/ \n"
 
     def test_urireplace(self):
+        """
+        Fetplace and remote files.
+
+        Args:
+            self: (todo): write your description
+        """
         for k, v in self.replaceuris.items():
             ud = bb.fetch.FetchData(k[0], self.d)
             ud.setup_localpath(self.d)
@@ -415,12 +450,24 @@ class MirrorUriTest(FetcherTest):
             self.assertEqual([v], newuris)
 
     def test_urilist1(self):
+        """
+        Fetches the test data.
+
+        Args:
+            self: (todo): write your description
+        """
         fetcher = bb.fetch.FetchData("http://downloads.yoctoproject.org/releases/bitbake/bitbake-1.0.tar.gz", self.d)
         mirrors = bb.fetch2.mirror_from_string(self.mirrorvar)
         uris, uds = bb.fetch2.build_mirroruris(fetcher, mirrors, self.d)
         self.assertEqual(uris, ['file:///somepath/downloads/bitbake-1.0.tar.gz', 'file:///someotherpath/downloads/bitbake-1.0.tar.gz'])
 
     def test_urilist2(self):
+        """
+        Fetch the data
+
+        Args:
+            self: (todo): write your description
+        """
         # Catch https:// -> files:// bug
         fetcher = bb.fetch.FetchData("https://downloads.yoctoproject.org/releases/bitbake/bitbake-1.0.tar.gz", self.d)
         mirrors = bb.fetch2.mirror_from_string(self.mirrorvar)
@@ -428,6 +475,12 @@ class MirrorUriTest(FetcherTest):
         self.assertEqual(uris, ['file:///someotherpath/downloads/bitbake-1.0.tar.gz'])
 
     def test_mirror_of_mirror(self):
+        """
+        Determine the mirror.
+
+        Args:
+            self: (todo): write your description
+        """
         # Test if mirror of a mirror works
         mirrorvar = self.mirrorvar + " http://.*/.* http://otherdownloads.yoctoproject.org/downloads/ \n"
         mirrorvar = mirrorvar + " http://otherdownloads.yoctoproject.org/.* http://downloads2.yoctoproject.org/downloads/ \n"
@@ -443,6 +496,12 @@ class MirrorUriTest(FetcherTest):
                    "https://.*/[^/]*    https://BBBB/B/B/B/ \n"
 
     def test_recursive(self):
+        """
+        Fetches data.
+
+        Args:
+            self: (todo): write your description
+        """
         fetcher = bb.fetch.FetchData("https://downloads.yoctoproject.org/releases/bitbake/bitbake-1.0.tar.gz", self.d)
         mirrors = bb.fetch2.mirror_from_string(self.recmirrorvar)
         uris, uds = bb.fetch2.build_mirroruris(fetcher, mirrors, self.d)
@@ -453,6 +512,12 @@ class MirrorUriTest(FetcherTest):
 
 class GitDownloadDirectoryNamingTest(FetcherTest):
     def setUp(self):
+        """
+        Sets the recipe.
+
+        Args:
+            self: (todo): write your description
+        """
         super(GitDownloadDirectoryNamingTest, self).setUp()
         self.recipe_url = "git://git.openembedded.org/bitbake"
         self.recipe_dir = "git.openembedded.org.bitbake"
@@ -462,10 +527,22 @@ class GitDownloadDirectoryNamingTest(FetcherTest):
         self.d.setVar('SRCREV', '82ea737a0b42a8b53e11c9cde141e9e9c0bd8c40')
 
     def setup_mirror_rewrite(self):
+        """
+        Setup the recipe.
+
+        Args:
+            self: (todo): write your description
+        """
         self.d.setVar("PREMIRRORS", self.recipe_url + " " + self.mirror_url + " \n")
 
     @skipIfNoNetwork()
     def test_that_directory_is_named_after_recipe_url_when_no_mirroring_is_used(self):
+        """
+        Check if a directory is a local directory.
+
+        Args:
+            self: (todo): write your description
+        """
         self.setup_mirror_rewrite()
         fetcher = bb.fetch.Fetch([self.recipe_url], self.d)
 
@@ -476,6 +553,12 @@ class GitDownloadDirectoryNamingTest(FetcherTest):
 
     @skipIfNoNetwork()
     def test_that_directory_exists_for_mirrored_url_and_recipe_url_when_mirroring_is_used(self):
+        """
+        Determine if a directory exists.
+
+        Args:
+            self: (todo): write your description
+        """
         self.setup_mirror_rewrite()
         fetcher = bb.fetch.Fetch([self.recipe_url], self.d)
 
@@ -487,6 +570,12 @@ class GitDownloadDirectoryNamingTest(FetcherTest):
 
     @skipIfNoNetwork()
     def test_that_recipe_directory_and_mirrored_directory_exists_when_mirroring_is_used_and_the_mirrored_directory_already_exists(self):
+        """
+        Downloads a download directory if it exists.
+
+        Args:
+            self: (todo): write your description
+        """
         self.setup_mirror_rewrite()
         fetcher = bb.fetch.Fetch([self.mirror_url], self.d)
         fetcher.download()
@@ -501,6 +590,12 @@ class GitDownloadDirectoryNamingTest(FetcherTest):
 
 class TarballNamingTest(FetcherTest):
     def setUp(self):
+        """
+        Sets the recipe variables.
+
+        Args:
+            self: (todo): write your description
+        """
         super(TarballNamingTest, self).setUp()
         self.recipe_url = "git://git.openembedded.org/bitbake"
         self.recipe_tarball = "git2_git.openembedded.org.bitbake.tar.gz"
@@ -511,10 +606,22 @@ class TarballNamingTest(FetcherTest):
         self.d.setVar('SRCREV', '82ea737a0b42a8b53e11c9cde141e9e9c0bd8c40')
 
     def setup_mirror_rewrite(self):
+        """
+        Setup the recipe.
+
+        Args:
+            self: (todo): write your description
+        """
         self.d.setVar("PREMIRRORS", self.recipe_url + " " + self.mirror_url + " \n")
 
     @skipIfNoNetwork()
     def test_that_the_recipe_tarball_is_created_when_no_mirroring_is_used(self):
+        """
+        Download all recipe the recipe.
+
+        Args:
+            self: (todo): write your description
+        """
         fetcher = bb.fetch.Fetch([self.recipe_url], self.d)
 
         fetcher.download()
@@ -524,6 +631,12 @@ class TarballNamingTest(FetcherTest):
 
     @skipIfNoNetwork()
     def test_that_the_mirror_tarball_is_created_when_mirroring_is_used(self):
+        """
+        Test if tarball tarball.
+
+        Args:
+            self: (todo): write your description
+        """
         self.setup_mirror_rewrite()
         fetcher = bb.fetch.Fetch([self.recipe_url], self.d)
 
@@ -535,6 +648,12 @@ class TarballNamingTest(FetcherTest):
 
 class GitShallowTarballNamingTest(FetcherTest):
     def setUp(self):
+        """
+        Set up the recipe variables.
+
+        Args:
+            self: (todo): write your description
+        """
         super(GitShallowTarballNamingTest, self).setUp()
         self.recipe_url = "git://git.openembedded.org/bitbake"
         self.recipe_tarball = "gitshallow_git.openembedded.org.bitbake_82ea737-1_master.tar.gz"
@@ -546,10 +665,22 @@ class GitShallowTarballNamingTest(FetcherTest):
         self.d.setVar('SRCREV', '82ea737a0b42a8b53e11c9cde141e9e9c0bd8c40')
 
     def setup_mirror_rewrite(self):
+        """
+        Setup the recipe.
+
+        Args:
+            self: (todo): write your description
+        """
         self.d.setVar("PREMIRRORS", self.recipe_url + " " + self.mirror_url + " \n")
 
     @skipIfNoNetwork()
     def test_that_the_tarball_is_named_after_recipe_url_when_no_mirroring_is_used(self):
+        """
+        Download the recipe tarball exists.
+
+        Args:
+            self: (todo): write your description
+        """
         fetcher = bb.fetch.Fetch([self.recipe_url], self.d)
 
         fetcher.download()
@@ -559,6 +690,12 @@ class GitShallowTarballNamingTest(FetcherTest):
 
     @skipIfNoNetwork()
     def test_that_the_mirror_tarball_is_created_when_mirroring_is_used(self):
+        """
+        Test if tarball tarball.
+
+        Args:
+            self: (todo): write your description
+        """
         self.setup_mirror_rewrite()
         fetcher = bb.fetch.Fetch([self.recipe_url], self.d)
 
@@ -570,7 +707,19 @@ class GitShallowTarballNamingTest(FetcherTest):
 
 class FetcherLocalTest(FetcherTest):
     def setUp(self):
+        """
+        Create a temporary file.
+
+        Args:
+            self: (todo): write your description
+        """
         def touch(fn):
+            """
+            Touch a file.
+
+            Args:
+                fn: (todo): write your description
+            """
             with open(fn, 'a'):
                 os.utime(fn, None)
 
@@ -587,6 +736,13 @@ class FetcherLocalTest(FetcherTest):
         self.d.setVar("FILESPATH", self.localsrcdir)
 
     def fetchUnpack(self, uris):
+        """
+        Fetch a directory.
+
+        Args:
+            self: (todo): write your description
+            uris: (str): write your description
+        """
         fetcher = bb.fetch.Fetch(uris, self.d)
         fetcher.download()
         fetcher.unpack(self.unpackdir)
@@ -598,34 +754,82 @@ class FetcherLocalTest(FetcherTest):
         return flst
 
     def test_local(self):
+        """
+        Test the local test
+
+        Args:
+            self: (todo): write your description
+        """
         tree = self.fetchUnpack(['file://a', 'file://dir/c'])
         self.assertEqual(tree, ['a', 'dir/c'])
 
     def test_local_wildcard(self):
+        """
+        Fetches the wildcard wildcard.
+
+        Args:
+            self: (todo): write your description
+        """
         tree = self.fetchUnpack(['file://a', 'file://dir/*'])
         self.assertEqual(tree, ['a',  'dir/c', 'dir/d', 'dir/subdir/e'])
 
     def test_local_dir(self):
+        """
+        Fetch the local directory.
+
+        Args:
+            self: (todo): write your description
+        """
         tree = self.fetchUnpack(['file://a', 'file://dir'])
         self.assertEqual(tree, ['a', 'dir/c', 'dir/d', 'dir/subdir/e'])
 
     def test_local_subdir(self):
+        """
+        Fetches the current working with the current working directory.
+
+        Args:
+            self: (todo): write your description
+        """
         tree = self.fetchUnpack(['file://dir/subdir'])
         self.assertEqual(tree, ['dir/subdir/e'])
 
     def test_local_subdir_file(self):
+        """
+        Fetch a local directory.
+
+        Args:
+            self: (todo): write your description
+        """
         tree = self.fetchUnpack(['file://dir/subdir/e'])
         self.assertEqual(tree, ['dir/subdir/e'])
 
     def test_local_subdirparam(self):
+        """
+        Determine the local working dir.
+
+        Args:
+            self: (todo): write your description
+        """
         tree = self.fetchUnpack(['file://a;subdir=bar', 'file://dir;subdir=foo/moo'])
         self.assertEqual(tree, ['bar/a', 'foo/moo/dir/c', 'foo/moo/dir/d', 'foo/moo/dir/subdir/e'])
 
     def test_local_deepsubdirparam(self):
+        """
+        Fetches the local directory.
+
+        Args:
+            self: (todo): write your description
+        """
         tree = self.fetchUnpack(['file://dir/subdir/e;subdir=bar'])
         self.assertEqual(tree, ['bar/dir/subdir/e'])
 
     def test_local_absolutedir(self):
+        """
+        Fetches the local directory.
+
+        Args:
+            self: (todo): write your description
+        """
         # Unpacking to an absolute path that is a subdirectory of the root
         # should work
         tree = self.fetchUnpack(['file://a;subdir=%s' % os.path.join(self.unpackdir, 'bar')])
@@ -636,11 +840,23 @@ class FetcherLocalTest(FetcherTest):
 
 class FetcherNoNetworkTest(FetcherTest):
     def setUp(self):
+        """
+        Sets the values of this task.
+
+        Args:
+            self: (todo): write your description
+        """
         super().setUp()
         # all test cases are based on not having network
         self.d.setVar("BB_NO_NETWORK", "1")
 
     def test_missing(self):
+        """
+        Fetches and missing.
+
+        Args:
+            self: (todo): write your description
+        """
         string = "this is a test file\n".encode("utf-8")
         self.d.setVarFlag("SRC_URI", "md5sum", hashlib.md5(string).hexdigest())
         self.d.setVarFlag("SRC_URI", "sha256sum", hashlib.sha256(string).hexdigest())
@@ -652,6 +868,12 @@ class FetcherNoNetworkTest(FetcherTest):
             fetcher.download()
 
     def test_valid_missing_donestamp(self):
+        """
+        Check if missing missing missing missing missing keys.
+
+        Args:
+            self: (todo): write your description
+        """
         # create the file in the download directory with correct hash
         string = "this is a test file\n".encode("utf-8")
         with open(os.path.join(self.dldir, "test-file.tar.gz"), "wb") as f:
@@ -667,6 +889,12 @@ class FetcherNoNetworkTest(FetcherTest):
         self.assertTrue(os.path.exists(os.path.join(self.dldir, "test-file.tar.gz.done")))
 
     def test_invalid_missing_donestamp(self):
+        """
+        Check if missing missing missing missing missing missing missing missing missing missing information.
+
+        Args:
+            self: (todo): write your description
+        """
         # create an invalid file in the download directory with incorrect hash
         string = "this is a test file\n".encode("utf-8")
         with open(os.path.join(self.dldir, "test-file.tar.gz"), "wb"):
@@ -684,6 +912,12 @@ class FetcherNoNetworkTest(FetcherTest):
         self.assertFalse(os.path.exists(os.path.join(self.dldir, "test-file.tar.gz")))
 
     def test_nochecksums_missing(self):
+        """
+        Download all missing missing missing.
+
+        Args:
+            self: (todo): write your description
+        """
         self.assertFalse(os.path.exists(os.path.join(self.dldir, "test-file.tar.gz")))
         self.assertFalse(os.path.exists(os.path.join(self.dldir, "test-file.tar.gz.done")))
         # ssh fetch does not support checksums
@@ -693,6 +927,12 @@ class FetcherNoNetworkTest(FetcherTest):
             fetcher.download()
 
     def test_nochecksums_missing_donestamp(self):
+        """
+        Test if all missing missing missing scores.
+
+        Args:
+            self: (todo): write your description
+        """
         # create a file in the download directory
         with open(os.path.join(self.dldir, "test-file.tar.gz"), "wb"):
             pass
@@ -706,6 +946,12 @@ class FetcherNoNetworkTest(FetcherTest):
             fetcher.download()
 
     def test_nochecksums_has_donestamp(self):
+        """
+        Downloads if there are valid test test files.
+
+        Args:
+            self: (todo): write your description
+        """
         # create a file in the download directory with the donestamp
         with open(os.path.join(self.dldir, "test-file.tar.gz"), "wb"):
             pass
@@ -723,6 +969,12 @@ class FetcherNoNetworkTest(FetcherTest):
         self.assertTrue(os.path.exists(os.path.join(self.dldir, "test-file.tar.gz.done")))
 
     def test_nochecksums_missing_has_donestamp(self):
+        """
+        Check if there s3
+
+        Args:
+            self: (todo): write your description
+        """
         # create a file in the download directory with the donestamp
         with open(os.path.join(self.dldir, "test-file.tar.gz.done"), "wb"):
             pass
@@ -740,6 +992,12 @@ class FetcherNoNetworkTest(FetcherTest):
 class FetcherNetworkTest(FetcherTest):
     @skipIfNoNetwork()
     def test_fetch(self):
+        """
+        Fetch the test files.
+
+        Args:
+            self: (todo): write your description
+        """
         fetcher = bb.fetch.Fetch(["http://downloads.yoctoproject.org/releases/bitbake/bitbake-1.0.tar.gz", "http://downloads.yoctoproject.org/releases/bitbake/bitbake-1.1.tar.gz"], self.d)
         fetcher.download()
         self.assertEqual(os.path.getsize(self.dldir + "/bitbake-1.0.tar.gz"), 57749)
@@ -753,6 +1011,12 @@ class FetcherNetworkTest(FetcherTest):
 
     @skipIfNoNetwork()
     def test_fetch_mirror(self):
+        """
+        Download test test test test files.
+
+        Args:
+            self: (todo): write your description
+        """
         self.d.setVar("MIRRORS", "http://.*/.* http://downloads.yoctoproject.org/releases/bitbake")
         fetcher = bb.fetch.Fetch(["http://invalid.yoctoproject.org/releases/bitbake/bitbake-1.0.tar.gz"], self.d)
         fetcher.download()
@@ -760,6 +1024,12 @@ class FetcherNetworkTest(FetcherTest):
 
     @skipIfNoNetwork()
     def test_fetch_mirror_of_mirror(self):
+        """
+        Download test test test test files.
+
+        Args:
+            self: (todo): write your description
+        """
         self.d.setVar("MIRRORS", "http://.*/.* http://invalid2.yoctoproject.org/ \n http://invalid2.yoctoproject.org/.* http://downloads.yoctoproject.org/releases/bitbake")
         fetcher = bb.fetch.Fetch(["http://invalid.yoctoproject.org/releases/bitbake/bitbake-1.0.tar.gz"], self.d)
         fetcher.download()
@@ -767,6 +1037,12 @@ class FetcherNetworkTest(FetcherTest):
 
     @skipIfNoNetwork()
     def test_fetch_file_mirror_of_mirror(self):
+        """
+        Download test test test test test test files.
+
+        Args:
+            self: (todo): write your description
+        """
         self.d.setVar("MIRRORS", "http://.*/.* file:///some1where/ \n file:///some1where/.* file://some2where/ \n file://some2where/.* http://downloads.yoctoproject.org/releases/bitbake")
         fetcher = bb.fetch.Fetch(["http://invalid.yoctoproject.org/releases/bitbake/bitbake-1.0.tar.gz"], self.d)
         os.mkdir(self.dldir + "/some2where")
@@ -775,6 +1051,12 @@ class FetcherNetworkTest(FetcherTest):
 
     @skipIfNoNetwork()
     def test_fetch_premirror(self):
+        """
+        Download test test test test files
+
+        Args:
+            self: (todo): write your description
+        """
         self.d.setVar("PREMIRRORS", "http://.*/.* http://downloads.yoctoproject.org/releases/bitbake")
         fetcher = bb.fetch.Fetch(["http://invalid.yoctoproject.org/releases/bitbake/bitbake-1.0.tar.gz"], self.d)
         fetcher.download()
@@ -782,7 +1064,22 @@ class FetcherNetworkTest(FetcherTest):
 
     @skipIfNoNetwork()
     def gitfetcher(self, url1, url2):
+        """
+        Download gitfetcher.
+
+        Args:
+            self: (todo): write your description
+            url1: (str): write your description
+            url2: (str): write your description
+        """
         def checkrevision(self, fetcher):
+            """
+            Check the revision.
+
+            Args:
+                self: (todo): write your description
+                fetcher: (todo): write your description
+            """
             fetcher.unpack(self.unpackdir)
             revision = bb.process.run("git rev-parse HEAD", shell=True, cwd=self.unpackdir + "/git")[0].strip()
             self.assertEqual(revision, "270a05b0b4ba0959fe0624d2a4885d7b70426da5")
@@ -802,29 +1099,59 @@ class FetcherNetworkTest(FetcherTest):
 
     @skipIfNoNetwork()
     def test_gitfetch(self):
+        """
+        Fetch git git git git git git git repository.
+
+        Args:
+            self: (todo): write your description
+        """
         url1 = url2 = "git://git.openembedded.org/bitbake"
         self.gitfetcher(url1, url2)
 
     @skipIfNoNetwork()
     def test_gitfetch_goodsrcrev(self):
+        """
+        Fetch git gitfetcher.
+
+        Args:
+            self: (todo): write your description
+        """
         # SRCREV is set but matches rev= parameter
         url1 = url2 = "git://git.openembedded.org/bitbake;rev=270a05b0b4ba0959fe0624d2a4885d7b70426da5"
         self.gitfetcher(url1, url2)
 
     @skipIfNoNetwork()
     def test_gitfetch_badsrcrev(self):
+        """
+        Fetch the fetch of the gitfetrevcher.
+
+        Args:
+            self: (todo): write your description
+        """
         # SRCREV is set but does not match rev= parameter
         url1 = url2 = "git://git.openembedded.org/bitbake;rev=dead05b0b4ba0959fe0624d2a4885d7b70426da5"
         self.assertRaises(bb.fetch.FetchError, self.gitfetcher, url1, url2)
 
     @skipIfNoNetwork()
     def test_gitfetch_tagandrev(self):
+        """
+        Fetch a git tag.
+
+        Args:
+            self: (todo): write your description
+        """
         # SRCREV is set but does not match rev= parameter
         url1 = url2 = "git://git.openembedded.org/bitbake;rev=270a05b0b4ba0959fe0624d2a4885d7b70426da5;tag=270a05b0b4ba0959fe0624d2a4885d7b70426da5"
         self.assertRaises(bb.fetch.FetchError, self.gitfetcher, url1, url2)
 
     @skipIfNoNetwork()
     def test_gitfetch_localusehead(self):
+        """
+        Download gitfetch git repository.
+
+        Args:
+            self: (todo): write your description
+        """
         # Create dummy local Git repo
         src_dir = tempfile.mkdtemp(dir=self.tempdir,
                                    prefix='gitfetch_localusehead_')
@@ -852,11 +1179,23 @@ class FetcherNetworkTest(FetcherTest):
 
     @skipIfNoNetwork()
     def test_gitfetch_remoteusehead(self):
+        """
+        Fetch git gitfetchhead url.
+
+        Args:
+            self: (todo): write your description
+        """
         url = "git://git.openembedded.org/bitbake;usehead=1"
         self.assertRaises(bb.fetch.ParameterError, self.gitfetcher, url, url)
 
     @skipIfNoNetwork()
     def test_gitfetch_finds_local_tarball_for_mirrored_url_when_previous_downloaded_by_the_recipe_url(self):
+        """
+        Test for local files.
+
+        Args:
+            self: (todo): write your description
+        """
         recipeurl = "git://git.openembedded.org/bitbake"
         mirrorurl = "git://someserver.org/bitbake"
         self.d.setVar("PREMIRRORS", "git://someserver.org/bitbake git://git.openembedded.org/bitbake \n")
@@ -864,12 +1203,24 @@ class FetcherNetworkTest(FetcherTest):
 
     @skipIfNoNetwork()
     def test_gitfetch_finds_local_tarball_when_previous_downloaded_from_a_premirror(self):
+        """
+        Fetches local recipe are downloaded.
+
+        Args:
+            self: (todo): write your description
+        """
         recipeurl = "git://someserver.org/bitbake"
         self.d.setVar("PREMIRRORS", "git://someserver.org/bitbake git://git.openembedded.org/bitbake \n")
         self.gitfetcher(recipeurl, recipeurl)
 
     @skipIfNoNetwork()
     def test_gitfetch_finds_local_repository_when_premirror_rewrites_the_recipe_url(self):
+        """
+        Test if local git repository.
+
+        Args:
+            self: (todo): write your description
+        """
         realurl = "git://git.openembedded.org/bitbake"
         recipeurl = "git://someserver.org/bitbake"
         self.sourcedir = self.unpackdir.replace("unpacked", "sourcemirror.git")
@@ -880,6 +1231,12 @@ class FetcherNetworkTest(FetcherTest):
 
     @skipIfNoNetwork()
     def test_git_submodule(self):
+        """
+        Downloads the git repo.
+
+        Args:
+            self: (todo): write your description
+        """
         # URL with ssh submodules
         url = "gitsm://git.yoctoproject.org/git-submodule-test;branch=ssh-gitsm-tests;rev=049da4a6cb198d7c0302e9e8b243a1443cb809a7"
         # Original URL (comment this if you have ssh access to git.yoctoproject.org)
@@ -901,6 +1258,12 @@ class FetcherNetworkTest(FetcherTest):
 
     @skipIfNoNetwork()
     def test_git_submodule_dbus_broker(self):
+        """
+        Downloads and download dir ishook directory
+
+        Args:
+            self: (todo): write your description
+        """
         # The following external repositories have show failures in fetch and unpack operations
         # We want to avoid regressions!
         url = "gitsm://github.com/bus1/dbus-broker;protocol=git;rev=fc874afa0992d0c75ec25acb43d344679f0ee7d2"
@@ -919,6 +1282,12 @@ class FetcherNetworkTest(FetcherTest):
 
     @skipIfNoNetwork()
     def test_git_submodule_CLI11(self):
+        """
+        Downloads the git repo.
+
+        Args:
+            self: (todo): write your description
+        """
         url = "gitsm://github.com/CLIUtils/CLI11;protocol=git;rev=bd4dc911847d0cde7a6b41dfa626a85aab213baf"
         fetcher = bb.fetch.Fetch([url], self.d)
         fetcher.download()
@@ -953,6 +1322,12 @@ class FetcherNetworkTest(FetcherTest):
 
     @skipIfNoNetwork()
     def test_git_submodule_aktualizr(self):
+        """
+        Downloads the gittualrual dir
+
+        Args:
+            self: (todo): write your description
+        """
         url = "gitsm://github.com/advancedtelematic/aktualizr;branch=master;protocol=git;rev=d00d1a04cc2366d1a5f143b84b9f507f8bd32c44"
         fetcher = bb.fetch.Fetch([url], self.d)
         fetcher.download()
@@ -998,6 +1373,11 @@ class FetcherNetworkTest(FetcherTest):
 
 class SVNTest(FetcherTest):
     def skipIfNoSvn():
+        """
+        Skip the number of the program.
+
+        Args:
+        """
         import shutil
         if not shutil.which("svn"):
             return unittest.skip("svn not installed,  tests being skipped")
@@ -1041,6 +1421,12 @@ class SVNTest(FetcherTest):
 
     @skipIfNoSvn()
     def tearDown(self):
+        """
+        Create a tempfile.
+
+        Args:
+            self: (todo): write your description
+        """
         os.chdir(self.origdir)
         if os.environ.get("BB_TMPDIR_NOCLEAN") == "yes":
             print("Not cleaning up %s. Please remove manually." % self.tempdir)
@@ -1050,6 +1436,12 @@ class SVNTest(FetcherTest):
     @skipIfNoSvn()
     @skipIfNoNetwork()
     def test_noexternal_svn(self):
+        """
+        Download external external external external external external.
+
+        Args:
+            self: (todo): write your description
+        """
         # Always match the rev count from setUp (currently rev 2)
         url = "svn://%s;module=trunk;protocol=file;rev=2" % self.repo_url.replace('file://', '')
         fetcher = bb.fetch.Fetch([url], self.d)
@@ -1064,6 +1456,12 @@ class SVNTest(FetcherTest):
 
     @skipIfNoSvn()
     def test_external_svn(self):
+        """
+        Download external external external external url
+
+        Args:
+            self: (todo): write your description
+        """
         # Always match the rev count from setUp (currently rev 2)
         url = "svn://%s;module=trunk;protocol=file;externals=allowed;rev=2" % self.repo_url.replace('file://', '')
         fetcher = bb.fetch.Fetch([url], self.d)
@@ -1078,42 +1476,84 @@ class SVNTest(FetcherTest):
 
 class TrustedNetworksTest(FetcherTest):
     def test_trusted_network(self):
+        """
+        Fetches network network.
+
+        Args:
+            self: (todo): write your description
+        """
         # Ensure trusted_network returns False when the host IS in the list.
         url = "git://Someserver.org/foo;rev=1"
         self.d.setVar("BB_ALLOWED_NETWORKS", "server1.org someserver.org server2.org server3.org")
         self.assertTrue(bb.fetch.trusted_network(self.d, url))
 
     def test_wild_trusted_network(self):
+        """
+        Test if wildcard network.
+
+        Args:
+            self: (todo): write your description
+        """
         # Ensure trusted_network returns true when the *.host IS in the list.
         url = "git://Someserver.org/foo;rev=1"
         self.d.setVar("BB_ALLOWED_NETWORKS", "server1.org *.someserver.org server2.org server3.org")
         self.assertTrue(bb.fetch.trusted_network(self.d, url))
 
     def test_prefix_wild_trusted_network(self):
+        """
+        Test if the wildcard prefixes.
+
+        Args:
+            self: (todo): write your description
+        """
         # Ensure trusted_network returns true when the prefix matches *.host.
         url = "git://git.Someserver.org/foo;rev=1"
         self.d.setVar("BB_ALLOWED_NETWORKS", "server1.org *.someserver.org server2.org server3.org")
         self.assertTrue(bb.fetch.trusted_network(self.d, url))
 
     def test_two_prefix_wild_trusted_network(self):
+        """
+        Fet for wildcard wildcard
+
+        Args:
+            self: (todo): write your description
+        """
         # Ensure trusted_network returns true when the prefix matches *.host.
         url = "git://something.git.Someserver.org/foo;rev=1"
         self.d.setVar("BB_ALLOWED_NETWORKS", "server1.org *.someserver.org server2.org server3.org")
         self.assertTrue(bb.fetch.trusted_network(self.d, url))
 
     def test_port_trusted_network(self):
+        """
+        Fetch network port network.
+
+        Args:
+            self: (todo): write your description
+        """
         # Ensure trusted_network returns True, even if the url specifies a port.
         url = "git://someserver.org:8080/foo;rev=1"
         self.d.setVar("BB_ALLOWED_NETWORKS", "someserver.org")
         self.assertTrue(bb.fetch.trusted_network(self.d, url))
 
     def test_untrusted_network(self):
+        """
+        Untrusted network
+
+        Args:
+            self: (todo): write your description
+        """
         # Ensure trusted_network returns False when the host is NOT in the list.
         url = "git://someserver.org/foo;rev=1"
         self.d.setVar("BB_ALLOWED_NETWORKS", "server1.org server2.org server3.org")
         self.assertFalse(bb.fetch.trusted_network(self.d, url))
 
     def test_wild_untrusted_network(self):
+        """
+        Test if wildusted network
+
+        Args:
+            self: (todo): write your description
+        """
         # Ensure trusted_network returns False when the host is NOT in the list.
         url = "git://*.someserver.org/foo;rev=1"
         self.d.setVar("BB_ALLOWED_NETWORKS", "server1.org server2.org server3.org")
@@ -1136,11 +1576,23 @@ class URLHandle(unittest.TestCase):
     })
 
     def test_decodeurl(self):
+        """
+        Decode the test url.
+
+        Args:
+            self: (todo): write your description
+        """
         for k, v in self.decodedata.items():
             result = bb.fetch.decodeurl(k)
             self.assertEqual(result, v)
 
     def test_encodeurl(self):
+        """
+        : return : attr : datatable.
+
+        Args:
+            self: (todo): write your description
+        """
         for k, v in self.datatable.items():
             result = bb.fetch.encodeurl(v)
             self.assertEqual(result, k)
@@ -1206,6 +1658,12 @@ class FetchLatestVersionTest(FetcherTest):
 
     @skipIfNoNetwork()
     def test_git_latest_versionstring(self):
+        """
+        Determines the version string.
+
+        Args:
+            self: (todo): write your description
+        """
         for k, v in self.test_git_uris.items():
             self.d.setVar("PN", k[0])
             self.d.setVar("SRCREV", k[2])
@@ -1219,6 +1677,12 @@ class FetchLatestVersionTest(FetcherTest):
 
     @skipIfNoNetwork()
     def test_wget_latest_versionstring(self):
+        """
+        Determine the major major major major version of the version number.
+
+        Args:
+            self: (todo): write your description
+        """
         for k, v in self.test_wget_uris.items():
             self.d.setVar("PN", k[0])
             self.d.setVar("UPSTREAM_CHECK_URI", k[2])
@@ -1251,6 +1715,12 @@ class FetchCheckStatusTest(FetcherTest):
 
     @skipIfNoNetwork()
     def test_wget_checkstatus(self):
+        """
+        Fet status. wgetstatus.
+
+        Args:
+            self: (todo): write your description
+        """
         fetch = bb.fetch2.Fetch(self.test_wget_uris, self.d)
         for u in self.test_wget_uris:
             with self.subTest(url=u):
@@ -1261,6 +1731,12 @@ class FetchCheckStatusTest(FetcherTest):
 
     @skipIfNoNetwork()
     def test_wget_checkstatus_connection_cache(self):
+        """
+        Determine the connection status.
+
+        Args:
+            self: (todo): write your description
+        """
         from bb.fetch2 import FetchConnectionCache
 
         connection_cache = FetchConnectionCache()
@@ -1279,17 +1755,37 @@ class FetchCheckStatusTest(FetcherTest):
 
 class GitMakeShallowTest(FetcherTest):
     def setUp(self):
+        """
+        Create a git repository.
+
+        Args:
+            self: (todo): write your description
+        """
         FetcherTest.setUp(self)
         self.gitdir = os.path.join(self.tempdir, 'gitshallow')
         bb.utils.mkdirhier(self.gitdir)
         bb.process.run('git init', cwd=self.gitdir)
 
     def assertRefs(self, expected_refs):
+        """
+        Checks that the refs have the expected.
+
+        Args:
+            self: (todo): write your description
+            expected_refs: (todo): write your description
+        """
         actual_refs = self.git(['for-each-ref', '--format=%(refname)']).splitlines()
         full_expected = self.git(['rev-parse', '--symbolic-full-name'] + expected_refs).splitlines()
         self.assertEqual(sorted(full_expected), sorted(actual_refs))
 
     def assertRevCount(self, expected_count, args=None):
+        """
+        Fail if expected number of expected number of expected.
+
+        Args:
+            self: (todo): write your description
+            expected_count: (todo): write your description
+        """
         if args is None:
             args = ['HEAD']
         revs = self.git(['rev-list'] + args)
@@ -1297,6 +1793,13 @@ class GitMakeShallowTest(FetcherTest):
         self.assertEqual(expected_count, actual_count, msg='Object count `%d` is not the expected `%d`' % (actual_count, expected_count))
 
     def git(self, cmd):
+        """
+        Run git git git.
+
+        Args:
+            self: (todo): write your description
+            cmd: (str): write your description
+        """
         if isinstance(cmd, str):
             cmd = 'git ' + cmd
         else:
@@ -1304,11 +1807,25 @@ class GitMakeShallowTest(FetcherTest):
         return bb.process.run(cmd, cwd=self.gitdir)[0]
 
     def make_shallow(self, args=None):
+        """
+        Create a shallow.
+
+        Args:
+            self: (todo): write your description
+        """
         if args is None:
             args = ['HEAD']
         return bb.process.run([bb.fetch2.git.Git.make_shallow_path] + args, cwd=self.gitdir)
 
     def add_empty_file(self, path, msg=None):
+        """
+        Add empty empty empty empty empty empty file
+
+        Args:
+            self: (todo): write your description
+            path: (str): write your description
+            msg: (str): write your description
+        """
         if msg is None:
             msg = path
         open(os.path.join(self.gitdir, path), 'w').close()
@@ -1316,6 +1833,12 @@ class GitMakeShallowTest(FetcherTest):
         self.git(['commit', '-m', msg, path])
 
     def test_make_shallow_single_branch_no_merge(self):
+        """
+        Make a single branch.
+
+        Args:
+            self: (todo): write your description
+        """
         self.add_empty_file('a')
         self.add_empty_file('b')
         self.assertRevCount(2)
@@ -1323,6 +1846,12 @@ class GitMakeShallowTest(FetcherTest):
         self.assertRevCount(1)
 
     def test_make_shallow_single_branch_one_merge(self):
+        """
+        Merge a single branch.
+
+        Args:
+            self: (todo): write your description
+        """
         self.add_empty_file('a')
         self.add_empty_file('b')
         self.git('checkout -b a_branch')
@@ -1337,6 +1866,12 @@ class GitMakeShallowTest(FetcherTest):
         self.assertRevCount(5)
 
     def test_make_shallow_at_merge(self):
+        """
+        Merge the shallow file at least one shallow.
+
+        Args:
+            self: (todo): write your description
+        """
         self.add_empty_file('a')
         self.git('checkout -b a_branch')
         self.add_empty_file('b')
@@ -1348,6 +1883,12 @@ class GitMakeShallowTest(FetcherTest):
         self.assertRevCount(1)
 
     def test_make_shallow_annotated_tag(self):
+        """
+        Test for annotated file tags.
+
+        Args:
+            self: (todo): write your description
+        """
         self.add_empty_file('a')
         self.add_empty_file('b')
         self.git('tag -a -m a_tag a_tag')
@@ -1356,6 +1897,12 @@ class GitMakeShallowTest(FetcherTest):
         self.assertRevCount(1)
 
     def test_make_shallow_multi_ref(self):
+        """
+        Create a shallow references to the shallow.
+
+        Args:
+            self: (todo): write your description
+        """
         self.add_empty_file('a')
         self.add_empty_file('b')
         self.git('checkout -b a_branch')
@@ -1373,6 +1920,12 @@ class GitMakeShallowTest(FetcherTest):
         self.assertRevCount(5, ['--all'])
 
     def test_make_shallow_multi_ref_trim(self):
+        """
+        Create a shallow file for the reference references.
+
+        Args:
+            self: (todo): write your description
+        """
         self.add_empty_file('a')
         self.git('checkout -b a_branch')
         self.add_empty_file('c')
@@ -1385,6 +1938,12 @@ class GitMakeShallowTest(FetcherTest):
         self.assertRefs(['master'])
 
     def test_make_shallow_noop(self):
+        """
+        Make the shallow file. shallow.
+
+        Args:
+            self: (todo): write your description
+        """
         self.add_empty_file('a')
         self.assertRevCount(1)
         self.make_shallow()
@@ -1392,6 +1951,12 @@ class GitMakeShallowTest(FetcherTest):
 
     @skipIfNoNetwork()
     def test_make_shallow_bitbake(self):
+        """
+        Make the bitbakeake bitbake.
+
+        Args:
+            self: (todo): write your description
+        """
         self.git('remote add origin https://github.com/openembedded/bitbake')
         self.git('fetch --tags origin')
         orig_revs = len(self.git('rev-list --all').splitlines())
@@ -1400,6 +1965,12 @@ class GitMakeShallowTest(FetcherTest):
 
 class GitShallowTest(FetcherTest):
     def setUp(self):
+        """
+        Sets the git repo
+
+        Args:
+            self: (todo): write your description
+        """
         FetcherTest.setUp(self)
         self.gitdir = os.path.join(self.tempdir, 'git')
         self.srcdir = os.path.join(self.tempdir, 'gitsource')
@@ -1421,6 +1992,14 @@ class GitShallowTest(FetcherTest):
         self.d.setVar('BB_GENERATE_SHALLOW_TARBALLS', '1')
 
     def assertRefs(self, expected_refs, cwd=None):
+        """
+        Ensure that the refs are equal refs of the refs.
+
+        Args:
+            self: (todo): write your description
+            expected_refs: (todo): write your description
+            cwd: (todo): write your description
+        """
         if cwd is None:
             cwd = self.gitdir
         actual_refs = self.git(['for-each-ref', '--format=%(refname)'], cwd=cwd).splitlines()
@@ -1428,6 +2007,14 @@ class GitShallowTest(FetcherTest):
         self.assertEqual(sorted(set(full_expected)), sorted(set(actual_refs)))
 
     def assertRevCount(self, expected_count, args=None, cwd=None):
+        """
+        Ensures that expected number of the expected branches.
+
+        Args:
+            self: (todo): write your description
+            expected_count: (todo): write your description
+            cwd: (todo): write your description
+        """
         if args is None:
             args = ['HEAD']
         if cwd is None:
@@ -1437,6 +2024,14 @@ class GitShallowTest(FetcherTest):
         self.assertEqual(expected_count, actual_count, msg='Object count `%d` is not the expected `%d`' % (actual_count, expected_count))
 
     def git(self, cmd, cwd=None):
+        """
+        Run git command.
+
+        Args:
+            self: (todo): write your description
+            cmd: (str): write your description
+            cwd: (todo): write your description
+        """
         if isinstance(cmd, str):
             cmd = 'git ' + cmd
         else:
@@ -1446,6 +2041,15 @@ class GitShallowTest(FetcherTest):
         return bb.process.run(cmd, cwd=cwd)[0]
 
     def add_empty_file(self, path, cwd=None, msg=None):
+        """
+        Add a git repo file. git repository.
+
+        Args:
+            self: (todo): write your description
+            path: (str): write your description
+            cwd: (str): write your description
+            msg: (str): write your description
+        """
         if msg is None:
             msg = path
         if cwd is None:
@@ -1455,6 +2059,13 @@ class GitShallowTest(FetcherTest):
         self.git(['commit', '-m', msg, path], cwd)
 
     def fetch(self, uri=None):
+        """
+        Fetch a uri.
+
+        Args:
+            self: (todo): write your description
+            uri: (str): write your description
+        """
         if uri is None:
             uris = self.d.getVar('SRC_URI').split()
             uri = uris[0]
@@ -1471,6 +2082,13 @@ class GitShallowTest(FetcherTest):
         return fetcher, ud
 
     def fetch_and_unpack(self, uri=None):
+        """
+        Fetch and return the uri.
+
+        Args:
+            self: (todo): write your description
+            uri: (str): write your description
+        """
         fetcher, ud = self.fetch(uri)
         fetcher.unpack(self.d.getVar('WORKDIR'))
         assert os.path.exists(self.d.getVar('S'))
@@ -1500,6 +2118,12 @@ class GitShallowTest(FetcherTest):
         return fetcher, ud
 
     def test_shallow_disabled(self):
+        """
+        Check if a test test is disabled.
+
+        Args:
+            self: (todo): write your description
+        """
         self.add_empty_file('a')
         self.add_empty_file('b')
         self.assertRevCount(2, cwd=self.srcdir)
@@ -1509,6 +2133,12 @@ class GitShallowTest(FetcherTest):
         self.assertRevCount(2)
 
     def test_shallow_nobranch(self):
+        """
+        Fetch shallow shallow. shallow.
+
+        Args:
+            self: (todo): write your description
+        """
         self.add_empty_file('a')
         self.add_empty_file('b')
         self.assertRevCount(2, cwd=self.srcdir)
@@ -1526,6 +2156,12 @@ class GitShallowTest(FetcherTest):
         self.assertRefs(['refs/shallow/default'])
 
     def test_shallow_default_depth_1(self):
+        """
+        Fetch the first depth - first.
+
+        Args:
+            self: (todo): write your description
+        """
         # Create initial git repo
         self.add_empty_file('a')
         self.add_empty_file('b')
@@ -1535,6 +2171,12 @@ class GitShallowTest(FetcherTest):
         self.assertRevCount(1)
 
     def test_shallow_depth_0_disables(self):
+        """
+        Fetch the set of depth depth depth files.
+
+        Args:
+            self: (todo): write your description
+        """
         self.add_empty_file('a')
         self.add_empty_file('b')
         self.assertRevCount(2, cwd=self.srcdir)
@@ -1544,6 +2186,12 @@ class GitShallowTest(FetcherTest):
         self.assertRevCount(2)
 
     def test_shallow_depth_default_override(self):
+        """
+        Fetch the default test depth depth depth.
+
+        Args:
+            self: (todo): write your description
+        """
         self.add_empty_file('a')
         self.add_empty_file('b')
         self.assertRevCount(2, cwd=self.srcdir)
@@ -1554,6 +2202,12 @@ class GitShallowTest(FetcherTest):
         self.assertRevCount(1)
 
     def test_shallow_depth_default_override_disable(self):
+        """
+        Disable the default depth depth depth depth depth.
+
+        Args:
+            self: (todo): write your description
+        """
         self.add_empty_file('a')
         self.add_empty_file('b')
         self.add_empty_file('c')
@@ -1565,6 +2219,12 @@ class GitShallowTest(FetcherTest):
         self.assertRevCount(2)
 
     def test_current_shallow_out_of_date_clone(self):
+        """
+        Fetch a new shallow for current date
+
+        Args:
+            self: (todo): write your description
+        """
         # Create initial git repo
         self.add_empty_file('a')
         self.add_empty_file('b')
@@ -1585,6 +2245,12 @@ class GitShallowTest(FetcherTest):
         self.assertRevCount(1)
 
     def test_shallow_single_branch_no_merge(self):
+        """
+        Fetch a single branch exists.
+
+        Args:
+            self: (todo): write your description
+        """
         self.add_empty_file('a')
         self.add_empty_file('b')
         self.assertRevCount(2, cwd=self.srcdir)
@@ -1595,6 +2261,12 @@ class GitShallowTest(FetcherTest):
         assert os.path.exists(os.path.join(self.gitdir, 'b'))
 
     def test_shallow_no_dangling(self):
+        """
+        Test if the shallow file exists.
+
+        Args:
+            self: (todo): write your description
+        """
         self.add_empty_file('a')
         self.add_empty_file('b')
         self.assertRevCount(2, cwd=self.srcdir)
@@ -1604,6 +2276,12 @@ class GitShallowTest(FetcherTest):
         assert not self.git('fsck --dangling')
 
     def test_shallow_srcrev_branch_truncation(self):
+        """
+        Test if the current branch exists.
+
+        Args:
+            self: (todo): write your description
+        """
         self.add_empty_file('a')
         self.add_empty_file('b')
         b_commit = self.git('rev-parse HEAD', cwd=self.srcdir).rstrip()
@@ -1621,6 +2299,12 @@ class GitShallowTest(FetcherTest):
         assert not os.path.exists(os.path.join(self.gitdir, 'c'))
 
     def test_shallow_ref_pruning(self):
+        """
+        Test for git refs. shallow
+
+        Args:
+            self: (todo): write your description
+        """
         self.add_empty_file('a')
         self.add_empty_file('b')
         self.git('branch a_branch', cwd=self.srcdir)
@@ -1633,6 +2317,12 @@ class GitShallowTest(FetcherTest):
         self.assertRevCount(1)
 
     def test_shallow_submodules(self):
+        """
+        Test for git submodules.
+
+        Args:
+            self: (todo): write your description
+        """
         self.add_empty_file('a')
         self.add_empty_file('b')
 
@@ -1665,6 +2355,12 @@ class GitShallowTest(FetcherTest):
 
     if any(os.path.exists(os.path.join(p, 'git-annex')) for p in os.environ.get('PATH').split(':')):
         def test_shallow_annex(self):
+            """
+            Test for git shallow.
+
+            Args:
+                self: (todo): write your description
+            """
             self.add_empty_file('a')
             self.add_empty_file('b')
             self.git('annex init', cwd=self.srcdir)
@@ -1681,6 +2377,12 @@ class GitShallowTest(FetcherTest):
             assert os.path.exists(os.path.join(self.gitdir, 'c'))
 
     def test_shallow_multi_one_uri(self):
+        """
+        Fetch shallow uri.
+
+        Args:
+            self: (todo): write your description
+        """
         # Create initial git repo
         self.add_empty_file('a')
         self.add_empty_file('b')
@@ -1708,6 +2410,12 @@ class GitShallowTest(FetcherTest):
         self.assertRefs(['master', 'origin/master', 'origin/a_branch'])
 
     def test_shallow_multi_one_uri_depths(self):
+        """
+        Test for shallow shallow shallow
+
+        Args:
+            self: (todo): write your description
+        """
         # Create initial git repo
         self.add_empty_file('a')
         self.add_empty_file('b')
@@ -1735,6 +2443,12 @@ class GitShallowTest(FetcherTest):
         self.assertRefs(['master', 'origin/master', 'origin/a_branch'])
 
     def test_shallow_clone_preferred_over_shallow(self):
+        """
+        Clone a temporary shallow shallow.
+
+        Args:
+            self: (todo): write your description
+        """
         self.add_empty_file('a')
         self.add_empty_file('b')
 
@@ -1751,6 +2465,12 @@ class GitShallowTest(FetcherTest):
         assert not os.path.exists(os.path.join(self.gitdir, '.git', 'shallow'))
 
     def test_shallow_mirrors(self):
+        """
+        Create a temporary directories existent directories exist.
+
+        Args:
+            self: (todo): write your description
+        """
         self.add_empty_file('a')
         self.add_empty_file('b')
 
@@ -1774,6 +2494,12 @@ class GitShallowTest(FetcherTest):
         self.assertRevCount(1)
 
     def test_shallow_invalid_depth(self):
+        """
+        Fetches the test depth depth.
+
+        Args:
+            self: (todo): write your description
+        """
         self.add_empty_file('a')
         self.add_empty_file('b')
 
@@ -1782,6 +2508,12 @@ class GitShallowTest(FetcherTest):
             self.fetch()
 
     def test_shallow_invalid_depth_default(self):
+        """
+        Check that the depth depth depth is set.
+
+        Args:
+            self: (todo): write your description
+        """
         self.add_empty_file('a')
         self.add_empty_file('b')
 
@@ -1790,6 +2522,12 @@ class GitShallowTest(FetcherTest):
             self.fetch()
 
     def test_shallow_extra_refs(self):
+        """
+        Add extra references to make any extra references.
+
+        Args:
+            self: (todo): write your description
+        """
         self.add_empty_file('a')
         self.add_empty_file('b')
         self.git('branch a_branch', cwd=self.srcdir)
@@ -1803,6 +2541,12 @@ class GitShallowTest(FetcherTest):
         self.assertRevCount(1)
 
     def test_shallow_extra_refs_wildcard(self):
+        """
+        Test for extra references for git references.
+
+        Args:
+            self: (todo): write your description
+        """
         self.add_empty_file('a')
         self.add_empty_file('b')
         self.git('branch a_branch', cwd=self.srcdir)
@@ -1817,6 +2561,12 @@ class GitShallowTest(FetcherTest):
         self.assertRevCount(1)
 
     def test_shallow_missing_extra_refs(self):
+        """
+        Fetches the missing from the missing references.
+
+        Args:
+            self: (todo): write your description
+        """
         self.add_empty_file('a')
         self.add_empty_file('b')
 
@@ -1825,6 +2575,12 @@ class GitShallowTest(FetcherTest):
             self.fetch()
 
     def test_shallow_missing_extra_refs_wildcard(self):
+        """
+        Check for missing references for missing references.
+
+        Args:
+            self: (todo): write your description
+        """
         self.add_empty_file('a')
         self.add_empty_file('b')
 
@@ -1832,6 +2588,12 @@ class GitShallowTest(FetcherTest):
         self.fetch()
 
     def test_shallow_remove_revs(self):
+        """
+        Test if the git repository exists. git repo.
+
+        Args:
+            self: (todo): write your description
+        """
         # Create initial git repo
         self.add_empty_file('a')
         self.add_empty_file('b')
@@ -1854,6 +2616,12 @@ class GitShallowTest(FetcherTest):
         self.assertRevCount(5)
 
     def test_shallow_invalid_revs(self):
+        """
+        Check that the test test set for invalid issues
+
+        Args:
+            self: (todo): write your description
+        """
         self.add_empty_file('a')
         self.add_empty_file('b')
 
@@ -1865,6 +2633,12 @@ class GitShallowTest(FetcherTest):
 
     @skipIfNoNetwork()
     def test_bitbake(self):
+        """
+        Perform bitbake.
+
+        Args:
+            self: (todo): write your description
+        """
         self.git('remote add --mirror=fetch origin git://github.com/openembedded/bitbake', cwd=self.srcdir)
         self.git('config core.bare true', cwd=self.srcdir)
         self.git('fetch', cwd=self.srcdir)
@@ -1884,6 +2658,12 @@ class GitShallowTest(FetcherTest):
         self.assertRevCount(orig_revs - 1758)
 
     def test_that_unpack_throws_an_error_when_the_git_clone_nor_shallow_tarball_exist(self):
+        """
+        Unpack the unpack test test for the test.
+
+        Args:
+            self: (todo): write your description
+        """
         self.add_empty_file('a')
         fetcher, ud = self.fetch()
         bb.utils.remove(self.gitdir, recurse=True)
@@ -1897,6 +2677,12 @@ class GitShallowTest(FetcherTest):
 
     @skipIfNoNetwork()
     def test_that_unpack_does_work_when_using_git_shallow_tarball_but_tarball_is_not_available(self):
+        """
+        Unpack the unpack contents of the unpack.
+
+        Args:
+            self: (todo): write your description
+        """
         self.d.setVar('SRCREV', 'e5939ff608b95cdd4d0ab0e1935781ab9a276ac0')
         self.d.setVar('BB_GIT_SHALLOW', '1')
         self.d.setVar('BB_GENERATE_SHALLOW_TARBALLS', '1')
@@ -1911,6 +2697,12 @@ class GitShallowTest(FetcherTest):
 
 class GitLfsTest(FetcherTest):
     def setUp(self):
+        """
+        Sets the git repository.
+
+        Args:
+            self: (todo): write your description
+        """
         FetcherTest.setUp(self)
 
         self.gitdir = os.path.join(self.tempdir, 'git')
@@ -1932,6 +2724,14 @@ class GitLfsTest(FetcherTest):
         self.git(['commit', '-m', "attributes", '.gitattributes'], cwd=self.srcdir)
 
     def git(self, cmd, cwd=None):
+        """
+        Run git command.
+
+        Args:
+            self: (todo): write your description
+            cmd: (str): write your description
+            cwd: (todo): write your description
+        """
         if isinstance(cmd, str):
             cmd = 'git ' + cmd
         else:
@@ -1941,6 +2741,13 @@ class GitLfsTest(FetcherTest):
         return bb.process.run(cmd, cwd=cwd)[0]
 
     def fetch(self, uri=None):
+        """
+        Fetch a uri.
+
+        Args:
+            self: (todo): write your description
+            uri: (str): write your description
+        """
         uris = self.d.getVar('SRC_URI').split()
         uri = uris[0]
         d = self.d
@@ -1951,6 +2758,12 @@ class GitLfsTest(FetcherTest):
         return fetcher, ud
 
     def test_lfs_enabled(self):
+        """
+        Test if a set of the source directory.
+
+        Args:
+            self: (todo): write your description
+        """
         import shutil
 
         uri = 'git://%s;protocol=file;subdir=${S};lfs=1' % self.srcdir
@@ -1971,6 +2784,12 @@ class GitLfsTest(FetcherTest):
             fetcher.unpack(self.d.getVar('WORKDIR'))
 
     def test_lfs_disabled(self):
+        """
+        Test for all git directories in the source.
+
+        Args:
+            self: (todo): write your description
+        """
         import shutil
 
         uri = 'git://%s;protocol=file;subdir=${S};lfs=0' % self.srcdir

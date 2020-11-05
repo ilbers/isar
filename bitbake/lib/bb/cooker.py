@@ -59,6 +59,13 @@ class state:
 
     @classmethod
     def get_name(cls, code):
+        """
+        Return the name of the given code.
+
+        Args:
+            cls: (todo): write your description
+            code: (str): write your description
+        """
         for name in dir(cls):
             value = getattr(cls, name)
             if type(value) == type(cls.initial) and value == code:
@@ -68,6 +75,14 @@ class state:
 
 class SkippedPackage:
     def __init__(self, info = None, reason = None):
+        """
+        Initialize the instance.
+
+        Args:
+            self: (todo): write your description
+            info: (bool): write your description
+            reason: (str): write your description
+        """
         self.pn = None
         self.skipreason = None
         self.provides = None
@@ -86,32 +101,79 @@ class CookerFeatures(object):
     _feature_list = [HOB_EXTRA_CACHES, BASEDATASTORE_TRACKING, SEND_SANITYEVENTS] = list(range(3))
 
     def __init__(self):
+        """
+        Initialize all the features.
+
+        Args:
+            self: (todo): write your description
+        """
         self._features=set()
 
     def setFeature(self, f):
+        """
+        Set a feature to the given feature.
+
+        Args:
+            self: (todo): write your description
+            f: (todo): write your description
+        """
         # validate we got a request for a feature we support
         if f not in CookerFeatures._feature_list:
             return
         self._features.add(f)
 
     def __contains__(self, f):
+        """
+        Determine whether f is contained in self.
+
+        Args:
+            self: (todo): write your description
+            f: (str): write your description
+        """
         return f in self._features
 
     def __iter__(self):
+        """
+        Returns an iterator over the iterables.
+
+        Args:
+            self: (todo): write your description
+        """
         return self._features.__iter__()
 
     def __next__(self):
+        """
+        Returns the next document.
+
+        Args:
+            self: (todo): write your description
+        """
         return next(self._features)
 
 
 class EventWriter:
     def __init__(self, cooker, eventfile):
+        """
+        Initialize the event queue.
+
+        Args:
+            self: (todo): write your description
+            cooker: (todo): write your description
+            eventfile: (str): write your description
+        """
         self.file_inited = None
         self.cooker = cooker
         self.eventfile = eventfile
         self.event_queue = []
 
     def write_event(self, event):
+        """
+        Writes event to file.
+
+        Args:
+            self: (todo): write your description
+            event: (todo): write your description
+        """
         with open(self.eventfile, "a") as f:
             try:
                 str_event = codecs.encode(pickle.dumps(event), 'base64').decode('utf-8')
@@ -122,6 +184,13 @@ class EventWriter:
                 print(err, traceback.format_exc())
 
     def send(self, event):
+        """
+        Sends event to the queue.
+
+        Args:
+            self: (todo): write your description
+            event: (str): write your description
+        """
         if self.file_inited:
             # we have the file, just write the event
             self.write_event(event)
@@ -153,6 +222,14 @@ class BBCooker:
     """
 
     def __init__(self, configuration, featureSet=None):
+        """
+        Initialize the configuration.
+
+        Args:
+            self: (todo): write your description
+            configuration: (dict): write your description
+            featureSet: (todo): write your description
+        """
         self.recipecaches = None
         self.skiplist = {}
         self.featureset = CookerFeatures()
@@ -211,6 +288,14 @@ class BBCooker:
         self.inotify_modified_files = []
 
         def _process_inotify_updates(server, cooker, abort):
+            """
+            Process incoming updates.
+
+            Args:
+                server: (todo): write your description
+                cooker: (todo): write your description
+                abort: (int): write your description
+            """
             cooker.process_inotify_updates()
             return 1.0
 
@@ -242,6 +327,12 @@ class BBCooker:
         sys.stdout.flush()
 
     def process_inotify_updates(self):
+        """
+        Process the updates inotify.
+
+        Args:
+            self: (todo): write your description
+        """
         for n in [self.confignotifier, self.notifier]:
             if n.check_events(timeout=0):
                 # read notified events and enqeue them
@@ -249,6 +340,13 @@ class BBCooker:
                 n.process_events()
 
     def config_notifications(self, event):
+        """
+        Configure notifications for a given event.
+
+        Args:
+            self: (todo): write your description
+            event: (todo): write your description
+        """
         if event.maskname == "IN_Q_OVERFLOW":
             bb.warn("inotify event queue overflowed, invalidating caches.")
             self.parsecache_valid = False
@@ -262,6 +360,13 @@ class BBCooker:
         self.baseconfig_valid = False
 
     def notifications(self, event):
+        """
+        Return a list.
+
+        Args:
+            self: (todo): write your description
+            event: (todo): write your description
+        """
         if event.maskname == "IN_Q_OVERFLOW":
             bb.warn("inotify event queue overflowed, invalidating caches.")
             self.parsecache_valid = False
@@ -275,6 +380,15 @@ class BBCooker:
         self.parsecache_valid = False
 
     def add_filewatch(self, deps, watcher=None, dirs=False):
+        """
+        Add a watcher to the watch list.
+
+        Args:
+            self: (todo): write your description
+            deps: (float): write your description
+            watcher: (todo): write your description
+            dirs: (str): write your description
+        """
         if not watcher:
             watcher = self.watcher
         for i in deps:
@@ -312,6 +426,14 @@ class BBCooker:
                     raise
 
     def sigterm_exception(self, signum, stackframe):
+        """
+        Called when a signal.
+
+        Args:
+            self: (todo): write your description
+            signum: (int): write your description
+            stackframe: (todo): write your description
+        """
         if signum == signal.SIGTERM:
             bb.warn("Cooker received SIGTERM, shutting down...")
         elif signum == signal.SIGHUP:
@@ -319,6 +441,13 @@ class BBCooker:
         self.state = state.forceshutdown
 
     def setFeatures(self, features):
+        """
+        Sets the features for this widget.
+
+        Args:
+            self: (todo): write your description
+            features: (list): write your description
+        """
         # we only accept a new feature set if we're in state initial, so we can reset without problems
         if not self.state in [state.initial, state.shutdown, state.forceshutdown, state.stopped, state.error]:
             raise Exception("Illegal state for feature set change")
@@ -330,6 +459,12 @@ class BBCooker:
             self.reset()
 
     def initConfigurationData(self):
+        """
+        Initializes the module.
+
+        Args:
+            self: (todo): write your description
+        """
 
         self.state = state.initial
         self.caches_array = []
@@ -386,6 +521,12 @@ class BBCooker:
         self.parsecache_valid = False
 
     def handlePRServ(self):
+        """
+        Handles the prhost.
+
+        Args:
+            self: (todo): write your description
+        """
         # Setup a PR Server based on the new configuration
         try:
             self.prhost = prserv.serv.auto_start(self.data)
@@ -409,16 +550,34 @@ class BBCooker:
         bb.parse.init_parser(self.data)
 
     def enableDataTracking(self):
+        """
+        Enable all data to be sent.
+
+        Args:
+            self: (todo): write your description
+        """
         self.configuration.tracking = True
         if hasattr(self, "data"):
             self.data.enableTracking()
 
     def disableDataTracking(self):
+        """
+        Disable the data.
+
+        Args:
+            self: (todo): write your description
+        """
         self.configuration.tracking = False
         if hasattr(self, "data"):
             self.data.disableTracking()
 
     def parseConfiguration(self):
+        """
+        * parse log data
+
+        Args:
+            self: (todo): write your description
+        """
         # Set log file verbosity
         verboselogs = bb.utils.to_boolean(self.data.getVar("BB_VERBOSE_LOGS", False))
         if verboselogs:
@@ -443,6 +602,15 @@ class BBCooker:
         self.parsecache_valid = False
 
     def updateConfigOpts(self, options, environment, cmdline):
+        """
+        Updates configuration options.
+
+        Args:
+            self: (todo): write your description
+            options: (dict): write your description
+            environment: (todo): write your description
+            cmdline: (str): write your description
+        """
         self.ui_cmdline = cmdline
         clean = True
         for o in options:
@@ -487,6 +655,12 @@ class BBCooker:
         return self.command.runAsyncCommand()
 
     def showVersions(self):
+        """
+        List all available versions
+
+        Args:
+            self: (todo): write your description
+        """
 
         (latest_versions, preferred_versions) = self.findProviders()
 
@@ -521,6 +695,12 @@ class BBCooker:
             self.reset()
 
         def mc_base(p):
+            """
+            Return the base base string.
+
+            Args:
+                p: (str): write your description
+            """
             if p.startswith('mc:'):
                 s = p.split(':')
                 if len(s) == 2:
@@ -719,11 +899,26 @@ class BBCooker:
 
     @staticmethod
     def add_mc_prefix(mc, pn):
+        """
+        Add a prefix to a mcmc.
+
+        Args:
+            mc: (todo): write your description
+            pn: (todo): write your description
+        """
         if mc:
             return "mc:%s:%s" % (mc, pn)
         return pn
 
     def buildDependTree(self, rq, taskdata):
+        """
+        Builds a dependency tree. rqfile
+
+        Args:
+            self: (todo): write your description
+            rq: (todo): write your description
+            taskdata: (todo): write your description
+        """
         seen_fns = []
         depend_tree = {}
         depend_tree["depends"] = {}
@@ -937,6 +1132,12 @@ class BBCooker:
         logger.info("Task dependencies saved to 'task-depends.dot'")
 
     def show_appends_with_no_recipes(self):
+        """
+        Shows all recipes.
+
+        Args:
+            self: (todo): write your description
+        """
         # Determine which bbappends haven't been applied
 
         # First get list of recipes, including skipped
@@ -963,6 +1164,12 @@ class BBCooker:
                 bb.fatal(msg)
 
     def handlePrefProviders(self):
+        """
+        Handle providers
+
+        Args:
+            self: (todo): write your description
+        """
 
         for mc in self.multiconfigs:
             localdata = data.createCopy(self.databuilder.mcdata[mc])
@@ -1031,9 +1238,24 @@ class BBCooker:
             bb.event.fire(bb.event.FilesMatchingFound(filepattern, matches), self.data)
 
     def findProviders(self, mc=''):
+        """
+        Find providers of providers.
+
+        Args:
+            self: (todo): write your description
+            mc: (todo): write your description
+        """
         return bb.providers.findProviders(self.data, self.recipecaches[mc], self.recipecaches[mc].pkg_pn)
 
     def findBestProvider(self, pn, mc=''):
+        """
+        Find providers that match a given package.
+
+        Args:
+            self: (todo): write your description
+            pn: (int): write your description
+            mc: (int): write your description
+        """
         if pn in self.recipecaches[mc].providers:
             filenames = self.recipecaches[mc].providers[pn]
             eligible, foundUnique = bb.providers.filterProviders(filenames, pn, self.data, self.recipecaches[mc])
@@ -1197,6 +1419,12 @@ class BBCooker:
 
             # Recursively work out collection priorities based on dependencies
             def calc_layer_priority(collection):
+                """
+                Calculate priority of all priority.
+
+                Args:
+                    collection: (str): write your description
+                """
                 if not collection_priorities[collection]:
                     max_depprio = min_prio
                     for dep in collection_depends[collection]:
@@ -1381,6 +1609,14 @@ class BBCooker:
         rq = bb.runqueue.RunQueue(self, self.data, self.recipecaches, taskdata, runlist)
 
         def buildFileIdle(server, rq, abort):
+            """
+            Builds a command
+
+            Args:
+                server: (str): write your description
+                rq: (todo): write your description
+                abort: (todo): write your description
+            """
 
             msg = None
             interrupted = 0
@@ -1427,6 +1663,14 @@ class BBCooker:
         """
 
         def buildTargetsIdle(server, rq, abort):
+            """
+            Build a command tokets a server.
+
+            Args:
+                server: (todo): write your description
+                rq: (todo): write your description
+                abort: (todo): write your description
+            """
             msg = None
             interrupted = 0
             if abort or self.state == state.forceshutdown:
@@ -1494,6 +1738,13 @@ class BBCooker:
 
 
     def getAllKeysWithFlags(self, flaglist):
+        """
+        Returns a dictionary of all the flags for this object.
+
+        Args:
+            self: (todo): write your description
+            flaglist: (list): write your description
+        """
         dump = {}
         for k in self.data.keys():
             try:
@@ -1518,6 +1769,12 @@ class BBCooker:
 
 
     def updateCacheSync(self):
+        """
+        Updates the list.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.state == state.running:
             return
 
@@ -1535,6 +1792,12 @@ class BBCooker:
 
     # This is called for all async commands when self.state != running
     def updateCache(self):
+        """
+        Updates the state of this method
+
+        Args:
+            self: (todo): write your description
+        """
         if self.state == state.running:
             return
 
@@ -1592,6 +1855,14 @@ class BBCooker:
         return True
 
     def checkPackages(self, pkgs_to_build, task=None):
+        """
+        Check for the build.
+
+        Args:
+            self: (todo): write your description
+            pkgs_to_build: (todo): write your description
+            task: (todo): write your description
+        """
 
         # Return a copy, don't modify the original
         pkgs_to_build = pkgs_to_build[:]
@@ -1638,12 +1909,24 @@ class BBCooker:
         return pkgs_to_build
 
     def pre_serve(self):
+        """
+        Pre - process the handle.
+
+        Args:
+            self: (todo): write your description
+        """
         # We now are in our own process so we can call this here.
         # PRServ exits if its parent process exits
         self.handlePRServ()
         return
 
     def post_serve(self):
+        """
+        Post - processes
+
+        Args:
+            self: (todo): write your description
+        """
         prserv.serv.auto_shutdown()
         if self.hashserv:
             self.hashserv.process.terminate()
@@ -1651,6 +1934,13 @@ class BBCooker:
         bb.event.fire(CookerExit(), self.data)
 
     def shutdown(self, force = False):
+        """
+        Shutdown the connection.
+
+        Args:
+            self: (todo): write your description
+            force: (bool): write your description
+        """
         if force:
             self.state = state.forceshutdown
         else:
@@ -1660,9 +1950,21 @@ class BBCooker:
             self.parser.shutdown(clean=not force, force=force)
 
     def finishcommand(self):
+        """
+        Finishes the next command.
+
+        Args:
+            self: (todo): write your description
+        """
         self.state = state.initial
 
     def reset(self):
+        """
+        Reset the data.
+
+        Args:
+            self: (todo): write your description
+        """
         self.initConfigurationData()
         self.handlePRServ()
 
@@ -1681,11 +1983,24 @@ class CookerExit(bb.event.Event):
     """
 
     def __init__(self):
+        """
+        Initialize event
+
+        Args:
+            self: (todo): write your description
+        """
         bb.event.Event.__init__(self)
 
 
 class CookerCollectFiles(object):
     def __init__(self, priorities):
+        """
+        Initialize the prior.
+
+        Args:
+            self: (todo): write your description
+            priorities: (todo): write your description
+        """
         self.bbappends = []
         # Priorities is a list of tupples, with the second element as the pattern.
         # We need to sort the list with the longest pattern first, and so on to
@@ -1693,6 +2008,14 @@ class CookerCollectFiles(object):
         self.bbfile_config_priorities = sorted(priorities, key=lambda tup: tup[1], reverse=True)
 
     def calc_bbfile_priority( self, filename, matched = None ):
+        """
+        Calculate priority for a regular expression.
+
+        Args:
+            self: (todo): write your description
+            filename: (str): write your description
+            matched: (todo): write your description
+        """
         for _, _, regex, pri in self.bbfile_config_priorities:
             if regex.match(filename):
                 if matched != None:
@@ -1750,10 +2073,22 @@ class CookerCollectFiles(object):
         searchdirs = []
 
         def ourlistdir(d):
+            """
+            Return a list of all directories.
+
+            Args:
+                d: (array): write your description
+            """
             searchdirs.append(d)
             return origlistdir(d)
 
         def ourscandir(d):
+            """
+            Return a list of directories that matchdir.
+
+            Args:
+                d: (array): write your description
+            """
             searchdirs.append(d)
             return origscandir(d)
 
@@ -1855,6 +2190,14 @@ class CookerCollectFiles(object):
         return filelist
 
     def collection_priorities(self, pkgfns, d):
+        """
+        Return a dict of the priority matches for a given package.
+
+        Args:
+            self: (todo): write your description
+            pkgfns: (todo): write your description
+            d: (todo): write your description
+        """
 
         priorities = {}
 
@@ -1871,6 +2214,12 @@ class CookerCollectFiles(object):
 
         # Don't show the warning if the BBFILE_PATTERN did match .bbappend files
         def find_bbappend_match(regex):
+            """
+            Return true if the regular expression matches.
+
+            Args:
+                regex: (str): write your description
+            """
             for b in self.bbappends:
                 (bbfile, append) = b
                 if regex.match(append):
@@ -1894,12 +2243,31 @@ class CookerCollectFiles(object):
 
 class ParsingFailure(Exception):
     def __init__(self, realexception, recipe):
+        """
+        Initialize a simulation.
+
+        Args:
+            self: (todo): write your description
+            realexception: (todo): write your description
+            recipe: (str): write your description
+        """
         self.realexception = realexception
         self.recipe = recipe
         Exception.__init__(self, realexception, recipe)
 
 class Parser(multiprocessing.Process):
     def __init__(self, jobs, results, quit, init, profile):
+        """
+        Initialize the jobs.
+
+        Args:
+            self: (todo): write your description
+            jobs: (todo): write your description
+            results: (todo): write your description
+            quit: (str): write your description
+            init: (str): write your description
+            profile: (str): write your description
+        """
         self.jobs = jobs
         self.results = results
         self.quit = quit
@@ -1910,6 +2278,12 @@ class Parser(multiprocessing.Process):
         self.profile = profile
 
     def run(self):
+        """
+        Run the profile.
+
+        Args:
+            self: (todo): write your description
+        """
 
         if not self.profile:
             self.realrun()
@@ -1927,6 +2301,12 @@ class Parser(multiprocessing.Process):
             prof.dump_stats(logfile)
 
     def realrun(self):
+        """
+        The main loop.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.init:
             self.init()
 
@@ -1955,9 +2335,24 @@ class Parser(multiprocessing.Process):
                 pending.append(result)
 
     def parse(self, filename, appends):
+        """
+        Parses a single record from a record.
+
+        Args:
+            self: (str): write your description
+            filename: (str): write your description
+            appends: (str): write your description
+        """
         try:
             # Record the filename we're parsing into any events generated
             def parse_filter(self, record):
+                """
+                Parses a record.
+
+                Args:
+                    self: (todo): write your description
+                    record: (todo): write your description
+                """
                 record.taskpid = bb.event.worker_pid
                 record.fn = filename
                 return True
@@ -1981,6 +2376,15 @@ class Parser(multiprocessing.Process):
 
 class CookerParser(object):
     def __init__(self, cooker, filelist, masked):
+        """
+        Initialize the cache.
+
+        Args:
+            self: (todo): write your description
+            cooker: (todo): write your description
+            filelist: (str): write your description
+            masked: (bool): write your description
+        """
         self.filelist = filelist
         self.cooker = cooker
         self.cfgdata = cooker.data
@@ -2019,11 +2423,22 @@ class CookerParser(object):
         self.haveshutdown = False
 
     def start(self):
+        """
+        Starts the queue.
+
+        Args:
+            self: (todo): write your description
+        """
         self.results = self.load_cached()
         self.processes = []
         if self.toparse:
             bb.event.fire(bb.event.ParseStarted(self.toparse), self.cfgdata)
             def init():
+                """
+                Initialize the cache.
+
+                Args:
+                """
                 Parser.bb_cache = self.bb_cache
                 bb.utils.set_process_name(multiprocessing.current_process().name)
                 multiprocessing.util.Finalize(None, bb.codeparser.parser_cache_save, exitpriority=1)
@@ -2033,6 +2448,13 @@ class CookerParser(object):
             self.result_queue = multiprocessing.Queue()
 
             def chunkify(lst,n):
+                """
+                Chunkify lstunk.
+
+                Args:
+                    lst: (list): write your description
+                    n: (int): write your description
+                """
                 return [lst[i::n] for i in range(n)]
             self.jobs = chunkify(self.willparse, self.num_processes)
 
@@ -2045,6 +2467,14 @@ class CookerParser(object):
             self.results = itertools.chain(self.results, self.parse_generator())
 
     def shutdown(self, clean=True, force=False):
+        """
+        Shutdown the queue
+
+        Args:
+            self: (todo): write your description
+            clean: (bool): write your description
+            force: (bool): write your description
+        """
         if not self.toparse:
             return
         if self.haveshutdown:
@@ -2097,11 +2527,23 @@ class CookerParser(object):
             print("Processed parsing statistics saved to %s" % (pout))
 
     def load_cached(self):
+        """
+        Load cached cached cached cached cached cached files.
+
+        Args:
+            self: (todo): write your description
+        """
         for filename, appends in self.fromcache:
             cached, infos = self.bb_cache.load(filename, appends)
             yield not cached, infos
 
     def parse_generator(self):
+        """
+        Parse a generator.
+
+        Args:
+            self: (todo): write your description
+        """
         while True:
             if self.parsed >= self.toparse:
                 break
@@ -2118,6 +2560,12 @@ class CookerParser(object):
                     yield result
 
     def parse_next(self):
+        """
+        Parses next available results.
+
+        Args:
+            self: (todo): write your description
+        """
         result = []
         parsed = None
         try:
@@ -2183,6 +2631,13 @@ class CookerParser(object):
         return True
 
     def reparse(self, filename):
+        """
+        Recompute a zip files.
+
+        Args:
+            self: (todo): write your description
+            filename: (str): write your description
+        """
         infos = self.bb_cache.parse(filename, self.cooker.collection.get_file_appends(filename))
         for vfn, info_array in infos:
             (fn, cls, mc) = bb.cache.virtualfn2realfn(vfn)

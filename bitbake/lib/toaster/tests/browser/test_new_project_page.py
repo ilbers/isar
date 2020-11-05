@@ -19,6 +19,12 @@ class TestNewProjectPage(SeleniumTestCase):
     """ Test project data at /project/X/ is displayed correctly """
 
     def setUp(self):
+        """
+        Create a new branch.
+
+        Args:
+            self: (todo): write your description
+        """
         bitbake, c = BitbakeVersion.objects.get_or_create(
             name="master",
             giturl="git://master",

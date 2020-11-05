@@ -14,6 +14,13 @@ ADDR_TYPE_TCP = 1
 
 
 def setup_database(database, sync=True):
+    """
+    Create a sqlite3 database.
+
+    Args:
+        database: (todo): write your description
+        sync: (todo): write your description
+    """
     db = sqlite3.connect(database)
     db.row_factory = sqlite3.Row
 
@@ -53,6 +60,12 @@ def setup_database(database, sync=True):
 
 
 def parse_address(addr):
+    """
+    Parses an address.
+
+    Args:
+        addr: (str): write your description
+    """
     if addr.startswith(UNIX_PREFIX):
         return (ADDR_TYPE_UNIX, (addr[len(UNIX_PREFIX):],))
     else:
@@ -67,6 +80,14 @@ def parse_address(addr):
 
 
 def create_server(addr, dbname, *, sync=True):
+    """
+    Create a server.
+
+    Args:
+        addr: (str): write your description
+        dbname: (str): write your description
+        sync: (str): write your description
+    """
     from . import server
     db = setup_database(dbname, sync=sync)
     s = server.Server(db)
@@ -81,6 +102,12 @@ def create_server(addr, dbname, *, sync=True):
 
 
 def create_client(addr):
+    """
+    Create a client object.
+
+    Args:
+        addr: (str): write your description
+    """
     from . import client
     c = client.Client()
 

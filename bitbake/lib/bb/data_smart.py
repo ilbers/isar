@@ -46,6 +46,11 @@ def infer_caller_details(loginfo, parent = False, varval = True):
     # to reduce clutter in the rest of the code.
     above = None
     def set_above():
+        """
+        Sets the current exception.
+
+        Args:
+        """
         try:
             raise Exception
         except Exception:
@@ -81,6 +86,15 @@ def infer_caller_details(loginfo, parent = False, varval = True):
 
 class VariableParse:
     def __init__(self, varname, d, val = None):
+        """
+        Init the environment.
+
+        Args:
+            self: (todo): write your description
+            varname: (str): write your description
+            d: (int): write your description
+            val: (todo): write your description
+        """
         self.varname = varname
         self.d = d
         self.value = val
@@ -90,6 +104,13 @@ class VariableParse:
         self.contains = {}
 
     def var_sub(self, match):
+        """
+        Return variable matching variable matching a variable.
+
+        Args:
+            self: (todo): write your description
+            match: (todo): write your description
+        """
             key = match.group()[2:-1]
             if self.varname and key:
                 if self.varname == key:
@@ -102,6 +123,13 @@ class VariableParse:
                 return match.group()
 
     def python_sub(self, match):
+        """
+        Parse a sub - string *
+
+        Args:
+            self: (todo): write your description
+            match: (todo): write your description
+        """
             if isinstance(match, str):
                 code = match
             else:
@@ -139,11 +167,25 @@ class VariableParse:
 
 class DataContext(dict):
     def __init__(self, metadata, **kwargs):
+        """
+        Initialize the metadata.
+
+        Args:
+            self: (todo): write your description
+            metadata: (dict): write your description
+        """
         self.metadata = metadata
         dict.__init__(self, **kwargs)
         self['d'] = metadata
 
     def __missing__(self, key):
+        """
+        Returns true if the key is not found.
+
+        Args:
+            self: (todo): write your description
+            key: (str): write your description
+        """
         value = self.metadata.getVar(key)
         if value is None or self.metadata.getVarFlag(key, 'func', False):
             raise KeyError(key)
@@ -152,6 +194,15 @@ class DataContext(dict):
 
 class ExpansionError(Exception):
     def __init__(self, varname, expression, exception):
+        """
+        Initialize a new variable.
+
+        Args:
+            self: (todo): write your description
+            varname: (str): write your description
+            expression: (str): write your description
+            exception: (todo): write your description
+        """
         self.expression = expression
         self.variablename = varname
         self.exception = exception
@@ -165,31 +216,73 @@ class ExpansionError(Exception):
         Exception.__init__(self, self.msg)
         self.args = (varname, expression, exception)
     def __str__(self):
+        """
+        Return a string representation of the message.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.msg
 
 class IncludeHistory(object):
     def __init__(self, parent = None, filename = '[TOP LEVEL]'):
+        """
+        Initialize this node.
+
+        Args:
+            self: (todo): write your description
+            parent: (todo): write your description
+            filename: (str): write your description
+        """
         self.parent = parent
         self.filename = filename
         self.children = []
         self.current = self
 
     def copy(self):
+        """
+        Return a copy of this one.
+
+        Args:
+            self: (todo): write your description
+        """
         new = IncludeHistory(self.parent, self.filename)
         for c in self.children:
             new.children.append(c)
         return new
 
     def include(self, filename):
+        """
+        Add a new file to the current working directory.
+
+        Args:
+            self: (todo): write your description
+            filename: (str): write your description
+        """
         newfile = IncludeHistory(self.current, filename)
         self.current.children.append(newfile)
         self.current = newfile
         return self
 
     def __enter__(self):
+        """
+        Enter the callable
+
+        Args:
+            self: (todo): write your description
+        """
         pass
 
     def __exit__(self, a, b, c):
+        """
+        Exit the exit.
+
+        Args:
+            self: (todo): write your description
+            a: (todo): write your description
+            b: (todo): write your description
+            c: (todo): write your description
+        """
         if self.current.parent:
             self.current = self.current.parent
         else:
@@ -212,15 +305,34 @@ class IncludeHistory(object):
 
 class VariableHistory(object):
     def __init__(self, dataroot):
+        """
+        Initialize a dictionary.
+
+        Args:
+            self: (todo): write your description
+            dataroot: (todo): write your description
+        """
         self.dataroot = dataroot
         self.variables = COWDictBase.copy()
 
     def copy(self):
+        """
+        Returns a copy of this variable.
+
+        Args:
+            self: (todo): write your description
+        """
         new = VariableHistory(self.dataroot)
         new.variables = self.variables.copy()
         return new
 
     def __getstate__(self):
+        """
+        Return a dictionary of the variables.
+
+        Args:
+            self: (todo): write your description
+        """
         vardict = {}
         for k, v in self.variables.iteritems():
             vardict[k] = v
@@ -228,12 +340,27 @@ class VariableHistory(object):
                 'variables': vardict}
 
     def __setstate__(self, state):
+        """
+        Sets the state of this box.
+
+        Args:
+            self: (todo): write your description
+            state: (dict): write your description
+        """
         self.dataroot = state['dataroot']
         self.variables = COWDictBase.copy()
         for k, v in state['variables'].items():
             self.variables[k] = v
 
     def record(self, *kwonly, **loginfo):
+        """
+        Record details about a variable.
+
+        Args:
+            self: (todo): write your description
+            kwonly: (todo): write your description
+            loginfo: (array): write your description
+        """
         if not self.dataroot._tracking:
             return
         if len(kwonly) > 0:
@@ -258,6 +385,14 @@ class VariableHistory(object):
         self.variables[var].append(loginfo.copy())
 
     def rename_variable_hist(self, oldvar, newvar):
+        """
+        Rename variable.
+
+        Args:
+            self: (todo): write your description
+            oldvar: (str): write your description
+            newvar: (str): write your description
+        """
         if not self.dataroot._tracking:
             return
         if oldvar not in self.variables:
@@ -268,6 +403,13 @@ class VariableHistory(object):
             self.variables[newvar].append(i.copy())
 
     def variable(self, var):
+        """
+        Get the variable of a variable.
+
+        Args:
+            self: (todo): write your description
+            var: (array): write your description
+        """
         remote_connector = self.dataroot.getVar('_remote_data', False)
         if remote_connector:
             varhistory = remote_connector.getVarHistory(var)
@@ -279,6 +421,17 @@ class VariableHistory(object):
         return varhistory
 
     def emit(self, var, oval, val, o, d):
+        """
+        Emit a variable
+
+        Args:
+            self: (todo): write your description
+            var: (str): write your description
+            oval: (str): write your description
+            val: (str): write your description
+            o: (todo): write your description
+            d: (str): write your description
+        """
         history = self.variable(var)
 
         # Append override history
@@ -373,6 +526,12 @@ class VariableHistory(object):
 
 class DataSmart(MutableMapping):
     def __init__(self):
+        """
+        Initialize the instance.
+
+        Args:
+            self: (todo): write your description
+        """
         self.dict = {}
 
         self.inchistory = IncludeHistory()
@@ -391,12 +550,32 @@ class DataSmart(MutableMapping):
         self.inoverride = False
 
     def enableTracking(self):
+        """
+        Enable / enable.
+
+        Args:
+            self: (todo): write your description
+        """
         self._tracking = True
 
     def disableTracking(self):
+        """
+        Clears the report.
+
+        Args:
+            self: (todo): write your description
+        """
         self._tracking = False
 
     def expandWithRefs(self, s, varname):
+        """
+        Expand a string into a variable.
+
+        Args:
+            self: (todo): write your description
+            s: (todo): write your description
+            varname: (str): write your description
+        """
 
         if not isinstance(s, str): # sanity check
             return VariableParse(varname, self, s)
@@ -428,9 +607,24 @@ class DataSmart(MutableMapping):
         return varparse
 
     def expand(self, s, varname = None):
+        """
+        Expand s.
+
+        Args:
+            self: (todo): write your description
+            s: (str): write your description
+            varname: (str): write your description
+        """
         return self.expandWithRefs(s, varname).value
 
     def finalize(self, parent = False):
+        """
+        Finalize the given parent.
+
+        Args:
+            self: (todo): write your description
+            parent: (todo): write your description
+        """
         return
 
     def internal_finalize(self, parent = False):
@@ -438,6 +632,12 @@ class DataSmart(MutableMapping):
         self.overrides = None
 
     def need_overrides(self):
+        """
+        Determine if overridden overridden.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.overrides is not None:
             return
         if self.inoverride:
@@ -460,11 +660,25 @@ class DataSmart(MutableMapping):
             bb.fatal("Overrides could not be expanded into a stable state after 5 iterations, overrides must be being referenced by other overridden variables in some recursive fashion. Please provide your configuration to bitbake-devel so we can laugh, er, I mean try and understand how to make it work.")
 
     def initVar(self, var):
+        """
+        Initialize the cache.
+
+        Args:
+            self: (todo): write your description
+            var: (array): write your description
+        """
         self.expand_cache = {}
         if not var in self.dict:
             self.dict[var] = {}
 
     def _findVar(self, var):
+        """
+        Find the variable.
+
+        Args:
+            self: (todo): write your description
+            var: (str): write your description
+        """
         dest = self.dict
         while dest:
             if var in dest:
@@ -480,6 +694,13 @@ class DataSmart(MutableMapping):
         return None, self.overridedata.get(var, None)
 
     def _makeShadowCopy(self, var):
+        """
+        Make a copy of the variable
+
+        Args:
+            self: (todo): write your description
+            var: (array): write your description
+        """
         if var in self.dict:
             return
 
@@ -492,6 +713,15 @@ class DataSmart(MutableMapping):
 
 
     def setVar(self, var, value, **loginfo):
+        """
+        Set a variable s value.
+
+        Args:
+            self: (todo): write your description
+            var: (todo): write your description
+            value: (todo): write your description
+            loginfo: (todo): write your description
+        """
         #print("var=" + str(var) + "  val=" + str(value))
         self.expand_cache = {}
         parsing=False
@@ -569,6 +799,14 @@ class DataSmart(MutableMapping):
             self._setvar_update_overridevars(var, value)
 
     def _setvar_update_overridevars(self, var, value):
+        """
+        Set the environment variables to a new value.
+
+        Args:
+            self: (todo): write your description
+            var: (str): write your description
+            value: (todo): write your description
+        """
         vardata = self.expandWithRefs(value, var)
         new = vardata.references
         new.update(vardata.contains.keys())
@@ -583,6 +821,14 @@ class DataSmart(MutableMapping):
         self.internal_finalize(True)
 
     def _setvar_update_overrides(self, var, **loginfo):
+        """
+        Set the variable value of a dictionary.
+
+        Args:
+            self: (todo): write your description
+            var: (todo): write your description
+            loginfo: (todo): write your description
+        """
         # aka pay the cookie monster
         override = var[var.rfind('_')+1:]
         shortvar = var[:var.rfind('_')]
@@ -601,6 +847,16 @@ class DataSmart(MutableMapping):
                     override = None
 
     def getVar(self, var, expand=True, noweakdefault=False, parsing=False):
+        """
+        Get var var
+
+        Args:
+            self: (todo): write your description
+            var: (str): write your description
+            expand: (bool): write your description
+            noweakdefault: (todo): write your description
+            parsing: (str): write your description
+        """
         return self.getVarFlag(var, "_content", expand, noweakdefault, parsing)
 
     def renameVar(self, key, newkey, **loginfo):
@@ -647,16 +903,42 @@ class DataSmart(MutableMapping):
         self.delVar(key, ignore=True)
 
     def appendVar(self, var, value, **loginfo):
+        """
+        Append a new record
+
+        Args:
+            self: (todo): write your description
+            var: (str): write your description
+            value: (todo): write your description
+            loginfo: (todo): write your description
+        """
         loginfo['op'] = 'append'
         self.varhistory.record(**loginfo)
         self.setVar(var + "_append", value, ignore=True, parsing=True)
 
     def prependVar(self, var, value, **loginfo):
+        """
+        Prepend a variable to the record.
+
+        Args:
+            self: (todo): write your description
+            var: (str): write your description
+            value: (todo): write your description
+            loginfo: (todo): write your description
+        """
         loginfo['op'] = 'prepend'
         self.varhistory.record(**loginfo)
         self.setVar(var + "_prepend", value, ignore=True, parsing=True)
 
     def delVar(self, var, **loginfo):
+        """
+        Remove a variable from the cache.
+
+        Args:
+            self: (todo): write your description
+            var: (array): write your description
+            loginfo: (todo): write your description
+        """
         self.expand_cache = {}
         if '_remote_data' in self.dict:
             connector = self.dict["_remote_data"]["_content"]
@@ -689,6 +971,16 @@ class DataSmart(MutableMapping):
                          override = None
 
     def setVarFlag(self, var, flag, value, **loginfo):
+        """
+        Set a variable.
+
+        Args:
+            self: (todo): write your description
+            var: (todo): write your description
+            flag: (todo): write your description
+            value: (todo): write your description
+            loginfo: (todo): write your description
+        """
         self.expand_cache = {}
         if '_remote_data' in self.dict:
             connector = self.dict["_remote_data"]["_content"]
@@ -717,6 +1009,18 @@ class DataSmart(MutableMapping):
             self.dict["__exportlist"]["_content"].add(var)
 
     def getVarFlag(self, var, flag, expand=True, noweakdefault=False, parsing=False, retparser=False):
+        """
+        Return the value of a variable
+
+        Args:
+            self: (todo): write your description
+            var: (todo): write your description
+            flag: (str): write your description
+            expand: (bool): write your description
+            noweakdefault: (todo): write your description
+            parsing: (str): write your description
+            retparser: (todo): write your description
+        """
         if flag == "_content":
             cachename = var
         else:
@@ -844,6 +1148,15 @@ class DataSmart(MutableMapping):
         return value
 
     def delVarFlag(self, var, flag, **loginfo):
+        """
+        Remove a variable
+
+        Args:
+            self: (todo): write your description
+            var: (array): write your description
+            flag: (array): write your description
+            loginfo: (todo): write your description
+        """
         self.expand_cache = {}
         if '_remote_data' in self.dict:
             connector = self.dict["_remote_data"]["_content"]
@@ -866,6 +1179,16 @@ class DataSmart(MutableMapping):
             del self.dict[var][flag]
 
     def appendVarFlag(self, var, flag, value, **loginfo):
+        """
+        Append a new variable
+
+        Args:
+            self: (todo): write your description
+            var: (array): write your description
+            flag: (todo): write your description
+            value: (todo): write your description
+            loginfo: (todo): write your description
+        """
         loginfo['op'] = 'append'
         loginfo['flag'] = flag
         self.varhistory.record(**loginfo)
@@ -873,6 +1196,16 @@ class DataSmart(MutableMapping):
         self.setVarFlag(var, flag, newvalue, ignore=True)
 
     def prependVarFlag(self, var, flag, value, **loginfo):
+        """
+        Prepend a variable to the record
+
+        Args:
+            self: (todo): write your description
+            var: (array): write your description
+            flag: (todo): write your description
+            value: (todo): write your description
+            loginfo: (todo): write your description
+        """
         loginfo['op'] = 'prepend'
         loginfo['flag'] = flag
         self.varhistory.record(**loginfo)
@@ -880,6 +1213,15 @@ class DataSmart(MutableMapping):
         self.setVarFlag(var, flag, newvalue, ignore=True)
 
     def setVarFlags(self, var, flags, **loginfo):
+        """
+        Set the variable values.
+
+        Args:
+            self: (todo): write your description
+            var: (todo): write your description
+            flags: (todo): write your description
+            loginfo: (todo): write your description
+        """
         self.expand_cache = {}
         infer_caller_details(loginfo)
         if not var in self.dict:
@@ -894,6 +1236,15 @@ class DataSmart(MutableMapping):
             self.dict[var][i] = flags[i]
 
     def getVarFlags(self, var, expand = False, internalflags=False):
+        """
+        Get the flags for a variable.
+
+        Args:
+            self: (todo): write your description
+            var: (todo): write your description
+            expand: (bool): write your description
+            internalflags: (str): write your description
+        """
         local_var, _ = self._findVar(var)
         flags = {}
 
@@ -910,6 +1261,14 @@ class DataSmart(MutableMapping):
 
 
     def delVarFlags(self, var, **loginfo):
+        """
+        Method to the cache.
+
+        Args:
+            self: (todo): write your description
+            var: (array): write your description
+            loginfo: (todo): write your description
+        """
         self.expand_cache = {}
         if not var in self.dict:
             self._makeShadowCopy(var)
@@ -966,14 +1325,32 @@ class DataSmart(MutableMapping):
                 self.setVar(key, referrervalue.replace(ref, value))
 
     def localkeys(self):
+        """
+        Return a list of local keys.
+
+        Args:
+            self: (todo): write your description
+        """
         for key in self.dict:
             if key not in ['_data', '_remote_data']:
                 yield key
 
     def __iter__(self):
+        """
+        Return an iterator over all the keys and values.
+
+        Args:
+            self: (todo): write your description
+        """
         deleted = set()
         overrides = set()
         def keylist(d):        
+            """
+            Return a list of all the keys.
+
+            Args:
+                d: (todo): write your description
+            """
             klist = set()
             for key in d:
                 if key in ["_data", "_remote_data"]:
@@ -1015,9 +1392,22 @@ class DataSmart(MutableMapping):
              yield k
 
     def __len__(self):
+        """
+        Returns the length of the iterator.
+
+        Args:
+            self: (todo): write your description
+        """
         return len(frozenset(iter(self)))
 
     def __getitem__(self, item):
+        """
+        Return the value of an item.
+
+        Args:
+            self: (todo): write your description
+            item: (str): write your description
+        """
         value = self.getVar(item, False)
         if value is None:
             raise KeyError(item)
@@ -1025,12 +1415,33 @@ class DataSmart(MutableMapping):
             return value
 
     def __setitem__(self, var, value):
+        """
+        Set a variable
+
+        Args:
+            self: (todo): write your description
+            var: (todo): write your description
+            value: (str): write your description
+        """
         self.setVar(var, value)
 
     def __delitem__(self, var):
+        """
+        Remove an item from the variable
+
+        Args:
+            self: (todo): write your description
+            var: (array): write your description
+        """
         self.delVar(var)
 
     def get_hash(self):
+        """
+        Get a hash of the current object.
+
+        Args:
+            self: (todo): write your description
+        """
         data = {}
         d = self.createCopy()
         bb.data.expandKeys(d)

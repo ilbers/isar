@@ -7,6 +7,15 @@
 class ClassRegistryMeta(type):
     """Give each ClassRegistry their own registry"""
     def __init__(cls, name, bases, attrs):
+        """
+        Initialize a class.
+
+        Args:
+            cls: (todo): write your description
+            name: (str): write your description
+            bases: (float): write your description
+            attrs: (dict): write your description
+        """
         cls.registry = {}
         type.__init__(cls, name, bases, attrs)
 
@@ -25,6 +34,15 @@ control over whether the class will be added to the registry (e.g. to keep
 abstract base classes out of the registry)."""
     priority = 0
     def __init__(cls, name, bases, attrs):
+        """
+        Initialize the class.
+
+        Args:
+            cls: (todo): write your description
+            name: (str): write your description
+            bases: (float): write your description
+            attrs: (dict): write your description
+        """
         super(ClassRegistry, cls).__init__(name, bases, attrs)
         try:
             if not cls.implemented:
@@ -40,10 +58,22 @@ abstract base classes out of the registry)."""
 
     @classmethod
     def prioritized(tcls):
+        """
+        Returns a list of priority.
+
+        Args:
+            tcls: (todo): write your description
+        """
         return sorted(list(tcls.registry.values()),
                       key=lambda v: (v.priority, v.name), reverse=True)
 
     def unregister(cls):
+        """
+        Unregistry from the registry.
+
+        Args:
+            cls: (todo): write your description
+        """
         for key in cls.registry.keys():
             if cls.registry[key] is cls:
                 del cls.registry[key]

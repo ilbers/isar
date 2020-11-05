@@ -28,6 +28,12 @@ try:
   next
 except NameError:
     def next(iter):
+        """
+        Return the next item from iterable.
+
+        Args:
+            iter: (int): write your description
+        """
         try:
             # Try new style iterators
             return iter.__next__()
@@ -41,6 +47,12 @@ try:
   any
 except NameError:
    def any(iterator):
+       """
+       Check if any of the items in - place.
+
+       Args:
+           iterator: (todo): write your description
+       """
       for item in iterator:
          if item: return True
       return False

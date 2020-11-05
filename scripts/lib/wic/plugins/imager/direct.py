@@ -53,6 +53,19 @@ class DirectPlugin(ImagerPlugin):
 
     def __init__(self, wks_file, rootfs_dir, bootimg_dir, kernel_dir,
                  native_sysroot, oe_builddir, options):
+        """
+        Initialize the wks file.
+
+        Args:
+            self: (todo): write your description
+            wks_file: (str): write your description
+            rootfs_dir: (str): write your description
+            bootimg_dir: (str): write your description
+            kernel_dir: (str): write your description
+            native_sysroot: (todo): write your description
+            oe_builddir: (str): write your description
+            options: (dict): write your description
+        """
         try:
             self.ks = KickStart(wks_file)
         except KickStartError as err:
@@ -258,6 +271,12 @@ class DirectPlugin(ImagerPlugin):
                     return "/dev/%s%s%-d" % (part.disk, suffix, part.realnum)
 
     def cleanup(self):
+        """
+        Cleanup files fromdir.
+
+        Args:
+            self: (todo): write your description
+        """
         if self._image:
             self._image.cleanup()
 
@@ -288,6 +307,16 @@ class PartitionedImage():
     """
 
     def __init__(self, path, ptable_format, partitions, native_sysroot=None):
+        """
+        Initialize image path.
+
+        Args:
+            self: (todo): write your description
+            path: (str): write your description
+            ptable_format: (todo): write your description
+            partitions: (int): write your description
+            native_sysroot: (todo): write your description
+        """
         self.path = path  # Path to the image file
         self.numpart = 0  # Number of allocated partitions
         self.realpart = 0 # Number of partitions in the partition table
@@ -446,6 +475,12 @@ class PartitionedImage():
         return exec_native_cmd(cmd, self.native_sysroot)
 
     def create(self):
+        """
+        Create a new filesystem.
+
+        Args:
+            self: (todo): write your description
+        """
         logger.debug("Creating sparse file %s", self.path)
         with open(self.path, 'w') as sparse:
             os.ftruncate(sparse.fileno(), self.min_size)
@@ -550,11 +585,23 @@ class PartitionedImage():
                                     self.native_sysroot)
 
     def cleanup(self):
+        """
+        Remove all part of the image.
+
+        Args:
+            self: (todo): write your description
+        """
         # remove partition images
         for image in set(self.partimages):
             os.remove(image)
 
     def assemble(self):
+        """
+        Assembles the image.
+
+        Args:
+            self: (todo): write your description
+        """
         logger.debug("Installing partitions")
 
         for part in self.partitions:

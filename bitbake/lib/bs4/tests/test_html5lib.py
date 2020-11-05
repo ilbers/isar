@@ -22,9 +22,21 @@ class HTML5LibBuilderSmokeTest(SoupTest, HTML5TreeBuilderSmokeTest):
 
     @property
     def default_builder(self):
+        """
+        Return the default html5BuilderBuilder.
+
+        Args:
+            self: (todo): write your description
+        """
         return HTML5TreeBuilder()
 
     def test_soupstrainer(self):
+        """
+        Process the test.
+
+        Args:
+            self: (todo): write your description
+        """
         # The html5lib tree builder does not support SoupStrainers.
         strainer = SoupStrainer("b")
         markup = "<p>A <b>bold</b> statement.</p>"
@@ -58,6 +70,12 @@ class HTML5LibBuilderSmokeTest(SoupTest, HTML5TreeBuilderSmokeTest):
             "<tfoot><tr><td>Baz</td></tr></tfoot></table>")
 
     def test_xml_declaration_followed_by_doctype(self):
+        """
+        Test for xml - rpc.
+
+        Args:
+            self: (todo): write your description
+        """
         markup = '''<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html>
 <html>
@@ -72,6 +90,12 @@ class HTML5LibBuilderSmokeTest(SoupTest, HTML5TreeBuilderSmokeTest):
         self.assertEqual(b"<p>foo</p>", soup.p.encode())
 
     def test_reparented_markup(self):
+        """
+        Reparented markup tags.
+
+        Args:
+            self: (todo): write your description
+        """
         markup = '<p><em>foo</p>\n<p>bar<a></a></em></p>'
         soup = self.soup(markup)
         self.assertEqual("<body><p><em>foo</em></p><em>\n</em><p><em>bar<a></a></em></p></body>", soup.body.decode())
@@ -79,6 +103,12 @@ class HTML5LibBuilderSmokeTest(SoupTest, HTML5TreeBuilderSmokeTest):
 
 
     def test_reparented_markup_ends_with_whitespace(self):
+        """
+        Test if all markup found in html.
+
+        Args:
+            self: (todo): write your description
+        """
         markup = '<p><em>foo</p>\n<p>bar<a></a></em></p>\n'
         soup = self.soup(markup)
         self.assertEqual("<body><p><em>foo</em></p><em>\n</em><p><em>bar<a></a></em></p>\n</body>", soup.body.decode())
@@ -91,6 +121,12 @@ class HTML5LibBuilderSmokeTest(SoupTest, HTML5TreeBuilderSmokeTest):
         assert str(soup).startswith("<!--?PITarget PIContent?-->")
 
     def test_cloned_multivalue_node(self):
+        """
+        Test if a beautifulsoup is already present.
+
+        Args:
+            self: (todo): write your description
+        """
         markup = b"""<a class="my_class"><p></a>"""
         soup = self.soup(markup)
         a1, a2 = soup.find_all('a')

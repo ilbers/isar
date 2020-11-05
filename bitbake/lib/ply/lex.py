@@ -49,9 +49,21 @@ except AttributeError:
 
 if sys.version_info[0] < 3:
     def func_code(f):
+        """
+        Decorator function f
+
+        Args:
+            f: (todo): write your description
+        """
         return f.func_code
 else:
     def func_code(f):
+        """
+        Decorator for function
+
+        Args:
+            f: (todo): write your description
+        """
         return f.__code__
 
 # This regular expression is used to match valid token names
@@ -62,14 +74,34 @@ _is_identifier = re.compile(r'^[a-zA-Z0-9_]+$')
 
 class LexError(Exception):
     def __init__(self,message,s):
+        """
+        Create a message
+
+        Args:
+            self: (todo): write your description
+            message: (str): write your description
+            s: (int): write your description
+        """
          self.args = (message,)
          self.text = s
 
 # Token class.  This class is used to represent the tokens produced.
 class LexToken(object):
     def __str__(self):
+        """
+        Return a string representation of this lexer.
+
+        Args:
+            self: (todo): write your description
+        """
         return "LexToken(%s,%r,%d,%d)" % (self.type,self.value,self.lineno,self.lexpos)
     def __repr__(self):
+        """
+        Return a repr representation of this object.
+
+        Args:
+            self: (todo): write your description
+        """
         return str(self)
 
 # This object is a stand-in for a logging object created by the 
@@ -77,14 +109,42 @@ class LexToken(object):
 
 class PlyLogger(object):
     def __init__(self,f):
+        """
+        Initialize f from f
+
+        Args:
+            self: (todo): write your description
+            f: (int): write your description
+        """
         self.f = f
     def critical(self,msg,*args,**kwargs):
+        """
+        Write a critical critical level.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         self.f.write((msg % args) + "\n")
 
     def warning(self,msg,*args,**kwargs):
+        """
+        Log warning
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         self.f.write("WARNING: "+ (msg % args) + "\n")
 
     def error(self,msg,*args,**kwargs):
+        """
+        Log an error message
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         self.f.write("ERROR: " + (msg % args) + "\n")
 
     info = critical
@@ -93,8 +153,21 @@ class PlyLogger(object):
 # Null logger is used when no output is generated. Does nothing.
 class NullLogger(object):
     def __getattribute__(self,name):
+        """
+        Returns the value of the given name.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+        """
         return self
     def __call__(self,*args,**kwargs):
+        """
+        Calls the call with the given arguments.
+
+        Args:
+            self: (todo): write your description
+        """
         return self
 
 # -----------------------------------------------------------------------------
@@ -113,6 +186,12 @@ class NullLogger(object):
 
 class Lexer:
     def __init__(self):
+        """
+        Initialize lexstate.
+
+        Args:
+            self: (todo): write your description
+        """
         self.lexre = None             # Master regular expression. This is a list of
                                       # tuples (re,findex) where re is a compiled
                                       # regular expression and findex is a list
@@ -139,6 +218,13 @@ class Lexer:
         self.lexoptimize = 0          # Optimized mode
 
     def clone(self,object=None):
+        """
+        Clone this copy of object
+
+        Args:
+            self: (todo): write your description
+            object: (todo): write your description
+        """
         c = copy.copy(self)
 
         # If the object parameter has been supplied, it means we are attaching the
@@ -169,6 +255,14 @@ class Lexer:
     # writetab() - Write lexer information to a table file
     # ------------------------------------------------------------
     def writetab(self,tabfile,outputdir=""):
+        """
+        Writes lexstate of a tabfile.
+
+        Args:
+            self: (todo): write your description
+            tabfile: (str): write your description
+            outputdir: (str): write your description
+        """
         if isinstance(tabfile,types.ModuleType):
             return
         basetabfilename = tabfile.split(".")[-1]
@@ -212,6 +306,14 @@ class Lexer:
     # readtab() - Read lexer information from a tab file
     # ------------------------------------------------------------
     def readtab(self,tabfile,fdict):
+        """
+        Read lexicalical file.
+
+        Args:
+            self: (todo): write your description
+            tabfile: (str): write your description
+            fdict: (dict): write your description
+        """
         if isinstance(tabfile,types.ModuleType):
             lextab = tabfile
         else:
@@ -249,6 +351,13 @@ class Lexer:
     # input() - Push a new string into the lexer
     # ------------------------------------------------------------
     def input(self,s):
+        """
+        Input string s.
+
+        Args:
+            self: (todo): write your description
+            s: (todo): write your description
+        """
         # Pull off the first character to see if s looks like a string
         c = s[:1]
         if not isinstance(c,StringTypes):
@@ -261,6 +370,13 @@ class Lexer:
     # begin() - Changes the lexing state
     # ------------------------------------------------------------
     def begin(self,state):
+        """
+        Begin lexstate.
+
+        Args:
+            self: (todo): write your description
+            state: (todo): write your description
+        """
         if not state in self.lexstatere:
             raise ValueError("Undefined state")
         self.lexre = self.lexstatere[state]
@@ -273,6 +389,13 @@ class Lexer:
     # push_state() - Changes the lexing state and saves old on stack
     # ------------------------------------------------------------
     def push_state(self,state):
+        """
+        Push a new state.
+
+        Args:
+            self: (todo): write your description
+            state: (bool): write your description
+        """
         self.lexstatestack.append(self.lexstate)
         self.begin(state)
 
@@ -280,18 +403,37 @@ class Lexer:
     # pop_state() - Restores the previous state
     # ------------------------------------------------------------
     def pop_state(self):
+        """
+        Pop the next breakpoint.
+
+        Args:
+            self: (todo): write your description
+        """
         self.begin(self.lexstatestack.pop())
 
     # ------------------------------------------------------------
     # current_state() - Returns the current lexing state
     # ------------------------------------------------------------
     def current_state(self):
+        """
+        Return the current state
+
+        Args:
+            self: (todo): write your description
+        """
         return self.lexstate
 
     # ------------------------------------------------------------
     # skip() - Skip ahead n characters
     # ------------------------------------------------------------
     def skip(self,n):
+        """
+        Skip n characters.
+
+        Args:
+            self: (todo): write your description
+            n: (str): write your description
+        """
         self.lexpos += n
 
     # ------------------------------------------------------------
@@ -302,6 +444,12 @@ class Lexer:
     # you are doing
     # ------------------------------------------------------------
     def token(self):
+        """
+        Return the next token.
+
+        Args:
+            self: (todo): write your description
+        """
         # Make local copies of frequently referenced attributes
         lexpos    = self.lexpos
         lexlen    = self.lexlen
@@ -399,9 +547,21 @@ class Lexer:
 
     # Iterator interface
     def __iter__(self):
+        """
+        Returns an iterator over the iterable.
+
+        Args:
+            self: (todo): write your description
+        """
         return self
 
     def next(self):
+        """
+        Returns the next token.
+
+        Args:
+            self: (todo): write your description
+        """
         t = self.token()
         if t is None:
             raise StopIteration
@@ -425,6 +585,12 @@ class Lexer:
 # -----------------------------------------------------------------------------
 
 def get_caller_module_dict(levels):
+    """
+    Returns a dictionary of modules from a module.
+
+    Args:
+        levels: (todo): write your description
+    """
     try:
         raise RuntimeError
     except RuntimeError:
@@ -447,6 +613,13 @@ def get_caller_module_dict(levels):
 # -----------------------------------------------------------------------------
 
 def _funcs_to_names(funclist,namelist):
+    """
+    Convert a list of functions to a list of functions.
+
+    Args:
+        funclist: (todo): write your description
+        namelist: (str): write your description
+    """
     result = []
     for f,name in zip(funclist,namelist):
          if f and f[0]:
@@ -463,6 +636,13 @@ def _funcs_to_names(funclist,namelist):
 # -----------------------------------------------------------------------------
 
 def _names_to_funcs(namelist,fdict):
+    """
+    Convert a list of functions.
+
+    Args:
+        namelist: (str): write your description
+        fdict: (dict): write your description
+    """
      result = []
      for n in namelist:
           if n and n[0]:
@@ -480,6 +660,15 @@ def _names_to_funcs(namelist,fdict):
 # -----------------------------------------------------------------------------
 
 def _form_master_re(relist,reflags,ldict,toknames):
+    """
+    Return the form for the form
+
+    Args:
+        relist: (list): write your description
+        reflags: (todo): write your description
+        ldict: (dict): write your description
+        toknames: (str): write your description
+    """
     if not relist: return []
     regex = "|".join(relist)
     try:
@@ -519,6 +708,13 @@ def _form_master_re(relist,reflags,ldict,toknames):
 # -----------------------------------------------------------------------------
 
 def _statetoken(s,names):
+    """
+    Parse a string and states.
+
+    Args:
+        s: (str): write your description
+        names: (str): write your description
+    """
     nonstate = 1
     parts = s.split("_")
     for i in range(1,len(parts)):
@@ -543,6 +739,15 @@ def _statetoken(s,names):
 # -----------------------------------------------------------------------------
 class LexerReflect(object):
     def __init__(self,ldict,log=None,reflags=0):
+        """
+        Initialize a logger.
+
+        Args:
+            self: (todo): write your description
+            ldict: (dict): write your description
+            log: (todo): write your description
+            reflags: (int): write your description
+        """
         self.ldict      = ldict
         self.error_func = None
         self.tokens     = []
@@ -558,6 +763,12 @@ class LexerReflect(object):
 
     # Get all of the basic information
     def get_all(self):
+        """
+        Get all rules in the rules.
+
+        Args:
+            self: (todo): write your description
+        """
         self.get_tokens()
         self.get_literals()
         self.get_states()
@@ -565,6 +776,12 @@ class LexerReflect(object):
         
     # Validate all of the information
     def validate_all(self):
+        """
+        Validate all rules.
+
+        Args:
+            self: (todo): write your description
+        """
         self.validate_tokens()
         self.validate_literals()
         self.validate_rules()
@@ -572,6 +789,12 @@ class LexerReflect(object):
 
     # Get the tokens map
     def get_tokens(self):
+        """
+        Parse tokens.
+
+        Args:
+            self: (todo): write your description
+        """
         tokens = self.ldict.get("tokens",None)
         if not tokens:
             self.log.error("No token list is defined")
@@ -592,6 +815,12 @@ class LexerReflect(object):
 
     # Validate the tokens
     def validate_tokens(self):
+        """
+        Validate tokens.
+
+        Args:
+            self: (todo): write your description
+        """
         terminals = {}
         for n in self.tokens:
             if not _is_identifier.match(n):
@@ -603,10 +832,22 @@ class LexerReflect(object):
 
     # Get the literals specifier
     def get_literals(self):
+        """
+        Returns the list of variables.
+
+        Args:
+            self: (todo): write your description
+        """
         self.literals = self.ldict.get("literals","")
 
     # Validate literals
     def validate_literals(self):
+        """
+        Check if the given string.
+
+        Args:
+            self: (todo): write your description
+        """
         try:
             for c in self.literals:
                 if not isinstance(c,StringTypes) or len(c) > 1:
@@ -619,6 +860,12 @@ class LexerReflect(object):
             self.error = 1
 
     def get_states(self):
+        """
+        Get states of states
+
+        Args:
+            self: (todo): write your description
+        """
         self.states = self.ldict.get("states",None)
         # Build statemap
         if self.states:
@@ -650,6 +897,12 @@ class LexerReflect(object):
     # categories (functions, strings, error functions, and ignore characters)
 
     def get_rules(self):
+        """
+        Parse rules. rules.
+
+        Args:
+            self: (todo): write your description
+        """
         tsymbols = [f for f in self.ldict if f[:2] == 't_' ]
 
         # Now build up a list of functions and a list of strings
@@ -721,6 +974,12 @@ class LexerReflect(object):
 
     # Validate all of the t_rules collected 
     def validate_rules(self):
+        """
+        Validate rules.
+
+        Args:
+            self: (todo): write your description
+        """
         for state in self.stateinfo:
             # Validate all rules defined by functions
 
@@ -827,6 +1086,13 @@ class LexerReflect(object):
     # -----------------------------------------------------------------------------
 
     def validate_file(self,filename):
+        """
+        Validate a file.
+
+        Args:
+            self: (todo): write your description
+            filename: (str): write your description
+        """
         import os.path
         base,ext = os.path.splitext(filename)
         if ext != '.py': return         # No idea what the file is. Return OK
@@ -863,6 +1129,21 @@ class LexerReflect(object):
 # Build all of the regular expression rules from definitions in the supplied module
 # -----------------------------------------------------------------------------
 def lex(module=None,object=None,debug=0,optimize=0,lextab="lextab",reflags=0,nowarn=0,outputdir="", debuglog=None, errorlog=None):
+    """
+    Returns a lexer.
+
+    Args:
+        module: (todo): write your description
+        object: (todo): write your description
+        debug: (bool): write your description
+        optimize: (todo): write your description
+        lextab: (str): write your description
+        reflags: (int): write your description
+        nowarn: (int): write your description
+        outputdir: (str): write your description
+        debuglog: (bool): write your description
+        errorlog: (todo): write your description
+    """
     global lexer
     ldict = None
     stateinfo  = { 'INITIAL' : 'inclusive'}
@@ -1012,6 +1293,13 @@ def lex(module=None,object=None,debug=0,optimize=0,lextab="lextab",reflags=0,now
 # -----------------------------------------------------------------------------
 
 def runmain(lexer=None,data=None):
+    """
+    Run lexer.
+
+    Args:
+        lexer: (todo): write your description
+        data: (array): write your description
+    """
     if not data:
         try:
             filename = sys.argv[1]
@@ -1045,7 +1333,19 @@ def runmain(lexer=None,data=None):
 # -----------------------------------------------------------------------------
 
 def TOKEN(r):
+    """
+    Decorator to set the docstrings.
+
+    Args:
+        r: (todo): write your description
+    """
     def set_doc(f):
+        """
+        Set the docstring of a function
+
+        Args:
+            f: (todo): write your description
+        """
         if hasattr(r,"__call__"):
             f.__doc__ = r.__doc__
         else:

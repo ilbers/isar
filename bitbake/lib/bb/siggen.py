@@ -18,6 +18,12 @@ import hashserv
 logger = logging.getLogger('BitBake.SigGen')
 
 def init(d):
+    """
+    Initialize a d - bus signature.
+
+    Args:
+        d: (todo): write your description
+    """
     siggens = [obj for obj in globals().values()
                       if type(obj) is type and issubclass(obj, SignatureGenerator)]
 
@@ -38,6 +44,13 @@ class SignatureGenerator(object):
     name = "noop"
 
     def __init__(self, data):
+        """
+        Initialize checksumhashes.
+
+        Args:
+            self: (todo): write your description
+            data: (todo): write your description
+        """
         self.basehash = {}
         self.taskhash = {}
         self.runtaskdeps = {}
@@ -47,12 +60,37 @@ class SignatureGenerator(object):
         self.setscenetasks = {}
 
     def finalise(self, fn, d, varient):
+        """
+        Finalize a function.
+
+        Args:
+            self: (todo): write your description
+            fn: (todo): write your description
+            d: (todo): write your description
+            varient: (todo): write your description
+        """
         return
 
     def get_unihash(self, tid):
+        """
+        Returns the unihash of a given tid.
+
+        Args:
+            self: (todo): write your description
+            tid: (str): write your description
+        """
         return self.taskhash[tid]
 
     def get_taskhash(self, tid, deps, dataCache):
+        """
+        Return the hash of the task.
+
+        Args:
+            self: (todo): write your description
+            tid: (str): write your description
+            deps: (str): write your description
+            dataCache: (todo): write your description
+        """
         self.taskhash[tid] = hashlib.sha256(tid.encode("utf-8")).hexdigest()
         return self.taskhash[tid]
 
@@ -61,39 +99,132 @@ class SignatureGenerator(object):
         return
 
     def stampfile(self, stampbase, file_name, taskname, extrainfo):
+        """
+        Stamp a stamp.
+
+        Args:
+            self: (todo): write your description
+            stampbase: (str): write your description
+            file_name: (str): write your description
+            taskname: (str): write your description
+            extrainfo: (str): write your description
+        """
         return ("%s.%s.%s" % (stampbase, taskname, extrainfo)).rstrip('.')
 
     def stampcleanmask(self, stampbase, file_name, taskname, extrainfo):
+        """
+        Stamp a mask for the given mask.
+
+        Args:
+            self: (todo): write your description
+            stampbase: (todo): write your description
+            file_name: (str): write your description
+            taskname: (str): write your description
+            extrainfo: (todo): write your description
+        """
         return ("%s.%s.%s" % (stampbase, taskname, extrainfo)).rstrip('.')
 
     def dump_sigtask(self, fn, task, stampbase, runtime):
+        """
+        Decorator to register a task.
+
+        Args:
+            self: (todo): write your description
+            fn: (todo): write your description
+            task: (todo): write your description
+            stampbase: (todo): write your description
+            runtime: (int): write your description
+        """
         return
 
     def invalidate_task(self, task, d, fn):
+        """
+        Invalidate task.
+
+        Args:
+            self: (todo): write your description
+            task: (todo): write your description
+            d: (todo): write your description
+            fn: (todo): write your description
+        """
         bb.build.del_stamp(task, d, fn)
 
     def dump_sigs(self, dataCache, options):
+        """
+        Return a sigs to use.
+
+        Args:
+            self: (todo): write your description
+            dataCache: (todo): write your description
+            options: (dict): write your description
+        """
         return
 
     def get_taskdata(self):
+        """
+        Return task data.
+
+        Args:
+            self: (todo): write your description
+        """
         return (self.runtaskdeps, self.taskhash, self.file_checksum_values, self.taints, self.basehash, self.unitaskhashes, self.setscenetasks)
 
     def set_taskdata(self, data):
+        """
+        Set task data.
+
+        Args:
+            self: (todo): write your description
+            data: (array): write your description
+        """
         self.runtaskdeps, self.taskhash, self.file_checksum_values, self.taints, self.basehash, self.unitaskhashes, self.setscenetasks = data
 
     def reset(self, data):
+        """
+        Reset the data.
+
+        Args:
+            self: (todo): write your description
+            data: (array): write your description
+        """
         self.__init__(data)
 
     def get_taskhashes(self):
+        """
+        Return hashes of hashes that task hashes in this task hashes.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.taskhash, self.unitaskhashes
 
     def set_taskhashes(self, hashes):
+        """
+        Set hashes that hashes.
+
+        Args:
+            self: (todo): write your description
+            hashes: (todo): write your description
+        """
         self.taskhash, self.unitaskhashes = hashes
 
     def save_unitaskhashes(self):
+        """
+        Save the unitask hashes.
+
+        Args:
+            self: (todo): write your description
+        """
         return
 
     def set_setscene_tasks(self, setscene_tasks):
+        """
+        Sets the set of tasks that have been set.
+
+        Args:
+            self: (todo): write your description
+            setscene_tasks: (todo): write your description
+        """
         return
 
 class SignatureGeneratorBasic(SignatureGenerator):
@@ -102,6 +233,13 @@ class SignatureGeneratorBasic(SignatureGenerator):
     name = "basic"
 
     def __init__(self, data):
+        """
+        Initialize checksum data.
+
+        Args:
+            self: (todo): write your description
+            data: (todo): write your description
+        """
         self.basehash = {}
         self.taskhash = {}
         self.taskdeps = {}
@@ -125,6 +263,13 @@ class SignatureGeneratorBasic(SignatureGenerator):
         self.unitaskhashes = self.unihash_cache.init_cache(data, "bb_unihashes.dat", {})
 
     def init_rundepcheck(self, data):
+        """
+        Initialize the task.
+
+        Args:
+            self: (todo): write your description
+            data: (todo): write your description
+        """
         self.taskwhitelist = data.getVar("BB_HASHTASK_WHITELIST") or None
         if self.taskwhitelist:
             self.twl = re.compile(self.taskwhitelist)
@@ -132,6 +277,14 @@ class SignatureGeneratorBasic(SignatureGenerator):
             self.twl = None
 
     def _build_data(self, fn, d):
+        """
+        Builds the data for a task
+
+        Args:
+            self: (todo): write your description
+            fn: (todo): write your description
+            d: (todo): write your description
+        """
 
         ignore_mismatch = ((d.getVar("BB_HASH_IGNORE_MISMATCH") or '') == '1')
         tasklist, gendeps, lookupcache = bb.data.generate_dependencies(d)
@@ -157,9 +310,25 @@ class SignatureGeneratorBasic(SignatureGenerator):
         return taskdeps
 
     def set_setscene_tasks(self, setscene_tasks):
+        """
+        Sets the number of the tasks.
+
+        Args:
+            self: (todo): write your description
+            setscene_tasks: (todo): write your description
+        """
         self.setscenetasks = setscene_tasks
 
     def finalise(self, fn, d, variant):
+        """
+        Finalize this task.
+
+        Args:
+            self: (todo): write your description
+            fn: (todo): write your description
+            d: (todo): write your description
+            variant: (todo): write your description
+        """
 
         mc = d.getVar("__BBMULTICONFIG", False) or ""
         if variant or mc:
@@ -181,6 +350,18 @@ class SignatureGeneratorBasic(SignatureGenerator):
             d.setVar("BB_BASEHASH_task-%s" % task, self.basehash[fn + ":" + task])
 
     def rundep_check(self, fn, recipename, task, dep, depname, dataCache):
+        """
+        Return true if the task has been executed.
+
+        Args:
+            self: (todo): write your description
+            fn: (str): write your description
+            recipename: (str): write your description
+            task: (str): write your description
+            dep: (todo): write your description
+            depname: (str): write your description
+            dataCache: (todo): write your description
+        """
         # Return True if we should keep the dependency, False to drop it
         # We only manipulate the dependencies for packages not in the whitelist
         if self.twl and not self.twl.search(recipename):
@@ -190,6 +371,15 @@ class SignatureGeneratorBasic(SignatureGenerator):
         return True
 
     def read_taint(self, fn, task, stampbase):
+        """
+        Read a taint file.
+
+        Args:
+            self: (todo): write your description
+            fn: (str): write your description
+            task: (str): write your description
+            stampbase: (str): write your description
+        """
         taint = None
         try:
             with open(stampbase + '.' + task + '.taint', 'r') as taintf:
@@ -199,6 +389,15 @@ class SignatureGeneratorBasic(SignatureGenerator):
         return taint
 
     def get_taskhash(self, tid, deps, dataCache):
+        """
+        Returns a hash of the taskhash.
+
+        Args:
+            self: (todo): write your description
+            tid: (str): write your description
+            deps: (str): write your description
+            dataCache: (todo): write your description
+        """
 
         (mc, _, task, fn) = bb.runqueue.split_tid_mcfn(tid)
 
@@ -258,9 +457,25 @@ class SignatureGeneratorBasic(SignatureGenerator):
             bb.fetch2.fetcher_parse_done()
 
     def save_unitaskhashes(self):
+        """
+        Save the unitaskhashes.
+
+        Args:
+            self: (todo): write your description
+        """
         self.unihash_cache.save(self.unitaskhashes)
 
     def dump_sigtask(self, fn, task, stampbase, runtime):
+        """
+        Dump the information of a single task.
+
+        Args:
+            self: (todo): write your description
+            fn: (todo): write your description
+            task: (todo): write your description
+            stampbase: (todo): write your description
+            runtime: (str): write your description
+        """
 
         tid = fn + ":" + task
         referencestamp = stampbase
@@ -330,6 +545,15 @@ class SignatureGeneratorBasic(SignatureGenerator):
             raise err
 
     def dump_sigfn(self, fn, dataCaches, options):
+        """
+        Dump the data to stdout
+
+        Args:
+            self: (todo): write your description
+            fn: (todo): write your description
+            dataCaches: (todo): write your description
+            options: (dict): write your description
+        """
         if fn in self.taskdeps:
             for task in self.taskdeps[fn]:
                 tid = fn + ":" + task
@@ -345,6 +569,13 @@ class SignatureGeneratorBasicHash(SignatureGeneratorBasic):
     name = "basichash"
 
     def get_stampfile_hash(self, tid):
+        """
+        Return the hash of a taskhash.
+
+        Args:
+            self: (str): write your description
+            tid: (str): write your description
+        """
         if tid in self.taskhash:
             return self.taskhash[tid]
 
@@ -352,6 +583,17 @@ class SignatureGeneratorBasicHash(SignatureGeneratorBasic):
         return self.basehash[tid]
 
     def stampfile(self, stampbase, fn, taskname, extrainfo, clean=False):
+        """
+        Return a unique hash file for the given file.
+
+        Args:
+            self: (todo): write your description
+            stampbase: (str): write your description
+            fn: (str): write your description
+            taskname: (str): write your description
+            extrainfo: (str): write your description
+            clean: (bool): write your description
+        """
         if taskname != "do_setscene" and taskname.endswith("_setscene"):
             tid = fn + ":" + taskname[:-9]
         else:
@@ -364,31 +606,83 @@ class SignatureGeneratorBasicHash(SignatureGeneratorBasic):
         return ("%s.%s.%s.%s" % (stampbase, taskname, h, extrainfo)).rstrip('.')
 
     def stampcleanmask(self, stampbase, fn, taskname, extrainfo):
+        """
+        Stamp the mask of the given task.
+
+        Args:
+            self: (todo): write your description
+            stampbase: (todo): write your description
+            fn: (todo): write your description
+            taskname: (str): write your description
+            extrainfo: (todo): write your description
+        """
         return self.stampfile(stampbase, fn, taskname, extrainfo, clean=True)
 
     def invalidate_task(self, task, d, fn):
+        """
+        Invalidator for a task.
+
+        Args:
+            self: (todo): write your description
+            task: (todo): write your description
+            d: (todo): write your description
+            fn: (todo): write your description
+        """
         bb.note("Tainting hash to force rebuild of task %s, %s" % (fn, task))
         bb.build.write_taint(task, d, fn)
 
 class SignatureGeneratorUniHashMixIn(object):
     def get_taskdata(self):
+        """
+        Returns the task data object.
+
+        Args:
+            self: (todo): write your description
+        """
         return (self.server, self.method) + super().get_taskdata()
 
     def set_taskdata(self, data):
+        """
+        Set the taskdata. task.
+
+        Args:
+            self: (todo): write your description
+            data: (array): write your description
+        """
         self.server, self.method = data[:2]
         super().set_taskdata(data[2:])
 
     def client(self):
+        """
+        Create a client object.
+
+        Args:
+            self: (todo): write your description
+        """
         if getattr(self, '_client', None) is None:
             self._client = hashserv.create_client(self.server)
         return self._client
 
     def __get_task_unihash_key(self, tid):
+        """
+        Return the unique key for a given task.
+
+        Args:
+            self: (todo): write your description
+            tid: (str): write your description
+        """
         # TODO: The key only *needs* to be the taskhash, the tid is just
         # convenient
         return '%s:%s' % (tid.rsplit("/", 1)[1], self.taskhash[tid])
 
     def get_stampfile_hash(self, tid):
+        """
+        Get the hash for a given tid
+
+        Args:
+            self: (todo): write your description
+            tid: (str): write your description
+        """
         if tid in self.taskhash:
             # If a unique hash is reported, use it as the stampfile hash. This
             # ensures that if a task won't be re-run if the taskhash changes,
@@ -400,9 +694,24 @@ class SignatureGeneratorUniHashMixIn(object):
         return super().get_stampfile_hash(tid)
 
     def set_unihash(self, tid, unihash):
+        """
+        Set the unihash of the given tid.
+
+        Args:
+            self: (todo): write your description
+            tid: (str): write your description
+            unihash: (todo): write your description
+        """
         self.unitaskhashes[self.__get_task_unihash_key(tid)] = unihash
 
     def get_unihash(self, tid):
+        """
+        Returns the unihash hash of a given tid.
+
+        Args:
+            self: (todo): write your description
+            tid: (str): write your description
+        """
         taskhash = self.taskhash[tid]
 
         # If its not a setscene task we can return
@@ -449,6 +758,15 @@ class SignatureGeneratorUniHashMixIn(object):
         return unihash
 
     def report_unihash(self, path, task, d):
+        """
+        Report a report of a report.
+
+        Args:
+            self: (todo): write your description
+            path: (str): write your description
+            task: (todo): write your description
+            d: (todo): write your description
+        """
         import importlib
 
         taskhash = d.getVar('BB_TASKHASH')
@@ -531,12 +849,26 @@ class SignatureGeneratorUniHashMixIn(object):
 class SignatureGeneratorTestEquivHash(SignatureGeneratorUniHashMixIn, SignatureGeneratorBasicHash):
     name = "TestEquivHash"
     def init_rundepcheck(self, data):
+        """
+        Initialize the data object.
+
+        Args:
+            self: (todo): write your description
+            data: (todo): write your description
+        """
         super().init_rundepcheck(data)
         self.server = data.getVar('BB_HASHSERVE')
         self.method = "sstate_output_hash"
 
 
 def dump_this_task(outfile, d):
+    """
+    Dump a task to a file.
+
+    Args:
+        outfile: (str): write your description
+        d: (todo): write your description
+    """
     import bb.parse
     fn = d.getVar("BB_FILENAME")
     task = "do_" + d.getVar("BB_CURRENTTASK")
@@ -558,6 +890,14 @@ def init_colors(enable_color):
     return colors
 
 def worddiff_str(oldstr, newstr, colors=None):
+    """
+    Return a diff as a diffs.
+
+    Args:
+        oldstr: (str): write your description
+        newstr: (str): write your description
+        colors: (str): write your description
+    """
     if not colors:
         colors = init_colors(False)
     diff = simplediff.diff(oldstr.split(' '), newstr.split(' '))
@@ -578,6 +918,14 @@ def worddiff_str(oldstr, newstr, colors=None):
     return '"%s"%s' % (' '.join(ret), whitespace_note)
 
 def list_inline_diff(oldlist, newlist, colors=None):
+    """
+    Return a diff between two strings.
+
+    Args:
+        oldlist: (list): write your description
+        newlist: (list): write your description
+        colors: (todo): write your description
+    """
     if not colors:
         colors = init_colors(False)
     diff = simplediff.diff(oldlist, newlist)
@@ -595,6 +943,12 @@ def list_inline_diff(oldlist, newlist, colors=None):
     return '[%s]' % (', '.join(ret))
 
 def clean_basepath(a):
+    """
+    Clean the basepath string.
+
+    Args:
+        a: (str): write your description
+    """
     mc = None
     if a.startswith("mc:"):
         _, mc, a = a.split(":", 2)
@@ -606,18 +960,40 @@ def clean_basepath(a):
     return b
 
 def clean_basepaths(a):
+    """
+    Clean a list of the basepaths in a dictionary.
+
+    Args:
+        a: (todo): write your description
+    """
     b = {}
     for x in a:
         b[clean_basepath(x)] = a[x]
     return b
 
 def clean_basepaths_list(a):
+    """
+    Clean a list of strings.
+
+    Args:
+        a: (todo): write your description
+    """
     b = []
     for x in a:
         b.append(clean_basepath(x))
     return b
 
 def compare_sigfiles(a, b, recursecb=None, color=False, collapsed=False):
+    """
+    Compares two strings.
+
+    Args:
+        a: (dict): write your description
+        b: (dict): write your description
+        recursecb: (todo): write your description
+        color: (str): write your description
+        collapsed: (todo): write your description
+    """
     output = []
 
     colors = init_colors(color)
@@ -645,6 +1021,15 @@ def compare_sigfiles(a, b, recursecb=None, color=False, collapsed=False):
         b_data = p2.load()
 
     def dict_diff(a, b, whitelist=set()):
+        """
+        Return the difference between two dicts.
+
+        Args:
+            a: (array): write your description
+            b: (array): write your description
+            whitelist: (list): write your description
+            set: (todo): write your description
+        """
         sa = set(a.keys())
         sb = set(b.keys())
         common = sa & sb
@@ -657,6 +1042,13 @@ def compare_sigfiles(a, b, recursecb=None, color=False, collapsed=False):
         return changed, added, removed
 
     def file_checksums_diff(a, b):
+        """
+        Return the differences between two files.
+
+        Args:
+            a: (dict): write your description
+            b: (dict): write your description
+        """
         from collections import Counter
         # Handle old siginfo format
         if isinstance(a, dict):
@@ -837,6 +1229,12 @@ def compare_sigfiles(a, b, recursecb=None, color=False, collapsed=False):
 
 
 def calc_basehash(sigdata):
+    """
+    Calculate the hash of the data.
+
+    Args:
+        sigdata: (todo): write your description
+    """
     task = sigdata['task']
     basedata = sigdata['varvals'][task]
 
@@ -853,6 +1251,12 @@ def calc_basehash(sigdata):
     return hashlib.sha256(basedata.encode("utf-8")).hexdigest()
 
 def calc_taskhash(sigdata):
+    """
+    Calculate the hash of the data
+
+    Args:
+        sigdata: (str): write your description
+    """
     data = sigdata['basehash']
 
     for dep in sigdata['runtaskdeps']:
@@ -872,6 +1276,12 @@ def calc_taskhash(sigdata):
 
 
 def dump_sigfile(a):
+    """
+    Dump a signal to a pickle file
+
+    Args:
+        a: (todo): write your description
+    """
     output = []
 
     with open(a, 'rb') as f:

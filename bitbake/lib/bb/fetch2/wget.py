@@ -39,11 +39,25 @@ class WgetProgressHandler(bb.progress.LineFilterProgressHandler):
     specified on the wget command line.
     """
     def __init__(self, d):
+        """
+        Initialize the progress bar.
+
+        Args:
+            self: (todo): write your description
+            d: (int): write your description
+        """
         super(WgetProgressHandler, self).__init__(d)
         # Send an initial progress event so the bar gets shown
         self._fire_progress(0)
 
     def writeline(self, line):
+        """
+        Writes a line of a file.
+
+        Args:
+            self: (todo): write your description
+            line: (str): write your description
+        """
         percs = re.findall(r'(\d+)%\s+([\d.]+[A-Z])', line)
         if percs:
             progress = int(percs[-1][0])
@@ -62,9 +76,24 @@ class Wget(FetchMethod):
         return ud.type in ['http', 'https', 'ftp']
 
     def recommends_checksum(self, urldata):
+        """
+        Returns true if the checksum of the checksum.
+
+        Args:
+            self: (todo): write your description
+            urldata: (str): write your description
+        """
         return True
 
     def urldata_init(self, ud, d):
+        """
+        Download a udevata.
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+        """
         if 'protocol' in ud.parm:
             if ud.parm['protocol'] == 'git':
                 raise bb.fetch2.ParameterError("Invalid protocol - if you wish to fetch from a git repository using http, you need to instead use the git:// prefix with protocol=http", ud.url)
@@ -81,6 +110,17 @@ class Wget(FetchMethod):
         self.basecmd = d.getVar("FETCHCMD_wget") or "/usr/bin/env wget -t 2 -T 30 --passive-ftp --no-check-certificate"
 
     def _runwget(self, ud, d, command, quiet, workdir=None):
+        """
+        Run a wget command.
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+            command: (str): write your description
+            quiet: (str): write your description
+            workdir: (str): write your description
+        """
 
         progresshandler = WgetProgressHandler(d)
 
@@ -122,6 +162,16 @@ class Wget(FetchMethod):
         return True
 
     def checkstatus(self, fetch, ud, d, try_again=True):
+        """
+        Checks if the connection is valid.
+
+        Args:
+            self: (todo): write your description
+            fetch: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+            try_again: (todo): write your description
+        """
         class HTTPConnectionCache(http.client.HTTPConnection):
             if fetch.connection_cache:
                 def connect(self):
@@ -140,6 +190,13 @@ class Wget(FetchMethod):
 
         class CacheHTTPHandler(urllib.request.HTTPHandler):
             def http_open(self, req):
+                """
+                Open a http post request.
+
+                Args:
+                    self: (todo): write your description
+                    req: (todo): write your description
+                """
                 return self.do_open(HTTPConnectionCache, req)
 
             def do_open(self, http_class, req):
@@ -231,10 +288,28 @@ class Wget(FetchMethod):
                 r.read()
                 class fp_dummy(object):
                     def read(self):
+                        """
+                        Reads the next to readme.
+
+                        Args:
+                            self: (todo): write your description
+                        """
                         return ""
                     def readline(self):
+                        """
+                        Reads a single line.
+
+                        Args:
+                            self: (todo): write your description
+                        """
                         return ""
                     def close(self):
+                        """
+                        Close the connection.
+
+                        Args:
+                            self: (todo): write your description
+                        """
                         pass
                     closed = False
 
@@ -254,6 +329,17 @@ class Wget(FetchMethod):
             Fallback to GET if HEAD is not allowed (405 HTTP error)
             """
             def http_error_405(self, req, fp, code, msg, headers):
+                """
+                Handles an http response.
+
+                Args:
+                    self: (todo): write your description
+                    req: (todo): write your description
+                    fp: (todo): write your description
+                    code: (int): write your description
+                    msg: (str): write your description
+                    headers: (dict): write your description
+                """
                 fp.read()
                 fp.close()
 
@@ -278,6 +364,18 @@ class Wget(FetchMethod):
             when we want to follow redirects using the original method.
             """
             def redirect_request(self, req, fp, code, msg, headers, newurl):
+                """
+                Redirect the redirect request.
+
+                Args:
+                    self: (todo): write your description
+                    req: (todo): write your description
+                    fp: (todo): write your description
+                    code: (str): write your description
+                    msg: (str): write your description
+                    headers: (dict): write your description
+                    newurl: (str): write your description
+                """
                 newreq = urllib.request.HTTPRedirectHandler.redirect_request(self, req, fp, code, msg, headers, newurl)
                 newreq.get_method = req.get_method
                 return newreq
@@ -358,6 +456,13 @@ class Wget(FetchMethod):
         return None
 
     def _modelate_version(self, version):
+        """
+        Return the version number.
+
+        Args:
+            self: (todo): write your description
+            version: (str): write your description
+        """
         if version[0] in ['.', '-']:
             if version[1].isdigit():
                 version = version[1] + version[0] + version[2:len(version)]

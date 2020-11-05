@@ -77,6 +77,14 @@ class Hg(FetchMethod):
         ud.write_tarballs = d.getVar("BB_GENERATE_MIRROR_TARBALLS")
 
     def need_update(self, ud, d):
+        """
+        Return true if the given revision exists
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+        """
         revTag = ud.parm.get('rev', 'tip')
         if revTag == "tip":
             return True
@@ -85,6 +93,14 @@ class Hg(FetchMethod):
         return False
 
     def try_premirror(self, ud, d):
+        """
+        Determine if the given uuid
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+        """
         # If we don't do this, updating an existing checkout with only premirrors
         # is not possible
         if bb.utils.to_boolean(d.getVar("BB_FETCH_PREMIRRORONLY")):
@@ -203,6 +219,12 @@ class Hg(FetchMethod):
         bb.utils.remove(ud.fullmirror + ".done")
 
     def supports_srcrev(self):
+        """
+        Determine if this source has a valid.
+
+        Args:
+            self: (todo): write your description
+        """
         return True
 
     def _latest_revision(self, ud, d, name):
@@ -214,6 +236,15 @@ class Hg(FetchMethod):
         return output.strip()
 
     def _build_revision(self, ud, d, name):
+        """
+        Builds the revision.
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+            name: (str): write your description
+        """
         return ud.revision
 
     def _revision_key(self, ud, d, name):
@@ -223,6 +254,14 @@ class Hg(FetchMethod):
         return "hg:" + ud.moddir
 
     def build_mirror_data(self, ud, d):
+        """
+        Builds a single mirror
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+        """
         # Generate a mirror tarball if needed
         if ud.write_tarballs == "1" and not os.path.exists(ud.fullmirror):
             # it's possible that this symlink points to read-only filesystem with PREMIRROR
@@ -234,6 +273,14 @@ class Hg(FetchMethod):
             runfetchcmd("touch %s.done" % (ud.fullmirror), d, workdir=ud.pkgdir)
 
     def localpath(self, ud, d):
+        """
+        Return the absolute path of a local path.
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+        """
         return ud.pkgdir
 
     def unpack(self, ud, destdir, d):

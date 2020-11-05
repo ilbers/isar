@@ -17,6 +17,13 @@ class UnsupportedTerminal(Exception):
 
 class NoSupportedTerminals(Exception):
     def __init__(self, terms):
+        """
+        Initialize the terms
+
+        Args:
+            self: (todo): write your description
+            terms: (list): write your description
+        """
         self.terms = terms
 
 
@@ -24,15 +31,40 @@ class Registry(oe.classutils.ClassRegistry):
     command = None
 
     def __init__(cls, name, bases, attrs):
+        """
+        Initialize the class.
+
+        Args:
+            cls: (todo): write your description
+            name: (str): write your description
+            bases: (float): write your description
+            attrs: (dict): write your description
+        """
         super(Registry, cls).__init__(name.lower(), bases, attrs)
 
     @property
     def implemented(cls):
+        """
+        Returns true if the command is a boolean.
+
+        Args:
+            cls: (todo): write your description
+        """
         return bool(cls.command)
 
 
 class Terminal(Popen, metaclass=Registry):
     def __init__(self, sh_cmd, title=None, env=None, d=None):
+        """
+        Initialize the environment. sh_cmd.
+
+        Args:
+            self: (todo): write your description
+            sh_cmd: (str): write your description
+            title: (str): write your description
+            env: (todo): write your description
+            d: (int): write your description
+        """
         fmt_sh_cmd = self.format_command(sh_cmd, title)
         try:
             Popen.__init__(self, fmt_sh_cmd, env=env)
@@ -44,6 +76,14 @@ class Terminal(Popen, metaclass=Registry):
                 raise
 
     def format_command(self, sh_cmd, title):
+        """
+        Format a formatted command.
+
+        Args:
+            self: (todo): write your description
+            sh_cmd: (str): write your description
+            title: (str): write your description
+        """
         fmt = {'title': title or 'Terminal', 'command': sh_cmd, 'cwd': os.getcwd() }
         if isinstance(self.command, str):
             return shlex.split(self.command.format(**fmt))
@@ -52,6 +92,16 @@ class Terminal(Popen, metaclass=Registry):
 
 class XTerminal(Terminal):
     def __init__(self, sh_cmd, title=None, env=None, d=None):
+        """
+        Initialize the environment.
+
+        Args:
+            self: (todo): write your description
+            sh_cmd: (str): write your description
+            title: (str): write your description
+            env: (todo): write your description
+            d: (int): write your description
+        """
         Terminal.__init__(self, sh_cmd, title, env, d)
         if not os.environ.get('DISPLAY'):
             raise UnsupportedTerminal(self.name)
@@ -61,6 +111,16 @@ class Gnome(XTerminal):
     priority = 2
 
     def __init__(self, sh_cmd, title=None, env=None, d=None):
+        """
+        Initialize the environment.
+
+        Args:
+            self: (todo): write your description
+            sh_cmd: (str): write your description
+            title: (str): write your description
+            env: (todo): write your description
+            d: (int): write your description
+        """
         # Recent versions of gnome-terminal does not support non-UTF8 charset:
         # https://bugzilla.gnome.org/show_bug.cgi?id=732127; as a workaround,
         # clearing the LC_ALL environment variable so it uses the locale.
@@ -86,6 +146,16 @@ class Konsole(XTerminal):
     priority = 2
 
     def __init__(self, sh_cmd, title=None, env=None, d=None):
+        """
+        Initialize the environment.
+
+        Args:
+            self: (todo): write your description
+            sh_cmd: (str): write your description
+            title: (str): write your description
+            env: (todo): write your description
+            d: (int): write your description
+        """
         # Check version
         vernum = check_terminal_version("konsole")
         if vernum and LooseVersion(vernum) < '2.0.0':
@@ -108,6 +178,16 @@ class Screen(Terminal):
     command = 'screen -D -m -t "{title}" -S devshell {command}'
 
     def __init__(self, sh_cmd, title=None, env=None, d=None):
+        """
+        Initialize sh_cmd
+
+        Args:
+            self: (todo): write your description
+            sh_cmd: (str): write your description
+            title: (str): write your description
+            env: (todo): write your description
+            d: (int): write your description
+        """
         s_id = "devshell_%i" % os.getpid()
         self.command = "screen -D -m -t \"{title}\" -S %s {command}" % s_id
         Terminal.__init__(self, sh_cmd, title, env, d)
@@ -126,6 +206,16 @@ class TmuxRunning(Terminal):
     priority = 2.75
 
     def __init__(self, sh_cmd, title=None, env=None, d=None):
+        """
+        Initialize the environment.
+
+        Args:
+            self: (todo): write your description
+            sh_cmd: (str): write your description
+            title: (str): write your description
+            env: (todo): write your description
+            d: (int): write your description
+        """
         if not bb.utils.which(os.getenv('PATH'), 'tmux'):
             raise UnsupportedTerminal('tmux is not installed')
 
@@ -144,6 +234,16 @@ class TmuxNewWindow(Terminal):
     priority = 2.70
 
     def __init__(self, sh_cmd, title=None, env=None, d=None):
+        """
+        Initialize the environment.
+
+        Args:
+            self: (todo): write your description
+            sh_cmd: (str): write your description
+            title: (str): write your description
+            env: (todo): write your description
+            d: (int): write your description
+        """
         if not bb.utils.which(os.getenv('PATH'), 'tmux'):
             raise UnsupportedTerminal('tmux is not installed')
 
@@ -158,6 +258,16 @@ class Tmux(Terminal):
     priority = 0.75
 
     def __init__(self, sh_cmd, title=None, env=None, d=None):
+        """
+        Initialize window
+
+        Args:
+            self: (todo): write your description
+            sh_cmd: (str): write your description
+            title: (str): write your description
+            env: (todo): write your description
+            d: (int): write your description
+        """
         if not bb.utils.which(os.getenv('PATH'), 'tmux'):
             raise UnsupportedTerminal('tmux is not installed')
 
@@ -180,6 +290,16 @@ class Custom(Terminal):
     priority = 3
 
     def __init__(self, sh_cmd, title=None, env=None, d=None):
+        """
+        Initialize the sh_cmd.
+
+        Args:
+            self: (todo): write your description
+            sh_cmd: (str): write your description
+            title: (str): write your description
+            env: (todo): write your description
+            d: (todo): write your description
+        """
         self.command = d and d.getVar('OE_TERMINAL_CUSTOMCMD')
         if self.command:
             if not '{command}' in self.command:
@@ -192,9 +312,19 @@ class Custom(Terminal):
 
 
 def prioritized():
+    """
+    Returns the prior prior.
+
+    Args:
+    """
     return Registry.prioritized()
 
 def get_cmd_list():
+    """
+    Return a list of all subclasses of this term.
+
+    Args:
+    """
     terms = Registry.prioritized()
     cmds = []
     for term in terms:
@@ -255,6 +385,12 @@ def spawn(name, sh_cmd, title=None, env=None, d=None):
            return
 
 def check_tmux_pane_size(tmux):
+    """
+    Determine size of the tty.
+
+    Args:
+        tmux: (todo): write your description
+    """
     import subprocess as sub
     # On older tmux versions (<1.9), return false. The reason
     # is that there is no easy way to get the height of the active panel
@@ -277,6 +413,12 @@ def check_tmux_pane_size(tmux):
     return size/2 >= 19
 
 def check_terminal_version(terminalName):
+    """
+    Deteruate version of the current terminal. terminal version.
+
+    Args:
+        terminalName: (str): write your description
+    """
     import subprocess as sub
     try:
         cmdversion = '%s --version' % terminalName
@@ -308,6 +450,11 @@ def check_terminal_version(terminalName):
     return vernum
 
 def distro_name():
+    """
+    Return the distro name of the distribution.
+
+    Args:
+    """
     try:
         p = Popen(['lsb_release', '-i'])
         out, err = p.communicate()

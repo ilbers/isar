@@ -19,16 +19,41 @@ from bb.parse import logger
 
 class StatementGroup(list):
     def eval(self, data):
+        """
+        Evaluate the given data.
+
+        Args:
+            self: (todo): write your description
+            data: (array): write your description
+        """
         for statement in self:
             statement.eval(data)
 
 class AstNode(object):
     def __init__(self, filename, lineno):
+        """
+        Initialize a new filename.
+
+        Args:
+            self: (todo): write your description
+            filename: (str): write your description
+            lineno: (int): write your description
+        """
         self.filename = filename
         self.lineno = lineno
 
 class IncludeNode(AstNode):
     def __init__(self, filename, lineno, what_file, force):
+        """
+        Initialize a file.
+
+        Args:
+            self: (todo): write your description
+            filename: (str): write your description
+            lineno: (int): write your description
+            what_file: (str): write your description
+            force: (bool): write your description
+        """
         AstNode.__init__(self, filename, lineno)
         self.what_file = what_file
         self.force = force
@@ -48,18 +73,50 @@ class IncludeNode(AstNode):
 
 class ExportNode(AstNode):
     def __init__(self, filename, lineno, var):
+        """
+        Initialize a variable.
+
+        Args:
+            self: (todo): write your description
+            filename: (str): write your description
+            lineno: (int): write your description
+            var: (int): write your description
+        """
         AstNode.__init__(self, filename, lineno)
         self.var = var
 
     def eval(self, data):
+        """
+        Evaluates
+
+        Args:
+            self: (todo): write your description
+            data: (todo): write your description
+        """
         data.setVarFlag(self.var, "export", 1, op = 'exported')
 
 class UnsetNode(AstNode):
     def __init__(self, filename, lineno, var):
+        """
+        Initialize a variable.
+
+        Args:
+            self: (todo): write your description
+            filename: (str): write your description
+            lineno: (int): write your description
+            var: (int): write your description
+        """
         AstNode.__init__(self, filename, lineno)
         self.var = var
 
     def eval(self, data):
+        """
+        Evaluate the model.
+
+        Args:
+            self: (todo): write your description
+            data: (todo): write your description
+        """
         loginfo = {
             'variable': self.var,
             'file': self.filename,
@@ -69,11 +126,28 @@ class UnsetNode(AstNode):
 
 class UnsetFlagNode(AstNode):
     def __init__(self, filename, lineno, var, flag):
+        """
+        Initialize a new variable.
+
+        Args:
+            self: (todo): write your description
+            filename: (str): write your description
+            lineno: (int): write your description
+            var: (int): write your description
+            flag: (int): write your description
+        """
         AstNode.__init__(self, filename, lineno)
         self.var = var
         self.flag = flag
 
     def eval(self, data):
+        """
+        Evaluate variable
+
+        Args:
+            self: (todo): write your description
+            data: (todo): write your description
+        """
         loginfo = {
             'variable': self.var,
             'file': self.filename,
@@ -89,16 +163,40 @@ class DataNode(AstNode):
     that faster with multiple classes.
     """
     def __init__(self, filename, lineno, groupd):
+        """
+        Initialize a new group.
+
+        Args:
+            self: (todo): write your description
+            filename: (str): write your description
+            lineno: (int): write your description
+            groupd: (list): write your description
+        """
         AstNode.__init__(self, filename, lineno)
         self.groupd = groupd
 
     def getFunc(self, key, data):
+        """
+        Get a value from the value
+
+        Args:
+            self: (todo): write your description
+            key: (str): write your description
+            data: (todo): write your description
+        """
         if 'flag' in self.groupd and self.groupd['flag'] != None:
             return data.getVarFlag(key, self.groupd['flag'], expand=False, noweakdefault=True)
         else:
             return data.getVar(key, False, noweakdefault=True, parsing=True)
 
     def eval(self, data):
+        """
+        Evaluate the data
+
+        Args:
+            self: (todo): write your description
+            data: (todo): write your description
+        """
         groupd = self.groupd
         key = groupd["var"]
         loginfo = {
@@ -152,6 +250,18 @@ class MethodNode(AstNode):
     tr_tbl = str.maketrans('/.+-@%&', '_______')
 
     def __init__(self, filename, lineno, func_name, body, python, fakeroot):
+        """
+        Initialize a new function.
+
+        Args:
+            self: (todo): write your description
+            filename: (str): write your description
+            lineno: (int): write your description
+            func_name: (str): write your description
+            body: (str): write your description
+            python: (todo): write your description
+            fakeroot: (str): write your description
+        """
         AstNode.__init__(self, filename, lineno)
         self.func_name = func_name
         self.body = body
@@ -159,6 +269,13 @@ class MethodNode(AstNode):
         self.fakeroot = fakeroot
 
     def eval(self, data):
+        """
+        Evaluate a text string.
+
+        Args:
+            self: (todo): write your description
+            data: (todo): write your description
+        """
         text = '\n'.join(self.body)
         funcname = self.func_name
         if self.func_name == "__anonymous":
@@ -185,12 +302,30 @@ class MethodNode(AstNode):
 
 class PythonMethodNode(AstNode):
     def __init__(self, filename, lineno, function, modulename, body):
+        """
+        Initialize a function.
+
+        Args:
+            self: (todo): write your description
+            filename: (str): write your description
+            lineno: (int): write your description
+            function: (callable): write your description
+            modulename: (str): write your description
+            body: (str): write your description
+        """
         AstNode.__init__(self, filename, lineno)
         self.function = function
         self.modulename = modulename
         self.body = body
 
     def eval(self, data):
+        """
+        Evaluate the text document
+
+        Args:
+            self: (todo): write your description
+            data: (todo): write your description
+        """
         # Note we will add root to parsedmethods after having parse
         # 'this' file. This means we will not parse methods from
         # bb classes twice
@@ -204,11 +339,28 @@ class PythonMethodNode(AstNode):
 
 class ExportFuncsNode(AstNode):
     def __init__(self, filename, lineno, fns, classname):
+        """
+        Initialize a classname.
+
+        Args:
+            self: (todo): write your description
+            filename: (str): write your description
+            lineno: (int): write your description
+            fns: (str): write your description
+            classname: (str): write your description
+        """
         AstNode.__init__(self, filename, lineno)
         self.n = fns.split()
         self.classname = classname
 
     def eval(self, data):
+        """
+        Evaluate the data.
+
+        Args:
+            self: (todo): write your description
+            data: (todo): write your description
+        """
 
         for func in self.n:
             calledfunc = self.classname + "_" + func
@@ -239,28 +391,78 @@ class ExportFuncsNode(AstNode):
 
 class AddTaskNode(AstNode):
     def __init__(self, filename, lineno, func, before, after):
+        """
+        Initialize a new function.
+
+        Args:
+            self: (todo): write your description
+            filename: (str): write your description
+            lineno: (int): write your description
+            func: (callable): write your description
+            before: (todo): write your description
+            after: (todo): write your description
+        """
         AstNode.__init__(self, filename, lineno)
         self.func = func
         self.before = before
         self.after = after
 
     def eval(self, data):
+        """
+        Evaluate task.
+
+        Args:
+            self: (todo): write your description
+            data: (array): write your description
+        """
         bb.build.addtask(self.func, self.before, self.after, data)
 
 class DelTaskNode(AstNode):
     def __init__(self, filename, lineno, func):
+        """
+        Initialize a function.
+
+        Args:
+            self: (todo): write your description
+            filename: (str): write your description
+            lineno: (int): write your description
+            func: (callable): write your description
+        """
         AstNode.__init__(self, filename, lineno)
         self.func = func
 
     def eval(self, data):
+        """
+        Evaluate the given data.
+
+        Args:
+            self: (todo): write your description
+            data: (array): write your description
+        """
         bb.build.deltask(self.func, data)
 
 class BBHandlerNode(AstNode):
     def __init__(self, filename, lineno, fns):
+        """
+        Initialize a file.
+
+        Args:
+            self: (todo): write your description
+            filename: (str): write your description
+            lineno: (int): write your description
+            fns: (str): write your description
+        """
         AstNode.__init__(self, filename, lineno)
         self.hs = fns.split()
 
     def eval(self, data):
+        """
+        Evaluate the hyperlog.
+
+        Args:
+            self: (todo): write your description
+            data: (todo): write your description
+        """
         bbhands = data.getVar('__BBHANDLERS', False) or []
         for h in self.hs:
             bbhands.append(h)
@@ -269,37 +471,141 @@ class BBHandlerNode(AstNode):
 
 class InheritNode(AstNode):
     def __init__(self, filename, lineno, classes):
+        """
+        Initialize the classes.
+
+        Args:
+            self: (todo): write your description
+            filename: (str): write your description
+            lineno: (int): write your description
+            classes: (todo): write your description
+        """
         AstNode.__init__(self, filename, lineno)
         self.classes = classes
 
     def eval(self, data):
+        """
+        Evaluates.
+
+        Args:
+            self: (todo): write your description
+            data: (array): write your description
+        """
         bb.parse.BBHandler.inherit(self.classes, self.filename, self.lineno, data)
 
 def handleInclude(statements, filename, lineno, m, force):
+    """
+    Handles statements.
+
+    Args:
+        statements: (list): write your description
+        filename: (str): write your description
+        lineno: (str): write your description
+        m: (todo): write your description
+        force: (bool): write your description
+    """
     statements.append(IncludeNode(filename, lineno, m.group(1), force))
 
 def handleExport(statements, filename, lineno, m):
+    """
+    Handles statements.
+
+    Args:
+        statements: (list): write your description
+        filename: (str): write your description
+        lineno: (str): write your description
+        m: (todo): write your description
+    """
     statements.append(ExportNode(filename, lineno, m.group(1)))
 
 def handleUnset(statements, filename, lineno, m):
+    """
+    Handle statements.
+
+    Args:
+        statements: (list): write your description
+        filename: (str): write your description
+        lineno: (todo): write your description
+        m: (todo): write your description
+    """
     statements.append(UnsetNode(filename, lineno, m.group(1)))
 
 def handleUnsetFlag(statements, filename, lineno, m):
+    """
+    Handle statements.
+
+    Args:
+        statements: (list): write your description
+        filename: (str): write your description
+        lineno: (todo): write your description
+        m: (todo): write your description
+    """
     statements.append(UnsetFlagNode(filename, lineno, m.group(1), m.group(2)))
 
 def handleData(statements, filename, lineno, groupd):
+    """
+    Handle statements.
+
+    Args:
+        statements: (list): write your description
+        filename: (str): write your description
+        lineno: (str): write your description
+        groupd: (todo): write your description
+    """
     statements.append(DataNode(filename, lineno, groupd))
 
 def handleMethod(statements, filename, lineno, func_name, body, python, fakeroot):
+    """
+    Handle statements.
+
+    Args:
+        statements: (list): write your description
+        filename: (str): write your description
+        lineno: (str): write your description
+        func_name: (str): write your description
+        body: (todo): write your description
+        python: (todo): write your description
+        fakeroot: (todo): write your description
+    """
     statements.append(MethodNode(filename, lineno, func_name, body, python, fakeroot))
 
 def handlePythonMethod(statements, filename, lineno, funcname, modulename, body):
+    """
+    Handle statements.
+
+    Args:
+        statements: (list): write your description
+        filename: (str): write your description
+        lineno: (todo): write your description
+        funcname: (str): write your description
+        modulename: (str): write your description
+        body: (todo): write your description
+    """
     statements.append(PythonMethodNode(filename, lineno, funcname, modulename, body))
 
 def handleExportFuncs(statements, filename, lineno, m, classname):
+    """
+    Process statements.
+
+    Args:
+        statements: (list): write your description
+        filename: (str): write your description
+        lineno: (str): write your description
+        m: (todo): write your description
+        classname: (str): write your description
+    """
     statements.append(ExportFuncsNode(filename, lineno, m.group(1), classname))
 
 def handleAddTask(statements, filename, lineno, m):
+    """
+    Add statements.
+
+    Args:
+        statements: (todo): write your description
+        filename: (str): write your description
+        lineno: (str): write your description
+        m: (todo): write your description
+    """
     func = m.group("func")
     before = m.group("before")
     after = m.group("after")
@@ -309,6 +615,15 @@ def handleAddTask(statements, filename, lineno, m):
     statements.append(AddTaskNode(filename, lineno, func, before, after))
 
 def handleDelTask(statements, filename, lineno, m):
+    """
+    Handle statements.
+
+    Args:
+        statements: (list): write your description
+        filename: (str): write your description
+        lineno: (str): write your description
+        m: (todo): write your description
+    """
     func = m.group("func")
     if func is None:
         return
@@ -316,19 +631,51 @@ def handleDelTask(statements, filename, lineno, m):
     statements.append(DelTaskNode(filename, lineno, func))
 
 def handleBBHandlers(statements, filename, lineno, m):
+    """
+    Handle handlers.
+
+    Args:
+        statements: (list): write your description
+        filename: (str): write your description
+        lineno: (str): write your description
+        m: (todo): write your description
+    """
     statements.append(BBHandlerNode(filename, lineno, m.group(1)))
 
 def handleInherit(statements, filename, lineno, m):
+    """
+    Handles statements.
+
+    Args:
+        statements: (list): write your description
+        filename: (str): write your description
+        lineno: (todo): write your description
+        m: (todo): write your description
+    """
     classes = m.group(1)
     statements.append(InheritNode(filename, lineno, classes))
 
 def runAnonFuncs(d):
+    """
+    Run all functions in the given dictionary.
+
+    Args:
+        d: (todo): write your description
+    """
     code = []
     for funcname in d.getVar("__BBANONFUNCS", False) or []:
         code.append("%s(d)" % funcname)
     bb.utils.better_exec("\n".join(code), {"d": d})
 
 def finalize(fn, d, variant = None):
+    """
+    Finalize the event handlers.
+
+    Args:
+        fn: (todo): write your description
+        d: (todo): write your description
+        variant: (todo): write your description
+    """
     saved_handlers = bb.event.get_handlers().copy()
     try:
         for var in d.getVar('__BBHANDLERS', False) or []:
@@ -357,7 +704,24 @@ def finalize(fn, d, variant = None):
         bb.event.set_handlers(saved_handlers)
 
 def _create_variants(datastores, names, function, onlyfinalise):
+    """
+    Create a set of variants.
+
+    Args:
+        datastores: (todo): write your description
+        names: (str): write your description
+        function: (todo): write your description
+        onlyfinalise: (str): write your description
+    """
     def create_variant(name, orig_d, arg = None):
+        """
+        Creates a variant.
+
+        Args:
+            name: (str): write your description
+            orig_d: (str): write your description
+            arg: (str): write your description
+        """
         if onlyfinalise and name not in onlyfinalise:
             return
         new_d = bb.data.createCopy(orig_d)
@@ -373,6 +737,13 @@ def _create_variants(datastores, names, function, onlyfinalise):
                 create_variant("%s-%s" % (variant, name), datastores[variant], name)
 
 def multi_finalize(fn, d):
+    """
+    Finalize multiple files.
+
+    Args:
+        fn: (todo): write your description
+        d: (todo): write your description
+    """
     appends = (d.getVar("__BBAPPEND") or "").split()
     for append in appends:
         logger.debug(1, "Appending .bbappend file %s to %s", append, fn)
@@ -408,6 +779,13 @@ def multi_finalize(fn, d):
 
         pn = d.getVar("PN")
         def extendfunc(name, d):
+            """
+            Extend a function to a file
+
+            Args:
+                name: (str): write your description
+                d: (todo): write your description
+            """
             if name != extendedmap[name]:
                 d.setVar("BBEXTENDCURR", extendedmap[name])
                 d.setVar("BBEXTENDVARIANT", variantmap[name])

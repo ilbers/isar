@@ -25,11 +25,25 @@ class MissingFlag(TypeError):
     """A particular flag is required to construct the type, but has not been
     provided."""
     def __init__(self, flag, type):
+        """
+        Initialize a type.
+
+        Args:
+            self: (todo): write your description
+            flag: (int): write your description
+            type: (str): write your description
+        """
         self.flag = flag
         self.type = type
         TypeError.__init__(self)
 
     def __str__(self):
+        """
+        Return a string representation of this type.
+
+        Args:
+            self: (todo): write your description
+        """
         return "Type '%s' requires flag '%s'" % (self.type, self.flag)
 
 def factory(var_type):

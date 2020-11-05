@@ -27,6 +27,13 @@ from selenium.common.exceptions import NoSuchElementException, \
         StaleElementReferenceException, TimeoutException
 
 def create_selenium_driver(cls,browser='chrome'):
+    """
+    Create a browser instance.
+
+    Args:
+        cls: (todo): write your description
+        browser: (str): write your description
+    """
     # set default browser string based on env (if available)
     env_browser = os.environ.get('TOASTER_TESTS_BROWSER')
     if env_browser:
@@ -68,6 +75,13 @@ class Wait(WebDriverWait):
     _POLL_FREQUENCY = 0.5
 
     def __init__(self, driver):
+        """
+        Initialize driver.
+
+        Args:
+            self: (todo): write your description
+            driver: (todo): write your description
+        """
         super(Wait, self).__init__(driver, self._TIMEOUT, self._POLL_FREQUENCY)
 
     def until(self, method, message=''):

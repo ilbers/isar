@@ -16,6 +16,12 @@ from orm.models import Layer_Version, Layer, Release, ToasterSetting
 class TestLoadDataFixtures(TestCase):
     """ Test loading our 3 provided fixtures """
     def test_run_loaddata_poky_command(self):
+        """
+        Execute loaddata command.
+
+        Args:
+            self: (todo): write your description
+        """
         management.call_command('loaddata', 'poky')
 
         num_releases = Release.objects.count()
@@ -27,6 +33,12 @@ class TestLoadDataFixtures(TestCase):
             " defined")
 
     def test_run_loaddata_oecore_command(self):
+        """
+        Executes the test test test test test test test data
+
+        Args:
+            self: (todo): write your description
+        """
         management.call_command('loaddata', 'oe-core')
 
         # We only have the one layer for oe-core setup
@@ -36,6 +48,12 @@ class TestLoadDataFixtures(TestCase):
             " layer")
 
     def test_run_loaddata_settings_command(self):
+        """
+        Test if the test test command
+
+        Args:
+            self: (todo): write your description
+        """
         management.call_command('loaddata', 'settings')
 
         self.assertTrue(

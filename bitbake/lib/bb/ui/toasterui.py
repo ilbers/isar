@@ -35,6 +35,12 @@ logger = logging.getLogger("ToasterLogger")
 interactive = sys.stdout.isatty()
 
 def _log_settings_from_server(server):
+    """
+    Logs the server instance.
+
+    Args:
+        server: (todo): write your description
+    """
     # Get values of variables which control our output
     includelogs, error = server.runCommand(["getVariable", "BBINCLUDELOGS"])
     if error:
@@ -57,6 +63,12 @@ def _log_settings_from_server(server):
 #
 # returns (log file, path to log file) for a build
 def _open_build_log(log_dir):
+    """
+    Open log file.
+
+    Args:
+        log_dir: (str): write your description
+    """
     format_str = "%(levelname)s: %(message)s"
 
     now = time.time()
@@ -77,6 +89,12 @@ def _open_build_log(log_dir):
 
 # stop logging to the build log if it exists
 def _close_build_log(build_log):
+    """
+    Closes the log
+
+    Args:
+        build_log: (todo): write your description
+    """
     if build_log:
         build_log.flush()
         build_log.close()
@@ -122,6 +140,14 @@ _evt_list = [
     "logging.LogRecord"]
 
 def main(server, eventHandler, params):
+    """
+    Main function.
+
+    Args:
+        server: (todo): write your description
+        eventHandler: (todo): write your description
+        params: (dict): write your description
+    """
     # set to a logging.FileHandler instance when a build starts;
     # see _open_build_log()
     build_log = None

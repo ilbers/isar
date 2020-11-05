@@ -30,6 +30,14 @@ class Cvs(FetchMethod):
         return ud.type in ['cvs']
 
     def urldata_init(self, ud, d):
+        """
+        Initialize a module.
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+        """
         if not "module" in ud.parm:
             raise MissingParameterError("module", ud.url)
         ud.module = ud.parm["module"]
@@ -53,6 +61,14 @@ class Cvs(FetchMethod):
         ud.localfile = d.expand('%s_%s_%s_%s%s%s.tar.gz' % (ud.module.replace('/', '.'), ud.host, ud.tag, ud.date, norecurse, fullpath))
 
     def need_update(self, ud, d):
+        """
+        Determine if uuid has changed
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+        """
         if (ud.date == "now"):
             return True
         if not os.path.exists(ud.localpath):
@@ -60,6 +76,14 @@ class Cvs(FetchMethod):
         return False
 
     def download(self, ud, d):
+        """
+        Download a file.
+
+        Args:
+            self: (todo): write your description
+            ud: (int): write your description
+            d: (todo): write your description
+        """
 
         method = ud.parm.get('method', 'pserver')
         localdir = ud.parm.get('localdir', ud.module)

@@ -75,6 +75,13 @@ from   bb.fetch2 import logger
 class GitProgressHandler(bb.progress.LineFilterProgressHandler):
     """Extract progress information from git output"""
     def __init__(self, d):
+        """
+        Initialize buffers.
+
+        Args:
+            self: (todo): write your description
+            d: (int): write your description
+        """
         self._buffer = ''
         self._count = 0
         super(GitProgressHandler, self).__init__(d)
@@ -82,6 +89,13 @@ class GitProgressHandler(bb.progress.LineFilterProgressHandler):
         self._fire_progress(-1)
 
     def write(self, string):
+        """
+        Write string to txt.
+
+        Args:
+            self: (todo): write your description
+            string: (str): write your description
+        """
         self._buffer += string
         stages = ['Counting objects', 'Compressing objects', 'Receiving objects', 'Resolving deltas']
         stage_weights = [0.2, 0.05, 0.5, 0.25]
@@ -118,6 +132,13 @@ class Git(FetchMethod):
 
     """Class to fetch a module or modules from git repositories"""
     def init(self, d):
+        """
+        Initialize the object.
+
+        Args:
+            self: (todo): write your description
+            d: (int): write your description
+        """
         pass
 
     def supports(self, ud, d):
@@ -127,6 +148,13 @@ class Git(FetchMethod):
         return ud.type in ['git']
 
     def supports_checksum(self, urldata):
+        """
+        Returns true if the checksum is valid.
+
+        Args:
+            self: (todo): write your description
+            urldata: (str): write your description
+        """
         return False
 
     def urldata_init(self, ud, d):
@@ -284,12 +312,36 @@ class Git(FetchMethod):
             ud.mirrortarballs.insert(0, ud.shallowtarball)
 
     def localpath(self, ud, d):
+        """
+        Return a local path.
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+        """
         return ud.clonedir
 
     def need_update(self, ud, d):
+        """
+        Determine whether or not.
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+        """
         return self.clonedir_need_update(ud, d) or self.shallow_tarball_need_update(ud) or self.tarball_need_update(ud)
 
     def clonedir_need_update(self, ud, d):
+        """
+        Determine if uuid has changed.
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+        """
         if not os.path.exists(ud.clonedir):
             return True
         for name in ud.names:
@@ -298,12 +350,34 @@ class Git(FetchMethod):
         return False
 
     def shallow_tarball_need_update(self, ud):
+        """
+        Check if tarball tarball exists.
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+        """
         return ud.shallow and ud.write_shallow_tarballs and not os.path.exists(ud.fullshallow)
 
     def tarball_need_update(self, ud):
+        """
+        Return true if a tarball exists.
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+        """
         return ud.write_tarballs and not os.path.exists(ud.fullmirror)
 
     def try_premirror(self, ud, d):
+        """
+        Determine if uuid exists.
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+        """
         # If we don't do this, updating an existing checkout with only premirrors
         # is not possible
         if bb.utils.to_boolean(d.getVar("BB_FETCH_PREMIRRORONLY")):
@@ -370,6 +444,14 @@ class Git(FetchMethod):
                 raise bb.fetch2.FetchError("Unable to find revision %s in branch %s even from upstream" % (ud.revisions[name], ud.branches[name]))
 
     def build_mirror_data(self, ud, d):
+        """
+        Build a single download directory.
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+        """
         if ud.shallow and ud.write_shallow_tarballs:
             if not os.path.exists(ud.fullshallow):
                 if os.path.islink(ud.fullshallow):
@@ -532,9 +614,25 @@ class Git(FetchMethod):
                 bb.utils.remove(r, True)
 
     def supports_srcrev(self):
+        """
+        Determine if this source has a valid.
+
+        Args:
+            self: (todo): write your description
+        """
         return True
 
     def _contains_ref(self, ud, d, name, wd):
+        """
+        Return true if the given ref contains a ref
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+            name: (str): write your description
+            wd: (todo): write your description
+        """
         cmd = ""
         if ud.nobranch:
             cmd = "%s log --pretty=oneline -n 1 %s -- 2> /dev/null | wc -l" % (
@@ -678,6 +776,15 @@ class Git(FetchMethod):
         return pupver
 
     def _build_revision(self, ud, d, name):
+        """
+        Builds the revision for a given name.
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+            name: (str): write your description
+        """
         return ud.revisions[name]
 
     def gitpkgv_revision(self, ud, d, name):
@@ -706,6 +813,15 @@ class Git(FetchMethod):
             return True, str(rev)
 
     def checkstatus(self, fetch, ud, d):
+        """
+        Check whether the status of remote
+
+        Args:
+            self: (todo): write your description
+            fetch: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+        """
         try:
             self._lsremote(ud, d, "")
             return True

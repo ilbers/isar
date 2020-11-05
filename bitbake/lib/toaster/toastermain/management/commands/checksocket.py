@@ -23,11 +23,25 @@ class Command(BaseCommand):
     help = 'Check if Toaster can listen on address:port'
 
     def add_arguments(self, parser):
+        """
+        Add command line arguments.
+
+        Args:
+            self: (todo): write your description
+            parser: (todo): write your description
+        """
         parser.add_argument('addrport', nargs='?', default=DEFAULT_ADDRPORT,
                             help='ipaddr:port to check, %s by default' % \
                                  DEFAULT_ADDRPORT)
 
     def handle(self, *args, **options):
+        """
+        Handle the command.
+
+        Args:
+            self: (todo): write your description
+            options: (todo): write your description
+        """
         addrport = options['addrport']
         if ':' not in addrport:
             raise CommandError('Invalid addr:port specified: %s' % addrport)

@@ -6,6 +6,13 @@ from django.db.models import Q
 
 
 def branch_to_release(apps, schema_editor):
+    """
+    Release the current release.
+
+    Args:
+        apps: (todo): write your description
+        schema_editor: (todo): write your description
+    """
     Layer_Version = apps.get_model('orm', 'Layer_Version')
     Release = apps.get_model('orm', 'Release')
 

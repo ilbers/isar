@@ -46,6 +46,13 @@ class KickStartParser(ArgumentParser):
     instead of producing usage message(default argparse behavior).
     """
     def error(self, message):
+        """
+        Raise an error.
+
+        Args:
+            self: (todo): write your description
+            message: (str): write your description
+        """
         raise ArgumentError(None, message)
 
 def sizetype(arg):
@@ -120,6 +127,13 @@ class KickStart():
     DEFAULT_OVERHEAD_FACTOR = 1.3
 
     def __init__(self, confpath):
+        """
+        Initialize the daemon.
+
+        Args:
+            self: (todo): write your description
+            confpath: (str): write your description
+        """
 
         self.partitions = []
         self.bootloader = None

@@ -10,11 +10,25 @@ import sys
 import time
 
 def get_bitbake_env(arch, distro):
+    """
+    Get bitbake environment variable.
+
+    Args:
+        arch: (str): write your description
+        distro: (str): write your description
+    """
     multiconfig = 'mc:qemu' + arch + '-' + distro + ':isar-image-base'
     output = subprocess.check_output(['bitbake', '-e', str(multiconfig)])
     return output
 
 def get_bitbake_var(output, var):
+    """
+    Retrieve variable from var.
+
+    Args:
+        output: (str): write your description
+        var: (str): write your description
+    """
     ret = ''
     for line in output.splitlines():
         if line.startswith(var):
@@ -22,6 +36,14 @@ def get_bitbake_var(output, var):
     return ret
 
 def format_qemu_cmdline(arch, build, distro):
+    """
+    Return a qemu command
+
+    Args:
+        arch: (todo): write your description
+        build: (todo): write your description
+        distro: (str): write your description
+    """
     bb_output = get_bitbake_env(arch, distro).decode()
 
     rootfs_image = ''
@@ -73,6 +95,14 @@ def format_qemu_cmdline(arch, build, distro):
     return cmd
 
 def start_qemu(arch, build, distro):
+    """
+    Start qemu
+
+    Args:
+        arch: (str): write your description
+        build: (todo): write your description
+        distro: (str): write your description
+    """
     cmdline = format_qemu_cmdline(arch, build, distro)
     cmdline.insert(1, '-nographic')
 

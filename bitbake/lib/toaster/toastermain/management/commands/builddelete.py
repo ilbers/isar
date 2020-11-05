@@ -15,10 +15,24 @@ class Command(BaseCommand):
     help    = "Deletes selected build(s)"
 
     def add_arguments(self, parser):
+        """
+        Add arguments to parser.
+
+        Args:
+            self: (todo): write your description
+            parser: (todo): write your description
+        """
         parser.add_argument('buildids', metavar='N', type=int, nargs='+',
                     help="Build ID's to delete")
 
     def handle(self, *args, **options):
+        """
+        Executes the migration
+
+        Args:
+            self: (todo): write your description
+            options: (todo): write your description
+        """
         for bid in options['buildids']:
             try:
                 b = Build.objects.get(pk = bid)

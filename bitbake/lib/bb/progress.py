@@ -22,6 +22,14 @@ class ProgressHandler(object):
     progress of some operation.
     """
     def __init__(self, d, outfile=None):
+        """
+        Initialize the progress bar.
+
+        Args:
+            self: (todo): write your description
+            d: (int): write your description
+            outfile: (str): write your description
+        """
         self._progress = 0
         self._data = d
         self._lastevent = 0
@@ -31,10 +39,23 @@ class ProgressHandler(object):
             self._outfile = StdoutNoopContextManager()
 
     def __enter__(self):
+        """
+        Enter the output file.
+
+        Args:
+            self: (todo): write your description
+        """
         self._outfile.__enter__()
         return self
 
     def __exit__(self, *excinfo):
+        """
+        Exit the given exception.
+
+        Args:
+            self: (todo): write your description
+            excinfo: (todo): write your description
+        """
         self._outfile.__exit__(*excinfo)
 
     def _fire_progress(self, taskprogress, rate=None):
@@ -42,12 +63,33 @@ class ProgressHandler(object):
         bb.event.fire(bb.build.TaskProgress(taskprogress, rate), self._data)
 
     def write(self, string):
+        """
+        Write string to the output file.
+
+        Args:
+            self: (todo): write your description
+            string: (str): write your description
+        """
         self._outfile.write(string)
 
     def flush(self):
+        """
+        Flush the file.
+
+        Args:
+            self: (todo): write your description
+        """
         self._outfile.flush()
 
     def update(self, progress, rate=None):
+        """
+        Updates the progress bar.
+
+        Args:
+            self: (todo): write your description
+            progress: (todo): write your description
+            rate: (array): write your description
+        """
         ts = time.time()
         if progress > 100:
             progress = 100
@@ -66,10 +108,25 @@ class LineFilterProgressHandler(ProgressHandler):
     basis.
     """
     def __init__(self, d, outfile=None):
+        """
+        Initialize filter filter.
+
+        Args:
+            self: (todo): write your description
+            d: (int): write your description
+            outfile: (str): write your description
+        """
         self._linebuffer = ''
         super(LineFilterProgressHandler, self).__init__(d, outfile)
 
     def write(self, string):
+        """
+        Write a string to the output stream.
+
+        Args:
+            self: (todo): write your description
+            string: (str): write your description
+        """
         self._linebuffer += string
         while True:
             breakpos = self._linebuffer.find('\n') + 1
@@ -85,16 +142,39 @@ class LineFilterProgressHandler(ProgressHandler):
                 super(LineFilterProgressHandler, self).write(line)
 
     def writeline(self, line):
+        """
+        Writes a line.
+
+        Args:
+            self: (todo): write your description
+            line: (str): write your description
+        """
         return True
 
 class BasicProgressHandler(ProgressHandler):
     def __init__(self, d, regex=r'(\d+)%', outfile=None):
+        """
+        Initialize the progress bar.
+
+        Args:
+            self: (todo): write your description
+            d: (int): write your description
+            regex: (bool): write your description
+            outfile: (str): write your description
+        """
         super(BasicProgressHandler, self).__init__(d, outfile)
         self._regex = re.compile(regex)
         # Send an initial progress event so the bar gets shown
         self._fire_progress(0)
 
     def write(self, string):
+        """
+        Write string.
+
+        Args:
+            self: (todo): write your description
+            string: (str): write your description
+        """
         percs = self._regex.findall(string)
         if percs:
             progress = int(percs[-1])
@@ -103,12 +183,28 @@ class BasicProgressHandler(ProgressHandler):
 
 class OutOfProgressHandler(ProgressHandler):
     def __init__(self, d, regex, outfile=None):
+        """
+        Initialize the progress bar.
+
+        Args:
+            self: (todo): write your description
+            d: (int): write your description
+            regex: (bool): write your description
+            outfile: (str): write your description
+        """
         super(OutOfProgressHandler, self).__init__(d, outfile)
         self._regex = re.compile(regex)
         # Send an initial progress event so the bar gets shown
         self._fire_progress(0)
 
     def write(self, string):
+        """
+        Write string to the device.
+
+        Args:
+            self: (todo): write your description
+            string: (str): write your description
+        """
         nums = self._regex.findall(string)
         if nums:
             progress = (float(nums[-1][0]) / float(nums[-1][1])) * 100
@@ -156,12 +252,32 @@ class MultiStageProgressReporter(object):
             self._callers = []
 
     def __enter__(self):
+        """
+        Decor function.
+
+        Args:
+            self: (todo): write your description
+        """
         return self
 
     def __exit__(self, *excinfo):
+        """
+        Exit the given exception.
+
+        Args:
+            self: (todo): write your description
+            excinfo: (todo): write your description
+        """
         pass
 
     def _fire_progress(self, taskprogress):
+        """
+        Called when a task is received.
+
+        Args:
+            self: (todo): write your description
+            taskprogress: (todo): write your description
+        """
         bb.event.fire(bb.build.TaskProgress(taskprogress), self._data)
 
     def next_stage(self, stage_total=None):
@@ -213,6 +329,12 @@ class MultiStageProgressReporter(object):
         self._fire_progress(progress)
 
     def finish(self):
+        """
+        Finish the last stage.
+
+        Args:
+            self: (todo): write your description
+        """
         if self._finished:
             return
         self._finished = True
@@ -237,22 +359,51 @@ class MultiStageProcessProgressReporter(MultiStageProgressReporter):
     standalone processes (such as preparing the runqueue)
     """
     def __init__(self, d, processname, stage_weights, debug=False):
+        """
+        Initialize process.
+
+        Args:
+            self: (todo): write your description
+            d: (int): write your description
+            processname: (str): write your description
+            stage_weights: (int): write your description
+            debug: (bool): write your description
+        """
         self._processname = processname
         self._started = False
         MultiStageProgressReporter.__init__(self, d, stage_weights, debug)
 
     def start(self):
+        """
+        Starts the consumer.
+
+        Args:
+            self: (todo): write your description
+        """
         if not self._started:
             bb.event.fire(bb.event.ProcessStarted(self._processname, 100), self._data)
             self._started = True
 
     def _fire_progress(self, taskprogress):
+        """
+        Called when a task.
+
+        Args:
+            self: (todo): write your description
+            taskprogress: (todo): write your description
+        """
         if taskprogress == 0:
             self.start()
             return
         bb.event.fire(bb.event.ProcessProgress(self._processname, taskprogress), self._data)
 
     def finish(self):
+        """
+        Called when the process.
+
+        Args:
+            self: (todo): write your description
+        """
         MultiStageProgressReporter.finish(self)
         bb.event.fire(bb.event.ProcessFinished(self._processname), self._data)
 
@@ -262,19 +413,59 @@ class DummyMultiStageProcessProgressReporter(MultiStageProgressReporter):
     with them (to avoid a bunch of "if progress_reporter:" checks)
     """
     def __init__(self):
+        """
+        Initialize the underlying dllorter.
+
+        Args:
+            self: (todo): write your description
+        """
         MultiStageProcessProgressReporter.__init__(self, "", None, [])
 
     def _fire_progress(self, taskprogress, rate=None):
+        """
+        Fire a task. progress.
+
+        Args:
+            self: (todo): write your description
+            taskprogress: (todo): write your description
+            rate: (array): write your description
+        """
         pass
 
     def start(self):
+        """
+        Start the thread.
+
+        Args:
+            self: (todo): write your description
+        """
         pass
 
     def next_stage(self, stage_total=None):
+        """
+        Next stage stage.
+
+        Args:
+            self: (todo): write your description
+            stage_total: (str): write your description
+        """
         pass
 
     def update(self, stage_progress):
+        """
+        Update the given stage.
+
+        Args:
+            self: (todo): write your description
+            stage_progress: (todo): write your description
+        """
         pass
 
     def finish(self):
+        """
+        Called when the current request.
+
+        Args:
+            self: (todo): write your description
+        """
         pass

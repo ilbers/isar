@@ -13,6 +13,12 @@ import logging
 class LayersTest(unittest.TestCase):
 
     def setUp(self):
+        """
+        Set up the environment variables.
+
+        Args:
+            self: (todo): write your description
+        """
         self.origdir = os.getcwd()
         self.d = bb.data.init()
         # At least one variable needs to be set
@@ -25,6 +31,12 @@ class LayersTest(unittest.TestCase):
         self.logger = logging.getLogger("BitBake")
 
     def tearDown(self):
+        """
+        Create a tempfile.
+
+        Args:
+            self: (todo): write your description
+        """
         os.chdir(self.origdir)
         if os.environ.get("BB_TMPDIR_NOCLEAN") == "yes":
             print("Not cleaning up %s. Please remove manually." % self.tempdir)

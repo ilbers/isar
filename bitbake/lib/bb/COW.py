@@ -32,11 +32,23 @@ class COWDictMeta(COWMeta):
     __marker__ = tuple()
 
     def __str__(cls):
+        """
+        Return a string representation of the class.
+
+        Args:
+            cls: (todo): write your description
+        """
         # FIXME: I have magic numbers!
         return "<COWDict Level: %i Current Keys: %i>" % (cls.__count__, len(cls.__dict__) - 3)
     __repr__ = __str__
 
     def cow(cls):
+        """
+        Creates a new class with the given cnf.
+
+        Args:
+            cls: (todo): write your description
+        """
         class C(cls):
             __count__ = cls.__count__ + 1
         return C
@@ -44,6 +56,14 @@ class COWDictMeta(COWMeta):
     __call__ = cow
 
     def __setitem__(cls, key, value):
+        """
+        Sets the key to the given value pair.
+
+        Args:
+            cls: (todo): write your description
+            key: (str): write your description
+            value: (str): write your description
+        """
         if value is not None and not isinstance(value, ImmutableTypes):
             if not isinstance(value, COWMeta):
                 cls.__hasmutable__ = True
@@ -51,6 +71,14 @@ class COWDictMeta(COWMeta):
         setattr(cls, key, value)
 
     def __getmutable__(cls, key, readonly=False):
+        """
+        Get the value of a key.
+
+        Args:
+            cls: (callable): write your description
+            key: (str): write your description
+            readonly: (todo): write your description
+        """
         nkey = key + MUTABLE
         try:
             return cls.__dict__[nkey]
@@ -78,6 +106,16 @@ class COWDictMeta(COWMeta):
         return cls.__getitem__(key, default, True)
 
     def __getitem__(cls, key, default=__getmarker__, readonly=False):
+        """
+        Return the value of a given key.
+
+        Args:
+            cls: (todo): write your description
+            key: (str): write your description
+            default: (todo): write your description
+            __getmarker__: (todo): write your description
+            readonly: (todo): write your description
+        """
         try:
             try:
                 value = getattr(cls, key)
@@ -96,23 +134,59 @@ class COWDictMeta(COWMeta):
             raise KeyError(str(e))
 
     def __delitem__(cls, key):
+        """
+        Removes item from the item.
+
+        Args:
+            cls: (todo): write your description
+            key: (str): write your description
+        """
         cls.__setitem__(key, cls.__marker__)
 
     def __revertitem__(cls, key):
+        """
+        Recursively copies of the item.
+
+        Args:
+            cls: (todo): write your description
+            key: (str): write your description
+        """
         if key not in cls.__dict__:
             key += MUTABLE
         delattr(cls, key)
 
     def __contains__(cls, key):
+        """
+        Determine if key contains a key.
+
+        Args:
+            cls: (todo): write your description
+            key: (todo): write your description
+        """
         return cls.has_key(key)
 
     def has_key(cls, key):
+        """
+        Returns true if the key exists.
+
+        Args:
+            cls: (todo): write your description
+            key: (str): write your description
+        """
         value = cls.__getreadonly__(key, cls.__marker__)
         if value is cls.__marker__:
             return False
         return True
 
     def iter(cls, type, readonly=False):
+        """
+        Iterate over the key / value pairs.
+
+        Args:
+            cls: (todo): write your description
+            type: (str): write your description
+            readonly: (bool): write your description
+        """
         for key in dir(cls):
             if key.startswith("__"):
                 continue
@@ -138,40 +212,105 @@ class COWDictMeta(COWMeta):
         return
 
     def iterkeys(cls):
+        """
+        Return an iterator over all keys in the keys.
+
+        Args:
+            cls: (todo): write your description
+        """
         return cls.iter("keys")
     def itervalues(cls, readonly=False):
+        """
+        Return a list of the file iservice.
+
+        Args:
+            cls: (todo): write your description
+            readonly: (bool): write your description
+        """
         if not cls.__warn__ is False and cls.__hasmutable__ and readonly is False:
             print("Warning: If you arn't going to change any of the values call with True.", file=cls.__warn__)
         return cls.iter("values", readonly)
     def iteritems(cls, readonly=False):
+        """
+        Return an iterator over all items.
+
+        Args:
+            cls: (todo): write your description
+            readonly: (bool): write your description
+        """
         if not cls.__warn__ is False and cls.__hasmutable__ and readonly is False:
             print("Warning: If you arn't going to change any of the values call with True.", file=cls.__warn__)
         return cls.iter("items", readonly)
 
 class COWSetMeta(COWDictMeta):
     def __str__(cls):
+        """
+        Return a string representation of the class.
+
+        Args:
+            cls: (todo): write your description
+        """
         # FIXME: I have magic numbers!
         return "<COWSet Level: %i Current Keys: %i>" % (cls.__count__, len(cls.__dict__) -3)
     __repr__ = __str__
 
     def cow(cls):
+        """
+        Creates a new class with the given cnf.
+
+        Args:
+            cls: (todo): write your description
+        """
         class C(cls):
             __count__ = cls.__count__ + 1
         return C
 
     def add(cls, value):
+        """
+        : param dict to : class : class : ~set.
+
+        Args:
+            cls: (todo): write your description
+            value: (todo): write your description
+        """
         COWDictMeta.__setitem__(cls, repr(hash(value)), value)
 
     def remove(cls, value):
+        """
+        Removes an item from the dictionary.
+
+        Args:
+            cls: (todo): write your description
+            value: (todo): write your description
+        """
         COWDictMeta.__delitem__(cls, repr(hash(value)))
 
     def __in__(cls, value):
+        """
+        Return a repr of the given value.
+
+        Args:
+            cls: (todo): write your description
+            value: (todo): write your description
+        """
         return repr(hash(value)) in COWDictMeta
 
     def iterkeys(cls):
+        """
+        Return an iterator over all keys of the dictionary.
+
+        Args:
+            cls: (todo): write your description
+        """
         raise TypeError("sets don't have keys")
 
     def iteritems(cls):
+        """
+        Iterate over all the items.
+
+        Args:
+            cls: (todo): write your description
+        """
         raise TypeError("sets don't have 'items'")
 
 # These are the actual classes you use!

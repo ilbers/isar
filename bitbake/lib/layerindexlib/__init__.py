@@ -18,15 +18,36 @@ logger = logging.getLogger('BitBake.layerindexlib')
 class LayerIndexException(Exception):
     '''LayerIndex Generic Exception'''
     def __init__(self, message):
+        """
+        Initialize the message
+
+        Args:
+            self: (todo): write your description
+            message: (str): write your description
+        """
          self.msg = message
          Exception.__init__(self, message)
 
     def __str__(self):
+        """
+        Return a string representation of the message.
+
+        Args:
+            self: (todo): write your description
+        """
          return self.msg
 
 class LayerIndexUrlError(LayerIndexException):
     '''Exception raised when unable to access a URL for some reason'''
     def __init__(self, url, message=""):
+        """
+        Initialize the message.
+
+        Args:
+            self: (todo): write your description
+            url: (str): write your description
+            message: (str): write your description
+        """
         if message:
             msg = "Unable to access layerindex url %s: %s" % (url, message)
         else:
@@ -37,6 +58,14 @@ class LayerIndexUrlError(LayerIndexException):
 class LayerIndexFetchError(LayerIndexException):
     '''General layerindex fetcher exception when something fails'''
     def __init__(self, url, message=""):
+        """
+        Initialize the message.
+
+        Args:
+            self: (todo): write your description
+            url: (str): write your description
+            message: (str): write your description
+        """
         if message:
             msg = "Unable to fetch layerindex url %s: %s" % (url, message)
         else:
@@ -49,6 +78,13 @@ class LayerIndexFetchError(LayerIndexException):
 # the layer may contain one or more individual indexes
 class LayerIndex():
     def __init__(self, d):
+        """
+        Initialize the plugins.
+
+        Args:
+            self: (todo): write your description
+            d: (int): write your description
+        """
         if not d:
             raise LayerIndexException("Must be initialized with bb.data.")
 
@@ -66,6 +102,13 @@ class LayerIndex():
                 plugin.init(self)
 
     def __add__(self, other):
+        """
+        Return a new index to this index.
+
+        Args:
+            self: (todo): write your description
+            other: (todo): write your description
+        """
         newIndex = LayerIndex(self.data)
 
         if self.__class__ != newIndex.__class__ or \
@@ -377,6 +420,16 @@ layerBranches set.  If not, they are effectively blank.'''
 
 
         def _resolve_dependencies(layerbranches, ignores, dependencies, invalid, processed=None):
+            """
+            Resolve the dependencies of the dependencies.
+
+            Args:
+                layerbranches: (todo): write your description
+                ignores: (todo): write your description
+                dependencies: (str): write your description
+                invalid: (int): write your description
+                processed: (array): write your description
+            """
             for layerbranch in layerbranches:
                 if ignores and layerbranch.layer.name in ignores:
                     continue
@@ -582,6 +635,12 @@ This function is used to implement debugging and provide the user info.
 # of new items, as well as simply loading of the items.
 class LayerIndexObj():
     def __init__(self):
+        """
+        Initialize this method
+
+        Args:
+            self: (todo): write your description
+        """
         super().__setattr__('_index', {})
         super().__setattr__('_lock', False)
 
@@ -603,6 +662,13 @@ class LayerIndexObj():
         return False
 
     def __getattr__(self, name):
+        """
+        Returns the attribute of the attribute name.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+        """
         if name.startswith('_'):
             return super().__getattribute__(name)
 
@@ -612,6 +678,14 @@ class LayerIndexObj():
         return self._index[name]
 
     def __setattr__(self, name, value):
+        """
+        Sets an attribute name.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            value: (todo): write your description
+        """
         if self.isLocked():
             raise TypeError("Can not set attribute '%s': index is locked" % name)
 
@@ -622,6 +696,13 @@ class LayerIndexObj():
         self._index[name] = value
 
     def __delattr__(self, name):
+        """
+        Removes an attribute by name.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+        """
         if self.isLocked():
             raise TypeError("Can not delete attribute '%s': index is locked" % name)
 
@@ -670,7 +751,19 @@ class LayerIndexObj():
     # Quick lookup table for searching layerId and branchID combos
     @property
     def layerBranches_layerId_branchId(self):
+        """
+        Obtain the layerid of the layer.
+
+        Args:
+            self: (todo): write your description
+        """
         def createCache(self):
+            """
+            Creates a new layer.
+
+            Args:
+                self: (todo): write your description
+            """
             cache = {}
             for layerbranchid in self.layerBranches:
                 layerbranch = self.layerBranches[layerbranchid]
@@ -693,7 +786,19 @@ class LayerIndexObj():
     # Quick lookup table for finding all dependencies of a layerBranch
     @property
     def layerDependencies_layerBranchId(self):
+        """
+        Returns the layerid of the layer.
+
+        Args:
+            self: (todo): write your description
+        """
         def createCache(self):
+            """
+            Creates a list of all the dependencies.
+
+            Args:
+                self: (todo): write your description
+            """
             cache = {}
             # This ensures empty lists for all branchids
             for layerbranchid in self.layerBranches:
@@ -720,7 +825,19 @@ class LayerIndexObj():
     # Quick lookup table for finding all instances of a vcs_url
     @property
     def layerBranches_vcsUrl(self):
+        """
+        This function returns a dicts of vcs.
+
+        Args:
+            self: (todo): write your description
+        """
         def createCache(self):
+            """
+            Create a new layer.
+
+            Args:
+                self: (todo): write your description
+            """
             cache = {}
             for layerbranchid in self.layerBranches:
                 layerbranch = self.layerBranches[layerbranchid]
@@ -841,6 +958,15 @@ class LayerIndexObj():
                 raise LayerIndexException("Can not resolve dependencies across indexes with this class function!")
 
         def _resolve_dependencies(layerbranches, ignores, dependencies, invalid):
+            """
+            Resolve the dependencies of the layer.
+
+            Args:
+                layerbranches: (todo): write your description
+                ignores: (todo): write your description
+                dependencies: (str): write your description
+                invalid: (int): write your description
+            """
             for layerbranch in layerbranches:
                 if ignores and layerBranch.layer.name in ignores:
                     continue
@@ -887,6 +1013,15 @@ class LayerIndexObj():
 # the data within the data element.
 class LayerIndexItemObj():
     def __init__(self, index, data=None, lock=False):
+        """
+        Initialize index.
+
+        Args:
+            self: (todo): write your description
+            index: (int): write your description
+            data: (todo): write your description
+            lock: (todo): write your description
+        """
         if data is None:
             data = {}
 
@@ -898,15 +1033,35 @@ class LayerIndexItemObj():
         super().__setattr__('_data',  data)
 
     def __eq__(self, other):
+        """
+        Determine if two values are equal.
+
+        Args:
+            self: (todo): write your description
+            other: (todo): write your description
+        """
         if self.__class__ != other.__class__:
             return False
         res=(self._data == other._data)
         return res
 
     def __bool__(self):
+        """
+        Returns true if the data is a boolean false otherwise.
+
+        Args:
+            self: (todo): write your description
+        """
         return bool(self._data)
 
     def __getattr__(self, name):
+        """
+        Get the value from the given name.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+        """
         # These are internal to THIS class, and not part of data
         if name == "index" or name.startswith('_'):
             return super().__getattribute__(name)
@@ -938,9 +1093,25 @@ class LayerIndexItemObj():
             self._data[name] = value
 
     def __setattr__(self, name, value):
+        """
+        Sets an attribute on the given value.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            value: (todo): write your description
+        """
         self._setattr(name, value, prop=True)
 
     def _delattr(self, name, prop=True):
+        """
+        Removes an attribute from the object.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            prop: (todo): write your description
+        """
         # Since __delattr__ runs before properties, we need to check if
         # there is a deleter property and then execute it
         # ... or we pop it ourselves..
@@ -954,6 +1125,13 @@ class LayerIndexItemObj():
             self._data.pop(name)
 
     def __delattr__(self, name):
+        """
+        Removes an attribute from the object.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+        """
         self._delattr(name, prop=True)
 
     def lockData(self):
@@ -974,6 +1152,20 @@ class Branch(LayerIndexItemObj):
                  short_description=None, sort_priority=1,
                  updates_enabled=True, updated=None,
                  update_environment=None):
+        """
+        Define a new branch.
+
+        Args:
+            self: (todo): write your description
+            id: (str): write your description
+            name: (str): write your description
+            bitbake_branch: (str): write your description
+            short_description: (str): write your description
+            sort_priority: (str): write your description
+            updates_enabled: (bool): write your description
+            updated: (todo): write your description
+            update_environment: (bool): write your description
+        """
         self.id = id
         self.name = name
         self.bitbake_branch = bitbake_branch
@@ -985,10 +1177,23 @@ class Branch(LayerIndexItemObj):
 
     @property
     def name(self):
+        """
+        Return the name of the field.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.__getattr__('name')
 
     @name.setter
     def name(self, value):
+        """
+        Get the name of the branch.
+
+        Args:
+            self: (todo): write your description
+            value: (str): write your description
+        """
         self._data['name'] = value
 
         if self.bitbake_branch == value:
@@ -996,10 +1201,22 @@ class Branch(LayerIndexItemObj):
 
     @name.deleter
     def name(self):
+        """
+        The name of the field.
+
+        Args:
+            self: (todo): write your description
+        """
         self._delattr('name', prop=False)
 
     @property
     def bitbake_branch(self):
+        """
+        Returns the bitbake_branch.
+
+        Args:
+            self: (todo): write your description
+        """
         try:
             return self.__getattr__('bitbake_branch')
         except AttributeError:
@@ -1007,6 +1224,13 @@ class Branch(LayerIndexItemObj):
 
     @bitbake_branch.setter
     def bitbake_branch(self, value):
+        """
+        Get the branch branch.
+
+        Args:
+            self: (todo): write your description
+            value: (todo): write your description
+        """
         if self.name == value:
             self._data['bitbake_branch'] = ""
         else:
@@ -1014,6 +1238,12 @@ class Branch(LayerIndexItemObj):
 
     @bitbake_branch.deleter
     def bitbake_branch(self):
+        """
+        A bitbake bitbake bitbake
+
+        Args:
+            self: (todo): write your description
+        """
         self._delattr('bitbake_branch', prop=False)
 
 
@@ -1029,6 +1259,27 @@ class LayerItem(LayerIndexItemObj):
                  index_preference=1,
                  classic=False,
                  updated=None):
+        """
+        Define a new vcs layer.
+
+        Args:
+            self: (todo): write your description
+            id: (str): write your description
+            name: (str): write your description
+            status: (str): write your description
+            layer_type: (str): write your description
+            summary: (todo): write your description
+            description: (str): write your description
+            vcs_url: (str): write your description
+            vcs_web_url: (str): write your description
+            vcs_web_tree_base_url: (str): write your description
+            vcs_web_file_base_url: (str): write your description
+            usage_url: (str): write your description
+            mailing_list_url: (list): write your description
+            index_preference: (todo): write your description
+            classic: (str): write your description
+            updated: (todo): write your description
+        """
         self.id = id
         self.name = name
         self.status = status
@@ -1050,6 +1301,23 @@ class LayerBranch(LayerIndexItemObj):
                  vcs_last_rev=None, vcs_last_commit=None,
                  actual_branch="",
                  updated=None):
+        """
+        Define a new branch.
+
+        Args:
+            self: (todo): write your description
+            id: (str): write your description
+            collection: (str): write your description
+            version: (str): write your description
+            layer: (todo): write your description
+            branch: (todo): write your description
+            vcs_subdir: (str): write your description
+            vcs_last_fetch: (todo): write your description
+            vcs_last_rev: (todo): write your description
+            vcs_last_commit: (todo): write your description
+            actual_branch: (str): write your description
+            updated: (todo): write your description
+        """
         self.id = id
         self.collection = collection
         self.version = version
@@ -1074,18 +1342,43 @@ class LayerBranch(LayerIndexItemObj):
     # referring to the layer id.. so lets adjust this to make it useful
     @property
     def layer_id(self):
+        """
+        Return layer id.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.__getattr__('layer')
 
     @layer_id.setter
     def layer_id(self, value):
+        """
+        Set the layer id.
+
+        Args:
+            self: (todo): write your description
+            value: (todo): write your description
+        """
         self._setattr('layer', value, prop=False)
 
     @layer_id.deleter
     def layer_id(self):
+        """
+        Delete the layer id.
+
+        Args:
+            self: (todo): write your description
+        """
         self._delattr('layer', prop=False)
 
     @property
     def layer(self):
+        """
+        Return the layer associated with the given layer_id.
+
+        Args:
+            self: (todo): write your description
+        """
         try:
             return self.index.layerItems[self.layer_id]
         except KeyError:
@@ -1095,6 +1388,13 @@ class LayerBranch(LayerIndexItemObj):
 
     @layer.setter
     def layer(self, value):
+        """
+        Set the layer_id.
+
+        Args:
+            self: (todo): write your description
+            value: (todo): write your description
+        """
         if not isinstance(value, LayerItem):
             raise TypeError('value is not a LayerItem')
         if self.index != value.index:
@@ -1103,22 +1403,53 @@ class LayerBranch(LayerIndexItemObj):
 
     @layer.deleter
     def layer(self):
+        """
+        Removes the layer.
+
+        Args:
+            self: (todo): write your description
+        """
         del self.layer_id
 
     @property
     def branch_id(self):
+        """
+        Return the id of the branch.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.__getattr__('branch')
 
     @branch_id.setter
     def branch_id(self, value):
+        """
+        Set the branch id.
+
+        Args:
+            self: (todo): write your description
+            value: (todo): write your description
+        """
         self._setattr('branch', value, prop=False)
 
     @branch_id.deleter
     def branch_id(self):
+        """
+        Remove the branch id of the branch.
+
+        Args:
+            self: (todo): write your description
+        """
         self._delattr('branch', prop=False)
 
     @property
     def branch(self):
+        """
+        Return the branch of the branch.
+
+        Args:
+            self: (todo): write your description
+        """
         try:
             logger.debug(1, "Get branch object from branches[%s]" % (self.branch_id))
             return self.index.branches[self.branch_id]
@@ -1129,6 +1460,13 @@ class LayerBranch(LayerIndexItemObj):
 
     @branch.setter
     def branch(self, value):
+        """
+        Set the branch of a branch.
+
+        Args:
+            self: (todo): write your description
+            value: (todo): write your description
+        """
         if not isinstance(value, LayerItem):
             raise TypeError('value is not a LayerItem')
         if self.index != value.index:
@@ -1137,10 +1475,22 @@ class LayerBranch(LayerIndexItemObj):
 
     @branch.deleter
     def branch(self):
+        """
+        Deletes the branch.
+
+        Args:
+            self: (todo): write your description
+        """
         del self.branch_id
 
     @property
     def actual_branch(self):
+        """
+        Return the actual branch of the branch.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.__getattr__('actual_branch'):
             return self.__getattr__('actual_branch')
         else:
@@ -1148,6 +1498,13 @@ class LayerBranch(LayerIndexItemObj):
 
     @actual_branch.setter
     def actual_branch(self, value):
+        """
+        Set the branch
+
+        Args:
+            self: (todo): write your description
+            value: (todo): write your description
+        """
         logger.debug(1, "Set actual_branch to %s .. name is %s" % (value, self.branch.name))
         if value != self.branch.name:
             self._setattr('actual_branch', value, prop=False)
@@ -1156,6 +1513,12 @@ class LayerBranch(LayerIndexItemObj):
 
     @actual_branch.deleter
     def actual_branch(self):
+        """
+        Deletes the current branch.
+
+        Args:
+            self: (todo): write your description
+        """
         self._delattr('actual_branch', prop=False)
 
 # Extend LayerIndexItemObj with common LayerBranch manipulations
@@ -1167,18 +1530,43 @@ class LayerBranch(LayerIndexItemObj):
 class LayerIndexItemObj_LayerBranch(LayerIndexItemObj):
     @property
     def layerbranch_id(self):
+        """
+        Return the id of the layer.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.__getattr__('layerbranch')
 
     @layerbranch_id.setter
     def layerbranch_id(self, value):
+        """
+        Set the layerbranch id.
+
+        Args:
+            self: (todo): write your description
+            value: (todo): write your description
+        """
         self._setattr('layerbranch', value, prop=False)
 
     @layerbranch_id.deleter
     def layerbranch_id(self):
+        """
+        Delete the layer id.
+
+        Args:
+            self: (todo): write your description
+        """
         self._delattr('layerbranch', prop=False)
 
     @property
     def layerbranch(self):
+        """
+        Return the branch of the given branch.
+
+        Args:
+            self: (todo): write your description
+        """
         try:
             return self.index.layerBranches[self.layerbranch_id]
         except KeyError:
@@ -1188,6 +1576,13 @@ class LayerIndexItemObj_LayerBranch(LayerIndexItemObj):
 
     @layerbranch.setter
     def layerbranch(self, value):
+        """
+        Set the branchbranchanch.
+
+        Args:
+            self: (todo): write your description
+            value: (todo): write your description
+        """
         if not isinstance(value, LayerBranch):
             raise TypeError('value (%s) is not a layerBranch' % type(value))
         if self.index != value.index:
@@ -1196,16 +1591,34 @@ class LayerIndexItemObj_LayerBranch(LayerIndexItemObj):
 
     @layerbranch.deleter
     def layerbranch(self):
+        """
+        Delete the layerbranch.
+
+        Args:
+            self: (todo): write your description
+        """
         del self.layerbranch_id
 
     @property
     def layer_id(self):
+        """
+        Return the id of the layer.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.layerbranch.layer_id
 
     # Doesn't make sense to set or delete layer_id
 
     @property
     def layer(self):
+        """
+        Return the layer of the layer
+
+        Args:
+            self: (todo): write your description
+        """
         return self.layerbranch.layer
 
     # Doesn't make sense to set or delete layer
@@ -1213,6 +1626,16 @@ class LayerIndexItemObj_LayerBranch(LayerIndexItemObj):
 
 class LayerDependency(LayerIndexItemObj_LayerBranch):
     def define_data(self, id, layerbranch, dependency, required=True):
+        """
+        Define a new layer.
+
+        Args:
+            self: (todo): write your description
+            id: (str): write your description
+            layerbranch: (todo): write your description
+            dependency: (todo): write your description
+            required: (bool): write your description
+        """
         self.id = id
         if isinstance(layerbranch, LayerBranch):
             self.layerbranch = layerbranch
@@ -1226,18 +1649,43 @@ class LayerDependency(LayerIndexItemObj_LayerBranch):
 
     @property
     def dependency_id(self):
+        """
+        Returns the dependency id.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.__getattr__('dependency')
 
     @dependency_id.setter
     def dependency_id(self, value):
+        """
+        Set the dependency id.
+
+        Args:
+            self: (todo): write your description
+            value: (str): write your description
+        """
         self._setattr('dependency', value, prop=False)
 
     @dependency_id.deleter
     def dependency_id(self):
+        """
+        The dependency id of the dependency.
+
+        Args:
+            self: (todo): write your description
+        """
         self._delattr('dependency', prop=False)
 
     @property
     def dependency(self):
+        """
+        Returns the dependency for this layer.
+
+        Args:
+            self: (todo): write your description
+        """
         try:
             return self.index.layerItems[self.dependency_id]
         except KeyError:
@@ -1247,6 +1695,13 @@ class LayerDependency(LayerIndexItemObj_LayerBranch):
 
     @dependency.setter
     def dependency(self, value):
+        """
+        Sets the dependency_id.
+
+        Args:
+            self: (todo): write your description
+            value: (todo): write your description
+        """
         if not isinstance(value, LayerDependency):
             raise TypeError('value (%s) is not a dependency' % type(value))
         if self.index != value.index:
@@ -1255,10 +1710,22 @@ class LayerDependency(LayerIndexItemObj_LayerBranch):
 
     @dependency.deleter
     def dependency(self):
+        """
+        Delete the dependency
+
+        Args:
+            self: (todo): write your description
+        """
         self._delattr('dependency', prop=False)
 
     @property
     def dependency_layerBranch(self):
+        """
+        Return the layerid of the layer.
+
+        Args:
+            self: (todo): write your description
+        """
         layerid = self.dependency_id
         branchid = self.layerbranch.branch_id
 
@@ -1279,6 +1746,29 @@ class Recipe(LayerIndexItemObj_LayerBranch):
                     summary="", description="", section="", license="",
                     homepage="", bugtracker="", provides="", bbclassextend="",
                     inherits="", blacklisted="", updated=None):
+        """
+        Define a new data file.
+
+        Args:
+            self: (todo): write your description
+            id: (str): write your description
+            filename: (str): write your description
+            filepath: (str): write your description
+            pn: (todo): write your description
+            pv: (todo): write your description
+            layerbranch: (todo): write your description
+            summary: (todo): write your description
+            description: (str): write your description
+            section: (todo): write your description
+            license: (todo): write your description
+            homepage: (str): write your description
+            bugtracker: (str): write your description
+            provides: (str): write your description
+            bbclassextend: (str): write your description
+            inherits: (todo): write your description
+            blacklisted: (list): write your description
+            updated: (todo): write your description
+        """
         self.id = id
         self.filename = filename
         self.filepath = filepath
@@ -1302,6 +1792,12 @@ class Recipe(LayerIndexItemObj_LayerBranch):
 
     @property
     def fullpath(self):
+        """
+        Returns the full path of the file.
+
+        Args:
+            self: (todo): write your description
+        """
         return os.path.join(self.filepath, self.filename)
 
     # Set would need to understand how to split it
@@ -1309,6 +1805,12 @@ class Recipe(LayerIndexItemObj_LayerBranch):
 
     @property
     def inherits(self):
+        """
+        Returns a list of theme.
+
+        Args:
+            self: (todo): write your description
+        """
         if 'inherits' not in self._data:
             # Older indexes may not have this, so emulate it
             if '-image-' in self.pn:
@@ -1317,10 +1819,23 @@ class Recipe(LayerIndexItemObj_LayerBranch):
 
     @inherits.setter
     def inherits(self, value):
+        """
+        Returns a list of the given value.
+
+        Args:
+            self: (todo): write your description
+            value: (todo): write your description
+        """
         return self._setattr('inherits', value, prop=False)
 
     @inherits.deleter
     def inherits(self):
+        """
+        Return a list of items inherits.
+
+        Args:
+            self: (todo): write your description
+        """
         return self._delattr('inherits', prop=False)
 
 
@@ -1328,6 +1843,17 @@ class Machine(LayerIndexItemObj_LayerBranch):
     def define_data(self, id,
                     name, description, layerbranch,
                     updated=None):
+        """
+        Define a new layer.
+
+        Args:
+            self: (todo): write your description
+            id: (str): write your description
+            name: (str): write your description
+            description: (str): write your description
+            layerbranch: (todo): write your description
+            updated: (todo): write your description
+        """
         self.id = id
         self.name = name
         self.description = description
@@ -1341,6 +1867,17 @@ class Distro(LayerIndexItemObj_LayerBranch):
     def define_data(self, id,
                     name, description, layerbranch,
                     updated=None):
+        """
+        Define a new layer.
+
+        Args:
+            self: (todo): write your description
+            id: (str): write your description
+            name: (str): write your description
+            description: (str): write your description
+            layerbranch: (todo): write your description
+            updated: (todo): write your description
+        """
         self.id = id
         self.name = name
         self.description = description
@@ -1353,6 +1890,12 @@ class Distro(LayerIndexItemObj_LayerBranch):
 # When performing certain actions, we may need to sort the data.
 # This will allow us to keep it consistent from run to run.
 def sort_entry(item):
+    """
+    Sort an entry
+
+    Args:
+        item: (todo): write your description
+    """
     newitem = item
     try:
         if type(newitem) == type(dict()):

@@ -22,13 +22,32 @@ class Client(object):
     MODE_GET_STREAM = 1
 
     def __init__(self):
+        """
+        Initialize the socket.
+
+        Args:
+            self: (todo): write your description
+        """
         self._socket = None
         self.reader = None
         self.writer = None
         self.mode = self.MODE_NORMAL
 
     def connect_tcp(self, address, port):
+        """
+        Connect to a tcp socket.
+
+        Args:
+            self: (todo): write your description
+            address: (str): write your description
+            port: (int): write your description
+        """
         def connect_sock():
+            """
+            Connect to a socket.
+
+            Args:
+            """
             s = socket.create_connection((address, port))
 
             s.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
@@ -39,7 +58,19 @@ class Client(object):
         self._connect_sock = connect_sock
 
     def connect_unix(self, path):
+        """
+        Connect to a unix socket.
+
+        Args:
+            self: (todo): write your description
+            path: (str): write your description
+        """
         def connect_sock():
+            """
+            Connect to a socket.
+
+            Args:
+            """
             s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
             # AF_UNIX has path length issues so chdir here to workaround
             cwd = os.getcwd()
@@ -53,6 +84,12 @@ class Client(object):
         self._connect_sock = connect_sock
 
     def connect(self):
+        """
+        Connect to the socket.
+
+        Args:
+            self: (todo): write your description
+        """
         if self._socket is None:
             self._socket = self._connect_sock()
 
@@ -70,6 +107,12 @@ class Client(object):
         return self._socket
 
     def close(self):
+        """
+        Closes the socket.
+
+        Args:
+            self: (todo): write your description
+        """
         if self._socket is not None:
             self._socket.close()
             self._socket = None
@@ -77,6 +120,13 @@ class Client(object):
             self.writer = None
 
     def _send_wrapper(self, proc):
+        """
+        Sends a connection to the socket.
+
+        Args:
+            self: (todo): write your description
+            proc: (todo): write your description
+        """
         count = 0
         while True:
             try:
@@ -92,7 +142,19 @@ class Client(object):
                 count += 1
 
     def send_message(self, msg):
+        """
+        Send a message to the server.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         def proc():
+            """
+            Read the json string.
+
+            Args:
+            """
             self.writer.write('%s\n' % json.dumps(msg))
             self.writer.flush()
 
@@ -108,7 +170,19 @@ class Client(object):
         return self._send_wrapper(proc)
 
     def send_stream(self, msg):
+        """
+        Send a message to the socket.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         def proc():
+            """
+            Reads the next byte string.
+
+            Args:
+            """
             self.writer.write("%s\n" % msg)
             self.writer.flush()
             l = self.reader.readline()
@@ -119,6 +193,13 @@ class Client(object):
         return self._send_wrapper(proc)
 
     def _set_mode(self, new_mode):
+        """
+        Set the mode.
+
+        Args:
+            self: (todo): write your description
+            new_mode: (str): write your description
+        """
         if new_mode == self.MODE_NORMAL and self.mode == self.MODE_GET_STREAM:
             r = self.send_stream('END')
             if r != 'ok':
@@ -133,6 +214,14 @@ class Client(object):
         self.mode = new_mode
 
     def get_unihash(self, method, taskhash):
+        """
+        Get unihash from the given method.
+
+        Args:
+            self: (todo): write your description
+            method: (str): write your description
+            taskhash: (str): write your description
+        """
         self._set_mode(self.MODE_GET_STREAM)
         r = self.send_stream('%s %s' % (method, taskhash))
         if not r:
@@ -140,6 +229,17 @@ class Client(object):
         return r
 
     def report_unihash(self, taskhash, method, outhash, unihash, extra={}):
+        """
+        Report unihash.
+
+        Args:
+            self: (todo): write your description
+            taskhash: (todo): write your description
+            method: (str): write your description
+            outhash: (todo): write your description
+            unihash: (str): write your description
+            extra: (array): write your description
+        """
         self._set_mode(self.MODE_NORMAL)
         m = extra.copy()
         m['taskhash'] = taskhash
@@ -149,9 +249,21 @@ class Client(object):
         return self.send_message({'report': m})
 
     def get_stats(self):
+        """
+        Returns the stats to be sentry.
+
+        Args:
+            self: (todo): write your description
+        """
         self._set_mode(self.MODE_NORMAL)
         return self.send_message({'get-stats': None})
 
     def reset_stats(self):
+        """
+        Reset the stats.
+
+        Args:
+            self: (todo): write your description
+        """
         self._set_mode(self.MODE_NORMAL)
         return self.send_message({'reset-stats': None})

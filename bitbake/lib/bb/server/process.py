@@ -39,6 +39,15 @@ class ProcessServer(multiprocessing.Process):
     profile_processed_filename = "profile.log.processed"
 
     def __init__(self, lock, sock, sockname):
+        """
+        Initialize the rpc server.
+
+        Args:
+            self: (todo): write your description
+            lock: (todo): write your description
+            sock: (todo): write your description
+            sockname: (str): write your description
+        """
         multiprocessing.Process.__init__(self)
         self.command_channel = False
         self.command_channel_reply = False
@@ -63,6 +72,12 @@ class ProcessServer(multiprocessing.Process):
         self._idlefuns[function] = data
 
     def run(self):
+        """
+        Run the rpc server.
+
+        Args:
+            self: (todo): write your description
+        """
 
         if self.xmlrpcinterface[0]:
             self.xmlrpc = bb.server.xmlrpcserver.BitBakeXMLRPCServer(self.xmlrpcinterface, self.cooker, self)
@@ -115,6 +130,12 @@ class ProcessServer(multiprocessing.Process):
         return ret
 
     def main(self):
+        """
+        Main function.
+
+        Args:
+            self: (todo): write your description
+        """
         self.cooker.pre_serve()
 
         bb.utils.set_process_name("Cooker")
@@ -129,6 +150,13 @@ class ProcessServer(multiprocessing.Process):
         print("Entering server connection loop")
 
         def disconnect_client(self, fds):
+            """
+            Disconnect a client.
+
+            Args:
+                self: (todo): write your description
+                fds: (todo): write your description
+            """
             print("Disconnecting Client")
             if self.controllersock:
                 fds.remove(self.controllersock)
@@ -269,6 +297,14 @@ class ProcessServer(multiprocessing.Process):
                     print(msg)
 
     def idle_commands(self, delay, fds=None):
+        """
+        Execute a function
+
+        Args:
+            self: (todo): write your description
+            delay: (todo): write your description
+            fds: (todo): write your description
+        """
         nextsleep = delay
         if not fds:
             fds = []
@@ -325,22 +361,50 @@ class ProcessServer(multiprocessing.Process):
 
 class ServerCommunicator():
     def __init__(self, connection, recv):
+        """
+        Initialize a new connection.
+
+        Args:
+            self: (todo): write your description
+            connection: (todo): write your description
+            recv: (float): write your description
+        """
         self.connection = connection
         self.recv = recv
 
     def runCommand(self, command):
+        """
+        Run a command on the remote host.
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+        """
         self.connection.send(command)
         if not self.recv.poll(30):
             raise ProcessTimeout("Timeout while waiting for a reply from the bitbake server")
         return self.recv.get()
 
     def updateFeatureSet(self, featureset):
+        """
+        Updates the specified feature set.
+
+        Args:
+            self: (todo): write your description
+            featureset: (todo): write your description
+        """
         _, error = self.runCommand(["setFeatures", featureset])
         if error:
             logger.error("Unable to set the cooker to the correct featureset: %s" % error)
             raise BaseException(error)
 
     def getEventHandle(self):
+        """
+        Returns the event handle.
+
+        Args:
+            self: (todo): write your description
+        """
         handle, error = self.runCommand(["getUIHandlerNum"])
         if error:
             logger.error("Unable to get UI Handler Number: %s" % error)
@@ -349,17 +413,39 @@ class ServerCommunicator():
         return handle
 
     def terminateServer(self):
+        """
+        Terminate the connection.
+
+        Args:
+            self: (todo): write your description
+        """
         self.connection.send(['terminateServer'])
         return
 
 class BitBakeProcessServerConnection(object):
     def __init__(self, ui_channel, recv, eq, sock):
+        """
+        Initialize the socket.
+
+        Args:
+            self: (todo): write your description
+            ui_channel: (todo): write your description
+            recv: (float): write your description
+            eq: (int): write your description
+            sock: (todo): write your description
+        """
         self.connection = ServerCommunicator(ui_channel, recv)
         self.events = eq
         # Save sock so it doesn't get gc'd for the life of our connection
         self.socket_connection = sock
 
     def terminate(self):
+        """
+        Terminate the socket.
+
+        Args:
+            self: (todo): write your description
+        """
         self.socket_connection.close()
         self.connection.connection.close()
         self.connection.recv.close()
@@ -370,6 +456,16 @@ class BitBakeServer(object):
     start_log_datetime_format = '%Y-%m-%d %H:%M:%S.%f'
 
     def __init__(self, lock, sockname, configuration, featureset):
+        """
+        Initialize the socket.
+
+        Args:
+            self: (todo): write your description
+            lock: (todo): write your description
+            sockname: (str): write your description
+            configuration: (dict): write your description
+            featureset: (todo): write your description
+        """
 
         self.configuration = configuration
         self.featureset = featureset
@@ -449,6 +545,12 @@ class BitBakeServer(object):
         ready.close()
 
     def _startServer(self):
+        """
+        Starts a websocket.
+
+        Args:
+            self: (todo): write your description
+        """
         print(self.start_log_format % (os.getpid(), datetime.datetime.now().strftime(self.start_log_datetime_format)))
         sys.stdout.flush()
 
@@ -471,6 +573,13 @@ class BitBakeServer(object):
         server.start()
 
 def connectProcessServer(sockname, featureset):
+    """
+    Connect to a socket.
+
+    Args:
+        sockname: (str): write your description
+        featureset: (str): write your description
+    """
     # Connect to socket
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     # AF_UNIX has path length issues so chdir here to workaround
@@ -563,6 +672,13 @@ def recvfds(sock, size):
 
 class BBUIEventQueue:
     def __init__(self, readfd):
+        """
+        Initialize the event loop.
+
+        Args:
+            self: (todo): write your description
+            readfd: (todo): write your description
+        """
 
         self.eventQueue = []
         self.eventQueueLock = threading.Lock()
@@ -576,6 +692,12 @@ class BBUIEventQueue:
         self.t.start()
 
     def getEvent(self):
+        """
+        Return the next item from the queue.
+
+        Args:
+            self: (todo): write your description
+        """
         self.eventQueueLock.acquire()
 
         if len(self.eventQueue) == 0:
@@ -591,19 +713,46 @@ class BBUIEventQueue:
         return item
 
     def waitEvent(self, delay):
+        """
+        Waits for the specified number of seconds.
+
+        Args:
+            self: (todo): write your description
+            delay: (todo): write your description
+        """
         self.eventQueueNotify.wait(delay)
         return self.getEvent()
 
     def queue_event(self, event):
+        """
+        Queue an event.
+
+        Args:
+            self: (todo): write your description
+            event: (todo): write your description
+        """
         self.eventQueueLock.acquire()
         self.eventQueue.append(event)
         self.eventQueueNotify.set()
         self.eventQueueLock.release()
 
     def send_event(self, event):
+        """
+        Send an event to the queue.
+
+        Args:
+            self: (todo): write your description
+            event: (todo): write your description
+        """
         self.queue_event(pickle.loads(event))
 
     def startCallbackHandler(self):
+        """
+        Starts a thread.
+
+        Args:
+            self: (todo): write your description
+        """
         bb.utils.set_process_name("UIEventQueue")
         while True:
             try:
@@ -618,42 +767,107 @@ class BBUIEventQueue:
 class ConnectionReader(object):
 
     def __init__(self, fd):
+        """
+        Initialize the connection.
+
+        Args:
+            self: (todo): write your description
+            fd: (int): write your description
+        """
         self.reader = multiprocessing.connection.Connection(fd, writable=False)
         self.rlock = multiprocessing.Lock()
 
     def wait(self, timeout=None):
+        """
+        Wait for the connection is ready.
+
+        Args:
+            self: (todo): write your description
+            timeout: (float): write your description
+        """
         return multiprocessing.connection.wait([self.reader], timeout)
 
     def poll(self, timeout=None):
+        """
+        Poll for a message to complete.
+
+        Args:
+            self: (todo): write your description
+            timeout: (float): write your description
+        """
         return self.reader.poll(timeout)
 
     def get(self):
+        """
+        Get the next byte from the socket.
+
+        Args:
+            self: (todo): write your description
+        """
         with self.rlock:
             res = self.reader.recv_bytes()
         return multiprocessing.reduction.ForkingPickler.loads(res)
 
     def fileno(self):
+        """
+        Return the filtered filter.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.reader.fileno()
 
     def close(self):
+        """
+        Closes the connection.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.reader.close()
 
 
 class ConnectionWriter(object):
 
     def __init__(self, fd):
+        """
+        Initialize the connection to the connection.
+
+        Args:
+            self: (todo): write your description
+            fd: (int): write your description
+        """
         self.writer = multiprocessing.connection.Connection(fd, readable=False)
         self.wlock = multiprocessing.Lock()
         # Why bb.event needs this I have no idea
         self.event = self
 
     def send(self, obj):
+        """
+        Send obj to the socket object.
+
+        Args:
+            self: (todo): write your description
+            obj: (todo): write your description
+        """
         obj = multiprocessing.reduction.ForkingPickler.dumps(obj)
         with self.wlock:
             self.writer.send_bytes(obj)
 
     def fileno(self):
+        """
+        Return the fileno of the file.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.writer.fileno()
 
     def close(self):
+        """
+        Close the stream.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.writer.close()

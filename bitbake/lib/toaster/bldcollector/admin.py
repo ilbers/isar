@@ -14,6 +14,13 @@ class BitbakeVersionAdmin(admin.ModelAdmin):
     # because of broken URL validation
 
     def formfield_for_dbfield(self, db_field, **kwargs):
+        """
+        Returns the formfield for the given dbfield.
+
+        Args:
+            self: (todo): write your description
+            db_field: (todo): write your description
+        """
         if isinstance(db_field, models.fields.URLField):
             return forms.fields.CharField()
         return super(BitbakeVersionAdmin, self).formfield_for_dbfield(

@@ -39,11 +39,23 @@ import layerindexlib
 class Spinner(threading.Thread):
     """ A simple progress spinner to indicate download/parsing is happening"""
     def __init__(self, *args, **kwargs):
+        """
+        Initialize the signals.
+
+        Args:
+            self: (todo): write your description
+        """
         super(Spinner, self).__init__(*args, **kwargs)
         self.setDaemon(True)
         self.signal = True
 
     def run(self):
+        """
+        Run the system
+
+        Args:
+            self: (todo): write your description
+        """
         os.system('setterm -cursor off')
         while self.signal:
             for char in ["/", "-", "\\", "|"]:
@@ -53,6 +65,12 @@ class Spinner(threading.Thread):
         os.system('setterm -cursor on')
 
     def stop(self):
+        """
+        Stop the signal.
+
+        Args:
+            self: (todo): write your description
+        """
         self.signal = False
 
 
@@ -61,6 +79,15 @@ class Command(BaseCommand):
     help = "Updates locally cached information from a layerindex server"
 
     def mini_progress(self, what, i, total):
+        """
+        Print progress bar.
+
+        Args:
+            self: (todo): write your description
+            what: (todo): write your description
+            i: (todo): write your description
+            total: (int): write your description
+        """
         i = i + 1
         pec = (float(i)/float(total))*100
 
@@ -287,4 +314,11 @@ class Command(BaseCommand):
         os.system('setterm -cursor on')
 
     def handle(self, **options):
+        """
+        Handle the command.
+
+        Args:
+            self: (todo): write your description
+            options: (todo): write your description
+        """
         self.update()

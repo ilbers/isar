@@ -28,6 +28,15 @@ import bb.event
 
 class PackageDepView(Gtk.TreeView):
     def __init__(self, model, dep_type, label):
+        """
+        Initialize a gtk tree
+
+        Args:
+            self: (todo): write your description
+            model: (todo): write your description
+            dep_type: (todo): write your description
+            label: (str): write your description
+        """
         Gtk.TreeView.__init__(self)
         self.current = None
         self.dep_type = dep_type
@@ -37,18 +46,42 @@ class PackageDepView(Gtk.TreeView):
         self.append_column(Gtk.TreeViewColumn(label, Gtk.CellRendererText(), text=COL_DEP_PACKAGE))
 
     def _filter(self, model, iter, data):
+        """
+        Return true if the filter is filtered by the filter.
+
+        Args:
+            self: (todo): write your description
+            model: (todo): write your description
+            iter: (int): write your description
+            data: (str): write your description
+        """
         this_type = model[iter][COL_DEP_TYPE]
         package = model[iter][COL_DEP_PARENT]
         if this_type != self.dep_type: return False
         return package == self.current
 
     def set_current_package(self, package):
+        """
+        Set current package
+
+        Args:
+            self: (todo): write your description
+            package: (str): write your description
+        """
         self.current = package
         self.filter_model.refilter()
 
 
 class PackageReverseDepView(Gtk.TreeView):
     def __init__(self, model, label):
+        """
+        Initialize gtk. gtk. gtk.
+
+        Args:
+            self: (todo): write your description
+            model: (todo): write your description
+            label: (str): write your description
+        """
         Gtk.TreeView.__init__(self)
         self.current = None
         self.filter_model = model.filter_new()
@@ -59,16 +92,38 @@ class PackageReverseDepView(Gtk.TreeView):
         self.append_column(Gtk.TreeViewColumn(label, Gtk.CellRendererText(), text=COL_DEP_PARENT))
 
     def _filter(self, model, iter, data):
+        """
+        Filter the given filter.
+
+        Args:
+            self: (todo): write your description
+            model: (todo): write your description
+            iter: (int): write your description
+            data: (str): write your description
+        """
         package = model[iter][COL_DEP_PACKAGE]
         return package == self.current
 
     def set_current_package(self, package):
+        """
+        Set current package
+
+        Args:
+            self: (todo): write your description
+            package: (str): write your description
+        """
         self.current = package
         self.filter_model.refilter()
 
 
 class DepExplorer(Gtk.Window):
     def __init__(self):
+        """
+        Initialize the gtk.
+
+        Args:
+            self: (todo): write your description
+        """
         Gtk.Window.__init__(self)
         self.set_title("Task Dependency Explorer")
         self.set_default_size(500, 500)
@@ -129,11 +184,30 @@ class DepExplorer(Gtk.Window):
         self.search_entry.grab_focus()
 
     def on_package_activated(self, treeview, path, column, data_col):
+        """
+        Callback method that column selection
+
+        Args:
+            self: (todo): write your description
+            treeview: (todo): write your description
+            path: (str): write your description
+            column: (str): write your description
+            data_col: (todo): write your description
+        """
         model = treeview.get_model()
         package = model.get_value(model.get_iter(path), data_col)
 
         pkg_path = []
         def finder(model, path, iter, needle):
+            """
+            Return true if the given package is installed package.
+
+            Args:
+                model: (todo): write your description
+                path: (str): write your description
+                iter: (int): write your description
+                needle: (todo): write your description
+            """
             package = model.get_value(iter, COL_PKG_NAME)
             if package == needle:
                 pkg_path.append(path)
@@ -146,6 +220,13 @@ class DepExplorer(Gtk.Window):
             self.pkg_treeview.scroll_to_cell(pkg_path[0])
 
     def on_cursor_changed(self, selection):
+        """
+        Called when the selected item
+
+        Args:
+            self: (todo): write your description
+            selection: (todo): write your description
+        """
         (model, it) = selection.get_selected()
         if it is None:
             current_package = None
@@ -156,6 +237,13 @@ class DepExplorer(Gtk.Window):
 
 
     def parse(self, depgraph):
+        """
+        Parse the dependency dependencies.
+
+        Args:
+            self: (str): write your description
+            depgraph: (str): write your description
+        """
         for task in depgraph["tdepends"]:
             self.pkg_model.insert(0, (task,))
             for depend in depgraph["tdepends"][task]:
@@ -165,6 +253,13 @@ class DepExplorer(Gtk.Window):
 class gtkthread(threading.Thread):
     quit = threading.Event()
     def __init__(self, shutdown):
+        """
+        Initialize the gtk instance.
+
+        Args:
+            self: (todo): write your description
+            shutdown: (todo): write your description
+        """
         threading.Thread.__init__(self)
         self.setDaemon(True)
         self.shutdown = shutdown
@@ -173,6 +268,12 @@ class gtkthread(threading.Thread):
             gtkthread.quit.set()
 
     def run(self):
+        """
+        Run gtk thread
+
+        Args:
+            self: (todo): write your description
+        """
         GObject.threads_init()
         Gdk.threads_init()
         Gtk.main()
@@ -180,6 +281,14 @@ class gtkthread(threading.Thread):
 
 
 def main(server, eventHandler, params):
+    """
+    Main function.
+
+    Args:
+        server: (todo): write your description
+        eventHandler: (todo): write your description
+        params: (dict): write your description
+    """
     shutdown = 0
 
     gtkgui = gtkthread(shutdown)

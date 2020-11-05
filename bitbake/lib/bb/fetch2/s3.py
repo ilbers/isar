@@ -32,9 +32,24 @@ class S3(FetchMethod):
         return ud.type in ['s3']
 
     def recommends_checksum(self, urldata):
+        """
+        Returns true if the checksum of the checksum.
+
+        Args:
+            self: (todo): write your description
+            urldata: (str): write your description
+        """
         return True
 
     def urldata_init(self, ud, d):
+        """
+        Initialize the given udf file.
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+        """
         if 'downloadfilename' in ud.parm:
             ud.basename = ud.parm['downloadfilename']
         else:

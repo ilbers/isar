@@ -23,6 +23,12 @@ class TestToasterTableUI(SeleniumTestCase):
     """
 
     def setUp(self):
+        """
+        Sets the result of this thread.
+
+        Args:
+            self: (todo): write your description
+        """
         pass
 
     def _get_orderby_heading(self, table):

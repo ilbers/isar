@@ -34,6 +34,12 @@ class Event(object):
     """Base class for events"""
 
     def __init__(self):
+        """
+        Initialize the pid.
+
+        Args:
+            self: (todo): write your description
+        """
         self.pid = worker_pid
 
 
@@ -43,6 +49,13 @@ class HeartbeatEvent(Event):
        of time (again runQueueTaskStarted, when there is just one long-running task), so this
        event is more suitable for doing some task-independent work occassionally."""
     def __init__(self, time):
+        """
+        Set the event time
+
+        Args:
+            self: (todo): write your description
+            time: (int): write your description
+        """
         Event.__init__(self)
         self.time = time
 
@@ -50,13 +63,29 @@ Registered        = 10
 AlreadyRegistered = 14
 
 def get_class_handlers():
+    """
+    Returns the class_handlers.
+
+    Args:
+    """
     return _handlers
 
 def set_class_handlers(h):
+    """
+    Sets the global handlers.
+
+    Args:
+        h: (todo): write your description
+    """
     global _handlers
     _handlers = h
 
 def clean_class_handlers():
+    """
+    Removes all handlers that have_class_handlers.
+
+    Args:
+    """
     return bb.compat.OrderedDict()
 
 # Internal
@@ -77,14 +106,33 @@ else:
     builtins = __builtins__.__dict__
 
 def enable_threadlock():
+    """
+    Set threadlock.
+
+    Args:
+    """
     global _thread_lock_enabled
     _thread_lock_enabled = True
 
 def disable_threadlock():
+    """
+    Set the threadlock.
+
+    Args:
+    """
     global _thread_lock_enabled
     _thread_lock_enabled = False
 
 def execute_handler(name, handler, event, d):
+    """
+    Execute a handler.
+
+    Args:
+        name: (str): write your description
+        handler: (str): write your description
+        event: (todo): write your description
+        d: (todo): write your description
+    """
     event.data = d
     addedd = False
     if 'd' not in builtins:
@@ -109,6 +157,13 @@ def execute_handler(name, handler, event, d):
             del builtins['d']
 
 def fire_class_handlers(event, d):
+    """
+    Fire all registered handler.
+
+    Args:
+        event: (todo): write your description
+        d: (todo): write your description
+    """
     if isinstance(event, logging.LogRecord):
         return
 
@@ -172,6 +227,13 @@ def print_ui_queue():
         ui_queue = []
 
 def fire_ui_handlers(event, d):
+    """
+    Reimplemented to register handlers.
+
+    Args:
+        event: (todo): write your description
+        d: (todo): write your description
+    """
     global _thread_lock
     global _thread_lock_enabled
 
@@ -225,6 +287,13 @@ def fire(event, d):
         fire_ui_handlers(event, d)
 
 def fire_from_worker(event, d):
+    """
+    Triggers from an event.
+
+    Args:
+        event: (todo): write your description
+        d: (todo): write your description
+    """
     fire_ui_handlers(event, d)
 
 noop = lambda _: None
@@ -281,17 +350,41 @@ def remove(name, handler):
             _event_handler_map[event].pop(name)
 
 def get_handlers():
+    """
+    Get the handlers of handlers.
+
+    Args:
+    """
     return _handlers
 
 def set_handlers(handlers):
+    """
+    Sets the global handlers.
+
+    Args:
+        handlers: (todo): write your description
+    """
     global _handlers
     _handlers = handlers
 
 def set_eventfilter(func):
+    """
+    Set the function to callable filter.
+
+    Args:
+        func: (callable): write your description
+    """
     global _eventfilter
     _eventfilter = func
 
 def register_UIHhandler(handler, mainui=False):
+    """
+    Register handler for c { event handler
+
+    Args:
+        handler: (todo): write your description
+        mainui: (todo): write your description
+    """
     bb.event._ui_handler_seq = bb.event._ui_handler_seq + 1
     _ui_handlers[_ui_handler_seq] = handler
     level, debug_domains = bb.msg.constructLogOptions()
@@ -302,6 +395,13 @@ def register_UIHhandler(handler, mainui=False):
     return _ui_handler_seq
 
 def unregister_UIHhandler(handlerNum, mainui=False):
+    """
+    Unregisters given handler.
+
+    Args:
+        handlerNum: (int): write your description
+        mainui: (todo): write your description
+    """
     if mainui:
         global _uiready
         _uiready = False
@@ -310,6 +410,11 @@ def unregister_UIHhandler(handlerNum, mainui=False):
     return
 
 def get_uihandler():
+    """
+    Return the uihandler uihandler.
+
+    Args:
+    """
     if _uiready is False:
         return None
     return _uiready
@@ -317,14 +422,38 @@ def get_uihandler():
 # Class to allow filtering of events and specific filtering of LogRecords *before* we put them over the IPC
 class UIEventFilter(object):
     def __init__(self, level, debug_domains):
+        """
+        Initialize a debug level.
+
+        Args:
+            self: (todo): write your description
+            level: (int): write your description
+            debug_domains: (bool): write your description
+        """
         self.update(None, level, debug_domains)
 
     def update(self, eventmask, level, debug_domains):
+        """
+        Updates the debug level.
+
+        Args:
+            self: (todo): write your description
+            eventmask: (array): write your description
+            level: (int): write your description
+            debug_domains: (todo): write your description
+        """
         self.eventmask = eventmask
         self.stdlevel = level
         self.debug_domains = debug_domains
 
     def filter(self, event):
+        """
+        Returns true if the given event should be filtered.
+
+        Args:
+            self: (todo): write your description
+            event: (todo): write your description
+        """
         if isinstance(event, logging.LogRecord):
             if event.levelno >= self.stdlevel:
                 return True
@@ -337,6 +466,15 @@ class UIEventFilter(object):
         return True
 
 def set_UIHmask(handlerNum, level, debug_domains, mask):
+    """
+    Sets the handler handler for the given logger.
+
+    Args:
+        handlerNum: (int): write your description
+        level: (str): write your description
+        debug_domains: (todo): write your description
+        mask: (array): write your description
+    """
     if not handlerNum in _ui_handlers:
         return False
     if '*' in mask:
@@ -355,12 +493,27 @@ def getName(e):
 class OperationStarted(Event):
     """An operation has begun"""
     def __init__(self, msg = "Operation Started"):
+        """
+        Initialize the message
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         Event.__init__(self)
         self.msg = msg
 
 class OperationCompleted(Event):
     """An operation has completed"""
     def __init__(self, total, msg = "Operation Completed"):
+        """
+        Initialize the total number of the total total number
+
+        Args:
+            self: (todo): write your description
+            total: (int): write your description
+            msg: (str): write your description
+        """
         Event.__init__(self)
         self.total = total
         self.msg = msg
@@ -368,6 +521,15 @@ class OperationCompleted(Event):
 class OperationProgress(Event):
     """An operation is in progress"""
     def __init__(self, current, total, msg = "Operation in Progress"):
+        """
+        Initialize the progress bar
+
+        Args:
+            self: (todo): write your description
+            current: (todo): write your description
+            total: (int): write your description
+            msg: (str): write your description
+        """
         Event.__init__(self)
         self.current = current
         self.total = total
@@ -379,11 +541,25 @@ class ConfigParsed(Event):
 class MultiConfigParsed(Event):
     """Multi-Config Parsing Complete"""
     def __init__(self, mcdata):
+        """
+        Initialize event
+
+        Args:
+            self: (todo): write your description
+            mcdata: (list): write your description
+        """
         self.mcdata = mcdata
         Event.__init__(self)
 
 class RecipeEvent(Event):
     def __init__(self, fn):
+        """
+        Initialize the function.
+
+        Args:
+            self: (todo): write your description
+            fn: (int): write your description
+        """
         self.fn = fn
         Event.__init__(self)
 
@@ -397,6 +573,14 @@ class RecipeTaskPreProcess(RecipeEvent):
     are only able to change interdependencies
     """
     def __init__(self, fn, tasklist):
+        """
+        Initialize the task.
+
+        Args:
+            self: (todo): write your description
+            fn: (int): write your description
+            tasklist: (list): write your description
+        """
         self.fn = fn
         self.tasklist = tasklist
         Event.__init__(self)
@@ -408,21 +592,56 @@ class BuildBase(Event):
     """Base class for bitbake build events"""
 
     def __init__(self, n, p, failures = 0):
+        """
+        Initialize the event loop.
+
+        Args:
+            self: (todo): write your description
+            n: (int): write your description
+            p: (int): write your description
+            failures: (str): write your description
+        """
         self._name = n
         self._pkgs = p
         Event.__init__(self)
         self._failures = failures
 
     def getPkgs(self):
+        """
+        Return a list of pkgs.
+
+        Args:
+            self: (todo): write your description
+        """
         return self._pkgs
 
     def setPkgs(self, pkgs):
+        """
+        Sets pkgs.
+
+        Args:
+            self: (todo): write your description
+            pkgs: (todo): write your description
+        """
         self._pkgs = pkgs
 
     def getName(self):
+        """
+        Return the name of the name.
+
+        Args:
+            self: (todo): write your description
+        """
         return self._name
 
     def setName(self, name):
+        """
+        Sets the name for this name.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+        """
         self._name = name
 
     def getFailures(self):
@@ -437,18 +656,45 @@ class BuildBase(Event):
 class BuildInit(BuildBase):
     """buildFile or buildTargets was invoked"""
     def __init__(self, p=[]):
+        """
+        Initialize the object.
+
+        Args:
+            self: (todo): write your description
+            p: (int): write your description
+        """
         name = None
         BuildBase.__init__(self, name, p)
 
 class BuildStarted(BuildBase, OperationStarted):
     """Event when builds start"""
     def __init__(self, n, p, failures = 0):
+        """
+        Initialize n times.
+
+        Args:
+            self: (todo): write your description
+            n: (int): write your description
+            p: (int): write your description
+            failures: (str): write your description
+        """
         OperationStarted.__init__(self, "Building Started")
         BuildBase.__init__(self, n, p, failures)
 
 class BuildCompleted(BuildBase, OperationCompleted):
     """Event when builds have completed"""
     def __init__(self, total, n, p, failures=0, interrupted=0):
+        """
+        Initialize the operation.
+
+        Args:
+            self: (todo): write your description
+            total: (int): write your description
+            n: (int): write your description
+            p: (int): write your description
+            failures: (str): write your description
+            interrupted: (todo): write your description
+        """
         if not failures:
             OperationCompleted.__init__(self, total, "Building Succeeded")
         else:
@@ -459,6 +705,16 @@ class BuildCompleted(BuildBase, OperationCompleted):
 class DiskFull(Event):
     """Disk full case build aborted"""
     def __init__(self, dev, type, freespace, mountpoint):
+        """
+        Initialize a new device.
+
+        Args:
+            self: (todo): write your description
+            dev: (todo): write your description
+            type: (str): write your description
+            freespace: (todo): write your description
+            mountpoint: (int): write your description
+        """
         Event.__init__(self)
         self._dev = dev
         self._type = type
@@ -467,6 +723,15 @@ class DiskFull(Event):
 
 class DiskUsageSample:
     def __init__(self, available_bytes, free_bytes, total_bytes):
+        """
+        Initialize the memory object.
+
+        Args:
+            self: (todo): write your description
+            available_bytes: (todo): write your description
+            free_bytes: (int): write your description
+            total_bytes: (todo): write your description
+        """
         # Number of bytes available to non-root processes.
         self.available_bytes = available_bytes
         # Number of bytes available to root processes.
@@ -478,6 +743,13 @@ class MonitorDiskEvent(Event):
     """If BB_DISKMON_DIRS is set, then this event gets triggered each time disk space is checked.
        Provides information about devices that are getting monitored."""
     def __init__(self, disk_usage):
+        """
+        Initialize disk usage.
+
+        Args:
+            self: (todo): write your description
+            disk_usage: (str): write your description
+        """
         Event.__init__(self)
         # hash of device root path -> DiskUsageSample
         self.disk_usage = disk_usage
@@ -486,6 +758,17 @@ class NoProvider(Event):
     """No Provider for an Event"""
 
     def __init__(self, item, runtime=False, dependees=None, reasons=None, close_matches=None):
+        """
+        Initialize the event.
+
+        Args:
+            self: (todo): write your description
+            item: (todo): write your description
+            runtime: (int): write your description
+            dependees: (todo): write your description
+            reasons: (str): write your description
+            close_matches: (bool): write your description
+        """
         Event.__init__(self)
         self._item = item
         self._runtime = runtime
@@ -494,12 +777,30 @@ class NoProvider(Event):
         self._close_matches = close_matches
 
     def getItem(self):
+        """
+        Return the item associated item.
+
+        Args:
+            self: (todo): write your description
+        """
         return self._item
 
     def isRuntime(self):
+        """
+        Returns true ifRuntime of the runtime.
+
+        Args:
+            self: (todo): write your description
+        """
         return self._runtime
 
     def __str__(self):
+        """
+        Return a string representation of the message.
+
+        Args:
+            self: (todo): write your description
+        """
         msg = ''
         if self._runtime:
             r = "R"
@@ -525,6 +826,15 @@ class MultipleProviders(Event):
     """Multiple Providers"""
 
     def  __init__(self, item, candidates, runtime = False):
+         """
+         Initialize item
+
+         Args:
+             self: (todo): write your description
+             item: (todo): write your description
+             candidates: (int): write your description
+             runtime: (int): write your description
+         """
         Event.__init__(self)
         self._item = item
         self._candidates = candidates
@@ -549,6 +859,12 @@ class MultipleProviders(Event):
         return self._candidates
 
     def __str__(self):
+        """
+        Return a string representation of the runtime string.
+
+        Args:
+            self: (todo): write your description
+        """
         msg = "Multiple providers are available for %s%s (%s)" % (self._is_runtime and "runtime " or "",
                             self._item,
                             ", ".join(self._candidates))
@@ -561,12 +877,32 @@ class MultipleProviders(Event):
 class ParseStarted(OperationStarted):
     """Recipe parsing for the runqueue has begun"""
     def __init__(self, total):
+        """
+        Initialize the progress bar
+
+        Args:
+            self: (todo): write your description
+            total: (int): write your description
+        """
         OperationStarted.__init__(self, "Recipe parsing Started")
         self.total = total
 
 class ParseCompleted(OperationCompleted):
     """Recipe parsing for the runqueue has completed"""
     def __init__(self, cached, parsed, skipped, masked, virtuals, errors, total):
+        """
+        Initialize the mask.
+
+        Args:
+            self: (todo): write your description
+            cached: (todo): write your description
+            parsed: (todo): write your description
+            skipped: (list): write your description
+            masked: (bool): write your description
+            virtuals: (todo): write your description
+            errors: (str): write your description
+            total: (int): write your description
+        """
         OperationCompleted.__init__(self, total, "Recipe parsing Completed")
         self.cached = cached
         self.parsed = parsed
@@ -579,39 +915,91 @@ class ParseCompleted(OperationCompleted):
 class ParseProgress(OperationProgress):
     """Recipe parsing progress"""
     def __init__(self, current, total):
+        """
+        Initialize the progress bar.
+
+        Args:
+            self: (todo): write your description
+            current: (todo): write your description
+            total: (int): write your description
+        """
         OperationProgress.__init__(self, current, total, "Recipe parsing")
 
 
 class CacheLoadStarted(OperationStarted):
     """Loading of the dependency cache has begun"""
     def __init__(self, total):
+        """
+        Initialize the progress bar
+
+        Args:
+            self: (todo): write your description
+            total: (int): write your description
+        """
         OperationStarted.__init__(self, "Loading cache Started")
         self.total = total
 
 class CacheLoadProgress(OperationProgress):
     """Cache loading progress"""
     def __init__(self, current, total):
+        """
+        Initialize the progress bar.
+
+        Args:
+            self: (todo): write your description
+            current: (todo): write your description
+            total: (int): write your description
+        """
         OperationProgress.__init__(self, current, total, "Loading cache")
 
 class CacheLoadCompleted(OperationCompleted):
     """Cache loading is complete"""
     def __init__(self, total, num_entries):
+        """
+        Initialize the entries.
+
+        Args:
+            self: (todo): write your description
+            total: (int): write your description
+            num_entries: (int): write your description
+        """
         OperationCompleted.__init__(self, total, "Loading cache Completed")
         self.num_entries = num_entries
 
 class TreeDataPreparationStarted(OperationStarted):
     """Tree data preparation started"""
     def __init__(self):
+        """
+        Initialize the start of the transport.
+
+        Args:
+            self: (todo): write your description
+        """
         OperationStarted.__init__(self, "Preparing tree data Started")
 
 class TreeDataPreparationProgress(OperationProgress):
     """Tree data preparation is in progress"""
     def __init__(self, current, total):
+        """
+        Initialize the progress bar.
+
+        Args:
+            self: (todo): write your description
+            current: (todo): write your description
+            total: (int): write your description
+        """
         OperationProgress.__init__(self, current, total, "Preparing tree data")
 
 class TreeDataPreparationCompleted(OperationCompleted):
     """Tree data preparation completed"""
     def __init__(self, total):
+        """
+        Initialize the progress bar.
+
+        Args:
+            self: (todo): write your description
+            total: (int): write your description
+        """
         OperationCompleted.__init__(self, total, "Preparing tree data Completed")
 
 class DepTreeGenerated(Event):
@@ -620,6 +1008,13 @@ class DepTreeGenerated(Event):
     """
 
     def __init__(self, depgraph):
+        """
+        Initialize the graph.
+
+        Args:
+            self: (todo): write your description
+            depgraph: (todo): write your description
+        """
         Event.__init__(self)
         self._depgraph = depgraph
 
@@ -628,6 +1023,13 @@ class TargetsTreeGenerated(Event):
     Event when a set of buildable targets has been generated
     """
     def __init__(self, model):
+        """
+        Initialize the model
+
+        Args:
+            self: (todo): write your description
+            model: (todo): write your description
+        """
         Event.__init__(self)
         self._model = model
 
@@ -638,6 +1040,13 @@ class ReachableStamps(Event):
     """
 
     def __init__(self, stamps):
+        """
+        Initialize event
+
+        Args:
+            self: (todo): write your description
+            stamps: (todo): write your description
+        """
         Event.__init__(self)
         self.stamps = stamps
 
@@ -647,6 +1056,14 @@ class FilesMatchingFound(Event):
     been generated
     """
     def __init__(self, pattern, matches):
+        """
+        Initialize the pattern.
+
+        Args:
+            self: (todo): write your description
+            pattern: (str): write your description
+            matches: (todo): write your description
+        """
         Event.__init__(self)
         self._pattern = pattern
         self._matches = matches
@@ -656,6 +1073,14 @@ class ConfigFilesFound(Event):
     Event when a list of appropriate config files has been generated
     """
     def __init__(self, variable, values):
+        """
+        Initialize a new variable.
+
+        Args:
+            self: (todo): write your description
+            variable: (todo): write your description
+            values: (todo): write your description
+        """
         Event.__init__(self)
         self._variable = variable
         self._values = values
@@ -665,6 +1090,13 @@ class ConfigFilePathFound(Event):
     Event when a path for a config file has been found
     """
     def __init__(self, path):
+        """
+        Initialize the path.
+
+        Args:
+            self: (todo): write your description
+            path: (str): write your description
+        """
         Event.__init__(self)
         self._path = path
 
@@ -672,6 +1104,13 @@ class MsgBase(Event):
     """Base class for messages"""
 
     def __init__(self, msg):
+        """
+        Initialize the message
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         self._message = msg
         Event.__init__(self)
 
@@ -696,6 +1135,16 @@ class MsgPlain(MsgBase):
 class LogExecTTY(Event):
     """Send event containing program to spawn on tty of the logger"""
     def __init__(self, msg, prog, sleep_delay, retries):
+        """
+        Initialize the delay.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+            prog: (todo): write your description
+            sleep_delay: (float): write your description
+            retries: (todo): write your description
+        """
         Event.__init__(self)
         self.msg = msg
         self.prog = prog
@@ -706,6 +1155,13 @@ class LogHandler(logging.Handler):
     """Dispatch logging messages as bitbake events"""
 
     def emit(self, record):
+        """
+        Emit a record.
+
+        Args:
+            self: (todo): write your description
+            record: (todo): write your description
+        """
         if record.exc_info:
             etype, value, tb = record.exc_info
             if hasattr(tb, 'tb_next'):
@@ -718,6 +1174,13 @@ class LogHandler(logging.Handler):
         fire(record, None)
 
     def filter(self, record):
+        """
+        Filter a record.
+
+        Args:
+            self: (todo): write your description
+            record: (todo): write your description
+        """
         record.taskpid = worker_pid
         return True
 
@@ -727,6 +1190,14 @@ class MetadataEvent(Event):
     to report information during asynchrous execution
     """
     def __init__(self, eventtype, eventdata):
+        """
+        Initialize event.
+
+        Args:
+            self: (todo): write your description
+            eventtype: (str): write your description
+            eventdata: (todo): write your description
+        """
         Event.__init__(self)
         self.type = eventtype
         self._localdata = eventdata
@@ -737,6 +1208,14 @@ class ProcessStarted(Event):
     where further progress events will be delivered
     """
     def __init__(self, processname, total):
+        """
+        Initialize a new process.
+
+        Args:
+            self: (todo): write your description
+            processname: (str): write your description
+            total: (int): write your description
+        """
         Event.__init__(self)
         self.processname = processname
         self.total = total
@@ -746,6 +1225,14 @@ class ProcessProgress(Event):
     Generic process progress event (usually part of the initial startup)
     """
     def __init__(self, processname, progress):
+        """
+        Initialize a new process.
+
+        Args:
+            self: (todo): write your description
+            processname: (str): write your description
+            progress: (bool): write your description
+        """
         Event.__init__(self)
         self.processname = processname
         self.progress = progress
@@ -755,6 +1242,13 @@ class ProcessFinished(Event):
     Generic process finished event (usually part of the initial startup)
     """
     def __init__(self, processname):
+        """
+        Initialize a new process.
+
+        Args:
+            self: (todo): write your description
+            processname: (str): write your description
+        """
         Event.__init__(self)
         self.processname = processname
 
@@ -763,6 +1257,13 @@ class SanityCheck(Event):
     Event to run sanity checks, either raise errors or generate events as return status.
     """
     def __init__(self, generateevents = True):
+        """
+        Initialize events.
+
+        Args:
+            self: (todo): write your description
+            generateevents: (todo): write your description
+        """
         Event.__init__(self)
         self.generateevents = generateevents
 
@@ -776,6 +1277,14 @@ class SanityCheckFailed(Event):
     Event to indicate sanity check has failed
     """
     def __init__(self, msg, network_error=False):
+        """
+        Initialize network.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+            network_error: (todo): write your description
+        """
         Event.__init__(self)
         self._msg = msg
         self._network_error = network_error
@@ -785,6 +1294,13 @@ class NetworkTest(Event):
     Event to run network connectivity tests, either raise errors or generate events as return status.
     """
     def __init__(self, generateevents = True):
+        """
+        Initialize events.
+
+        Args:
+            self: (todo): write your description
+            generateevents: (todo): write your description
+        """
         Event.__init__(self)
         self.generateevents = generateevents
 
@@ -803,5 +1319,12 @@ class FindSigInfoResult(Event):
     Event to return results from findSigInfo command
     """
     def __init__(self, result):
+        """
+        Initialize result.
+
+        Args:
+            self: (todo): write your description
+            result: (dict): write your description
+        """
         Event.__init__(self)
         self.result = result

@@ -11,10 +11,23 @@ logger = logging.getLogger('bitbake-layers')
 
 class LayerPlugin():
     def __init__(self):
+        """
+        Initialize bblayers
+
+        Args:
+            self: (todo): write your description
+        """
         self.tinfoil = None
         self.bblayers = []
 
     def tinfoil_init(self, tinfoil):
+        """
+        Initialize tinfo tables
+
+        Args:
+            self: (todo): write your description
+            tinfoil: (todo): write your description
+        """
         self.tinfoil = tinfoil
         self.bblayers = (self.tinfoil.config_data.getVar('BBLAYERS') or "").split()
         layerconfs = self.tinfoil.config_data.varhistory.get_variable_items_files('BBFILE_COLLECTIONS', self.tinfoil.config_data)
@@ -34,4 +47,11 @@ class LayerPlugin():
         return subparser
 
     def get_layer_name(self, layerdir):
+        """
+        Get the name of a layer.
+
+        Args:
+            self: (todo): write your description
+            layerdir: (str): write your description
+        """
         return os.path.basename(layerdir.rstrip(os.sep))

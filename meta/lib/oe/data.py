@@ -24,6 +24,16 @@ def typed_value(key, d):
         bb.msg.fatal("Data", "%s: %s" % (key, str(exc)))
 
 def export2json(d, json_file, expand=True, searchString="",replaceString=""):
+    """
+    Export a dictionary to json.
+
+    Args:
+        d: (todo): write your description
+        json_file: (str): write your description
+        expand: (bool): write your description
+        searchString: (str): write your description
+        replaceString: (str): write your description
+    """
     data2export = {}
     keys2export = []
 

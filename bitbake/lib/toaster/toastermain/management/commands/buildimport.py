@@ -51,6 +51,12 @@ TOASTER_EPILOG = '#=== TOASTER_CONFIG_EPILOG ==='
 # quick development/debugging support
 verbose = 2
 def _log(msg):
+    """
+    Log a message
+
+    Args:
+        msg: (str): write your description
+    """
     if 1 == verbose:
         print(msg)
     elif 2 == verbose:
@@ -91,6 +97,13 @@ class Command(BaseCommand):
     toaster_vars = {}
 
     def add_arguments(self, parser):
+        """
+        Add command line arguments.
+
+        Args:
+            self: (todo): write your description
+            parser: (todo): write your description
+        """
         parser.add_argument(
             '--name', dest='name', required=True,
             help='name of the project',
@@ -118,6 +131,13 @@ class Command(BaseCommand):
 
     # Extract the bb variables from a conf file
     def scan_conf(self,fn):
+        """
+        Scan for a section.
+
+        Args:
+            self: (todo): write your description
+            fn: (array): write your description
+        """
         vars = self.vars
         toaster_vars = self.toaster_vars
 
@@ -194,6 +214,14 @@ class Command(BaseCommand):
 
     # Update the scanned project variables
     def update_project_vars(self,project,name):
+        """
+        Updates vars in project
+
+        Args:
+            self: (todo): write your description
+            project: (str): write your description
+            name: (str): write your description
+        """
         pv, create = ProjectVariable.objects.get_or_create(project = project, name = name)
         if (not name in self.vars.keys()) or (not self.vars[name]):
             self.vars[name] = pv.value
@@ -204,6 +232,13 @@ class Command(BaseCommand):
 
     # Find the git version of the installation
     def find_layer_dir_version(self,path):
+        """
+        Find the layer version of the given path.
+
+        Args:
+            self: (todo): write your description
+            path: (str): write your description
+        """
         #  * rocko               ...
 
         install_version = ''
@@ -225,6 +260,13 @@ class Command(BaseCommand):
 
     # Compute table of the installation's registered layer versions (branch or commit)
     def find_layer_dir_versions(self,INSTALL_URL_PREFIX):
+        """
+        Find all the layers.
+
+        Args:
+            self: (todo): write your description
+            INSTALL_URL_PREFIX: (str): write your description
+        """
         lv_dict = {}
         layer_versions = Layer_Version.objects.all()
         for lv in layer_versions:
@@ -242,6 +284,12 @@ class Command(BaseCommand):
 
     # Apply table of all layer versions
     def extract_bblayers(self):
+        """
+        Extract bblayer layers.
+
+        Args:
+            self: (todo): write your description
+        """
         # set up the constants
         bblayer_str = self.vars['BBLAYERS']
         TOASTER_DIR = os.environ.get('TOASTER_DIR')
@@ -305,6 +353,15 @@ class Command(BaseCommand):
 
     #
     def find_import_release(self,layers_list,lv_dict,default_release):
+        """
+        Find the release release.
+
+        Args:
+            self: (todo): write your description
+            layers_list: (list): write your description
+            lv_dict: (dict): write your description
+            default_release: (str): write your description
+        """
         #   poky,meta,rocko => 4;openembedded-core
         release = default_release
         for line,path,version,layer_path,is_toaster_clone in layers_list:
@@ -326,6 +383,16 @@ class Command(BaseCommand):
 
     # Apply the found conf layers
     def apply_conf_bblayers(self,layers_list,lv_dict,project,release=None):
+        """
+        Apply layers to layers.
+
+        Args:
+            self: (todo): write your description
+            layers_list: (list): write your description
+            lv_dict: (dict): write your description
+            project: (todo): write your description
+            release: (todo): write your description
+        """
         for line,path,version,layer_path,is_toaster_clone in layers_list:
             # Assert release promote if present
             if release:
@@ -423,6 +490,13 @@ class Command(BaseCommand):
 
     # Scan the project's conf files (if any)
     def scan_conf_variables(self,project_path):
+        """
+        Scan the local variables.
+
+        Args:
+            self: (todo): write your description
+            project_path: (str): write your description
+        """
         # scan the project's settings, add any new layers or variables
         if os.path.isfile("%s/conf/local.conf" % project_path):
             self.scan_conf("%s/conf/local.conf" % project_path)
@@ -439,6 +513,16 @@ class Command(BaseCommand):
 
     # Scan the found conf variables (if any)
     def apply_conf_variables(self,project,layers_list,lv_dict,release=None):
+        """
+        Apply variables to all layers.
+
+        Args:
+            self: (todo): write your description
+            project: (todo): write your description
+            layers_list: (list): write your description
+            lv_dict: (dict): write your description
+            release: (str): write your description
+        """
         if self.vars:
             # Catch vars relevant to Toaster (in case no Toaster section)
             self.update_project_vars(project,'DISTRO')
@@ -470,6 +554,13 @@ class Command(BaseCommand):
 
 
     def handle(self, *args, **options):
+        """
+        Executes projects.
+
+        Args:
+            self: (todo): write your description
+            options: (todo): write your description
+        """
         project_name = options['name']
         project_path = options['path']
         project_callback = options['callback'] if options['callback'] else ''

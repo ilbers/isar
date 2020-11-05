@@ -22,11 +22,25 @@ class FileMtimeCache(object):
     cache = {}
 
     def cached_mtime(self, f):
+        """
+        Return the cached modification time.
+
+        Args:
+            self: (todo): write your description
+            f: (todo): write your description
+        """
         if f not in self.cache:
             self.cache[f] = os.stat(f)[stat.ST_MTIME]
         return self.cache[f]
 
     def cached_mtime_noerror(self, f):
+        """
+        Cache the cached results.
+
+        Args:
+            self: (todo): write your description
+            f: (todo): write your description
+        """
         if f not in self.cache:
             try:
                 self.cache[f] = os.stat(f)[stat.ST_MTIME]
@@ -35,10 +49,23 @@ class FileMtimeCache(object):
         return self.cache[f]
 
     def update_mtime(self, f):
+        """
+        Updates the modification time of the cache.
+
+        Args:
+            self: (todo): write your description
+            f: (todo): write your description
+        """
         self.cache[f] = os.stat(f)[stat.ST_MTIME]
         return self.cache[f]
 
     def clear(self):
+        """
+        Clears the cache.
+
+        Args:
+            self: (todo): write your description
+        """
         self.cache.clear()
 
 # Checksum + mtime cache (persistent)
@@ -47,10 +74,23 @@ class FileChecksumCache(MultiProcessCache):
     CACHE_VERSION = 1
 
     def __init__(self):
+        """
+        Initializes the cache
+
+        Args:
+            self: (todo): write your description
+        """
         self.mtime_cache = FileMtimeCache()
         MultiProcessCache.__init__(self)
 
     def get_checksum(self, f):
+        """
+        Return the checksum of a file.
+
+        Args:
+            self: (todo): write your description
+            f: (str): write your description
+        """
         entry = self.cachedata[0].get(f)
         cmtime = self.mtime_cache.cached_mtime(f)
         if entry:
@@ -65,6 +105,14 @@ class FileChecksumCache(MultiProcessCache):
         return hashval
 
     def merge_data(self, source, dest):
+        """
+        Merge dest into dest.
+
+        Args:
+            self: (todo): write your description
+            source: (str): write your description
+            dest: (todo): write your description
+        """
         for h in source[0]:
             if h in dest:
                 (smtime, _) = source[0][h]
@@ -78,6 +126,12 @@ class FileChecksumCache(MultiProcessCache):
         """Get checksums for a list of files"""
 
         def checksum_file(f):
+            """
+            Return checksum of file.
+
+            Args:
+                f: (str): write your description
+            """
             try:
                 checksum = self.get_checksum(f)
             except OSError as e:
@@ -86,6 +140,12 @@ class FileChecksumCache(MultiProcessCache):
             return checksum
 
         def checksum_dir(pth):
+            """
+            Return a list of all checksumhecksumums.
+
+            Args:
+                pth: (todo): write your description
+            """
             # Handle directories recursively
             if pth == "/":
                 bb.fatal("Refusing to checksum /")

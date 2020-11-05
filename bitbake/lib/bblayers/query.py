@@ -17,6 +17,12 @@ logger = logging.getLogger('bitbake-layers')
 
 
 def plugin_init(plugins):
+    """
+    Return a plugin instance.
+
+    Args:
+        plugins: (todo): write your description
+    """
     return QueryPlugin()
 
 
@@ -31,6 +37,15 @@ class QueryPlugin(LayerPlugin):
             logger.plain("%s  %s  %d" % (layername.ljust(20), layerdir.ljust(40), pri))
 
     def version_str(self, pe, pv, pr = None):
+        """
+        Returns the version string representing the version number. pv version.
+
+        Args:
+            self: (todo): write your description
+            pe: (todo): write your description
+            pv: (todo): write your description
+            pr: (todo): write your description
+        """
         verstr = "%s" % pv
         if pr:
             verstr = "%s-%s" % (verstr, pr)
@@ -115,6 +130,22 @@ skipped recipes will also be listed, with a " (skipped)" suffix.
         self.list_recipes(title, args.pnspec, False, False, args.filenames, args.recipes_only, args.multiple, args.layer, args.bare, inheritlist)
 
     def list_recipes(self, title, pnspec, show_overlayed_only, show_same_ver_only, show_filenames, show_recipes_only, show_multi_provider_only, selected_layer, bare, inherits):
+        """
+        List available recipes.
+
+        Args:
+            self: (todo): write your description
+            title: (str): write your description
+            pnspec: (str): write your description
+            show_overlayed_only: (bool): write your description
+            show_same_ver_only: (bool): write your description
+            show_filenames: (str): write your description
+            show_recipes_only: (bool): write your description
+            show_multi_provider_only: (bool): write your description
+            selected_layer: (todo): write your description
+            bare: (todo): write your description
+            inherits: (todo): write your description
+        """
         if inherits:
             bbpath = str(self.tinfoil.config_data.getVar('BBPATH'))
             for classname in inherits:
@@ -144,6 +175,16 @@ skipped recipes will also be listed, with a " (skipped)" suffix.
                 preferred_versions[p] = (ver, fn)
 
         def print_item(f, pn, ver, layer, ispref):
+            """
+            Print the selected item.
+
+            Args:
+                f: (todo): write your description
+                pn: (todo): write your description
+                ver: (str): write your description
+                layer: (todo): write your description
+                ispref: (str): write your description
+            """
             if not selected_layer or layer == selected_layer:
                 if not bare and f in skiplist:
                     skipped = ' (skipped)'
@@ -233,6 +274,13 @@ skipped recipes will also be listed, with a " (skipped)" suffix.
         return items_listed
 
     def get_file_layer(self, filename):
+        """
+        Gets the layer.
+
+        Args:
+            self: (todo): write your description
+            filename: (str): write your description
+        """
         layerdir = self.get_file_layerdir(filename)
         if layerdir:
             return self.get_layer_name(layerdir)
@@ -240,6 +288,13 @@ skipped recipes will also be listed, with a " (skipped)" suffix.
             return '?'
 
     def get_file_layerdir(self, filename):
+        """
+        Get a layerdir.
+
+        Args:
+            self: (todo): write your description
+            filename: (str): write your description
+        """
         layer = bb.utils.get_file_layer(filename, self.tinfoil.config_data)
         return self.bbfile_collections.get(layer, None)
 
@@ -285,6 +340,13 @@ Lists recipes with the bbappends that apply to them as subitems.
             logger.plain('No append files found')
 
     def show_appends_for_pn(self, pn):
+        """
+        Return list of the installed appends
+
+        Args:
+            self: (todo): write your description
+            pn: (todo): write your description
+        """
         filenames = self.tinfoil.cooker_data.pkg_pn[pn]
 
         best = self.tinfoil.find_best_provider(pn)
@@ -293,11 +355,26 @@ Lists recipes with the bbappends that apply to them as subitems.
         return self.show_appends_output(filenames, best_filename)
 
     def show_appends_for_skipped(self):
+        """
+        List all appends.
+
+        Args:
+            self: (todo): write your description
+        """
         filenames = [os.path.basename(f)
                     for f in self.tinfoil.cooker.skiplist.keys()]
         return self.show_appends_output(filenames, None, " (skipped)")
 
     def show_appends_output(self, filenames, best_filename, name_suffix = ''):
+        """
+        Show the output of the appends.
+
+        Args:
+            self: (todo): write your description
+            filenames: (str): write your description
+            best_filename: (str): write your description
+            name_suffix: (str): write your description
+        """
         appended, missing = self.get_appends_for_files(filenames)
         if appended:
             for basename, appends in appended:
@@ -314,6 +391,13 @@ Lists recipes with the bbappends that apply to them as subitems.
             return False
 
     def get_appends_for_files(self, filenames):
+        """
+        Return a list of files for appends.
+
+        Args:
+            self: (todo): write your description
+            filenames: (str): write your description
+        """
         appended, notappended = [], []
         for filename in filenames:
             _, cls, _ = bb.cache.virtualfn2realfn(filename)
@@ -491,6 +575,13 @@ NOTE: .bbappend files can impact the dependencies.
             logger.plain("%s %s %s" % (f, keyword, best_realfn))
 
     def register_commands(self, sp):
+        """
+        Register the commands.
+
+        Args:
+            self: (todo): write your description
+            sp: (todo): write your description
+        """
         self.add_command(sp, 'show-layers', self.do_show_layers, parserecipes=False)
 
         parser_show_overlayed = self.add_command(sp, 'show-overlayed', self.do_show_overlayed)

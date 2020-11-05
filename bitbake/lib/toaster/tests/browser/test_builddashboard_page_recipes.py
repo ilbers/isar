@@ -17,6 +17,12 @@ class TestBuilddashboardPageRecipes(SeleniumTestCase):
     """ Test build dashboard recipes sub-page """
 
     def setUp(self):
+        """
+        Sets up all the task for this analysis.
+
+        Args:
+            self: (todo): write your description
+        """
         project = Project.objects.get_or_create_default_project()
 
         now = timezone.now()

@@ -28,6 +28,14 @@ logger = logging.getLogger("BitBake.Cache")
 __cache_version__ = "152"
 
 def getCacheFile(path, filename, data_hash):
+    """
+    Return the hash of a file.
+
+    Args:
+        path: (str): write your description
+        filename: (str): write your description
+        data_hash: (str): write your description
+    """
     return os.path.join(path, filename + "." + data_hash)
 
 # RecipeInfoCommon defines common data retrieving methods
@@ -37,28 +45,80 @@ class RecipeInfoCommon(object):
 
     @classmethod
     def listvar(cls, var, metadata):
+        """
+        List all variable names of variable.
+
+        Args:
+            cls: (todo): write your description
+            var: (array): write your description
+            metadata: (dict): write your description
+        """
         return cls.getvar(var, metadata).split()
 
     @classmethod
     def intvar(cls, var, metadata):
+        """
+        Return integer value of variable.
+
+        Args:
+            cls: (todo): write your description
+            var: (array): write your description
+            metadata: (todo): write your description
+        """
         return int(cls.getvar(var, metadata) or 0)
 
     @classmethod
     def depvar(cls, var, metadata):
+        """
+        Returns a variable of a variable.
+
+        Args:
+            cls: (todo): write your description
+            var: (array): write your description
+            metadata: (dict): write your description
+        """
         return bb.utils.explode_deps(cls.getvar(var, metadata))
 
     @classmethod
     def pkgvar(cls, var, packages, metadata):
+        """
+        Return a dictionary.
+
+        Args:
+            cls: (todo): write your description
+            var: (array): write your description
+            packages: (str): write your description
+            metadata: (todo): write your description
+        """
         return dict((pkg, cls.depvar("%s_%s" % (var, pkg), metadata))
                     for pkg in packages)
 
     @classmethod
     def taskvar(cls, var, tasks, metadata):
+        """
+        Create a task object : class.
+
+        Args:
+            cls: (todo): write your description
+            var: (array): write your description
+            tasks: (str): write your description
+            metadata: (dict): write your description
+        """
         return dict((task, cls.getvar("%s_task-%s" % (var, task), metadata))
                     for task in tasks)
 
     @classmethod
     def flaglist(cls, flag, varlist, metadata, squash=False):
+        """
+        Returns a dictionary of variable names of a dictionary.
+
+        Args:
+            cls: (callable): write your description
+            flag: (todo): write your description
+            varlist: (list): write your description
+            metadata: (todo): write your description
+            squash: (bool): write your description
+        """
         out_dict = dict((var, metadata.getVarFlag(var, flag))
                     for var in varlist)
         if squash:
@@ -68,6 +128,15 @@ class RecipeInfoCommon(object):
 
     @classmethod
     def getvar(cls, var, metadata, expand = True):
+        """
+        Returns variable : class.
+
+        Args:
+            cls: (callable): write your description
+            var: (str): write your description
+            metadata: (todo): write your description
+            expand: (bool): write your description
+        """
         return metadata.getVar(var, expand) or ''
 
 
@@ -77,6 +146,14 @@ class CoreRecipeInfo(RecipeInfoCommon):
     cachefile = "bb_cache.dat"
 
     def __init__(self, filename, metadata):
+        """
+        Initialize a file.
+
+        Args:
+            self: (todo): write your description
+            filename: (str): write your description
+            metadata: (todo): write your description
+        """
         self.file_depends = metadata.getVar('__depends', False)
         self.timestamp = bb.parse.cached_mtime(filename)
         self.variants = self.listvar('__VARIANTS', metadata) + ['']
@@ -127,6 +204,13 @@ class CoreRecipeInfo(RecipeInfoCommon):
 
     @classmethod
     def init_cacheData(cls, cachedata):
+        """
+        Initialize the cache.
+
+        Args:
+            cls: (todo): write your description
+            cachedata: (todo): write your description
+        """
         # CacheData in Core RecipeInfo Class
         cachedata.task_deps = {}
         cachedata.pkg_fn = {}
@@ -162,6 +246,14 @@ class CoreRecipeInfo(RecipeInfoCommon):
         cachedata.extradepsfunc = {}
 
     def add_cacheData(self, cachedata, fn):
+        """
+        Add cache data.
+
+        Args:
+            self: (todo): write your description
+            cachedata: (todo): write your description
+            fn: (todo): write your description
+        """
         cachedata.task_deps[fn] = self.task_deps
         cachedata.pkg_fn[fn] = self.pn
         cachedata.pkg_pn[self.pn].append(fn)
@@ -311,6 +403,13 @@ def parse_recipe(bb_data, bbfile, appends, mc=''):
 class NoCache(object):
 
     def __init__(self, databuilder):
+        """
+        Initialize the databuilder.
+
+        Args:
+            self: (todo): write your description
+            databuilder: (todo): write your description
+        """
         self.databuilder = databuilder
         self.data = databuilder.data
 
@@ -356,6 +455,15 @@ class Cache(NoCache):
     """
 
     def __init__(self, databuilder, data_hash, caches_array):
+        """
+        Initialize the cache.
+
+        Args:
+            self: (todo): write your description
+            databuilder: (todo): write your description
+            data_hash: (str): write your description
+            caches_array: (array): write your description
+        """
         super().__init__(databuilder)
         data = databuilder.data
 
@@ -406,6 +514,12 @@ class Cache(NoCache):
             pass
 
     def load_cachefile(self):
+        """
+        Load the cached data from disk.
+
+        Args:
+            self: (str): write your description
+        """
         cachesize = 0
         previous_progress = 0
         previous_percent = 0
@@ -705,9 +819,26 @@ class Cache(NoCache):
 
     @staticmethod
     def mtime(cachefile):
+        """
+        Return the cache file.
+
+        Args:
+            cachefile: (str): write your description
+        """
         return bb.parse.cached_mtime_noerror(cachefile)
 
     def add_info(self, filename, info_array, cacheData, parsed=None, watcher=None):
+        """
+        Add information about a recipe.
+
+        Args:
+            self: (todo): write your description
+            filename: (str): write your description
+            info_array: (todo): write your description
+            cacheData: (todo): write your description
+            parsed: (bool): write your description
+            watcher: (todo): write your description
+        """
         if isinstance(info_array[0], CoreRecipeInfo) and (not info_array[0].skipped):
             cacheData.add_from_recipeinfo(filename, info_array)
 
@@ -761,6 +892,13 @@ class CacheData(object):
     """
 
     def __init__(self, caches_array):
+        """
+        Initialize the cache.
+
+        Args:
+            self: (todo): write your description
+            caches_array: (array): write your description
+        """
         self.caches_array = caches_array
         for cache_class in self.caches_array:
             if not issubclass(cache_class, RecipeInfoCommon):
@@ -777,6 +915,14 @@ class CacheData(object):
         self.bbfile_priority = {}
 
     def add_from_recipeinfo(self, fn, info_array):
+        """
+        Add a recipe from a recipe.
+
+        Args:
+            self: (todo): write your description
+            fn: (todo): write your description
+            info_array: (todo): write your description
+        """
         for info in info_array:
             info.add_cacheData(self, fn)
 
@@ -788,11 +934,25 @@ class MultiProcessCache(object):
     """
 
     def __init__(self):
+        """
+        Initialize the cache.
+
+        Args:
+            self: (todo): write your description
+        """
         self.cachefile = None
         self.cachedata = self.create_cachedata()
         self.cachedata_extras = self.create_cachedata()
 
     def init_cache(self, d, cache_file_name=None):
+        """
+        Initialize a cached object.
+
+        Args:
+            self: (todo): write your description
+            d: (todo): write your description
+            cache_file_name: (str): write your description
+        """
         cachedir = (d.getVar("PERSISTENT_DIR") or
                     d.getVar("CACHE"))
         if cachedir in [None, '']:
@@ -820,10 +980,22 @@ class MultiProcessCache(object):
         self.cachedata = data
 
     def create_cachedata(self):
+        """
+        Create a dictionary of cached cached data.
+
+        Args:
+            self: (todo): write your description
+        """
         data = [{}]
         return data
 
     def save_extras(self):
+        """
+        Saves the lock to a file.
+
+        Args:
+            self: (todo): write your description
+        """
         if not self.cachefile:
             return
 
@@ -848,12 +1020,26 @@ class MultiProcessCache(object):
         bb.utils.unlockfile(glf)
 
     def merge_data(self, source, dest):
+        """
+        Merge data from dest.
+
+        Args:
+            self: (todo): write your description
+            source: (str): write your description
+            dest: (todo): write your description
+        """
         for j in range(0,len(dest)):
             for h in source[j]:
                 if h not in dest[j]:
                     dest[j][h] = source[j][h]
 
     def save_merge(self):
+        """
+        Save the cache to disk.
+
+        Args:
+            self: (todo): write your description
+        """
         if not self.cachefile:
             return
 
@@ -893,11 +1079,27 @@ class SimpleCache(object):
     """
 
     def __init__(self, version):
+        """
+        Initialize the cache.
+
+        Args:
+            self: (todo): write your description
+            version: (todo): write your description
+        """
         self.cachefile = None
         self.cachedata = None
         self.cacheversion = version
 
     def init_cache(self, d, cache_file_name=None, defaultdata=None):
+        """
+        Initialize a cached object.
+
+        Args:
+            self: (todo): write your description
+            d: (todo): write your description
+            cache_file_name: (str): write your description
+            defaultdata: (todo): write your description
+        """
         cachedir = (d.getVar("PERSISTENT_DIR") or
                     d.getVar("CACHE"))
         if not cachedir:
@@ -926,6 +1128,13 @@ class SimpleCache(object):
         return data
 
     def save(self, data):
+        """
+        Save the object to disk.
+
+        Args:
+            self: (todo): write your description
+            data: (array): write your description
+        """
         if not self.cachefile:
             return
 

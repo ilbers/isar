@@ -37,6 +37,12 @@ from bb.cache import MultiProcessCache
 logger = logging.getLogger('BitBake.CodeParser')
 
 def bbhash(s):
+    """
+    Return a sha - encoded string.
+
+    Args:
+        s: (str): write your description
+    """
     return hashlib.sha256(s.encode("utf-8")).hexdigest()
 
 def check_indent(codestr):
@@ -84,9 +90,22 @@ def check_indent(codestr):
 
 class SetCache(object):
     def __init__(self):
+        """
+        Initialize the cache.
+
+        Args:
+            self: (todo): write your description
+        """
         self.setcache = {}
 
     def internSet(self, items):
+        """
+        Return a new set of sets.
+
+        Args:
+            self: (todo): write your description
+            items: (todo): write your description
+        """
         
         new = []
         for i in items:
@@ -102,6 +121,15 @@ codecache = SetCache()
 
 class pythonCacheLine(object):
     def __init__(self, refs, execs, contains):
+        """
+        Init the refs to the refs
+
+        Args:
+            self: (todo): write your description
+            refs: (str): write your description
+            execs: (todo): write your description
+            contains: (todo): write your description
+        """
         self.refs = codecache.internSet(refs)
         self.execs = codecache.internSet(execs)
         self.contains = {}
@@ -109,33 +137,90 @@ class pythonCacheLine(object):
             self.contains[c] = codecache.internSet(contains[c])
 
     def __getstate__(self):
+        """
+        : return : ref : ref : ref : ref : refs. refs.
+
+        Args:
+            self: (todo): write your description
+        """
         return (self.refs, self.execs, self.contains)
 
     def __setstate__(self, state):
+        """
+        Sets the state of this widget to the inputed state. state >
+
+        Args:
+            self: (todo): write your description
+            state: (dict): write your description
+        """
         (refs, execs, contains) = state
         self.__init__(refs, execs, contains)
     def __hash__(self):
+        """
+        Return the hash of the refs.
+
+        Args:
+            self: (todo): write your description
+        """
         l = (hash(self.refs), hash(self.execs))
         for c in sorted(self.contains.keys()):
             l = l + (c, hash(self.contains[c]))
         return hash(l)
     def __repr__(self):
+        """
+        Return a repr representation of this instruction.
+
+        Args:
+            self: (todo): write your description
+        """
         return " ".join([str(self.refs), str(self.execs), str(self.contains)]) 
 
 
 class shellCacheLine(object):
     def __init__(self, execs):
+        """
+        Initialize the command.
+
+        Args:
+            self: (todo): write your description
+            execs: (todo): write your description
+        """
         self.execs = codecache.internSet(execs)
 
     def __getstate__(self):
+        """
+        Return the state of this container.
+
+        Args:
+            self: (todo): write your description
+        """
         return (self.execs)
 
     def __setstate__(self, state):
+        """
+        Sets the state of this widget.
+
+        Args:
+            self: (todo): write your description
+            state: (dict): write your description
+        """
         (execs) = state
         self.__init__(execs)
     def __hash__(self):
+        """
+        Return the hash.
+
+        Args:
+            self: (todo): write your description
+        """
         return hash(self.execs)
     def __repr__(self):
+        """
+        Return a string representation of this object.
+
+        Args:
+            self: (todo): write your description
+        """
         return str(self.execs)
 
 class CodeParserCache(MultiProcessCache):
@@ -147,6 +232,12 @@ class CodeParserCache(MultiProcessCache):
     CACHE_VERSION = 11
 
     def __init__(self):
+        """
+        Initializes the instance of the class
+
+        Args:
+            self: (todo): write your description
+        """
         MultiProcessCache.__init__(self)
         self.pythoncache = self.cachedata[0]
         self.shellcache = self.cachedata[1]
@@ -159,6 +250,15 @@ class CodeParserCache(MultiProcessCache):
         self.shellcachelines = {}
 
     def newPythonCacheLine(self, refs, execs, contains):
+        """
+        Return a new cacheline instance for the given refs.
+
+        Args:
+            self: (todo): write your description
+            refs: (str): write your description
+            execs: (todo): write your description
+            contains: (todo): write your description
+        """
         cacheline = pythonCacheLine(refs, execs, contains)
         h = hash(cacheline)
         if h in self.pythoncachelines:
@@ -167,6 +267,13 @@ class CodeParserCache(MultiProcessCache):
         return cacheline
 
     def newShellCacheLine(self, execs):
+        """
+        Return a new shellcachelcache.
+
+        Args:
+            self: (todo): write your description
+            execs: (todo): write your description
+        """
         cacheline = shellCacheLine(execs)
         h = hash(cacheline)
         if h in self.shellcachelines:
@@ -175,6 +282,13 @@ class CodeParserCache(MultiProcessCache):
         return cacheline
 
     def init_cache(self, d):
+        """
+        Initialize the cache.
+
+        Args:
+            self: (todo): write your description
+            d: (todo): write your description
+        """
         # Check if we already have the caches
         if self.pythoncache:
             return
@@ -186,32 +300,76 @@ class CodeParserCache(MultiProcessCache):
         self.shellcache = self.cachedata[1]
 
     def create_cachedata(self):
+        """
+        Create a dictionary of cached data.
+
+        Args:
+            self: (todo): write your description
+        """
         data = [{}, {}]
         return data
 
 codeparsercache = CodeParserCache()
 
 def parser_cache_init(d):
+    """
+    Initialize a cache parser.
+
+    Args:
+        d: (todo): write your description
+    """
     codeparsercache.init_cache(d)
 
 def parser_cache_save():
+    """
+    Saves the parser
+
+    Args:
+    """
     codeparsercache.save_extras()
 
 def parser_cache_savemerge():
+    """
+    Parsesmerge
+
+    Args:
+    """
     codeparsercache.save_merge()
 
 Logger = logging.getLoggerClass()
 class BufferedLogger(Logger):
     def __init__(self, name, level=0, target=None):
+        """
+        Create a new logger.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            level: (int): write your description
+            target: (todo): write your description
+        """
         Logger.__init__(self, name)
         self.setLevel(level)
         self.buffer = []
         self.target = target
 
     def handle(self, record):
+        """
+        Add a record.
+
+        Args:
+            self: (todo): write your description
+            record: (todo): write your description
+        """
         self.buffer.append(record)
 
     def flush(self):
+        """
+        Flush the record.
+
+        Args:
+            self: (todo): write your description
+        """
         for record in self.buffer:
             if self.target.isEnabledFor(record.levelno):
                 self.target.handle(record)
@@ -239,6 +397,13 @@ class PythonParser():
             self.log.debug(1, self.unhandled_message % (funcstr, argstr))
 
     def visit_Call(self, node):
+        """
+        Visitor for function call ast node.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+        """
         name = self.called_node_name(node.func)
         if name and (name.endswith(self.getvars) or name.endswith(self.getvarflags) or name in self.containsfuncs or name in self.containsanyfuncs):
             if isinstance(node.args[0], ast.Str):
@@ -293,6 +458,14 @@ class PythonParser():
                 break
 
     def __init__(self, name, log):
+        """
+        Initialize a logger.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            log: (todo): write your description
+        """
         self.name = name
         self.var_execs = set()
         self.contains = {}
@@ -304,6 +477,15 @@ class PythonParser():
         self.unhandled_message = "while parsing %s, %s" % (name, self.unhandled_message)
 
     def parse_python(self, node, lineno=0, filename="<string>"):
+        """
+        Parse a python object.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+            lineno: (str): write your description
+            filename: (str): write your description
+        """
         if not node or not node.strip():
             return
 
@@ -340,6 +522,14 @@ class PythonParser():
 
 class ShellParser():
     def __init__(self, name, log):
+        """
+        Initialize a logger.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            log: (todo): write your description
+        """
         self.funcdefs = set()
         self.allexecs = set()
         self.execs = set()
@@ -370,6 +560,13 @@ class ShellParser():
         return self.execs
 
     def _parse_shell(self, value):
+        """
+        Parse a shell.
+
+        Args:
+            self: (todo): write your description
+            value: (str): write your description
+        """
         try:
             tokens, _ = pyshyacc.parse(value, eof=True, debug=False)
         except Exception:
@@ -384,10 +581,22 @@ class ShellParser():
         """
 
         def function_definition(value):
+            """
+            Returns a function definition.
+
+            Args:
+                value: (str): write your description
+            """
             self.funcdefs.add(value.name)
             return [value.body], None
 
         def case_clause(value):
+            """
+            Generate a list of clause.
+
+            Args:
+                value: (todo): write your description
+            """
             # Element 0 of each item in the case is the list of patterns, and
             # Element 1 of each item in the case is the list of commands to be
             # executed when that pattern matches.
@@ -396,6 +605,12 @@ class ShellParser():
             return cmds, words
 
         def if_clause(value):
+            """
+            Parse_clause if possible to_cmd.
+
+            Args:
+                value: (todo): write your description
+            """
             main = chain(value.cond, value.if_cmds)
             rest = value.else_cmds
             if isinstance(rest, tuple) and rest[0] == "elif":
@@ -404,6 +619,12 @@ class ShellParser():
                 return chain(main, rest)
 
         def simple_command(value):
+            """
+            Return a simple command object for the given value.
+
+            Args:
+                value: (todo): write your description
+            """
             return None, chain(value.words, (assign[1] for assign in value.assigns))
 
         token_handlers = {
@@ -423,6 +644,12 @@ class ShellParser():
         }
 
         def process_token_list(tokens):
+            """
+            Process a list of tokens.
+
+            Args:
+                tokens: (str): write your description
+            """
             for token in tokens:
                 if isinstance(token, list):
                     process_token_list(token)

@@ -31,6 +31,15 @@ if sqlversion[0] < 3 or (sqlversion[0] == 3 and sqlversion[1] < 3):
 
 class PRTable(object):
     def __init__(self, conn, table, nohist):
+        """
+        Initialize the table.
+
+        Args:
+            self: (todo): write your description
+            conn: (todo): write your description
+            table: (str): write your description
+            nohist: (todo): write your description
+        """
         self.conn = conn
         self.nohist = nohist
         self.dirty = False
@@ -59,15 +68,36 @@ class PRTable(object):
                 raise exc
 
     def sync(self):
+        """
+        Commit the current db.
+
+        Args:
+            self: (todo): write your description
+        """
         self.conn.commit()
         self._execute("BEGIN EXCLUSIVE TRANSACTION")
 
     def sync_if_dirty(self):
+        """
+        Syncs the changes to the sync syncable
+
+        Args:
+            self: (todo): write your description
+        """
         if self.dirty:
             self.sync()
             self.dirty = False
 
     def _getValueHist(self, version, pkgarch, checksum):
+        """
+        Retrieve the value of the given row.
+
+        Args:
+            self: (todo): write your description
+            version: (str): write your description
+            pkgarch: (todo): write your description
+            checksum: (bool): write your description
+        """
         data=self._execute("SELECT value FROM %s WHERE version=? AND pkgarch=? AND checksum=?;" % self.table,
                            (version, pkgarch, checksum))
         row=data.fetchone()
@@ -93,6 +123,15 @@ class PRTable(object):
                 raise prserv.NotFoundError
 
     def _getValueNohist(self, version, pkgarch, checksum):
+        """
+        Returns the first nohist value for a given version.
+
+        Args:
+            self: (todo): write your description
+            version: (str): write your description
+            pkgarch: (todo): write your description
+            checksum: (bool): write your description
+        """
         data=self._execute("SELECT value FROM %s \
                             WHERE version=? AND pkgarch=? AND checksum=? AND \
                             value >= (select max(value) from %s where version=? AND pkgarch=?);" 
@@ -122,12 +161,31 @@ class PRTable(object):
                 raise prserv.NotFoundError
 
     def getValue(self, version, pkgarch, checksum):
+        """
+        Return the checksum of the given version.
+
+        Args:
+            self: (todo): write your description
+            version: (str): write your description
+            pkgarch: (str): write your description
+            checksum: (bool): write your description
+        """
         if self.nohist:
             return self._getValueNohist(version, pkgarch, checksum)
         else:
             return self._getValueHist(version, pkgarch, checksum)
 
     def _importHist(self, version, pkgarch, checksum, value):
+        """
+        Imports the results of the database.
+
+        Args:
+            self: (todo): write your description
+            version: (todo): write your description
+            pkgarch: (str): write your description
+            checksum: (bool): write your description
+            value: (todo): write your description
+        """
         val = None 
         data = self._execute("SELECT value FROM %s WHERE version=? AND pkgarch=? AND checksum=?;" % self.table,
                            (version, pkgarch, checksum))
@@ -152,6 +210,16 @@ class PRTable(object):
         return val
 
     def _importNohist(self, version, pkgarch, checksum, value):
+        """
+        Takes a list of nohist into a database
+
+        Args:
+            self: (todo): write your description
+            version: (todo): write your description
+            pkgarch: (str): write your description
+            checksum: (bool): write your description
+            value: (todo): write your description
+        """
         try:
             #try to insert
             self._execute("INSERT INTO %s VALUES (?, ?, ?, ?);"  % (self.table),
@@ -176,12 +244,32 @@ class PRTable(object):
             return None
 
     def importone(self, version, pkgarch, checksum, value):
+        """
+        Imports a single package.
+
+        Args:
+            self: (todo): write your description
+            version: (todo): write your description
+            pkgarch: (str): write your description
+            checksum: (bool): write your description
+            value: (str): write your description
+        """
         if self.nohist:
             return self._importNohist(version, pkgarch, checksum, value)
         else:
             return self._importHist(version, pkgarch, checksum, value)
 
     def export(self, version, pkgarch, checksum, colinfo):
+        """
+        Exports the results of the table.
+
+        Args:
+            self: (todo): write your description
+            version: (str): write your description
+            pkgarch: (str): write your description
+            checksum: (bool): write your description
+            colinfo: (todo): write your description
+        """
         metainfo = {}
         #column info 
         if colinfo:
@@ -236,6 +324,13 @@ class PRTable(object):
         return (metainfo, datainfo)
 
     def dump_db(self, fd):
+        """
+        Dump the database to a file descriptor
+
+        Args:
+            self: (todo): write your description
+            fd: (todo): write your description
+        """
         writeCount = 0
         for line in self.conn.iterdump():
             writeCount = writeCount + len(line) + 1
@@ -246,6 +341,14 @@ class PRTable(object):
 class PRData(object):
     """Object representing the PR database"""
     def __init__(self, filename, nohist=True):
+        """
+        Initialize a sqlite database.
+
+        Args:
+            self: (todo): write your description
+            filename: (str): write your description
+            nohist: (todo): write your description
+        """
         self.filename=os.path.abspath(filename)
         self.nohist=nohist
         #build directory hierarchy
@@ -261,9 +364,22 @@ class PRData(object):
         self._tables={}
 
     def disconnect(self):
+        """
+        Disconnect from the connection.
+
+        Args:
+            self: (todo): write your description
+        """
         self.connection.close()
 
     def __getitem__(self,tblname):
+        """
+        Return a table object.
+
+        Args:
+            self: (todo): write your description
+            tblname: (str): write your description
+        """
         if not isinstance(tblname, str):
             raise TypeError("tblname argument must be a string, not '%s'" %
                             type(tblname))
@@ -274,6 +390,13 @@ class PRData(object):
             return tableobj
 
     def __delitem__(self, tblname):
+        """
+        Removes an item from the database.
+
+        Args:
+            self: (todo): write your description
+            tblname: (str): write your description
+        """
         if tblname in self._tables:
             del self._tables[tblname]
         logger.info("drop table %s" % (tblname))

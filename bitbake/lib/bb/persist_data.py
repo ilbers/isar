@@ -39,7 +39,19 @@ class SQLTable(collections.MutableMapping):
             will be closed and reopened each time a failure occurs
             """
             def retry_wrapper(f):
+                """
+                Wrap wrapper around the sqlite.
+
+                Args:
+                    f: (todo): write your description
+                """
                 def wrap_func(self, *args, **kwargs):
+                    """
+                    Wrap a sqlite.
+
+                    Args:
+                        self: (todo): write your description
+                    """
                     # Reconnect if necessary
                     if self.connection is None and reconnect:
                         self.reconnect()
@@ -71,6 +83,12 @@ class SQLTable(collections.MutableMapping):
             after `self` and before any of the normal arguments
             """
             def wrap_func(self, *args, **kwargs):
+                """
+                Wrap the given function and return value.
+
+                Args:
+                    self: (todo): write your description
+                """
                 # Context manager will COMMIT the database on success,
                 # or ROLLBACK on an exception
                 with self.connection:
@@ -81,6 +99,14 @@ class SQLTable(collections.MutableMapping):
 
     """Object representing a table/domain in the database"""
     def __init__(self, cachefile, table):
+        """
+        Initialize the database.
+
+        Args:
+            self: (todo): write your description
+            cachefile: (str): write your description
+            table: (str): write your description
+        """
         self.cachefile = cachefile
         self.table = table
 
@@ -90,6 +116,13 @@ class SQLTable(collections.MutableMapping):
     @_Decorators.retry(reconnect=False)
     @_Decorators.transaction
     def _setup_database(self, cursor):
+        """
+        Setup the database.
+
+        Args:
+            self: (todo): write your description
+            cursor: (todo): write your description
+        """
         cursor.execute("pragma synchronous = off;")
         # Enable WAL and keep the autocheckpoint length small (the default is
         # usually 1000). Persistent caches are usually read-mostly, so keeping
@@ -98,6 +131,12 @@ class SQLTable(collections.MutableMapping):
         cursor.execute("pragma wal_autocheckpoint = 100;")
 
     def reconnect(self):
+        """
+        Establish a sqlite connection.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.connection is not None:
             self.connection.close()
         self.connection = sqlite3.connect(self.cachefile, timeout=5)
@@ -122,12 +161,31 @@ class SQLTable(collections.MutableMapping):
         """
         class CursorIter(object):
             def __init__(self, cursor):
+                """
+                Set the cursor.
+
+                Args:
+                    self: (todo): write your description
+                    cursor: (todo): write your description
+                """
                 self.cursor = cursor
 
             def __iter__(self):
+                """
+                Returns an iterator over the iterable.
+
+                Args:
+                    self: (todo): write your description
+                """
                 return self
 
             def __next__(self):
+                """
+                Returns the next row.
+
+                Args:
+                    self: (todo): write your description
+                """
                 row = self.cursor.fetchone()
                 if row is None:
                     self.cursor.close()
@@ -135,9 +193,24 @@ class SQLTable(collections.MutableMapping):
                 return f(row)
 
             def __enter__(self):
+                """
+                Decor function.
+
+                Args:
+                    self: (todo): write your description
+                """
                 return self
 
             def __exit__(self, typ, value, traceback):
+                """
+                Called bytestring is closed.
+
+                Args:
+                    self: (todo): write your description
+                    typ: (todo): write your description
+                    value: (todo): write your description
+                    traceback: (todo): write your description
+                """
                 self.cursor.close()
                 return False
 
@@ -149,15 +222,36 @@ class SQLTable(collections.MutableMapping):
             cursor.close()
 
     def __enter__(self):
+        """
+        Gets the operation.
+
+        Args:
+            self: (todo): write your description
+        """
         self.connection.__enter__()
         return self
 
     def __exit__(self, *excinfo):
+        """
+        Called bytestring is closed.
+
+        Args:
+            self: (todo): write your description
+            excinfo: (todo): write your description
+        """
         self.connection.__exit__(*excinfo)
 
     @_Decorators.retry()
     @_Decorators.transaction
     def __getitem__(self, cursor, key):
+        """
+        Return the value from the database.
+
+        Args:
+            self: (todo): write your description
+            cursor: (todo): write your description
+            key: (str): write your description
+        """
         cursor.execute("SELECT * from %s where key=?;" % self.table, [key])
         row = cursor.fetchone()
         if row is not None:
@@ -167,6 +261,14 @@ class SQLTable(collections.MutableMapping):
     @_Decorators.retry()
     @_Decorators.transaction
     def __delitem__(self, cursor, key):
+        """
+        Removes an item from the database.
+
+        Args:
+            self: (todo): write your description
+            cursor: (todo): write your description
+            key: (str): write your description
+        """
         if key not in self:
             raise KeyError(key)
         cursor.execute("DELETE from %s where key=?;" % self.table, [key])
@@ -174,6 +276,15 @@ class SQLTable(collections.MutableMapping):
     @_Decorators.retry()
     @_Decorators.transaction
     def __setitem__(self, cursor, key, value):
+        """
+        Sets the value in the database.
+
+        Args:
+            self: (todo): write your description
+            cursor: (todo): write your description
+            key: (str): write your description
+            value: (str): write your description
+        """
         if not isinstance(key, str):
             raise TypeError('Only string keys are supported')
         elif not isinstance(value, str):
@@ -189,56 +300,136 @@ class SQLTable(collections.MutableMapping):
     @_Decorators.retry()
     @_Decorators.transaction
     def __contains__(self, cursor, key):
+        """
+        Determine if cursor exists.
+
+        Args:
+            self: (todo): write your description
+            cursor: (todo): write your description
+            key: (todo): write your description
+        """
         cursor.execute('SELECT * from %s where key=?;' % self.table, [key])
         return cursor.fetchone() is not None
 
     @_Decorators.retry()
     @_Decorators.transaction
     def __len__(self, cursor):
+        """
+        Returns the number of rows in the table.
+
+        Args:
+            self: (todo): write your description
+            cursor: (todo): write your description
+        """
         cursor.execute("SELECT COUNT(key) FROM %s;" % self.table)
         row = cursor.fetchone()
         if row is not None:
             return row[0]
 
     def __iter__(self):
+        """
+        Returns an iterable for the rows.
+
+        Args:
+            self: (todo): write your description
+        """
         return self._row_iter(lambda row: row[0], "SELECT key from %s;" % self.table)
 
     def __lt__(self, other):
+        """
+        Determine whether two iterable.
+
+        Args:
+            self: (todo): write your description
+            other: (todo): write your description
+        """
         if not isinstance(other, Mapping):
             raise NotImplemented
 
         return len(self) < len(other)
 
     def get_by_pattern(self, pattern):
+        """
+        Returns the first row by the given pattern.
+
+        Args:
+            self: (todo): write your description
+            pattern: (str): write your description
+        """
         return self._row_iter(lambda row: row[1], "SELECT * FROM %s WHERE key LIKE ?;" %
                               self.table, [pattern])
 
     def values(self):
+        """
+        Return a list of all values.
+
+        Args:
+            self: (todo): write your description
+        """
         return list(self.itervalues())
 
     def itervalues(self):
+        """
+        Returns a list of all rows in the table.
+
+        Args:
+            self: (todo): write your description
+        """
         return self._row_iter(lambda row: row[0], "SELECT value FROM %s;" %
                               self.table)
 
     def items(self):
+        """
+        Return an iterator over all items.
+
+        Args:
+            self: (dict): write your description
+        """
         return list(self.iteritems())
 
     def iteritems(self):
+        """
+        Return an iterator over the table.
+
+        Args:
+            self: (todo): write your description
+        """
         return self._row_iter(lambda row: (row[0], row[1]), "SELECT * FROM %s;" %
                               self.table)
 
     @_Decorators.retry()
     @_Decorators.transaction
     def clear(self, cursor):
+        """
+        Clears the rows from the database.
+
+        Args:
+            self: (todo): write your description
+            cursor: (todo): write your description
+        """
         cursor.execute("DELETE FROM %s;" % self.table)
 
     def has_key(self, key):
+        """
+        Returns true if key is a key.
+
+        Args:
+            self: (todo): write your description
+            key: (str): write your description
+        """
         return key in self
 
 
 class PersistData(object):
     """Deprecated representation of the bitbake persistent data store"""
     def __init__(self, d):
+        """
+        Initialize the data object.
+
+        Args:
+            self: (todo): write your description
+            d: (int): write your description
+        """
         warnings.warn("Use of PersistData is deprecated.  Please use "
                       "persist(domain, d) instead.",
                       category=DeprecationWarning,

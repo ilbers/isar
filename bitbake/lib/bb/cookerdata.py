@@ -24,6 +24,15 @@ parselog    = logging.getLogger("BitBake.Parsing")
 
 class ConfigParameters(object):
     def __init__(self, argv=sys.argv):
+        """
+        Initialize the environment.
+
+        Args:
+            self: (todo): write your description
+            argv: (list): write your description
+            sys: (todo): write your description
+            argv: (list): write your description
+        """
         self.options, targets = self.parseCommandLine(argv)
         self.environment = self.parseEnvironment()
 
@@ -33,12 +42,34 @@ class ConfigParameters(object):
             setattr(self, key, val)
 
     def parseCommandLine(self, argv=sys.argv):
+        """
+        Parse a command line.
+
+        Args:
+            self: (todo): write your description
+            argv: (list): write your description
+            sys: (todo): write your description
+            argv: (list): write your description
+        """
         raise Exception("Caller must implement commandline option parsing")
 
     def parseEnvironment(self):
+        """
+        Parse environment variables.
+
+        Args:
+            self: (todo): write your description
+        """
         return os.environ.copy()
 
     def updateFromServer(self, server):
+        """
+        Updates the target server with the given server.
+
+        Args:
+            self: (todo): write your description
+            server: (todo): write your description
+        """
         if not self.options.cmd:
             defaulttask, error = server.runCommand(["getVariable", "BB_DEFAULT_TASK"])
             if error:
@@ -56,6 +87,14 @@ class ConfigParameters(object):
                 self.options.pkgs_to_build.extend(bbpkgs.split())
 
     def updateToServer(self, server, environment):
+        """
+        Updates server
+
+        Args:
+            self: (todo): write your description
+            server: (str): write your description
+            environment: (todo): write your description
+        """
         options = {}
         for o in ["abort", "force", "invalidate_stamp",
                   "verbose", "debug", "dry_run", "dump_signatures",
@@ -68,6 +107,12 @@ class ConfigParameters(object):
             raise Exception("Unable to update the server configuration with local parameters: %s" % error)
 
     def parseActions(self):
+        """
+        Parse the build options
+
+        Args:
+            self: (todo): write your description
+        """
         # Parse any commandline into actions
         action = {'action':None, 'msg':None}
         if self.options.show_environment:
@@ -111,6 +156,12 @@ class CookerConfiguration(object):
     """
 
     def __init__(self):
+        """
+        Initialize the consumer
+
+        Args:
+            self: (todo): write your description
+        """
         self.debug_domains = []
         self.extra_assume_provided = []
         self.prefile = []
@@ -138,15 +189,35 @@ class CookerConfiguration(object):
         self.env = {}
 
     def setConfigParameters(self, parameters):
+        """
+        Sets a dictionary of this configuration.
+
+        Args:
+            self: (todo): write your description
+            parameters: (list): write your description
+        """
         for key in self.__dict__.keys():
             if key in parameters.options.__dict__:
                 setattr(self, key, parameters.options.__dict__[key])
         self.env = parameters.environment.copy()
 
     def setServerRegIdleCallback(self, srcb):
+        """
+        Sets : py : class : meth :.
+
+        Args:
+            self: (todo): write your description
+            srcb: (todo): write your description
+        """
         self.server_register_idlecallback = srcb
 
     def __getstate__(self):
+        """
+        Get the current state of the object.
+
+        Args:
+            self: (todo): write your description
+        """
         state = {}
         for key in self.__dict__.keys():
             if key == "server_register_idlecallback":
@@ -156,6 +227,13 @@ class CookerConfiguration(object):
         return state
 
     def __setstate__(self,state):
+        """
+        Set the given state.
+
+        Args:
+            self: (todo): write your description
+            state: (dict): write your description
+        """
         for k in state:
             setattr(self, k, state[k])
 
@@ -164,6 +242,12 @@ def catch_parse_error(func):
     """Exception handling bits for our parsing"""
     @wraps(func)
     def wrapped(fn, *args):
+        """
+        Wraps a function that the function.
+
+        Args:
+            fn: (str): write your description
+        """
         try:
             return func(fn, *args)
         except IOError as exc:
@@ -190,14 +274,36 @@ def catch_parse_error(func):
 
 @catch_parse_error
 def parse_config_file(fn, data, include=True):
+    """
+    Parse config file.
+
+    Args:
+        fn: (str): write your description
+        data: (str): write your description
+        include: (list): write your description
+    """
     return bb.parse.handle(fn, data, include)
 
 @catch_parse_error
 def _inherit(bbclass, data):
+    """
+    Inheritititititit.
+
+    Args:
+        bbclass: (todo): write your description
+        data: (array): write your description
+    """
     bb.parse.BBHandler.inherit(bbclass, "configuration INHERITs", 0, data)
     return data
 
 def findConfigFile(configfile, data):
+    """
+    Search for a config file.
+
+    Args:
+        configfile: (str): write your description
+        data: (todo): write your description
+    """
     search = []
     bbpath = data.getVar("BBPATH")
     if bbpath:
@@ -220,6 +326,11 @@ def findConfigFile(configfile, data):
 #
 
 def findTopdir():
+    """
+    Find the os. os. os. os. path.
+
+    Args:
+    """
     d = bb.data.init()
     bbpath = None
     if 'BBPATH' in os.environ:
@@ -238,6 +349,14 @@ def findTopdir():
 class CookerDataBuilder(object):
 
     def __init__(self, cookercfg, worker = False):
+        """
+        Initialize the simulation.
+
+        Args:
+            self: (todo): write your description
+            cookercfg: (todo): write your description
+            worker: (todo): write your description
+        """
 
         self.prefiles = cookercfg.prefile
         self.postfiles = cookercfg.postfile
@@ -268,6 +387,12 @@ class CookerDataBuilder(object):
         self.mcdata = {}
 
     def parseBaseConfiguration(self):
+        """
+        Parses the static report
+
+        Args:
+            self: (todo): write your description
+        """
         data_hash = hashlib.sha256()
         try:
             self.data = self.parseConfigurationFiles(self.prefiles, self.postfiles)
@@ -320,6 +445,12 @@ class CookerDataBuilder(object):
         self.mcdata[''] = self.data
 
     def reset(self):
+        """
+        Reset the box.
+
+        Args:
+            self: (todo): write your description
+        """
         # We may not have run parseBaseConfiguration() yet
         if not hasattr(self, 'origdata'):
             return
@@ -327,9 +458,25 @@ class CookerDataBuilder(object):
         self.mcdata[''] = self.data
 
     def _findLayerConf(self, data):
+        """
+        Finds a list of the given config file.
+
+        Args:
+            self: (todo): write your description
+            data: (array): write your description
+        """
         return findConfigFile("bblayers.conf", data)
 
     def parseConfigurationFiles(self, prefiles, postfiles, mc = "default"):
+        """
+        Parse config files
+
+        Args:
+            self: (todo): write your description
+            prefiles: (str): write your description
+            postfiles: (str): write your description
+            mc: (todo): write your description
+        """
         data = bb.data.createCopy(self.basedata)
         data.setVar("BB_CURRENT_MC", mc)
 

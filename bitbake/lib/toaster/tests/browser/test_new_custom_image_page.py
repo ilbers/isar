@@ -18,6 +18,12 @@ class TestNewCustomImagePage(SeleniumTestCase):
     CUSTOM_IMAGE_NAME = 'roopa-doopa'
 
     def setUp(self):
+        """
+        Sets up a new project.
+
+        Args:
+            self: (todo): write your description
+        """
         release = Release.objects.create(
             name='baz',
             bitbake_version=BitbakeVersion.objects.create(name='v1')

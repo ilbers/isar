@@ -23,10 +23,22 @@ import signal
 class KillRunbuilds(threading.Thread):
     """ Kill the runbuilds process after an amount of time """
     def __init__(self, *args, **kwargs):
+        """
+        Initialize the scene.
+
+        Args:
+            self: (todo): write your description
+        """
         super(KillRunbuilds, self).__init__(*args, **kwargs)
         self.setDaemon(True)
 
     def run(self):
+        """
+        Run the daemon.
+
+        Args:
+            self: (todo): write your description
+        """
         time.sleep(5)
         signal_runbuilds()
         time.sleep(1)
@@ -43,6 +55,12 @@ class TestCommands(TestCase):
     """ Sanity test that runbuilds executes OK """
 
     def setUp(self):
+        """
+        Sets the environment variables.
+
+        Args:
+            self: (todo): write your description
+        """
         os.environ.setdefault("DJANGO_SETTINGS_MODULE",
                               "toastermain.settings_test")
         os.environ.setdefault("BUILDDIR",
@@ -53,6 +71,12 @@ class TestCommands(TestCase):
         management.call_command('migrate')
 
     def test_runbuilds_command(self):
+        """
+        Run a test command.
+
+        Args:
+            self: (todo): write your description
+        """
         kill_runbuilds = KillRunbuilds()
         kill_runbuilds.start()
 

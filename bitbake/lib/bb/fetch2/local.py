@@ -28,6 +28,14 @@ class Local(FetchMethod):
         return urldata.type in ['file']
 
     def urldata_init(self, ud, d):
+        """
+        Initialize a urldata.
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+        """
         # We don't set localfile as for this fetcher the file is already local!
         ud.decodedurl = urllib.parse.unquote(ud.url.split("://")[1].split(";")[0])
         ud.basename = os.path.basename(ud.decodedurl)
@@ -70,6 +78,14 @@ class Local(FetchMethod):
         return searched
 
     def need_update(self, ud, d):
+        """
+        Determine uuid has already been changed
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+        """
         if ud.url.find("*") != -1:
             return False
         if os.path.exists(ud.localpath):
@@ -103,5 +119,13 @@ class Local(FetchMethod):
         return False
 
     def clean(self, urldata, d):
+        """
+        Clean the dataframe with given d
+
+        Args:
+            self: (todo): write your description
+            urldata: (str): write your description
+            d: (list): write your description
+        """
         return
 

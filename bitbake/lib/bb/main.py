@@ -38,6 +38,12 @@ class BBMainFatal(bb.BBHandledException):
     pass
 
 def present_options(optionlist):
+    """
+    Check if a list is a list.
+
+    Args:
+        optionlist: (todo): write your description
+    """
     if len(optionlist) > 1:
         return ' or '.join([', '.join(optionlist[:-1]), optionlist[-1]])
     else:
@@ -45,6 +51,13 @@ def present_options(optionlist):
 
 class BitbakeHelpFormatter(optparse.IndentedHelpFormatter):
     def format_option(self, option):
+        """
+        Format the formatted option for the command.
+
+        Args:
+            self: (todo): write your description
+            option: (str): write your description
+        """
         # We need to do this here rather than in the text we supply to
         # add_option() because we don't want to call list_extension_modules()
         # on every execution (since it imports all of the modules)
@@ -89,6 +102,14 @@ def list_extension_modules(pkg, checkattr):
     return modules
 
 def import_extension_module(pkg, modulename, checkattr):
+    """
+    Import a module by name and extension.
+
+    Args:
+        pkg: (todo): write your description
+        modulename: (str): write your description
+        checkattr: (todo): write your description
+    """
     try:
         # Dynamically load the UI based on the ui name. Although we
         # suggest a fixed set this allows you to have flexibility in which
@@ -104,6 +125,17 @@ def import_extension_module(pkg, modulename, checkattr):
 warnlog = logging.getLogger("BitBake.Warnings")
 _warnings_showwarning = warnings.showwarning
 def _showwarning(message, category, filename, lineno, file=None, line=None):
+    """
+    Log a warning.
+
+    Args:
+        message: (str): write your description
+        category: (str): write your description
+        filename: (str): write your description
+        lineno: (str): write your description
+        file: (str): write your description
+        line: (str): write your description
+    """
     if file is not None:
         if _warnings_showwarning is not None:
             _warnings_showwarning(message, category, filename, lineno, file, line)
@@ -122,6 +154,15 @@ warnings.filterwarnings("ignore", message="With-statements now directly support 
 class BitBakeConfigParameters(cookerdata.ConfigParameters):
 
     def parseCommandLine(self, argv=sys.argv):
+        """
+        Parse command line arguments.
+
+        Args:
+            self: (todo): write your description
+            argv: (list): write your description
+            sys: (todo): write your description
+            argv: (list): write your description
+        """
         parser = optparse.OptionParser(
             formatter=BitbakeHelpFormatter(),
             version="BitBake Build Tool Core version %s" % bb.__version__,
@@ -327,6 +368,13 @@ class BitBakeConfigParameters(cookerdata.ConfigParameters):
 
 
 def bitbake_main(configParams, configuration):
+    """
+    The main function.
+
+    Args:
+        configParams: (dict): write your description
+        configuration: (todo): write your description
+    """
 
     # Python multiprocessing requires /dev/shm on Linux
     if sys.platform.startswith('linux') and not os.access('/dev/shm', os.W_OK | os.X_OK):
@@ -391,6 +439,14 @@ def bitbake_main(configParams, configuration):
     return 1
 
 def setup_bitbake(configParams, configuration, extrafeatures=None):
+    """
+    Create bitbake bitbake.
+
+    Args:
+        configParams: (dict): write your description
+        configuration: (todo): write your description
+        extrafeatures: (str): write your description
+    """
     # Ensure logging messages get sent to the UI as events
     handler = bb.event.LogHandler()
     if not configParams.status_only:
@@ -489,6 +545,11 @@ def setup_bitbake(configParams, configuration, extrafeatures=None):
     return server_connection, ui_module
 
 def lockBitbake():
+    """
+    Return a boolean indicating whether the bit bitbake.
+
+    Args:
+    """
     topdir = bb.cookerdata.findTopdir()
     if not topdir:
         bb.error("Unable to find conf/bblayers.conf or conf/bitbake.conf. BBPATH is unset and/or not in a build directory?")

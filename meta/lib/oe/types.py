@@ -20,6 +20,14 @@ class OEList(list):
     name = "list"
 
     def __init__(self, value, separator = None):
+        """
+        Initialize a separator.
+
+        Args:
+            self: (todo): write your description
+            value: (str): write your description
+            separator: (str): write your description
+        """
         if value is not None:
             list.__init__(self, value.split(separator))
         else:
@@ -31,6 +39,12 @@ class OEList(list):
             self.separator = separator
 
     def __str__(self):
+        """
+        A string representation of the separator.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.separator.join(self)
 
 def choice(value, choices):
@@ -52,24 +66,81 @@ def choice(value, choices):
 class NoMatch(object):
     """Stub python regex pattern object which never matches anything"""
     def findall(self, string, flags=0):
+        """
+        Find all occurrences of the elements matching string string.
+
+        Args:
+            self: (todo): write your description
+            string: (str): write your description
+            flags: (int): write your description
+        """
         return None
 
     def finditer(self, string, flags=0):
+        """
+        Find the first occurrence of string.
+
+        Args:
+            self: (todo): write your description
+            string: (str): write your description
+            flags: (int): write your description
+        """
         return None
 
     def match(self, flags=0):
+        """
+        Match the given flags.
+
+        Args:
+            self: (todo): write your description
+            flags: (int): write your description
+        """
         return None
 
     def search(self, string, flags=0):
+        """
+        Search the first match.
+
+        Args:
+            self: (todo): write your description
+            string: (str): write your description
+            flags: (int): write your description
+        """
         return None
 
     def split(self, string, maxsplit=0):
+        """
+        Split string at most recent string.
+
+        Args:
+            self: (todo): write your description
+            string: (str): write your description
+            maxsplit: (int): write your description
+        """
         return None
 
     def sub(pattern, repl, string, count=0):
+        """
+        Return the first occurrence of * sub.
+
+        Args:
+            pattern: (str): write your description
+            repl: (int): write your description
+            string: (str): write your description
+            count: (int): write your description
+        """
         return None
 
     def subn(pattern, repl, string, count=0):
+        """
+        Return the first occurrence of sub.
+
+        Args:
+            pattern: (str): write your description
+            repl: (int): write your description
+            string: (str): write your description
+            count: (int): write your description
+        """
         return None
 
 NoMatch = NoMatch()
@@ -149,6 +220,15 @@ def float(value, fromhex='false'):
         return _float(value)
 
 def path(value, relativeto='', normalize='true', mustexist='false'):
+    """
+    Return a path.
+
+    Args:
+        value: (str): write your description
+        relativeto: (str): write your description
+        normalize: (bool): write your description
+        mustexist: (str): write your description
+    """
     value = os.path.join(relativeto, value)
 
     if boolean(normalize):

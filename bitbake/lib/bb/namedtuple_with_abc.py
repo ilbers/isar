@@ -47,6 +47,15 @@ _namedtuple = collections.namedtuple
 class _NamedTupleABCMeta(ABCMeta):
     '''The metaclass for the abstract base class + mix-in for named tuples.'''
     def __new__(mcls, name, bases, namespace):
+        """
+        Creates a new class with the given name.
+
+        Args:
+            mcls: (todo): write your description
+            name: (str): write your description
+            bases: (todo): write your description
+            namespace: (str): write your description
+        """
         fields = namespace.get('_fields')
         for base in bases:
             if fields is not None:
@@ -98,6 +107,12 @@ if __name__ == '__main__':
     class MyRecord(namedtuple.abc):
         _fields = 'x y z'  # such form will be transformed into ('x', 'y', 'z')
         def _my_custom_method(self):
+            """
+            Return a dictionary of custom methods.
+
+            Args:
+                self: (todo): write your description
+            """
             return list(self._asdict().items())
     # (the '_fields' attribute belongs to the named tuple public API anyway)
 
@@ -111,6 +126,12 @@ if __name__ == '__main__':
 
     class MyAbstractRecord(namedtuple.abc):
         def _my_custom_method(self):
+            """
+            Return a dictionary of custom methods.
+
+            Args:
+                self: (todo): write your description
+            """
             return list(self._asdict().items())
 
     try:
@@ -120,6 +141,12 @@ if __name__ == '__main__':
 
     class AnotherAbstractRecord(MyAbstractRecord):
         def __str__(self):
+            """
+            Return a string representation of - wells.
+
+            Args:
+                self: (todo): write your description
+            """
             return '<<<{0}>>>'.format(super(AnotherAbstractRecord,
                                             self).__str__())
 
@@ -147,6 +174,12 @@ if __name__ == '__main__':
 
     class MyRecord33(MyRecord3):
         def __str__(self):
+            """
+            Return a string representation of this object.
+
+            Args:
+                self: (todo): write your description
+            """
             return '< {0!r}, ..., {0!r} >'.format(self.p, self.r)
 
     rec33 = MyRecord33('foo', 'bar', 'baz')
@@ -170,12 +203,37 @@ if __name__ == '__main__':
 
     class MyMixIn(object):
         def method(self):
+            """
+            Return a string representation of the method
+
+            Args:
+                self: (todo): write your description
+            """
             return "MyMixIn.method() called"
         def _my_custom_method(self):
+            """
+            Returns the custom method that returns a method.
+
+            Args:
+                self: (todo): write your description
+            """
             return "MyMixIn._my_custom_method() called"
         def count(self, item):
+            """
+            Return the number of items in the given item.
+
+            Args:
+                self: (todo): write your description
+                item: (todo): write your description
+            """
             return "MyMixIn.count({0}) called".format(item)
         def _asdict(self):  # (cannot override a namedtuple method, see below)
+            """
+            Return a dict representation of all of the data.
+
+            Args:
+                self: (todo): write your description
+            """
             return "MyMixIn._asdict() called"
 
     class MyRecord4(MyRecord33, MyMixIn):  # mix-in on the right
@@ -215,6 +273,12 @@ if __name__ == '__main__':
     class MyRecord6(MyRecord33):
         _fields = 'j k l x y z'
         def _asdict(self):
+            """
+            Return a dict representation of all of the data.
+
+            Args:
+                self: (todo): write your description
+            """
             return "MyRecord6._asdict() called"
     rec6 = MyRecord6(1, 2, 3, 1, 2, 3)
     print(rec6._asdict())  # (this returns "MyRecord6._asdict() called")

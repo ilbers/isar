@@ -17,6 +17,13 @@ class Command(BaseCommand):
     help    = "Test the response time for all toaster urls"
 
     def handle(self, *args, **options):
+        """
+        Executes the command.
+
+        Args:
+            self: (todo): write your description
+            options: (todo): write your description
+        """
 	root_urlconf = __import__(settings.ROOT_URLCONF)
 	patterns = root_urlconf.urls.urlpatterns
 	global full_url
@@ -32,6 +39,14 @@ class Command(BaseCommand):
 			print('Trying \'' + full_url + '\', ' + str(status_code) + ', ' + str(load_time))
 
     def get_full_url(self, url_patt, url_root_res):
+        """
+        Gets full url.
+
+        Args:
+            self: (todo): write your description
+            url_patt: (str): write your description
+            url_root_res: (str): write your description
+        """
 	full_url = str(url_patt).split('^')[1].replace('$>', '').replace('(?P<file_path>(?:/[', '/bin/busybox').replace('.*', '')
 	full_url = str(url_root_res + full_url)
 	full_url = re.sub('\(\?P<.*?>\\\d\+\)', '1', full_url)
@@ -39,6 +54,13 @@ class Command(BaseCommand):
 	return full_url
 
     def url_info(self, full_url):
+        """
+        Fetch full url.
+
+        Args:
+            self: (todo): write your description
+            full_url: (str): write your description
+        """
 	client = Client()
 	info = []
 	try:
@@ -57,6 +79,12 @@ class Command(BaseCommand):
 	return info
 
     def error(self, *args):
+        """
+        Print the error message to stderr.
+
+        Args:
+            self: (todo): write your description
+        """
 	for arg in args:
 	    print(arg, end=' ', file=sys.stderr)
 	print(file=sys.stderr)

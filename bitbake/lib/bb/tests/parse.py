@@ -31,14 +31,34 @@ C = "3"
 """
 
     def setUp(self):
+        """
+        Sets the buttons for the game.
+
+        Args:
+            self: (todo): write your description
+        """
         self.origdir = os.getcwd()
         self.d = bb.data.init()
         bb.parse.siggen = bb.siggen.init(self.d)
 
     def tearDown(self):
+        """
+        Tear down directory.
+
+        Args:
+            self: (todo): write your description
+        """
         os.chdir(self.origdir)
 
     def parsehelper(self, content, suffix = ".bb"):
+        """
+        Parse a temporary file.
+
+        Args:
+            self: (todo): write your description
+            content: (str): write your description
+            suffix: (str): write your description
+        """
 
         f = tempfile.NamedTemporaryFile(suffix = suffix)
         f.write(bytes(content, "utf-8"))
@@ -47,6 +67,12 @@ C = "3"
         return f
 
     def test_parse_simple(self):
+        """
+        Run simple test test.
+
+        Args:
+            self: (todo): write your description
+        """
         f = self.parsehelper(self.testfile)
         d = bb.parse.handle(f.name, self.d)['']
         self.assertEqual(d.getVar("A"), "1")
@@ -54,6 +80,12 @@ C = "3"
         self.assertEqual(d.getVar("C"), "3")
 
     def test_parse_incomplete_function(self):
+        """
+        Run test testfile for test test.
+
+        Args:
+            self: (todo): write your description
+        """
         testfileB = self.testfile.replace("}", "")
         f = self.parsehelper(testfileB)
         with self.assertRaises(bb.parse.ParseError):
@@ -69,6 +101,12 @@ unset B[flag]
 """
 
     def test_parse_unset(self):
+        """
+        Parse the test set.
+
+        Args:
+            self: (todo): write your description
+        """
         f = self.parsehelper(self.unsettest)
         d = bb.parse.handle(f.name, self.d)['']
         self.assertEqual(d.getVar("A"), None)
@@ -83,6 +121,12 @@ exportD = "d"
 """
 
     def test_parse_exports(self):
+        """
+        Test if the exports are valid
+
+        Args:
+            self: (todo): write your description
+        """
         f = self.parsehelper(self.exporttest)
         d = bb.parse.handle(f.name, self.d)['']
         self.assertEqual(d.getVar("A"), "a")
@@ -105,6 +149,12 @@ PN = "gtk+"
 """
 
     def test_parse_overrides(self):
+        """
+        Parse the data set
+
+        Args:
+            self: (todo): write your description
+        """
         f = self.parsehelper(self.overridetest)
         d = bb.parse.handle(f.name, self.d)['']
         self.assertEqual(d.getVar("RRECOMMENDS"), "b")
@@ -120,6 +170,12 @@ EXTRA_OECONF_append = " c"
 """
 
     def test_parse_overrides(self):
+        """
+        Parse the test sets
+
+        Args:
+            self: (todo): write your description
+        """
         f = self.parsehelper(self.overridetest2)
         d = bb.parse.handle(f.name, self.d)['']
         d.appendVar("EXTRA_OECONF", " d")
@@ -133,6 +189,12 @@ PN = "bc"
 """
 
     def test_parse_combinations(self):
+        """
+        Parse the test data set
+
+        Args:
+            self: (todo): write your description
+        """
         f = self.parsehelper(self.overridetest3)
         d = bb.parse.handle(f.name, self.d)['']
         bb.data.expandKeys(d)
@@ -164,6 +226,12 @@ python () {
     # become unset/disappear.
     #
     def test_parse_classextend_contamination(self):
+        """
+        The test : attr : test_parse_contaminationend_contaminationend_contaminationend_contaminationclass
+
+        Args:
+            self: (todo): write your description
+        """
         cls = self.parsehelper(self.classextend_bbclass, suffix=".bbclass")
         #clsname = os.path.basename(cls.name).replace(".bbclass", "")
         self.classextend = self.classextend.replace("###CLASS###", cls.name)
@@ -181,6 +249,12 @@ addtask do_fetch do_patch
 deltask do_fetch do_patch
 """
     def test_parse_addtask_deltask(self):
+        """
+        Process a test test.
+
+        Args:
+            self: (todo): write your description
+        """
         import sys
         f = self.parsehelper(self.addtask_deltask)
         d = bb.parse.handle(f.name, self.d)['']

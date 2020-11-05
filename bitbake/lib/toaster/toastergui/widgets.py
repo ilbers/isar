@@ -47,6 +47,12 @@ class NoFieldOrDataName(Exception):
 
 class ToasterTable(TemplateView):
     def __init__(self, *args, **kwargs):
+        """
+        Initialize the template
+
+        Args:
+            self: (todo): write your description
+        """
         super(ToasterTable, self).__init__()
         if 'template_name' in kwargs:
             self.template_name = kwargs['template_name']
@@ -66,9 +72,21 @@ class ToasterTable(TemplateView):
     @cache_control(must_revalidate=True,
                    max_age=0, no_store=True, no_cache=True)
     def dispatch(self, *args, **kwargs):
+        """
+        This decorator sets this view to have restricted permissions.
+
+        Args:
+            self: (todo): write your description
+        """
         return super(ToasterTable, self).dispatch(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
+        """
+        Add context data to context.
+
+        Args:
+            self: (todo): write your description
+        """
         context = super(ToasterTable, self).get_context_data(**kwargs)
         context['title'] = self.title
         context['table_name'] = type(self).__name__.lower()
@@ -84,6 +102,13 @@ class ToasterTable(TemplateView):
         return context
 
     def get(self, request, *args, **kwargs):
+        """
+        Returns a queryset.
+
+        Args:
+            self: (todo): write your description
+            request: (todo): write your description
+        """
         if request.GET.get('format', None) == 'json':
 
             self.setup_queryset(*args, **kwargs)
@@ -103,6 +128,13 @@ class ToasterTable(TemplateView):
         return super(ToasterTable, self).get(request, *args, **kwargs)
 
     def get_filter_info(self, request, **kwargs):
+        """
+        Returns the filterinfo.
+
+        Args:
+            self: (todo): write your description
+            request: (todo): write your description
+        """
         self.setup_filters(**kwargs)
 
         search = request.GET.get("search", None)
@@ -233,6 +265,13 @@ class ToasterTable(TemplateView):
             raise
 
     def apply_orderby(self, orderby):
+        """
+        Set the queryset to the queryset.
+
+        Args:
+            self: (todo): write your description
+            orderby: (todo): write your description
+        """
         # Note that django will execute this when we try to retrieve the data
         self.queryset = self.queryset.order_by(orderby)
 
@@ -411,10 +450,29 @@ class ToasterTypeAhead(View):
         pass
 
     def __init__(self, *args, **kwargs):
+        """
+        Initialize the object.
+
+        Args:
+            self: (todo): write your description
+        """
         super(ToasterTypeAhead, self).__init__()
 
     def get(self, request, *args, **kwargs):
+        """
+        Returns a json - compatible with the given model.
+
+        Args:
+            self: (todo): write your description
+            request: (todo): write your description
+        """
         def response(data):
+            """
+            Return a json - serializable object.
+
+            Args:
+                data: (str): write your description
+            """
             return HttpResponse(json.dumps(data,
                                            indent=2,
                                            cls=DjangoJSONEncoder),
@@ -448,6 +506,13 @@ class ToasterTypeAhead(View):
         return response(data)
 
     def validate_fields(self, result):
+        """
+        Validate the field fields.
+
+        Args:
+            self: (todo): write your description
+            result: (todo): write your description
+        """
         if 'name' in result is False or 'detail' in result is False:
             raise self.MissingFieldsException(
                 "name and detail are required fields")
@@ -460,6 +525,13 @@ class ToasterTypeAhead(View):
 
 class MostRecentBuildsView(View):
     def _was_yesterday_or_earlier(self, completed_on):
+        """
+        Returns true if the current time is at least the given timezone.
+
+        Args:
+            self: (todo): write your description
+            completed_on: (bool): write your description
+        """
         now = timezone.now()
         delta = now - completed_on
 

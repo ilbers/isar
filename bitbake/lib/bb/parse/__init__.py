@@ -29,12 +29,27 @@ logger = logging.getLogger("BitBake.Parsing")
 class ParseError(Exception):
     """Exception raised when parsing fails"""
     def __init__(self, msg, filename, lineno=0):
+        """
+        Initialize a message.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+            filename: (str): write your description
+            lineno: (int): write your description
+        """
         self.msg = msg
         self.filename = filename
         self.lineno = lineno
         Exception.__init__(self, msg, filename, lineno)
 
     def __str__(self):
+        """
+        Return a string representation of this file.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.lineno:
             return "ParseError at %s:%d: %s" % (self.filename, self.lineno, self.msg)
         else:
@@ -48,11 +63,23 @@ class SkipPackage(SkipRecipe):
 
 __mtime_cache = {}
 def cached_mtime(f):
+    """
+    Cached time of a function f.
+
+    Args:
+        f: (todo): write your description
+    """
     if f not in __mtime_cache:
         __mtime_cache[f] = os.stat(f)[stat.ST_MTIME]
     return __mtime_cache[f]
 
 def cached_mtime_noerror(f):
+    """
+    Cached cache time.
+
+    Args:
+        f: (todo): write your description
+    """
     if f not in __mtime_cache:
         try:
             __mtime_cache[f] = os.stat(f)[stat.ST_MTIME]
@@ -61,6 +88,12 @@ def cached_mtime_noerror(f):
     return __mtime_cache[f]
 
 def update_mtime(f):
+    """
+    Update the modification time of a file.
+
+    Args:
+        f: (todo): write your description
+    """
     try:
         __mtime_cache[f] = os.stat(f)[stat.ST_MTIME]
     except OSError:
@@ -70,15 +103,33 @@ def update_mtime(f):
     return __mtime_cache[f]
 
 def update_cache(f):
+    """
+    Update the cache
+
+    Args:
+        f: (str): write your description
+    """
     if f in __mtime_cache:
         logger.debug(1, "Updating mtime cache for %s" % f)
         update_mtime(f)
 
 def clear_cache():
+    """
+    Clear all cached cache.
+
+    Args:
+    """
     global __mtime_cache
     __mtime_cache = {}
 
 def mark_dependency(d, f):
+    """
+    Mark the dependency to the dependency
+
+    Args:
+        d: (todo): write your description
+        f: (str): write your description
+    """
     if f.startswith('./'):
         f = "%s/%s" % (os.getcwd(), f[2:])
     deps = (d.getVar('__depends', False) or [])
@@ -88,6 +139,13 @@ def mark_dependency(d, f):
         d.setVar('__depends', deps)
 
 def check_dependency(d, f):
+    """
+    Determine if the dependency has_dependency
+
+    Args:
+        d: (todo): write your description
+        f: (str): write your description
+    """
     s = (f, cached_mtime_noerror(f))
     deps = (d.getVar('__depends', False) or [])
     return s in deps
@@ -108,14 +166,34 @@ def handle(fn, data, include = 0):
     raise ParseError("not a BitBake file", fn)
 
 def init(fn, data):
+    """
+    Initialize a function.
+
+    Args:
+        fn: (int): write your description
+        data: (todo): write your description
+    """
     for h in handlers:
         if h['supports'](fn):
             return h['init'](data)
 
 def init_parser(d):
+    """
+    Initialize the parser.
+
+    Args:
+        d: (todo): write your description
+    """
     bb.parse.siggen = bb.siggen.init(d)
 
 def resolve_file(fn, d):
+    """
+    Resolve a file.
+
+    Args:
+        fn: (str): write your description
+        d: (todo): write your description
+    """
     if not os.path.isabs(fn):
         bbpath = d.getVar("BBPATH")
         newfn, attempts = bb.utils.which(bbpath, fn, history=True)
@@ -135,6 +213,13 @@ def resolve_file(fn, d):
 # Used by OpenEmbedded metadata
 __pkgsplit_cache__={}
 def vars_from_file(mypkg, d):
+    """
+    Returns a list of vars from a file.
+
+    Args:
+        mypkg: (str): write your description
+        d: (str): write your description
+    """
     if not mypkg or not mypkg.endswith((".bb", ".bbappend")):
         return (None, None, None)
     if mypkg in __pkgsplit_cache__:

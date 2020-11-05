@@ -10,6 +10,12 @@ import time
 
 class BBUIHelper:
     def __init__(self):
+        """
+        Initialize tasks.
+
+        Args:
+            self: (todo): write your description
+        """
         self.needUpdate = False
         self.running_tasks = {}
         # Running PIDs preserves the order tasks were executed in
@@ -19,6 +25,13 @@ class BBUIHelper:
         self.tasknumber_total = 0
 
     def eventHandler(self, event):
+        """
+        Process event handler.
+
+        Args:
+            self: (todo): write your description
+            event: (todo): write your description
+        """
         if isinstance(event, bb.build.TaskStarted):
             if event._mc != "default":
                 self.running_tasks[event.pid] = { 'title' : "mc:%s:%s %s" % (event._mc, event._package, event._task), 'starttime' : time.time() }
@@ -54,5 +67,11 @@ class BBUIHelper:
         return True
 
     def getTasks(self):
+        """
+        Return a list.
+
+        Args:
+            self: (todo): write your description
+        """
         self.needUpdate = False
         return (self.running_tasks, self.failed_tasks)

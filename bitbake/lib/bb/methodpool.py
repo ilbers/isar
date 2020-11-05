@@ -17,11 +17,24 @@ def insert_method(modulename, code, fn, lineno):
 compilecache = {}
 
 def compile_cache(code):
+    """
+    Compile cache.
+
+    Args:
+        code: (str): write your description
+    """
     h = hash(code)
     if h in compilecache:
         return compilecache[h]
     return None
 
 def compile_cache_add(code, compileobj):
+    """
+    Compile the given code.
+
+    Args:
+        code: (str): write your description
+        compileobj: (todo): write your description
+    """
     h = hash(code)
     compilecache[h] = compileobj

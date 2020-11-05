@@ -79,6 +79,13 @@ def expand(s, d, varname = None):
     return d.expand(s, varname)
 
 def expandKeys(alterdata, readdata = None):
+    """
+    Recursively adddatatdata objects
+
+    Args:
+        alterdata: (todo): write your description
+        readdata: (todo): write your description
+    """
     if readdata == None:
         readdata = alterdata
 
@@ -188,11 +195,23 @@ def emit_env(o=sys.__stdout__, d = init(), all=False):
             emit_var(key, o, d, all and not isfunc) and o.write('\n')
 
 def exported_keys(d):
+    """
+    Return a list of keys in d.
+
+    Args:
+        d: (todo): write your description
+    """
     return (key for key in d.keys() if not key.startswith('__') and
                                       d.getVarFlag(key, 'export', False) and
                                       not d.getVarFlag(key, 'unexport', False))
 
 def exported_vars(d):
+    """
+    Parse a dictionary containing all variables in d.
+
+    Args:
+        d: (todo): write your description
+    """
     k = list(exported_keys(d))
     for key in k:
         try:
@@ -235,6 +254,14 @@ def emit_func_python(func, o=sys.__stdout__, d = init()):
     """Emits all items in the data store in a format such that it can be sourced by a shell."""
 
     def write_func(func, o, call = False):
+        """
+        Writes a function
+
+        Args:
+            func: (callable): write your description
+            o: (todo): write your description
+            call: (dict): write your description
+        """
         body = d.getVar(func, False)
         if not body.startswith("def"):
             body = _functionfmt.format(function=func, body=body)
@@ -267,6 +294,16 @@ def update_data(d):
     d.finalize(parent = True)
 
 def build_dependencies(key, keys, shelldeps, varflagsexcl, d):
+    """
+    Builds a list of dependencies for a given key.
+
+    Args:
+        key: (str): write your description
+        keys: (list): write your description
+        shelldeps: (float): write your description
+        varflagsexcl: (str): write your description
+        d: (todo): write your description
+    """
     deps = set()
     try:
         if key[-1] == ']':
@@ -279,6 +316,14 @@ def build_dependencies(key, keys, shelldeps, varflagsexcl, d):
         vardeps = varflags.get("vardeps")
 
         def handle_contains(value, contains, d):
+            """
+            Check if a dictionary contains a list of items.
+
+            Args:
+                value: (todo): write your description
+                contains: (todo): write your description
+                d: (todo): write your description
+            """
             newvalue = ""
             for k in sorted(contains):
                 l = (d.getVar(k) or "").split()
@@ -296,6 +341,15 @@ def build_dependencies(key, keys, shelldeps, varflagsexcl, d):
             return value + newvalue
 
         def handle_remove(value, deps, removes, d):
+            """
+            Handle remove remove
+
+            Args:
+                value: (todo): write your description
+                deps: (float): write your description
+                removes: (bool): write your description
+                d: (todo): write your description
+            """
             for r in sorted(removes):
                 r2 = d.expandWithRefs(r, None)
                 value += "\n_remove of %s" % r
@@ -366,6 +420,12 @@ def build_dependencies(key, keys, shelldeps, varflagsexcl, d):
     #d.setVarFlag(key, "vardeps", deps)
 
 def generate_dependencies(d):
+    """
+    Generate a list of dependencies.
+
+    Args:
+        d: (todo): write your description
+    """
 
     keys = set(key for key in d if not key.startswith("__"))
     shelldeps = set(key for key in d.getVar("__exportlist", False) if d.getVarFlag(key, "export", False) and not d.getVarFlag(key, "unexport", False))
@@ -392,6 +452,16 @@ def generate_dependencies(d):
     return tasklist, deps, values
 
 def generate_dependency_hash(tasklist, gendeps, lookupcache, whitelist, fn):
+    """
+    Generate a hash of dependency dependencies.
+
+    Args:
+        tasklist: (list): write your description
+        gendeps: (float): write your description
+        lookupcache: (todo): write your description
+        whitelist: (list): write your description
+        fn: (todo): write your description
+    """
     taskdeps = {}
     basehash = {}
 
@@ -429,6 +499,13 @@ def generate_dependency_hash(tasklist, gendeps, lookupcache, whitelist, fn):
     return taskdeps, basehash
 
 def inherits_class(klass, d):
+    """
+    Returns true if d is a class.
+
+    Args:
+        klass: (str): write your description
+        d: (todo): write your description
+    """
     val = d.getVar('__inherit_cache', False) or []
     needle = os.path.join('classes', '%s.bbclass' % klass)
     for v in val:

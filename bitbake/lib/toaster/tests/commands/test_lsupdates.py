@@ -15,6 +15,12 @@ from orm.models import Layer_Version, Machine, Recipe
 
 class TestLayerIndexUpdater(TestCase):
     def test_run_lsupdates_command(self):
+        """
+        Runs the database changes.
+
+        Args:
+            self: (todo): write your description
+        """
         # Load some release information for us to fetch from the layer index
         management.call_command('loaddata', 'poky')
 

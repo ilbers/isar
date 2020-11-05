@@ -9,6 +9,12 @@ import bb
 logger = logging.getLogger("BitBake.Monitor")
 
 def printErr(info):
+    """
+    Print a message
+
+    Args:
+        info: (todo): write your description
+    """
     logger.error("%s\n       Disk space monitor will NOT be enabled" % info)
 
 def convertGMK(unit):
@@ -162,6 +168,13 @@ class diskMonitor:
     """Prepare the disk space monitor data"""
 
     def __init__(self, configuration):
+        """
+        Initialize configuration.
+
+        Args:
+            self: (todo): write your description
+            configuration: (dict): write your description
+        """
 
         self.enableMonitor = False
         self.configuration = configuration

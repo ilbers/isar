@@ -8,6 +8,13 @@ import os, time
 import sys,logging
 
 def init_logger(logfile, loglevel):
+    """
+    Initialize the logger.
+
+    Args:
+        logfile: (str): write your description
+        loglevel: (str): write your description
+    """
     numeric_level = getattr(logging, loglevel.upper(), None)
     if not isinstance(numeric_level, int):
         raise ValueError('Invalid log level: %s' % loglevel)

@@ -36,15 +36,36 @@ logger = logging.getLogger("BitBake.Fetcher")
 class BBFetchException(Exception):
     """Class all fetch exceptions inherit from"""
     def __init__(self, message):
+        """
+        Initialize the message
+
+        Args:
+            self: (todo): write your description
+            message: (str): write your description
+        """
         self.msg = message
         Exception.__init__(self, message)
 
     def __str__(self):
+        """
+        Return a string representation of the message.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.msg
 
 class UntrustedUrl(BBFetchException):
     """Exception raised when encountering a host not listed in BB_ALLOWED_NETWORKS"""
     def __init__(self, url, message=''):
+        """
+        Initialize the message.
+
+        Args:
+            self: (todo): write your description
+            url: (str): write your description
+            message: (str): write your description
+        """
         if message:
             msg = message
         else:
@@ -56,6 +77,14 @@ class UntrustedUrl(BBFetchException):
 class MalformedUrl(BBFetchException):
     """Exception raised when encountering an invalid url"""
     def __init__(self, url, message=''):
+        """
+        Initialize the message.
+
+        Args:
+            self: (todo): write your description
+            url: (str): write your description
+            message: (str): write your description
+        """
         if message:
             msg = message
         else:
@@ -67,6 +96,14 @@ class MalformedUrl(BBFetchException):
 class FetchError(BBFetchException):
     """General fetcher exception when something happens incorrectly"""
     def __init__(self, message, url = None):
+        """
+        Initialize the message.
+
+        Args:
+            self: (todo): write your description
+            message: (str): write your description
+            url: (str): write your description
+        """
         if url:
             msg = "Fetcher failure for URL: '%s'. %s" % (url, message)
         else:
@@ -78,6 +115,15 @@ class FetchError(BBFetchException):
 class ChecksumError(FetchError):
     """Exception when mismatched checksum encountered"""
     def __init__(self, message, url = None, checksum = None):
+        """
+        Initialize checksum.
+
+        Args:
+            self: (todo): write your description
+            message: (str): write your description
+            url: (str): write your description
+            checksum: (todo): write your description
+        """
         self.checksum = checksum
         FetchError.__init__(self, message, url)
 
@@ -87,6 +133,14 @@ class NoChecksumError(FetchError):
 class UnpackError(BBFetchException):
     """General fetcher exception when something happens incorrectly when unpacking"""
     def __init__(self, message, url):
+        """
+        Initialize a message.
+
+        Args:
+            self: (todo): write your description
+            message: (str): write your description
+            url: (str): write your description
+        """
         msg = "Unpack failure for URL: '%s'. %s" % (url, message)
         self.url = url
         BBFetchException.__init__(self, msg)
@@ -95,6 +149,13 @@ class UnpackError(BBFetchException):
 class NoMethodError(BBFetchException):
     """Exception raised when there is no method to obtain a supplied url or set of urls"""
     def __init__(self, url):
+        """
+        Initialize the message.
+
+        Args:
+            self: (todo): write your description
+            url: (str): write your description
+        """
         msg = "Could not find a fetcher which supports the URL: '%s'" % url
         self.url = url
         BBFetchException.__init__(self, msg)
@@ -103,6 +164,14 @@ class NoMethodError(BBFetchException):
 class MissingParameterError(BBFetchException):
     """Exception raised when a fetch method is missing a critical parameter in the url"""
     def __init__(self, missing, url):
+        """
+        Initializes the init.
+
+        Args:
+            self: (todo): write your description
+            missing: (todo): write your description
+            url: (str): write your description
+        """
         msg = "URL: '%s' is missing the required parameter '%s'" % (url, missing)
         self.url = url
         self.missing = missing
@@ -112,6 +181,14 @@ class MissingParameterError(BBFetchException):
 class ParameterError(BBFetchException):
     """Exception raised when a url cannot be proccessed due to invalid parameters."""
     def __init__(self, message, url):
+        """
+        Initialize a message.
+
+        Args:
+            self: (todo): write your description
+            message: (str): write your description
+            url: (str): write your description
+        """
         msg = "URL: '%s' has invalid parameters. %s" % (url, message)
         self.url = url
         BBFetchException.__init__(self, msg)
@@ -120,6 +197,14 @@ class ParameterError(BBFetchException):
 class NetworkAccess(BBFetchException):
     """Exception raised when network access is disabled but it is required."""
     def __init__(self, url, cmd):
+        """
+        Initialize a command
+
+        Args:
+            self: (todo): write your description
+            url: (str): write your description
+            cmd: (int): write your description
+        """
         msg = "Network access disabled through BB_NO_NETWORK (or set indirectly due to use of BB_FETCH_PREMIRRORONLY) but access requested with command %s (for url %s)" % (cmd, url)
         self.url = url
         self.cmd = cmd
@@ -128,10 +213,25 @@ class NetworkAccess(BBFetchException):
 
 class NonLocalMethod(Exception):
     def __init__(self):
+        """
+        Initializes the internal state
+
+        Args:
+            self: (todo): write your description
+        """
         Exception.__init__(self)
 
 class MissingChecksumEvent(bb.event.Event):
     def __init__(self, url, md5sum, sha256sum):
+        """
+        Initialize checksum.
+
+        Args:
+            self: (todo): write your description
+            url: (str): write your description
+            md5sum: (todo): write your description
+            sha256sum: (str): write your description
+        """
         self.url = url
         self.checksums = {'md5sum': md5sum,
                           'sha256sum': sha256sum}
@@ -205,6 +305,13 @@ class URI(object):
     _netloc_forbidden = ['file']
 
     def __init__(self, uri=None):
+        """
+        Init the connection parameters.
+
+        Args:
+            self: (todo): write your description
+            uri: (str): write your description
+        """
         self.scheme = ''
         self.userinfo = ''
         self.hostname = ''
@@ -263,6 +370,12 @@ class URI(object):
             self.query = self._param_str_split(urlp.query, "&")
 
     def __str__(self):
+        """
+        Return the query string.
+
+        Args:
+            self: (todo): write your description
+        """
         userinfo = self.userinfo
         if userinfo:
             userinfo += '@'
@@ -277,44 +390,106 @@ class URI(object):
             self._param_str())
 
     def _param_str(self):
+        """
+        Return a string representation of the parameter.
+
+        Args:
+            self: (todo): write your description
+        """
         return (
             ''.join([';', self._param_str_join(self.params, ";")])
             if self.params else '')
 
     def _query_str(self):
+        """
+        Returns the query string for the query.
+
+        Args:
+            self: (todo): write your description
+        """
         return (
             ''.join(['?', self._param_str_join(self.query, "&")])
             if self.query else '')
 
     def _param_str_split(self, string, elmdelim, kvdelim="="):
+        """
+        Split string into two strings.
+
+        Args:
+            self: (todo): write your description
+            string: (str): write your description
+            elmdelim: (str): write your description
+            kvdelim: (str): write your description
+        """
         ret = collections.OrderedDict()
         for k, v in [x.split(kvdelim, 1) for x in string.split(elmdelim)]:
             ret[k] = v
         return ret
 
     def _param_str_join(self, dict_, elmdelim, kvdelim="="):
+        """
+        Join a string to a string.
+
+        Args:
+            self: (todo): write your description
+            dict_: (dict): write your description
+            elmdelim: (str): write your description
+            kvdelim: (str): write your description
+        """
         return elmdelim.join([kvdelim.join([k, v]) for k, v in dict_.items()])
 
     @property
     def hostport(self):
+        """
+        Return the hostname
+
+        Args:
+            self: (todo): write your description
+        """
         if not self.port:
             return self.hostname
         return "%s:%d" % (self.hostname, self.port)
 
     @property
     def path_quoted(self):
+        """
+        Return the quoted by the path.
+
+        Args:
+            self: (todo): write your description
+        """
         return urllib.parse.quote(self.path)
 
     @path_quoted.setter
     def path_quoted(self, path):
+        """
+        Set the given path.
+
+        Args:
+            self: (todo): write your description
+            path: (str): write your description
+        """
         self.path = urllib.parse.unquote(path)
 
     @property
     def path(self):
+        """
+        Return the : class : ~.
+
+        Args:
+            self: (todo): write your description
+        """
         return self._path
 
     @path.setter
     def path(self, path):
+        """
+        Set the path.
+
+        Args:
+            self: (todo): write your description
+            path: (str): write your description
+        """
         self._path = path
 
         if not path or re.compile("^/").match(path):
@@ -324,12 +499,25 @@ class URI(object):
 
     @property
     def username(self):
+        """
+        Returns username of the username.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.userinfo:
             return (self.userinfo.split(":", 1))[0]
         return ''
 
     @username.setter
     def username(self, username):
+        """
+        Set username and password.
+
+        Args:
+            self: (todo): write your description
+            username: (str): write your description
+        """
         password = self.password
         self.userinfo = username
         if password:
@@ -337,12 +525,25 @@ class URI(object):
 
     @property
     def password(self):
+        """
+        Returns the password for the user.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.userinfo and ":" in self.userinfo:
             return (self.userinfo.split(":", 1))[1]
         return ''
 
     @password.setter
     def password(self, password):
+        """
+        Change password.
+
+        Args:
+            self: (todo): write your description
+            password: (str): write your description
+        """
         self.userinfo = "%s:%s" % (self.username, password)
 
 def decodeurl(url):
@@ -420,6 +621,17 @@ def encodeurl(decoded):
     return url
 
 def uri_replace(ud, uri_find, uri_replace, replacements, d, mirrortarball=None):
+    """
+    Replace uri with uri.
+
+    Args:
+        ud: (todo): write your description
+        uri_find: (str): write your description
+        uri_replace: (str): write your description
+        replacements: (str): write your description
+        d: (array): write your description
+        mirrortarball: (todo): write your description
+    """
     if not ud.url or not uri_find or not uri_replace:
         logger.error("uri_replace: passed an undefined value, not replacing")
         return None
@@ -506,9 +718,19 @@ def fetcher_init(d):
             m.init(d)
 
 def fetcher_parse_save():
+    """
+    Save checksum checksum checksum.
+
+    Args:
+    """
     _checksum_cache.save_extras()
 
 def fetcher_parse_done():
+    """
+    Parses a checksum.
+
+    Args:
+    """
     _checksum_cache.save_merge()
 
 def fetcher_compare_revisions(d):
@@ -531,6 +753,12 @@ def fetcher_compare_revisions(d):
     return False
 
 def mirror_from_string(data):
+    """
+    Convert a string into a list.
+
+    Args:
+        data: (array): write your description
+    """
     mirrors = (data or "").replace('\\n',' ').split()
     # Split into pairs
     if len(mirrors) % 2 != 0:
@@ -716,12 +944,23 @@ def update_stamp(ud, d):
             raise
 
 def subprocess_setup():
+    """
+    Sets up the signal
+
+    Args:
+    """
     # Python installs a SIGPIPE handler by default. This is usually not what
     # non-Python subprocesses expect.
     # SIGPIPE errors are known issues with gzip/bash
     signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
 def get_autorev(d):
+    """
+    Get autorev
+
+    Args:
+        d: (todo): write your description
+    """
     #  only not cache src rev in autorev case
     if d.getVar('BB_SRCREV_POLICY') != "cache":
         d.setVar('BB_DONT_CACHE', '1')
@@ -792,6 +1031,13 @@ def get_srcrev(d, method_name='sortable_revision'):
     return format
 
 def localpath(url, d):
+    """
+    Download a local path
+
+    Args:
+        url: (str): write your description
+        d: (todo): write your description
+    """
     fetcher = bb.fetch2.Fetch([url], d)
     return fetcher.localpath(url)
 
@@ -898,6 +1144,14 @@ def check_network_access(d, info, url):
         logger.debug(1, "Fetcher accessed the network with the command %s" % info)
 
 def build_mirroruris(origud, mirrors, ld):
+    """
+    Builds a multiparturisuris
+
+    Args:
+        origud: (str): write your description
+        mirrors: (todo): write your description
+        ld: (todo): write your description
+    """
     uris = []
     uds = []
 
@@ -909,6 +1163,16 @@ def build_mirroruris(origud, mirrors, ld):
     replacements["MIRRORNAME"] = origud.host.replace(':','.') + origud.path.replace('/', '.').replace('*', '.')
 
     def adduri(ud, uris, uds, mirrors, tarballs):
+        """
+        Add uris to uri.
+
+        Args:
+            ud: (int): write your description
+            uris: (str): write your description
+            uds: (todo): write your description
+            mirrors: (str): write your description
+            tarballs: (todo): write your description
+        """
         for line in mirrors:
             try:
                 (find, replace) = line
@@ -967,6 +1231,16 @@ def rename_bad_checksum(ud, suffix):
 
 
 def try_mirror_url(fetch, origud, ud, ld, check = False):
+    """
+    Determine if a local file or not already.
+
+    Args:
+        fetch: (todo): write your description
+        origud: (str): write your description
+        ud: (todo): write your description
+        ld: (todo): write your description
+        check: (bool): write your description
+    """
     # Return of None or a value means we're finished
     # False means try another url
 
@@ -1051,6 +1325,13 @@ def try_mirror_url(fetch, origud, ud, ld, check = False):
 
 
 def ensure_symlink(target, link_name):
+    """
+    Create a symlink at target_name.
+
+    Args:
+        target: (todo): write your description
+        link_name: (str): write your description
+    """
     if not os.path.exists(link_name):
         if os.path.islink(link_name):
             # Broken symbolic link
@@ -1212,6 +1493,15 @@ class FetchData(object):
     A class which represents the fetcher state for a given URI.
     """
     def __init__(self, url, d, localonly = False):
+        """
+        Initialize local md5 file
+
+        Args:
+            self: (todo): write your description
+            url: (str): write your description
+            d: (todo): write your description
+            localonly: (bool): write your description
+        """
         # localpath is the location of a downloaded result. If not set, the file is local.
         self.donestamp = None
         self.needdonestamp = True
@@ -1297,6 +1587,13 @@ class FetchData(object):
         self.lockfile = basepath + '.lock'
 
     def setup_revisions(self, d):
+        """
+        Set up the revision
+
+        Args:
+            self: (todo): write your description
+            d: (todo): write your description
+        """
         self.revisions = {}
         for name in self.names:
             self.revisions[name] = srcrev_internal_helper(self, d, name)
@@ -1306,6 +1603,13 @@ class FetchData(object):
             self.revision = self.revisions[self.names[0]]
 
     def setup_localpath(self, d):
+        """
+        Sets up the localpath.
+
+        Args:
+            self: (todo): write your description
+            d: (todo): write your description
+        """
         if not self.localpath:
             self.localpath = self.method.localpath(self, d)
 
@@ -1329,6 +1633,13 @@ class FetchMethod(object):
     """Base class for 'fetch'ing data"""
 
     def __init__(self, urls=None):
+        """
+        Sets the urls.
+
+        Args:
+            self: (todo): write your description
+            urls: (str): write your description
+        """
         self.urls = []
 
     def supports(self, urldata, d):
@@ -1374,9 +1685,22 @@ class FetchMethod(object):
         return relpath
 
     def setUrls(self, urls):
+        """
+        Sets the urls for the given urls.
+
+        Args:
+            self: (todo): write your description
+            urls: (str): write your description
+        """
         self.__urls = urls
 
     def getUrls(self):
+        """
+        Returns the list of the urls.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.__urls
 
     urls = property(getUrls, setUrls, None, "Urls property")
@@ -1403,6 +1727,15 @@ class FetchMethod(object):
         raise NoMethodError(urldata.url)
 
     def unpack(self, urldata, rootdir, data):
+        """
+        Unpack a file
+
+        Args:
+            self: (todo): write your description
+            urldata: (str): write your description
+            rootdir: (str): write your description
+            data: (todo): write your description
+        """
         iterate = False
         file = urldata.localpath
 
@@ -1563,10 +1896,28 @@ class FetchMethod(object):
             return rev
 
     def sortable_revision(self, ud, d, name):
+        """
+        Sort the revision of the given the revision.
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+            name: (str): write your description
+        """
         latest_rev = self._build_revision(ud, d, name)
         return True, str(latest_rev)
 
     def generate_revision_key(self, ud, d, name):
+        """
+        Generate a unique revision key for a given uuid.
+
+        Args:
+            self: (todo): write your description
+            ud: (todo): write your description
+            d: (todo): write your description
+            name: (str): write your description
+        """
         key = self._revision_key(ud, d, name)
         return "%s-%s" % (key, d.getVar("PN") or "")
 
@@ -1580,6 +1931,17 @@ class FetchMethod(object):
 
 class Fetch(object):
     def __init__(self, urls, d, cache = True, localonly = False, connection_cache = None):
+        """
+        Initialize a connection.
+
+        Args:
+            self: (todo): write your description
+            urls: (str): write your description
+            d: (todo): write your description
+            cache: (todo): write your description
+            localonly: (bool): write your description
+            connection_cache: (todo): write your description
+        """
         if localonly and cache:
             raise Exception("bb.fetch2.Fetch.__init__: cannot set cache and localonly at same time")
 
@@ -1608,6 +1970,13 @@ class Fetch(object):
             urldata_cache[mc + fn] = self.ud
 
     def localpath(self, url):
+        """
+        Return the path of a local path.
+
+        Args:
+            self: (todo): write your description
+            url: (str): write your description
+        """
         if url not in self.urls:
             self.ud[url] = FetchData(url, self.d)
 
@@ -1805,18 +2174,49 @@ class FetchConnectionCache(object):
         A class which represents an container for socket connections.
     """
     def __init__(self):
+        """
+        Initialize the cache.
+
+        Args:
+            self: (todo): write your description
+        """
         self.cache = {}
 
     def get_connection_name(self, host, port):
+        """
+        Return the connection name.
+
+        Args:
+            self: (todo): write your description
+            host: (str): write your description
+            port: (int): write your description
+        """
         return host + ':' + str(port)
 
     def add_connection(self, host, port, connection):
+        """
+        Add a connection to the cache.
+
+        Args:
+            self: (todo): write your description
+            host: (str): write your description
+            port: (int): write your description
+            connection: (todo): write your description
+        """
         cn = self.get_connection_name(host, port)
 
         if cn not in self.cache:
             self.cache[cn] = connection
 
     def get_connection(self, host, port):
+        """
+        Get a connection object for a host.
+
+        Args:
+            self: (todo): write your description
+            host: (str): write your description
+            port: (int): write your description
+        """
         connection = None
 
         cn = self.get_connection_name(host, port)
@@ -1826,12 +2226,26 @@ class FetchConnectionCache(object):
         return connection
 
     def remove_connection(self, host, port):
+        """
+        Removes a host
+
+        Args:
+            self: (todo): write your description
+            host: (str): write your description
+            port: (int): write your description
+        """
         cn = self.get_connection_name(host, port)
         if cn in self.cache:
             self.cache[cn].close()
             del self.cache[cn]
 
     def close_connections(self):
+        """
+        Close all connections
+
+        Args:
+            self: (todo): write your description
+        """
         for cn in list(self.cache.keys()):
             self.cache[cn].close()
             del self.cache[cn]

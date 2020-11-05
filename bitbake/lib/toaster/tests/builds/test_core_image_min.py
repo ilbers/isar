@@ -25,10 +25,22 @@ class BuildCoreImageMinimal(BuildTest):
     """Build core-image-minimal and test the results"""
 
     def setUp(self):
+        """
+        Sets the build.
+
+        Args:
+            self: (todo): write your description
+        """
         self.completed_build = self.build("core-image-minimal")
 
     # Check if build name is unique - tc_id=795
     def test_Build_Unique_Name(self):
+        """
+        Called when all builds in the database.
+
+        Args:
+            self: (todo): write your description
+        """
         all_builds = Build.objects.all().count()
         distinct_builds = Build.objects.values('id').distinct().count()
         self.assertEqual(distinct_builds,
@@ -37,6 +49,12 @@ class BuildCoreImageMinimal(BuildTest):
 
     # Check if build cooker log path is unique - tc_id=819
     def test_Build_Unique_Cooker_Log_Path(self):
+        """
+        Load all distinct path tomod files that have been built.
+
+        Args:
+            self: (todo): write your description
+        """
         distinct_path = Build.objects.values(
             'cooker_log_path').distinct().count()
         total_builds = Build.objects.values('id').count()
@@ -46,6 +64,12 @@ class BuildCoreImageMinimal(BuildTest):
 
     # Check if task order is unique for one build - tc=824
     def test_Task_Unique_Order(self):
+        """
+        Makes a task order.
+
+        Args:
+            self: (todo): write your description
+        """
         total_task_order = Task.objects.filter(
             build=self.built).values('order').count()
         distinct_task_order = Task.objects.filter(
@@ -57,6 +81,12 @@ class BuildCoreImageMinimal(BuildTest):
 
     # Check task order sequence for one build - tc=825
     def test_Task_Order_Sequence(self):
+        """
+        Makes a list of subtasks.
+
+        Args:
+            self: (todo): write your description
+        """
         cnt_err = []
         tasks = Task.objects.filter(
             Q(build=self.completed_build),
@@ -79,6 +109,12 @@ class BuildCoreImageMinimal(BuildTest):
     # Check if outcome = 2 (SSTATE) then sstate_result must be 3 (RESTORED) -
     # tc=832
     def test_Task_If_Outcome_2_Sstate_Result_Must_Be_3(self):
+        """
+        Test if a task can be scheduled
+
+        Args:
+            self: (todo): write your description
+        """
         tasks = Task.objects.filter(outcome=2).values('id', 'sstate_result')
         cnt_err = []
         for task in tasks:
@@ -92,6 +128,12 @@ class BuildCoreImageMinimal(BuildTest):
     # Check if outcome = 1 (COVERED) or 3 (EXISTING) then sstate_result must
     # be 0 (SSTATE_NA) - tc=833
     def test_Task_If_Outcome_1_3_Sstate_Result_Must_Be_0(self):
+        """
+        Test for two tasks between two tasks
+
+        Args:
+            self: (todo): write your description
+        """
         tasks = Task.objects.filter(
             outcome__in=(Task.OUTCOME_COVERED,
                          Task.OUTCOME_PREBUILT)).values('id',
@@ -113,6 +155,12 @@ class BuildCoreImageMinimal(BuildTest):
     # Check if outcome is 0 (SUCCESS) or 4 (FAILED) then sstate_result must be
     # 0 (NA), 1 (MISS) or 2 (FAILED) - tc=834
     def test_Task_If_Outcome_0_4_Sstate_Result_Must_Be_0_1_2(self):
+        """
+        Marks all tasks as scheduled.
+
+        Args:
+            self: (todo): write your description
+        """
         tasks = Task.objects.filter(
             outcome__in=(0, 4)).values('id', 'sstate_result')
         cnt_err = []
@@ -128,6 +176,12 @@ class BuildCoreImageMinimal(BuildTest):
     # Check if task_executed = TRUE (1), script_type must be 0 (CODING_NA), 2
     # (CODING_PYTHON), 3 (CODING_SHELL) - tc=891
     def test_Task_If_Task_Executed_True_Script_Type_0_2_3(self):
+        """
+        Test for tasks that are scheduled to be scheduled tasks.
+
+        Args:
+            self: (todo): write your description
+        """
         tasks = Task.objects.filter(
             task_executed=1).values('id', 'script_type')
         cnt_err = []
@@ -142,6 +196,12 @@ class BuildCoreImageMinimal(BuildTest):
     # Check if task_executed = TRUE (1), outcome must be 0 (SUCCESS) or 4
     # (FAILED) - tc=836
     def test_Task_If_Task_Executed_True_Outcome_0_4(self):
+        """
+        Test if a list of tasks that have been run.
+
+        Args:
+            self: (todo): write your description
+        """
         tasks = Task.objects.filter(task_executed=1).values('id', 'outcome')
         cnt_err = []
 
@@ -155,6 +215,12 @@ class BuildCoreImageMinimal(BuildTest):
 
     # Check if task_executed = FALSE (0), script_type must be 0 - tc=890
     def test_Task_If_Task_Executed_False_Script_Type_0(self):
+        """
+        * run tasks that are scheduled to run.
+
+        Args:
+            self: (todo): write your description
+        """
         tasks = Task.objects.filter(
             task_executed=0).values('id', 'script_type')
         cnt_err = []
@@ -171,6 +237,12 @@ class BuildCoreImageMinimal(BuildTest):
     # task outcome must be 1 (COVERED), 2 (CACHED), 3 (PREBUILT), 5 (EMPTY) -
     # tc=837
     def test_Task_If_Task_Executed_False_Outcome_1_2_3_5(self):
+        """
+        Makes sure all tasks are running.
+
+        Args:
+            self: (todo): write your description
+        """
         builds = Build.objects.filter(outcome=0).values('id')
         cnt_err = []
         for build in builds:
@@ -186,6 +258,12 @@ class BuildCoreImageMinimal(BuildTest):
 
     # Key verification - tc=888
     def test_Target_Installed_Package(self):
+        """
+        Returns a list of package packages.
+
+        Args:
+            self: (todo): write your description
+        """
         rows = Target_Installed_Package.objects.values('id',
                                                        'target_id',
                                                        'package_id')
@@ -203,6 +281,12 @@ class BuildCoreImageMinimal(BuildTest):
 
     # Key verification - tc=889
     def test_Task_Dependency(self):
+        """
+        Lists all tasks that are running.
+
+        Args:
+            self: (todo): write your description
+        """
         rows = Task_Dependency.objects.values('id',
                                               'task_id',
                                               'depends_on_id')
@@ -221,6 +305,12 @@ class BuildCoreImageMinimal(BuildTest):
     # orm_build.outcome=0 then if the file exists and its size matches
     # the file_size value. Need to add the tc in the test run
     def test_Target_File_Name_Populated(self):
+        """
+        Returns a list of target files for the target.
+
+        Args:
+            self: (todo): write your description
+        """
         builds = Build.objects.filter(outcome=0).values('id')
         for build in builds:
             targets = Target.objects.filter(
@@ -250,6 +340,12 @@ class BuildCoreImageMinimal(BuildTest):
 
     # Key verification - tc=884
     def test_Package_Dependency(self):
+        """
+        Check if dependencies are installed
+
+        Args:
+            self: (todo): write your description
+        """
         cnt_err = []
         deps = Package_Dependency.objects.values(
             'id', 'package_id', 'depends_on_id')
@@ -262,6 +358,12 @@ class BuildCoreImageMinimal(BuildTest):
     # Recipe key verification, recipe name does not depends on a recipe having
     # the same name - tc=883
     def test_Recipe_Dependency(self):
+        """
+        Check if dependency dependency dependencies
+
+        Args:
+            self: (todo): write your description
+        """
         deps = Recipe_Dependency.objects.values(
             'id', 'recipe_id', 'depends_on_id')
         cnt_err = []
@@ -280,6 +382,12 @@ class BuildCoreImageMinimal(BuildTest):
 
     # Check if package name does not start with a number (0-9) - tc=846
     def test_Package_Name_For_Number(self):
+        """
+        Test if the package name.
+
+        Args:
+            self: (todo): write your description
+        """
         packages = Package.objects.filter(~Q(size=-1)).values('id', 'name')
         cnt_err = []
         for package in packages:
@@ -290,6 +398,12 @@ class BuildCoreImageMinimal(BuildTest):
 
     # Check if package version starts with a number (0-9) - tc=847
     def test_Package_Version_Starts_With_Number(self):
+        """
+        .. versionadded ::
+
+        Args:
+            self: (todo): write your description
+        """
         packages = Package.objects.filter(
             ~Q(size=-1)).values('id', 'version')
         cnt_err = []
@@ -301,6 +415,12 @@ class BuildCoreImageMinimal(BuildTest):
 
     # Check if package revision starts with 'r' - tc=848
     def test_Package_Revision_Starts_With_r(self):
+        """
+        Test if a package packages
+
+        Args:
+            self: (todo): write your description
+        """
         packages = Package.objects.filter(
             ~Q(size=-1)).values('id', 'revision')
         cnt_err = []
@@ -313,6 +433,12 @@ class BuildCoreImageMinimal(BuildTest):
     # Check the validity of the package build_id
     # TC must be added in test run
     def test_Package_Build_Id(self):
+        """
+        Sets the package id
+
+        Args:
+            self: (todo): write your description
+        """
         packages = Package.objects.filter(
             ~Q(size=-1)).values('id', 'build_id')
         cnt_err = []
@@ -335,6 +461,12 @@ class BuildCoreImageMinimal(BuildTest):
     # Check the validity of package recipe_id
     # TC must be added in test run
     def test_Package_Recipe_Id(self):
+        """
+        Test if package packages exist
+
+        Args:
+            self: (todo): write your description
+        """
         packages = Package.objects.filter(
             ~Q(size=-1)).values('id', 'recipe_id')
         cnt_err = []
@@ -349,6 +481,12 @@ class BuildCoreImageMinimal(BuildTest):
     # Check if package installed_size field is not null
     # TC must be aded in test run
     def test_Package_Installed_Size_Not_NULL(self):
+        """
+        Test for packages that packages
+
+        Args:
+            self: (todo): write your description
+        """
         packages = Package.objects.filter(
             installed_size__isnull=True).values('id')
         cnt_err = []

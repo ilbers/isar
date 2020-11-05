@@ -150,10 +150,22 @@ class ProgressBar(object):
 
 
     def __iter__(self):
+        """
+        Returns an iterator over the iterable.
+
+        Args:
+            self: (todo): write your description
+        """
         return self
 
 
     def __next__(self):
+        """
+        Return the next result.
+
+        Args:
+            self: (todo): write your description
+        """
         try:
             value = next(self.__iterable)
             if self.start_time is None:
@@ -196,6 +208,12 @@ class ProgressBar(object):
 
 
     def _format_widgets(self):
+        """
+        Return a list of the widgets.
+
+        Args:
+            self: (todo): write your description
+        """
         result = []
         expanding = []
         width = self.term_width

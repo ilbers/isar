@@ -84,6 +84,13 @@ def format_display(path, metadata):
         return rel
 
 def copytree(src, dst):
+    """
+    Recursively recursively.
+
+    Args:
+        src: (str): write your description
+        dst: (str): write your description
+    """
     # We could use something like shutil.copytree here but it turns out to
     # to be slow. It takes twice as long copying to an empty directory. 
     # If dst already has contents performance can be 15 time slower
@@ -157,6 +164,13 @@ def find(dir, **walkoptions):
 
 ## realpath() related functions
 def __is_path_below(file, root):
+    """
+    Determine if a file is a path.
+
+    Args:
+        file: (str): write your description
+        root: (todo): write your description
+    """
     return (file + os.path.sep).startswith(root)
 
 def __realpath_rel(start, rel_path, root, loop_cnt, assume_dir):
@@ -184,6 +198,15 @@ def __realpath_rel(start, rel_path, root, loop_cnt, assume_dir):
     return start
 
 def __realpath(file, root, loop_cnt, assume_dir):
+    """
+    Return the absolute path of a file.
+
+    Args:
+        file: (str): write your description
+        root: (todo): write your description
+        loop_cnt: (todo): write your description
+        assume_dir: (str): write your description
+    """
     while os.path.islink(file) and len(file) >= len(root):
         if loop_cnt == 0:
             raise OSError(errno.ELOOP, file)

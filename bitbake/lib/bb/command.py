@@ -26,6 +26,13 @@ import bb.remotedata
 
 class DataStoreConnectionHandle(object):
     def __init__(self, dsindex=0):
+        """
+        Initialize the index
+
+        Args:
+            self: (todo): write your description
+            dsindex: (int): write your description
+        """
         self.dsindex = dsindex
 
 class CommandCompleted(bb.event.Event):
@@ -33,14 +40,34 @@ class CommandCompleted(bb.event.Event):
 
 class CommandExit(bb.event.Event):
     def  __init__(self, exitcode):
+         """
+         Initialize the event loop.
+
+         Args:
+             self: (todo): write your description
+             exitcode: (int): write your description
+         """
         bb.event.Event.__init__(self)
         self.exitcode = int(exitcode)
 
 class CommandFailed(CommandExit):
     def __init__(self, message):
+        """
+        Initialize an error message.
+
+        Args:
+            self: (todo): write your description
+            message: (str): write your description
+        """
         self.error = message
         CommandExit.__init__(self, 1)
     def __str__(self):
+        """
+        Return the string representation of the error.
+
+        Args:
+            self: (todo): write your description
+        """
         return "Command execution failed: %s" % self.error
 
 class CommandError(Exception):
@@ -51,6 +78,13 @@ class Command:
     A queue of asynchronous commands for bitbake
     """
     def __init__(self, cooker):
+        """
+        Initialize datastores.
+
+        Args:
+            self: (todo): write your description
+            cooker: (todo): write your description
+        """
         self.cooker = cooker
         self.cmds_sync = CommandsSync()
         self.cmds_async = CommandsAsync()
@@ -60,6 +94,14 @@ class Command:
         self.currentAsyncCommand = None
 
     def runCommand(self, commandline, ro_only = False):
+        """
+        Run a command.
+
+        Args:
+            self: (todo): write your description
+            commandline: (str): write your description
+            ro_only: (bool): write your description
+        """
         command = commandline.pop(0)
         if hasattr(CommandsSync, command):
             # Can run synchronous commands straight away
@@ -88,6 +130,12 @@ class Command:
         return True, None
 
     def runAsyncCommand(self):
+        """
+        Run the command.
+
+        Args:
+            self: (todo): write your description
+        """
         try:
             self.cooker.process_inotify_updates()
             if self.cooker.state in (bb.cooker.state.error, bb.cooker.state.shutdown, bb.cooker.state.forceshutdown):
@@ -126,6 +174,14 @@ class Command:
             return False
 
     def finishAsyncCommand(self, msg=None, code=None):
+        """
+        Called when a command is received.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+            code: (str): write your description
+        """
         if msg or msg == "":
             bb.event.fire(CommandFailed(msg), self.cooker.data)
         elif code:
@@ -136,9 +192,21 @@ class Command:
         self.cooker.finishcommand()
 
     def reset(self):
+        """
+        Reset the datastores.
+
+        Args:
+            self: (todo): write your description
+        """
         self.remotedatastores = bb.remotedata.RemoteDatastores(self.cooker)
 
 def split_mc_pn(pn):
+    """
+    Splits a string into a tuple of strings ) pairs ) pairs ) where the keys.
+
+    Args:
+        pn: (str): write your description
+    """
     if pn.startswith("multiconfig:"):
         _, mc, pn = pn.split(":", 2)
         return (mc, pn)
@@ -224,6 +292,14 @@ class CommandsSync:
         command.cooker.disableDataTracking()
 
     def setPrePostConfFiles(self, command, params):
+        """
+        Sets the prefiles command. postfiles to the command.
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            params: (dict): write your description
+        """
         prefiles = params[0].split()
         postfiles = params[1].split()
         command.cooker.configuration.prefile = prefiles
@@ -231,16 +307,40 @@ class CommandsSync:
     setPrePostConfFiles.needconfig = False
 
     def matchFile(self, command, params):
+        """
+        Returns true if the given command matches the given command.
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            params: (dict): write your description
+        """
         fMatch = params[0]
         return command.cooker.matchFile(fMatch)
     matchFile.needconfig = False
 
     def getUIHandlerNum(self, command, params):
+        """
+        Gets the currently - line parameters ]
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            params: (dict): write your description
+        """
         return bb.event.get_uihandler()
     getUIHandlerNum.needconfig = False
     getUIHandlerNum.readonly = True
 
     def setEventMask(self, command, params):
+        """
+        Function path : debug event handler
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            params: (dict): write your description
+        """
         handlerNum = params[0]
         llevel = params[1]
         debug_domains = params[2]
@@ -261,6 +361,14 @@ class CommandsSync:
     setFeatures.readonly = True
 
     def updateConfig(self, command, params):
+        """
+        Updates the command.
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            params: (list): write your description
+        """
         options = params[0]
         environment = params[1]
         cmdline = params[2]
@@ -276,6 +384,14 @@ class CommandsSync:
     parseConfiguration.needconfig = False
 
     def getLayerPriorities(self, command, params):
+        """
+        Parse a list from the command.
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            params: (dict): write your description
+        """
         command.cooker.parseConfiguration()
         ret = []
         # regex objects cannot be marshalled by xmlrpc
@@ -285,6 +401,14 @@ class CommandsSync:
     getLayerPriorities.readonly = True
 
     def getRecipes(self, command, params):
+        """
+        Returns a list of recipes.
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            params: (dict): write your description
+        """
         try:
             mc = params[0]
         except IndexError:
@@ -293,6 +417,14 @@ class CommandsSync:
     getRecipes.readonly = True
 
     def getRecipeDepends(self, command, params):
+        """
+        Return a list of recipes for the given command.
+
+        Args:
+            self: (todo): write your description
+            command: (todo): write your description
+            params: (dict): write your description
+        """
         try:
             mc = params[0]
         except IndexError:
@@ -301,6 +433,14 @@ class CommandsSync:
     getRecipeDepends.readonly = True
 
     def getRecipeVersions(self, command, params):
+        """
+        Returns a list of - packages for a given command.
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            params: (dict): write your description
+        """
         try:
             mc = params[0]
         except IndexError:
@@ -309,6 +449,14 @@ class CommandsSync:
     getRecipeVersions.readonly = True
 
     def getRecipeProvides(self, command, params):
+        """
+        Returns a list of recipes.
+
+        Args:
+            self: (todo): write your description
+            command: (todo): write your description
+            params: (dict): write your description
+        """
         try:
             mc = params[0]
         except IndexError:
@@ -317,6 +465,14 @@ class CommandsSync:
     getRecipeProvides.readonly = True
 
     def getRecipePackages(self, command, params):
+        """
+        Returns a list of packages.
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            params: (dict): write your description
+        """
         try:
             mc = params[0]
         except IndexError:
@@ -325,6 +481,14 @@ class CommandsSync:
     getRecipePackages.readonly = True
 
     def getRecipePackagesDynamic(self, command, params):
+        """
+        Returns a list of recipes of a given command.
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            params: (dict): write your description
+        """
         try:
             mc = params[0]
         except IndexError:
@@ -333,6 +497,14 @@ class CommandsSync:
     getRecipePackagesDynamic.readonly = True
 
     def getRProviders(self, command, params):
+        """
+        Returns a list
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            params: (dict): write your description
+        """
         try:
             mc = params[0]
         except IndexError:
@@ -341,6 +513,14 @@ class CommandsSync:
     getRProviders.readonly = True
 
     def getRuntimeDepends(self, command, params):
+        """
+        Return a list of recipes.
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            params: (dict): write your description
+        """
         ret = []
         try:
             mc = params[0]
@@ -355,6 +535,14 @@ class CommandsSync:
     getRuntimeDepends.readonly = True
 
     def getRuntimeRecommends(self, command, params):
+        """
+        Get a list of recipes.
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            params: (dict): write your description
+        """
         ret = []
         try:
             mc = params[0]
@@ -369,6 +557,14 @@ class CommandsSync:
     getRuntimeRecommends.readonly = True
 
     def getRecipeInherits(self, command, params):
+        """
+        Returns a list of recipes.
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            params: (dict): write your description
+        """
         try:
             mc = params[0]
         except IndexError:
@@ -377,6 +573,14 @@ class CommandsSync:
     getRecipeInherits.readonly = True
 
     def getBbFilePriority(self, command, params):
+        """
+        Get bbbbbbbbbbbbbbb command.
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            params: (dict): write your description
+        """
         try:
             mc = params[0]
         except IndexError:
@@ -385,6 +589,14 @@ class CommandsSync:
     getBbFilePriority.readonly = True
 
     def getDefaultPreference(self, command, params):
+        """
+        Returns a list of the given command.
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            params: (dict): write your description
+        """
         try:
             mc = params[0]
         except IndexError:
@@ -393,6 +605,14 @@ class CommandsSync:
     getDefaultPreference.readonly = True
 
     def getSkippedRecipes(self, command, params):
+        """
+        Return a list of command parameters.
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            params: (dict): write your description
+        """
         # Return list sorted by reverse priority order
         import bb.cache
         skipdict = OrderedDict(sorted(command.cooker.skiplist.items(),
@@ -401,28 +621,76 @@ class CommandsSync:
     getSkippedRecipes.readonly = True
 
     def getOverlayedRecipes(self, command, params):
+        """
+        Returns a list of command instances.
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            params: (dict): write your description
+        """
         return list(command.cooker.collection.overlayed.items())
     getOverlayedRecipes.readonly = True
 
     def getFileAppends(self, command, params):
+        """
+        Gets command parameters.
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            params: (dict): write your description
+        """
         fn = params[0]
         return command.cooker.collection.get_file_appends(fn)
     getFileAppends.readonly = True
 
     def getAllAppends(self, command, params):
+        """
+        Get all command commands.
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            params: (dict): write your description
+        """
         return command.cooker.collection.bbappends
     getAllAppends.readonly = True
 
     def findProviders(self, command, params):
+        """
+        Returns a list.
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            params: (dict): write your description
+        """
         return command.cooker.findProviders()
     findProviders.readonly = True
 
     def findBestProvider(self, command, params):
+        """
+        Finds a singleton parameters.
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            params: (dict): write your description
+        """
         (mc, pn) = split_mc_pn(params[0])
         return command.cooker.findBestProvider(pn, mc)
     findBestProvider.readonly = True
 
     def allProviders(self, command, params):
+        """
+        List all providers.
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            params: (dict): write your description
+        """
         try:
             mc = params[0]
         except IndexError:
@@ -431,6 +699,14 @@ class CommandsSync:
     allProviders.readonly = True
 
     def getRuntimeProviders(self, command, params):
+        """
+        Execute providers.
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            params: (dict): write your description
+        """
         rprovide = params[0]
         try:
             mc = params[1]
@@ -447,6 +723,14 @@ class CommandsSync:
     getRuntimeProviders.readonly = True
 
     def dataStoreConnectorFindVar(self, command, params):
+        """
+        Function to find a datastore for a given command.
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            params: (dict): write your description
+        """
         dsindex = params[0]
         name = params[1]
         datastore = command.remotedatastores[dsindex]
@@ -473,12 +757,28 @@ class CommandsSync:
     dataStoreConnectorFindVar.readonly = True
 
     def dataStoreConnectorGetKeys(self, command, params):
+        """
+        Retrieve datast datastore.
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            params: (dict): write your description
+        """
         dsindex = params[0]
         datastore = command.remotedatastores[dsindex]
         return list(datastore.keys())
     dataStoreConnectorGetKeys.readonly = True
 
     def dataStoreConnectorGetVarHistory(self, command, params):
+        """
+        Get datast history for a given command.
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            params: (dict): write your description
+        """
         dsindex = params[0]
         name = params[1]
         datastore = command.remotedatastores[dsindex]
@@ -486,6 +786,14 @@ class CommandsSync:
     dataStoreConnectorGetVarHistory.readonly = True
 
     def dataStoreConnectorExpandPythonRef(self, command, params):
+        """
+        Evaluate a subastore command.
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            params: (dict): write your description
+        """
         config_data_dict = params[0]
         varname = params[1]
         expr = params[2]
@@ -496,12 +804,28 @@ class CommandsSync:
         return varparse.python_sub(expr)
 
     def dataStoreConnectorRelease(self, command, params):
+        """
+        Sets the index of the datastore.
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            params: (dict): write your description
+        """
         dsindex = params[0]
         if dsindex <= 0:
             raise CommandError('dataStoreConnectorRelease: invalid index %d' % dsindex)
         command.remotedatastores.release(dsindex)
 
     def dataStoreConnectorSetVarFlag(self, command, params):
+        """
+        Sets datastatastore
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            params: (dict): write your description
+        """
         dsindex = params[0]
         name = params[1]
         flag = params[2]
@@ -510,6 +834,14 @@ class CommandsSync:
         datastore.setVarFlag(name, flag, value)
 
     def dataStoreConnectorDelVar(self, command, params):
+        """
+        Api to remove a datastore
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            params: (dict): write your description
+        """
         dsindex = params[0]
         name = params[1]
         datastore = command.remotedatastores[dsindex]
@@ -520,6 +852,14 @@ class CommandsSync:
             datastore.delVar(name)
 
     def dataStoreConnectorRenameVar(self, command, params):
+        """
+        Set the datastqore name of a datastore.
+
+        Args:
+            self: (todo): write your description
+            command: (str): write your description
+            params: (dict): write your description
+        """
         dsindex = params[0]
         name = params[1]
         newname = params[2]

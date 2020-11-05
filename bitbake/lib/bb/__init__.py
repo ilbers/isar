@@ -33,25 +33,68 @@ import logging
 
 class NullHandler(logging.Handler):
     def emit(self, record):
+        """
+        Emit a record.
+
+        Args:
+            self: (todo): write your description
+            record: (todo): write your description
+        """
         pass
 
 Logger = logging.getLoggerClass()
 class BBLogger(Logger):
     def __init__(self, name):
+        """
+        Initialize a logger
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+        """
         if name.split(".")[0] == "BitBake":
             self.debug = self.bbdebug
         Logger.__init__(self, name)
 
     def bbdebug(self, level, msg, *args, **kwargs):
+        """
+        Log msg with debug
+
+        Args:
+            self: (todo): write your description
+            level: (str): write your description
+            msg: (str): write your description
+        """
         return self.log(logging.DEBUG - level + 1, msg, *args, **kwargs)
 
     def plain(self, msg, *args, **kwargs):
+        """
+        Log msg with severity severity.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         return self.log(logging.INFO + 1, msg, *args, **kwargs)
 
     def verbose(self, msg, *args, **kwargs):
+        """
+        Log msg with verbose level.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         return self.log(logging.INFO - 1, msg, *args, **kwargs)
 
     def verbnote(self, msg, *args, **kwargs):
+        """
+        Log msg with severity severity.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         return self.log(logging.INFO + 2, msg, *args, **kwargs)
 
 
@@ -73,9 +116,20 @@ sys.modules['bb.fetch'] = sys.modules['bb.fetch2']
 
 # Messaging convenience functions
 def plain(*args):
+    """
+    Convenvenio.
+
+    Args:
+    """
     mainlogger.plain(''.join(args))
 
 def debug(lvl, *args):
+    """
+    Print a debug information.
+
+    Args:
+        lvl: (todo): write your description
+    """
     if isinstance(lvl, str):
         mainlogger.warning("Passed invalid debug level '%s' to bb.debug", lvl)
         args = (lvl,) + args
@@ -83,6 +137,11 @@ def debug(lvl, *args):
     mainlogger.debug(lvl, ''.join(args))
 
 def note(*args):
+    """
+    Display a note
+
+    Args:
+    """
     mainlogger.info(''.join(args))
 
 #
@@ -92,18 +151,38 @@ def note(*args):
 # something to make it happen
 #
 def verbnote(*args):
+    """
+    Verbnote
+
+    Args:
+    """
     mainlogger.verbnote(''.join(args))
 
 #
 # Warnings - things the user likely needs to pay attention to and fix
 #
 def warn(*args):
+    """
+    Print a warning.
+
+    Args:
+    """
     mainlogger.warning(''.join(args))
 
 def error(*args, **kwargs):
+    """
+    Return an error message
+
+    Args:
+    """
     mainlogger.error(''.join(args), extra=kwargs)
 
 def fatal(*args, **kwargs):
+    """
+    Wrapper for stderr.
+
+    Args:
+    """
     mainlogger.critical(''.join(args), extra=kwargs)
     raise BBHandledException()
 
@@ -119,6 +198,11 @@ def deprecated(func, name=None, advice=""):
         name = func.__name__
 
     def newFunc(*args, **kwargs):
+        """
+        Deprecated.
+
+        Args:
+        """
         warnings.warn("Call to deprecated function %s%s." % (name,
                                                              advice),
                       category=DeprecationWarning,

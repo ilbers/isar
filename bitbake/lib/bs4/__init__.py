@@ -122,6 +122,13 @@ class BeautifulSoup(Tag):
                 "XML.")
 
         def deprecated_argument(old_name, new_name):
+            """
+            This is used to be deprecated.
+
+            Args:
+                old_name: (str): write your description
+                new_name: (str): write your description
+            """
             if old_name in kwargs:
                 warnings.warn(
                     'The "%s" argument to the BeautifulSoup constructor '
@@ -223,9 +230,21 @@ class BeautifulSoup(Tag):
         self.builder.soup = None
 
     def __copy__(self):
+        """
+        Returns a copy of this type.
+
+        Args:
+            self: (todo): write your description
+        """
         return type(self)(self.encode(), builder=self.builder)
 
     def __getstate__(self):
+        """
+        Get the state of the state.
+
+        Args:
+            self: (todo): write your description
+        """
         # Frequently a tree builder can't be pickled.
         d = dict(self.__dict__)
         if 'builder' in d and not self.builder.picklable:
@@ -233,6 +252,12 @@ class BeautifulSoup(Tag):
         return d
 
     def _feed(self):
+        """
+        Called bytestring.
+
+        Args:
+            self: (todo): write your description
+        """
         # Convert the document to Unicode.
         self.builder.reset()
 
@@ -243,6 +268,12 @@ class BeautifulSoup(Tag):
             self.popTag()
 
     def reset(self):
+        """
+        Reset this tag.
+
+        Args:
+            self: (todo): write your description
+        """
         Tag.__init__(self, self, self.builder, self.ROOT_TAG_NAME)
         self.hidden = 1
         self.builder.reset()
@@ -261,12 +292,32 @@ class BeautifulSoup(Tag):
         return subclass(s)
 
     def insert_before(self, successor):
+        """
+        Inserts the given success.
+
+        Args:
+            self: (todo): write your description
+            successor: (str): write your description
+        """
         raise NotImplementedError("BeautifulSoup objects don't support insert_before().")
 
     def insert_after(self, successor):
+        """
+        Inserts the given success.
+
+        Args:
+            self: (todo): write your description
+            successor: (str): write your description
+        """
         raise NotImplementedError("BeautifulSoup objects don't support insert_after().")
 
     def popTag(self):
+        """
+        Removes the previous tag from the stack.
+
+        Args:
+            self: (todo): write your description
+        """
         tag = self.tagStack.pop()
         if self.preserve_whitespace_tag_stack and tag == self.preserve_whitespace_tag_stack[-1]:
             self.preserve_whitespace_tag_stack.pop()
@@ -276,6 +327,13 @@ class BeautifulSoup(Tag):
         return self.currentTag
 
     def pushTag(self, tag):
+        """
+        Add a tag to the current stack.
+
+        Args:
+            self: (todo): write your description
+            tag: (str): write your description
+        """
         #print "Push", tag.name
         if self.currentTag:
             self.currentTag.contents.append(tag)
@@ -285,6 +343,14 @@ class BeautifulSoup(Tag):
             self.preserve_whitespace_tag_stack.append(tag)
 
     def endData(self, containerClass=NavigableString):
+        """
+        Parses the data.
+
+        Args:
+            self: (todo): write your description
+            containerClass: (str): write your description
+            NavigableString: (str): write your description
+        """
         if self.current_data:
             current_data = ''.join(self.current_data)
             # If whitespace is not preserved, and this string contains
@@ -411,11 +477,26 @@ class BeautifulSoup(Tag):
         return tag
 
     def handle_endtag(self, name, nsprefix=None):
+        """
+        Handle endtag tag
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            nsprefix: (str): write your description
+        """
         #print "End tag: " + name
         self.endData()
         self._popToTag(name, nsprefix)
 
     def handle_data(self, data):
+        """
+        Handle data
+
+        Args:
+            self: (todo): write your description
+            data: (todo): write your description
+        """
         self.current_data.append(data)
 
     def decode(self, pretty_print=False,
@@ -447,6 +528,12 @@ class BeautifulStoneSoup(BeautifulSoup):
     """Deprecated interface to an XML parser."""
 
     def __init__(self, *args, **kwargs):
+        """
+        Initialize this method initial values.
+
+        Args:
+            self: (todo): write your description
+        """
         kwargs['features'] = 'xml'
         warnings.warn(
             'The BeautifulStoneSoup class is deprecated. Instead of using '

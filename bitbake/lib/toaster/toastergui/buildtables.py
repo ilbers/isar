@@ -17,6 +17,12 @@ from toastergui.tablefilter import TableFilterActionToggle
 
 class BuildTablesMixin(ToasterTable):
     def get_context_data(self, **kwargs):
+        """
+        Returns context data.
+
+        Args:
+            self: (todo): write your description
+        """
         # We need to be explicit about which superclass we're calling here
         # Otherwise the MRO gets in a right mess
         context = ToasterTable.get_context_data(self, **kwargs)
@@ -27,11 +33,23 @@ class BuildTablesMixin(ToasterTable):
 class BuiltPackagesTableBase(tables.PackagesTable):
     """ Table to display all the packages built in a build """
     def __init__(self, *args, **kwargs):
+        """
+        Initialize the blueprint.
+
+        Args:
+            self: (todo): write your description
+        """
         super(BuiltPackagesTableBase, self).__init__(*args, **kwargs)
         self.title = "Packages built"
         self.default_orderby = "name"
 
     def setup_queryset(self, *args, **kwargs):
+        """
+        Sets up the package queryset.
+
+        Args:
+            self: (todo): write your description
+        """
         build = Build.objects.get(pk=kwargs['build_id'])
         self.static_context_extra['build'] = build
         self.static_context_extra['target_name'] = None
@@ -39,6 +57,12 @@ class BuiltPackagesTableBase(tables.PackagesTable):
         self.queryset = self.queryset.order_by(self.default_orderby)
 
     def setup_columns(self, *args, **kwargs):
+        """
+        Add columns to the recipe.
+
+        Args:
+            self: (todo): write your description
+        """
         super(BuiltPackagesTableBase, self).setup_columns(*args, **kwargs)
 
         def pkg_link_template(val):
@@ -52,6 +76,12 @@ class BuiltPackagesTableBase(tables.PackagesTable):
                     ''' % val)
 
         def recipe_link_template(val):
+            """
+            Returns a link template.
+
+            Args:
+                val: (float): write your description
+            """
             return ('''
                     {%% if data.recipe %%}
                     <a href="
@@ -132,6 +162,12 @@ class BuiltPackagesTableBase(tables.PackagesTable):
 class BuiltPackagesTable(BuildTablesMixin, BuiltPackagesTableBase):
     """ Show all the packages built for the selected build """
     def __init__(self, *args, **kwargs):
+        """
+        Initialize the blueprint.
+
+        Args:
+            self: (todo): write your description
+        """
         super(BuiltPackagesTable, self).__init__(*args, **kwargs)
         self.title = "Packages built"
         self.default_orderby = "name"
@@ -145,9 +181,21 @@ class BuiltPackagesTable(BuildTablesMixin, BuiltPackagesTableBase):
              'but it does make everything faster.')
 
     def setup_columns(self, *args, **kwargs):
+        """
+        Sets the columns.
+
+        Args:
+            self: (todo): write your description
+        """
         super(BuiltPackagesTable, self).setup_columns(*args, **kwargs)
 
         def remove_dep_cols(columns):
+            """
+            Remove columns from columns
+
+            Args:
+                columns: (list): write your description
+            """
             for column in columns:
                 # We don't need these fields
                 if column['static_data_name'] in ['reverse_dependencies',
@@ -162,11 +210,24 @@ class BuiltPackagesTable(BuildTablesMixin, BuiltPackagesTableBase):
 class InstalledPackagesTable(BuildTablesMixin, BuiltPackagesTableBase):
     """ Show all packages installed in an image """
     def __init__(self, *args, **kwargs):
+        """
+        Initialize the default extensions.
+
+        Args:
+            self: (todo): write your description
+        """
         super(InstalledPackagesTable, self).__init__(*args, **kwargs)
         self.title = "Packages Included"
         self.default_orderby = "name"
 
     def make_package_list(self, target):
+        """
+        Return a list of packages that match the given target.
+
+        Args:
+            self: (todo): write your description
+            target: (todo): write your description
+        """
         # The database design means that you get the intermediate objects and
         # not package objects like you'd really want so we get them here
         pkgs = target.target_installed_package_set.values_list('package',
@@ -174,6 +235,12 @@ class InstalledPackagesTable(BuildTablesMixin, BuiltPackagesTableBase):
         return Package.objects.filter(pk__in=pkgs)
 
     def get_context_data(self, **kwargs):
+        """
+        Returns context data to context.
+
+        Args:
+            self: (todo): write your description
+        """
         context = super(InstalledPackagesTable,
                         self).get_context_data(**kwargs)
 
@@ -187,6 +254,12 @@ class InstalledPackagesTable(BuildTablesMixin, BuiltPackagesTableBase):
         return context
 
     def setup_queryset(self, *args, **kwargs):
+        """
+        Set up the context menu to the context.
+
+        Args:
+            self: (todo): write your description
+        """
         build = Build.objects.get(pk=kwargs['build_id'])
         self.static_context_extra['build'] = build
 
@@ -202,6 +275,12 @@ class InstalledPackagesTable(BuildTablesMixin, BuiltPackagesTableBase):
         self.queryset = self.queryset.order_by(self.default_orderby)
 
     def setup_columns(self, *args, **kwargs):
+        """
+        Add the columns
+
+        Args:
+            self: (todo): write your description
+        """
         super(InstalledPackagesTable, self).setup_columns(**kwargs)
         self.add_column(title="Installed size",
                         static_data_name="installed_size",
@@ -232,17 +311,35 @@ class BuiltRecipesTable(BuildTablesMixin):
     """ Table to show the recipes that have been built in this build """
 
     def __init__(self, *args, **kwargs):
+        """
+        Initialize this class.
+
+        Args:
+            self: (todo): write your description
+        """
         super(BuiltRecipesTable, self).__init__(*args, **kwargs)
         self.title = "Recipes built"
         self.default_orderby = "name"
 
     def setup_queryset(self, *args, **kwargs):
+        """
+        Set up the queryset for the context.
+
+        Args:
+            self: (todo): write your description
+        """
         build = Build.objects.get(pk=kwargs['build_id'])
         self.static_context_extra['build'] = build
         self.queryset = build.get_recipes()
         self.queryset = self.queryset.order_by(self.default_orderby)
 
     def setup_columns(self, *args, **kwargs):
+        """
+        Add columns
+
+        Args:
+            self: (todo): write your description
+        """
         recipe_name_tmpl =\
             '<a href="{% url "recipe" extra.build.pk data.pk %}">'\
             '{{data.name}}'\
@@ -374,6 +471,12 @@ class BuildTasksTable(BuildTablesMixin):
     """ Table to show the tasks that run in this build """
 
     def __init__(self, *args, **kwargs):
+        """
+        Initialize widget
+
+        Args:
+            self: (todo): write your description
+        """
         super(BuildTasksTable, self).__init__(*args, **kwargs)
         self.title = "Tasks"
         self.default_orderby = "order"
@@ -382,12 +485,24 @@ class BuildTasksTable(BuildTablesMixin):
         self.toggle_columns = {}
 
     def setup_queryset(self, *args, **kwargs):
+        """
+        Set up the queryset based on the context.
+
+        Args:
+            self: (todo): write your description
+        """
         build = Build.objects.get(pk=kwargs['build_id'])
         self.static_context_extra['build'] = build
         self.queryset = build.task_build.filter(~Q(order=None))
         self.queryset = self.queryset.order_by(self.default_orderby)
 
     def setup_filters(self, *args, **kwargs):
+        """
+        Setup filters
+
+        Args:
+            self: (todo): write your description
+        """
         # Execution outcome types filter
         executed_outcome = TableFilter(name="execution_outcome",
                                        title="Filter Tasks by 'Executed")
@@ -436,6 +551,12 @@ class BuildTasksTable(BuildTablesMixin):
         self.add_filter(task_outcome)
 
     def setup_columns(self, *args, **kwargs):
+        """
+        Add the columns
+
+        Args:
+            self: (todo): write your description
+        """
         self.toggle_columns['order'] = len(self.columns)
 
         recipe_name_tmpl =\
@@ -444,6 +565,12 @@ class BuildTasksTable(BuildTablesMixin):
             '</a>'
 
         def task_link_tmpl(val):
+            """
+            Return the link link link link.
+
+            Args:
+                val: (float): write your description
+            """
             return ('<a name="task-{{data.order}}"'
                     'href="{%% url "task" extra.build.pk data.pk %%}">'
                     '%s'
@@ -551,10 +678,22 @@ class BuildTimeTable(BuildTasksTable):
     """ Same as tasks table but the Time column is default displayed"""
 
     def __init__(self, *args, **kwargs):
+        """
+        Initialize the table.
+
+        Args:
+            self: (todo): write your description
+        """
         super(BuildTimeTable, self).__init__(*args, **kwargs)
         self.default_orderby = "-elapsed_time"
 
     def setup_columns(self, *args, **kwargs):
+        """
+        Add columns to display
+
+        Args:
+            self: (todo): write your description
+        """
         super(BuildTimeTable, self).setup_columns(**kwargs)
 
         self.columns[self.toggle_columns['order']]['hidden'] = True
@@ -567,10 +706,22 @@ class BuildCPUTimeTable(BuildTasksTable):
     """ Same as tasks table but the CPU usage columns are default displayed"""
 
     def __init__(self, *args, **kwargs):
+        """
+        Initialize the table.
+
+        Args:
+            self: (todo): write your description
+        """
         super(BuildCPUTimeTable, self).__init__(*args, **kwargs)
         self.default_orderby = "-cpu_time_system"
 
     def setup_columns(self, *args, **kwargs):
+        """
+        Setup the columns
+
+        Args:
+            self: (todo): write your description
+        """
         super(BuildCPUTimeTable, self).setup_columns(**kwargs)
 
         self.columns[self.toggle_columns['order']]['hidden'] = True
@@ -584,10 +735,22 @@ class BuildIOTable(BuildTasksTable):
     """ Same as tasks table but the Disk IO column is default displayed"""
 
     def __init__(self, *args, **kwargs):
+        """
+        Initialize this class.
+
+        Args:
+            self: (todo): write your description
+        """
         super(BuildIOTable, self).__init__(*args, **kwargs)
         self.default_orderby = "-disk_io"
 
     def setup_columns(self, *args, **kwargs):
+        """
+        Setup columns
+
+        Args:
+            self: (todo): write your description
+        """
         super(BuildIOTable, self).setup_columns(**kwargs)
 
         self.columns[self.toggle_columns['order']]['hidden'] = True

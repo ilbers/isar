@@ -49,6 +49,13 @@ class MimeTypeFinder(object):
     # or 'application/octet-stream' if the type couldn't be guessed
     @classmethod
     def get_mimetype(self, path):
+        """
+        Return the mimetype for the given path.
+
+        Args:
+            self: (todo): write your description
+            path: (str): write your description
+        """
         guess = mimetypes.guess_type(path, self._strict)
         guessed_type = guess[0]
         if guessed_type == None:
@@ -57,6 +64,14 @@ class MimeTypeFinder(object):
 
 # single point to add global values into the context before rendering
 def toaster_render(request, page, context):
+    """
+    Render a render page
+
+    Args:
+        request: (todo): write your description
+        page: (todo): write your description
+        context: (dict): write your description
+    """
     context['project_enable'] = project_enable
     context['project_specific'] = is_project_specific
     return render(request, page, context)
@@ -65,6 +80,12 @@ def toaster_render(request, page, context):
 # all new sessions should come through the landing page;
 # determine in which mode we are running in, and redirect appropriately
 def landing(request):
+    """
+    Displays the default builds.
+
+    Args:
+        request: (todo): write your description
+    """
     # in build mode, we redirect to the command-line builds page
     # if there are any builds for the default (cli builds) project
     default_project = Project.objects.get_or_create_default_project()
@@ -86,6 +107,12 @@ def landing(request):
     return toaster_render(request, 'landing.html', context)
 
 def objtojson(obj):
+    """
+    Serializes a model instance to json.
+
+    Args:
+        obj: (todo): write your description
+    """
     from django.db.models.query import QuerySet
     from django.db.models import Model
 
@@ -118,8 +145,21 @@ def objtojson(obj):
 
 
 def _lv_to_dict(prj, x = None):
+    """
+    Convert a dict to a dict.
+
+    Args:
+        prj: (todo): write your description
+        x: (todo): write your description
+    """
     if x is None:
         def wrapper(x):
+            """
+            Decorator to a dict.
+
+            Args:
+                x: (int): write your description
+            """
             return _lv_to_dict(prj, x)
         return wrapper
 
@@ -134,6 +174,13 @@ def _lv_to_dict(prj, x = None):
 
 
 def _build_page_range(paginator, index = 1):
+    """
+    Build a page range from a page.
+
+    Args:
+        paginator: (todo): write your description
+        index: (int): write your description
+    """
     try:
         page = paginator.page(index)
     except PageNotAnInteger:
@@ -157,6 +204,13 @@ def _build_page_range(paginator, index = 1):
 
 
 def _verify_parameters(g, mandatory_parameters):
+    """
+    Verify parameters.
+
+    Args:
+        g: (str): write your description
+        mandatory_parameters: (list): write your description
+    """
     miss = []
     for mp in mandatory_parameters:
         if not mp in g:
@@ -166,6 +220,14 @@ def _verify_parameters(g, mandatory_parameters):
     return None
 
 def _redirect_parameters(view, g, mandatory_parameters, *args, **kwargs):
+    """
+    Redirects parameters to a url.
+
+    Args:
+        view: (todo): write your description
+        g: (todo): write your description
+        mandatory_parameters: (str): write your description
+    """
     try:
         from urllib import unquote, urlencode
     except ImportError:
@@ -182,6 +244,15 @@ def _redirect_parameters(view, g, mandatory_parameters, *args, **kwargs):
 
 class RedirectException(Exception):
     def __init__(self, view, g, mandatory_parameters, *args, **kwargs):
+        """
+        Initialize the view
+
+        Args:
+            self: (todo): write your description
+            view: (bool): write your description
+            g: (int): write your description
+            mandatory_parameters: (todo): write your description
+        """
         super(RedirectException, self).__init__()
         self.view = view
         self.g = g
@@ -190,6 +261,12 @@ class RedirectException(Exception):
         self.okwargs = kwargs
 
     def get_redirect_response(self):
+        """
+        Return the redirect url.
+
+        Args:
+            self: (todo): write your description
+        """
         return _redirect_parameters(self.view, self.g, self.mandatory_parameters, self.oargs, **self.okwargs)
 
 FIELD_SEPARATOR = ":"
@@ -198,6 +275,13 @@ OR_VALUE_SEPARATOR = "|"
 DESCENDING = "-"
 
 def __get_q_for_val(name, value):
+    """
+    Get q - style q - style q - value.
+
+    Args:
+        name: (str): write your description
+        value: (str): write your description
+    """
     if "OR" in value or "AND" in value:
         result = None
         for x in value.split("OR"):
@@ -223,6 +307,12 @@ def __get_q_for_val(name, value):
         return Q(**kwargs)
 
 def _get_filtering_query(filter_string):
+    """
+    Parse filters from a string.
+
+    Args:
+        filter_string: (str): write your description
+    """
 
     search_terms = filter_string.split(FIELD_SEPARATOR)
     and_keys = search_terms[0].split(AND_VALUE_SEPARATOR)
@@ -242,12 +332,27 @@ def _get_filtering_query(filter_string):
     return and_query
 
 def _get_toggle_order(request, orderkey, toggle_reverse = False):
+    """
+    Returns the order for the request.
+
+    Args:
+        request: (todo): write your description
+        orderkey: (str): write your description
+        toggle_reverse: (todo): write your description
+    """
     if toggle_reverse:
         return "%s:+" % orderkey if request.GET.get('orderby', "") == "%s:-" % orderkey else "%s:-" % orderkey
     else:
         return "%s:-" % orderkey if request.GET.get('orderby', "") == "%s:+" % orderkey else "%s:+" % orderkey
 
 def _get_toggle_order_icon(request, orderkey):
+    """
+    Returns the icon icon.
+
+    Args:
+        request: (todo): write your description
+        orderkey: (str): write your description
+    """
     if request.GET.get('orderby', "") == "%s:+"%orderkey:
         return "down"
     elif request.GET.get('orderby', "") == "%s:-"%orderkey:
@@ -257,6 +362,13 @@ def _get_toggle_order_icon(request, orderkey):
 
 # we check that the input comes in a valid form that we can recognize
 def _validate_input(field_input, model):
+    """
+    Validate input.
+
+    Args:
+        field_input: (str): write your description
+        model: (str): write your description
+    """
 
     invalid = None
 
@@ -286,6 +398,14 @@ def _validate_input(field_input, model):
 # uses search_allowed_fields in orm/models.py to create a search query
 # for these fields with the supplied input text
 def _get_search_results(search_term, queryset, model):
+    """
+    Get a quereries.
+
+    Args:
+        search_term: (str): write your description
+        queryset: (todo): write your description
+        model: (todo): write your description
+    """
     search_object = None
     for st in search_term.split(" "):
         queries = None
@@ -302,6 +422,13 @@ def _get_search_results(search_term, queryset, model):
 # function to extract the search/filter/ordering parameters from the request
 # it uses the request and the model to validate input for the filter and orderby values
 def _search_tuple(request, model):
+    """
+    Takes a search string.
+
+    Args:
+        request: (todo): write your description
+        model: (todo): write your description
+    """
     ordering_string, invalid = _validate_input(request.GET.get('orderby', ''), model)
     if invalid:
         raise BaseException("Invalid ordering model:" + str(model) + str(invalid))
@@ -316,6 +443,17 @@ def _search_tuple(request, model):
 
 # returns a lazy-evaluated queryset for a filter/search/order combination
 def _get_queryset(model, queryset, filter_string, search_term, ordering_string, ordering_secondary=''):
+    """
+    Returns a queryset of queryset.
+
+    Args:
+        model: (str): write your description
+        queryset: (todo): write your description
+        filter_string: (str): write your description
+        search_term: (str): write your description
+        ordering_string: (str): write your description
+        ordering_secondary: (todo): write your description
+    """
     if filter_string:
         filter_query = _get_filtering_query(filter_string)
         queryset = queryset.filter(filter_query)
@@ -343,6 +481,14 @@ def _get_queryset(model, queryset, filter_string, search_term, ordering_string, 
 # if the value is given explicitly as a GET parameter it will be the first selected,
 # otherwise the cookie value will be used.
 def _get_parameters_values(request, default_count, default_order):
+    """
+    Returns a list of query. get_count_order.
+
+    Args:
+        request: (todo): write your description
+        default_count: (str): write your description
+        default_order: (todo): write your description
+    """
     current_url = resolve(request.path_info).url_name
     pagesize = request.GET.get('count', request.session.get('%s_count' % current_url, default_count))
     orderby = request.GET.get('orderby', request.session.get('%s_orderby' % current_url, default_order))
@@ -352,6 +498,14 @@ def _get_parameters_values(request, default_count, default_order):
 # set cookies for parameters. this is usefull in case parameters are set
 # manually from the GET values of the link
 def _set_parameters_values(pagesize, orderby, request):
+    """
+    Set the values of a list of pages.
+
+    Args:
+        pagesize: (int): write your description
+        orderby: (str): write your description
+        request: (todo): write your description
+    """
     from django.core.urlresolvers import resolve
     current_url = resolve(request.path_info).url_name
     request.session['%s_count' % current_url] = pagesize
@@ -359,6 +513,13 @@ def _set_parameters_values(pagesize, orderby, request):
 
 # date range: normalize GUI's dd/mm/yyyy to date object
 def _normalize_input_date(date_str,default):
+    """
+    Normalize input string.
+
+    Args:
+        date_str: (str): write your description
+        default: (todo): write your description
+    """
     date_str=re.sub('/', '-', date_str)
     # accept dd/mm/yyyy to d/m/yy
     try:
@@ -376,6 +537,12 @@ def _normalize_input_date(date_str,default):
 # "completed_on__gte!completed_on__lt:01/03/2015!02/03/2015_daterange" to
 # "completed_on__gte!completed_on__lt:2015-03-01!2015-03-02"
 def _modify_date_range_filter(filter_string):
+    """
+    Modify a date range.
+
+    Args:
+        filter_string: (str): write your description
+    """
     # was the date range radio button selected?
     if 0 >  filter_string.find('_daterange'):
         return filter_string,''
@@ -399,6 +566,14 @@ def _modify_date_range_filter(filter_string):
     return filter_string,daterange_selected
 
 def _add_daterange_context(queryset_all, request, daterange_list):
+    """
+    Add daterange to dater context.
+
+    Args:
+        queryset_all: (todo): write your description
+        request: (todo): write your description
+        daterange_list: (todo): write your description
+    """
     # calculate the exact begining of local today and yesterday
     today_begin = timezone.localtime(timezone.now())
     yesterday_begin = today_begin - timedelta(days=1)
@@ -428,6 +603,13 @@ def _add_daterange_context(queryset_all, request, daterange_list):
 # may generate multiple image files. display them all.
 #
 def builddashboard( request, build_id ):
+    """
+    Builds a dashboard.
+
+    Args:
+        request: (todo): write your description
+        build_id: (str): write your description
+    """
     template = "builddashboard.html"
     if Build.objects.filter( pk=build_id ).count( ) == 0 :
         return redirect( builds )
@@ -521,6 +703,12 @@ def builddashboard( request, build_id ):
 
 
 def generateCoveredList2( revlist = None ):
+    """
+    Generate a list of task revisions return a list.
+
+    Args:
+        revlist: (list): write your description
+    """
     if not revlist:
         revlist = []
     covered_list =  [ x for x in revlist if x.outcome == Task.OUTCOME_COVERED ]
@@ -536,6 +724,14 @@ def generateCoveredList2( revlist = None ):
     return revlist
 
 def task( request, build_id, task_id ):
+    """
+    Returns a list of task.
+
+    Args:
+        request: (todo): write your description
+        build_id: (str): write your description
+        task_id: (str): write your description
+    """
     template = "task.html"
     tasks_list = Task.objects.filter( pk=task_id )
     if tasks_list.count( ) == 0:
@@ -591,6 +787,15 @@ def task( request, build_id, task_id ):
     return toaster_render( request, template, context )
 
 def recipe(request, build_id, recipe_id, active_tab="1"):
+    """
+    Render a recipe.
+
+    Args:
+        request: (todo): write your description
+        build_id: (str): write your description
+        recipe_id: (str): write your description
+        active_tab: (bool): write your description
+    """
     template = "recipe.html"
     if Recipe.objects.filter(pk=recipe_id).count() == 0 :
         return redirect(builds)
@@ -618,6 +823,14 @@ def recipe(request, build_id, recipe_id, active_tab="1"):
     return toaster_render(request, template, context)
 
 def recipe_packages(request, build_id, recipe_id):
+    """
+    Determine the packages.
+
+    Args:
+        request: (todo): write your description
+        build_id: (str): write your description
+        recipe_id: (str): write your description
+    """
     template = "recipe_packages.html"
     if Recipe.objects.filter(pk=recipe_id).count() == 0 :
         return redirect(builds)
@@ -667,6 +880,14 @@ def recipe_packages(request, build_id, recipe_id):
 from django.core.serializers.json import DjangoJSONEncoder
 from django.http import HttpResponse
 def xhr_dirinfo(request, build_id, target_id):
+    """
+    Get information about a directory.
+
+    Args:
+        request: (todo): write your description
+        build_id: (str): write your description
+        target_id: (str): write your description
+    """
     top = request.GET.get('start', '/')
     return HttpResponse(_get_dir_entries(build_id, target_id, top), content_type = "application/json")
 
@@ -674,6 +895,13 @@ from django.utils.functional import Promise
 from django.utils.encoding import force_text
 class LazyEncoder(json.JSONEncoder):
     def default(self, obj):
+        """
+        Default encoder.
+
+        Args:
+            self: (todo): write your description
+            obj: (todo): write your description
+        """
         if isinstance(obj, Promise):
             return force_text(obj)
         return super(LazyEncoder, self).default(obj)
@@ -681,6 +909,14 @@ class LazyEncoder(json.JSONEncoder):
 from toastergui.templatetags.projecttags import filtered_filesizeformat
 import os
 def _get_dir_entries(build_id, target_id, start):
+    """
+    Get directory entries.
+
+    Args:
+        build_id: (str): write your description
+        target_id: (str): write your description
+        start: (todo): write your description
+    """
     node_str = {
         Target_File.ITYPE_REGULAR   : '-',
         Target_File.ITYPE_DIRECTORY : 'd',
@@ -785,11 +1021,23 @@ def dirinfo(request, build_id, target_id, file_path=None):
     return toaster_render(request, template, context)
 
 def _find_task_dep(task_object):
+    """
+    Return a list of task_objects.
+
+    Args:
+        task_object: (todo): write your description
+    """
     tdeps = Task_Dependency.objects.filter(task=task_object).filter(depends_on__order__gt=0)
     tdeps = tdeps.exclude(depends_on__outcome=Task.OUTCOME_NA).select_related("depends_on")
     return [x.depends_on for x in tdeps]
 
 def _find_task_revdep(task_object):
+    """
+    Find all task_objects.
+
+    Args:
+        task_object: (todo): write your description
+    """
     tdeps = Task_Dependency.objects.filter(depends_on=task_object).filter(task__order__gt=0)
     tdeps = tdeps.exclude(task__outcome = Task.OUTCOME_NA).select_related("task", "task__recipe", "task__build")
 
@@ -800,6 +1048,12 @@ def _find_task_revdep(task_object):
     return [tdep.task for tdep in tdeps]
 
 def _find_task_revdep_list(tasklist):
+    """
+    Return a list.
+
+    Args:
+        tasklist: (list): write your description
+    """
     tdeps = Task_Dependency.objects.filter(depends_on__in=tasklist).filter(task__order__gt=0)
     tdeps = tdeps.exclude(task__outcome=Task.OUTCOME_NA).select_related("task", "task__recipe", "task__build")
 
@@ -810,6 +1064,12 @@ def _find_task_revdep_list(tasklist):
     return [tdep.task for tdep in tdeps]
 
 def _find_task_provider(task_object):
+    """
+    Find the task object return none if it is found.
+
+    Args:
+        task_object: (str): write your description
+    """
     task_revdeps = _find_task_revdep(task_object)
     for tr in task_revdeps:
         if tr.outcome != Task.OUTCOME_COVERED:
@@ -821,6 +1081,13 @@ def _find_task_provider(task_object):
     return None
 
 def configuration(request, build_id):
+    """
+    Returns a build configuration
+
+    Args:
+        request: (todo): write your description
+        build_id: (str): write your description
+    """
     template = 'configuration.html'
 
     var_names = ('BB_VERSION', 'BUILD_SYS', 'NATIVELSBSTRING', 'TARGET_SYS',
@@ -838,6 +1105,13 @@ def configuration(request, build_id):
 
 
 def configvars(request, build_id):
+    """
+    Return a list of configvars
+
+    Args:
+        request: (todo): write your description
+        build_id: (str): write your description
+    """
     template = 'configvars.html'
     (pagesize, orderby) = _get_parameters_values(request, 100, 'variable_name:+')
     mandatory_parameters = { 'count': pagesize,  'page' : 1, 'orderby' : orderby, 'filter' : 'description__regex:.+' }
@@ -928,6 +1202,14 @@ def configvars(request, build_id):
     return response
 
 def bfile(request, build_id, package_id):
+    """
+    Return the contents of a jinaster.
+
+    Args:
+        request: (todo): write your description
+        build_id: (str): write your description
+        package_id: (str): write your description
+    """
     template = 'bfile.html'
     files = Package_File.objects.filter(package = package_id)
     build = Build.objects.get(pk=build_id)
@@ -961,6 +1243,14 @@ The lists are built in the sort order specified for the package runtime
 dependency views.
 """
 def _get_package_dependencies(package_id, target_id = INVALID_KEY):
+    """
+    Return a list of dependencies for a package.
+
+    Args:
+        package_id: (str): write your description
+        target_id: (str): write your description
+        INVALID_KEY: (str): write your description
+    """
     runtime_deps = []
     other_deps = []
     other_depends_types = OTHER_DEPENDS_BASE
@@ -1016,12 +1306,27 @@ def _get_package_dependencies(package_id, target_id = INVALID_KEY):
 
 # Return the count of packages dependent on package for this target_id image
 def _get_package_reverse_dep_count(package, target_id):
+    """
+    Return the dependency count of dependencies for a dependency.
+
+    Args:
+        package: (str): write your description
+        target_id: (str): write your description
+    """
     return package.package_dependencies_target.filter(target_id__exact=target_id, dep_type__exact = Package_Dependency.TYPE_TRDEPENDS).count()
 
 # Return the count of the packages that this package_id is dependent on.
 # Use one of the two RDEPENDS types, either TRDEPENDS if the package was
 # installed, or else RDEPENDS if only built.
 def _get_package_dependency_count(package, target_id, is_installed):
+    """
+    Return the number of dependencies of a given in the dependency.
+
+    Args:
+        package: (str): write your description
+        target_id: (str): write your description
+        is_installed: (str): write your description
+    """
     if is_installed :
         return package.package_dependencies_source.filter(target_id__exact = target_id,
             dep_type__exact = Package_Dependency.TYPE_TRDEPENDS).count()
@@ -1029,6 +1334,12 @@ def _get_package_dependency_count(package, target_id, is_installed):
         return package.package_dependencies_source.filter(dep_type__exact = Package_Dependency.TYPE_RDEPENDS).count()
 
 def _get_package_alias(package):
+    """
+    Return the alias of a package.
+
+    Args:
+        package: (str): write your description
+    """
     alias = package.installed_name
     if alias != None and alias != '' and alias != package.name:
         return alias
@@ -1036,6 +1347,12 @@ def _get_package_alias(package):
         return ''
 
 def _get_fullpackagespec(package):
+    """
+    Returns the full version string for the given package.
+
+    Args:
+        package: (str): write your description
+    """
     r = package.name
     version_good = package.version != None and  package.version != ''
     revision_good = package.revision != None and package.revision != ''
@@ -1050,6 +1367,14 @@ def _get_fullpackagespec(package):
     return r
 
 def package_built_detail(request, build_id, package_id):
+    """
+    Returns the details of a package.
+
+    Args:
+        request: (todo): write your description
+        build_id: (str): write your description
+        package_id: (str): write your description
+    """
     template = "package_built_detail.html"
     if Build.objects.filter(pk=build_id).count() == 0 :
         return redirect(builds)
@@ -1094,6 +1419,14 @@ def package_built_detail(request, build_id, package_id):
     return response
 
 def package_built_dependencies(request, build_id, package_id):
+    """
+    Displays package dependencies for the given package.
+
+    Args:
+        request: (todo): write your description
+        build_id: (str): write your description
+        package_id: (str): write your description
+    """
     template = "package_built_dependencies.html"
     if Build.objects.filter(pk=build_id).count() == 0 :
          return redirect(builds)
@@ -1112,6 +1445,15 @@ def package_built_dependencies(request, build_id, package_id):
 
 
 def package_included_detail(request, build_id, target_id, package_id):
+    """
+    Displays the list.
+
+    Args:
+        request: (todo): write your description
+        build_id: (str): write your description
+        target_id: (str): write your description
+        package_id: (str): write your description
+    """
     template = "package_included_detail.html"
     if Build.objects.filter(pk=build_id).count() == 0 :
         return redirect(builds)
@@ -1159,6 +1501,15 @@ def package_included_detail(request, build_id, target_id, package_id):
     return response
 
 def package_included_dependencies(request, build_id, target_id, package_id):
+    """
+    Returns the package dependencies of a package.
+
+    Args:
+        request: (todo): write your description
+        build_id: (str): write your description
+        target_id: (str): write your description
+        package_id: (str): write your description
+    """
     template = "package_included_dependencies.html"
     if Build.objects.filter(pk=build_id).count() == 0 :
         return redirect(builds)
@@ -1181,6 +1532,15 @@ def package_included_dependencies(request, build_id, target_id, package_id):
     return toaster_render(request, template, context)
 
 def package_included_reverse_dependencies(request, build_id, target_id, package_id):
+    """
+    Return a list of packages that have changed.
+
+    Args:
+        request: (todo): write your description
+        build_id: (str): write your description
+        target_id: (str): write your description
+        package_id: (str): write your description
+    """
     template = "package_included_reverse_dependencies.html"
     if Build.objects.filter(pk=build_id).count() == 0 :
         return redirect(builds)
@@ -1234,6 +1594,15 @@ def package_included_reverse_dependencies(request, build_id, target_id, package_
     return response
 
 def image_information_dir(request, build_id, target_id, packagefile_id):
+    """
+    Redirect information about a buildfile.
+
+    Args:
+        request: (todo): write your description
+        build_id: (int): write your description
+        target_id: (str): write your description
+        packagefile_id: (str): write your description
+    """
     # stubbed for now
     return redirect(builds)
     # the context processor that supplies data used across all the pages
@@ -1243,6 +1612,12 @@ def image_information_dir(request, build_id, target_id, packagefile_id):
 # variables referred to in templates, which used to determine the
 # visibility of UI elements like the "New build" button
 def managedcontextprocessor(request):
+    """
+    Returns a dict of context variables
+
+    Args:
+        request: (todo): write your description
+    """
     projects = Project.objects.all()
     ret = {
         "projects": projects,
@@ -1257,6 +1632,13 @@ def managedcontextprocessor(request):
 # managers and aggregators via JSON
 
 def _json_build_status(build_id,extend):
+    """
+    Return build status for a build
+
+    Args:
+        build_id: (str): write your description
+        extend: (todo): write your description
+    """
     build_stat = None
     try:
         build = Build.objects.get( pk = build_id )
@@ -1313,6 +1695,12 @@ def _json_build_status(build_id,extend):
     return build_stat
 
 def json_builds(request):
+    """
+    Returns a list of builds.
+
+    Args:
+        request: (todo): write your description
+    """
     build_table = []
     builds = []
     try:
@@ -1324,6 +1712,12 @@ def json_builds(request):
     return JsonResponse({'builds' : build_table, 'count' : len(builds)})
 
 def json_building(request):
+    """
+    Returns a list of all table.
+
+    Args:
+        request: (todo): write your description
+    """
     build_table = []
     builds = []
     try:
@@ -1335,6 +1729,13 @@ def json_building(request):
     return JsonResponse({'building' : build_table, 'count' : len(builds)})
 
 def json_build(request,build_id):
+    """
+    Build a build_build of a build_id
+
+    Args:
+        request: (todo): write your description
+        build_id: (str): write your description
+    """
     return JsonResponse({'build' : _json_build_status(build_id,True)})
 
 
@@ -1362,6 +1763,12 @@ if True:
 
     # new project
     def newproject(request):
+        """
+        Create a new project
+
+        Args:
+            request: (todo): write your description
+        """
         if not project_enable:
             return redirect( landing )
 
@@ -1435,6 +1842,13 @@ if True:
 
     # new project
     def newproject_specific(request, pid):
+        """
+        Render a new project.
+
+        Args:
+            request: (todo): write your description
+            pid: (int): write your description
+        """
         if not project_enable:
             return redirect( landing )
 
@@ -1505,6 +1919,13 @@ if True:
 
     # Shows the edit project page
     def project(request, pid):
+        """
+        Project project.
+
+        Args:
+            request: (todo): write your description
+            pid: (int): write your description
+        """
         project = Project.objects.get(pk=pid)
 
         if '1' == os.environ.get('TOASTER_PROJECTSPECIFIC'):
@@ -1519,6 +1940,13 @@ if True:
 
     # Shows the edit project-specific page
     def project_specific(request, pid):
+        """
+        Displays the pid
+
+        Args:
+            request: (todo): write your description
+            pid: (str): write your description
+        """
         project = Project.objects.get(pk=pid)
 
         # Are we refreshing from a successful project specific update clone?
@@ -1539,6 +1967,13 @@ if True:
 
     # perform the final actions for the project specific page
     def project_specific_finalize(cmnd, pid):
+        """
+        Called when the project.
+
+        Args:
+            cmnd: (todo): write your description
+            pid: (int): write your description
+        """
         project = Project.objects.get(pk=pid)
         callback = project.get_variable(Project.PROJECT_SPECIFIC_CALLBACK)
         if "update" == cmnd:
@@ -1572,6 +2007,13 @@ if True:
 
     # Shows the final landing page for project specific update
     def landing_specific(request, pid):
+        """
+        Render the pid.
+
+        Args:
+            request: (todo): write your description
+            pid: (str): write your description
+        """
         project_specific_finalize("update", pid)
         context = {
             "install_dir": os.environ['TOASTER_DIR'],
@@ -1580,6 +2022,13 @@ if True:
 
     # Shows the related landing-specific page
     def landing_specific_cancel(request, pid):
+        """
+        Cancel the pid pid.
+
+        Args:
+            request: (todo): write your description
+            pid: (str): write your description
+        """
         project_specific_finalize("cancel", pid)
         context = {
             "install_dir": os.environ['TOASTER_DIR'],
@@ -1617,6 +2066,12 @@ if True:
     @csrf_exempt
     def xhr_testreleasechange(request, pid):
         def response(data):
+            """
+            Convert the response. response.
+
+            Args:
+                data: (str): write your description
+            """
             return HttpResponse(jsonfilter(data),
                                 content_type="application/json")
 
@@ -1652,6 +2107,13 @@ if True:
             return response({"error": str(e) })
 
     def xhr_configvaredit(request, pid):
+        """
+        Configure pidvared.
+
+        Args:
+            request: (todo): write your description
+            pid: (str): write your description
+        """
         try:
             prj = Project.objects.get(id = pid)
             # There are cases where user can add variables which hold values
@@ -1730,6 +2192,14 @@ if True:
 
 
     def customrecipe_download(request, pid, recipe_id):
+        """
+        Download a specific recipe.
+
+        Args:
+            request: (todo): write your description
+            pid: (int): write your description
+            recipe_id: (str): write your description
+        """
         recipe = get_object_or_404(CustomImageRecipe, pk=recipe_id)
 
         file_data = recipe.generate_recipe_file_contents()
@@ -1742,6 +2212,13 @@ if True:
         return response
 
     def importlayer(request, pid):
+        """
+        Import a layer
+
+        Args:
+            request: (todo): write your description
+            pid: (int): write your description
+        """
         template = "importlayer.html"
         context = {
             'project': Project.objects.get(id=pid),
@@ -1749,6 +2226,14 @@ if True:
         return toaster_render(request, template, context)
 
     def layerdetails(request, pid, layerid):
+        """
+        Render layer details.
+
+        Args:
+            request: (todo): write your description
+            pid: (int): write your description
+            layerid: (todo): write your description
+        """
         project = Project.objects.get(pk=pid)
         layer_version = Layer_Version.objects.get(pk=layerid)
 
@@ -1779,6 +2264,11 @@ if True:
 
 
     def get_project_configvars_context():
+        """
+        Returns a context dict.
+
+        Args:
+        """
         # Vars managed outside of this view
         vars_managed = {
             'MACHINE', 'BBLAYERS'
@@ -1796,6 +2286,13 @@ if True:
         return(vars_managed,sorted(vars_fstypes),vars_blacklist)
 
     def projectconf(request, pid):
+        """
+        Get project configuration.
+
+        Args:
+            request: (todo): write your description
+            pid: (int): write your description
+        """
 
         try:
             prj = Project.objects.get(id = pid)

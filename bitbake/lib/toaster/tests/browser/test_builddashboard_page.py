@@ -19,6 +19,12 @@ class TestBuildDashboardPage(SeleniumTestCase):
     """ Tests for the build dashboard /build/X """
 
     def setUp(self):
+        """
+        Sets up the project object.
+
+        Args:
+            self: (todo): write your description
+        """
         bbv = BitbakeVersion.objects.create(name='bbv1', giturl='/tmp/',
                                             branch='master', dirpath="")
         release = Release.objects.create(name='release1',

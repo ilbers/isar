@@ -69,6 +69,15 @@ class PluginMgr:
 
 class PluginMeta(type):
     def __new__(cls, name, bases, attrs):
+        """
+        Create a new class.
+
+        Args:
+            cls: (todo): write your description
+            name: (str): write your description
+            bases: (todo): write your description
+            attrs: (dict): write your description
+        """
         class_type = type.__new__(cls, name, bases, attrs)
         if 'name' in attrs:
             PLUGINS[class_type.wic_plugin_type][attrs['name']] = class_type
@@ -79,6 +88,12 @@ class ImagerPlugin(metaclass=PluginMeta):
     wic_plugin_type = "imager"
 
     def do_create(self):
+        """
+        Creates a new instance.
+
+        Args:
+            self: (todo): write your description
+        """
         raise WicError("Method %s.do_create is not implemented" %
                        self.__class__.__name__)
 

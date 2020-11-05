@@ -35,6 +35,12 @@ if 'sqlite' in settings.DATABASES['default']['ENGINE']:
 
     _base_save = models.Model.save
     def save(self, *args, **kwargs):
+        """
+        Saves save method.
+
+        Args:
+            self: (todo): write your description
+        """
         while True:
             try:
                 with transaction.atomic():
@@ -54,6 +60,12 @@ if 'sqlite' in settings.DATABASES['default']['ENGINE']:
     from django.db.models.query import QuerySet
     _base_insert = QuerySet._insert
     def _insert(self,  *args, **kwargs):
+        """
+        Executes an http put request.
+
+        Args:
+            self: (todo): write your description
+        """
         with transaction.atomic(using=self.db, savepoint=False):
             return _base_insert(self, *args, **kwargs)
     QuerySet._insert = _insert
@@ -91,6 +103,11 @@ class GitURLValidator(validators.URLValidator):
         r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
 def GitURLField(**kwargs):
+    """
+    Create a validator to a list of fields.
+
+    Args:
+    """
     r = models.URLField(**kwargs)
     for i in range(len(r.validators)):
         if isinstance(r.validators[i], validators.URLValidator):
@@ -104,11 +121,26 @@ class ToasterSetting(models.Model):
     value = models.CharField(max_length=255)
 
     def __unicode__(self):
+        """
+        Return the unicode string representation of this variable.
+
+        Args:
+            self: (todo): write your description
+        """
         return "Setting %s = %s" % (self.name, self.value)
 
 
 class ProjectManager(models.Manager):
     def create_project(self, name, release, existing_project=None):
+        """
+        Create project
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            release: (str): write your description
+            existing_project: (str): write your description
+        """
         if existing_project and (release is not None):
             prj = existing_project
             prj.bitbake_version = release.bitbake_version
@@ -153,6 +185,12 @@ class ProjectManager(models.Manager):
 
     # return single object with is_default = True
     def get_or_create_default_project(self):
+        """
+        Creates project
+
+        Args:
+            self: (todo): write your description
+        """
         projects = super(ProjectManager, self).filter(is_default=True)
 
         if len(projects) > 1:
@@ -200,9 +238,21 @@ class Project(models.Model):
     is_default= models.BooleanField(default=False)
 
     def __unicode__(self):
+        """
+        Returns a string representation of this name.
+
+        Args:
+            self: (todo): write your description
+        """
         return "%s (Release %s, BBV %s)" % (self.name, self.release, self.bitbake_version)
 
     def get_current_machine_name(self):
+        """
+        Returns the current machine name
+
+        Args:
+            self: (todo): write your description
+        """
         try:
             return self.projectvariable_set.get(name="MACHINE").value
         except (ProjectVariable.DoesNotExist,IndexError):
@@ -217,12 +267,24 @@ class Project(models.Model):
         ).count()
 
     def get_last_build_id(self):
+        """
+        Returns the build id for the given project.
+
+        Args:
+            self: (todo): write your description
+        """
         try:
             return Build.objects.filter( project = self.id ).order_by('-completed_on')[0].id
         except (Build.DoesNotExist,IndexError):
             return( -1 )
 
     def get_last_outcome(self):
+        """
+        Gets the last build
+
+        Args:
+            self: (todo): write your description
+        """
         build_id = self.get_last_build_id()
         if (-1 == build_id):
             return( "" )
@@ -232,6 +294,12 @@ class Project(models.Model):
             return( "not_found" )
 
     def get_last_target(self):
+        """
+        Returns the last build id
+
+        Args:
+            self: (todo): write your description
+        """
         build_id = self.get_last_build_id()
         if (-1 == build_id):
             return( "" )
@@ -241,6 +309,12 @@ class Project(models.Model):
             return( "not_found" )
 
     def get_last_errors(self):
+        """
+        Returns the last build errors
+
+        Args:
+            self: (todo): write your description
+        """
         build_id = self.get_last_build_id()
         if (-1 == build_id):
             return( 0 )
@@ -250,6 +324,12 @@ class Project(models.Model):
             return( "not_found" )
 
     def get_last_warnings(self):
+        """
+        Returns a list of the build
+
+        Args:
+            self: (todo): write your description
+        """
         build_id = self.get_last_build_id()
         if (-1 == build_id):
             return( 0 )
@@ -267,6 +347,12 @@ class Project(models.Model):
         return last_build.get_image_file_extensions()
 
     def get_last_imgfiles(self):
+        """
+        Returns the last imagefiles
+
+        Args:
+            self: (todo): write your description
+        """
         build_id = self.get_last_build_id()
         if (-1 == build_id):
             return( "" )
@@ -304,12 +390,24 @@ class Project(models.Model):
 
 
     def get_default_image_recipe(self):
+        """
+        Returns the default image variable.
+
+        Args:
+            self: (todo): write your description
+        """
         try:
             return self.projectvariable_set.get(name="DEFAULT_IMAGE").value
         except (ProjectVariable.DoesNotExist,IndexError):
             return None;
 
     def get_is_new(self):
+        """
+        Returns true if new variable is a new variable.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.get_variable(Project.PROJECT_SPECIFIC_ISNEW)
 
     def get_available_machines(self):
@@ -373,20 +471,48 @@ class Project(models.Model):
     PROJECT_SPECIFIC_CLONING_FAIL = '5'
 
     def get_variable(self,variable,default_value = ''):
+        """
+        Get the value of a variable.
+
+        Args:
+            self: (str): write your description
+            variable: (str): write your description
+            default_value: (str): write your description
+        """
         try:
             return self.projectvariable_set.get(name=variable).value
         except (ProjectVariable.DoesNotExist,IndexError):
             return default_value
 
     def set_variable(self,variable,value):
+        """
+        Set a variable.
+
+        Args:
+            self: (todo): write your description
+            variable: (str): write your description
+            value: (todo): write your description
+        """
         pv,create = ProjectVariable.objects.get_or_create(project = self, name = variable)
         pv.value = value
         pv.save()
 
     def get_default_image(self):
+        """
+        Returns the default image
+
+        Args:
+            self: (todo): write your description
+        """
         return self.get_variable(Project.PROJECT_SPECIFIC_DEFAULTIMAGE)
 
     def schedule_build(self):
+        """
+        Schedules a schedule
+
+        Args:
+            self: (todo): write your description
+        """
 
         from bldcontrol.models import BuildRequest, BRTarget, BRLayer
         from bldcontrol.models import BRBitbake, BRVariable
@@ -541,6 +667,12 @@ class Build(models.Model):
         return len(variables) > 0
 
     def completeper(self):
+        """
+        Returns complete completion.
+
+        Args:
+            self: (todo): write your description
+        """
         tf = Task.objects.filter(build = self)
         tfc = tf.count()
         if tfc > 0:
@@ -550,6 +682,12 @@ class Build(models.Model):
         return completeper
 
     def eta(self):
+        """
+        Return the number of seconds.
+
+        Args:
+            self: (todo): write your description
+        """
         eta = timezone.now()
         completeper = self.completeper()
         if self.completeper() > 0:
@@ -613,6 +751,12 @@ class Build(models.Model):
         return list(set(re.split(r' {1,}', image_fstypes)))
 
     def get_sorted_target_list(self):
+        """
+        Returns a list of target target targets.
+
+        Args:
+            self: (todo): write your description
+        """
         tgts = Target.objects.filter(build_id = self.id).order_by( 'target' );
         return( tgts );
 
@@ -662,6 +806,12 @@ class Build(models.Model):
         return queryset
 
     def get_outcome_text(self):
+        """
+        Returns the next outcome text.
+
+        Args:
+            self: (todo): write your description
+        """
         return Build.BUILD_OUTCOME[int(self.outcome)][1]
 
     @property
@@ -672,20 +822,44 @@ class Build(models.Model):
 
     @property
     def errors(self):
+        """
+        Convenience function : logging. log.
+
+        Args:
+            self: (todo): write your description
+        """
         return (self.logmessage_set.filter(level=LogMessage.ERROR) |
                 self.logmessage_set.filter(level=LogMessage.EXCEPTION) |
                 self.logmessage_set.filter(level=LogMessage.CRITICAL))
 
     @property
     def warnings(self):
+        """
+        Returns a list of log level.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.logmessage_set.filter(level=LogMessage.WARNING)
 
     @property
     def timespent(self):
+        """
+        Returns a new timespent.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.completed_on - self.started_on
 
     @property
     def timespent_seconds(self):
+        """
+        Return the number of timespent
+
+        Args:
+            self: (todo): write your description
+        """
         return self.timespent.total_seconds()
 
     @property
@@ -703,12 +877,24 @@ class Build(models.Model):
         return target_labels
 
     def get_buildrequest(self):
+        """
+        Returns the buildrequest object.
+
+        Args:
+            self: (todo): write your description
+        """
         buildrequest = None
         if hasattr(self, 'buildrequest'):
             buildrequest = self.buildrequest
         return buildrequest
 
     def is_queued(self):
+        """
+        Returns true if this buildrequest is in the queue.
+
+        Args:
+            self: (todo): write your description
+        """
         from bldcontrol.models import BuildRequest
         buildrequest = self.get_buildrequest()
         if buildrequest:
@@ -717,6 +903,12 @@ class Build(models.Model):
             return False
 
     def is_cancelling(self):
+        """
+        Determine if this buildrequest.
+
+        Args:
+            self: (todo): write your description
+        """
         from bldcontrol.models import BuildRequest
         buildrequest = self.get_buildrequest()
         if buildrequest:
@@ -774,6 +966,12 @@ class Build(models.Model):
             return self.get_outcome_text()
 
     def __str__(self):
+        """
+        Returns a string representation of this project.
+
+        Args:
+            self: (todo): write your description
+        """
         return "%d %s %s" % (self.id, self.project, ",".join([t.target for t in self.target_set.all()]))
 
 class ProjectTarget(models.Model):
@@ -792,9 +990,21 @@ class Target(models.Model):
     package_manifest_path = models.CharField(max_length=500, null=True)
 
     def package_count(self):
+        """
+        Returns the number of packages currently running.
+
+        Args:
+            self: (todo): write your description
+        """
         return Target_Installed_Package.objects.filter(target_id__exact=self.id).count()
 
     def __unicode__(self):
+        """
+        Return the unicode string.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.target
 
     def get_similar_targets(self):
@@ -950,6 +1160,12 @@ class TargetKernelFile(models.Model):
 
     @property
     def basename(self):
+        """
+        Returns the path of the file.
+
+        Args:
+            self: (todo): write your description
+        """
         return os.path.basename(self.file_name)
 
 # SDK artifacts for a target: sh and manifest files
@@ -960,6 +1176,12 @@ class TargetSDKFile(models.Model):
 
     @property
     def basename(self):
+        """
+        Returns the path of the file.
+
+        Args:
+            self: (todo): write your description
+        """
         return os.path.basename(self.file_name)
 
 class Target_Image_File(models.Model):
@@ -1073,6 +1295,12 @@ class Task(models.Model):
     search_allowed_fields = [ "recipe__name", "recipe__version", "task_name", "logfile" ]
 
     def __init__(self, *args, **kwargs):
+        """
+        Initialize a task
+
+        Args:
+            self: (todo): write your description
+        """
         super(Task, self).__init__(*args, **kwargs)
         try:
             self._helptext = HelpText.objects.get(key=self.task_name, area=HelpText.VARIABLE, build=self.build).text
@@ -1080,26 +1308,62 @@ class Task(models.Model):
             self._helptext = None
 
     def get_related_setscene(self):
+        """
+        Returns a list of task sets.
+
+        Args:
+            self: (todo): write your description
+        """
         return Task.objects.filter(task_executed=True, build = self.build, recipe = self.recipe, task_name=self.task_name+"_setscene")
 
     def get_outcome_text(self):
+        """
+        Returns the text of the task.
+
+        Args:
+            self: (todo): write your description
+        """
         return Task.TASK_OUTCOME[int(self.outcome) + 1][1]
 
     def get_outcome_help(self):
+        """
+        Returns the help help for the task.
+
+        Args:
+            self: (todo): write your description
+        """
         return Task.TASK_OUTCOME_HELP[int(self.outcome)][1]
 
     def get_sstate_text(self):
+        """
+        Return the state of the task.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.sstate_result==Task.SSTATE_NA:
             return ''
         else:
             return Task.SSTATE_RESULT[int(self.sstate_result)][1]
 
     def get_executed_display(self):
+        """
+        Returns the display display display display display display
+
+        Args:
+            self: (todo): write your description
+        """
         if self.task_executed:
             return "Executed"
         return "Not Executed"
 
     def get_description(self):
+        """
+        Returns the description of the image.
+
+        Args:
+            self: (todo): write your description
+        """
         return self._helptext
 
     build = models.ForeignKey(Build, related_name='task_build')
@@ -1139,6 +1403,12 @@ class Task(models.Model):
     sstate_text  = property(get_sstate_text)
 
     def __unicode__(self):
+        """
+        Returns a string representing this recipe.
+
+        Args:
+            self: (todo): write your description
+        """
         return "%d(%d) %s:%s" % (self.pk, self.build.pk, self.recipe.name, self.task_name)
 
     class Meta:
@@ -1195,6 +1465,12 @@ class Package_DependencyManager(models.Manager):
     TARGET_LATEST = "use-latest-target-for-target"
 
     def get_queryset(self):
+        """
+        Returns a list of the package package.
+
+        Args:
+            self: (todo): write your description
+        """
         return super(Package_DependencyManager, self).get_queryset().exclude(package_id = F('depends_on__id'))
 
     def for_target_or_none(self, target):
@@ -1331,12 +1607,30 @@ class Recipe(models.Model):
     is_image = models.BooleanField(default=False)
 
     def __unicode__(self):
+        """
+        Return a string representation of this name.
+
+        Args:
+            self: (todo): write your description
+        """
         return "Recipe " + self.name + ":" + self.version
 
     def get_vcs_recipe_file_link_url(self):
+        """
+        Get link link link link link file.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.layer_version.get_vcs_file_link_url(self.file_path)
 
     def get_description_or_summary(self):
+        """
+        Returns the description of the description.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.description:
             return self.description
         elif self.summary:
@@ -1352,6 +1646,12 @@ class Recipe_DependencyManager(models.Manager):
     use_for_related_fields = True
 
     def get_queryset(self):
+        """
+        Returns a querysency for this recipe.
+
+        Args:
+            self: (todo): write your description
+        """
         return super(Recipe_DependencyManager, self).get_queryset().exclude(recipe_id = F('depends_on__id'))
 
 class Provides(models.Model):
@@ -1382,11 +1682,23 @@ class Machine(models.Model):
     description = models.CharField(max_length=255)
 
     def get_vcs_machine_file_link_url(self):
+        """
+        Get link link link link link link_link_url.
+
+        Args:
+            self: (todo): write your description
+        """
         path = 'conf/machine/'+self.name+'.conf'
 
         return self.layer_version.get_vcs_file_link_url(path)
 
     def __unicode__(self):
+        """
+        Return a unicode string representation of this object.
+
+        Args:
+            self: (todo): write your description
+        """
         return "Machine " + self.name + "(" + self.description + ")"
 
 
@@ -1401,6 +1713,12 @@ class BitbakeVersion(models.Model):
     dirpath = models.CharField(max_length=255)
 
     def __unicode__(self):
+        """
+        Return a string representation of this name.
+
+        Args:
+            self: (todo): write your description
+        """
         return "%s (Branch: %s)" % (self.name, self.branch)
 
 
@@ -1413,9 +1731,21 @@ class Release(models.Model):
     helptext = models.TextField(null=True)
 
     def __unicode__(self):
+        """
+        Return the name of the name of the current branch.
+
+        Args:
+            self: (todo): write your description
+        """
         return "%s (%s)" % (self.name, self.branch_name)
 
     def __str__(self):
+        """
+        Return the string representation of this object.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.name
 
 class ReleaseDefaultLayer(models.Model):
@@ -1463,6 +1793,12 @@ class Layer(models.Model):
     description = models.TextField(null=True, default=None)
 
     def __unicode__(self):
+        """
+        Return a string representation of this name.
+
+        Args:
+            self: (todo): write your description
+        """
         return "%s / %s " % (self.name, self.summary)
 
 
@@ -1504,6 +1840,14 @@ class Layer_Version(models.Model):
     # code lifted, with adaptations, from the layerindex-web application
     # https://git.yoctoproject.org/cgit/cgit.cgi/layerindex-web/
     def _handle_url_path(self, base_url, path):
+        """
+        Handle a url path.
+
+        Args:
+            self: (todo): write your description
+            base_url: (str): write your description
+            path: (str): write your description
+        """
         import re, posixpath
         if base_url:
             if self.dirpath:
@@ -1537,22 +1881,47 @@ class Layer_Version(models.Model):
         return None
 
     def get_vcs_link_url(self):
+        """
+        Returns the url of the link.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.layer.vcs_web_url is None:
             return None
         return self.layer.vcs_web_url
 
     def get_vcs_file_link_url(self, file_path=""):
+        """
+        Gets the link to the link.
+
+        Args:
+            self: (todo): write your description
+            file_path: (str): write your description
+        """
         if self.layer.vcs_web_file_base_url is None:
             return None
         return self._handle_url_path(self.layer.vcs_web_file_base_url,
                                      file_path)
 
     def get_vcs_dirpath_link_url(self):
+        """
+        Returns the url of the vcs link.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.layer.vcs_web_tree_base_url is None:
             return None
         return self._handle_url_path(self.layer.vcs_web_tree_base_url, '')
 
     def get_vcs_reference(self):
+        """
+        Returns the vcs reference.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.commit is not None and len(self.commit) > 0:
             return self.commit
         if self.branch is not None and len(self.branch) > 0:
@@ -1573,6 +1942,14 @@ class Layer_Version(models.Model):
     def get_alldeps(self, project_id):
         """Get full list of unique layer dependencies."""
         def gen_layerdeps(lver, project, depth):
+            """
+            Yields all layers in lver.
+
+            Args:
+                lver: (todo): write your description
+                project: (todo): write your description
+                depth: (int): write your description
+            """
             if depth == 0:
                 return
             for ldep in lver.dependencies.all():
@@ -1595,9 +1972,21 @@ class Layer_Version(models.Model):
         return sorted(result, key=lambda x: x.layer.name)
 
     def __unicode__(self):
+        """
+        Returns the string representation of this layer.
+
+        Args:
+            self: (todo): write your description
+        """
         return ("id %d belongs to layer: %s" % (self.pk, self.layer.name))
 
     def __str__(self):
+        """
+        Return a string representation of this layer.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.release:
             release = self.release.name
         else:
@@ -1619,6 +2008,12 @@ class ProjectLayer(models.Model):
     optional = models.BooleanField(default = True)
 
     def __unicode__(self):
+        """
+        Return a string representation of this project.
+
+        Args:
+            self: (todo): write your description
+        """
         return "%s, %s" % (self.project.name, self.layercommit)
 
     class Meta:
@@ -1837,9 +2232,20 @@ class LogMessage(models.Model):
     lineno = models.IntegerField(null=True)
 
     def __str__(self):
+        """
+        Return a string representation of this message.
+
+        Args:
+            self: (todo): write your description
+        """
         return force_bytes('%s %s %s' % (self.get_level_display(), self.message, self.build))
 
 def invalidate_cache(**kwargs):
+    """
+    Cleans up cache
+
+    Args:
+    """
     from django.core.cache import cache
     try:
       cache.clear()
@@ -1864,10 +2270,22 @@ class Distro(models.Model):
     description = models.CharField(max_length=255)
 
     def get_vcs_distro_file_link_url(self):
+        """
+        Get link link link link link file link.
+
+        Args:
+            self: (todo): write your description
+        """
         path = 'conf/distro/%s.conf' % self.name
         return self.layer_version.get_vcs_file_link_url(path)
 
     def __unicode__(self):
+        """
+        Return a unicode string representation of this object.
+
+        Args:
+            self: (todo): write your description
+        """
         return "Distro " + self.name + "(" + self.description + ")"
 
 django.db.models.signals.post_save.connect(invalidate_cache)

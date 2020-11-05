@@ -14,6 +14,11 @@ from layerindexlib.tests.common import LayersTest
 import logging
 
 def skipIfNoNetwork():
+    """
+    Return true if the network interfaces.
+
+    Args:
+    """
     if os.environ.get("BB_SKIP_NETTESTS") == "yes":
         return unittest.skip("Network tests being skipped")
     return lambda f: f
@@ -22,6 +27,12 @@ class LayerIndexWebRestApiTest(LayersTest):
 
     @skipIfNoNetwork()
     def setUp(self):
+        """
+        Sets the layers
+
+        Args:
+            self: (todo): write your description
+        """
         self.assertFalse(os.environ.get("BB_SKIP_NETTESTS") == "yes", msg="BB_SKIP_NETTESTS set, but we tried to test anyway")
         LayersTest.setUp(self)
         self.layerindex = layerindexlib.LayerIndex(self.d)
@@ -29,10 +40,22 @@ class LayerIndexWebRestApiTest(LayersTest):
 
     @skipIfNoNetwork()
     def test_layerindex_is_empty(self):
+        """
+        Check if the layer is empty.
+
+        Args:
+            self: (todo): write your description
+        """
         self.assertFalse(self.layerindex.is_empty(), msg="Layerindex is empty")
 
     @skipIfNoNetwork()
     def test_layerindex_store_file(self):
+        """
+        Test if a layerindex in the index.
+
+        Args:
+            self: (todo): write your description
+        """
         self.layerindex.store_layerindex('file://%s/file.json' % self.tempdir, self.layerindex.indexes[0])
 
         self.assertTrue(os.path.isfile('%s/file.json' % self.tempdir), msg="Temporary file was not created by store_layerindex")
@@ -70,6 +93,12 @@ class LayerIndexWebRestApiTest(LayersTest):
 
     @skipIfNoNetwork()
     def test_layerindex_store_split(self):
+        """
+        Split the index of the layerindex.
+
+        Args:
+            self: (todo): write your description
+        """
         self.layerindex.store_layerindex('file://%s' % self.tempdir, self.layerindex.indexes[0])
 
         reload = layerindexlib.LayerIndex(self.d)
@@ -93,6 +122,12 @@ class LayerIndexWebRestApiTest(LayersTest):
 
     @skipIfNoNetwork()
     def test_dependency_resolution(self):
+        """
+        This method to see if the dependency has changed.
+
+        Args:
+            self: (todo): write your description
+        """
         # Verify depth first searching...
         (dependencies, invalidnames) = self.layerindex.find_dependencies(names=['meta-python'])
 
@@ -130,7 +165,20 @@ class LayerIndexWebRestApiTest(LayersTest):
 
     @skipIfNoNetwork()
     def test_find_collection(self):
+        """
+        Run test test test test case.
+
+        Args:
+            self: (todo): write your description
+        """
         def _check(collection, expected):
+            """
+            Check if the collection has expected todo.
+
+            Args:
+                collection: (todo): write your description
+                expected: (todo): write your description
+            """
             self.logger.debug(1, "Looking for collection %s..." % collection)
             result = self.layerindex.find_collection(collection)
             if expected:
@@ -150,7 +198,20 @@ class LayerIndexWebRestApiTest(LayersTest):
 
     @skipIfNoNetwork()
     def test_find_layerbranch(self):
+        """
+        Find the branches in the given layer.
+
+        Args:
+            self: (todo): write your description
+        """
         def _check(name, expected):
+            """
+            Check that all the branches exist in the same order of branches.
+
+            Args:
+                name: (str): write your description
+                expected: (todo): write your description
+            """
             self.logger.debug(1, "Looking for layerbranch %s..." % name)
 
             for index in self.layerindex.indexes:

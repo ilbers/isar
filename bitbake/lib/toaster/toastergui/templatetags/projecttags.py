@@ -19,10 +19,23 @@ register = template.Library()
 
 @register.simple_tag
 def time_difference(start_time, end_time):
+    """
+    Return the difference between two dates.
+
+    Args:
+        start_time: (todo): write your description
+        end_time: (todo): write your description
+    """
     return end_time - start_time
 
 @register.filter(name = 'sectohms')
 def sectohms(time):
+    """
+    Return a human - readable to a human - readable hours.
+
+    Args:
+        time: (float): write your description
+    """
     try:
         tdsec = int(time)
     except ValueError:
@@ -33,12 +46,25 @@ def sectohms(time):
 
 @register.filter(name = 'get_tasks')
 def get_tasks(queryset):
+    """
+    Return a list of all tasks.
+
+    Args:
+        queryset: (todo): write your description
+    """
     return list(target + ':' + task if task else target \
                     for target, task in queryset.values_list('target', 'task'))
 
 
 @register.filter(name = "json")
 def json(value, default = None):
+    """
+    Convert a string to a json string.
+
+    Args:
+        value: (str): write your description
+        default: (todo): write your description
+    """
     # JSON spec says that "\/" is functionally identical to "/" to allow for HTML-tag embedding in JSON strings
     # unfortunately, I can't find any option in the json module to turn on forward-slash escaping, so we do
     # it manually here
@@ -57,6 +83,13 @@ def query(qs, **kwargs):
 
 @register.filter("whitespace_slice")
 def whitespace_space_filter(value, arg):
+    """
+    Filter whitespace filter.
+
+    Args:
+        value: (todo): write your description
+        arg: (str): write your description
+    """
     try:
         bits = []
         for x in arg.split(":"):
@@ -75,21 +108,50 @@ def whitespace_space_filter(value, arg):
 
 @register.filter
 def divide(value, arg):
+    """
+    Divide an integer into an integer.
+
+    Args:
+        value: (str): write your description
+        arg: (str): write your description
+    """
     if int(arg) == 0:
         return -1
     return int(value) // int(arg)
 
 @register.filter
 def multiply(value, arg):
+    """
+    Multiply an integer.
+
+    Args:
+        value: (str): write your description
+        arg: (str): write your description
+    """
     return int(value) * int(arg)
 
 @register.assignment_tag
 def datecompute(delta, start = timezone.now()):
+    """
+    Compute the time between the given start and end times.
+
+    Args:
+        delta: (float): write your description
+        start: (int): write your description
+        timezone: (todo): write your description
+        now: (todo): write your description
+    """
     return start + timedelta(delta)
 
 
 @register.filter(name = 'sortcols')
 def sortcols(tablecols):
+    """
+    Sort a list of columns.
+
+    Args:
+        tablecols: (str): write your description
+    """
     return sorted(tablecols, key = lambda t: t['name'])
 
 @register.filter
@@ -236,12 +298,24 @@ def filter_sizeovertotal(package_object, total_size):
 from django.utils.safestring import mark_safe
 @register.filter
 def format_vpackage_rowclass(size):
+    """
+    Returns the row class for a given size.
+
+    Args:
+        size: (int): write your description
+    """
     if size == -1:
         return mark_safe('class="text-muted"')
     return ''
 
 @register.filter
 def format_vpackage_namehelp(name):
+    """
+    Formats the help for the help.
+
+    Args:
+        name: (str): write your description
+    """
     r =  name + '&nbsp;'
     r += '<span class="glyphicon glyphicon-question-sign get-help hover-help"'
     r += ' title = "' + name + ' has not been built">'

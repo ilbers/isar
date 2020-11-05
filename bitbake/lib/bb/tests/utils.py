@@ -15,6 +15,12 @@ import re
 class VerCmpString(unittest.TestCase):
 
     def test_vercmpstring(self):
+        """
+        .. versionadded version
+
+        Args:
+            self: (todo): write your description
+        """
         result = bb.utils.vercmp_string('1', '2')
         self.assertTrue(result < 0)
         result = bb.utils.vercmp_string('2', '1')
@@ -39,6 +45,12 @@ class VerCmpString(unittest.TestCase):
         self.assertTrue(result > 0)
 
     def test_explode_dep_versions(self):
+        """
+        Explode versions of versions.
+
+        Args:
+            self: (todo): write your description
+        """
         correctresult = {"foo" : ["= 1.10"]}
         result = bb.utils.explode_dep_versions2("foo (= 1.10)")
         self.assertEqual(result, correctresult)
@@ -54,6 +66,12 @@ class VerCmpString(unittest.TestCase):
         self.assertEqual(result, correctresult)
 
     def test_vercmp_string_op(self):
+        """
+        .. versionadded :: 2019. 2. 0
+
+        Args:
+            self: (todo): write your description
+        """
         compareops = [('1', '1', '=', True),
                       ('1', '1', '==', True),
                       ('1', '1', '!=', False),
@@ -90,6 +108,12 @@ class VerCmpString(unittest.TestCase):
 
 class Path(unittest.TestCase):
     def test_unsafe_delete_path(self):
+        """
+        Test if path exists.
+
+        Args:
+            self: (todo): write your description
+        """
         checkitems = [('/', True),
                       ('//', True),
                       ('///', True),
@@ -138,6 +162,15 @@ do_functionname() {
 }
 """
     def _testeditfile(self, varvalues, compareto, dummyvars=None):
+        """
+        Create a variable in the variable.
+
+        Args:
+            self: (todo): write your description
+            varvalues: (todo): write your description
+            compareto: (str): write your description
+            dummyvars: (str): write your description
+        """
         if dummyvars is None:
             dummyvars = []
         with tempfile.NamedTemporaryFile('w', delete=False) as tf:
@@ -146,6 +179,15 @@ do_functionname() {
             try:
                 varcalls = []
                 def handle_file(varname, origvalue, op, newlines):
+                    """
+                    Todo variable.
+
+                    Args:
+                        varname: (str): write your description
+                        origvalue: (str): write your description
+                        op: (str): write your description
+                        newlines: (str): write your description
+                    """
                     self.assertIn(varname, varvalues, 'Callback called for variable %s not in the list!' % varname)
                     self.assertNotIn(varname, dummyvars, 'Callback called for variable %s in dummy list!' % varname)
                     varcalls.append(varname)
@@ -164,6 +206,12 @@ do_functionname() {
 
 
     def test_edit_metadata_file_nochange(self):
+        """
+        Sets the metadata file metadata.
+
+        Args:
+            self: (todo): write your description
+        """
         # Test file doesn't get modified with nothing to do
         self._testeditfile({}, self._origfile)
         # Test file doesn't get modified with only dummy variables
@@ -175,6 +223,12 @@ do_functionname() {
                         'MULTILINE3': ('               c1               c2               c3 ', None, 4, False)}, self._origfile)
 
     def test_edit_metadata_file_1(self):
+        """
+        Edit the metadata file metadata file.
+
+        Args:
+            self: (todo): write your description
+        """
 
         newfile1 = """
 # A comment
@@ -212,6 +266,12 @@ do_functionname() {
 
 
     def test_edit_metadata_file_2(self):
+        """
+        Edit metadata file.
+
+        Args:
+            self: (todo): write your description
+        """
 
         newfile2 = """
 # A comment
@@ -249,6 +309,12 @@ do_functionname() {
 
 
     def test_edit_metadata_file_3(self):
+        """
+        Test if metadata file metadata
+
+        Args:
+            self: (todo): write your description
+        """
 
         newfile3 = """
 # A comment
@@ -288,6 +354,12 @@ do_functionname() {
 
 
     def test_edit_metadata_file_4(self):
+        """
+        Test if metadata file.
+
+        Args:
+            self: (todo): write your description
+        """
 
         newfile4 = """
 # A comment
@@ -318,6 +390,12 @@ MULTILINE2 := " \\
 
 
     def test_edit_metadata(self):
+        """
+        Edit metadata for a metadata file.
+
+        Args:
+            self: (todo): write your description
+        """
         newfile5 = """
 # A comment
 HELLO = "hithere"
@@ -356,6 +434,15 @@ do_functionname() {
 
 
         def handle_var(varname, origvalue, op, newlines):
+            """
+            Handle a variable.
+
+            Args:
+                varname: (str): write your description
+                origvalue: (str): write your description
+                op: (todo): write your description
+                newlines: (list): write your description
+            """
             if varname == 'THIS':
                 newlines.append('# A new comment\n')
             elif varname == 'do_functionname()':
@@ -375,6 +462,12 @@ do_functionname() {
 
     # Make sure the orig value matches what we expect it to be
     def test_edit_metadata_origvalue(self):
+        """
+        Edit metadata in the metadata of the metadata metadata.
+
+        Args:
+            self: (todo): write your description
+        """
         origfile = """
 MULTILINE = "  stuff \\
     morestuff"
@@ -384,6 +477,15 @@ MULTILINE = "  stuff \\
         value_in_callback = ""
 
         def handle_var(varname, origvalue, op, newlines):
+            """
+            Handle a variable.
+
+            Args:
+                varname: (str): write your description
+                origvalue: (str): write your description
+                op: (todo): write your description
+                newlines: (list): write your description
+            """
             global value_in_callback
             value_in_callback = origvalue
             return (origvalue, op, -1, False)
@@ -398,6 +500,18 @@ MULTILINE = "  stuff \\
 class EditBbLayersConf(unittest.TestCase):
 
     def _test_bblayers_edit(self, before, after, add, remove, notadded, notremoved):
+        """
+        Test if two - layer.
+
+        Args:
+            self: (todo): write your description
+            before: (todo): write your description
+            after: (str): write your description
+            add: (todo): write your description
+            remove: (bool): write your description
+            notadded: (todo): write your description
+            notremoved: (bool): write your description
+        """
         with tempfile.NamedTemporaryFile('w', delete=False) as tf:
             tf.write(before)
             tf.close()
@@ -413,6 +527,12 @@ class EditBbLayersConf(unittest.TestCase):
 
 
     def test_bblayers_remove(self):
+        """
+        Remove bblayers.
+
+        Args:
+            self: (todo): write your description
+        """
         before = r"""
 # A comment
 
@@ -444,6 +564,12 @@ BBLAYERS = " \
 
 
     def test_bblayers_add(self):
+        """
+        Add two layers to bblayers.
+
+        Args:
+            self: (todo): write your description
+        """
         before = r"""
 # A comment
 
@@ -477,6 +603,12 @@ BBLAYERS = " \
 
 
     def test_bblayers_add_remove(self):
+        """
+        Add bblayers to bblayers.
+
+        Args:
+            self: (todo): write your description
+        """
         before = r"""
 # A comment
 
@@ -508,6 +640,12 @@ BBLAYERS = " \
 
 
     def test_bblayers_add_remove_home(self):
+        """
+        Add bblayers layers to bblayers.
+
+        Args:
+            self: (todo): write your description
+        """
         before = r"""
 # A comment
 
@@ -539,6 +677,12 @@ BBLAYERS = " \
 
 
     def test_bblayers_add_remove_plusequals(self):
+        """
+        Add bblayers to bblayers layer.
+
+        Args:
+            self: (todo): write your description
+        """
         before = r"""
 # A comment
 
@@ -567,6 +711,12 @@ BBLAYERS += " \
 
 
     def test_bblayers_add_remove_plusequals2(self):
+        """
+        Add bblayers layers.
+
+        Args:
+            self: (todo): write your description
+        """
         before = r"""
 # A comment
 

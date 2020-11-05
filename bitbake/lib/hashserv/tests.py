@@ -19,11 +19,23 @@ class TestHashEquivalenceServer(object):
     METHOD = 'TestMethod'
 
     def _run_server(self):
+        """
+        Starts the server.
+
+        Args:
+            self: (todo): write your description
+        """
         # logging.basicConfig(level=logging.DEBUG, filename='bbhashserv.log', filemode='w',
         #                     format='%(levelname)s %(filename)s:%(lineno)d %(message)s')
         self.server.serve_forever()
 
     def setUp(self):
+        """
+        Set up the database.
+
+        Args:
+            self: (todo): write your description
+        """
         if sys.version_info < (3, 5, 0):
             self.skipTest('Python 3.5 or later required')
 
@@ -36,6 +48,12 @@ class TestHashEquivalenceServer(object):
         self.client = create_client(self.server.address)
 
     def tearDown(self):
+        """
+        Cleans up the server.
+
+        Args:
+            self: (todo): write your description
+        """
         # Shutdown server
         s = getattr(self, 'server', None)
         if s is not None:
@@ -45,6 +63,12 @@ class TestHashEquivalenceServer(object):
         self.temp_dir.cleanup()
 
     def test_create_hash(self):
+        """
+        Create a hash of the report.
+
+        Args:
+            self: (todo): write your description
+        """
         # Simple test that hashes can be created
         taskhash = '35788efcb8dfb0a02659d81cf2bfd695fb30faf9'
         outhash = '2765d4a5884be49b28601445c2760c5f21e7e5c0ee2b7e3fce98fd7e5970796f'
@@ -57,6 +81,12 @@ class TestHashEquivalenceServer(object):
         self.assertEqual(result['unihash'], unihash, 'Server returned bad unihash')
 
     def test_create_equivalent(self):
+        """
+        Create a new equivalent equivalent equivalent equivalent equivalent equivalent to : class.
+
+        Args:
+            self: (todo): write your description
+        """
         # Tests that a second reported task with the same outhash will be
         # assigned the same unihash
         taskhash = '53b8dce672cb6d0c73170be43f540460bfc347b4'
@@ -74,6 +104,12 @@ class TestHashEquivalenceServer(object):
         self.assertEqual(result['unihash'], unihash, 'Server returned bad unihash')
 
     def test_duplicate_taskhash(self):
+        """
+        Duplicate the hash of the task.
+
+        Args:
+            self: (todo): write your description
+        """
         # Tests that duplicate reports of the same taskhash with different
         # outhash & unihash always return the unihash from the first reported
         # taskhash
@@ -100,7 +136,19 @@ class TestHashEquivalenceServer(object):
         self.assertEqual(result, unihash)
 
     def test_stress(self):
+        """
+        Test for automatic automatic automatic stress.
+
+        Args:
+            self: (todo): write your description
+        """
         def query_server(failures):
+            """
+            Query the server.
+
+            Args:
+                failures: (str): write your description
+            """
             client = Client(self.server.address)
             try:
                 for i in range(1000):
@@ -134,9 +182,21 @@ class TestHashEquivalenceServer(object):
 
 class TestHashEquivalenceUnixServer(TestHashEquivalenceServer, unittest.TestCase):
     def get_server_addr(self):
+        """
+        Return the server address.
+
+        Args:
+            self: (todo): write your description
+        """
         return "unix://" + os.path.join(self.temp_dir.name, 'sock')
 
 
 class TestHashEquivalenceTCPServer(TestHashEquivalenceServer, unittest.TestCase):
     def get_server_addr(self):
+        """
+        Get the server address.
+
+        Args:
+            self: (todo): write your description
+        """
         return "localhost:0"
