@@ -19,6 +19,8 @@ SDK_INSTALL ?= ""
 
 DEPENDS += "${SDK_INSTALL}"
 
+DEPENDS_append_riscv64 = "${@' crossbuild-essential-riscv64' if d.getVar('ISAR_CROSS_COMPILE', True) == '1' and d.getVar('PN') != 'crossbuild-essential-riscv64' else ''}"
+
 TOOLCHAIN = "crossbuild-essential-${DISTRO_ARCH}"
 TOOLCHAIN_${HOST_ARCH} = "build-essential"
 TOOLCHAIN_i386 = "build-essential"
