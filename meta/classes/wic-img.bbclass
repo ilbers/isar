@@ -164,17 +164,16 @@ EOSUDO
           # The python path is hard-coded as /usr/bin/python3-native/python3 in wic. Handle that.
           mkdir -p /usr/bin/python3-native/
           if [ $(head -1 $(which bmaptool) | grep python3) ];then
-            ln -s /usr/bin/python3 /usr/bin/python3-native/python3
+            ln -fs /usr/bin/python3 /usr/bin/python3-native/python3
           else
-            ln -s /usr/bin/python2 /usr/bin/python3-native/python3
+            ln -fs /usr/bin/python2 /usr/bin/python3-native/python3
           fi
           export PATH="$BITBAKEDIR/bin:$PATH"
           "$SCRIPTSDIR"/wic create "$WKS_FULL_PATH" \
             --vars "$STAGING_DIR/$MACHINE/imgdata/" \
             -o "/$WICTMP/${IMAGE_FULLNAME}.wic/" \
             --bmap \
-            -e "$IMAGE_BASENAME" $@
-          rm -rf /usr/bin/python3-native' \
+            -e "$IMAGE_BASENAME" $@' \
               my_script "${BITBAKEDIR}" "${SCRIPTSDIR}" "${WKS_FULL_PATH}" "${STAGING_DIR}" \
               "${MACHINE}" "${WICTMP}" "${IMAGE_FULLNAME}" "${IMAGE_BASENAME}" \
               ${WIC_CREATE_EXTRA_ARGS}
