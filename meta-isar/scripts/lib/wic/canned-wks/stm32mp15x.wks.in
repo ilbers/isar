@@ -3,9 +3,9 @@
 #
 # SPDX-License-Identifier: MIT
 
-part fsbl1 --part-name fsbl1 --source rawcopy --sourceparams "file=/usr/lib/u-boot/${MACHINE}/u-boot-spl.stm32" --fstype=ext4 --fsoptions "noauto" --part-type 0x8301 --fixed-size 256K
-part fsbl2 --part-name fsbl2 --source rawcopy --sourceparams "file=/usr/lib/u-boot/${MACHINE}/u-boot-spl.stm32" --fstype=ext4 --fsoptions "noauto" --part-type 0x8301 --fixed-size 256K
-part ssbl --part-name ssbl --source rawcopy --sourceparams "file=/usr/lib/u-boot/${MACHINE}/u-boot.img" --fstype=ext4 --fsoptions "noauto" --part-type 0x8301 --fixed-size 2048K
+part fsbl1 --part-name fsbl1 --source rawcopy --sourceparams "file=/usr/lib/trusted-firmware-a/${MACHINE}/tf-a-stm32mp157c-ev1.stm32" --fstype=ext4 --fsoptions "noauto" --part-type 0x8301 --fixed-size 256K
+part fsbl2 --part-name fsbl2 --source rawcopy --sourceparams "file=/usr/lib/trusted-firmware-a/${MACHINE}/tf-a-stm32mp157c-ev1.stm32" --fstype=ext4 --fsoptions "noauto" --part-type 0x8301 --fixed-size 256K
+part ssbl --part-name ssbl --source rawcopy --sourceparams "file=/usr/lib/u-boot/${MACHINE}/u-boot.stm32" --fstype=ext4 --fsoptions "noauto" --part-type 0x8301 --fixed-size 2048K
 
 part / --source rootfs-u-boot --fstype ext4 --label root --align 1024 --active --use-uuid
 
