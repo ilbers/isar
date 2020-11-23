@@ -1,0 +1,33 @@
+From 3e15c315f97401f394ae83ed17fbef72b765222a Mon Sep 17 00:00:00 2001
+From: Etienne Carriere <etienne.carriere@st.com>
+Date: Thu, 10 Sep 2020 10:50:01 +0200
+Subject: [PATCH] optee: add property no-map to secure reserved memory
+
+OP-TEE reserved memory node must set property "no-map" to prevent
+Linux kernel from mapping secure memory unless what non-secure world
+speculative accesses of the CPU can violate the memory firmware
+configuration.
+
+Fixes: 6ccb05eae01b ("image: fdt: copy possible optee nodes to a loaded devicetree")
+Signed-off-by: Etienne Carriere <etienne.carriere@st.com>
+Signed-off-by: Patrice Chotard <patrice.chotard@st.com>
+---
+ lib/optee/optee.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/optee/optee.c b/lib/optee/optee.c
+index 963c2ff430..9e6606568f 100644
+--- a/lib/optee/optee.c
++++ b/lib/optee/optee.c
+@@ -192,7 +192,7 @@ int optee_copy_fdt_nodes(const void *old_blob, void *new_blob)
+ 				ret = fdtdec_add_reserved_memory(new_blob,
+ 								 nodename,
+ 								 &carveout,
+-								 NULL, false);
++								 NULL, true);
+ 				free(oldname);
+ 
+ 				if (ret < 0)
+-- 
+2.26.2
+

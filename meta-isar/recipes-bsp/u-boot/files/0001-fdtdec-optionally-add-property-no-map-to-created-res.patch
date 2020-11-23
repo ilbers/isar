@@ -1,0 +1,151 @@
+From ccaa5747bdeae4261199dd7e80771e4de1c550ca Mon Sep 17 00:00:00 2001
+From: Etienne Carriere <etienne.carriere@st.com>
+Date: Thu, 10 Sep 2020 10:49:59 +0200
+Subject: [PATCH] fdtdec: optionally add property no-map to created reserved
+ memory node
+
+Add boolean input argument @no_map to helper function
+fdtdec_add_reserved_memory() to add or not "no-map" property
+for an added reserved memory node.
+
+Property no-map is used by the Linux kernel to not not map memory
+in its static memory mapping. It is needed for example for the|
+consistency of system non-cached memory and to prevent speculative
+accesses to some firewalled memory.
+
+No functional change. A later change will update to OPTEE library to
+add no-map property to OP-TEE reserved memory nodes.
+
+Signed-off-by: Etienne Carriere <etienne.carriere@st.com>
+Signed-off-by: Patrice Chotard <patrice.chotard@st.com>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+---
+ arch/riscv/lib/fdt_fixup.c |  2 +-
+ include/fdtdec.h           |  5 +++--
+ lib/fdtdec.c               | 10 ++++++++--
+ lib/optee/optee.c          |  2 +-
+ test/dm/fdtdec.c           |  6 +++---
+ 5 files changed, 16 insertions(+), 9 deletions(-)
+
+diff --git a/arch/riscv/lib/fdt_fixup.c b/arch/riscv/lib/fdt_fixup.c
+index 5b2420243f..d02062fd5b 100644
+--- a/arch/riscv/lib/fdt_fixup.c
++++ b/arch/riscv/lib/fdt_fixup.c
+@@ -75,7 +75,7 @@ int riscv_fdt_copy_resv_mem_node(const void *src, void *dst)
+ 		pmp_mem.start = addr;
+ 		pmp_mem.end = addr + size - 1;
+ 		err = fdtdec_add_reserved_memory(dst, basename, &pmp_mem,
+-						 &phandle);
++						 &phandle, false);
+ 		if (err < 0 && err != -FDT_ERR_EXISTS) {
+ 			log_err("failed to add reserved memory: %d\n", err);
+ 			return err;
+diff --git a/include/fdtdec.h b/include/fdtdec.h
+index 152eb07b9e..62d1660973 100644
+--- a/include/fdtdec.h
++++ b/include/fdtdec.h
+@@ -1029,7 +1029,7 @@ static inline int fdtdec_set_phandle(void *blob, int node, uint32_t phandle)
+  *     };
+  *     uint32_t phandle;
+  *
+- *     fdtdec_add_reserved_memory(fdt, "framebuffer", &fb, &phandle);
++ *     fdtdec_add_reserved_memory(fdt, "framebuffer", &fb, &phandle, false);
+  *
+  * This results in the following subnode being added to the top-level
+  * /reserved-memory node:
+@@ -1056,11 +1056,12 @@ static inline int fdtdec_set_phandle(void *blob, int node, uint32_t phandle)
+  * @param carveout	information about the carveout region
+  * @param phandlep	return location for the phandle of the carveout region
+  *			can be NULL if no phandle should be added
++ * @param no_map	add "no-map" property if true
+  * @return 0 on success or a negative error code on failure
+  */
+ int fdtdec_add_reserved_memory(void *blob, const char *basename,
+ 			       const struct fdt_memory *carveout,
+-			       uint32_t *phandlep);
++			       uint32_t *phandlep, bool no_map);
+ 
+ /**
+  * fdtdec_get_carveout() - reads a carveout from an FDT
+diff --git a/lib/fdtdec.c b/lib/fdtdec.c
+index 56bf9fcc79..b8fc5e2bff 100644
+--- a/lib/fdtdec.c
++++ b/lib/fdtdec.c
+@@ -1316,7 +1316,7 @@ static int fdtdec_init_reserved_memory(void *blob)
+ 
+ int fdtdec_add_reserved_memory(void *blob, const char *basename,
+ 			       const struct fdt_memory *carveout,
+-			       uint32_t *phandlep)
++			       uint32_t *phandlep, bool no_map)
+ {
+ 	fdt32_t cells[4] = {}, *ptr = cells;
+ 	uint32_t upper, lower, phandle;
+@@ -1416,6 +1416,12 @@ int fdtdec_add_reserved_memory(void *blob, const char *basename,
+ 	if (err < 0)
+ 		return err;
+ 
++	if (no_map) {
++		err = fdt_setprop(blob, node, "no-map", NULL, 0);
++		if (err < 0)
++			return err;
++	}
++
+ 	/* return the phandle for the new node for the caller to use */
+ 	if (phandlep)
+ 		*phandlep = phandle;
+@@ -1481,7 +1487,7 @@ int fdtdec_set_carveout(void *blob, const char *node, const char *prop_name,
+ 	fdt32_t value;
+ 	void *prop;
+ 
+-	err = fdtdec_add_reserved_memory(blob, name, carveout, &phandle);
++	err = fdtdec_add_reserved_memory(blob, name, carveout, &phandle, false);
+ 	if (err < 0) {
+ 		debug("failed to add reserved memory: %d\n", err);
+ 		return err;
+diff --git a/lib/optee/optee.c b/lib/optee/optee.c
+index 457d4cca8a..963c2ff430 100644
+--- a/lib/optee/optee.c
++++ b/lib/optee/optee.c
+@@ -192,7 +192,7 @@ int optee_copy_fdt_nodes(const void *old_blob, void *new_blob)
+ 				ret = fdtdec_add_reserved_memory(new_blob,
+ 								 nodename,
+ 								 &carveout,
+-								 NULL);
++								 NULL, false);
+ 				free(oldname);
+ 
+ 				if (ret < 0)
+diff --git a/test/dm/fdtdec.c b/test/dm/fdtdec.c
+index 716993f706..4119003041 100644
+--- a/test/dm/fdtdec.c
++++ b/test/dm/fdtdec.c
+@@ -80,7 +80,7 @@ static int dm_test_fdtdec_add_reserved_memory(struct unit_test_state *uts)
+ 	resv.start = 0x1000;
+ 	resv.end = 0x1fff;
+ 	ut_assertok(fdtdec_add_reserved_memory(blob, "rsvd_region",
+-					       &resv, &phandle));
++					       &resv, &phandle, false));
+ 
+ 	/* Test /reserve-memory and its subnode should exist */
+ 	parent = fdt_path_offset(blob, "/reserved-memory");
+@@ -101,7 +101,7 @@ static int dm_test_fdtdec_add_reserved_memory(struct unit_test_state *uts)
+ 	resv.start = 0x2000;
+ 	resv.end = 0x2fff;
+ 	ut_assertok(fdtdec_add_reserved_memory(blob, "rsvd_region1",
+-					       &resv, &phandle1));
++					       &resv, &phandle1, false));
+ 	subnode = fdt_path_offset(blob, "/reserved-memory/rsvd_region1");
+ 	ut_assert(subnode > 0);
+ 
+@@ -115,7 +115,7 @@ static int dm_test_fdtdec_add_reserved_memory(struct unit_test_state *uts)
+ 	resv.start = 0x1000;
+ 	resv.end = 0x1fff;
+ 	ut_assertok(fdtdec_add_reserved_memory(blob, "rsvd_region2",
+-					       &resv, &phandle1));
++					       &resv, &phandle1, false));
+ 	subnode = fdt_path_offset(blob, "/reserved-memory/rsvd_region2");
+ 	ut_assert(subnode < 0);
+ 
+-- 
+2.26.2
+
