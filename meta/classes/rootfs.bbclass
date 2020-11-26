@@ -190,6 +190,10 @@ cache_deb_src() {
         sudo mv "${ROOTFSDIR}"/etc/resolv.conf "${ROOTFSDIR}"/etc/resolv.conf.isar
     fi
     rootfs_install_resolvconf
+    # Note: ISAR updates the apt state information(apt-get update) only once during bootstrap and
+    # relies on that through out the build. Copy that state information instead of apt-get update
+    # which generates a new state from upstream.
+    sudo cp -Trpn "${BOOTSTRAP_SRC}/var/lib/apt/lists/" "${ROOTFSDIR}/var/lib/apt/lists/"
 
     deb_dl_dir_import ${ROOTFSDIR} ${ROOTFS_DISTRO}
     debsrc_download ${ROOTFSDIR} ${ROOTFS_DISTRO}
