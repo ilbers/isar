@@ -115,7 +115,7 @@ rootfs_install_resolvconf() {
 ROOTFS_INSTALL_COMMAND += "rootfs_import_package_cache"
 rootfs_import_package_cache[weight] = "5"
 rootfs_import_package_cache() {
-    deb_dl_dir_import ${ROOTFSDIR}
+    deb_dl_dir_import ${ROOTFSDIR} ${ROOTFS_DISTRO}
 }
 
 ROOTFS_INSTALL_COMMAND += "rootfs_install_pkgs_download"
@@ -132,7 +132,7 @@ ROOTFS_INSTALL_COMMAND += "${ROOTFS_INSTALL_COMMAND_BEFORE_EXPORT}"
 ROOTFS_INSTALL_COMMAND += "rootfs_export_package_cache"
 rootfs_export_package_cache[weight] = "5"
 rootfs_export_package_cache() {
-    deb_dl_dir_export ${ROOTFSDIR}
+    deb_dl_dir_export ${ROOTFSDIR} ${ROOTFS_DISTRO}
 }
 
 ROOTFS_INSTALL_COMMAND += "${@ 'rootfs_install_clean_files' if (d.getVar('ROOTFS_CLEAN_FILES') or '').strip() else ''}"

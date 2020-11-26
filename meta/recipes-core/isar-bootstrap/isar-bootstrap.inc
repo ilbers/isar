@@ -258,7 +258,11 @@ isar_bootstrap() {
     export IS_HOST debootstrap_args E
     if [ ! -e "${DEPLOY_ISAR_BOOTSTRAP}" ]; then
         sudo rm -rf --one-file-system "${ROOTFSDIR}"
-        deb_dl_dir_import "${ROOTFSDIR}"
+        if [ "${IS_HOST}" ];then
+            deb_dl_dir_import "${ROOTFSDIR}" "${HOST_DISTRO}"
+        else
+            deb_dl_dir_import "${ROOTFSDIR}" "${DISTRO}"
+        fi
 
         sudo -E -s <<'EOSUDO'
             set -e
@@ -358,7 +362,11 @@ isar_bootstrap() {
             ln -Tfsr "${ROOTFSDIR}" "${DEPLOY_ISAR_BOOTSTRAP}"
 EOSUDO
     fi
-    deb_dl_dir_export "${ROOTFSDIR}"
+    if [ "${IS_HOST}" ];then
+        deb_dl_dir_export "${ROOTFSDIR}" "${HOST_DISTRO}"
+    else
+        deb_dl_dir_export "${ROOTFSDIR}" "${DISTRO}"
+    fi
 }
 
 CLEANFUNCS = "clean_deploy"

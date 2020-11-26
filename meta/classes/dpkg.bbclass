@@ -9,10 +9,14 @@ PACKAGE_ARCH ?= "${DISTRO_ARCH}"
 do_install_builddeps() {
     dpkg_do_mounts
     E="${@ isar_export_proxies(d)}"
-    deb_dl_dir_import "${BUILDCHROOT_DIR}"
+    distro="${DISTRO}"
+    if [ ${ISAR_CROSS_COMPILE} -eq 1 ]; then
+       distro="${HOST_DISTRO}"
+    fi
+    deb_dl_dir_import "${BUILDCHROOT_DIR}" "${distro}"
     sudo -E chroot ${BUILDCHROOT_DIR} /isar/deps.sh \
         ${PP}/${PPS} ${PACKAGE_ARCH} --download-only
-    deb_dl_dir_export "${BUILDCHROOT_DIR}"
+    deb_dl_dir_export "${BUILDCHROOT_DIR}" "${distro}"
     sudo -E chroot ${BUILDCHROOT_DIR} /isar/deps.sh \
         ${PP}/${PPS} ${PACKAGE_ARCH}
     dpkg_undo_mounts

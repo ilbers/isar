@@ -6,7 +6,7 @@
 inherit repository
 
 deb_dl_dir_import() {
-    export pc="${DEBDIR}/${DISTRO}/"
+    export pc="${DEBDIR}/${2}"
     export rootfs="${1}"
     [ ! -d "${pc}" ] && return 0
     sudo mkdir -p "${rootfs}"/var/cache/apt/archives/
@@ -20,7 +20,7 @@ deb_dl_dir_import() {
 }
 
 deb_dl_dir_export() {
-    export pc="${DEBDIR}/${DISTRO}/"
+    export pc="${DEBDIR}/${2}"
     export rootfs="${1}"
     mkdir -p "${pc}"
     flock "${pc}".lock -c '
