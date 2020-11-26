@@ -96,3 +96,13 @@ repo_contains_package() {
     # no
     return 2
 }
+
+repo_sanity_test() {
+    local dir="$1"
+    local dbdir="$2"
+    local output="$( reprepro -s -b "${dir}" --dbdir "${dbdir}" sourcemissing )"
+    if [ -n "${output}" ]; then
+        bbwarn "One or more sources are missing in base-apt"
+        bbwarn "${output}"
+    fi
+}

@@ -66,6 +66,8 @@ repo() {
     fi
 
     populate_base_apt
+    repo_sanity_test "${REPO_BASE_DIR}"/"${BASE_DISTRO}" \
+        "${REPO_BASE_DB_DIR}"/"${BASE_DISTRO}"
 }
 
 python do_cache() {
