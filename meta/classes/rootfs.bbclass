@@ -186,10 +186,18 @@ python do_rootfs_install() {
 addtask rootfs_install before do_rootfs_postprocess after do_unpack
 
 cache_deb_src() {
+    if [ -e "${ROOTFSDIR}"/etc/resolv.conf ]; then
+        sudo mv "${ROOTFSDIR}"/etc/resolv.conf "${ROOTFSDIR}"/etc/resolv.conf.isar
+    fi
     rootfs_install_resolvconf
+
     deb_dl_dir_import ${ROOTFSDIR} ${ROOTFS_DISTRO}
     debsrc_download ${ROOTFSDIR} ${ROOTFS_DISTRO}
-    rootfs_install_clean_files
+
+    sudo rm -f "${ROOTFSDIR}"/etc/resolv.conf
+    if [ -e "${ROOTFSDIR}"/etc/resolv.conf.isar ]; then
+        sudo mv "${ROOTFSDIR}"/etc/resolv.conf.isar "${ROOTFSDIR}"/etc/resolv.conf
+    fi
 }
 
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'clean-package-cache', 'rootfs_postprocess_clean_package_cache', '', d)}"
