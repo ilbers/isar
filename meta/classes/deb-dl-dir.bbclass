@@ -5,6 +5,33 @@
 
 inherit repository
 
+debsrc_download() {
+    export rootfs="$1"
+    export rootfs_distro="$2"
+    mkdir -p "${DEBSRCDIR}"/"${rootfs_distro}"
+    sudo -E -s <<'EOSUDO'
+    mkdir -p "${rootfs}/deb-src"
+    mountpoint -q "${rootfs}/deb-src" || \
+    mount --bind "${DEBSRCDIR}" "${rootfs}/deb-src"
+EOSUDO
+    ( flock 9
+    set -e
+    printenv | grep -q BB_VERBOSE_LOGS && set -x
+    find "${rootfs}/var/cache/apt/archives/" -maxdepth 1 -type f -iname '*\.deb' | while read package; do
+        local src="$( dpkg-deb --show --showformat '${source:Package}' "${package}" )"
+        local version="$( dpkg-deb --show --showformat '${source:Version}' "${package}" )"
+
+        sudo -E chroot --userspec=$( id -u ):$( id -g ) ${rootfs} \
+            sh -c ' mkdir -p "/deb-src/${1}/${2}" && cd "/deb-src/${1}/${2}" && apt-get -y --download-only --only-source source "$2"="$3" ' download-src "${rootfs_distro}" "${src}" "${version}"
+    done
+    ) 9>"${DEBSRCDIR}/${rootfs_distro}.lock"
+    sudo -E -s <<'EOSUDO'
+    mountpoint -q "${rootfs}/deb-src" && \
+    umount -l "${rootfs}/deb-src"
+    rm -rf "${rootfs}/deb-src"
+EOSUDO
+}
+
 deb_dl_dir_import() {
     export pc="${DEBDIR}/${2}"
     export rootfs="${1}"
