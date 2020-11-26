@@ -5,6 +5,15 @@
 
 inherit repository
 
+is_not_part_of_current_build() {
+    local package="$( dpkg-deb --show --showformat '${Package}' "${1}" )"
+    local output="$( grep -hs "^Package: ${package}" \
+            "${IMAGE_ROOTFS}"/var/lib/dpkg/status \
+            "${BUILDCHROOT_HOST_DIR}"/var/lib/dpkg/status \
+            "${BUILDCHROOT_TARGET_DIR}"/var/lib/dpkg/status )"
+    [ -z "${output}" ]
+}
+
 debsrc_download() {
     export rootfs="$1"
     export rootfs_distro="$2"
@@ -18,6 +27,7 @@ EOSUDO
     set -e
     printenv | grep -q BB_VERBOSE_LOGS && set -x
     find "${rootfs}/var/cache/apt/archives/" -maxdepth 1 -type f -iname '*\.deb' | while read package; do
+        is_not_part_of_current_build "${package}" && continue
         local src="$( dpkg-deb --show --showformat '${source:Package}' "${package}" )"
         local version="$( dpkg-deb --show --showformat '${source:Version}' "${package}" )"
         local dscfile=$(find "${DEBSRCDIR}"/"${rootfs_distro}" -name "${src}_${version}.dsc")
