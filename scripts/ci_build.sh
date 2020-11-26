@@ -185,6 +185,7 @@ if [ -n "$REPRO_BUILD" ]; then
     sed -i -e 's/^BB_NO_NETWORK/#BB_NO_NETWORK/g' conf/local.conf
 fi
 
+sed -i -e 's/^#BASE_REPO_FEATURES ?= "cache-deb-src"/BASE_REPO_FEATURES ?= "cache-deb-src"/g' conf/local.conf
 # Start cross build for the defined set of configurations
 sed -i -e 's/ISAR_CROSS_COMPILE ?= "0"/ISAR_CROSS_COMPILE ?= "1"/g' conf/local.conf
 bitbake $BB_ARGS $CROSS_TARGETS_SET
