@@ -63,7 +63,7 @@ image_do_mounts() {
 }
 
 ROOTFSDIR = "${IMAGE_ROOTFS}"
-ROOTFS_FEATURES += "clean-package-cache finalize-rootfs generate-manifest export-dpkg-status"
+ROOTFS_FEATURES += "clean-package-cache generate-manifest export-dpkg-status"
 ROOTFS_PACKAGES += "${IMAGE_PREINSTALL} ${IMAGE_INSTALL}"
 ROOTFS_MANIFEST_DEPLOY_DIR ?= "${DEPLOY_DIR_IMAGE}"
 ROOTFS_DPKGSTATUS_DEPLOY_DIR ?= "${DEPLOY_DIR_IMAGE}"
@@ -173,6 +173,45 @@ python do_deploy() {
     pass
 }
 addtask deploy before do_build after do_image
+
+do_rootfs_finalize() {
+    sudo -s <<'EOSUDO'
+        test -e "${ROOTFSDIR}/chroot-setup.sh" && \
+            "${ROOTFSDIR}/chroot-setup.sh" "cleanup" "${ROOTFSDIR}"
+        rm -f "${ROOTFSDIR}/chroot-setup.sh"
+
+        test ! -e "${ROOTFSDIR}/usr/share/doc/qemu-user-static" && \
+            find "${ROOTFSDIR}/usr/bin" \
+                -maxdepth 1 -name 'qemu-*-static' -type f -delete
+
+        mountpoint -q '${ROOTFSDIR}/isar-apt' && \
+            umount -l ${ROOTFSDIR}/isar-apt
+        rmdir --ignore-fail-on-non-empty ${ROOTFSDIR}/isar-apt
+
+        mountpoint -q '${ROOTFSDIR}/base-apt' && \
+            umount -l ${ROOTFSDIR}/base-apt
+        rmdir --ignore-fail-on-non-empty ${ROOTFSDIR}/base-apt
+
+        mountpoint -q '${ROOTFSDIR}/dev' && \
+            umount -l ${ROOTFSDIR}/dev
+        mountpoint -q '${ROOTFSDIR}/sys' && \
+            umount -l ${ROOTFSDIR}/proc
+        mountpoint -q '${ROOTFSDIR}/sys' && \
+            umount -l ${ROOTFSDIR}/sys
+
+        rm -f "${ROOTFSDIR}/etc/apt/apt.conf.d/55isar-fallback.conf"
+
+        rm -f "${ROOTFSDIR}/etc/apt/sources.list.d/isar-apt.list"
+        rm -f "${ROOTFSDIR}/etc/apt/preferences.d/isar-apt"
+        rm -f "${ROOTFSDIR}/etc/apt/sources.list.d/base-apt.list"
+
+        mv "${ROOTFSDIR}/etc/apt/sources-list" \
+            "${ROOTFSDIR}/etc/apt/sources.list.d/bootstrap.list"
+
+        rm -f "${ROOTFSDIR}/etc/apt/sources-list"
+EOSUDO
+}
+addtask rootfs_finalize before do_rootfs after do_rootfs_postprocess
 
 # Last so that the image type can overwrite tasks if needed
 inherit ${IMAGE_TYPE}
