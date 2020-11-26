@@ -42,7 +42,7 @@ repo_add_srcpackage() {
     if [ -n "${GNUPGHOME}" ]; then
         export GNUPGHOME="${GNUPGHOME}"
     fi
-    reprepro -b "${dir}" --dbdir "${dbdir}" -C main -P source \
+    reprepro -b "${dir}" --dbdir "${dbdir}" -C main -S - -P source \
         includedsc "${codename}" \
         "$@"
 }
