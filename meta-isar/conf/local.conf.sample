@@ -181,6 +181,10 @@ ISAR_CROSS_COMPILE ?= "0"
 # NOTE: this works for amd64 and arm64 targets so far
 #ISAR_ENABLE_COMPAT_ARCH ?= "1"
 
+# Uncomment this to enable caching of all source packages.
+# Without this feature, only sources of packages downloaded with apt:// are downloaded.
+#BASE_REPO_FEATURES ?= "cache-deb-src"
+
 #
 # Uncomment this to enable use of cached base repository
 #ISAR_USE_CACHED_BASE_REPO ?= "1"

@@ -10,6 +10,7 @@ SRC_URI = "file://distributions.in"
 
 BASE_REPO_KEY ?= ""
 KEYFILES ?= ""
+BASE_REPO_FEATURES ?= ""
 
 populate_base_apt() {
     find "${DEBDIR}"/"${DISTRO}" -name '*\.deb' | while read package; do

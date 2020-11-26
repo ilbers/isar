@@ -185,7 +185,6 @@ python do_rootfs_install() {
 }
 addtask rootfs_install before do_rootfs_postprocess after do_unpack
 
-ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'cache-deb-src', 'cache_deb_src', '', d)}"
 cache_deb_src() {
     rootfs_install_resolvconf
     deb_dl_dir_import ${ROOTFSDIR} ${ROOTFS_DISTRO}

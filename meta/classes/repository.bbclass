@@ -100,9 +100,10 @@ repo_contains_package() {
 repo_sanity_test() {
     local dir="$1"
     local dbdir="$2"
-    local output="$( reprepro -s -b "${dir}" --dbdir "${dbdir}" sourcemissing )"
-    if [ -n "${output}" ]; then
-        bbwarn "One or more sources are missing in base-apt"
-        bbwarn "${output}"
+    if [ "${@bb.utils.contains('BASE_REPO_FEATURES', 'cache-deb-src', 'yes', 'no', d)}" = "yes" ];then
+        local output="$( reprepro -s -b "${dir}" --dbdir "${dbdir}" sourcemissing )"
+        if [ -n "${output}" ]; then
+            bbfatal "One or more sources are missing in repo. ${output}"
+        fi
     fi
 }
