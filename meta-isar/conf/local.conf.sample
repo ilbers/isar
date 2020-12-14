@@ -63,6 +63,8 @@ BBMULTICONFIG = " \
     stm32mp15x-buster \
     rpi-stretch \
     sifive-fu540-sid-ports \
+    qemuarm64-focal \
+    qemuamd64-focal \
 "
 
 #

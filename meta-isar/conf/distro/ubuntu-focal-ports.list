@@ -1,0 +1,6 @@
+deb	[arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports focal main restricted universe multiverse
+deb-src	[arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports focal main restricted universe multiverse
+deb	[arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports focal-updates main restricted universe multiverse
+deb-src	[arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports focal-updates main restricted universe multiverse
+deb	[arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports focal-security main restricted universe multiverse
+deb-src	[arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports focal-security main restricted universe multiverse

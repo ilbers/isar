@@ -109,10 +109,10 @@ readonly ISARROOT="$(dirname "$0")"/..
 readonly MACHINE_CONF=$ISARROOT/meta-isar/conf/machine/qemu$ARCH.conf
 eval "$(egrep 'MACHINE_SERIAL|QEMU_' $MACHINE_CONF |bb2sh)"
 
-eval $(bitbake -e mc:qemu$ARCH-$DISTRO:isar-image-base | grep "^IMAGE_TYPE=")
+eval $(bitbake -e mc:qemu$ARCH-$DISTRO:isar-image-base | grep "\(^IMAGE_TYPE=\|^IMAGE_FULLNAME=\)")
 case "$IMAGE_TYPE" in
     ext4-img)
-    readonly ROOTFS_IMAGE=isar-image-base-debian-$DISTRO-qemu$ARCH.ext4.img
+    readonly ROOTFS_IMAGE=$IMAGE_FULLNAME.ext4.img
 
     eval $(bitbake -e mc:qemu$ARCH-$DISTRO:isar-image-base | grep "^KERNEL_IMAGE=")
     eval $(bitbake -e mc:qemu$ARCH-$DISTRO:isar-image-base | grep "^INITRD_IMAGE=")
@@ -129,7 +129,7 @@ case "$IMAGE_TYPE" in
     KARGS="console=$MACHINE_SERIAL root=/dev/$QEMU_ROOTFS_DEV rw $QEMU_KARGS"
     ;;
     wic-img)
-    readonly ROOTFS_IMAGE=isar-image-base-debian-$DISTRO-qemu$ARCH.wic.img
+    readonly ROOTFS_IMAGE=$IMAGE_FULLNAME.wic.img
     EXTRA_ARGS="$EXTRA_ARGS -snapshot"
     ;;
     *)

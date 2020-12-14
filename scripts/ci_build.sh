@@ -31,7 +31,8 @@ TARGETS_SET="\
             mc:qemumipsel-stretch:isar-image-base \
             mc:qemumipsel-buster:isar-image-base \
             mc:nand-ubi-demo-buster:isar-image-ubi \
-            mc:rpi-stretch:isar-image-base"
+            mc:rpi-stretch:isar-image-base \
+            mc:qemuamd64-focal:isar-image-base"
           # qemu-user-static of <= buster too old to build that
           # mc:qemuarm64-buster:isar-image-base
           # mc:qemuarm64-bullseye:isar-image-base
@@ -50,7 +51,8 @@ CROSS_TARGETS_SET="\
                   mc:qemuamd64-stretch:isar-image-base \
                   mc:de0-nano-soc-buster:isar-image-base \
                   mc:stm32mp15x-buster:isar-image-base \
-                  mc:rpi-stretch:isar-image-base"
+                  mc:rpi-stretch:isar-image-base \
+                  mc:qemuarm64-focal:isar-image-base"
 
 CROSS_TARGETS_SET_BULLSEYE="\
     mc:qemuarm-bullseye:isar-image-base \
