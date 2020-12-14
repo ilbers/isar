@@ -271,14 +271,16 @@ isar_bootstrap() {
                                ${@get_distro_components_argument(d, True)} \
                                "${@get_distro_suite(d, True)}" \
                                "${ROOTFSDIR}" \
-                               "${@get_distro_source(d, True)}"
+                               "${@get_distro_source(d, True)}" \
+                               ${DISTRO_DEBOOTSTRAP_SCRIPT}
             else
                 ${DEBOOTSTRAP} $debootstrap_args \
                                --arch="${DISTRO_ARCH}" \
                                ${@get_distro_components_argument(d, False)} \
                                "${@get_distro_suite(d, False)}" \
                                "${ROOTFSDIR}" \
-                               "${@get_distro_source(d, False)}"
+                               "${@get_distro_source(d, False)}" \
+                               ${DISTRO_DEBOOTSTRAP_SCRIPT}
             fi
 
             # Install apt config
