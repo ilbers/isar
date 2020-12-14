@@ -132,15 +132,18 @@ EOF
 
 do_copy_boot_files[dirs] = "${DEPLOY_DIR_IMAGE}"
 do_copy_boot_files() {
-    kernel="$(realpath -q '${IMAGE_ROOTFS}/vmlinuz')"
+    kernel="$(realpath -q '${IMAGE_ROOTFS}'/vmlinu[xz])"
     if [ ! -f "$kernel" ]; then
-        kernel="$(realpath -q '${IMAGE_ROOTFS}/vmlinux')"
+        kernel="$(realpath -q '${IMAGE_ROOTFS}'/boot/vmlinu[xz])"
     fi
     if [ -f "$kernel" ]; then
-        cp -f "$kernel" '${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGE}'
+        sudo cat "$kernel" > "${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGE}"
     fi
 
     initrd="$(realpath -q '${IMAGE_ROOTFS}/initrd.img')"
+    if [ ! -f "$initrd" ]; then
+        initrd="$(realpath -q '${IMAGE_ROOTFS}/boot/initrd.img')"
+    fi
     if [ -f "$initrd" ]; then
         cp -f "$initrd" '${DEPLOY_DIR_IMAGE}/${INITRD_IMAGE}'
     fi
