@@ -99,7 +99,7 @@ WICVARS += "\
            KERNEL_NAME KERNEL_FILE"
 
 # Isar specific vars used in our plugins
-WICVARS += "KERNEL_IMAGE INITRD_IMAGE DISTRO_ARCH"
+WICVARS += "KERNEL_IMAGE INITRD_IMAGE DISTRO DISTRO_ARCH"
 
 python do_rootfs_wicenv () {
     wicvars = d.getVar('WICVARS', True)

@@ -65,6 +65,10 @@ class BootimgEFIPlugin(SourcePlugin):
             # Create grub configuration using parameters from wks file
             bootloader = creator.ks.bootloader
 
+            kernel_initrd_path = "/"
+            if get_bitbake_var("DISTRO").startswith("ubuntu"):
+                kernel_initrd_path = "/boot/"
+
             grubefi_conf =  "serial --unit=0 --speed=115200 --word=8 --parity=no --stop=1\n"
             grubefi_conf += "terminal_input --append serial\n"
             grubefi_conf += "terminal_output --append serial\n"
@@ -77,9 +81,9 @@ class BootimgEFIPlugin(SourcePlugin):
                     grubefi_conf += "set root=$bootdisk',gpt%d'\n" % part.realnum
             grubefi_conf += "\n"
             grubefi_conf += "menuentry 'boot'{\n"
-            grubefi_conf += "    linux /vmlinuz root=%s rootwait %s\n" \
-                            % (creator.rootdev, bootloader.append or "")
-            grubefi_conf += "    initrd /initrd.img\n"
+            grubefi_conf += "    linux %svmlinuz root=%s rootwait %s\n" \
+                            % (kernel_initrd_path, creator.rootdev, bootloader.append or "")
+            grubefi_conf += "    initrd %sinitrd.img\n" % kernel_initrd_path
             grubefi_conf += "}\n"
 
         logger.debug("Writing grubefi config %s/hdd/boot/EFI/BOOT/grub.cfg",
