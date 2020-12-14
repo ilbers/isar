@@ -186,7 +186,8 @@ python do_rootfs_install() {
 addtask rootfs_install before do_rootfs_postprocess after do_unpack
 
 cache_deb_src() {
-    if [ -e "${ROOTFSDIR}"/etc/resolv.conf ]; then
+    if [ -e "${ROOTFSDIR}"/etc/resolv.conf ] ||
+       [ -h "${ROOTFSDIR}"/etc/resolv.conf ]; then
         sudo mv "${ROOTFSDIR}"/etc/resolv.conf "${ROOTFSDIR}"/etc/resolv.conf.isar
     fi
     rootfs_install_resolvconf
@@ -199,7 +200,8 @@ cache_deb_src() {
     debsrc_download ${ROOTFSDIR} ${ROOTFS_DISTRO}
 
     sudo rm -f "${ROOTFSDIR}"/etc/resolv.conf
-    if [ -e "${ROOTFSDIR}"/etc/resolv.conf.isar ]; then
+    if [ -e "${ROOTFSDIR}"/etc/resolv.conf.isar ] ||
+       [ -h "${ROOTFSDIR}"/etc/resolv.conf.isar ]; then
         sudo mv "${ROOTFSDIR}"/etc/resolv.conf.isar "${ROOTFSDIR}"/etc/resolv.conf
     fi
 }
