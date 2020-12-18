@@ -4,6 +4,7 @@ import os
 import subprocess32
 import sys
 import time
+import tempfile
 
 from os.path import dirname
 sys.path.append(dirname(__file__) + '/..')
@@ -26,9 +27,9 @@ class VmBootTest(Test):
         self.log.info('Isar build folder is: ' + build_dir)
         self.log.info('===================================================')
 
-        output_file = '/tmp/vm_boot_test.log'
-        if os.path.exists(output_file):
-            os.remove(output_file)
+        fd, output_file = tempfile.mkstemp(suffix='_log.txt',
+                                           prefix='vm_start_' + distro + '_' +
+                                           arch + '_', dir=build_dir, text=True)
 
         cmdline = start_vm.format_qemu_cmdline(arch, build_dir, distro,
                                                output_file, None)
