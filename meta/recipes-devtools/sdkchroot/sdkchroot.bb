@@ -35,12 +35,6 @@ ROOTFS_FEATURES += "clean-package-cache generate-manifest export-dpkg-status"
 ROOTFS_MANIFEST_DEPLOY_DIR = "${DEPLOY_DIR_SDKCHROOT}"
 ROOTFS_DPKGSTATUS_DEPLOY_DIR = "${DEPLOY_DIR_SDKCHROOT}"
 
-python() {
-    if d.getVar("HOST_ARCH") not in ['i386', 'amd64']:
-        raise bb.parse.SkipRecipe("SDK doesn't support {} as host".format(
-            d.getVar("ROOTFS_ARCH")))
-}
-
 SDK_PREINSTALL += " \
     debhelper \
     autotools-dev \
