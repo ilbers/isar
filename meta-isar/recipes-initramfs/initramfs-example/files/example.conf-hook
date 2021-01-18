@@ -1,0 +1,7 @@
+# Example conf-hook.
+#
+# See "CONFIGURATION HOOK SCRIPTS" in initramfs-tools(7) for details.
+
+# Example: Use busybox instead of klibc-utils.  The package must also add
+# `busybox` as a dependency when this is set.
+BUSYBOX=y

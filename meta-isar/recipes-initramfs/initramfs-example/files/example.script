@@ -1,0 +1,21 @@
+#!/bin/sh
+# Example boot script.
+#
+# See "BOOT SCRIPTS" in initramfs-tools(7) for details.
+
+PREREQ=""
+prereqs()
+{
+    echo "$PREREQ"
+}
+case $1 in
+prereqs)
+    prereqs
+    exit 0
+    ;;
+esac
+
+. /scripts/functions
+# Begin real processing below this line
+
+log_success_msg "Hello from ISAR!"
