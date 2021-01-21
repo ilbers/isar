@@ -287,3 +287,8 @@ Use DEBIAN_BUILD_DEPENDS instead, to align with deb_debianize.
 
 Migrate your patches so they can be applied with "git am", or
 "unset PATCHTOOL" to get old behaviour.
+
+### Change kernel image name for arm64
+
+Kernel image name for arm64 platforms is vmlinux now. Image format was
+not changed (uncompressed executable) but now it is named correctly.

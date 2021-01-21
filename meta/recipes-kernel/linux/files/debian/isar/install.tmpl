@@ -26,9 +26,9 @@ do_install() {
     fi
     krel="$(${MAKE} O=${O} -s --no-print-directory kernelrelease)"
     case "${ARCH}" in
-        mips|powerpc|riscv) kimage_path="boot/vmlinux-${krel}"    ;;
-                        um) kimage_path="usr/bin/vmlinux-${krel}" ;;
-                         *) kimage_path="boot/vmlinuz-${krel}"    ;;
+        mips|powerpc|riscv|arm64) kimage_path="boot/vmlinux-${krel}"    ;;
+                              um) kimage_path="usr/bin/vmlinux-${krel}" ;;
+                               *) kimage_path="boot/vmlinuz-${krel}"    ;;
     esac
 
     print_settings
