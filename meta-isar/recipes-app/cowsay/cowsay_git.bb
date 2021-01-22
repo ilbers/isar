@@ -5,7 +5,6 @@
 
 inherit dpkg-gbp
 
-PATCHTOOL = "git"
 SRC_URI = "git://salsa.debian.org/debian/cowsay.git;protocol=https"
 SRC_URI += "file://isar.patch"
 SRCREV = "756f0c41fbf582093c0c1dff9ff77734716cb26f"

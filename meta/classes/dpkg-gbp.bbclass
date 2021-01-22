@@ -7,6 +7,8 @@ inherit dpkg
 
 S = "${WORKDIR}/git"
 
+PATCHTOOL ?= "git"
+
 GBP_DEPENDS ?= "git-buildpackage pristine-tar"
 GBP_EXTRA_OPTIONS ?= "--git-pristine-tar"
 

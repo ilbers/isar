@@ -282,3 +282,8 @@ like /boot/efi to avoid such issues.
 ### Deprecate BUILD_DEPENDS in u-boot-custom.inc
 
 Use DEBIAN_BUILD_DEPENDS instead, to align with deb_debianize.
+
+### Default to PATCHTOOL ?= "git" for dpkg-gbp
+
+Migrate your patches so they can be applied with "git am", or
+"unset PATCHTOOL" to get old behaviour.
