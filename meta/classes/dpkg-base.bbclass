@@ -47,10 +47,10 @@ python do_adjust_git() {
             bb.fatal(str(e))
 }
 
-addtask adjust_git after do_unpack before do_patch
+addtask adjust_git before do_dpkg_build
 
 inherit patch
-addtask patch after do_adjust_git before do_dpkg_build
+addtask patch before do_adjust_git
 
 SRC_APT ?= ""
 
