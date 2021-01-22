@@ -5,8 +5,8 @@
 #
 # SPDX-License-Identifier: MIT
 
-DESCRIPTION = "swupdate utility for software updates"
-HOMEPAGE= "https://github.com/sbabic/swupdate"
+DESCRIPTION = "Standalone library & tools for accessing the U-Boot environment"
+HOMEPAGE= "https://github.com/sbabic/libubootenv"
 LICENSE = "GPL-2.0"
 LIC_FILES_CHKSUM = "file://${LAYERDIR_isar}/licenses/COPYING.GPLv2;md5=751419260aa954499f7abaabaa882bbe"
 
@@ -14,18 +14,11 @@ PROVIDES = "libubootenv-tool libubootenv-dev libubootenv-doc libubootenv0.1"
 
 inherit dpkg-gbp
 
-SRC_URI = "git://salsa.debian.org/debian/libubootenv.git;protocol=https \
-           file://0002-Add-support-GNUInstallDirs.patch;apply=no "
-SRCREV = "2c7cb6d941d906dcc1d2e447cc17e418485dff12"
+SRC_URI = "git://salsa.debian.org/debian/libubootenv.git;protocol=https"
+SRCREV = "918da2525ce711700633ad69ea9b7e569b7abdbc"
 
 S = "${WORKDIR}/git"
 
-do_prepare_build() {
-	cd ${S}
-	export QUILT_PATCHES=debian/patches
-	quilt import -f ${WORKDIR}/*.patch
-	quilt push -a
-}
 
 dpkg_runbuild_prepend() {
 	export DEB_BUILD_OPTIONS="nocheck"
