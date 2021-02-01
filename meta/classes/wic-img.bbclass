@@ -129,7 +129,21 @@ do_rootfs_wicenv[prefuncs] = 'set_image_size'
 
 WIC_IMAGE_FILE ="${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.wic.img"
 
-do_wic_image() {
+python check_for_wic_warnings() {
+    with open("{}/log.do_wic_image".format(d.getVar("T"))) as f:
+        for line in f.readlines():
+            if line.startswith("WARNING"):
+                bb.warn(line.strip())
+}
+
+do_wic_image[file-checksums] += "${WKS_FILE_CHECKSUM}"
+python do_wic_image() {
+    bb.build.exec_func("generate_wic_image", d)
+    bb.build.exec_func("check_for_wic_warnings", d)
+}
+addtask wic_image before do_image after do_image_tools
+
+generate_wic_image() {
     buildchroot_do_mounts
     sudo -s <<'EOSUDO'
         ( flock 9
@@ -186,7 +200,3 @@ EOSUDO
     rm -rf ${BUILDCHROOT_DIR}/${WICTMP}
     rm -rf ${IMAGE_ROOTFS}/../pseudo
 }
-
-do_wic_image[file-checksums] += "${WKS_FILE_CHECKSUM}"
-
-addtask wic_image before do_image after do_image_tools
