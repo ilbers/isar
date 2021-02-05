@@ -135,7 +135,7 @@ class BootimgPcbiosIsarPlugin(SourcePlugin):
             kernel_name = get_bitbake_var("KERNEL_NAME")
             rootfs_dir = get_bitbake_var("IMAGE_ROOTFS")
             kernel = os.path.basename(os.path.realpath(os.path.join(rootfs_dir, kernel_file)))
-            kernel_version = kernel.strip('-' + kernel_name).strip(kernel_file + '-')
+            kernel_version = kernel[len(kernel_file)+1:-(len(kernel_name)+1)]
             initrd = "initrd.img-%s-%s" % (kernel_version, kernel_name)
 
             syslinux_conf += "KERNEL " + kernel + "\n"
@@ -165,7 +165,7 @@ class BootimgPcbiosIsarPlugin(SourcePlugin):
         kernel_name = get_bitbake_var("KERNEL_NAME")
         rootfs_dir = rootfs_dir['ROOTFS_DIR']
         kernel = os.path.basename(os.path.realpath(os.path.join(rootfs_dir, kernel_file)))
-        kernel_version = kernel.strip('-' + kernel_name).strip(kernel_file + '-')
+        kernel_version = kernel[len(kernel_file)+1:-(len(kernel_name)+1)]
         initrd = "initrd.img-%s-%s" % (kernel_version, kernel_name)
         config = "config-%s-%s" % (kernel_version, kernel_name)
         mapfile = "System.map-%s-%s" % (kernel_version, kernel_name)
