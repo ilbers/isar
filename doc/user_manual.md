@@ -767,6 +767,16 @@ For the variables please have a look at the previous example, the following new 
 Have a look at the `example-raw` recipe to get an idea how the `dpkg-raw` class can be used to customize your image.
 Note that the package will be build using the whole debian package workflow, so your package will be checked by many debhelper scripts. If those helpers point out quality issues it might be a good idea to fix them. But `example-raw` also shows how rules can still be violated.
 
+### Prebuilt .deb packages from somewhere
+
+In some cases you might find yourself having a `.deb` that someone else built,
+but not a proper debian repository to add to `DISTRO_APT_SOURCES` to get it
+from which would be the better way.
+
+Such single debs can be included if need be. You just need to write a recipe
+that just fetches those debs to its `WORKDIR` and deploys them. They can then
+be installed via `IMAGE_INSTALL`. Have a look at `prebuilt-deb`.
+
 ## Isar Cross-compilation
 
 ### Motivation
