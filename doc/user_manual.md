@@ -880,10 +880,6 @@ sudo rm -rf tmp
 bitbake mc:qemuarm-buster:isar-image-base
 ```
 
-### Limitation
-
-Files fetched with the `SRC_URI` protocol "apt://" are not yet cached.
-
 ## Add foreign packages from other repositories to the generated image
 
 ### Motivation
