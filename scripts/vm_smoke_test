@@ -3,9 +3,7 @@
 # This software is a part of ISAR.
 # Copyright (C) 2015-2018 ilbers GmbH
 
-CONSOLE_OUTPUT=/tmp/isar_console
-PID_FILE=/tmp/qemu.pid
-VERBOSE=1
+VERBOSE="--show=test"
 TIMEOUT=300
 
 # Error codes:
@@ -13,75 +11,15 @@ ES_OK=0
 ES_FAIL=1
 ES_BUG=3
 
-RET=$ES_OK
+RET=$ES_FAIL
 
-dump_boot_log() {
-    echo "Boot log:\n8<--"
-    cat $CONSOLE_OUTPUT
-    echo "\n8<--"
-}
+# Get Avocado QEMU tests path
+VM_TEST_DIR="$(dirname "$0")/../testsuite/vm_boot_test"
 
-check_login_prompt() {
-    echo -n "Check login prompt: "
+# Go to Isar root
+cd "$(dirname "$0")/.."
 
-    str=$(grep "isar login: " $CONSOLE_OUTPUT)
-
-    if [ -n "$str" ]; then
-        echo "PASSED"
-    else
-        echo "FAIL"
-        RET=$ES_FAIL
-        FAIL=1
-    fi
-}
-
-check_example_module() {
-    echo -n "Check example module: "
-
-    str=$(grep "Just an example" $CONSOLE_OUTPUT)
-
-    if [ -n "$str" ]; then
-        echo "PASSED"
-    else
-        echo "FAIL"
-        RET=$ES_FAIL
-        FAIL=1
-    fi
-}
-
-run_test () {
-    ARCH=$1
-    DISTRO=$2
-
-    echo "-------------------------------------------------"
-    echo "Testing Isar [$DISTRO] image for [$ARCH] machine:"
-
-    start_vm -a $ARCH -d $DISTRO -o $CONSOLE_OUTPUT -p $PID_FILE > /dev/null 2>&1 &
-    sleep 5
-
-    if [ -z `ps -p $! -o pid=` ]; then
-        echo "QEMU start: FAILED"
-        RET=$ES_FAIL
-        echo "Command output:\n8<--"
-        start_vm -a $ARCH -d $DISTRO -o $CONSOLE_OUTPUT -p $PID_FILE
-        echo "\n8<--"
-    else
-        sleep $TIMEOUT
-        kill `cat $PID_FILE`
-
-        FAIL=0
-
-        check_login_prompt
-
-        check_example_module
-
-        [ $VERBOSE -eq 1 -o $FAIL -eq 1 ] && dump_boot_log
-
-        rm $CONSOLE_OUTPUT
-    fi
-
-    rm $PID_FILE
-}
+BUILD_DIR=./build
 
 show_help() {
     echo "This script tests the Isar images for default targets in QEMU."
@@ -91,10 +29,6 @@ show_help() {
     echo
     echo "Parameters:"
     echo "    -f,--fast             test reduced set of supported targets."
-    echo "    -o,--output FILE      specify file to store console output."
-    echo "                          The default is: /tmp/isar_console"
-    echo "    -p,--pid-file FILE    specify file to store QEMU process PID."
-    echo "                          The default is: /tmp/qemu.pid"
     echo "    -q, --quiet           do not display boot logs for all the targets."
     echo "                          If test failed for the specific configuration,"
     echo "                          the respective boot log will be printed anyway."
@@ -119,18 +53,18 @@ do
         exit 0
         ;;
     -o|--output)
-        CONSOLE_OUTPUT=$2
+        # Deprecated option
         shift
         ;;
     -p|--pid-file)
-        PID_FILE=$2
+        # Deprecated option
         shift
         ;;
     -f|--fast)
         FAST_BUILD="1"
         ;;
     -q|--quiet)
-        VERBOSE=0
+        VERBOSE=""
         ;;
     -t|--timeout)
         TIMEOUT=$2
@@ -145,24 +79,26 @@ do
     shift
 done
 
-# ARM machine
-run_test arm stretch
-run_test arm buster
-
-# AMD64 machine
-if [ -z "$FAST_BUILD" ]; then
-    run_test amd64 buster
-    run_test amd64 focal
-fi
-run_test amd64 stretch
-
-# i386 machine
-if [ -z "$FAST_BUILD" ]; then
-    run_test i386 stretch
-    run_test i386 buster
+TAGS="full"
+if [ -n "$FAST_BUILD" ]; then
+    TAGS="fast"
 fi
 
-# ARM64 machine
-run_test arm64 stretch
+# Provide working path
+mkdir -p .config/avocado
+cat <<EOF > .config/avocado/avocado.conf
+[datadir.paths]
+base_dir = $BUILD_DIR/
+test_dir = $BUILD_DIR/tests
+data_dir = $BUILD_DIR/data
+logs_dir = $BUILD_DIR/job-results
+EOF
+export VIRTUAL_ENV="./"
+
+if avocado $VERBOSE run "$VM_TEST_DIR/vm_boot_test.py" -t $TAGS \
+    --test-runner=runner --disable-sysinfo \
+    -p build_dir="$BUILD_DIR" -p time_to_wait=$TIMEOUT; then
+    RET=$ES_OK
+fi
 
 exit $RET
