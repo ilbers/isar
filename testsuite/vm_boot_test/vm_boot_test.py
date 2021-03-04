@@ -13,13 +13,10 @@ import start_vm
 
 from avocado import Test
 
-class VmBootTest(Test):
+class VmBase(Test):
 
-    def test(self):
-        # TODO: add default values
+    def vm_start(self, arch='amd64', distro='buster'):
         build_dir = self.params.get('build_dir', default='.')
-        arch = self.params.get('arch', default='arm')
-        distro = self.params.get('distro', default='stretch')
         time_to_wait = self.params.get('time_to_wait', default=60)
 
         self.log.info('===================================================')
@@ -49,3 +46,41 @@ class VmBootTest(Test):
                 return
 
         self.fail('Test failed')
+
+class VmBootTestFast(VmBase):
+
+    """
+    Test QEMU image start (fast)
+
+    :avocado: tags=fast,full
+    """
+    def test_arm_stretch(self):
+        self.vm_start('arm','stretch')
+
+    def test_arm_buster(self):
+        self.vm_start('arm','buster')
+
+    def test_arm64_stretch(self):
+        self.vm_start('arm64','stretch')
+
+    def test_amd64_stretch(self):
+        self.vm_start('amd64','stretch')
+
+class VmBootTestFull(VmBase):
+
+    """
+    Test QEMU image start (full)
+
+    :avocado: tags=full
+    """
+    def test_i386_stretch(self):
+        self.vm_start('i386','stretch')
+
+    def test_i386_buster(self):
+        self.vm_start('i386','buster')
+
+    def test_amd64_buster(self):
+        self.vm_start('amd64','buster')
+
+    def test_amd64_focal(self):
+        self.vm_start('amd64','focal')
