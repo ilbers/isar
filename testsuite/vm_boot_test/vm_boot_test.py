@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 import os
-import subprocess32
+import select
+import subprocess
 import sys
 import time
 import tempfile
@@ -12,6 +13,9 @@ sys.path.append(dirname(__file__) + '/..')
 import start_vm
 
 from avocado import Test
+
+class CanBeFinished(Exception):
+    pass
 
 class VmBase(Test):
 
@@ -34,18 +38,45 @@ class VmBase(Test):
 
         self.log.info('QEMU boot line: ' + str(cmdline))
 
-        devnull = open(os.devnull, 'w')
+        login_prompt = b'isar login:'
+        service_prompt = b'Just an example'
 
-        p1 = subprocess32.Popen(cmdline, stdout=devnull, stderr=devnull)
-        time.sleep(int(time_to_wait))
-        p1.kill()
-        p1.wait()
+        timeout = time.time() + int(time_to_wait)
+
+        p1 = subprocess.Popen(cmdline, stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE)
+        try:
+            poller = select.poll()
+            poller.register(p1.stdout, select.POLLIN)
+            poller.register(p1.stderr, select.POLLIN)
+            while time.time() < timeout and p1.poll() is None:
+                events = poller.poll(1000 * (timeout - time.time()))
+                for fd, event in events:
+                    if fd == p1.stdout.fileno():
+                        # Wait for the complete string if it is read in chunks
+                        # like "i", "sar", " login:"
+                        time.sleep(0.01)
+                        data = os.read(fd, 1024)
+                        if login_prompt in data:
+                            raise CanBeFinished
+                    if fd == p1.stderr.fileno():
+                        self.log.error(p1.stderr.readline())
+        except CanBeFinished:
+            self.log.debug('Got login prompt')
+        finally:
+            if p1.poll() is None:
+                p1.kill()
+            p1.wait()
 
         if os.path.exists(output_file):
-            if 'isar login:' in open(output_file).read():
-                return
+            with open(output_file, "rb") as f1:
+                data = f1.read()
+                if service_prompt in data and login_prompt in data:
+                    return
+                else:
+                    self.log.error(data)
 
-        self.fail('Test failed')
+        self.fail('Log ' + output_file)
 
 class VmBootTestFast(VmBase):
 
