@@ -17,7 +17,7 @@ def get_bitbake_env(arch, distro):
 def get_bitbake_var(output, var):
     ret = ''
     for line in output.splitlines():
-        if line.startswith(var):
+        if line.startswith(var + '='):
             ret = line.split('"')[1]
     return ret
 
