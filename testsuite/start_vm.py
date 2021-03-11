@@ -21,7 +21,7 @@ def get_bitbake_var(output, var):
             ret = line.split('"')[1]
     return ret
 
-def format_qemu_cmdline(arch, build, distro):
+def format_qemu_cmdline(arch, build, distro, out, pid):
     bb_output = get_bitbake_env(arch, distro).decode()
 
     rootfs_image = ''
@@ -57,6 +57,13 @@ def format_qemu_cmdline(arch, build, distro):
     qemu_cpu = get_bitbake_var(bb_output, 'QEMU_CPU')
     qemu_disk_args = get_bitbake_var(bb_output, 'QEMU_DISK_ARGS')
 
+    if out:
+        extra_args.extend(['-chardev','stdio,id=ch0,logfile=' + out])
+        extra_args.extend(['-serial','chardev:ch0'])
+        extra_args.extend(['-monitor','none'])
+    if pid:
+        extra_args.extend(['-pidfile', pid])
+
     qemu_disk_args = qemu_disk_args.replace('##ROOTFS_IMAGE##', deploy_dir_image + '/' + rootfs_image).split()
 
     cmd = ['qemu-system-' + qemu_arch, '-m', '1024M']
@@ -72,10 +79,11 @@ def format_qemu_cmdline(arch, build, distro):
 
     return cmd
 
-def start_qemu(arch, build, distro):
-    cmdline = format_qemu_cmdline(arch, build, distro)
+def start_qemu(arch, build, distro, out, pid):
+    cmdline = format_qemu_cmdline(arch, build, distro, out, pid)
     cmdline.insert(1, '-nographic')
 
+    print(cmdline)
     p1 = subprocess.call(cmdline)
 
 if __name__ == "__main__":
@@ -83,6 +91,8 @@ if __name__ == "__main__":
     parser.add_argument('-a', '--arch', choices=['arm', 'arm64', 'amd64', 'i386'], help='set isar machine architecture.', default='arm')
     parser.add_argument('-b', '--build', help='set path to build directory.', default=os.getcwd())
     parser.add_argument('-d', '--distro', choices=['jessie', 'stretch'], help='set isar Debian distribution.', default='stretch')
+    parser.add_argument('-o', '--out', help='Route QEMU console output to specified file.')
+    parser.add_argument('-p', '--pid', help='Store QEMU pid to specified file.')
     args = parser.parse_args()
 
-    start_qemu(args.arch, args.build, args.distro)
+    start_qemu(args.arch, args.build, args.distro, args.out, args.pid)

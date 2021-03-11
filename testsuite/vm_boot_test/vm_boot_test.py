@@ -30,10 +30,9 @@ class VmBootTest(Test):
         if os.path.exists(output_file):
             os.remove(output_file)
 
-        cmdline = start_vm.format_qemu_cmdline(arch, build_dir, distro)
+        cmdline = start_vm.format_qemu_cmdline(arch, build_dir, distro,
+                                               output_file, None)
         cmdline.insert(1, '-nographic')
-        cmdline.append('-serial')
-        cmdline.append('file:' + output_file)
 
         self.log.info('QEMU boot line: ' + str(cmdline))
 
