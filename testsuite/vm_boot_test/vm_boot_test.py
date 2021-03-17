@@ -13,11 +13,24 @@ sys.path.append(dirname(__file__) + '/..')
 import start_vm
 
 from avocado import Test
+from avocado.utils import process
+from avocado.utils import path
 
 class CanBeFinished(Exception):
     pass
 
 class VmBase(Test):
+
+    def check_bitbake(self, build_dir):
+        try:
+            path.find_command('bitbake')
+        except path.CmdNotFoundError:
+            out = process.getoutput('/bin/bash -c "cd ../.. && \
+                                    source isar-init-build-env \
+                                    %s 2>&1 >/dev/null; env"' % build_dir)
+            env = dict(((x.split('=', 1) + [''])[:2] \
+                        for x in output.splitlines() if x != ''))
+            os.environ.update(env)
 
     def vm_start(self, arch='amd64', distro='buster'):
         build_dir = self.params.get('build_dir', default='.')
@@ -27,6 +40,8 @@ class VmBase(Test):
         self.log.info('Running Isar VM boot test for (' + distro + '-' + arch + ')')
         self.log.info('Isar build folder is: ' + build_dir)
         self.log.info('===================================================')
+
+        self.check_bitbake(build_dir)
 
         fd, output_file = tempfile.mkstemp(suffix='_log.txt',
                                            prefix='vm_start_' + distro + '_' +
