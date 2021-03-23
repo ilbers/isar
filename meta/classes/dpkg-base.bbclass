@@ -26,6 +26,13 @@ python do_adjust_git() {
             if ud.type != 'git':
                 continue
 
+            if os.path.islink(ud.localpath):
+                realpath = os.path.realpath(ud.localpath)
+                if realpath.startswith(d.getVar("DL_DIR")):
+                    link = realpath.replace(d.getVar("DL_DIR"), '/downloads', 1)
+                    os.unlink(ud.localpath)
+                    os.symlink(link, ud.localpath)
+
             subdir = ud.parm.get("subpath", "")
             if subdir != "":
                 def_destsuffix = "%s/" % os.path.basename(subdir.rstrip('/'))
