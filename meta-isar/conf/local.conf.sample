@@ -150,6 +150,9 @@ BB_DISKMON_DIRS = "\
     ABORT,${SSTATE_DIR},100M,1K \
     ABORT,/tmp,10M,1K"
 
+# Isar MIRRORS in case of service unavailable
+MIRRORS ?= "git?://salsa\.debian\.org/debian/.* git://github.com/ilbers/BASENAME"
+
 #
 # Shared-state files from other locations
 #
