@@ -12,12 +12,7 @@ PATCHTOOL ?= "git"
 GBP_DEPENDS ?= "git-buildpackage pristine-tar"
 GBP_EXTRA_OPTIONS ?= "--git-pristine-tar"
 
-do_install_builddeps_append() {
-    dpkg_do_mounts
-    distro="${DISTRO}"
-    if [ ${ISAR_CROSS_COMPILE} -eq 1 ]; then
-       distro="${HOST_DISTRO}"
-    fi
+builddeps_install_append() {
     deb_dl_dir_import "${BUILDCHROOT_DIR}" "${distro}"
     sudo -E chroot ${BUILDCHROOT_DIR} \
         apt-get install -y -o Debug::pkgProblemResolver=yes \
@@ -26,7 +21,6 @@ do_install_builddeps_append() {
     sudo -E chroot ${BUILDCHROOT_DIR} \
         apt-get install -y -o Debug::pkgProblemResolver=yes \
                         --no-install-recommends ${GBP_DEPENDS}
-    dpkg_undo_mounts
 }
 
 dpkg_runbuild_prepend() {
