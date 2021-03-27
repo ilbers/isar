@@ -18,11 +18,7 @@ BOOT_CMD=$(mktemp)
 KERNEL_VERSION=$(linux-version list | linux-version sort --reverse | head -1)
 
 case $(uname -m) in
-	aarch64)
-		KERNEL_FILE="vmlinuz"
-		BOOT="booti"
-		;;
-	mips|riscv64)
+	aarch64|mips|riscv64)
 		KERNEL_FILE="vmlinux"
 		BOOT="booti"
 		;;
