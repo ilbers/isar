@@ -17,6 +17,15 @@ cd "$(dirname "$0")/.."
 # Start build in Isar tree by default
 BUILD_DIR=./build
 
+# Check dependencies
+DEPENDENCIES="umoci skopeo"
+for prog in ${DEPENDENCIES} ; do
+    if [ ! -x "$(which $prog)" ] ; then
+        echo "missing $prog in PATH, exiting" >&2
+        exit 1
+    fi
+done
+
 BB_ARGS="-v"
 
 TARGETS_SET="\
@@ -33,7 +42,8 @@ TARGETS_SET="\
             mc:qemumipsel-buster:isar-image-base \
             mc:nand-ubi-demo-buster:isar-image-ubi \
             mc:rpi-stretch:isar-image-base \
-            mc:qemuamd64-focal:isar-image-base"
+            mc:qemuamd64-focal:isar-image-base \
+            "
           # qemu-user-static of <= buster too old to build that
           # mc:qemuarm64-buster:isar-image-base
           # mc:qemuarm64-bullseye:isar-image-base
@@ -43,6 +53,12 @@ TARGETS_SET_BULLSEYE="\
     mc:qemuarm-bullseye:isar-image-base \
     mc:qemui386-bullseye:isar-image-base \
     mc:qemumipsel-bullseye:isar-image-base \
+"
+
+TARGETS_CONTAINERS="\
+    mc:container-stretch:isar-image-base \
+    mc:container-buster:isar-image-base \
+    mc:container-bullseye:isar-image-base \
 "
 
 CROSS_TARGETS_SET="\
@@ -237,3 +253,14 @@ bitbake $BB_ARGS mc:qemuamd64-stretch:isar-image-base
 mv "${LAYERDIR_isar}/scripts/lib/wic/canned-wks/sdimage-efi.wks.ci-backup" "${LAYERDIR_isar}/scripts/lib/wic/canned-wks/sdimage-efi.wks"
 mv ${BUILDDIR}/tmp/deploy/images/qemuamd64/isar-image-base-debian-stretch-qemuamd64.wic.img.ci-backup \
     ${BUILDDIR}/tmp/deploy/images/qemuamd64/isar-image-base-debian-stretch-qemuamd64.wic.img
+
+# Finalize with containerized images, since they remove some not-needed packages from the local.conf
+sed -i -e 's/\(IMAGE_INSTALL = .*\) example-module-${KERNEL_NAME}\(.*\)/\1\2/g' conf/local.conf
+sed -i -e 's/\(IMAGE_INSTALL = .*\) enable-fsck\(.*\)/\1\2/g' conf/local.conf
+bitbake $BB_ARGS $TARGETS_CONTAINERS
+while [ -e bitbake.sock ]; do sleep 1; done
+# and SDK container image creation
+echo 'SDK_FORMATS = "docker-archive"' >> conf/local.conf
+bitbake $BB_ARGS -c do_populate_sdk mc:container-stretch:isar-image-base
+while [ -e bitbake.sock ]; do sleep 1; done
+
