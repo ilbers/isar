@@ -76,6 +76,7 @@ inherit image-tools-extension
 inherit image-postproc-extension
 inherit image-locales-extension
 inherit image-account-extension
+inherit image-container-extension
 
 # Extra space for rootfs in MB
 ROOTFS_EXTRA ?= "64"
