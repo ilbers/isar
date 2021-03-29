@@ -6,11 +6,25 @@
 # This class extends the image.bbclass to supply the creation of a sdk
 
 SDK_INCLUDE_ISAR_APT ?= "0"
+SDK_FORMATS ?= "tar-xz"
+
+sdk_tar_xz() {
+    # Copy mount_chroot.sh for convenience
+    sudo cp ${SCRIPTSDIR}/mount_chroot.sh ${SDKCHROOT_DIR}
+
+    # Create SDK archive
+    cd -P ${SDKCHROOT_DIR}/..
+    sudo tar --transform="s|^rootfs|sdk-${DISTRO}-${DISTRO_ARCH}|" \
+        -c rootfs | xz -T0 > ${DEPLOY_DIR_IMAGE}/sdk-${DISTRO}-${DISTRO_ARCH}.tar.xz
+    bbdebug 1 "SDK rootfs available in ${DEPLOY_DIR_IMAGE}/sdk-${DISTRO}-${DISTRO_ARCH}.tar.xz"
+}
 
 do_populate_sdk[stamp-extra-info] = "${DISTRO}-${MACHINE}"
 do_populate_sdk[depends] = "sdkchroot:do_build"
-do_populate_sdk[vardeps] += "SDK_INCLUDE_ISAR_APT"
+do_populate_sdk[vardeps] += "SDK_INCLUDE_ISAR_APT SDK_FORMATS"
 do_populate_sdk() {
+    local sdk_container_formats=""
+
     if [ "${SDK_INCLUDE_ISAR_APT}" = "1" ]; then
         # Copy isar-apt with deployed Isar packages
         sudo cp -Trpfx ${REPO_ISAR_DIR}/${DISTRO} ${SDKCHROOT_DIR}/isar-apt
@@ -48,12 +62,26 @@ do_populate_sdk() {
         done
     done
 
-    # Copy mount_chroot.sh for convenience
-    sudo cp ${SCRIPTSDIR}/mount_chroot.sh ${SDKCHROOT_DIR}
+    # separate SDK formats: TAR and container formats
+    for sdk_format in ${SDK_FORMATS} ; do
+        case ${sdk_format} in
+            "tar-xz")
+                sdk_tar_xz
+                ;;
+            "docker-archive" | "oci" | "oci-archive" | "docker-daemon" | "containers-storage")
+                sdk_container_formats="${sdk_container_formats} ${sdk_format}"
+                ;;
+            *)
+                die "unsupported SDK format specified: ${sdk_format}"
+                ;;
+        esac
+    done
 
-    # Create SDK archive
-    cd -P ${SDKCHROOT_DIR}/..
-    sudo tar --transform="s|^rootfs|sdk-${DISTRO}-${DISTRO_ARCH}|" \
-        -c rootfs | xz -T0 > ${DEPLOY_DIR_IMAGE}/sdk-${DISTRO}-${DISTRO_ARCH}.tar.xz
+    # generate the SDK in all the desired container formats
+    if [ -n "${sdk_container_formats}" ] ; then
+        bbnote "Generating SDK container in ${sdk_container_formats} format"
+        containerize_rootfs "${SDKCHROOT_DIR}" "sdk-${DISTRO}-${DISTRO_ARCH}" "${sdk_container_formats}"
+    fi
 }
+
 addtask populate_sdk after do_rootfs
