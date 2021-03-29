@@ -19,6 +19,7 @@ Copyright (C) 2016-2019, ilbers GmbH
  - [Add a Custom Application](#add-a-custom-application)
  - [Enabling Cross-compilation](#isar-cross-compilation)
  - [Create an ISAR SDK root filesystem](#create-an-isar-sdk-root-filesystem)
+ - [Create a containerized Isar SDK root filesystem](#create-a-containerized-isar-sdk-root-filesystem)
  - [Creation of local apt repo caching upstream Debian packages](#creation-of-local-apt-repo-caching-upstream-debian-packages)
 
 
@@ -83,6 +84,14 @@ If your host is >= buster, also install the following package.
 ```
 apt install python3-distutils
 ```
+
+If you want to generate containerized SDKs, also install the following 
+packages: `umoci` and `skopeo`.
+Umoci is provided by Debian Buster and can be installed with 
+`apt install umoci`, Skopeo is provided by Debian Bullseye/Unstable and has to 
+be installed either manually downloading the DEB and installing it (no other 
+packages required) or with `apt install -t bullseye skopeo` (if 
+unstable/bullseye included in `/etc/apt/sources.list[.d]`).
 
 Notes:
 
@@ -221,6 +230,73 @@ enough to allow images to be testable under `qemu`.
 qemu-system-x86_64 -m 256M -nographic -bios edk2/Build/OvmfX64/RELEASE_*/FV/OVMF.fd -hda tmp/deploy/images/qemuamd64/isar-image-base-debian-buster-qemuamd64.wic.img
 # i386 image
 qemu-system-i386 -m 256M -nographic -hda tmp/deploy/images/qemui386/isar-image-base-debian-buster-qemui386.wic.img
+```
+
+### Generate container image with root filesystem
+
+A runnable container image is generated if you set IMAGE_TYPE to 
+'container-img'.
+Getting a container image can be the main purpose of an Isar configuration, 
+but not only.
+A container image created from an Isar configuration meant for bare-metal or 
+virtual machines can be helpfull to test certain applications which 
+requirements (e.g. libraries) can be easily resolved in a containerized 
+environment.
+
+Container images can be generated in different formats, selected with the 
+variable `CONTAINER_FORMAT`. One or more (whitespace separated) of following 
+options can be given:
+ - `docker-archive`: (default) an archive containing a Docker image that can 
+   be imported with [`docker import`](https://docs.docker.com/engine/reference/commandline/import/)
+ - `docker-daemon`: resulting container image is made available on the local 
+   Docker Daemon
+ - `containers-storage`: resulting container image is made available to tools 
+   using containers/storage back-end (e.g. Podman, CRIO, buildah,...)
+ - `oci-archive`: an archive containing an OCI image, mostly for archiving as 
+   seed for any of the above formats
+
+Following formats don't work if running `bitbake ...` (to build the image) 
+from inside of a container (e.g. using `kas-container`): `docker-daemon` and 
+`containers-storage`.
+It's technically possible, but requires making host resources (e.g. the 
+Docker Daemon socket) accessible in the container, which can endanger the 
+stability and security of the host.
+
+The resulting container image archives (only for `docker-archive` and 
+`oci-archive`) are made available as 
+`tmp/deploy/images/${MACHINE}/${DISTRO}-${DISTRO_ARCH}-${container_format}.tar.xz` 
+(being `container_format` each one of the formats specified in 
+`CONTAINER_FORMAT`).
+
+### Example
+
+ - Make the relevant environment variables available to the task
+
+For one-shot builds (use `local.conf` otherwise):
+
+```
+export BB_ENV_EXTRAWHITE="$BB_ENV_EXTRAWHITE IMAGE_TYPE CONTAINER_FORMAT"
+export IMAGE_TYPE="container-img"
+export CONTAINER_FORMAT="docker-archive"
+```
+
+ - Trigger creation of container image from root filesystem
+
+```
+bitbake mc:qemuarm-buster:isar-image-base
+```
+
+ - Load the container image into the Docker Daemon
+
+```
+xzcat build/tmp/deploy/images/qemuarm/debian-buster-armhf-docker-archive.tar.xz | docker load
+```
+
+ - Run a container using the container image (following commands starting with 
+   `#~:` are to be run in the container)
+
+```
+docker run --rm -ti --volume "$(pwd):/build" isar-buster-armhf:latest
 ```
 
 ---
@@ -832,6 +908,109 @@ ii  crossbuild-essential-armhf           12.3                   all          Inf
 /usr/share/doc/libhello-dev/changelog.gz
 /usr/share/doc/libhello-dev/copyright
 ~#
+```
+
+## Create a containerized Isar SDK root filesystem
+
+### Motivation
+
+Distributing and using the SDK root filesystem created following the 
+instructions in 
+"[Create an Isar SDK root filesystem](#create-an-isar-sdk-root-filesystem)" 
+becomes easier using container images (at least for those using containers 
+anyway).
+A "containerized" SDK adds to those advantages of a normal SDK root filesystem 
+the comfort of container images.
+
+### Approach
+
+Create container image with SDK root filesystem with installed cross-toolchain 
+for target architecture and ability to install already prebuilt target binary 
+artifacts.
+Developer:
+ - runs a container based on the resulting container image mounting the source 
+   code to be built,
+ - develops applications for target platform on the container and
+ - leaves the container getting the results on the mounted directory.
+
+### Solution
+
+User specifies the variable `SDK_FORMATS` providing a space-separated list of 
+SDK formats to generate.
+
+Supported formats are:
+ - `tar-xz`: (default) is the non-containerized format that results from 
+   following the instructions in 
+   "[Create an ISAR SDK root filesystem](#create-an-isar-sdk-root-filesystem)"
+ - `docker-archive`: an archive containing a Docker image that can be imported 
+   with 
+   [`docker import`](https://docs.docker.com/engine/reference/commandline/import/)
+ - `docker-daemon`: resulting container image is made available on the local 
+   Docker Daemon
+ - `containers-storage`: resulting container image is made available to tools 
+   using containers/storage back-end (e.g. Podman, CRIO, buildah,...)
+ - `oci-archive`: an archive containing an OCI image, mostly for archiving as 
+   seed for any of the above formats
+
+User manually triggers creation of SDK formats for his target platform by 
+launching the task `do_populate_sdk` for target image, f.e.
+`bitbake -c do_populate_sdk mc:${MACHINE}-${DISTRO}:isar-image-base`.
+Packages that should be additionally installed into the SDK can be appended to 
+`SDK_PREINSTALL` (external repositories) and `SDK_INSTALL` (self-built).
+
+Following formats don't work if running `bitbake -c do_populate_sdk ...` (to 
+generate the containerized SDK) from inside of a container (e.g. using 
+`kas-container`): `docker-daemon` and `containers-storage`.
+It's technically possible, but requires making host resources (e.g. the Docker 
+Daemon socket) accessible in the container.
+What can endanger the stability and security of the host.
+
+The resulting SDK formats are archived into 
+`tmp/deploy/images/${MACHINE}/sdk-${DISTRO}-${DISTRO_ARCH}-${sdk_format}.tar.xz` 
+(being `sdk_format` each one of the formats specified in `SDK_FORMATS`).
+The SDK container directory `/isar-apt` contains a copy of isar-apt repo with 
+locally prebuilt target debian packages (for <HOST_DISTRO>).
+One may get into an SDK container and install required target packages with 
+the help of `apt-get install <package_name>:<DISTRO_ARCH>` command.
+The directory with the source code to develop on should be mounted on the 
+container (with `--volume <host-directory>:<container-directory>`) to be able 
+to edit files in the host with an IDE and build in the container.
+
+### Example
+
+ - Make the SDK formats to generate available to the task
+
+For one-shot builds (use `local.conf` otherwise):
+
+```
+export BB_ENV_EXTRAWHITE="$BB_ENV_EXTRAWHITE SDK_FORMATS"
+export SDK_FORMATS="docker-archive"
+```
+
+ - Trigger creation of SDK root filesystem
+
+```
+bitbake -c do_populate_sdk mc:qemuarm-buster:isar-image-base
+```
+
+ - Load the SDK container image into the Docker Daemon
+
+```
+xzcat build/tmp/deploy/images/qemuarm/sdk-debian-buster-armhf-docker-archive.tar.xz | docker load
+```
+
+ - Run a container using the SDK container image (following commands starting 
+   with `#~:` are to be run in the container)
+
+```
+docker run --rm -ti --volume "$(pwd):/build" isar-sdk-buster-armhf:latest
+```
+
+ - Check that cross toolchains are installed
+
+```
+:~# dpkg -l | grep crossbuild-essential-armhf
+ii  crossbuild-essential-armhf           12.3                   all          Informational list of cross-build-essential packages
 ```
 
 ## Creation of local apt repo caching upstream Debian packages
