@@ -1,4 +1,6 @@
 #!/bin/sh
 set -e
 
+rm /etc/ssh/ssh_host_*_key*
+
 systemctl enable sshd-regen-keys.service

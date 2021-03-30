@@ -9,9 +9,7 @@ ConditionPathIsReadWrite=/etc
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-Environment=DEBIAN_FRONTEND=noninteractive
-ExecStart=/usr/sbin/sshd-regen-keys.sh
-ExecStartPost=-/bin/systemctl disable sshd-regen-keys.service
+ExecStart=/usr/bin/ssh-keygen -A
 StandardOutput=syslog
 StandardError=syslog
 
