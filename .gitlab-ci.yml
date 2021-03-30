@@ -15,6 +15,7 @@ variables:
     name: "logs-$CI_JOB_ID"
     paths:
       - build/tmp/work/*/*/*/temp
+      - build/job-results
     when: on_failure
     expire_in: 1 week
 
