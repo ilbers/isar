@@ -65,7 +65,6 @@ do_apt_fetch() {
     if [ -z "${@d.getVar("SRC_APT", True).strip()}" ]; then
         return 0
     fi
-    rm -rf ${S}
     dpkg_do_mounts
     E="${@ isar_export_proxies(d)}"
     sudo -E chroot ${BUILDCHROOT_DIR} /usr/bin/apt-get update \
@@ -76,15 +75,37 @@ do_apt_fetch() {
     for uri in "${SRC_APT}"; do
         sudo -E chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} \
             sh -c 'mkdir -p /downloads/deb-src/"$1"/"$2" && cd /downloads/deb-src/"$1"/"$2" && apt-get -y --download-only --only-source source "$2"' my_script "${DISTRO}" "${uri}"
-        sudo -E chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} \
-            sh -c 'cp /downloads/deb-src/"$1"/"$2"/* ${PP} && cd ${PP} && apt-get -y --only-source source "$2"' my_script "${DISTRO}" "${uri}"
     done
 
     dpkg_undo_mounts
 }
 
-addtask apt_fetch after do_unpack before do_patch
+addtask apt_fetch after do_unpack before do_apt_unpack
 do_apt_fetch[lockfiles] += "${REPO_ISAR_DIR}/isar.lock"
+
+do_apt_unpack() {
+    if [ -z "${@d.getVar("SRC_APT", True).strip()}" ]; then
+        return 0
+    fi
+    rm -rf ${S}
+    dpkg_do_mounts
+    E="${@ isar_export_proxies(d)}"
+
+    for uri in "${SRC_APT}"; do
+        sudo -E chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} \
+            sh -c ' \
+                set -e
+                dscfile="$(apt-get -y -qq --print-uris --only-source source "${2}" | cut -d " " -f2 | grep -E "*.dsc")"
+                cd ${PP}
+                cp /downloads/deb-src/"${1}"/"${2}"/* ${PP}
+                dpkg-source -x "${dscfile}" "${PPS}"' \
+                    my_script "${DISTRO}" "${uri}"
+    done
+
+    dpkg_undo_mounts
+}
+
+addtask apt_unpack after do_apt_fetch before do_patch
 
 addtask cleanall_apt before do_cleanall
 do_cleanall_apt[nostamp] = "1"
