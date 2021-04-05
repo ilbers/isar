@@ -676,15 +676,68 @@ Before creating a new recipe it's highly recommended to take a look into the Bit
 
 Isar currently supports two ways of creating custom packages.
 
+### Compilation of upstream sources
+
+Isar does understand `SRC_URI` entries starting with "apt://". For an example
+of a customized upstream package have a look at `meta-isar/recipes-app/hello`.
+This is what you do if you want to rebuild/modify an upstream package.
+
+### apt:// options
+With apt:// you can specify the version of package you want to fetch by one of the below methods.
+
+ - Specify the right ${PV} in the recipe name or inside the recipe.
+```
+inherit dpkg
+
+PV=2.10
+
+SRC_URI = "apt://${PN}"
+```
+ - You could also specify the version in SRC_URI as below
+```
+inherit dpkg
+
+SRC_URI="apt://hello=2.10"
+```
+ - You can also specify the distribution instead of the package version.
+```
+inherit dpkg
+
+SRC_URI="apt://hello/buster"
+```
+ - You can also ignore the ${PV} or distribution name and let apt resolve the version at build time.
+
+Recipe filename: hello.bb
+```
+inherit dpkg
+
+SRC_URI="apt://hello"
+```
+
+When you use the last two methods, apt will pull the latest source package available for that particular
+distribution. This might be different than the latest binary package version available for that particular
+architecture.
+
+This happens when new source package is available via the debian security feeds, but builds are only available
+for the major architectures like amd64, i386 and arm.
+
+Please see https://www.debian.org/security/faq#archismissing for details.
+
+If the user wants to make sure that he builds the right binary package available for their architecture,
+please set ${PV}, so that the right source package is pulled for that architecture.
+
+Below are some of the packages with this scenario at the time of writing this.
+
+1. https://packages.debian.org/stretch/zstd
+2. https://packages.debian.org/stretch/hello
+3. https://packages.debian.org/stretch/apt
+4. https://packages.debian.org/stretch/busybox
+
 ### Compilation of debianized-sources
 
 The `deb` packages are built using `dpkg-buildpackage`, so the sources should contain the `debian` directory with necessary meta information. This way is the default way of adding software that needs to be compiled from source. The bbclass for this approach is called `dpkg`.
 
 **NOTE:** If the sources do not contain a `debian` directory your recipe can fetch, create, or ship that. You might want to read the the next section before returning here.
-
-This is also what you do if you want to rebuild/modify an upstream package.
-Isar does understand `SRC_URI` entries starting with "apt://". For an example
-of a customized upstream package have a look at `meta-isar/recipes-app/hello`.
 
 #### Example
 ```
