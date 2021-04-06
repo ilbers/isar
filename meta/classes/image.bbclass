@@ -199,21 +199,6 @@ do_rootfs_finalize() {
             find "${ROOTFSDIR}/usr/bin" \
                 -maxdepth 1 -name 'qemu-*-static' -type f -delete
 
-        mountpoint -q '${ROOTFSDIR}/isar-apt' && \
-            umount -l ${ROOTFSDIR}/isar-apt
-        rmdir --ignore-fail-on-non-empty ${ROOTFSDIR}/isar-apt
-
-        mountpoint -q '${ROOTFSDIR}/base-apt' && \
-            umount -l ${ROOTFSDIR}/base-apt
-        rmdir --ignore-fail-on-non-empty ${ROOTFSDIR}/base-apt
-
-        mountpoint -q '${ROOTFSDIR}/dev' && \
-            umount -l ${ROOTFSDIR}/dev
-        mountpoint -q '${ROOTFSDIR}/sys' && \
-            umount -l ${ROOTFSDIR}/proc
-        mountpoint -q '${ROOTFSDIR}/sys' && \
-            umount -l ${ROOTFSDIR}/sys
-
         rm -f "${ROOTFSDIR}/etc/apt/apt.conf.d/55isar-fallback.conf"
 
         rm -f "${ROOTFSDIR}/etc/apt/sources.list.d/isar-apt.list"

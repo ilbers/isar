@@ -26,9 +26,23 @@ export LANG = "C"
 export LANGUAGE = "C"
 export LC_ALL = "C"
 
+MOUNT_LOCKFILE = "${ROOTFSDIR}.lock"
+
 rootfs_do_mounts[weight] = "3"
 rootfs_do_mounts() {
     sudo -s <<'EOSUDO'
+        ( flock 9
+        set -e
+
+        count="1"
+        if [ -f '${ROOTFSDIR}.mount' ]; then
+            count=$(($(< '${ROOTFSDIR}.mount') + 1))
+        fi
+        echo $count > '${ROOTFSDIR}.mount'
+        if [ $count -gt 1 ]; then
+            exit 0
+        fi
+
         mountpoint -q '${ROOTFSDIR}/dev' || \
             mount --rbind /dev '${ROOTFSDIR}/dev'
         mount --make-rslave '${ROOTFSDIR}/dev'
@@ -56,6 +70,39 @@ rootfs_do_mounts() {
                 mount --bind '${REPO_BASE_DIR}' '${ROOTFSDIR}/base-apt'
         fi
 
+        ) 9>'${MOUNT_LOCKFILE}'
+EOSUDO
+}
+
+rootfs_undo_mounts() {
+    sudo -s <<'EOSUDO'
+        ( flock 9
+        set -e
+
+        if [ -f '${ROOTFSDIR}.mount' ]; then
+            count=$(($(< '${ROOTFSDIR}.mount') - 1))
+            echo $count > '${ROOTFSDIR}.mount'
+        else
+            exit 1
+        fi
+        if [ $count -gt 0 ]; then
+            exit 0
+        fi
+        rm ${ROOTFSDIR}.mount
+
+        mountpoint -q '${ROOTFSDIR}/base-apt' && \
+            umount ${ROOTFSDIR}/base-apt && \
+            rmdir --ignore-fail-on-non-empty ${ROOTFSDIR}/base-apt
+        mountpoint -q '${ROOTFSDIR}/isar-apt' && \
+            umount ${ROOTFSDIR}/isar-apt && \
+            rmdir --ignore-fail-on-non-empty ${ROOTFSDIR}/isar-apt
+        mountpoint -q '${ROOTFSDIR}/sys' && \
+            umount -R ${ROOTFSDIR}/sys
+        mountpoint -q '${ROOTFSDIR}/proc' && \
+            umount -R ${ROOTFSDIR}/proc
+        mountpoint -q '${ROOTFSDIR}/dev' && \
+            umount -R ${ROOTFSDIR}/dev
+        ) 9>'${MOUNT_LOCKFILE}'
 EOSUDO
 }
 
@@ -159,7 +206,7 @@ python do_rootfs_install() {
 
     # Mount after configure commands, so that they have time to copy
     # 'isar-apt' (sdkchroot):
-    cmds = ['rootfs_prepare'] + configure_cmds + ['rootfs_do_mounts'] + install_cmds
+    cmds = ['rootfs_prepare'] + configure_cmds + ['rootfs_do_mounts'] + install_cmds  + ['rootfs_undo_mounts']
 
     # NOTE: The weights specify how long each task takes in seconds and are used
     # by the MultiStageProgressReporter to render a progress bar for this task.
@@ -241,12 +288,13 @@ python do_rootfs_postprocess() {
     progress_reporter.update(0)
 
     cmds = d.getVar("ROOTFS_POSTPROCESS_COMMAND")
-    if cmds is None or not cmds.strip():
-        return
-    cmds = cmds.split()
-    for i, cmd in enumerate(cmds):
-        bb.build.exec_func(cmd, d)
-        progress_reporter.update(int(i / len(cmds) * 100))
+    if cmds is not None and cmds.strip():
+        cmds = cmds.split()
+        for i, cmd in enumerate(cmds):
+            bb.build.exec_func(cmd, d)
+            progress_reporter.update(int(i / len(cmds) * 100))
+
+    bb.build.exec_func('rootfs_undo_mounts', d)
 }
 addtask rootfs_postprocess before do_rootfs
 
