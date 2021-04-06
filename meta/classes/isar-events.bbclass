@@ -52,6 +52,7 @@ python build_completed() {
     with open('/proc/mounts') as f:
         for line in f.readlines():
             if basepath in line:
+                bb.warn('%s left mounted, unmounting...' % line.split()[1])
                 subprocess.call(
                     ["sudo", "umount", "-l", line.split()[1]],
                     stdout=subprocess.DEVNULL,
