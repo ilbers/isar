@@ -26,5 +26,7 @@ do_ubi_image() {
     # Create ubi image using buildchroot tools
     sudo chroot ${BUILDCHROOT_DIR} /usr/sbin/ubinize ${UBINIZE_ARGS} \
                 -o '${PP_DEPLOY}/${UBI_IMAGE_FILE}' '${PP_WORK}/${UBINIZE_CFG}'
+
+    image_undo_mounts
 }
 addtask ubi_image before do_image after do_image_tools do_transform_template

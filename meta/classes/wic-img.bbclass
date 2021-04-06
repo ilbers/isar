@@ -200,4 +200,5 @@ EOSUDO
     done
     rm -rf ${BUILDCHROOT_DIR}/${WICTMP}
     rm -rf ${IMAGE_ROOTFS}/../pseudo
+    buildchroot_undo_mounts
 }

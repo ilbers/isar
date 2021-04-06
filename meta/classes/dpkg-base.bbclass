@@ -181,6 +181,7 @@ def dpkg_do_mounts(d):
     bb.build.exec_func("buildchroot_do_mounts", d)
 
 def dpkg_undo_mounts(d):
+    bb.build.exec_func("buildchroot_undo_mounts", d)
     buildroot = d.getVar('BUILDROOT', True)
     if not ismount(buildroot):
         bb.warn('Path %s not mounted!' % buildroot)

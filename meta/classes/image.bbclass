@@ -62,6 +62,15 @@ image_do_mounts() {
     buildchroot_do_mounts
 }
 
+image_undo_mounts() {
+    buildchroot_undo_mounts
+    sudo flock ${MOUNT_LOCKFILE} -c ' \
+        umount "${BUILDROOT_DEPLOY}"
+        umount "${BUILDROOT_ROOTFS}"
+        umount "${BUILDROOT_WORK}"
+    '
+}
+
 ROOTFSDIR = "${IMAGE_ROOTFS}"
 ROOTFS_FEATURES += "clean-package-cache generate-manifest export-dpkg-status"
 ROOTFS_PACKAGES += "${IMAGE_PREINSTALL} ${IMAGE_INSTALL}"

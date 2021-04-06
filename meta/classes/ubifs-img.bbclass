@@ -21,6 +21,8 @@ do_ubifs_image() {
     # Create ubifs image using buildchroot tools
     sudo chroot ${BUILDCHROOT_DIR} /usr/sbin/mkfs.ubifs ${MKUBIFS_ARGS} \
                 -r '${PP_ROOTFS}' '${PP_DEPLOY}/${UBIFS_IMAGE_FILE}'
+
+    image_undo_mounts
 }
 
 addtask ubifs_image before do_image after do_image_tools
