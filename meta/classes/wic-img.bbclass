@@ -200,5 +200,14 @@ EOSUDO
     done
     rm -rf ${BUILDCHROOT_DIR}/${WICTMP}
     rm -rf ${IMAGE_ROOTFS}/../pseudo
+    sudo -s <<'EOSUDO'
+        ( flock 9
+        for dir in ${BBLAYERS} ${STAGING_DIR} ${SCRIPTSDIR} ${BITBAKEDIR}; do
+            if mountpoint -q ${BUILDCHROOT_DIR}/$dir; then
+                umount ${BUILDCHROOT_DIR}/$dir
+            fi
+        done
+        ) 9>${MOUNT_LOCKFILE}
+EOSUDO
     buildchroot_undo_mounts
 }
