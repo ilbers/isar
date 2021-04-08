@@ -193,10 +193,11 @@ EOSUDO
               ${WIC_CREATE_EXTRA_ARGS}
 
     sudo chown -R $(stat -c "%U" ${LAYERDIR_core}) ${LAYERDIR_core} ${LAYERDIR_isar} ${SCRIPTSDIR} || true
-    WIC_DIRECT=$(ls -t -1 ${BUILDCHROOT_DIR}/$WICTMP/${IMAGE_FULLNAME}.wic/*.direct | head -1)
     sudo chown -R $(id -u):$(id -g) ${BUILDCHROOT_DIR}/${WICTMP}
-    mv -f ${WIC_DIRECT} ${WIC_IMAGE_FILE}
-    mv -f ${WIC_DIRECT}.bmap ${WIC_IMAGE_FILE}.bmap
+    find ${BUILDCHROOT_DIR}/${WICTMP} -type f -name "*.direct*" | while read f; do
+        suffix=$(basename $f | sed 's/\(.*\)\(\.direct\)\(.*\)/\3/')
+        mv -f ${f} ${WIC_IMAGE_FILE}${suffix}
+    done
     rm -rf ${BUILDCHROOT_DIR}/${WICTMP}
     rm -rf ${IMAGE_ROOTFS}/../pseudo
 }
