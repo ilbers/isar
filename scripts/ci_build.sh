@@ -58,6 +58,9 @@ TARGETS_SET_BULLSEYE="\
 TARGETS_CONTAINERS="\
     mc:container-stretch:isar-image-base \
     mc:container-buster:isar-image-base \
+"
+
+TARGETS_CONTAINERS_BULLSEYE="\
     mc:container-bullseye:isar-image-base \
 "
 
@@ -258,6 +261,12 @@ mv ${BUILDDIR}/tmp/deploy/images/qemuamd64/isar-image-base-debian-stretch-qemuam
 sed -i -e 's/\(IMAGE_INSTALL = .*\) example-module-${KERNEL_NAME}\(.*\)/\1\2/g' conf/local.conf
 sed -i -e 's/\(IMAGE_INSTALL = .*\) enable-fsck\(.*\)/\1\2/g' conf/local.conf
 bitbake $BB_ARGS $TARGETS_CONTAINERS
+while [ -e bitbake.sock ]; do sleep 1; done
+if bitbake $BB_ARGS $TARGETS_CONTAINERS_BULLSEYE; then
+    echo "bullseye container: PASSED"
+else
+    echo "bullseye container: KFAIL"
+fi
 while [ -e bitbake.sock ]; do sleep 1; done
 # and SDK container image creation
 echo 'SDK_FORMATS = "docker-archive"' >> conf/local.conf
