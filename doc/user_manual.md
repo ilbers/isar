@@ -232,6 +232,17 @@ qemu-system-x86_64 -m 256M -nographic -bios edk2/Build/OvmfX64/RELEASE_*/FV/OVMF
 qemu-system-i386 -m 256M -nographic -hda tmp/deploy/images/qemui386/isar-image-base-debian-buster-qemui386.wic.img
 ```
 
+#### Flashing such images to a physical device
+
+wic images can be flashed in multiple ways. The most generic and easy way is probably with [ etcher ](https://etcher.io). That works on many operating systems and is relatively easy to use. On top it can decompress images on the fly, should they be compressed. It also offers some sort of protection so you do not write to the wrong device and maybe break your machine.
+
+If you have a unix shell there are other ways. Make sure to always double check the target device, those tools might not warn if you choose the wrong target.
+
+`bmaptool` would be the best choice on a Linux/Unix system. It offers skipping of empty space and will flash much faster than `dd`, it also has some protection so you do not flash over a mounted drive by accident. Unfortunately it is not yet available on all Linux distributions.
+https://github.com/intel/bmap-tools
+
+`dd` is the most generic option, available pretty much everywhere. But here you really need to make sure to not write to the wrong target.
+
 ### Generate container image with root filesystem
 
 A runnable container image is generated if you set IMAGE_TYPE to 
