@@ -6,7 +6,6 @@
 # This class extends the image.bbclass for containerizing the root filesystem.
 
 CONTAINER_FORMATS ?= "docker-archive"
-IMAGE_INSTALL += "isar-exclude-docs isar-disable-apt-cache"
 
 containerize_rootfs() {
     local cmd="/bin/dash"
