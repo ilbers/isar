@@ -132,11 +132,14 @@ class BootimgPcbiosIsarPlugin(SourcePlugin):
             syslinux_conf += "LABEL boot\n"
 
             kernel_file = get_bitbake_var("KERNEL_FILE")
-            kernel_name = get_bitbake_var("KERNEL_NAME")
             rootfs_dir = get_bitbake_var("IMAGE_ROOTFS")
             kernel = os.path.basename(os.path.realpath(os.path.join(rootfs_dir, kernel_file)))
-            kernel_version = kernel[len(kernel_file)+1:-(len(kernel_name)+1)]
-            initrd = "initrd.img-%s-%s" % (kernel_version, kernel_name)
+            kernel_parts = kernel.split("-")
+            kernel_suffix = "-".join(kernel_parts[1:])
+            initrd = "initrd.img"
+
+            if kernel_suffix:
+                initrd += "-%s" % kernel_suffix
 
             syslinux_conf += "KERNEL " + kernel + "\n"
 
@@ -160,15 +163,19 @@ class BootimgPcbiosIsarPlugin(SourcePlugin):
         """
         syslinux_dir = cls._get_syslinux_dir(bootimg_dir)
 
-        staging_kernel_dir = kernel_dir
         kernel_file = get_bitbake_var("KERNEL_FILE")
-        kernel_name = get_bitbake_var("KERNEL_NAME")
         rootfs_dir = rootfs_dir['ROOTFS_DIR']
         kernel = os.path.basename(os.path.realpath(os.path.join(rootfs_dir, kernel_file)))
-        kernel_version = kernel[len(kernel_file)+1:-(len(kernel_name)+1)]
-        initrd = "initrd.img-%s-%s" % (kernel_version, kernel_name)
-        config = "config-%s-%s" % (kernel_version, kernel_name)
-        mapfile = "System.map-%s-%s" % (kernel_version, kernel_name)
+        kernel_parts = kernel.split("-")
+        kernel_suffix = "-".join(kernel_parts[1:])
+        initrd = "initrd.img"
+        config = "config"
+        mapfile = "System.map"
+
+        if kernel_suffix:
+            initrd += "-%s" % kernel_suffix
+            config += "-%s" % kernel_suffix
+            mapfile += "-%s" % kernel_suffix
 
         hdddir = "%s/hdd/boot" % cr_workdir
 
