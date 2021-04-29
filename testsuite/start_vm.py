@@ -30,8 +30,9 @@ def format_qemu_cmdline(arch, build, distro, out, pid):
 
     image_type = get_bitbake_var(bb_output, 'IMAGE_TYPE')
     deploy_dir_image = get_bitbake_var(bb_output, 'DEPLOY_DIR_IMAGE')
+    base = 'ubuntu' if distro in ['focal', 'bionic'] else 'debian'
     if image_type == 'ext4-img':
-        rootfs_image = 'isar-image-base-debian-' + distro + '-qemu' + arch + '.ext4.img'
+        rootfs_image = 'isar-image-base-' + base + '-' + distro + '-qemu' + arch + '.ext4.img'
         kernel_image = deploy_dir_image + '/' + get_bitbake_var(bb_output, 'KERNEL_IMAGE')
         initrd_image = get_bitbake_var(bb_output, 'INITRD_IMAGE')
 
@@ -47,7 +48,7 @@ def format_qemu_cmdline(arch, build, distro, out, pid):
         extra_args = ['-kernel', kernel_image, '-initrd', initrd_image]
         extra_args.extend(kargs)
     elif image_type == 'wic-img':
-        rootfs_image = 'isar-image-base-debian-' + distro + '-qemu' + arch + '.wic.img'
+        rootfs_image = 'isar-image-base-' + base + '-' + distro + '-qemu' + arch + '.wic.img'
         extra_args = ['-snapshot']
     else:
         raise ValueError('Invalid image type: ' + str(image_type))
