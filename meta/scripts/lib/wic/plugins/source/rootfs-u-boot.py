@@ -14,6 +14,7 @@
 
 import glob
 import logging
+import re
 import os
 
 from wic import WicError
@@ -75,6 +76,12 @@ class RootfsUBootPlugin(RootfsPlugin):
             overlays = source_params.get('overlays') or ''
             cfg.write('OVERLAYS="%s"\n' % overlays)
             script_prepend = source_params.get('script_prepend') or ''
+            # remove escapes from $\{var\} that are needed to avoid expansion by wic
+            script_prepend = re.sub(r'\$\\{([^\\]+)\\}', r'${\1}', script_prepend)
+            # escape any quotes that aren't escaped yet
+            script_prepend = re.sub(r'([^\\])"', r'\1\\"', script_prepend)
+            # escape any dollars that aren't escaped yet
+            script_prepend = re.sub(r'([^\\])\$', r'\1\\$', script_prepend)
             cfg.write('SCRIPT_PREPEND="%s"\n' % script_prepend)
 
         # Run update-u-boot-script in the target rootfs
