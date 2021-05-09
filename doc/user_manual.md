@@ -258,7 +258,7 @@ Container images can be generated in different formats, selected with the
 variable `CONTAINER_FORMAT`. One or more (whitespace separated) of following 
 options can be given:
  - `docker-archive`: (default) an archive containing a Docker image that can 
-   be imported with [`docker import`](https://docs.docker.com/engine/reference/commandline/import/)
+   be imported with [`docker load`](https://docs.docker.com/engine/reference/commandline/load)
  - `docker-daemon`: resulting container image is made available on the local 
    Docker Daemon
  - `containers-storage`: resulting container image is made available to tools 
@@ -300,7 +300,7 @@ bitbake mc:qemuarm-buster:isar-image-base
  - Load the container image into the Docker Daemon
 
 ```
-xzcat build/tmp/deploy/images/qemuarm/debian-buster-armhf-docker-archive.tar.xz | docker load
+docker load -i build/tmp/deploy/images/qemuarm/debian-buster-armhf-docker-archive.tar.xz
 ```
 
  - Run a container using the container image (following commands starting with 
@@ -1018,7 +1018,7 @@ Supported formats are:
    "[Create an ISAR SDK root filesystem](#create-an-isar-sdk-root-filesystem)"
  - `docker-archive`: an archive containing a Docker image that can be imported 
    with 
-   [`docker import`](https://docs.docker.com/engine/reference/commandline/import/)
+   [`docker load`](https://docs.docker.com/engine/reference/commandline/load)
  - `docker-daemon`: resulting container image is made available on the local 
    Docker Daemon
  - `containers-storage`: resulting container image is made available to tools 
@@ -1070,7 +1070,7 @@ bitbake -c do_populate_sdk mc:qemuarm-buster:isar-image-base
  - Load the SDK container image into the Docker Daemon
 
 ```
-xzcat build/tmp/deploy/images/qemuarm/sdk-debian-buster-armhf-docker-archive.tar.xz | docker load
+docker load -i build/tmp/deploy/images/qemuarm/sdk-debian-buster-armhf-docker-archive.tar.xz
 ```
 
  - Run a container using the SDK container image (following commands starting 
