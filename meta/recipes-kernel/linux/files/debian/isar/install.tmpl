@@ -174,6 +174,9 @@ kernel_headers() {
     (cd ${S}; find . -name 'Makefile*' -o -name 'Kconfig*' -o -name '*.pl') >>${src_hdr_files}
     (cd ${S}; find arch/*/include include scripts -type f -o -type l) >>${src_hdr_files}
     (cd ${S}; find arch/${ARCH} -name module.lds -o -name Kbuild.platforms -o -name Platform) >>${src_hdr_files}
+    if [ -n "${CONFIG_SECURITY_SELINUX}" ]; then
+        (cd ${S}; find security/selinux/include -type f -o -type l) >>${src_hdr_files}
+    fi
     (cd ${S}; find $(find arch/${ARCH} -name include -o -name scripts -type d) -type f) >>${src_hdr_files}
 
     (cd ${O}; find arch/${ARCH}/include Module.symvers include scripts -type f) >>${obj_hdr_files}
