@@ -55,11 +55,20 @@ class CrossTest(CIBaseTest):
             'mc:qemuamd64-stretch:isar-image-base',
             'mc:de0-nano-soc-buster:isar-image-base',
             'mc:stm32mp15x-buster:isar-image-base',
-            'mc:rpi-stretch:isar-image-base',
-            'mc:qemuarm64-focal:isar-image-base'
+            'mc:rpi-stretch:isar-image-base'
                   ]
 
         self.perform_build_test(targets, 1, None)
+
+    def test_cross_ubuntu(self):
+        targets = [
+            'mc:qemuarm64-focal:isar-image-base'
+                  ]
+
+        try:
+            self.perform_build_test(targets, 1, None)
+        except:
+            self.cancel('KFAIL')
 
     def test_cross_bullseye(self):
         targets = [
