@@ -36,7 +36,7 @@ rootfs_do_mounts() {
 
         count="1"
         if [ -f '${ROOTFSDIR}.mount' ]; then
-            count=$(($(< '${ROOTFSDIR}.mount') + 1))
+            count=$(($(cat '${ROOTFSDIR}.mount') + 1))
         fi
         echo $count > '${ROOTFSDIR}.mount'
         if [ $count -gt 1 ]; then
@@ -80,9 +80,10 @@ rootfs_undo_mounts() {
         set -e
 
         if [ -f '${ROOTFSDIR}.mount' ]; then
-            count=$(($(< '${ROOTFSDIR}.mount') - 1))
+            count=$(($(cat '${ROOTFSDIR}.mount') - 1))
             echo $count > '${ROOTFSDIR}.mount'
         else
+            echo "Could not find mount counter"
             exit 1
         fi
         if [ $count -gt 0 ]; then

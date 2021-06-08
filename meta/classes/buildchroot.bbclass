@@ -30,7 +30,7 @@ buildchroot_do_mounts() {
 
         count="1"
         if [ -f '${BUILDCHROOT_DIR}.mount' ]; then
-            count=$(($(< '${BUILDCHROOT_DIR}.mount') + 1))
+            count=$(($(cat '${BUILDCHROOT_DIR}.mount') + 1))
         fi
         echo $count > '${BUILDCHROOT_DIR}.mount'
         if [ $count -gt 1 ]; then
@@ -78,9 +78,10 @@ buildchroot_undo_mounts() {
         set -e
 
         if [ -f '${BUILDCHROOT_DIR}.mount' ]; then
-            count=$(($(< '${BUILDCHROOT_DIR}.mount') - 1))
+            count=$(($(cat '${BUILDCHROOT_DIR}.mount') - 1))
             echo $count > '${BUILDCHROOT_DIR}.mount'
         else
+            echo "Could not find mount counter"
             exit 1
         fi
         if [ $count -gt 0 ]; then
