@@ -3,7 +3,7 @@
 # Debian rules for custom U-Boot build
 #
 # This software is a part of ISAR.
-# Copyright (c) Siemens AG, 2018
+# Copyright (c) Siemens AG, 2018-2021
 #
 # SPDX-License-Identifier: MIT
 
@@ -15,7 +15,11 @@ endif
 override_dh_auto_build:
 	$(MAKE) $(PARALLEL_MAKE) $(U_BOOT_CONFIG)
 	$(MAKE) $(PARALLEL_MAKE) ${U_BOOT_BIN}
-	./scripts/get_default_envs.sh >u-boot-initial-env
+	$(MAKE) -n u-boot-initial-env >/dev/null 2>&1; if [ $$? -ne 2 ]; then \
+		$(MAKE) $(PARALLEL_MAKE) u-boot-initial-env; \
+	else \
+		./scripts/get_default_envs.sh >u-boot-initial-env; \
+	fi
 	$(MAKE) $(PARALLEL_MAKE) $(SET_CROSS_BUILD_TOOLS) NO_SDL=1 tools-only envtools
 
 override_dh_auto_install:
