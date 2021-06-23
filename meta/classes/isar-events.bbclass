@@ -8,6 +8,8 @@ addhandler build_started
 
 python build_started() {
     bb.utils.remove(d.getVar('TMPDIR') + "/work/*/*/*/temp/once.*")
+    bb.utils.remove(d.getVar('TMPDIR') + "/work/*/*/*/rootfs.mount")
+    bb.utils.remove(d.getVar('TMPDIR') + "/deploy/buildchroot-*/*.mount")
 }
 build_started[eventmask] = "bb.event.BuildStarted"
 
