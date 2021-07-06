@@ -157,14 +157,16 @@ dpkg_do_mounts() {
 }
 
 dpkg_undo_mounts() {
-    i=1
+    i=0
     while ! sudo umount ${BUILDROOT}; do
         sleep 0.1
-        i=`expr $i + 1`
-        if [ $i -gt 100 ]; then
-            bbwarn "${BUILDROOT}: Couldn't unmount, retrying..."
-            i=1
+        if [ `expr $i % 100` -eq 0 ] ; then
+            bbwarn "${BUILDROOT}: Couldn't unmount ($i), retrying..."
         fi
+        if [ $i -ge 10000 ]; then
+            bbfatal "${BUILDROOT}: Couldn't unmount after timeout"
+        fi
+        i=`expr $i + 1`
     done
     sudo rmdir ${BUILDROOT}
 }
