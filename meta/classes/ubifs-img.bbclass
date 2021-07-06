@@ -12,6 +12,10 @@ UBIFS_IMAGE_FILE ?= "${IMAGE_FULLNAME}.ubifs.img"
 
 IMAGER_INSTALL += "mtd-utils"
 
+# glibc bug 23960 https://sourceware.org/bugzilla/show_bug.cgi?id=23960
+# should not use QEMU on armhf target with mkfs.ubifs < v2.1.3
+ISAR_CROSS_COMPILE_armhf = "1"
+
 # Generate ubifs filesystem image
 do_ubifs_image() {
     rm -f '${DEPLOY_DIR_IMAGE}/${UBIFS_IMAGE_FILE}'
