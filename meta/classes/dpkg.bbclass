@@ -6,7 +6,9 @@ inherit dpkg-base
 PACKAGE_ARCH ?= "${DISTRO_ARCH}"
 
 # Install build dependencies for package
-builddeps_install() {
+do_install_builddeps() {
+    dpkg_do_mounts
+    E="${@ isar_export_proxies(d)}"
     distro="${DISTRO}"
     if [ ${ISAR_CROSS_COMPILE} -eq 1 ]; then
        distro="${HOST_DISTRO}"
@@ -17,15 +19,7 @@ builddeps_install() {
     deb_dl_dir_export "${BUILDCHROOT_DIR}" "${distro}"
     sudo -E chroot ${BUILDCHROOT_DIR} /isar/deps.sh \
         ${PP}/${PPS} ${PACKAGE_ARCH}
-}
-
-python do_install_builddeps() {
-    dpkg_do_mounts(d)
-    isar_export_proxies(d)
-    try:
-        bb.build.exec_func("builddeps_install", d)
-    finally:
-        dpkg_undo_mounts(d)
+    dpkg_undo_mounts
 }
 
 addtask install_builddeps after do_prepare_build before do_dpkg_build

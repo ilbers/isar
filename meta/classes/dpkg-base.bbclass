@@ -61,7 +61,12 @@ addtask patch before do_adjust_git
 
 SRC_APT ?= ""
 
-fetch_apt() {
+do_apt_fetch() {
+    if [ -z "${@d.getVar("SRC_APT", True).strip()}" ]; then
+        return 0
+    fi
+    dpkg_do_mounts
+    E="${@ isar_export_proxies(d)}"
     sudo -E chroot ${BUILDCHROOT_DIR} /usr/bin/apt-get update \
         -o Dir::Etc::SourceList="sources.list.d/isar-apt.list" \
         -o Dir::Etc::SourceParts="-" \
@@ -71,19 +76,8 @@ fetch_apt() {
         sudo -E chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} \
             sh -c 'mkdir -p /downloads/deb-src/"$1"/"$2" && cd /downloads/deb-src/"$1"/"$2" && apt-get -y --download-only --only-source source "$2"' my_script "${DISTRO}" "${uri}"
     done
-}
 
-python do_apt_fetch() {
-    src_apt = d.getVar("SRC_APT", True)
-    if not src_apt:
-        return 0
-
-    dpkg_do_mounts(d)
-    try:
-        isar_export_proxies(d)
-        bb.build.exec_func("fetch_apt", d)
-    finally:
-        dpkg_undo_mounts(d)
+    dpkg_undo_mounts
 }
 
 addtask apt_fetch after do_unpack before do_apt_unpack
@@ -92,7 +86,14 @@ do_apt_fetch[lockfiles] += "${REPO_ISAR_DIR}/isar.lock"
 # Add dependency from the correct buildchroot: host or target
 do_apt_fetch[depends] = "${BUILDCHROOT_DEP}"
 
-unpack_apt() {
+do_apt_unpack() {
+    if [ -z "${@d.getVar("SRC_APT", True).strip()}" ]; then
+        return 0
+    fi
+    rm -rf ${S}
+    dpkg_do_mounts
+    E="${@ isar_export_proxies(d)}"
+
     for uri in "${SRC_APT}"; do
         sudo -E chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} \
             sh -c ' \
@@ -103,25 +104,8 @@ unpack_apt() {
                 dpkg-source -x "${dscfile}" "${PPS}"' \
                     my_script "${DISTRO}" "${uri}"
     done
-}
 
-python do_apt_unpack() {
-    import shutil
-
-    src_apt = d.getVar("SRC_APT", True)
-    if not src_apt:
-        return 0
-
-    srcsubdir = d.getVar('S', True)
-    if os.path.exists(srcsubdir):
-        shutil.rmtree(srcsubdir)
-
-    dpkg_do_mounts(d)
-    try:
-        isar_export_proxies(d)
-        bb.build.exec_func("unpack_apt", d)
-    finally:
-        dpkg_undo_mounts(d)
+    dpkg_undo_mounts
 }
 
 addtask apt_unpack after do_apt_fetch before do_patch
@@ -165,38 +149,25 @@ do_prepare_build[deptask] = "do_deploy_deb"
 
 BUILDROOT = "${BUILDCHROOT_DIR}/${PP}"
 
-def ismount(path):
-    real = os.path.realpath(path)
-    with open('/proc/mounts') as f:
-        for line in f.readlines():
-            if len(line.split()) > 2 and real == line.split()[1]:
-                return True
-    return False
+dpkg_do_mounts() {
+    mkdir -p ${BUILDROOT}
+    sudo mount --bind ${WORKDIR} ${BUILDROOT}
 
-def dpkg_do_mounts(d):
-    buildroot = d.getVar('BUILDROOT', True)
-    if ismount(buildroot):
-        bb.warn('Path %s already mounted!' % buildroot)
-        return
-    workdir = d.getVar('WORKDIR', True)
-    os.makedirs(buildroot, exist_ok=True)
-    os.system('sudo mount --bind %s %s' % (workdir, buildroot))
-    bb.build.exec_func("buildchroot_do_mounts", d)
+    buildchroot_do_mounts
+}
 
-def dpkg_undo_mounts(d):
-    bb.build.exec_func("buildchroot_undo_mounts", d)
-    buildroot = d.getVar('BUILDROOT', True)
-    if not ismount(buildroot):
-        bb.warn('Path %s not mounted!' % buildroot)
-        return
-    for i in range(200):
-        if not os.system('sudo umount %s' % buildroot):
-            os.rmdir(buildroot)
-            return
-        if i % 100 == 0:
-            bb.warn("%s: Couldn't unmount, retrying..." % buildroot)
-        time.sleep(0.1)
-    bb.fatal("Couldn't unmount, exiting...")
+dpkg_undo_mounts() {
+    i=1
+    while ! sudo umount ${BUILDROOT}; do
+        sleep 0.1
+        i=`expr $i + 1`
+        if [ $i -gt 100 ]; then
+            bbwarn "${BUILDROOT}: Couldn't unmount, retrying..."
+            i=1
+        fi
+    done
+    sudo rmdir ${BUILDROOT}
+}
 
 # Placeholder for actual dpkg_runbuild() implementation
 dpkg_runbuild() {
@@ -206,12 +177,10 @@ dpkg_runbuild() {
 python do_dpkg_build() {
     lock = bb.utils.lockfile(d.getVar("REPO_ISAR_DIR") + "/isar.lock",
                              shared=True)
-    dpkg_do_mounts(d)
-    try:
-        bb.build.exec_func("dpkg_runbuild", d)
-    finally:
-        dpkg_undo_mounts(d)
-        bb.utils.unlockfile(lock)
+    bb.build.exec_func("dpkg_do_mounts", d)
+    bb.build.exec_func("dpkg_runbuild", d)
+    bb.build.exec_func("dpkg_undo_mounts", d)
+    bb.utils.unlockfile(lock)
 }
 
 addtask dpkg_build before do_build
@@ -255,16 +224,16 @@ python do_devshell() {
     oe_lib_path = os.path.join(d.getVar('LAYERDIR_core'), 'lib')
     sys.path.insert(0, oe_lib_path)
 
-    dpkg_do_mounts(d)
-    try:
-        isar_export_proxies(d)
+    bb.build.exec_func('dpkg_do_mounts', d)
 
-        buildchroot = d.getVar('BUILDCHROOT_DIR')
-        pp_pps = os.path.join(d.getVar('PP'), d.getVar('PPS'))
-        termcmd = "sudo -E chroot {0} sh -c 'cd {1}; $SHELL -i'"
-        oe_terminal(termcmd.format(buildchroot, pp_pps), "Isar devshell", d)
-    finally:
-        dpkg_undo_mounts(d)
+    isar_export_proxies(d)
+
+    buildchroot = d.getVar('BUILDCHROOT_DIR')
+    pp_pps = os.path.join(d.getVar('PP'), d.getVar('PPS'))
+    termcmd = "sudo -E chroot {0} sh -c 'cd {1}; $SHELL -i'"
+    oe_terminal(termcmd.format(buildchroot, pp_pps), "Isar devshell", d)
+
+    bb.build.exec_func('dpkg_undo_mounts', d)
 }
 
 addtask devshell after do_prepare_build
