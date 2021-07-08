@@ -26,7 +26,7 @@ export LANG = "C"
 export LANGUAGE = "C"
 export LC_ALL = "C"
 
-MOUNT_LOCKFILE = "${ROOTFSDIR}.lock"
+IMAGE_MOUNT_LOCKFILE = "${ROOTFSDIR}.lock"
 
 rootfs_do_mounts[weight] = "3"
 rootfs_do_mounts() {
@@ -70,7 +70,7 @@ rootfs_do_mounts() {
                 mount --bind '${REPO_BASE_DIR}' '${ROOTFSDIR}/base-apt'
         fi
 
-        ) 9>'${MOUNT_LOCKFILE}'
+        ) 9>'${IMAGE_MOUNT_LOCKFILE}'
 EOSUDO
 }
 
@@ -103,7 +103,7 @@ rootfs_undo_mounts() {
             umount -R ${ROOTFSDIR}/proc
         mountpoint -q '${ROOTFSDIR}/dev' && \
             umount -R ${ROOTFSDIR}/dev
-        ) 9>'${MOUNT_LOCKFILE}'
+        ) 9>'${IMAGE_MOUNT_LOCKFILE}'
 EOSUDO
 }
 
