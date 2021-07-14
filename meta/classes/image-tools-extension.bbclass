@@ -14,7 +14,7 @@ IMAGER_INSTALL ??= ""
 IMAGER_BUILD_DEPS ??= ""
 DEPENDS += "${IMAGER_BUILD_DEPS}"
 
-do_install_imager_deps[depends] = "buildchroot-target:do_build"
+do_install_imager_deps[depends] = "${BUILDCHROOT_DEP}"
 do_install_imager_deps[deptask] = "do_deploy_deb"
 do_install_imager_deps[lockfiles] += "${REPO_ISAR_DIR}/isar.lock"
 do_install_imager_deps() {
