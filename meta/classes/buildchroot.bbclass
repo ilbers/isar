@@ -5,7 +5,7 @@
 
 ISAR_CROSS_COMPILE ??= "0"
 
-# Add dependency from the correct buildchroot: host or target
+# Choose the correct buildchroot: host or target
 python __anonymous() {
     mode = d.getVar('ISAR_CROSS_COMPILE', True)
     distro_arch = d.getVar('DISTRO_ARCH')
@@ -17,7 +17,6 @@ python __anonymous() {
         dep = "buildchroot-host:do_build"
         rootfs = d.getVar('BUILDCHROOT_HOST_DIR', True)
 
-    d.setVarFlag('do_apt_fetch', 'depends', dep)
     d.setVar('BUILDCHROOT_DEP', dep)
     d.setVar('BUILDCHROOT_DIR', rootfs)
 }

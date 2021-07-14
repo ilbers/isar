@@ -89,6 +89,9 @@ python do_apt_fetch() {
 addtask apt_fetch after do_unpack before do_apt_unpack
 do_apt_fetch[lockfiles] += "${REPO_ISAR_DIR}/isar.lock"
 
+# Add dependency from the correct buildchroot: host or target
+do_apt_fetch[depends] = "${BUILDCHROOT_DEP}"
+
 unpack_apt() {
     for uri in "${SRC_APT}"; do
         sudo -E chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} \
