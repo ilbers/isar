@@ -18,6 +18,7 @@ python __anonymous() {
         rootfs = d.getVar('BUILDCHROOT_HOST_DIR', True)
 
     d.setVarFlag('do_apt_fetch', 'depends', dep)
+    d.setVar('BUILDCHROOT_DEP', dep)
     d.setVar('BUILDCHROOT_DIR', rootfs)
 }
 
