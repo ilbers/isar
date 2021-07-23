@@ -169,6 +169,8 @@ dpkg_undo_mounts() {
         i=`expr $i + 1`
     done
     sudo rmdir ${BUILDROOT}
+
+    buildchroot_undo_mounts
 }
 
 # Placeholder for actual dpkg_runbuild() implementation
@@ -180,9 +182,11 @@ python do_dpkg_build() {
     lock = bb.utils.lockfile(d.getVar("REPO_ISAR_DIR") + "/isar.lock",
                              shared=True)
     bb.build.exec_func("dpkg_do_mounts", d)
-    bb.build.exec_func("dpkg_runbuild", d)
-    bb.build.exec_func("dpkg_undo_mounts", d)
-    bb.utils.unlockfile(lock)
+    try:
+        bb.build.exec_func("dpkg_runbuild", d)
+    finally:
+        bb.build.exec_func("dpkg_undo_mounts", d)
+        bb.utils.unlockfile(lock)
 }
 
 addtask dpkg_build before do_build
