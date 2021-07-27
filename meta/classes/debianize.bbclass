@@ -1,5 +1,6 @@
 # This software is a part of ISAR.
 # Copyright (C) 2017-2019 Siemens AG
+# Copyright (C) 2021 Siemens Mobility GmbH
 #
 # SPDX-License-Identifier: MIT
 
@@ -7,6 +8,7 @@ CHANGELOG_V ??= "${PV}"
 DPKG_ARCH ??= "any"
 DEBIAN_BUILD_DEPENDS ??= ""
 DEBIAN_DEPENDS ??= ""
+DEBIAN_CONFLICTS ??= ""
 DESCRIPTION ??= "must not be empty"
 MAINTAINER ??= "Unknown maintainer <unknown@example.com>"
 
@@ -63,6 +65,7 @@ Build-Depends: debhelper (>= ${compat}), ${DEBIAN_BUILD_DEPENDS}
 Package: ${PN}
 Architecture: ${DPKG_ARCH}
 Depends: ${DEBIAN_DEPENDS}
+Conflicts: ${DEBIAN_CONFLICTS}
 Description: ${DESCRIPTION}
 EOF
 }
