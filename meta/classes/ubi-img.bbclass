@@ -26,6 +26,7 @@ do_ubi_image() {
     # Create ubi image using buildchroot tools
     sudo chroot ${BUILDCHROOT_DIR} /usr/sbin/ubinize ${UBINIZE_ARGS} \
                 -o '${PP_DEPLOY}/${UBI_IMAGE_FILE}' '${PP_WORK}/${UBINIZE_CFG}'
+    sudo chown $(id -u):$(id -g) '${DEPLOY_DIR_IMAGE}/${UBI_IMAGE_FILE}'
 
     image_undo_mounts
 }

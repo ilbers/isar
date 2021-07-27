@@ -23,6 +23,7 @@ do_fit_image() {
     # Create fit image using buildchroot tools
     sudo chroot ${BUILDCHROOT_DIR} /usr/bin/mkimage ${MKIMAGE_ARGS} \
                 -f '${PP_WORK}/${FIT_IMAGE_SOURCE}' '${PP_DEPLOY}/${FIT_IMAGE_FILE}'
+    sudo chown $(id -u):$(id -g) '${DEPLOY_DIR_IMAGE}/${FIT_IMAGE_FILE}'
 
     image_undo_mounts
 }

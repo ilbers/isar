@@ -21,6 +21,7 @@ do_ubifs_image() {
     # Create ubifs image using buildchroot tools
     sudo chroot ${BUILDCHROOT_DIR} /usr/sbin/mkfs.ubifs ${MKUBIFS_ARGS} \
                 -r '${PP_ROOTFS}' '${PP_DEPLOY}/${UBIFS_IMAGE_FILE}'
+    sudo chown $(id -u):$(id -g) '${DEPLOY_DIR_IMAGE}/${UBIFS_IMAGE_FILE}'
 
     image_undo_mounts
 }
