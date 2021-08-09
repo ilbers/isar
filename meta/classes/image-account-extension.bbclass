@@ -8,7 +8,7 @@
 USERS ??= ""
 
 #USERS += "root"
-#USER_root[password] = "" # Encrypted password
+#USER_root[password] = "" # Encrypted password, or clear-text when [flags] = "clear-text-password"
 #USER_root[expire] = ""
 #USER_root[inactive] = ""
 #USER_root[uid] = ""
@@ -17,7 +17,7 @@ USERS ??= ""
 #USER_root[home] = "/home/root"
 #USER_root[shell] = "/bin/sh"
 #USER_root[groups] = "audio video"
-#USER_root[flags] = "no-create-home create-home system allow-empty-password"
+#USER_root[flags] = "no-create-home create-home system allow-empty-password clear-text-password"
 
 GROUPS ??= ""
 
@@ -252,8 +252,12 @@ image_configure_accounts() {
 
         # Set password:
         if [ -n "$password" -o "${flags}" != "${flags%*,allow-empty-password,*}" ]; then
+            chpasswd_args="-e"
+            if [ "${flags}" != "${flags%*,clear-text-password,*}" ]; then
+                chpasswd_args=""
+            fi
             printf '%s:%s' "$name" "$password" | sudo chroot '${ROOTFSDIR}' \
-                /usr/sbin/chpasswd -e
+                /usr/sbin/chpasswd $chpasswd_args
         fi
     done
 }

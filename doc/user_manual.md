@@ -633,6 +633,7 @@ The `USERS` and `USER_<username>` variable works similar to the `GROUPS` and `GR
    - `create-home` - `useradd` will be called with `-m` to force creation of the users home directory.
    - `system` - `useradd` will be called with `--system`.
    - `allow-empty-password` - Even if the `password` flag is empty, it will still be set. This results in a login without password.
+   - `clear-text-password` - The `password` flag of the given user contains a clear-text password and not an encrypted version of it.
 
 #### Home directory contents prefilling
 
