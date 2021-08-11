@@ -11,35 +11,8 @@ DEPLOY_ISAR_BOOTSTRAP = "${DEPLOY_DIR_BOOTSTRAP}/${DISTRO}-${DISTRO_ARCH}"
 
 require isar-bootstrap.inc
 
-do_apt_config_prepare[dirs] = "${WORKDIR}"
-do_apt_config_prepare[vardeps] += "\
-                                   APTPREFS \
-                                   DISTRO_APT_PREFERENCES \
-                                   DEBDISTRONAME \
-                                   APTSRCS \
-                                   DISTRO_APT_SOURCES \
-                                   DEPLOY_ISAR_BOOTSTRAP \
-                                  "
-python do_apt_config_prepare() {
-    apt_preferences_out = d.getVar("APTPREFS", True)
-    apt_preferences_list = (
-        d.getVar("DISTRO_APT_PREFERENCES", True) or ""
-    ).split()
-    aggregate_files(d, apt_preferences_list, apt_preferences_out)
-
-    apt_sources_out = d.getVar("APTSRCS", True)
-    apt_sources_init_out = d.getVar("APTSRCS_INIT", True)
-    apt_sources_list = (d.getVar("DISTRO_APT_SOURCES", True) or "").split()
-
-    aggregate_files(d, apt_sources_list, apt_sources_init_out)
-    aggregate_aptsources_list(d, apt_sources_list, apt_sources_out)
-}
-addtask apt_config_prepare before do_bootstrap after do_unpack
-
 OVERRIDES_append = ":${@get_distro_needs_https_support(d, False)}"
 
-do_bootstrap[vardeps] += "DISTRO_APT_SOURCES"
 do_bootstrap() {
     isar_bootstrap
 }
-addtask bootstrap before do_build after do_generate_keyrings

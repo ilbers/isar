@@ -27,6 +27,8 @@ DISTRO_BOOTSTRAP_BASE_PACKAGES = "locales"
 DISTRO_BOOTSTRAP_BASE_PACKAGES_append_gnupg = ",gnupg"
 DISTRO_BOOTSTRAP_BASE_PACKAGES_append_https-support = "${@https_support(d)}"
 
+DISTRO_VARS_PREFIX ?= ""
+
 inherit deb-dl-dir
 
 python () {
@@ -220,14 +222,47 @@ do_generate_keyrings() {
 }
 addtask generate_keyrings before do_build after do_unpack
 
+do_apt_config_prepare[dirs] = "${WORKDIR}"
+do_apt_config_prepare[vardeps] += " \
+    APTPREFS \
+    ${DISTRO_VARS_PREFIX}DISTRO_APT_PREFERENCES \
+    DEBDISTRONAME \
+    APTSRCS \
+    ${DISTRO_VARS_PREFIX}DISTRO_APT_SOURCES \
+    DEPLOY_ISAR_BOOTSTRAP \
+    "
+python do_apt_config_prepare() {
+    apt_preferences_out = d.getVar("APTPREFS", True)
+    apt_preferences_list = (
+        d.getVar(d.getVar("DISTRO_VARS_PREFIX") + "DISTRO_APT_PREFERENCES", True) or ""
+    ).split()
+    aggregate_files(d, apt_preferences_list, apt_preferences_out)
+
+    apt_sources_out = d.getVar("APTSRCS", True)
+    apt_sources_init_out = d.getVar("APTSRCS_INIT", True)
+    apt_sources_list = (
+        d.getVar(d.getVar("DISTRO_VARS_PREFIX") + "DISTRO_APT_SOURCES", True) or ""
+    ).split()
+
+    aggregate_files(d, apt_sources_list, apt_sources_init_out)
+    aggregate_aptsources_list(d, apt_sources_list, apt_sources_out)
+}
+addtask apt_config_prepare before do_bootstrap after do_unpack
+
 def get_host_release():
     import platform
     rel = platform.release()
     return rel
 
-do_bootstrap[vardeps] += "DISTRO_APT_PREMIRRORS ISAR_ENABLE_COMPAT_ARCH"
+do_bootstrap[vardeps] += " \
+    DISTRO_APT_PREMIRRORS \
+    ISAR_ENABLE_COMPAT_ARCH \
+    ${DISTRO_VARS_PREFIX}DISTRO_APT_SOURCES \
+    "
 do_bootstrap[dirs] = "${DEPLOY_DIR_BOOTSTRAP}"
 do_bootstrap[depends] = "base-apt:do_cache isar-apt:do_cache_config"
+
+addtask bootstrap before do_build after do_generate_keyrings
 
 isar_bootstrap() {
     IS_HOST=""
