@@ -1,7 +1,7 @@
 # Minimal debian root file system
 #
 # This software is a part of ISAR.
-# Copyright (c) Siemens AG, 2018
+# Copyright (c) Siemens AG, 2018-2021
 #
 # SPDX-License-Identifier: MIT
 
@@ -15,6 +15,8 @@ SRC_URI = " \
     file://chroot-setup.sh"
 PV = "1.0"
 
+BOOTSTRAP_FOR_HOST ?= "0"
+
 DEBOOTSTRAP ?= "qemu-debootstrap"
 ROOTFSDIR = "${WORKDIR}/rootfs"
 APTPREFS = "${WORKDIR}/apt-preferences"
@@ -26,8 +28,8 @@ DEPLOY_ISAR_BOOTSTRAP ?= ""
 DISTRO_BOOTSTRAP_BASE_PACKAGES = "locales"
 DISTRO_BOOTSTRAP_BASE_PACKAGES_append_gnupg = ",gnupg"
 DISTRO_BOOTSTRAP_BASE_PACKAGES_append_https-support = "${@https_support(d)}"
-
-DISTRO_VARS_PREFIX ?= ""
+DISTRO_VARS_PREFIX ?= "${@'HOST_' if d.getVar('BOOTSTRAP_FOR_HOST') == '1' else ''}"
+BOOTSTRAP_DISTRO = "${@d.getVar('HOST_DISTRO' if d.getVar('BOOTSTRAP_FOR_HOST') == '1' else 'DISTRO')}"
 
 inherit deb-dl-dir
 
@@ -137,15 +139,12 @@ def aggregate_aptsources_list(d, file_list, file_out):
                     out_fd.write("\n".encode())
             out_fd.write("\n".encode())
 
-def get_aptsources_list(d, is_host=False):
-    if is_host:
-        apt_sources_list = (d.getVar("HOST_DISTRO_APT_SOURCES", True) or "").split()
-    else:
-        apt_sources_list = (d.getVar("DISTRO_APT_SOURCES", True) or "").split()
-    return apt_sources_list
+def get_aptsources_list(d):
+    apt_sources_var = d.getVar("DISTRO_VARS_PREFIX") + "DISTRO_APT_SOURCES"
+    return (d.getVar(apt_sources_var, True) or "").split()
 
-def generate_distro_sources(d, is_host=False):
-    apt_sources_list = get_aptsources_list(d, is_host)
+def generate_distro_sources(d):
+    apt_sources_list = get_aptsources_list(d)
     for entry in apt_sources_list:
         entry_real = bb.parse.resolve_file(entry, d)
         with open(entry_real, "r") as in_fd:
@@ -155,27 +154,29 @@ def generate_distro_sources(d, is_host=False):
                     parsed = get_apt_source_mirror(d, parsed)
                     yield parsed
 
-def get_distro_primary_source_entry(d, is_host=False):
-    apt_sources_list = get_aptsources_list(d, is_host)
-    for source in generate_distro_sources(d, is_host):
+def get_distro_primary_source_entry(d):
+    apt_sources_list = get_aptsources_list(d)
+    for source in generate_distro_sources(d):
         if source[0] == "deb":
             return source[2:]
     return ["", "", ""]
 
-def get_distro_have_https_source(d, is_host=False):
-    return any(source[2].startswith("https://") for source in generate_distro_sources(d, is_host))
+def get_distro_have_https_source(d):
+    return any(source[2].startswith("https://") for source in generate_distro_sources(d))
 
-def https_support(d, is_host=False):
-    if get_distro_suite(d, is_host) == "stretch":
+def https_support(d):
+    if get_distro_suite(d) == "stretch":
         return ",apt-transport-https,ca-certificates"
     else:
         return ",ca-certificates"
 
-def get_distro_needs_https_support(d, is_host=False):
-    if get_distro_have_https_source(d, is_host):
+def get_distro_needs_https_support(d):
+    if get_distro_have_https_source(d):
         return "https-support"
     else:
         return ""
+
+OVERRIDES_append = ":${@get_distro_needs_https_support(d)}"
 
 def get_distro_needs_gpg_support(d):
     apt_keys = d.getVar("DISTRO_BOOTSTRAP_KEYS") or ""
@@ -187,14 +188,14 @@ def get_distro_needs_gpg_support(d):
 
 OVERRIDES_append = ":${@get_distro_needs_gpg_support(d)}"
 
-def get_distro_source(d, is_host):
-    return get_distro_primary_source_entry(d, is_host)[0]
+def get_distro_source(d):
+    return get_distro_primary_source_entry(d)[0]
 
-def get_distro_suite(d, is_host):
-    return get_distro_primary_source_entry(d, is_host)[1]
+def get_distro_suite(d):
+    return get_distro_primary_source_entry(d)[1]
 
-def get_distro_components_argument(d, is_host):
-    components = get_distro_primary_source_entry(d, is_host)[2]
+def get_distro_components_argument(d):
+    components = get_distro_primary_source_entry(d)[2]
     if components and components.strip():
         return "--components=" + ",".join(components.split())
     else:
@@ -262,23 +263,12 @@ do_bootstrap[vardeps] += " \
 do_bootstrap[dirs] = "${DEPLOY_DIR_BOOTSTRAP}"
 do_bootstrap[depends] = "base-apt:do_cache isar-apt:do_cache_config"
 
-addtask bootstrap before do_build after do_generate_keyrings
-
-isar_bootstrap() {
-    IS_HOST=""
-    while true; do
-        case "$1" in
-        --host) IS_HOST=1 ;;
-        -*) bbfatal "$0: invalid option specified: $1" ;;
-        *) break ;;
-        esac
-        shift
-    done
+do_bootstrap() {
     if [ "${ISAR_ENABLE_COMPAT_ARCH}" = "1" ]; then
         if [ -z "${COMPAT_DISTRO_ARCH}" ]; then
             bbfatal "${DISTRO_ARCH} does not have a compat arch"
         fi
-        if [ "${@get_distro_suite(d, True)}-${COMPAT_DISTRO_ARCH}" = "stretch-i386" ]; then
+        if [ "${@get_distro_suite(d)}-${COMPAT_DISTRO_ARCH}" = "stretch-i386" ]; then
             bbfatal "compat arch build for stretch-i386 not supported"
         fi
     fi
@@ -290,33 +280,23 @@ isar_bootstrap() {
         debootstrap_args="$debootstrap_args --no-check-gpg"
     fi
     E="${@ isar_export_proxies(d)}"
-    export IS_HOST debootstrap_args E
+    export BOOTSTRAP_FOR_HOST debootstrap_args E
 
     sudo rm -rf --one-file-system "${ROOTFSDIR}"
-    if [ "${IS_HOST}" ];then
-        deb_dl_dir_import "${ROOTFSDIR}" "${HOST_DISTRO}"
-    else
-        deb_dl_dir_import "${ROOTFSDIR}" "${DISTRO}"
-    fi
+    deb_dl_dir_import "${ROOTFSDIR}" "${BOOTSTRAP_DISTRO}"
 
     sudo -E -s <<'EOSUDO'
         set -e
-        if [ ${IS_HOST} ]; then
-            ${DEBOOTSTRAP} $debootstrap_args \
-                           ${@get_distro_components_argument(d, True)} \
-                           "${@get_distro_suite(d, True)}" \
-                           "${ROOTFSDIR}" \
-                           "${@get_distro_source(d, True)}" \
-                           ${DISTRO_DEBOOTSTRAP_SCRIPT}
-        else
-            ${DEBOOTSTRAP} $debootstrap_args \
-                           --arch="${DISTRO_ARCH}" \
-                           ${@get_distro_components_argument(d, False)} \
-                           "${@get_distro_suite(d, False)}" \
-                           "${ROOTFSDIR}" \
-                           "${@get_distro_source(d, False)}" \
-                           ${DISTRO_DEBOOTSTRAP_SCRIPT}
+        if [ "${BOOTSTRAP_FOR_HOST}" = "0" ]; then
+            arch_param="--arch=${DISTRO_ARCH}"
         fi
+        ${DEBOOTSTRAP} $debootstrap_args \
+                       $arch_param \
+                       ${@get_distro_components_argument(d)} \
+                       "${@get_distro_suite(d)}" \
+                       "${ROOTFSDIR}" \
+                       "${@get_distro_source(d)}" \
+                       ${DISTRO_DEBOOTSTRAP_SCRIPT}
 
         # Install apt config
         mkdir -p "${ROOTFSDIR}/etc/apt/preferences.d"
@@ -363,7 +343,7 @@ isar_bootstrap() {
             chroot "${ROOTFSDIR}" gpgconf --kill gpg-agent && /bin/rm -rf "${MY_GPGHOME}"
         fi
 
-        if [ "${@get_distro_suite(d, True)}" = "stretch" ] && [ "${@get_host_release().split('.')[0]}" -lt "4" ]; then
+        if [ "${@get_distro_suite(d)}" = "stretch" ] && [ "${@get_host_release().split('.')[0]}" -lt "4" ]; then
             install -v -m644 "${WORKDIR}/isar-apt-fallback.conf" \
                              "${ROOTFSDIR}/etc/apt/apt.conf.d/55isar-fallback.conf"
         fi
@@ -387,7 +367,7 @@ isar_bootstrap() {
 
         export DEBIAN_FRONTEND=noninteractive
 
-        if [ ${IS_HOST} ]; then
+        if [ "${BOOTSTRAP_FOR_HOST}" = "1" ]; then
             chroot "${ROOTFSDIR}" /usr/bin/dpkg --add-architecture ${DISTRO_ARCH}
         fi
 
@@ -408,12 +388,10 @@ isar_bootstrap() {
         # Finalize debootstrap by setting the link in deploy
         ln -Tfsr "${ROOTFSDIR}" "${DEPLOY_ISAR_BOOTSTRAP}"
 EOSUDO
-    if [ "${IS_HOST}" ];then
-        deb_dl_dir_export "${ROOTFSDIR}" "${HOST_DISTRO}"
-    else
-        deb_dl_dir_export "${ROOTFSDIR}" "${DISTRO}"
-    fi
+    deb_dl_dir_export "${ROOTFSDIR}" "${BOOTSTRAP_DISTRO}"
 }
+
+addtask bootstrap before do_build after do_generate_keyrings
 
 CLEANFUNCS = "clean_deploy"
 clean_deploy() {

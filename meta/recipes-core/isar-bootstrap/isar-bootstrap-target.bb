@@ -10,9 +10,3 @@ Description = "Minimal target Debian root file system"
 DEPLOY_ISAR_BOOTSTRAP = "${DEPLOY_DIR_BOOTSTRAP}/${DISTRO}-${DISTRO_ARCH}"
 
 require isar-bootstrap.inc
-
-OVERRIDES_append = ":${@get_distro_needs_https_support(d, False)}"
-
-do_bootstrap() {
-    isar_bootstrap
-}
