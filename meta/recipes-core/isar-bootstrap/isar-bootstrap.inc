@@ -256,125 +256,123 @@ isar_bootstrap() {
     fi
     E="${@ isar_export_proxies(d)}"
     export IS_HOST debootstrap_args E
-    if [ ! -e "${DEPLOY_ISAR_BOOTSTRAP}" ]; then
-        sudo rm -rf --one-file-system "${ROOTFSDIR}"
-        if [ "${IS_HOST}" ];then
-            deb_dl_dir_import "${ROOTFSDIR}" "${HOST_DISTRO}"
+
+    sudo rm -rf --one-file-system "${ROOTFSDIR}"
+    if [ "${IS_HOST}" ];then
+        deb_dl_dir_import "${ROOTFSDIR}" "${HOST_DISTRO}"
+    else
+        deb_dl_dir_import "${ROOTFSDIR}" "${DISTRO}"
+    fi
+
+    sudo -E -s <<'EOSUDO'
+        set -e
+        if [ ${IS_HOST} ]; then
+            ${DEBOOTSTRAP} $debootstrap_args \
+                           ${@get_distro_components_argument(d, True)} \
+                           "${@get_distro_suite(d, True)}" \
+                           "${ROOTFSDIR}" \
+                           "${@get_distro_source(d, True)}" \
+                           ${DISTRO_DEBOOTSTRAP_SCRIPT}
         else
-            deb_dl_dir_import "${ROOTFSDIR}" "${DISTRO}"
+            ${DEBOOTSTRAP} $debootstrap_args \
+                           --arch="${DISTRO_ARCH}" \
+                           ${@get_distro_components_argument(d, False)} \
+                           "${@get_distro_suite(d, False)}" \
+                           "${ROOTFSDIR}" \
+                           "${@get_distro_source(d, False)}" \
+                           ${DISTRO_DEBOOTSTRAP_SCRIPT}
         fi
 
-        sudo -E -s <<'EOSUDO'
-            set -e
-            if [ ${IS_HOST} ]; then
-                ${DEBOOTSTRAP} $debootstrap_args \
-                               ${@get_distro_components_argument(d, True)} \
-                               "${@get_distro_suite(d, True)}" \
-                               "${ROOTFSDIR}" \
-                               "${@get_distro_source(d, True)}" \
-                               ${DISTRO_DEBOOTSTRAP_SCRIPT}
-            else
-                ${DEBOOTSTRAP} $debootstrap_args \
-                               --arch="${DISTRO_ARCH}" \
-                               ${@get_distro_components_argument(d, False)} \
-                               "${@get_distro_suite(d, False)}" \
-                               "${ROOTFSDIR}" \
-                               "${@get_distro_source(d, False)}" \
-                               ${DISTRO_DEBOOTSTRAP_SCRIPT}
+        # Install apt config
+        mkdir -p "${ROOTFSDIR}/etc/apt/preferences.d"
+        install -v -m644 "${APTPREFS}" \
+                         "${ROOTFSDIR}/etc/apt/preferences.d/bootstrap"
+        mkdir -p "${ROOTFSDIR}/etc/apt/sources.list.d"
+        if [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" ]; then
+            line="file:///base-apt/${BASE_DISTRO} ${BASE_DISTRO_CODENAME} main"
+            if [ -z "${BASE_REPO_KEY}" ]; then
+                line="[trusted=yes] ${line}"
             fi
+            echo "deb ${line}" >  "${ROOTFSDIR}/etc/apt/sources.list.d/base-apt.list"
+            echo "deb-src ${line}" >>  "${ROOTFSDIR}/etc/apt/sources.list.d/base-apt.list"
 
-            # Install apt config
-            mkdir -p "${ROOTFSDIR}/etc/apt/preferences.d"
-            install -v -m644 "${APTPREFS}" \
-                             "${ROOTFSDIR}/etc/apt/preferences.d/bootstrap"
-            mkdir -p "${ROOTFSDIR}/etc/apt/sources.list.d"
-            if [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" ]; then
-                line="file:///base-apt/${BASE_DISTRO} ${BASE_DISTRO_CODENAME} main"
-                if [ -z "${BASE_REPO_KEY}" ]; then
-                    line="[trusted=yes] ${line}"
-                fi
-                echo "deb ${line}" >  "${ROOTFSDIR}/etc/apt/sources.list.d/base-apt.list"
-                echo "deb-src ${line}" >>  "${ROOTFSDIR}/etc/apt/sources.list.d/base-apt.list"
+            mkdir -p ${ROOTFSDIR}/base-apt
+            mount --bind ${REPO_BASE_DIR} ${ROOTFSDIR}/base-apt
+        else
+            install -v -m644 "${APTSRCS}" \
+                             "${ROOTFSDIR}/etc/apt/sources.list.d/bootstrap.list"
+        fi
+        install -v -m644 "${APTSRCS_INIT}" "${ROOTFSDIR}/etc/apt/sources-list"
+        rm -f "${ROOTFSDIR}/etc/apt/sources.list"
+        rm -rf "${ROOTFSDIR}/var/lib/apt/lists/"*
+        mkdir -p "${ROOTFSDIR}/etc/apt/apt.conf.d"
+        install -v -m644 "${WORKDIR}/isar-apt.conf" \
+                         "${ROOTFSDIR}/etc/apt/apt.conf.d/50isar.conf"
+        if [ "${@get_distro_needs_gpg_support(d)}" = "gnupg" ]; then
+            MY_GPGHOME="$(chroot "${ROOTFSDIR}" mktemp -d /tmp/gpghomeXXXXXXXXXX)"
+            echo "Created temporary directory ${MY_GPGHOME} for gpg-agent"
+            export GNUPGHOME="${MY_GPGHOME}"
+            chroot "${ROOTFSDIR}" gpg-agent --daemon
+            APT_KEY_APPEND="--homedir ${MY_GPGHOME}"
+        fi
+        find ${APT_KEYS_DIR}/ -type f | while read keyfile
+        do
+            kfn="$(basename $keyfile)"
+            cp $keyfile "${ROOTFSDIR}/tmp/$kfn"
+            chroot "${ROOTFSDIR}" /usr/bin/apt-key \
+                --keyring ${THIRD_PARTY_APT_KEYRING} ${APT_KEY_APPEND} add "/tmp/$kfn"
+            rm "${ROOTFSDIR}/tmp/$kfn"
+        done
+        if [ -d "${MY_GPGHOME}" ]; then
+            echo "Killing gpg-agent for ${MY_GPGHOME}"
+            chroot "${ROOTFSDIR}" gpgconf --kill gpg-agent && /bin/rm -rf "${MY_GPGHOME}"
+        fi
 
-                mkdir -p ${ROOTFSDIR}/base-apt
-                mount --bind ${REPO_BASE_DIR} ${ROOTFSDIR}/base-apt
-            else
-                install -v -m644 "${APTSRCS}" \
-                                 "${ROOTFSDIR}/etc/apt/sources.list.d/bootstrap.list"
-            fi
-            install -v -m644 "${APTSRCS_INIT}" \
-                                 "${ROOTFSDIR}/etc/apt/sources-list"
-            rm -f "${ROOTFSDIR}/etc/apt/sources.list"
-            rm -rf "${ROOTFSDIR}/var/lib/apt/lists/"*
-            mkdir -p "${ROOTFSDIR}/etc/apt/apt.conf.d"
-            install -v -m644 "${WORKDIR}/isar-apt.conf" \
-                             "${ROOTFSDIR}/etc/apt/apt.conf.d/50isar.conf"
-            if [ "${@get_distro_needs_gpg_support(d)}" = "gnupg" ]; then
-                MY_GPGHOME="$(chroot "${ROOTFSDIR}" mktemp -d /tmp/gpghomeXXXXXXXXXX)"
-                echo "Created temporary directory ${MY_GPGHOME} for gpg-agent"
-                export GNUPGHOME="${MY_GPGHOME}"
-                chroot "${ROOTFSDIR}" gpg-agent --daemon
-                APT_KEY_APPEND="--homedir ${MY_GPGHOME}"
-            fi
-            find ${APT_KEYS_DIR}/ -type f | while read keyfile
-            do
-                kfn="$(basename $keyfile)"
-                cp $keyfile "${ROOTFSDIR}/tmp/$kfn"
-                chroot "${ROOTFSDIR}" /usr/bin/apt-key \
-                    --keyring ${THIRD_PARTY_APT_KEYRING} ${APT_KEY_APPEND} add "/tmp/$kfn"
-                rm "${ROOTFSDIR}/tmp/$kfn"
-            done
-            if [ -d "${MY_GPGHOME}" ]; then
-                echo "Killing gpg-agent for ${MY_GPGHOME}"
-                chroot "${ROOTFSDIR}" gpgconf --kill gpg-agent && /bin/rm -rf "${MY_GPGHOME}"
-            fi
+        if [ "${@get_distro_suite(d, True)}" = "stretch" ] && [ "${@get_host_release().split('.')[0]}" -lt "4" ]; then
+            install -v -m644 "${WORKDIR}/isar-apt-fallback.conf" \
+                             "${ROOTFSDIR}/etc/apt/apt.conf.d/55isar-fallback.conf"
+        fi
 
-            if [ "${@get_distro_suite(d, True)}" = "stretch" ] && [ "${@get_host_release().split('.')[0]}" -lt "4" ]; then
-                install -v -m644 "${WORKDIR}/isar-apt-fallback.conf" \
-                                 "${ROOTFSDIR}/etc/apt/apt.conf.d/55isar-fallback.conf"
-            fi
+        # Set locale
+        install -v -m644 "${WORKDIR}/locale" "${ROOTFSDIR}/etc/locale"
 
-            # Set locale
-            install -v -m644 "${WORKDIR}/locale" "${ROOTFSDIR}/etc/locale"
+        sed -i '/en_US.UTF-8 UTF-8/s/^#//g' "${ROOTFSDIR}/etc/locale.gen"
+        chroot "${ROOTFSDIR}" /usr/sbin/locale-gen
 
-            sed -i '/en_US.UTF-8 UTF-8/s/^#//g' "${ROOTFSDIR}/etc/locale.gen"
-            chroot "${ROOTFSDIR}" /usr/sbin/locale-gen
+        # setup chroot
+        install -v -m755 "${WORKDIR}/chroot-setup.sh" "${ROOTFSDIR}/chroot-setup.sh"
+        "${ROOTFSDIR}/chroot-setup.sh" "setup" "${ROOTFSDIR}"
 
-            # setup chroot
-            install -v -m755 "${WORKDIR}/chroot-setup.sh" "${ROOTFSDIR}/chroot-setup.sh"
-            "${ROOTFSDIR}/chroot-setup.sh" "setup" "${ROOTFSDIR}"
+        # update APT
+        mount --rbind /dev ${ROOTFSDIR}/dev
+        mount --make-rslave ${ROOTFSDIR}/dev
+        mount -t proc none ${ROOTFSDIR}/proc
+        mount --rbind /sys ${ROOTFSDIR}/sys
+        mount --make-rslave ${ROOTFSDIR}/sys
 
-            # update APT
-            mount --rbind /dev ${ROOTFSDIR}/dev
-            mount --make-rslave ${ROOTFSDIR}/dev
-            mount -t proc none ${ROOTFSDIR}/proc
-            mount --rbind /sys ${ROOTFSDIR}/sys
-            mount --make-rslave ${ROOTFSDIR}/sys
+        export DEBIAN_FRONTEND=noninteractive
 
-            export DEBIAN_FRONTEND=noninteractive
+        if [ ${IS_HOST} ]; then
+            chroot "${ROOTFSDIR}" /usr/bin/dpkg --add-architecture ${DISTRO_ARCH}
+        fi
 
-            if [ ${IS_HOST} ]; then
-                chroot "${ROOTFSDIR}" /usr/bin/dpkg --add-architecture ${DISTRO_ARCH}
-            fi
+        if [ "${ISAR_ENABLE_COMPAT_ARCH}" = "1" ]; then
+            chroot "${ROOTFSDIR}" /usr/bin/dpkg --add-architecture ${COMPAT_DISTRO_ARCH}
+        fi
 
-            if [ "${ISAR_ENABLE_COMPAT_ARCH}" = "1" ]; then
-                chroot "${ROOTFSDIR}" /usr/bin/dpkg --add-architecture ${COMPAT_DISTRO_ARCH}
-            fi
+        chroot "${ROOTFSDIR}" /usr/bin/apt-get update -y
+        chroot "${ROOTFSDIR}" /usr/bin/apt-get install -y -f
+        chroot "${ROOTFSDIR}" /usr/bin/apt-get dist-upgrade -y \
+                                -o Debug::pkgProblemResolver=yes
 
-            chroot "${ROOTFSDIR}" /usr/bin/apt-get update -y
-            chroot "${ROOTFSDIR}" /usr/bin/apt-get install -y -f
-            chroot "${ROOTFSDIR}" /usr/bin/apt-get dist-upgrade -y \
-                                  -o Debug::pkgProblemResolver=yes
+        umount -l "${ROOTFSDIR}/dev"
+        umount -l "${ROOTFSDIR}/proc"
+        umount -l "${ROOTFSDIR}/sys"
+        umount -l "${ROOTFSDIR}/base-apt" || true
 
-            umount -l "${ROOTFSDIR}/dev"
-            umount -l "${ROOTFSDIR}/proc"
-            umount -l "${ROOTFSDIR}/sys"
-            umount -l "${ROOTFSDIR}/base-apt" || true
-
-            # Finalize debootstrap by setting the link in deploy
-            ln -Tfsr "${ROOTFSDIR}" "${DEPLOY_ISAR_BOOTSTRAP}"
+        # Finalize debootstrap by setting the link in deploy
+        ln -Tfsr "${ROOTFSDIR}" "${DEPLOY_ISAR_BOOTSTRAP}"
 EOSUDO
-    fi
     if [ "${IS_HOST}" ];then
         deb_dl_dir_export "${ROOTFSDIR}" "${HOST_DISTRO}"
     else
