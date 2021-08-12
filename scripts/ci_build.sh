@@ -166,6 +166,10 @@ ISAR_ENABLE_COMPAT_ARCH_debian-stretch_amd64 = "0"
 IMAGE_INSTALL += "kselftest"
 EOF
 
+if [ -n "$DISTRO_APT_PREMIRRORS" ]; then
+    echo "DISTRO_APT_PREMIRRORS = \"$DISTRO_APT_PREMIRRORS\"" >> conf/local.conf
+fi
+
 if [ -n "$CROSS_BUILD" ]; then
     sed -i -e 's/ISAR_CROSS_COMPILE ?= "0"/ISAR_CROSS_COMPILE ?= "1"/g' conf/local.conf
 fi

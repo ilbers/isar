@@ -10,6 +10,7 @@ variables:
     - export https_proxy=$HTTPS_PROXY
     - export ftp_proxy=$FTP_PROXY
     - export no_proxy=$NO_PROXY
+    - export DISTRO_APT_PREMIRRORS=$DISTRO_APT_PREMIRRORS
   artifacts:
     name: "logs-$CI_JOB_ID"
     paths:
