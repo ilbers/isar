@@ -38,7 +38,5 @@ do_generate_initramfs() {
 
     rm -rf "${INITRAMFS_IMAGE_FILE}"
     cp "${INITRAMFS_ROOTFS}/initrd.img" "${INITRAMFS_IMAGE_FILE}"
-
-    rootfs_undo_mounts
 }
 addtask generate_initramfs after do_rootfs before do_build
