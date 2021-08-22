@@ -17,8 +17,6 @@ do_ext4_image() {
 
     sudo chroot ${BUILDCHROOT_DIR} /sbin/mke2fs ${MKE2FS_ARGS} \
                 -F -d '${PP_ROOTFS}' '${PP_DEPLOY}/${EXT4_IMAGE_FILE}'
-
-    image_undo_mounts
 }
 
 addtask ext4_image before do_image after do_image_tools

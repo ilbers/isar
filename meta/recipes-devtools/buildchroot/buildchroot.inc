@@ -49,14 +49,6 @@ rootfs_do_mounts_append() {
 EOSUDO
 }
 
-rootfs_undo_mounts_append() {
-    sudo -s <<'EOSUDO'
-    mountpoint -q '${BUILDCHROOT_DIR}/downloads' && \
-        umount ${BUILDCHROOT_DIR}/downloads && \
-        rmdir --ignore-fail-on-non-empty ${BUILDCHROOT_DIR}/downloads
-EOSUDO
-}
-
 ROOTFS_POSTPROCESS_COMMAND =+ "buildchroot_install_files"
 buildchroot_install_files() {
     sudo mkdir -p "${BUILDCHROOT_DIR}/home/builder"

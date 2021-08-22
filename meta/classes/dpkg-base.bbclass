@@ -169,8 +169,6 @@ dpkg_undo_mounts() {
         i=`expr $i + 1`
     done
     sudo rmdir ${BUILDROOT}
-
-    buildchroot_undo_mounts
 }
 
 # Placeholder for actual dpkg_runbuild() implementation

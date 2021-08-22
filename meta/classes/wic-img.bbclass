@@ -209,5 +209,4 @@ EOSUDO
         done
         ) 9>${MOUNT_LOCKFILE}
 EOSUDO
-    buildchroot_undo_mounts
 }
