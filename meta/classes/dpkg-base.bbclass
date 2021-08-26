@@ -55,6 +55,7 @@ python do_adjust_git() {
 }
 
 addtask adjust_git before do_dpkg_build
+do_adjust_git[lockfiles] += "${DL_DIR}/git/isar.lock"
 
 inherit patch
 addtask patch before do_adjust_git
