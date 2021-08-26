@@ -28,8 +28,10 @@ python do_adjust_git() {
 
             if os.path.islink(ud.localpath):
                 realpath = os.path.realpath(ud.localpath)
-                if realpath.startswith(d.getVar("DL_DIR")):
-                    link = realpath.replace(d.getVar("DL_DIR"), '/downloads', 1)
+                filter_out = os.path.join(d.getVar("DL_DIR"), "git") + "/"
+                if realpath.startswith(filter_out):
+                    # make the link relative
+                    link = realpath.replace(filter_out, '', 1)
                     os.unlink(ud.localpath)
                     os.symlink(link, ud.localpath)
 
