@@ -59,6 +59,8 @@ buildchroot_install_files() {
     sudo install -m 755 ${WORKDIR}/common.sh ${BUILDCHROOT_DIR}/isar/
     sudo install -m 755 ${WORKDIR}/deps.sh ${BUILDCHROOT_DIR}/isar/
 
+    sudo ln -s /downloads/git "${BUILDCHROOT_DIR}/home/.git-downloads"
+
     # Configure root filesystem
     sudo install -m 755 ${WORKDIR}/configscript.sh ${BUILDCHROOT_DIR}
     USER_ID=$(id -u)

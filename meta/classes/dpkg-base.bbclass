@@ -19,6 +19,12 @@ python do_adjust_git() {
 
     rootdir = d.getVar('WORKDIR', True)
 
+    git_link = os.path.join(d.getVar('GIT_DL_LINK_DIR'), '.git-downloads')
+    git_dl = os.path.join(d.getVar("DL_DIR"), "git")
+
+    if not os.path.exists(git_link) or os.path.realpath(git_link) != git_dl:
+        os.symlink(git_dl, git_link)
+
     for src_uri in (d.getVar("SRC_URI", True) or "").split():
         try:
             fetcher = bb.fetch2.Fetch([src_uri], d)
@@ -44,11 +50,14 @@ python do_adjust_git() {
             destsuffix = ud.parm.get("destsuffix", def_destsuffix)
             destdir = ud.destdir = os.path.join(rootdir, destsuffix)
 
+            git_link_rel = os.path.relpath(git_link,
+                                           os.path.join(destdir, ".git/objects"))
+
             alternates = os.path.join(destdir, ".git/objects/info/alternates")
 
             if os.path.exists(alternates):
                 cmd = ["sed", "-i", alternates, "-e",
-                       "s|{}|/downloads|".format(d.getVar("DL_DIR"))]
+                       "s|{}|{}|".format(git_dl, git_link_rel)]
                 bb.note(' '.join(cmd))
                 if subprocess.call(cmd) != 0:
                     bb.fatal("git alternates adjustment failed")
