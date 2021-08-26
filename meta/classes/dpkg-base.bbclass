@@ -65,11 +65,11 @@ python do_adjust_git() {
             bb.fatal(str(e))
 }
 
-addtask adjust_git before do_dpkg_build
+addtask adjust_git after do_unpack before do_patch
 do_adjust_git[lockfiles] += "${DL_DIR}/git/isar.lock"
 
 inherit patch
-addtask patch before do_adjust_git
+addtask patch after do_adjust_git before do_dpkg_build
 
 SRC_APT ?= ""
 
