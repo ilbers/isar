@@ -15,7 +15,8 @@ fi
 
 BOOT_CMD=$(mktemp)
 
-KERNEL_VERSION=$(linux-version list | linux-version sort --reverse | head -1)
+KERNEL_VERSION=$(find /boot -name vmlinu[xz]-* | sed 's|/boot/vmlinu[xz]-||g' |
+		 linux-version sort --reverse | head -1)
 
 case $(uname -m) in
 	aarch64|mips|riscv64)
