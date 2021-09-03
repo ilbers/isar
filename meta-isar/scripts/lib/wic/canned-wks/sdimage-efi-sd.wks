@@ -1,0 +1,9 @@
+# short-description: Create an EFI disk image without any swap
+# long-description: Creates a partitioned EFI disk image without any swap that
+# the user can directly dd to boot media.
+
+part /boot --source bootimg-efi-isar --sourceparams "loader=systemd-boot" --ondisk sda --label efi --part-type EF00 --align 1024
+
+part / --source rootfs --ondisk sda --fstype ext4 --mkfs-extraopts "-T default" --label platform --align 1024 --use-uuid --exclude-path boot/
+
+bootloader --ptable gpt --timeout 3 --append "rootwait console=ttyS0,115200 console=tty0"
