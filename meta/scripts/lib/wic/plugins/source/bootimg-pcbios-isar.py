@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 #
 # DESCRIPTION
-# This implements the 'bootimg-pcbios' source plugin class for 'wic'
+# This implements the 'bootimg-pcbios-isar' source plugin class for 'wic'
 #
 # AUTHORS
 # Tom Zanussi <tom.zanussi (at] linux.intel.com>
@@ -20,14 +20,18 @@ from wic.pluginbase import SourcePlugin
 from wic.misc import (exec_cmd, exec_native_cmd,
                       get_bitbake_var, BOOTDD_EXTRA_SPACE)
 
+import sys
+sys.path[0] = os.path.dirname(os.path.abspath(__file__)) + "/.."
+from isarpluginbase import (isar_get_filenames, isar_populate_boot_cmd)
+
 logger = logging.getLogger('wic')
 
-class BootimgPcbiosPlugin(SourcePlugin):
+class BootimgPcbiosIsarPlugin(SourcePlugin):
     """
     Create MBR boot partition and install syslinux on it.
     """
 
-    name = 'bootimg-pcbios'
+    name = 'bootimg-pcbios-isar'
 
     @classmethod
     def _get_bootimg_dir(cls, bootimg_dir, dirname):
@@ -56,6 +60,10 @@ class BootimgPcbiosPlugin(SourcePlugin):
         """
         bootimg_dir = cls._get_bootimg_dir(bootimg_dir, 'syslinux')
         mbrfile = "%s/syslinux/" % bootimg_dir
+
+        # files have different prefix in debian
+        mbrfile += "mbr/"
+
         if creator.ptable_format == 'msdos':
             mbrfile += "mbr.bin"
         elif creator.ptable_format == 'gpt':
@@ -123,10 +131,17 @@ class BootimgPcbiosPlugin(SourcePlugin):
             syslinux_conf += "LABEL boot\n"
 
             kernel = "/vmlinuz"
+
+            kernel, initrd = isar_get_filenames(get_bitbake_var("IMAGE_ROOTFS"))
+
             syslinux_conf += "KERNEL " + kernel + "\n"
 
             syslinux_conf += "APPEND label=boot root=%s %s\n" % \
                              (creator.rootdev, bootloader.append)
+
+            # we are using an initrd, smuggle it in
+            syslinux_conf = syslinux_conf.replace(" root=%s " % (creator.rootdev),
+                                                  " root=%s initrd=%s " % (creator.rootdev, initrd))
 
         logger.debug("Writing syslinux config %s/hdd/boot/syslinux.cfg",
                      cr_workdir)
@@ -166,7 +181,17 @@ class BootimgPcbiosPlugin(SourcePlugin):
                 "install -m 444 %s/syslinux/libutil.c32 %s/libutil.c32" %
                 (bootimg_dir, hdddir))
 
+        install_cmd = isar_populate_boot_cmd(rootfs_dir['ROOTFS_DIR'], hdddir)
+        exec_cmd(install_cmd)
+
         for install_cmd in cmds:
+            # skip the kernel install from OE parts, we copy boot from debian
+            if install_cmd == cmds[0]:
+                continue
+            # one file has a different suffix in debian
+            install_cmd = install_cmd.replace("ldlinux.sys", "ldlinux.c32")
+            # files have different prefix in debian
+            install_cmd = install_cmd.replace("/syslinux/", "/syslinux/modules/bios/")
             exec_cmd(install_cmd)
 
         du_cmd = "du -bks %s" % hdddir
