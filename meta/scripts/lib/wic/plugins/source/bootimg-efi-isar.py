@@ -1,24 +1,10 @@
-# ex:ts=4:sw=4:sts=4:et
-# -*- tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
 #
 # Copyright (c) 2014, Intel Corporation.
-# All rights reserved.
 #
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 2 as
-# published by the Free Software Foundation.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+# SPDX-License-Identifier: GPL-2.0-only
 #
 # DESCRIPTION
-# This implements the 'bootimg-efi-isar' source plugin class for 'wic'
+# This implements the 'bootimg-efi' source plugin class for 'wic'
 #
 # AUTHORS
 # Tom Zanussi <tom.zanussi (at] linux.intel.com>
@@ -27,11 +13,15 @@
 import logging
 import os
 import shutil
+import re
+
+from glob import glob
 
 from wic import WicError
 from wic.engine import get_custom_config
 from wic.pluginbase import SourcePlugin
-from wic.misc import (exec_cmd, get_bitbake_var, BOOTDD_EXTRA_SPACE)
+from wic.misc import (exec_cmd, exec_native_cmd,
+                      get_bitbake_var, BOOTDD_EXTRA_SPACE)
 
 logger = logging.getLogger('wic')
 
@@ -41,10 +31,10 @@ class BootimgEFIPlugin(SourcePlugin):
     This plugin supports GRUB 2 and systemd-boot bootloaders.
     """
 
-    name = 'bootimg-efi-isar'
+    name = 'bootimg-efi'
 
     @classmethod
-    def do_configure_grubefi(cls, creator, cr_workdir, bootpart):
+    def do_configure_grubefi(cls, hdddir, creator, cr_workdir, source_params):
         """
         Create loader-specific (grub-efi) config
         """
@@ -61,29 +51,52 @@ class BootimgEFIPlugin(SourcePlugin):
                 raise WicError("configfile is specified but failed to "
                                "get it from %s." % configfile)
 
+        initrd = source_params.get('initrd')
+
+        if initrd:
+            bootimg_dir = get_bitbake_var("DEPLOY_DIR_IMAGE")
+            if not bootimg_dir:
+                raise WicError("Couldn't find DEPLOY_DIR_IMAGE, exiting")
+
+            initrds = initrd.split(';')
+            for rd in initrds:
+                cp_cmd = "cp %s/%s %s" % (bootimg_dir, rd, hdddir)
+                exec_cmd(cp_cmd, True)
+        else:
+            logger.debug("Ignoring missing initrd")
+
         if not custom_cfg:
             # Create grub configuration using parameters from wks file
             bootloader = creator.ks.bootloader
+            title = source_params.get('title')
 
-            kernel_initrd_path = "/"
-            if get_bitbake_var("DISTRO").startswith("ubuntu"):
-                kernel_initrd_path = "/boot/"
-
-            grubefi_conf =  "serial --unit=0 --speed=115200 --word=8 --parity=no --stop=1\n"
-            grubefi_conf += "terminal_input --append serial\n"
-            grubefi_conf += "terminal_output --append serial\n"
-            grubefi_conf += "\n"
+            grubefi_conf = ""
+            grubefi_conf += "serial --unit=0 --speed=115200 --word=8 --parity=no --stop=1\n"
             grubefi_conf += "default=boot\n"
             grubefi_conf += "timeout=%s\n" % bootloader.timeout
-            for part in creator.parts:
-                if part.mountpoint == "/":
-                    grubefi_conf += "regexp --set bootdisk '(hd[0-9]*),' $prefix\n"
-                    grubefi_conf += "set root=$bootdisk',gpt%d'\n" % part.realnum
-            grubefi_conf += "\n"
-            grubefi_conf += "menuentry 'boot'{\n"
-            grubefi_conf += "    linux %svmlinuz root=%s rootwait %s\n" \
-                            % (kernel_initrd_path, creator.rootdev, bootloader.append or "")
-            grubefi_conf += "    initrd %sinitrd.img\n" % kernel_initrd_path
+            grubefi_conf += "menuentry '%s'{\n" % (title if title else "boot")
+
+            kernel = get_bitbake_var("KERNEL_IMAGETYPE")
+            if get_bitbake_var("INITRAMFS_IMAGE_BUNDLE") == "1":
+                if get_bitbake_var("INITRAMFS_IMAGE"):
+                    kernel = "%s-%s.bin" % \
+                        (get_bitbake_var("KERNEL_IMAGETYPE"), get_bitbake_var("INITRAMFS_LINK_NAME"))
+
+            label = source_params.get('label')
+            label_conf = "root=%s" % creator.rootdev
+            if label:
+                label_conf = "LABEL=%s" % label
+
+            grubefi_conf += "linux /%s %s rootwait %s\n" \
+                % (kernel, label_conf, bootloader.append)
+
+            if initrd:
+                initrds = initrd.split(';')
+                grubefi_conf += "initrd"
+                for rd in initrds:
+                    grubefi_conf += " /%s" % rd
+                grubefi_conf += "\n"
+
             grubefi_conf += "}\n"
 
         logger.debug("Writing grubefi config %s/hdd/boot/EFI/BOOT/grub.cfg",
@@ -117,8 +130,10 @@ class BootimgEFIPlugin(SourcePlugin):
             if not bootimg_dir:
                 raise WicError("Couldn't find DEPLOY_DIR_IMAGE, exiting")
 
-            cp_cmd = "cp %s/%s %s" % (bootimg_dir, initrd, hdddir)
-            exec_cmd(cp_cmd, True)
+            initrds = initrd.split(';')
+            for rd in initrds:
+                cp_cmd = "cp %s/%s %s" % (bootimg_dir, rd, hdddir)
+                exec_cmd(cp_cmd, True)
         else:
             logger.debug("Ignoring missing initrd")
 
@@ -143,16 +158,30 @@ class BootimgEFIPlugin(SourcePlugin):
 
         if not custom_cfg:
             # Create systemd-boot configuration using parameters from wks file
-            kernel = "/vmlinuz"
+            kernel = get_bitbake_var("KERNEL_IMAGETYPE")
+            if get_bitbake_var("INITRAMFS_IMAGE_BUNDLE") == "1":
+                if get_bitbake_var("INITRAMFS_IMAGE"):
+                    kernel = "%s-%s.bin" % \
+                        (get_bitbake_var("KERNEL_IMAGETYPE"), get_bitbake_var("INITRAMFS_LINK_NAME"))
+
+            title = source_params.get('title')
 
             boot_conf = ""
-            boot_conf += "title boot\n"
-            boot_conf += "linux %s\n" % kernel
-            boot_conf += "options LABEL=Boot root=%s %s\n" % \
-                             (creator.rootdev, bootloader.append or "")
+            boot_conf += "title %s\n" % (title if title else "boot")
+            boot_conf += "linux /%s\n" % kernel
+
+            label = source_params.get('label')
+            label_conf = "LABEL=Boot root=%s" % creator.rootdev
+            if label:
+                label_conf = "LABEL=%s" % label
+
+            boot_conf += "options %s %s\n" % \
+                             (label_conf, bootloader.append)
 
             if initrd:
-                boot_conf += "initrd /%s\n" % initrd
+                initrds = initrd.split(';')
+                for rd in initrds:
+                    boot_conf += "initrd /%s\n" % rd
 
         logger.debug("Writing systemd-boot config "
                      "%s/hdd/boot/loader/entries/boot.conf", cr_workdir)
@@ -175,14 +204,65 @@ class BootimgEFIPlugin(SourcePlugin):
 
         try:
             if source_params['loader'] == 'grub-efi':
-                cls.do_configure_grubefi(creator, cr_workdir, part)
+                cls.do_configure_grubefi(hdddir, creator, cr_workdir, source_params)
             elif source_params['loader'] == 'systemd-boot':
                 cls.do_configure_systemdboot(hdddir, creator, cr_workdir, source_params)
             else:
-                raise WicError("unrecognized bootimg-efi-isar loader: %s" % source_params['loader'])
+                raise WicError("unrecognized bootimg-efi loader: %s" % source_params['loader'])
         except KeyError:
-            raise WicError("bootimg-efi-isar requires a loader, none specified")
+            raise WicError("bootimg-efi requires a loader, none specified")
 
+        if get_bitbake_var("IMAGE_EFI_BOOT_FILES") is None:
+            logger.debug('No boot files defined in IMAGE_EFI_BOOT_FILES')
+        else:
+            boot_files = None
+            for (fmt, id) in (("_uuid-%s", part.uuid), ("_label-%s", part.label), (None, None)):
+                if fmt:
+                    var = fmt % id
+                else:
+                    var = ""
+
+                boot_files = get_bitbake_var("IMAGE_EFI_BOOT_FILES" + var)
+                if boot_files:
+                    break
+
+            logger.debug('Boot files: %s', boot_files)
+
+            # list of tuples (src_name, dst_name)
+            deploy_files = []
+            for src_entry in re.findall(r'[\w;\-\./\*]+', boot_files):
+                if ';' in src_entry:
+                    dst_entry = tuple(src_entry.split(';'))
+                    if not dst_entry[0] or not dst_entry[1]:
+                        raise WicError('Malformed boot file entry: %s' % src_entry)
+                else:
+                    dst_entry = (src_entry, src_entry)
+
+                logger.debug('Destination entry: %r', dst_entry)
+                deploy_files.append(dst_entry)
+
+            cls.install_task = [];
+            for deploy_entry in deploy_files:
+                src, dst = deploy_entry
+                if '*' in src:
+                    # by default install files under their basename
+                    entry_name_fn = os.path.basename
+                    if dst != src:
+                        # unless a target name was given, then treat name
+                        # as a directory and append a basename
+                        entry_name_fn = lambda name: \
+                                        os.path.join(dst,
+                                                     os.path.basename(name))
+
+                    srcs = glob(os.path.join(kernel_dir, src))
+
+                    logger.debug('Globbed sources: %s', ', '.join(srcs))
+                    for entry in srcs:
+                        src = os.path.relpath(entry, kernel_dir)
+                        entry_dst_name = entry_name_fn(entry)
+                        cls.install_task.append((src, entry_dst_name))
+                else:
+                    cls.install_task.append((src, dst))
 
     @classmethod
     def do_prepare_partition(cls, part, source_params, creator, cr_workdir,
@@ -202,6 +282,23 @@ class BootimgEFIPlugin(SourcePlugin):
 
         hdddir = "%s/hdd/boot" % cr_workdir
 
+        kernel = get_bitbake_var("KERNEL_IMAGETYPE")
+        if get_bitbake_var("INITRAMFS_IMAGE_BUNDLE") == "1":
+            if get_bitbake_var("INITRAMFS_IMAGE"):
+                kernel = "%s-%s.bin" % \
+                    (get_bitbake_var("KERNEL_IMAGETYPE"), get_bitbake_var("INITRAMFS_LINK_NAME"))
+
+        install_cmd = "install -m 0644 %s/%s %s/%s" % \
+            (staging_kernel_dir, kernel, hdddir, kernel)
+        exec_cmd(install_cmd)
+
+        if get_bitbake_var("IMAGE_EFI_BOOT_FILES"):
+            for src_path, dst_path in cls.install_task:
+                install_cmd = "install -m 0644 -D %s %s" \
+                              % (os.path.join(kernel_dir, src_path),
+                                 os.path.join(hdddir, dst_path))
+                exec_cmd(install_cmd)
+
         try:
             if source_params['loader'] == 'grub-efi':
                 shutil.copyfile("%s/hdd/boot/EFI/BOOT/grub.cfg" % cr_workdir,
@@ -211,52 +308,15 @@ class BootimgEFIPlugin(SourcePlugin):
                     exec_cmd(cp_cmd, True)
                 shutil.move("%s/grub.cfg" % cr_workdir,
                             "%s/hdd/boot/EFI/BOOT/grub.cfg" % cr_workdir)
-
-                distro_arch = get_bitbake_var("DISTRO_ARCH")
-                if not distro_arch:
-                    raise WicError("Couldn't find target architecture")
-
-                if distro_arch == "amd64":
-                    grub_target = 'x86_64-efi'
-                    grub_image = "bootx64.efi"
-                    grub_modules = "multiboot efi_uga iorw ata "
-                elif distro_arch == "i386":
-                    grub_target = 'i386-efi'
-                    grub_image = "bootia32.efi"
-                    grub_modules = "multiboot efi_uga iorw ata "
-                elif distro_arch == "arm64":
-                    grub_target = 'arm64-efi'
-                    grub_image = "bootaa64.efi"
-                    grub_modules = ""
-                else:
-                    raise WicError("grub-efi is incompatible with target %s" %
-                                   distro_arch)
-
-                bootimg_dir = "%s/hdd/boot" % cr_workdir
-                if not os.path.isfile("%s/EFI/BOOT/%s" \
-                                      % (bootimg_dir, grub_image)):
-
-                    # TODO: check that grub-mkimage is available
-                    grub_cmd = "grub-mkimage -p /EFI/BOOT "
-                    grub_cmd += "-O %s -o %s/EFI/BOOT/%s " \
-                                % (grub_target, bootimg_dir, grub_image)
-                    grub_cmd += "part_gpt part_msdos ntfs ntfscomp fat ext2 "
-                    grub_cmd += "normal chain boot configfile linux "
-                    grub_cmd += "search efi_gop font gfxterm gfxmenu "
-                    grub_cmd += "terminal minicmd test loadenv echo help "
-                    grub_cmd += "reboot serial terminfo iso9660 loopback tar "
-                    grub_cmd += "memdisk ls search_fs_uuid udf btrfs xfs lvm "
-                    grub_cmd += "reiserfs regexp " + grub_modules
-                    exec_cmd(grub_cmd)
             elif source_params['loader'] == 'systemd-boot':
                 for mod in [x for x in os.listdir(kernel_dir) if x.startswith("systemd-")]:
                     cp_cmd = "cp %s/%s %s/EFI/BOOT/%s" % (kernel_dir, mod, hdddir, mod[8:])
                     exec_cmd(cp_cmd, True)
             else:
-                raise WicError("unrecognized bootimg-efi-isar loader: %s" %
+                raise WicError("unrecognized bootimg-efi loader: %s" %
                                source_params['loader'])
         except KeyError:
-            raise WicError("bootimg-efi-isar requires a loader, none specified")
+            raise WicError("bootimg-efi requires a loader, none specified")
 
         startup = os.path.join(kernel_dir, "startup.nsh")
         if os.path.exists(startup):
@@ -280,12 +340,14 @@ class BootimgEFIPlugin(SourcePlugin):
         # dosfs image, created by mkdosfs
         bootimg = "%s/boot.img" % cr_workdir
 
-        dosfs_cmd = "mkdosfs -n efi -i %s -C %s %d" % \
-                    (part.fsuuid, bootimg, blocks)
-        exec_cmd(dosfs_cmd)
+        label = part.label if part.label else "ESP"
+
+        dosfs_cmd = "mkdosfs -n %s -i %s -C %s %d" % \
+                    (label, part.fsuuid, bootimg, blocks)
+        exec_native_cmd(dosfs_cmd, native_sysroot)
 
         mcopy_cmd = "mcopy -i %s -s %s/* ::/" % (bootimg, hdddir)
-        exec_cmd(mcopy_cmd, True)
+        exec_native_cmd(mcopy_cmd, native_sysroot)
 
         chmod_cmd = "chmod 644 %s" % bootimg
         exec_cmd(chmod_cmd)
