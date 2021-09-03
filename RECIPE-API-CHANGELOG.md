@@ -292,3 +292,12 @@ Migrate your patches so they can be applied with "git am", or
 
 Kernel image name for arm64 platforms is vmlinux now. Image format was
 not changed (uncompressed executable) but now it is named correctly.
+
+### wic plugins for efi and pcbios use seperate /boot partition
+
+It used to depend on the bootloader whether stuff was in in the root partition or in the boot partition, now it will always be in the boot partition.
+
+Kernel update with "apt-get" will not work since bootloader configuration will
+not be updated. It used to "kind of work" for grub and efi, that hack is gone.
+
+When using the plugins it is advised to name the partition "/boot" and to exclude boot from the follwing rootfs to not waste space.
