@@ -73,6 +73,25 @@ addtask patch after do_adjust_git before do_dpkg_build
 
 SRC_APT ?= ""
 
+# filter out all "apt://" URIs out of SRC_URI and stick them into SRC_APT
+python() {
+    src_uri = (d.getVar('SRC_URI') or "").split()
+    if len(src_uri) == 0:
+        return
+
+    prefix = "apt://"
+    new_src_uri = []
+    src_apt = []
+    for u in src_uri:
+        if u.startswith(prefix):
+            src_apt.append(u[len(prefix) :])
+        else:
+            new_src_uri.append(u)
+
+    d.setVar('SRC_URI', ' '.join(new_src_uri))
+    d.prependVar('SRC_APT', ' '.join(src_apt))
+}
+
 do_apt_fetch() {
     if [ -z "${@d.getVar("SRC_APT", True).strip()}" ]; then
         return 0
