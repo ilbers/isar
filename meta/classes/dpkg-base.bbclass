@@ -76,8 +76,6 @@ SRC_APT ?= ""
 # filter out all "apt://" URIs out of SRC_URI and stick them into SRC_APT
 python() {
     src_uri = (d.getVar('SRC_URI') or "").split()
-    if len(src_uri) == 0:
-        return
 
     prefix = "apt://"
     new_src_uri = []
@@ -90,12 +88,14 @@ python() {
 
     d.setVar('SRC_URI', ' '.join(new_src_uri))
     d.prependVar('SRC_APT', ' '.join(src_apt))
+
+    if d.getVar('SRC_APT').strip() == '':
+        d.setVarFlag('do_apt_fetch', 'noexec', '1')
+        d.setVarFlag('do_apt_unpack', 'noexec', '1')
+        d.setVarFlag('do_cleanall_apt', 'noexec', '1')
 }
 
 do_apt_fetch() {
-    if [ -z "${@d.getVar("SRC_APT", True).strip()}" ]; then
-        return 0
-    fi
     dpkg_do_mounts
     E="${@ isar_export_proxies(d)}"
     sudo -E chroot ${BUILDCHROOT_DIR} /usr/bin/apt-get update \
@@ -118,9 +118,6 @@ do_apt_fetch[lockfiles] += "${REPO_ISAR_DIR}/isar.lock"
 do_apt_fetch[depends] = "${BUILDCHROOT_DEP}"
 
 do_apt_unpack() {
-    if [ -z "${@d.getVar("SRC_APT", True).strip()}" ]; then
-        return 0
-    fi
     rm -rf ${S}
     dpkg_do_mounts
     E="${@ isar_export_proxies(d)}"
@@ -144,9 +141,6 @@ addtask apt_unpack after do_apt_fetch before do_patch
 addtask cleanall_apt before do_cleanall
 do_cleanall_apt[nostamp] = "1"
 do_cleanall_apt() {
-    if [ -z "${@d.getVar("SRC_APT", True).strip()}" ]; then
-        return 0
-    fi
     for uri in "${SRC_APT}"; do
         rm -rf "${DEBSRCDIR}"/"${DISTRO}"/"$uri"
     done
