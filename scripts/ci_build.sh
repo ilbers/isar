@@ -43,6 +43,7 @@ TARGETS_SET="\
             mc:nand-ubi-demo-buster:isar-image-ubi \
             mc:rpi-stretch:isar-image-base \
             mc:qemuamd64-focal:isar-image-base \
+            mc:virtualbox-ova-buster:isar-image-base \
             "
           # qemu-user-static of <= buster too old to build that
           # mc:qemuarm64-buster:isar-image-base

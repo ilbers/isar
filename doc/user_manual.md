@@ -454,6 +454,7 @@ Isar can generate various images types for specific machine. The type of the ima
  - `rpi-sdimg` - A complete, partitioned Raspberry Pi SD card image (default option for the `rpi` machine).
  - `wic-img` - A full disk image with user-specified partitions created and populated using the wic tool.
  - `ubi-img` - A image for use on mtd nand partitions employing UBI
+ - `vm-img` - A image for use on VirtualBox or VMware
 
 ---
 
