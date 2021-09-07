@@ -37,6 +37,7 @@ TARGETS_SET="\
             mc:qemuamd64-stretch:isar-image-base \
             mc:qemuamd64-buster:isar-image-base \
             mc:qemuamd64-buster-tgz:isar-image-base \
+            mc:qemuamd64-buster-cpiogz:isar-image-base \
             mc:qemuamd64-buster:isar-initramfs \
             mc:qemumipsel-stretch:isar-image-base \
             mc:qemumipsel-buster:isar-image-base \

@@ -50,6 +50,7 @@ BBMULTICONFIG = " \
     qemuamd64-stretch \
     qemuamd64-buster \
     qemuamd64-buster-tgz \
+    qemuamd64-buster-cpiogz \
     qemuamd64-bullseye \
     container-amd64-stretch \
     container-amd64-buster \
