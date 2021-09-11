@@ -196,19 +196,22 @@ if [ -n "$REPRO_BUILD" ]; then
     sed -i -e 's/ISAR_USE_CACHED_BASE_REPO ?= "1"/#ISAR_USE_CACHED_BASE_REPO ?= "1"/g' conf/local.conf
     sed -i -e 's/^BB_NO_NETWORK/#BB_NO_NETWORK/g' conf/local.conf
     sed -i -e 's/^BASE_REPO_KEY/#BASE_REPO_KEY/g' conf/local.conf
-
-    # Enable use of unsigned cached base repository
     bitbake $BB_ARGS $REPRO_TARGETS_SET
     while [ -e bitbake.sock ]; do sleep 1; done
+    # Enable use of unsigned cached base repository
     sudo rm -rf tmp
     sed -i -e 's/#ISAR_USE_CACHED_BASE_REPO ?= "1"/ISAR_USE_CACHED_BASE_REPO ?= "1"/g' conf/local.conf
     sed -i -e 's/^#BB_NO_NETWORK/BB_NO_NETWORK/g' conf/local.conf
     bitbake $BB_ARGS $REPRO_TARGETS_SET
     while [ -e bitbake.sock ]; do sleep 1; done
-    # Cleanup and disable use of unsigned cached base repository
-    sudo rm -rf tmp
+    # Disable use of unsigned cached base repository
     sed -i -e 's/ISAR_USE_CACHED_BASE_REPO ?= "1"/#ISAR_USE_CACHED_BASE_REPO ?= "1"/g' conf/local.conf
     sed -i -e 's/^BB_NO_NETWORK/#BB_NO_NETWORK/g' conf/local.conf
+    # Try to build with changed configuration with no cleanup
+    bitbake $BB_ARGS $REPRO_TARGETS_SET
+    while [ -e bitbake.sock ]; do sleep 1; done
+    # Cleanup
+    sudo rm -rf tmp
 fi
 
 sed -i -e 's/^#BASE_REPO_FEATURES ?= "cache-deb-src"/BASE_REPO_FEATURES ?= "cache-deb-src"/g' conf/local.conf
