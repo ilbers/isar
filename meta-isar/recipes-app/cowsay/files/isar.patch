@@ -1,6 +1,20 @@
-diff -Nru git.old/debian/patches/isar.patch git/debian/patches/isar.patch
---- git.old/debian/patches/isar.patch	1970-01-01 01:00:00.000000000 +0100
-+++ git/debian/patches/isar.patch	2021-01-21 14:21:26.439040449 +0100
+From 8b7944ca60d4bba3644463d39c865de71e9eba05 Mon Sep 17 00:00:00 2001
+From: Henning Schild <henning.schild@siemens.com>
+Date: Fri, 22 Jan 2021 09:42:40 +0100
+Subject: [PATCH] %% original patch: isar.patch
+
+%% original patch: isar.patch
+---
+ debian/patches/isar.patch | 12 ++++++++++++
+ debian/patches/series     |  1 +
+ 2 files changed, 13 insertions(+)
+ create mode 100644 debian/patches/isar.patch
+
+diff --git a/debian/patches/isar.patch b/debian/patches/isar.patch
+new file mode 100644
+index 0000000..00dae53
+--- /dev/null
++++ b/debian/patches/isar.patch
 @@ -0,0 +1,12 @@
 +Index: git/cows/elephant.cow
 +===================================================================
@@ -14,11 +28,15 @@ diff -Nru git.old/debian/patches/isar.patch git/debian/patches/isar.patch
 + $the_cow = <<EOC;
 +  $thoughts     /\\  ___  /\\
 +   $thoughts   // \\/   \\/ \\\\
-diff -Nru git.old/debian/patches/series git/debian/patches/series
---- git.old/debian/patches/series	2021-01-21 14:20:59.404038258 +0100
-+++ git/debian/patches/series	2021-01-21 14:21:26.440040449 +0100
-@@ -18,3 +18,4 @@
+diff --git a/debian/patches/series b/debian/patches/series
+index 0206ace..dfa29f9 100644
+--- a/debian/patches/series
++++ b/debian/patches/series
+@@ -18,3 +18,4 @@ suse_cow
  utf8_width
  moofasa-tabs
  03-ansi_code_width_color_widechar.patch
 +isar.patch
+-- 
+2.31.1
+
