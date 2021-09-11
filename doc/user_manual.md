@@ -787,6 +787,21 @@ This approach prevents duplication of the license files in different packages.
 
 The last line in the example above adds recipe to the Isar work chain.
 
+### Compilation of sources from gbp-compatible repository
+
+gbp or git-buildpackage is a utility that supports maintaining a Debian/Ubuntu package in git. Such kind of repositories can be found on salsa. They might be useful for building unreleased or older packages and patching them. The bbclass for this approach is called `dpkg-gbp`.
+
+#### Example
+```
+inherit dpkg-gbp
+
+SRC_URI = "git://salsa.debian.org/debian/cowsay.git;protocol=https"
+SRC_URI += "file://isar.patch"
+SRCREV = "756f0c41fbf582093c0c1dff9ff77734716cb26f"
+```
+
+For these packages `git` is used as a PATCHTOOL. This means that custom patches should be in format that allows to apply them by `git am` command.
+
 ### Compilation of sources missing the debian/-directory
 
 The `debian` directory contains meta information on how to build a package from source. This is roughly speaking "configure", "compile", "install" all described in a Debian-specific way.
