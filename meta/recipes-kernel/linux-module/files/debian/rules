@@ -24,6 +24,9 @@ ifneq (,$(findstring 86,$(DEB_HOST_GNU_CPU)))
 export ARCH=x86
 endif
 
+override_dh_auto_clean:
+	$(MAKE) -C $(KDIR) M=$(PWD) clean
+
 override_dh_auto_build:
 	$(MAKE) -C $(KDIR) M=$(PWD) modules
 
