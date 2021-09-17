@@ -6,7 +6,7 @@ endif
 
 override_dh_auto_build:
 	CFLAGS= LDFLAGS= $(MAKE) $(PARALLEL_MAKE) PLATFORM=sifive/fu540 \
-		FW_PAYLOAD_PATH=/usr/lib/u-boot/sifive_fu540/u-boot.bin
+		FW_PAYLOAD_PATH=/usr/lib/u-boot/sifive_unleashed/u-boot.bin
 
 %:
 	dh $@

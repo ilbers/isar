@@ -8,7 +8,7 @@ inherit dpkg
 SRC_URI = " \
     https://github.com/riscv/opensbi/archive/v${PV}.tar.gz;downloadfilename=opensbi-${PV}.tar.gz \
     file://sifive-fu540-rules"
-SRC_URI[sha256sum] = "17e048ac765e92e15f7436b604452614cf88dc2bcbbaab18cdc024f3fdd4c575"
+SRC_URI[sha256sum] = "60f995cb3cd03e3cf5e649194d3395d0fe67499fd960a36cf7058a4efde686f0"
 
 S = "${WORKDIR}/opensbi-${PV}"
 
