@@ -138,9 +138,14 @@ python check_for_wic_warnings() {
 
 do_wic_image[file-checksums] += "${WKS_FILE_CHECKSUM}"
 python do_wic_image() {
-    bb.build.exec_func("wic_do_mounts", d)
-    bb.build.exec_func("generate_wic_image", d)
-    bb.build.exec_func("check_for_wic_warnings", d)
+    cmds = ['wic_do_mounts', 'generate_wic_image', 'check_for_wic_warnings']
+    weights = [5, 90, 5]
+    progress_reporter = bb.progress.MultiStageProgressReporter(d, weights)
+
+    for cmd in cmds:
+        progress_reporter.next_stage()
+        bb.build.exec_func(cmd, d)
+    progress_reporter.finish()
 }
 addtask wic_image before do_image after do_image_tools
 
