@@ -200,7 +200,7 @@ do_rootfs_finalize() {
 
         mountpoint -q '${ROOTFSDIR}/dev' && \
             umount -l ${ROOTFSDIR}/dev
-        mountpoint -q '${ROOTFSDIR}/sys' && \
+        mountpoint -q '${ROOTFSDIR}/proc' && \
             umount -l ${ROOTFSDIR}/proc
         mountpoint -q '${ROOTFSDIR}/sys' && \
             umount -l ${ROOTFSDIR}/sys
