@@ -138,12 +138,13 @@ python check_for_wic_warnings() {
 
 do_wic_image[file-checksums] += "${WKS_FILE_CHECKSUM}"
 python do_wic_image() {
+    bb.build.exec_func("wic_do_mounts", d)
     bb.build.exec_func("generate_wic_image", d)
     bb.build.exec_func("check_for_wic_warnings", d)
 }
 addtask wic_image before do_image after do_image_tools
 
-generate_wic_image() {
+wic_do_mounts() {
     buildchroot_do_mounts
     sudo -s <<'EOSUDO'
         ( flock 9
@@ -155,6 +156,9 @@ generate_wic_image() {
         done
         ) 9>${MOUNT_LOCKFILE}
 EOSUDO
+}
+
+generate_wic_image() {
     export FAKEROOTCMD=${FAKEROOTCMD}
     export BUILDDIR=${BUILDDIR}
     export MTOOLS_SKIP_CHECK=1
@@ -200,13 +204,4 @@ EOSUDO
     done
     rm -rf ${BUILDCHROOT_DIR}/${WICTMP}
     rm -rf ${IMAGE_ROOTFS}/../pseudo
-    sudo -s <<'EOSUDO'
-        ( flock 9
-        for dir in ${BBLAYERS} ${STAGING_DIR} ${SCRIPTSDIR} ${BITBAKEDIR}; do
-            if mountpoint -q ${BUILDCHROOT_DIR}/$dir; then
-                umount ${BUILDCHROOT_DIR}/$dir
-            fi
-        done
-        ) 9>${MOUNT_LOCKFILE}
-EOSUDO
 }
