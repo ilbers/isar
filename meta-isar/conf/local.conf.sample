@@ -155,6 +155,9 @@ BB_DISKMON_DIRS = "\
 # Isar MIRRORS in case of service unavailable
 MIRRORS ?= "git?://salsa\.debian\.org/debian/.* git://github.com/ilbers/BASENAME"
 
+# External MIRRORS in case of service unavailable
+MIRRORS += "https?://cdn\.kernel\.org/.* https://mirrors.edge.kernel.org/PATH"
+
 #
 # Shared-state files from other locations
 #
