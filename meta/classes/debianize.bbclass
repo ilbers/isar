@@ -88,6 +88,8 @@ EOF
 }
 
 deb_debianize() {
+	install -m 755 -d ${S}/debian
+
 	# create the compat-file if there is no file with that name in WORKDIR
 	if [ -f ${WORKDIR}/compat ]; then
 		install -v -m 644 ${WORKDIR}/compat ${S}/debian/compat
