@@ -12,6 +12,7 @@ ROOTFS_PACKAGES ?= ""
 # 'clean-package-cache' - delete package cache from rootfs
 # 'generate-manifest' - generate a package manifest of the rootfs into ${ROOTFS_MANIFEST_DEPLOY_DIR}
 # 'export-dpkg-status' - exports /var/lib/dpkg/status file to ${ROOTFS_DPKGSTATUS_DEPLOY_DIR}
+# 'clean-log-files' - delete log files that are not owned by packages
 ROOTFS_FEATURES ?= ""
 
 ROOTFS_APT_ARGS="install --yes -o Debug::pkgProblemResolver=yes"
@@ -211,6 +212,15 @@ rootfs_postprocess_clean_package_cache() {
     sudo -E chroot '${ROOTFSDIR}' \
         /usr/bin/apt-get clean
     sudo rm -rf "${ROOTFSDIR}/var/lib/apt/lists/"*
+}
+
+ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'clean-log-files', 'rootfs_postprocess_clean_log_files', '', d)}"
+rootfs_postprocess_clean_log_files() {
+    # Delete log files that are not owned by packages
+    sudo -E chroot '${ROOTFSDIR}' \
+        /usr/bin/find /var/log/ -type f \
+        -exec sh -c '! dpkg -S {} > /dev/null 2>&1' ';' \
+        -exec rm -f {} ';'
 }
 
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'generate-manifest', 'rootfs_generate_manifest', '', d)}"
