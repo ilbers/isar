@@ -331,23 +331,22 @@ do_bootstrap() {
         mkdir -p "${ROOTFSDIR}/etc/apt/apt.conf.d"
         install -v -m644 "${WORKDIR}/isar-apt.conf" \
                          "${ROOTFSDIR}/etc/apt/apt.conf.d/50isar.conf"
-        if [ -n "${@get_distro_needs_gpg_support(d)}" ]; then
+        find ${APT_KEYS_DIR}/ -type f | while read keyfile
+        do
             MY_GPGHOME="$(chroot "${ROOTFSDIR}" mktemp -d /tmp/gpghomeXXXXXXXXXX)"
             echo "Created temporary directory ${MY_GPGHOME} for gpg-agent"
             export GNUPGHOME="${MY_GPGHOME}"
             APT_KEY_APPEND="--homedir ${MY_GPGHOME}"
-        fi
-        find ${APT_KEYS_DIR}/ -type f | while read keyfile
-        do
+
             kfn="$(basename $keyfile)"
             cp $keyfile "${ROOTFSDIR}/tmp/$kfn"
             chroot "${ROOTFSDIR}" /usr/bin/gpg-agent --daemon -- /usr/bin/apt-key \
                 --keyring ${THIRD_PARTY_APT_KEYRING} ${APT_KEY_APPEND} add "/tmp/$kfn"
             rm "${ROOTFSDIR}/tmp/$kfn"
-        done
-        if [ -n "${MY_GPGHOME}" ]; then
+
+            echo "Removing ${MY_GPGHOME}"
             rm -rf "${ROOTFSDIR}${MY_GPGHOME}"
-        fi
+        done
 
         if [ "${@get_distro_suite(d)}" = "stretch" ] && [ "${@get_host_release().split('.')[0]}" -lt "4" ]; then
             install -v -m644 "${WORKDIR}/isar-apt-fallback.conf" \
