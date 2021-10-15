@@ -11,8 +11,6 @@ ConditionPathIsReadWrite=/etc
 Type=oneshot
 RemainAfterExit=yes
 ExecStart=/usr/bin/ssh-keygen -A
-StandardOutput=syslog
-StandardError=syslog
 
 [Install]
 WantedBy=sysinit.target
