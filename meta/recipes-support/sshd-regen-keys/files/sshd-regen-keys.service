@@ -3,6 +3,7 @@ Description=Regenerate sshd host keys
 DefaultDependencies=no
 Conflicts=shutdown.target
 After=systemd-remount-fs.service
+After=systemd-random-seed.service
 Before=shutdown.target ssh.service
 ConditionPathIsReadWrite=/etc
 
