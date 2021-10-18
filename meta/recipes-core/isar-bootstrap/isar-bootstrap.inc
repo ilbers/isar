@@ -59,12 +59,12 @@ python () {
         filename = fetcher.localpath(key)
         d.appendVar("THIRD_PARTY_APT_KEYFILES", " %s" % filename)
 
-    distro_apt_sources = d.getVar(d.getVar("DISTRO_VARS_PREFIX") + "DISTRO_APT_SOURCES", True)
+    distro_apt_sources = d.getVar(d.getVar("DISTRO_VARS_PREFIX") + "DISTRO_APT_SOURCES", True) or ""
     for file in distro_apt_sources.split():
         d.appendVar("SRC_URI", " file://%s" % bb.parse.resolve_file(file, d))
 
-    distro_apt_preferences = d.getVar(d.getVar("DISTRO_VARS_PREFIX") + "DISTRO_APT_PREFERENCES", True)
-    for file in distro_apt_sources.split():
+    distro_apt_preferences = d.getVar(d.getVar("DISTRO_VARS_PREFIX") + "DISTRO_APT_PREFERENCES", True) or ""
+    for file in distro_apt_preferences.split():
         d.appendVar("SRC_URI", " file://%s" % bb.parse.resolve_file(file, d))
 }
 
