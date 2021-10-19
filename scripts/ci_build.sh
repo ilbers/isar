@@ -14,6 +14,17 @@ export PATH=$PATH:/sbin
 # Go to Isar root
 cd "$(dirname "$0")/.."
 
+# install avocado in virtualenv in case it is not there already
+if ! command -v avocado > /dev/null; then
+    sudo apt-get update -qq
+    sudo apt-get install -y virtualenv
+    rm -rf /tmp/avocado_venv
+    virtualenv --python python3 /tmp/avocado_venv
+    source /tmp/avocado_venv/bin/activate
+    # The latest working version of Avocado framework
+    pip install avocado-framework==88.0
+fi
+
 # Get Avocado build tests path
 BUILD_TEST_DIR="$(pwd)/testsuite/build_test"
 
