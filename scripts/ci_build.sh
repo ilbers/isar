@@ -21,8 +21,7 @@ if ! command -v avocado > /dev/null; then
     rm -rf /tmp/avocado_venv
     virtualenv --python python3 /tmp/avocado_venv
     source /tmp/avocado_venv/bin/activate
-    # The latest working version of Avocado framework
-    pip install avocado-framework==88.0
+    pip install avocado-framework
 fi
 
 # Get Avocado build tests path
@@ -121,10 +120,10 @@ set -x
 mkdir -p .config/avocado
 cat <<EOF > .config/avocado/avocado.conf
 [datadir.paths]
-base_dir = $BUILD_DIR/
-test_dir = $BUILD_DIR/tests
-data_dir = $BUILD_DIR/data
-logs_dir = $BUILD_DIR/job-results
+base_dir = $(realpath $BUILD_DIR)/
+test_dir = $(realpath $BUILD_DIR)/tests
+data_dir = $(realpath $BUILD_DIR)/data
+logs_dir = $(realpath $BUILD_DIR)/job-results
 EOF
 export VIRTUAL_ENV="./"
 
