@@ -92,6 +92,8 @@ class CIBuilder(Test):
             while p1.poll() is None:
                 events = poller.poll(1000)
                 for fd, event in events:
+                    if event != select.POLLIN:
+                        continue
                     if fd == p1.stdout.fileno():
                         self.log.info(p1.stdout.readline().rstrip())
                     if fd == p1.stderr.fileno():
