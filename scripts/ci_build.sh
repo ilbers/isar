@@ -113,9 +113,6 @@ if [ -z "$REPRO_BUILD" ]; then
     TAGS="$TAGS,-repro"
 fi
 
-# the real stuff starts here, trace commands from now on
-set -x
-
 # Provide working path
 mkdir -p .config/avocado
 cat <<EOF > .config/avocado/avocado.conf
@@ -126,6 +123,9 @@ data_dir = $(realpath $BUILD_DIR)/data
 logs_dir = $(realpath $BUILD_DIR)/job-results
 EOF
 export VIRTUAL_ENV="./"
+
+# the real stuff starts here, trace commands from now on
+set -x
 
 avocado $VERBOSE run "$BUILD_TEST_DIR/build_test.py" \
     -t $TAGS --test-runner=runner --disable-sysinfo \
