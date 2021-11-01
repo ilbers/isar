@@ -3,6 +3,7 @@
 import os
 import re
 import tempfile
+import time
 
 from cibuilder import CIBuilder
 from avocado.utils import process
@@ -114,3 +115,35 @@ class CIBaseTest(CIBuilder):
 
         self.bitbake(build_dir, targets, bitbake_cmd, bb_args)
 
+
+    def perform_ccache_test(self, targets):
+        build_dir, bb_args = self.prep('Isar ccache build', targets, 0, 0)
+
+        self.deletetmp(build_dir)
+        process.run('rm -rf ' + build_dir + '/ccache', sudo=True)
+
+        with open(build_dir + '/conf/ci_build.conf', 'a') as file:
+            file.write('USE_CCACHE = "1"\n')
+            file.write('CCACHE_TOP_DIR = "${TOPDIR}/ccache"')
+
+        self.log.info('Starting build and filling ccache dir...')
+        start = time.time()
+        self.bitbake(build_dir, targets, None, bb_args)
+        first_time = time.time() - start
+        self.log.info('Non-cached build: ' + str(round(first_time)) + 's')
+
+        self.deletetmp(build_dir)
+
+        self.log.info('Starting build and using ccache dir...')
+        start = time.time()
+        self.bitbake(build_dir, targets, None, bb_args)
+        second_time = time.time() - start
+        self.log.info('Cached build: ' + str(round(second_time)) + 's')
+
+        speedup_k = 1.1
+        if first_time / second_time < speedup_k:
+            self.fail('No speedup after rebuild with ccache')
+
+        # Cleanup
+        self.deletetmp(build_dir)
+        process.run('rm -rf ' + build_dir + '/ccache', sudo=True)

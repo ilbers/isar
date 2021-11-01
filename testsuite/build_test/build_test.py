@@ -40,6 +40,17 @@ class ReproTest(CIBaseTest):
 
         self.perform_repro_test(targets, 0)
 
+class CcacheTest(CIBaseTest):
+
+    """
+    Test rebuild speed improve with ccache
+
+    :avocado: tags=ccache
+    """
+    def test_ccache_rebuild(self):
+        targets = ['mc:de0-nano-soc-buster:isar-image-base']
+        self.perform_ccache_test(targets)
+
 class CrossTest(CIBaseTest):
 
     """
