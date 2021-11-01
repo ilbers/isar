@@ -24,6 +24,10 @@ python __anonymous() {
 MOUNT_LOCKFILE = "${BUILDCHROOT_DIR}.lock"
 
 buildchroot_do_mounts() {
+    if [ "${USE_CCACHE}" = "1" ]; then
+        mkdir -p ${CCACHE_DIR}
+    fi
+
     sudo -s <<'EOSUDO'
         ( flock 9
         set -e
@@ -32,6 +36,11 @@ buildchroot_do_mounts() {
             mount --bind '${REPO_ISAR_DIR}/${DISTRO}' '${BUILDCHROOT_DIR}/isar-apt'
         mountpoint -q '${BUILDCHROOT_DIR}/downloads' ||
             mount --bind '${DL_DIR}' '${BUILDCHROOT_DIR}/downloads'
+        if [ "${USE_CCACHE}" = "1" ]; then
+            mkdir -p '${BUILDCHROOT_DIR}/ccache'
+            mountpoint -q '${BUILDCHROOT_DIR}/ccache' ||
+                mount --bind '${CCACHE_DIR}' '${BUILDCHROOT_DIR}/ccache'
+        fi
         mountpoint -q '${BUILDCHROOT_DIR}/dev' ||
             mount --rbind /dev '${BUILDCHROOT_DIR}/dev'
         mount --make-rslave '${BUILDCHROOT_DIR}/dev'

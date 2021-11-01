@@ -227,3 +227,8 @@ USER_isar[flags] += "clear-text-password"
 
 # Uncomment the below line to debug WIC.
 # WIC_CREATE_EXTRA_ARGS += "-D"
+
+# Uncomment this to use ccache for custom packages
+#USE_CCACHE = "1"
+# Uncomment and set own top level ccache directory to share between builds
+#CCACHE_TOP_DIR ?= "${TMPDIR}/ccache"

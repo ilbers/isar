@@ -14,4 +14,9 @@ for i in configure aclocal.m4 Makefile.am Makefile.in; do
     fi
 done
 
+if [ "$use_ccache" == "1" ]; then
+    export CCACHE_DIR=/ccache
+    export PATH=/usr/lib/ccache:$PATH
+fi
+
 ${GBP_PREFIX}dpkg-buildpackage -a$target_arch -d --source-option=-I

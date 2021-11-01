@@ -17,6 +17,7 @@ fi
 
 # Create human-readable names
 target_arch=$2
+use_ccache=$3
 
 set_arch="--host-arch $target_arch"
 

@@ -33,5 +33,5 @@ dpkg_runbuild() {
     E="${@ isar_export_proxies(d)}"
     export PARALLEL_MAKE="${PARALLEL_MAKE}"
     sudo -E chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} \
-         /isar/build.sh ${PP}/${PPS} ${PACKAGE_ARCH}
+         /isar/build.sh ${PP}/${PPS} ${PACKAGE_ARCH} ${USE_CCACHE}
 }

@@ -32,6 +32,7 @@ BUILDCHROOT_PREINSTALL_COMMON = " \
     make \
     debhelper \
     autotools-dev \
+    ccache \
     dpkg \
     locales \
     docbook-to-man \
