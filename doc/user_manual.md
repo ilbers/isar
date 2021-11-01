@@ -18,6 +18,7 @@ Copyright (C) 2016-2019, ilbers GmbH
  - [Add a New Image Type](#add-a-new-image-type)
  - [Add a Custom Application](#add-a-custom-application)
  - [Enabling Cross-compilation](#isar-cross-compilation)
+ - [Using ccache for custom packages](#using-ccache-for-custom-packages)
  - [Create an ISAR SDK root filesystem](#create-an-isar-sdk-root-filesystem)
  - [Create a containerized Isar SDK root filesystem](#create-a-containerized-isar-sdk-root-filesystem)
  - [Creation of local apt repo caching upstream Debian packages](#creation-of-local-apt-repo-caching-upstream-debian-packages)
@@ -910,6 +911,22 @@ Just like OpenEmbedded, Isar supports a devshell target for all dpkg package
 recipes. This target opens a terminal inside the buildchroot that runs the
 package build. To invoke it, just call
 `bitbake mc:${MACHINE}-${DISTRO}:<package_name> -c devshell`.
+
+
+## Using ccache for custom packages
+
+While base system is created from binary Debian repositories, some user
+packages are built from sources. It's possible to reduce build time
+for such packages by enabling ccache.
+
+To enable global ccache functionality, `USE_CCACHE = "1"` can be added
+to `local.conf`. If some package requires ccache to be always disabled,
+`USE_CCACHE = "0"` can be used in the recipe despite global setup.
+
+By default, ccache directory is created inside `TMPDIR`, but it can be
+adjusted by `CCACHE_TOP_DIR` variable in `local.conf`. Ccache directory
+`CCACHE_DIR` default value is `"${CCACHE_TOP_DIR}/${DISTRO}-${DISTRO_ARCH}"`,
+that means caches for different distros and architectures are not overlapped.
 
 
 ## Create an ISAR SDK root filesystem
