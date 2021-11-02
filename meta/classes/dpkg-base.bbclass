@@ -269,3 +269,13 @@ addtask devshell after do_prepare_build
 DEVSHELL_STARTDIR ?= "${S}"
 do_devshell[dirs] = "${DEVSHELL_STARTDIR}"
 do_devshell[nostamp] = "1"
+
+python do_devshell_nodeps() {
+    bb.build.exec_func('do_devshell', d)
+}
+
+# devshell may be placed after do_instell_builddeps in downstream classes.
+# devshell_nodeps will always stay right after do_prepare_build.
+addtask devshell_nodeps after do_prepare_build
+do_devshell_nodeps[dirs] = "${DEVSHELL_STARTDIR}"
+do_devshell_nodeps[nostamp] = "1"
