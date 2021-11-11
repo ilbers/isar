@@ -21,7 +21,7 @@
 THISDIR = "${@os.path.dirname(d.getVar('FILE', True))}"
 FILESPATH = "${@base_set_filespath(["${FILE_DIRNAME}/${PF}", "${FILE_DIRNAME}/${P}", "${FILE_DIRNAME}/${PN}", "${FILE_DIRNAME}/files", "${FILE_DIRNAME}"], d)}"
 
-OE_IMPORTS += "os sys time oe.path oe.patch"
+OE_IMPORTS += "os sys time oe.path oe.patch oe.sstatesig oe.utils"
 OE_IMPORTS[type] = "list"
 
 def oe_import(d):
