@@ -214,6 +214,31 @@ python do_dpkg_build() {
 
 addtask dpkg_build
 
+SSTATETASKS += "do_dpkg_build"
+DPKG_SSTATE = "${WORKDIR}/dpkg-sstate"
+do_dpkg_build[dirs] += "${DPKG_SSTATE} ${S}/.."
+do_dpkg_build[cleandirs] += "${DPKG_SSTATE}"
+do_dpkg_build[sstate-plaindirs] = "${DPKG_SSTATE}"
+do_dpkg_build[sstate-interceptfuncs] = "dpkg_build_sstate_prepare"
+
+dpkg_build_sstate_prepare() {
+    test -n "$(find ${S}/.. -maxdepth 1 -name '*.deb' -print -quit)" &&
+        ln -f ${S}/../*.deb -t ${DPKG_SSTATE}
+}
+
+dpkg_build_sstate_finalize() {
+    test -n "$(find ${DPKG_SSTATE} -maxdepth 1 -name '*.deb' -print -quit)" &&
+        ln -f ${DPKG_SSTATE}/*.deb -t ${S}/..
+}
+
+python do_dpkg_build_setscene() {
+    sstate_setscene(d)
+    bb.build.exec_func('dpkg_build_sstate_finalize', d)
+}
+
+addtask dpkg_build_setscene
+do_dpkg_build_setscene[dirs] += "${S}/.."
+
 KEEP_INSTALLED_ON_CLEAN ?= "0"
 
 CLEANFUNCS += "deb_clean"
