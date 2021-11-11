@@ -244,6 +244,7 @@ do_deploy_deb() {
 }
 
 addtask deploy_deb after do_dpkg_build before do_build
+do_deploy_deb[deptask] = "do_deploy_deb"
 do_deploy_deb[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
 do_deploy_deb[dirs] = "${S}"
 

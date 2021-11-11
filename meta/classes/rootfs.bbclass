@@ -153,7 +153,7 @@ rootfs_install_pkgs_install() {
 do_rootfs_install[root_cleandirs] = "${ROOTFSDIR}"
 do_rootfs_install[vardeps] += "${ROOTFS_CONFIGURE_COMMAND} ${ROOTFS_INSTALL_COMMAND}"
 do_rootfs_install[depends] = "isar-bootstrap-${@'target' if d.getVar('ROOTFS_ARCH') == d.getVar('DISTRO_ARCH') else 'host'}:do_build"
-do_rootfs_install[deptask] = "do_deploy_deb"
+do_rootfs_install[recrdeptask] = "do_deploy_deb"
 python do_rootfs_install() {
     configure_cmds = (d.getVar("ROOTFS_CONFIGURE_COMMAND", True) or "").split()
     install_cmds = (d.getVar("ROOTFS_INSTALL_COMMAND", True) or "").split()
