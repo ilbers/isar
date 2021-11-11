@@ -212,7 +212,7 @@ python do_dpkg_build() {
         bb.utils.unlockfile(lock)
 }
 
-addtask dpkg_build before do_build
+addtask dpkg_build
 
 KEEP_INSTALLED_ON_CLEAN ?= "0"
 

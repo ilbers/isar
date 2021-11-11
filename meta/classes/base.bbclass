@@ -183,7 +183,7 @@ python do_fetch() {
         bb.fatal(str(e))
 }
 
-addtask fetch before do_build
+addtask fetch
 
 do_unpack[dirs] = "${WORKDIR}"
 
@@ -202,7 +202,7 @@ python do_unpack() {
         bb.fatal(str(e))
 }
 
-addtask unpack after do_fetch before do_build
+addtask unpack after do_fetch
 
 do_build[noexec] = "1"
 do_build () {
