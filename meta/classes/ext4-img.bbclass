@@ -21,3 +21,4 @@ do_ext4_image() {
 
 addtask ext4_image before do_image after do_image_tools
 do_ext4_image[prefuncs] = 'set_image_size'
+do_ext4_image[dirs] = "${DEPLOY_DIR_IMAGE}"

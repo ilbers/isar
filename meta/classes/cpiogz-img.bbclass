@@ -19,3 +19,4 @@ do_cpiogz_image() {
 }
 
 addtask cpiogz_image before do_image after do_image_tools
+do_cpiogz_image[dirs] = "${DEPLOY_DIR_IMAGE}"

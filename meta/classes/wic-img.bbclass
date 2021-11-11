@@ -139,6 +139,7 @@ python check_for_wic_warnings() {
 }
 
 do_wic_image[file-checksums] += "${WKS_FILE_CHECKSUM}"
+do_wic_image[dirs] = "${DEPLOY_DIR_IMAGE}"
 python do_wic_image() {
     cmds = ['wic_do_mounts', 'generate_wic_image', 'check_for_wic_warnings']
     weights = [5, 90, 5]

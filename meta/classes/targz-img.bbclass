@@ -12,3 +12,4 @@ do_targz_image() {
 }
 
 addtask targz_image before do_image after do_image_tools
+do_targz_image[dirs] = "${DEPLOY_DIR_IMAGE}"

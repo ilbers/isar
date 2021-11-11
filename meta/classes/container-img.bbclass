@@ -6,6 +6,7 @@
 # This class provides the task 'containerize_rootfs'
 # to create container images containing the target rootfs.
 
+do_container_image[dirs] = "${DEPLOY_DIR_IMAGE}"
 do_container_image[stamp-extra-info] = "${DISTRO}-${MACHINE}"
 do_container_image[vardeps] += "CONTAINER_FORMATS"
 do_container_image(){

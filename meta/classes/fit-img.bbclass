@@ -26,3 +26,4 @@ do_fit_image() {
     sudo chown $(id -u):$(id -g) '${DEPLOY_DIR_IMAGE}/${FIT_IMAGE_FILE}'
 }
 addtask fit_image before do_image after do_image_tools do_transform_template
+do_fit_image[dirs] = "${DEPLOY_DIR_IMAGE}"

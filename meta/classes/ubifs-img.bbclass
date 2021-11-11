@@ -29,3 +29,4 @@ do_ubifs_image() {
 }
 
 addtask ubifs_image before do_image after do_image_tools
+do_ubifs_image[dirs] = "${DEPLOY_DIR_IMAGE}"

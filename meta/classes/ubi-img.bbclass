@@ -29,3 +29,4 @@ do_ubi_image() {
     sudo chown $(id -u):$(id -g) '${DEPLOY_DIR_IMAGE}/${UBI_IMAGE_FILE}'
 }
 addtask ubi_image before do_image after do_image_tools do_transform_template
+do_ubi_image[dirs] = "${DEPLOY_DIR_IMAGE}"
