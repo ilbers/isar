@@ -5,6 +5,9 @@ WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}/${PV}-${PR}"
 STAMP = "${STAMPS_DIR}/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}/${PV}-${PR}"
 STAMPCLEAN = "${STAMPS_DIR}/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}/*-*"
 
+# Sstate also needs to be machine-specific
+SSTATE_MANIFESTS = "${TMPDIR}/sstate-control/${MACHINE}-${DISTRO}-${DISTRO_ARCH}"
+
 INITRAMFS_INSTALL ?= ""
 INITRAMFS_PREINSTALL ?= ""
 INITRAMFS_ROOTFS ?= "${WORKDIR}/rootfs"

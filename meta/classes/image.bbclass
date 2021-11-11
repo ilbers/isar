@@ -8,6 +8,9 @@ WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}-${IMAGE_SUFF
 STAMP = "${STAMPS_DIR}/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}-${IMAGE_SUFFIX}/${PV}-${PR}"
 STAMPCLEAN = "${STAMPS_DIR}/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}-${IMAGE_SUFFIX}/*-*"
 
+# Sstate also needs to be machine-specific
+SSTATE_MANIFESTS = "${TMPDIR}/sstate-control/${MACHINE}-${DISTRO}-${DISTRO_ARCH}"
+
 IMAGE_INSTALL ?= ""
 IMAGE_FSTYPES ?= "${@ d.getVar("IMAGE_TYPE", True) if d.getVar("IMAGE_TYPE", True) else "ext4-img"}"
 IMAGE_ROOTFS ?= "${WORKDIR}/rootfs"
