@@ -398,6 +398,30 @@ EOSUDO
 
 addtask bootstrap before do_build after do_generate_keyrings
 
+SSTATETASKS += "do_bootstrap"
+BOOTSTRAP_SSTATE = "${WORKDIR}/bootstrap-sstate"
+do_bootstrap[dirs] += "${BOOTSTRAP_SSTATE}"
+do_bootstrap[cleandirs] += "${BOOTSTRAP_SSTATE}"
+do_bootstrap[sstate-plaindirs] = "${BOOTSTRAP_SSTATE}"
+do_bootstrap[sstate-interceptfuncs] = "bootstrap_sstate_prepare"
+
+bootstrap_sstate_prepare() {
+    sudo tar -C $(dirname "${ROOTFSDIR}") -cpf ${BOOTSTRAP_SSTATE}/bootstrap.tar --one-file-system $(basename "${ROOTFSDIR}")
+}
+
+bootstrap_sstate_finalize() {
+    sudo tar -C $(dirname "${ROOTFSDIR}") -xpf ${BOOTSTRAP_SSTATE}/bootstrap.tar
+    sudo ln -Tfsr "${ROOTFSDIR}" "${DEPLOY_ISAR_BOOTSTRAP}"
+}
+
+python do_bootstrap_setscene() {
+    sstate_setscene(d)
+    bb.build.exec_func('bootstrap_sstate_finalize', d)
+}
+
+addtask do_bootstrap_setscene
+do_bootstrap_setscene[dirs] = "${DEPLOY_DIR_BOOTSTRAP}"
+
 CLEANFUNCS = "clean_deploy"
 clean_deploy() {
     rm -f "${DEPLOY_ISAR_BOOTSTRAP}"
