@@ -27,7 +27,7 @@ MACHINE ??= "qemuarm"
 # generation of buildchroot environment and target root filesystem.
 #
 # This sets the default distribution configuration:
-DISTRO ??= "debian-stretch"
+DISTRO ??= "debian-bullseye"
 DISTRO_ARCH ??= "armhf"
 
 #
