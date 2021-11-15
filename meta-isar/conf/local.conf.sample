@@ -61,7 +61,7 @@ BBMULTICONFIG = " \
     qemuriscv64-sid-ports \
     bananapi-buster \
     de0-nano-soc-buster \
-    hikey-stretch \
+    hikey-bullseye \
     nand-ubi-demo-buster \
     nanopi-neo-buster \
     stm32mp15x-buster \
