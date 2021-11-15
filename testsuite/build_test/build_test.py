@@ -141,7 +141,8 @@ class NoCrossTest(CIBaseTest):
             'mc:qemuamd64-bullseye:isar-image-base',
             'mc:qemuarm-bullseye:isar-image-base',
             'mc:qemui386-bullseye:isar-image-base',
-            'mc:qemumipsel-bullseye:isar-image-base'
+            'mc:qemumipsel-bullseye:isar-image-base',
+            'mc:hikey-bullseye:isar-image-base'
                   ]
 
         try:
