@@ -1,2 +1,2 @@
 deb	http://deb.debian.org/debian-ports sid main
-deb-src	http://deb.debian.org/debian-ports sid main
+deb-src	http://deb.debian.org/debian sid main
