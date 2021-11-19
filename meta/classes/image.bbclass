@@ -1,10 +1,12 @@
 # This software is a part of ISAR.
 # Copyright (C) 2015-2017 ilbers GmbH
 
+# Replace possible multiple spaces with single underscores
+IMAGE_SUFFIX = "${@'_'.join(d.getVar("IMAGE_TYPE", True).split())}"
 # Make workdir and stamps machine-specific without changing common PN target
-WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}-${IMAGE_TYPE}/${PV}-${PR}"
-STAMP = "${STAMPS_DIR}/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}-${IMAGE_TYPE}/${PV}-${PR}"
-STAMPCLEAN = "${STAMPS_DIR}/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}-${IMAGE_TYPE}/*-*"
+WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}-${IMAGE_SUFFIX}/${PV}-${PR}"
+STAMP = "${STAMPS_DIR}/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}-${IMAGE_SUFFIX}/${PV}-${PR}"
+STAMPCLEAN = "${STAMPS_DIR}/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}-${IMAGE_SUFFIX}/*-*"
 
 IMAGE_INSTALL ?= ""
 IMAGE_TYPE    ?= "ext4-img"
