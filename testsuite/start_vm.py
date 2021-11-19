@@ -28,7 +28,7 @@ def format_qemu_cmdline(arch, build, distro, out, pid):
     extra_args = ''
     cpu = ['']
 
-    image_type = get_bitbake_var(bb_output, 'IMAGE_TYPE').split()[0]
+    image_type = get_bitbake_var(bb_output, 'IMAGE_FSTYPES').split()[0]
     deploy_dir_image = get_bitbake_var(bb_output, 'DEPLOY_DIR_IMAGE')
     base = 'ubuntu' if distro in ['focal', 'bionic'] else 'debian'
     if image_type == 'ext4-img':

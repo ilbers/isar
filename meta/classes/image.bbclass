@@ -2,14 +2,14 @@
 # Copyright (C) 2015-2017 ilbers GmbH
 
 # Replace possible multiple spaces with single underscores
-IMAGE_SUFFIX = "${@'_'.join(d.getVar("IMAGE_TYPE", True).split())}"
+IMAGE_SUFFIX = "${@'_'.join(d.getVar("IMAGE_FSTYPES", True).split())}"
 # Make workdir and stamps machine-specific without changing common PN target
 WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}-${IMAGE_SUFFIX}/${PV}-${PR}"
 STAMP = "${STAMPS_DIR}/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}-${IMAGE_SUFFIX}/${PV}-${PR}"
 STAMPCLEAN = "${STAMPS_DIR}/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}-${IMAGE_SUFFIX}/*-*"
 
 IMAGE_INSTALL ?= ""
-IMAGE_TYPE    ?= "ext4-img"
+IMAGE_FSTYPES ?= "${@ d.getVar("IMAGE_TYPE", True) if d.getVar("IMAGE_TYPE", True) else "ext4-img"}"
 IMAGE_ROOTFS ?= "${WORKDIR}/rootfs"
 
 IMAGE_INSTALL += "${@ ("linux-image-" + d.getVar("KERNEL_NAME", True)) if d.getVar("KERNEL_NAME", True) else ""}"
@@ -38,6 +38,8 @@ BUILDROOT_WORK = "${BUILDCHROOT_DIR}${PP_WORK}"
 python(){
     if (d.getVar('IMAGE_TRANSIENT_PACKAGES')):
         bb.warn("IMAGE_TRANSIENT_PACKAGES is set and no longer supported")
+    if (d.getVar('IMAGE_TYPE')):
+        bb.warn("IMAGE_TYPE is deprecated, please switch to IMAGE_FSTYPES")
 }
 
 def cfg_script(d):
@@ -222,4 +224,4 @@ EOSUDO
 addtask rootfs_finalize before do_rootfs after do_rootfs_postprocess
 
 # Last so that the image type can overwrite tasks if needed
-inherit ${IMAGE_TYPE}
+inherit ${IMAGE_FSTYPES}

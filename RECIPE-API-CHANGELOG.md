@@ -301,3 +301,8 @@ Kernel update with "apt-get" will not work since bootloader configuration will
 not be updated. It used to "kind of work" for grub and efi, that hack is gone.
 
 When using the plugins it is advised to name the partition "/boot" and to exclude boot from the follwing rootfs to not waste space.
+
+### Rename IMAGE_TYPE to IMAGE_FSTYPES
+
+The variable is renamed to get closer to OE/Poky variables naming. The old naming
+will still also work, but with deprecation warning shown.

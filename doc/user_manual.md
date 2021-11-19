@@ -210,7 +210,7 @@ tmp/deploy/images/rpi/isar-image-base.rpi-sdimg
 
 ### Generate full disk image
 
-A bootable disk image is generated if `wic-img` is listed in IMAGE_TYPE.
+A bootable disk image is generated if `wic-img` is listed in IMAGE_FSTYPES.
 Behind the scenes a tool called `wic` is used to assemble the images.
 It is controlled by a `.wks` file which you can choose with changing WKS_FILE.
 Some examples in the tree use that feature already.
@@ -249,7 +249,7 @@ https://github.com/intel/bmap-tools
 
 ### Generate container image with root filesystem
 
-A runnable container image is generated if IMAGE_TYPE variable includes
+A runnable container image is generated if IMAGE_FSTYPES variable includes
 'container-img'.
 Getting a container image can be the main purpose of an Isar configuration, 
 but not only.
@@ -290,8 +290,8 @@ The resulting container image archives (only for `docker-archive` and
 For one-shot builds (use `local.conf` otherwise):
 
 ```
-export BB_ENV_EXTRAWHITE="$BB_ENV_EXTRAWHITE IMAGE_TYPE CONTAINER_FORMAT"
-export IMAGE_TYPE="container-img"
+export BB_ENV_EXTRAWHITE="$BB_ENV_EXTRAWHITE IMAGE_FSTYPES CONTAINER_FORMAT"
+export IMAGE_FSTYPES="container-img"
 export CONTAINER_FORMAT="docker-archive"
 ```
 
@@ -452,7 +452,9 @@ Please refer to `Add a Custom Application` section for more information about wr
 
 ## Image Type Selection
 
-Isar can generate various images types for specific machine. The type of the image to be generated may be specified through the `IMAGE_TYPE` variable. Currently, the following image types are provided:
+Isar can generate various images types for specific machine. The type of the
+image to be generated may be specified through the `IMAGE_FSTYPES` variable.
+Currently, the following image types are provided:
 
  - `ext4` - Raw ext4 filesystem image (default option for `qemuarm` machine).
  - `rpi-sdimg` - A complete, partitioned Raspberry Pi SD card image (default option for the `rpi` machine).
@@ -460,7 +462,7 @@ Isar can generate various images types for specific machine. The type of the ima
  - `ubi-img` - A image for use on mtd nand partitions employing UBI
  - `vm-img` - A image for use on VirtualBox or VMware
 
-There are several image types can be listed in `IMAGE_TYPE` divided by space.
+There are several image types can be listed in `IMAGE_FSTYPES` divided by space.
 
 Instead of setting multiple image types in one target, user can also use
 [multiconfig](#building-target-images-for-multiple-configurations) feature and specify
@@ -519,7 +521,7 @@ Every machine is described in its configuration file. The file defines the follo
  - `KERNEL_IMAGE` - The name of kernel binary that it installed to `/boot` folder in target filesystem. This variable is used by Isar to extract the kernel binary and put it into the deploy folder. This makes sense for embedded devices, where kernel and root filesystem are written to different flash partitions. This variable is optional.
  - `INITRD_IMAGE` - The name of `ramdisk` binary. The meaning of this variable is similar to `KERNEL_IMAGE`. This variable is optional.
  - `MACHINE_SERIAL` - The name of serial device that will be used for console output.
- - `IMAGE_TYPE` - The types of images to be generated for this machine.
+ - `IMAGE_FSTYPES` - The types of images to be generated for this machine.
 
 Below is an example of machine configuration file for `Raspberry Pi` board:
 ```
@@ -528,7 +530,7 @@ IMAGE_PREINSTALL = "linux-image-rpi-rpfv \
 KERNEL_IMAGE = "vmlinuz-4.4.0-1-rpi"
 INITRD_IMAGE = "initrd.img-4.4.0-1-rpi"
 MACHINE_SERIAL = "ttyAMA0"
-IMAGE_TYPE = "rpi-sdimg"
+IMAGE_FSTYPES = "rpi-sdimg"
 ```
 
 To add new machine user should perform the following steps:
@@ -561,7 +563,7 @@ The user may use `meta-isar/recipes-core/images` as a template for new image rec
 ### General Information
 The image recipe in Isar creates a folder with target root filesystem. Its default location is:
 ```
-tmp/work/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}-${IMAGE_TYPE}/${PV}-${PR}/rootfs
+tmp/work/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}-${IMAGE_FSTYPES}/${PV}-${PR}/rootfs
 ```
 Every image type in Isar is implemented as a `bitbake` class. The goal of these classes is to pack root filesystem folder to appropriate format.
 
@@ -584,7 +586,7 @@ The content of `do_my_image` function can be implemented either in shell or in P
 
 In the machine configuration file, set the following:
 ```
-IMAGE_TYPE = "my-image"
+IMAGE_FSTYPES = "my-image"
 ```
 
 ### Reference Classes
