@@ -6,6 +6,8 @@
 
 WKS_FILE_CHECKSUM = "${@'${WKS_FULL_PATH}:%s' % os.path.exists('${WKS_FULL_PATH}')}"
 
+WKS_FILE ??= "sdimage-efi"
+
 do_copy_wks_template[file-checksums] += "${WKS_FILE_CHECKSUM}"
 do_copy_wks_template () {
     cp -f '${WKS_TEMPLATE_PATH}' '${WORKDIR}/${WKS_TEMPLATE_FILE}'
