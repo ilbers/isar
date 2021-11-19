@@ -17,6 +17,7 @@ Copyright (C) 2016-2019, ilbers GmbH
  - [Add a New Image](#add-a-new-image)
  - [Add a New Image Type](#add-a-new-image-type)
  - [Add a Custom Application](#add-a-custom-application)
+ - [Build statistics collection](#build-statistics-collection)
  - [Enabling Cross-compilation](#isar-cross-compilation)
  - [Using ccache for custom packages](#using-ccache-for-custom-packages)
  - [Create an ISAR SDK root filesystem](#create-an-isar-sdk-root-filesystem)
@@ -871,6 +872,27 @@ from which would be the better way.
 Such single debs can be included if need be. You just need to write a recipe
 that just fetches those debs to its `WORKDIR` and deploys them. They can then
 be installed via `IMAGE_INSTALL`. Have a look at `prebuilt-deb`.
+
+---
+
+## Build statistics collection
+
+While isar is building the system, build statistics is collected in
+`tmp/buildstats/<timestamp>` directory. This functionality is implemented in
+`buildstats` class, and is enabled by `USE_BUILDSTATS= "1"` in `local.conf`.
+
+The collected statistics can be represented visually by using
+`pybootchartgui.py` script (borrowed from OpenEmbedded):
+```
+../scripts/pybootchartgui/pybootchartgui.py tmp/buildstats/20210911054429/ -f pdf -o ~/buildstats.pdf
+```
+
+NOTE: `python3-cairo` package is required for `pybootchartgui.py` to work:
+```
+sudo apt-get install python3-cairo
+```
+
+---
 
 ## Isar Cross-compilation
 
