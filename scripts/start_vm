@@ -110,6 +110,8 @@ readonly MACHINE_CONF=$ISARROOT/meta-isar/conf/machine/qemu$ARCH.conf
 eval "$(egrep 'MACHINE_SERIAL|QEMU_' $MACHINE_CONF |bb2sh)"
 
 eval $(bitbake -e mc:qemu$ARCH-$DISTRO:isar-image-base | grep "\(^IMAGE_TYPE=\|^IMAGE_FULLNAME=\)")
+# Take first image type for VM if there are several defined
+IMAGE_TYPE=$(echo "$IMAGE_TYPE" | awk '{print $1}')
 case "$IMAGE_TYPE" in
     ext4-img)
     readonly ROOTFS_IMAGE=$IMAGE_FULLNAME.ext4.img
