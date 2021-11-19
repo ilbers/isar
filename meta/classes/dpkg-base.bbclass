@@ -248,11 +248,6 @@ do_deploy_deb[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
 do_deploy_deb[dirs] = "${S}"
 
 python do_devshell() {
-    import sys
-
-    oe_lib_path = os.path.join(d.getVar('LAYERDIR_core'), 'lib')
-    sys.path.insert(0, oe_lib_path)
-
     bb.build.exec_func('dpkg_do_mounts', d)
 
     isar_export_proxies(d)

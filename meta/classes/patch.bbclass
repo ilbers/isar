@@ -92,11 +92,6 @@ def should_apply(parm, d):
 should_apply[vardepsexclude] = "DATE SRCDATE"
 
 python patch_do_patch() {
-    import sys
-
-    oe_lib_path = os.path.join(d.getVar('LAYERDIR_core'), 'lib')
-    sys.path.insert(0, oe_lib_path)
-
     import oe.patch
 
     patchsetmap = {
