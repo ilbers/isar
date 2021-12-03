@@ -17,7 +17,6 @@ fi
 
 # Create human-readable names
 target_arch=$2
-use_ccache=$3
 
 set_arch="--host-arch $target_arch"
 
@@ -28,3 +27,6 @@ cd "$1"
 export LC_ALL=C
 export LANG=C
 export LANGUAGE=C
+
+# allow for changes to the PATH variable
+export PATH=$PATH_PREPEND:$PATH

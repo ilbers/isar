@@ -32,7 +32,8 @@ addtask devshell after do_install_builddeps
 # Build package from sources using build script
 dpkg_runbuild() {
     E="${@ isar_export_proxies(d)}"
+    E="${@ isar_export_ccache(d)}"
     export PARALLEL_MAKE="${PARALLEL_MAKE}"
     sudo -E chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} \
-         /isar/build.sh ${PP}/${PPS} ${PACKAGE_ARCH} ${USE_CCACHE}
+         /isar/build.sh ${PP}/${PPS} ${PACKAGE_ARCH}
 }
