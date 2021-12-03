@@ -278,10 +278,12 @@ python do_devshell() {
     bb.build.exec_func('dpkg_do_mounts', d)
 
     isar_export_proxies(d)
+    isar_export_ccache(d)
 
     buildchroot = d.getVar('BUILDCHROOT_DIR')
     pp_pps = os.path.join(d.getVar('PP'), d.getVar('PPS'))
-    termcmd = "sudo -E chroot {0} sh -c 'cd {1}; $SHELL -i'"
+    # the PATH variable is not forwarded by sudo -E.
+    termcmd = "sudo -E chroot {0} sh -c 'cd {1}; export PATH=$PATH_PREPEND:$PATH; $SHELL -i'"
     oe_terminal(termcmd.format(buildchroot, pp_pps), "Isar devshell", d)
 
     bb.build.exec_func('dpkg_undo_mounts', d)

@@ -166,6 +166,11 @@ def isar_export_proxies(d):
 
     return bb.utils.export_proxies(d)
 
+def isar_export_ccache(d):
+    if d.getVar('USE_CCACHE') == '1':
+        os.environ['CCACHE_DIR'] = '/ccache'
+        os.environ['PATH_PREPEND'] = '/usr/lib/ccache'
+
 do_fetch[dirs] = "${DL_DIR}"
 do_fetch[file-checksums] = "${@bb.fetch.get_checksum_file_list(d)}"
 do_fetch[vardeps] += "SRCREV"
