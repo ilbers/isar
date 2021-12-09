@@ -174,21 +174,6 @@ class RebuildTest(CIBaseTest):
         finally:
             self.restorefile(dpkgbase_file)
 
-class WicTest(CIBaseTest):
-
-    """
-    Test wic --exclude-path
-
-    :avocado: tags=wic,fast,full
-    """
-    def test_wic_exclude(self):
-        # TODO: remove hardcoded filenames
-        wks_path = '/scripts/lib/wic/canned-wks/sdimage-efi.wks'
-        wic_path = '/tmp/deploy/images/qemuamd64/isar-image-base-debian-stretch-qemuamd64.wic.img'
-
-        self.perform_wic_test('mc:qemuamd64-stretch:isar-image-base',
-                              wks_path, wic_path)
-
 class ContainerImageTest(CIBaseTest):
 
     """

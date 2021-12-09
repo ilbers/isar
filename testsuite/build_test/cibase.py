@@ -78,35 +78,6 @@ class CIBaseTest(CIBuilder):
         # Cleanup
         self.deletetmp(build_dir)
 
-    def perform_wic_test(self, targets, wks_path, wic_path):
-        cross = int(self.params.get('cross', default=0))
-        build_dir, bb_args = self.prep('WIC exclude build', targets, cross, 1)
-
-        layerdir_isar = self.getlayerdir('isar')
-
-        wks_file = layerdir_isar + wks_path
-        wic_img = build_dir + wic_path
-
-        if not os.path.isfile(wic_img):
-            self.fail('No build started before: ' + wic_img + ' not exist')
-
-        self.backupfile(wks_file)
-        self.backupmove(wic_img)
-
-        with open(wks_file, 'r') as file:
-            lines = file.readlines()
-        with open(wks_file, 'w') as file:
-            for line in lines:
-                file.write(re.sub(r'part \/ ', 'part \/ --exclude-path usr ',
-                                  line))
-
-        try:
-            self.bitbake(build_dir, targets, None, bb_args)
-        finally:
-            self.restorefile(wks_file)
-
-        self.restorefile(wic_img)
-
     def perform_container_test(self, targets, bitbake_cmd):
         cross = int(self.params.get('cross', default=0))
         build_dir, bb_args = self.prep('Isar Container', targets, cross, 1)
