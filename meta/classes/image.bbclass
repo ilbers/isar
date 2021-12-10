@@ -198,12 +198,12 @@ do_rootfs_finalize() {
                 -maxdepth 1 -name 'qemu-*-static' -type f -delete
 
         mountpoint -q '${ROOTFSDIR}/isar-apt' && \
-            umount -l ${ROOTFSDIR}/isar-apt
-        rmdir --ignore-fail-on-non-empty ${ROOTFSDIR}/isar-apt
+            umount -l ${ROOTFSDIR}/isar-apt && \
+            rmdir --ignore-fail-on-non-empty ${ROOTFSDIR}/isar-apt
 
         mountpoint -q '${ROOTFSDIR}/base-apt' && \
-            umount -l ${ROOTFSDIR}/base-apt
-        rmdir --ignore-fail-on-non-empty ${ROOTFSDIR}/base-apt
+            umount -l ${ROOTFSDIR}/base-apt && \
+            rmdir --ignore-fail-on-non-empty ${ROOTFSDIR}/base-apt
 
         mountpoint -q '${ROOTFSDIR}/dev' && \
             umount -l ${ROOTFSDIR}/dev
