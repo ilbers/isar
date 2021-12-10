@@ -95,6 +95,7 @@ do_create_ova() {
     image_do_mounts
 
     sudo -Es chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} <<'EOSUDO'
+        set -e
         export DISK_SIZE_BYTES=$(qemu-img info -f vmdk "${VIRTUAL_MACHINE_DISK}" \
                                  | gawk 'match($0, /^virtual size:.*\(([0-9]+) bytes\)/, a) {print a[1]}')
         export DISK_UUID=$(uuidgen)

@@ -59,6 +59,7 @@ __EOF__
 
     # Install configuration into image:
     sudo -E -s <<'EOSUDO'
+        set -e
         cat '${WORKDIR}/locale.gen' >> '${ROOTFSDIR}/etc/locale.gen'
         cat '${WORKDIR}/locale.default' > '${ROOTFSDIR}/etc/default/locale'
         cat '${WORKDIR}/locale.nopurge' > '${ROOTFSDIR}/etc/locale.nopurge'

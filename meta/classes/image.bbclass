@@ -189,6 +189,7 @@ addtask deploy before do_build after do_image
 
 do_rootfs_finalize() {
     sudo -s <<'EOSUDO'
+        set -e
         test -e "${ROOTFSDIR}/chroot-setup.sh" && \
             "${ROOTFSDIR}/chroot-setup.sh" "cleanup" "${ROOTFSDIR}"
         rm -f "${ROOTFSDIR}/chroot-setup.sh"

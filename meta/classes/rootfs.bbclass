@@ -30,6 +30,7 @@ export LC_ALL = "C"
 rootfs_do_mounts[weight] = "3"
 rootfs_do_mounts() {
     sudo -s <<'EOSUDO'
+        set -e
         mountpoint -q '${ROOTFSDIR}/dev' || \
             mount --rbind /dev '${ROOTFSDIR}/dev'
         mount --make-rslave '${ROOTFSDIR}/dev'
@@ -80,6 +81,7 @@ ROOTFS_CONFIGURE_COMMAND += "rootfs_configure_isar_apt"
 rootfs_configure_isar_apt[weight] = "2"
 rootfs_configure_isar_apt() {
     sudo -s <<'EOSUDO'
+    set -e
 
     mkdir -p '${ROOTFSDIR}/etc/apt/sources.list.d'
     echo 'deb [trusted=yes] file:///isar-apt ${DEBDISTRONAME} main' > \

@@ -22,6 +22,7 @@ is_not_part_of_current_build() {
 
 debsrc_do_mounts() {
     sudo -s <<EOSUDO
+    set -e
     mkdir -p "${1}/deb-src"
     mountpoint -q "${1}/deb-src" || \
     mount --bind "${DEBSRCDIR}" "${1}/deb-src"
@@ -30,6 +31,7 @@ EOSUDO
 
 debsrc_undo_mounts() {
     sudo -s <<EOSUDO
+    set -e
     mkdir -p "${1}/deb-src"
     mountpoint -q "${1}/deb-src" && \
     umount -l "${1}/deb-src"

@@ -44,6 +44,7 @@ BUILDCHROOT_PREINSTALL_COMMON = " \
 
 rootfs_do_mounts_append() {
     sudo -s <<'EOSUDO'
+    set -e
     mkdir -p '${BUILDCHROOT_DIR}/downloads'
     mountpoint -q '${BUILDCHROOT_DIR}/downloads' || \
         mount --bind '${DL_DIR}' '${BUILDCHROOT_DIR}/downloads'

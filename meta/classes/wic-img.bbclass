@@ -156,6 +156,7 @@ wic_do_mounts() {
     buildchroot_do_mounts
     sudo -s <<'EOSUDO'
         ( flock 9
+        set -e
         for dir in ${BBLAYERS} ${STAGING_DIR} ${SCRIPTSDIR} ${BITBAKEDIR}; do
             mkdir -p ${BUILDCHROOT_DIR}/$dir
             if ! mountpoint ${BUILDCHROOT_DIR}/$dir >/dev/null 2>&1; then
