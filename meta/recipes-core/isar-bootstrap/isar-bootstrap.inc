@@ -163,7 +163,6 @@ def generate_distro_sources(d):
                     yield parsed
 
 def get_distro_primary_source_entry(d):
-    apt_sources_list = get_aptsources_list(d)
     for source in generate_distro_sources(d):
         if source[0] == "deb":
             return source[2:]
