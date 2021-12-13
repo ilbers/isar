@@ -167,7 +167,7 @@ def get_distro_primary_source_entry(d):
     for source in generate_distro_sources(d):
         if source[0] == "deb":
             return source[2:]
-    return ["", "", ""]
+    bb.fatal('Invalid apt sources list')
 
 def get_distro_have_https_source(d):
     return any(source[2].startswith("https://") for source in generate_distro_sources(d))
