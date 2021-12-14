@@ -4,4 +4,4 @@
 # what we delete needs to be in sync with the dpkg configuration we ship
 
 rm -rf /usr/share/man/*
-find /usr/share/doc/ -type f ! -name "copyright" ! -name "changelog.Debian.*" -exec rm -rf {} \;
+find /usr/share/doc/ -type f ! -name "copyright" ! -name "changelog.*" -exec rm -rf {} \;

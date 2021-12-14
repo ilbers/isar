@@ -8,4 +8,4 @@ path-exclude=/usr/share/doc/*
 path-include=/usr/share/doc/*/copyright
 
 # ... and Debian changelogs
-path-include=/usr/share/doc/*/changelog.Debian.*
+path-include=/usr/share/doc/*/changelog.*
