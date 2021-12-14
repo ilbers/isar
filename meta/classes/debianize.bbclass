@@ -14,20 +14,19 @@ MAINTAINER ??= "Unknown maintainer <unknown@example.com>"
 
 deb_add_changelog() {
 	changelog_v="${CHANGELOG_V}"
+	timestamp=0
 	if [ -f ${S}/debian/changelog ]; then
 		if [ ! -f ${WORKDIR}/changelog.orig ]; then
 			cp ${S}/debian/changelog ${WORKDIR}/changelog.orig
 		fi
 		orig_version=$(dpkg-parsechangelog -l ${WORKDIR}/changelog.orig -S Version)
 		changelog_v=$(echo "${changelog_v}" | sed 's/<orig-version>/'${orig_version}'/')
+		orig_date=$(dpkg-parsechangelog -l ${WORKDIR}/changelog.orig -S Date)
+		orig_seconds=$(date --date="${orig_date}" +'%s')
+		timestamp=$(expr ${orig_seconds} + 42)
 	fi
 
-	timestamp=$(find ${S}/ -type f -not -path "${S}/debian/*" -printf "%T@\n"|sort -n -r|head -n 1)
-	if [ -n "${timestamp}" ]; then
-		date=$(LANG=C date -R -d @${timestamp})
-	else
-		date=$(LANG=C date -R)
-	fi
+	date=$(LANG=C date -R -d @${timestamp})
 	cat <<EOF > ${S}/debian/changelog
 ${PN} (${changelog_v}) UNRELEASED; urgency=low
 
