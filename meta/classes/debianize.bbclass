@@ -34,6 +34,12 @@ ${PN} (${changelog_v}) UNRELEASED; urgency=low
 
  -- ${MAINTAINER}  ${date}
 EOF
+	if [ -f ${WORKDIR}/changelog.orig ]; then
+		# prepend our entry to the original changelog
+		echo >> ${S}/debian/changelog
+		cat ${WORKDIR}/changelog.orig >> ${S}/debian/changelog
+	fi
+
 	if [ -f ${WORKDIR}/changelog ]; then
 		latest_version=$(dpkg-parsechangelog -l ${WORKDIR}/changelog -S Version)
 		if [ "${latest_version}" = "${changelog_v}" ]; then
