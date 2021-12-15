@@ -8,10 +8,10 @@
 
 do_container_image[dirs] = "${DEPLOY_DIR_IMAGE}"
 do_container_image[stamp-extra-info] = "${DISTRO}-${MACHINE}"
-do_container_image[vardeps] += "CONTAINER_FORMATS"
+do_container_image[vardeps] += "CONTAINER_IMAGE_FORMATS"
 do_container_image(){
-    bbdebug 1 "Generate container image in these formats: ${CONTAINER_FORMATS}"
-    containerize_rootfs "${IMAGE_ROOTFS}" "${CONTAINER_FORMATS}"
+    bbdebug 1 "Generate container image in these formats: ${CONTAINER_IMAGE_FORMATS}"
+    containerize_rootfs "${IMAGE_ROOTFS}" "${CONTAINER_IMAGE_FORMATS}"
 }
 
 addtask container_image before do_image after do_image_tools

@@ -310,3 +310,7 @@ will still also work, but with deprecation warning shown.
 ### Change default "NAME:TAG" when building container images
 
 The "NAME" used to be rather static and the TAG was always "latest", now the values are derived from recipe variables PN, PV, PR.
+
+### Renamed variable CONTAINER_FORMATS to CONTAINER_IMAGE_FORMATS
+
+The meaning remains the same, just the name changed.

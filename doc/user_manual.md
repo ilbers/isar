@@ -260,7 +260,7 @@ requirements (e.g. libraries) can be easily resolved in a containerized
 environment.
 
 Container images can be generated in different formats, selected with the 
-variable `CONTAINER_FORMAT`. One or more (whitespace separated) of following 
+variable `CONTAINER_IMAGE_FORMATS`. One or more (whitespace separated) of following 
 options can be given:
  - `docker-archive`: (default) an archive containing a Docker image that can 
    be imported with [`docker load`](https://docs.docker.com/engine/reference/commandline/load)
@@ -282,7 +282,7 @@ The resulting container image archives (only for `docker-archive` and
 `oci-archive`) are made available as 
 `tmp/deploy/images/${MACHINE}/${DISTRO}-${DISTRO_ARCH}-${container_format}.tar.xz` 
 (being `container_format` each one of the formats specified in 
-`CONTAINER_FORMAT`).
+`CONTAINER_IMAGE_FORMATS`).
 
 ### Example
 
@@ -291,9 +291,9 @@ The resulting container image archives (only for `docker-archive` and
 For one-shot builds (use `local.conf` otherwise):
 
 ```
-export BB_ENV_EXTRAWHITE="$BB_ENV_EXTRAWHITE IMAGE_FSTYPES CONTAINER_FORMAT"
+export BB_ENV_EXTRAWHITE="$BB_ENV_EXTRAWHITE IMAGE_TYPE CONTAINER_IMAGE_FORMATS"
 export IMAGE_FSTYPES="container-img"
-export CONTAINER_FORMAT="docker-archive"
+export CONTAINER_IMAGE_FORMATS="docker-archive"
 ```
 
  - Trigger creation of container image from root filesystem

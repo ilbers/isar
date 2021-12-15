@@ -5,7 +5,7 @@
 #
 # This class extends the image.bbclass for containerizing the root filesystem.
 
-CONTAINER_FORMATS ?= "docker-archive"
+CONTAINER_IMAGE_FORMATS ?= "docker-archive"
 CONTAINER_IMAGE_NAME ?= "${PN}-${DISTRO}-${DISTRO_ARCH}"
 CONTAINER_IMAGE_TAG ?= "${PV}-${PR}"
 
@@ -45,7 +45,7 @@ containerize_rootfs() {
 
     # convert the OCI container image to the desired format
     image_name="${container_name_prefix}${CONTAINER_IMAGE_NAME}"
-    for image_type in ${CONTAINER_FORMATS} ; do
+    for image_type in ${CONTAINER_IMAGE_FORMATS} ; do
         image_archive="${DEPLOY_DIR_IMAGE}/${image_name}-${tag}-${image_type}.tar"
         bbdebug 1 "Creating container image type: ${image_type}"
         case "${image_type}" in
