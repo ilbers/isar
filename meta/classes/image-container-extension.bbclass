@@ -10,7 +10,7 @@ CONTAINER_FORMATS ?= "docker-archive"
 containerize_rootfs() {
     local cmd="/bin/dash"
     local empty_tag="empty"
-    local full_tag="latest"
+    local tag="latest"
     local oci_img_dir="${WORKDIR}/oci-image"
     local rootfs="$1"
     local rootfs_id="$2"
@@ -33,7 +33,7 @@ containerize_rootfs() {
 
     # pack container image
     bbdebug 1 "pack container image"
-    sudo umoci repack --image "${oci_img_dir}:${full_tag}" \
+    sudo umoci repack --image "${oci_img_dir}:${tag}" \
         "${oci_img_dir}_unpacked"
     sudo umoci remove --image "${oci_img_dir}:${empty_tag}"
     sudo rm -rf "${oci_img_dir}_unpacked"
@@ -49,14 +49,14 @@ containerize_rootfs() {
         case "${image_type}" in
             "docker-archive" | "oci-archive")
                 if [ "${image_type}" = "oci-archive" ] ; then
-                    target="${image_type}:${image_archive}:latest"
+                    target="${image_type}:${image_archive}:${tag}"
                 else
-                    target="${image_type}:${image_archive}:${image_name}:latest"
+                    target="${image_type}:${image_archive}:${image_name}:${tag}"
                 fi
                 rm -f "${image_archive}" "${image_archive}.xz"
                 bbdebug 2 "Converting OCI image to ${image_type}"
                 skopeo --insecure-policy copy \
-                    "oci:${oci_img_dir}:${full_tag}" "${target}"
+                    "oci:${oci_img_dir}:${tag}" "${target}"
                 bbdebug 2 "Compressing image"
                 xz -T0 "${image_archive}"
                 ;;
@@ -69,8 +69,8 @@ containerize_rootfs() {
                     die "Adding the container image to a container runtime (${image_type}) not supported if running from a container (e.g. 'kas-container')"
                 fi
                 skopeo --insecure-policy copy \
-                    "oci:${oci_img_dir}:${full_tag}" \
-                    "${image_type}:${image_name}:latest"
+                    "oci:${oci_img_dir}:${tag}" \
+                    "${image_type}:${image_name}:${tag}"
                 ;;
             *)
                 die "Unsupported format for containerize_rootfs: ${image_type}"
