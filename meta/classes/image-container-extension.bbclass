@@ -18,7 +18,7 @@ containerize_rootfs() {
 
     # prepare OCI container image skeleton
     bbdebug 1 "prepare OCI container image skeleton"
-    rm -rf "${oci_img_dir}"
+    sudo rm -rf "${oci_img_dir}" "${oci_img_dir}_unpacked"
     sudo umoci init --layout "${oci_img_dir}"
     sudo umoci new --image "${oci_img_dir}:${empty_tag}"
     sudo umoci config --image "${oci_img_dir}:${empty_tag}" \
