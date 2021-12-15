@@ -80,7 +80,7 @@ do_populate_sdk() {
     # generate the SDK in all the desired container formats
     if [ -n "${sdk_container_formats}" ] ; then
         bbnote "Generating SDK container in ${sdk_container_formats} format"
-        containerize_rootfs "${SDKCHROOT_DIR}" "sdk-${DISTRO}-${DISTRO_ARCH}" "${sdk_container_formats}"
+        containerize_rootfs "${SDKCHROOT_DIR}" "${sdk_container_formats}" "sdk-"
     fi
 }
 

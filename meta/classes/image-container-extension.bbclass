@@ -6,15 +6,17 @@
 # This class extends the image.bbclass for containerizing the root filesystem.
 
 CONTAINER_FORMATS ?= "docker-archive"
+CONTAINER_IMAGE_NAME ?= "${PN}-${DISTRO}-${DISTRO_ARCH}"
+CONTAINER_IMAGE_TAG ?= "${PV}-${PR}"
 
 containerize_rootfs() {
     local cmd="/bin/dash"
     local empty_tag="empty"
-    local tag="latest"
+    local tag="${CONTAINER_IMAGE_TAG}"
     local oci_img_dir="${WORKDIR}/oci-image"
     local rootfs="$1"
-    local rootfs_id="$2"
-    local container_formats="$3"
+    local container_formats="$2"
+    local container_name_prefix="$3"
 
     # prepare OCI container image skeleton
     bbdebug 1 "prepare OCI container image skeleton"
@@ -42,9 +44,9 @@ containerize_rootfs() {
     sudo chown --recursive $(id -u):$(id -g) "${oci_img_dir}"
 
     # convert the OCI container image to the desired format
-    image_name="isar-${rootfs_id}"
+    image_name="${container_name_prefix}${CONTAINER_IMAGE_NAME}"
     for image_type in ${CONTAINER_FORMATS} ; do
-        image_archive="${DEPLOY_DIR_IMAGE}/${rootfs_id}-${image_type}.tar"
+        image_archive="${DEPLOY_DIR_IMAGE}/${image_name}-${tag}-${image_type}.tar"
         bbdebug 1 "Creating container image type: ${image_type}"
         case "${image_type}" in
             "docker-archive" | "oci-archive")

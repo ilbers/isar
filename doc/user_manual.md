@@ -305,14 +305,14 @@ bitbake mc:qemuarm-buster:isar-image-base
  - Load the container image into the Docker Daemon
 
 ```
-docker load -i build/tmp/deploy/images/qemuarm/debian-buster-armhf-docker-archive.tar.xz
+docker load -i build/tmp/deploy/images/qemuarm/isar-image-base-debian-buster-armhf-1.0-r0-docker-archive.tar.xz
 ```
 
  - Run a container using the container image (following commands starting with 
    `#~:` are to be run in the container)
 
 ```
-docker run --rm -ti --volume "$(pwd):/build" isar-buster-armhf:latest
+docker run --rm -ti --volume "$(pwd):/build" isar-image-base-debian-buster-armhf:1.0-r0
 ```
 
 ---
@@ -1139,14 +1139,14 @@ bitbake -c do_populate_sdk mc:qemuarm-buster:isar-image-base
  - Load the SDK container image into the Docker Daemon
 
 ```
-docker load -i build/tmp/deploy/images/qemuarm/sdk-debian-buster-armhf-docker-archive.tar.xz
+docker load -i build/tmp/deploy/images/qemuarm/sdk-isar-image-base-debian-buster-armhf-1.0-r0-docker-archive.tar.xz
 ```
 
  - Run a container using the SDK container image (following commands starting 
    with `#~:` are to be run in the container)
 
 ```
-docker run --rm -ti --volume "$(pwd):/build" isar-sdk-buster-armhf:latest
+docker run --rm -ti --volume "$(pwd):/build" sdk-isar-image-base-debian-buster-armhf:1.0-r0
 ```
 
  - Check that cross toolchains are installed

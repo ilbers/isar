@@ -306,3 +306,7 @@ When using the plugins it is advised to name the partition "/boot" and to exclud
 
 The variable is renamed to get closer to OE/Poky variables naming. The old naming
 will still also work, but with deprecation warning shown.
+
+### Change default "NAME:TAG" when building container images
+
+The "NAME" used to be rather static and the TAG was always "latest", now the values are derived from recipe variables PN, PV, PR.
