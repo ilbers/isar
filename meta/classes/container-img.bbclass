@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: MIT
 #
-# This class provides the task 'containerize_rootfs'
+# This class provides the task 'container_image'
 # to create container images containing the target rootfs.
 
 do_container_image[dirs] = "${DEPLOY_DIR_IMAGE}"
