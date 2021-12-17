@@ -53,7 +53,6 @@ OVA_VRAM ?= "64"
 OVA_FIRMWARE ?= "efi"
 OVA_ACPI ?= "true"
 OVA_3D_ACCEL ?= "false"
-OVA_CLIPBOARD ?= "bidirectional"
 OVA_SHA_ALG = "1"
 
 # Generate random MAC addresses just as VirtualBox does, the format is
@@ -65,7 +64,7 @@ macgen() {
 }
 
 OVA_VARS = "OVA_NAME OVA_MEMORY OVA_NUMBER_OF_CPU OVA_VRAM \
-            OVA_FIRMWARE OVA_ACPI OVA_3D_ACCEL OVA_CLIPBOARD \
+            OVA_FIRMWARE OVA_ACPI OVA_3D_ACCEL \
             OVA_SHA_ALG VIRTUAL_MACHINE_IMAGE_FILE"
 
 # the ovf template is updated with ensubst
@@ -91,8 +90,6 @@ do_create_ova() {
     rm -f '${DEPLOY_DIR_IMAGE}/${OVA_NAME}.mf'
 
     export PRIMARY_MAC=$(macgen)
-    export SECONDARY_MAC=$(macgen)
-    export DISK_NAME=$(basename -s .vmdk ${VIRTUAL_MACHINE_DISK})
     export LAST_CHANGE=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
     export OVA_FIRMWARE_UPPERCASE=$(echo ${OVA_FIRMWARE} | tr '[a-z]' '[A-Z]')
 
