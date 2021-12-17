@@ -7,8 +7,10 @@
 inherit buildchroot
 inherit wic-img
 
-IMAGER_BUILD_DEPS += "vm-template"
-IMAGER_INSTALL += "qemu-utils gawk uuid-runtime vm-template"
+FILESEXTRAPATHS_prepend := "${FILE_DIRNAME}/vm-img:"
+SRC_URI += "file://vm-template.ovf.tmpl"
+
+IMAGER_INSTALL += "qemu-utils gawk uuid-runtime"
 
 # virtual machine disk settings
 SOURCE_IMAGE_FILE ?= "${IMAGE_FULLNAME}.wic.img"
@@ -101,7 +103,7 @@ do_create_ova() {
         export DISK_UUID=$(uuidgen)
         export VM_UUID=$(uuidgen)
         # create ovf
-        cat /usr/share/vm-template/vm-template.ovf.tmpl | envsubst > ${PP_DEPLOY}/${OVA_NAME}.ovf
+        cat ${PP_WORK}/vm-template.ovf.tmpl | envsubst > ${PP_DEPLOY}/${OVA_NAME}.ovf
         tar -cvf ${PP_DEPLOY}/${OVA_NAME}.ova -C ${PP_DEPLOY} ${OVA_NAME}.ovf
 
         # VirtualBox needs here a manifest file. VMware does accept that format.
