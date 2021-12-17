@@ -65,7 +65,7 @@ BBMULTICONFIG = " \
     nand-ubi-demo-buster \
     nanopi-neo-buster \
     stm32mp15x-buster \
-    virtualbox-ova-buster \
+    virtualbox-bullseye \
     rpi-stretch \
     sifive-fu540-sid-ports \
     qemuarm64-focal \

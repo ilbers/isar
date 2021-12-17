@@ -126,8 +126,7 @@ class NoCrossTest(CIBaseTest):
             'mc:qemumipsel-buster:isar-image-base',
             'mc:nand-ubi-demo-buster:isar-image-ubi',
             'mc:rpi-stretch:isar-image-base',
-            'mc:qemuamd64-focal:isar-image-base',
-            'mc:virtualbox-ova-buster:isar-image-base'
+            'mc:qemuamd64-focal:isar-image-base'
                   ]
 
         # Cleanup after cross build
@@ -142,7 +141,8 @@ class NoCrossTest(CIBaseTest):
             'mc:qemuarm-bullseye:isar-image-base',
             'mc:qemui386-bullseye:isar-image-base',
             'mc:qemumipsel-bullseye:isar-image-base',
-            'mc:hikey-bullseye:isar-image-base'
+            'mc:hikey-bullseye:isar-image-base',
+            'mc:virtualbox-bullseye:isar-image-base'
                   ]
 
         try:
