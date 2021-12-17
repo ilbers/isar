@@ -67,20 +67,9 @@ OVA_VARS = "OVA_NAME OVA_MEMORY OVA_NUMBER_OF_CPU OVA_VRAM \
             OVA_FIRMWARE OVA_ACPI OVA_3D_ACCEL \
             OVA_SHA_ALG VIRTUAL_MACHINE_IMAGE_FILE"
 
-# the ovf template is updated with ensubst
-# this function adds the variable from OVA_VARS to the environment
-python update_environment() {
-    template_vars = (d.getVar('OVA_VARS', True) or "").split()
-    if len(template_vars) == 0:
-        return
+TEMPLATE_FILES += "${OVF_TEMPLATE_FILE}"
+TEMPLATE_VARS += "${OVA_VARS}"
 
-    for varname in template_vars:
-        value = d.getVar(varname, True)
-        if value:
-            os.environ.update({varname: value})
-}
-
-do_create_ova[prefuncs] += "update_environment"
 do_create_ova() {
     if [ ! ${VIRTUAL_MACHINE_IMAGE_TYPE} = "vmdk" ]; then
         exit 0
@@ -93,6 +82,7 @@ do_create_ova() {
     export LAST_CHANGE=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
     export OVA_FIRMWARE_UPPERCASE=$(echo ${OVA_FIRMWARE} | tr '[a-z]' '[A-Z]')
 
+    export OVF_TEMPLATE_STAGE2=$(echo ${OVF_TEMPLATE_FILE} | sed 's/.tmpl$//' )
     image_do_mounts
 
     sudo -Es chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} <<'EOSUDO'
@@ -102,7 +92,7 @@ do_create_ova() {
         export DISK_UUID=$(uuidgen)
         export VM_UUID=$(uuidgen)
         # create ovf
-        cat ${PP_WORK}/${OVF_TEMPLATE_FILE} | envsubst > ${PP_DEPLOY}/${OVA_NAME}.ovf
+        cat ${PP_WORK}/${OVF_TEMPLATE_STAGE2} | envsubst > ${PP_DEPLOY}/${OVA_NAME}.ovf
         tar -cvf ${PP_DEPLOY}/${OVA_NAME}.ova -C ${PP_DEPLOY} ${OVA_NAME}.ovf
 
         # VirtualBox needs here a manifest file. VMware does accept that format.
