@@ -37,10 +37,10 @@ CONVERSION_OPTIONS = "${@set_convert_options(d)}"
 do_convert_wic() {
     rm -f '${DEPLOY_DIR_IMAGE}/${VIRTUAL_MACHINE_IMAGE_FILE}'
     image_do_mounts
-    bbnote "Creating ${VIRTUAL_MACHINE_IMAGE_FILE} from ${WIC_IMAGE_FILE}"
+    bbnote "Creating ${VIRTUAL_MACHINE_IMAGE_FILE} from ${SOURCE_IMAGE_FILE}"
     sudo -E  chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} \
     /usr/bin/qemu-img convert -f raw -O ${VIRTUAL_MACHINE_IMAGE_TYPE} ${CONVERSION_OPTIONS} \
-        '${PP_DEPLOY}/${SOURCE_IMAGE_FILE}' '${PP_DEPLOY}/${VIRTUAL_MACHINE_IMAGE_FILE}'
+        '${PP_DEPLOY}/${SOURCE_IMAGE_FILE}' '${VIRTUAL_MACHINE_DISK}'
 }
 
 addtask convert_wic before do_build after do_wic_image do_copy_boot_files do_install_imager_deps do_transform_template
