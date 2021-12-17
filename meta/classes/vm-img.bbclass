@@ -8,7 +8,8 @@ inherit buildchroot
 inherit wic-img
 
 FILESEXTRAPATHS_prepend := "${FILE_DIRNAME}/vm-img:"
-SRC_URI += "file://vm-template.ovf.tmpl"
+OVF_TEMPLATE_FILE ?= "vm-img-virtualbox.ovf.tmpl"
+SRC_URI += "file://${OVF_TEMPLATE_FILE}"
 
 IMAGER_INSTALL += "qemu-utils gawk uuid-runtime"
 
@@ -93,6 +94,7 @@ do_create_ova() {
     export SECONDARY_MAC=$(macgen)
     export DISK_NAME=$(basename -s .vmdk ${VIRTUAL_MACHINE_DISK})
     export LAST_CHANGE=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
+    export OVA_FIRMWARE_UPPERCASE=$(echo ${OVA_FIRMWARE} | tr '[a-z]' '[A-Z]')
 
     image_do_mounts
 
@@ -103,7 +105,7 @@ do_create_ova() {
         export DISK_UUID=$(uuidgen)
         export VM_UUID=$(uuidgen)
         # create ovf
-        cat ${PP_WORK}/vm-template.ovf.tmpl | envsubst > ${PP_DEPLOY}/${OVA_NAME}.ovf
+        cat ${PP_WORK}/${OVF_TEMPLATE_FILE} | envsubst > ${PP_DEPLOY}/${OVA_NAME}.ovf
         tar -cvf ${PP_DEPLOY}/${OVA_NAME}.ova -C ${PP_DEPLOY} ${OVA_NAME}.ovf
 
         # VirtualBox needs here a manifest file. VMware does accept that format.
