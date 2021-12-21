@@ -252,7 +252,7 @@ class ContainerSdkTest(CIBaseTest):
     """
     @skipUnless(UMOCI_AVAILABLE and SKOPEO_AVAILABLE, 'umoci/skopeo not found')
     def test_container_sdk(self):
-        targets = ['mc:container-amd64-stretch:isar-image-base']
+        targets = ['mc:container-amd64-bullseye:isar-image-base']
 
         self.init()
         self.perform_build_test(targets, bitbake_cmd='do_populate_sdk', container=True)
