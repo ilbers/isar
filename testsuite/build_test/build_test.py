@@ -133,6 +133,7 @@ class NoCrossTest(CIBaseTest):
             'mc:rpi-stretch:isar-image-base',
             'mc:hikey-bullseye:isar-image-base',
             'mc:virtualbox-bullseye:isar-image-base',
+            'mc:bananapi-bullseye:isar-image-base',
             'mc:qemuamd64-focal:isar-image-base'
                   ]
 
