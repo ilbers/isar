@@ -67,6 +67,7 @@ BBMULTICONFIG = " \
     qemuriscv64-sid-ports \
     bananapi-buster \
     de0-nano-soc-buster \
+    de0-nano-soc-bullseye \
     hikey-bullseye \
     hikey-bookworm \
     nand-ubi-demo-buster \

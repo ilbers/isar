@@ -26,7 +26,7 @@ class ReproTest(CIBaseTest):
     """
     def test_repro_signed(self):
         targets = [
-            'mc:de0-nano-soc-buster:isar-image-base',
+            'mc:de0-nano-soc-bullseye:isar-image-base',
             'mc:qemuarm64-stretch:isar-image-base'
                   ]
 
@@ -48,7 +48,7 @@ class CcacheTest(CIBaseTest):
     :avocado: tags=ccache
     """
     def test_ccache_rebuild(self):
-        targets = ['mc:de0-nano-soc-buster:isar-image-base']
+        targets = ['mc:de0-nano-soc-bullseye:isar-image-base']
         self.perform_ccache_test(targets)
 
 class CrossTest(CIBaseTest):
@@ -65,7 +65,7 @@ class CrossTest(CIBaseTest):
             'mc:qemuarm-bullseye:isar-image-base',
             'mc:qemuarm64-stretch:isar-image-base',
             'mc:qemuamd64-stretch:isar-image-base',
-            'mc:de0-nano-soc-buster:isar-image-base',
+            'mc:de0-nano-soc-bullseye:isar-image-base',
             'mc:stm32mp15x-buster:isar-image-base',
             'mc:rpi-stretch:isar-image-base'
                   ]
