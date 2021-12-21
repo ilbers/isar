@@ -14,4 +14,4 @@ for i in configure aclocal.m4 Makefile.am Makefile.in; do
     fi
 done
 
-${GBP_PREFIX}dpkg-buildpackage -a$target_arch -d --source-option=-I
+${GBP_PREFIX}dpkg-buildpackage -a$target_arch --source-option=-I
