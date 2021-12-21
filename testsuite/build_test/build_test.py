@@ -27,15 +27,15 @@ class ReproTest(CIBaseTest):
     def test_repro_signed(self):
         targets = [
             'mc:de0-nano-soc-bullseye:isar-image-base',
-            'mc:qemuarm64-stretch:isar-image-base'
+            'mc:qemuarm64-bullseye:isar-image-base'
                   ]
 
         self.perform_repro_test(targets, 1)
 
     def test_repro_unsigned(self):
         targets = [
-            'mc:qemuamd64-stretch:isar-image-base',
-            'mc:qemuarm-stretch:isar-image-base'
+            'mc:qemuamd64-bullseye:isar-image-base',
+            'mc:qemuarm-bullseye:isar-image-base'
                   ]
 
         self.perform_repro_test(targets, 0)
@@ -60,11 +60,9 @@ class CrossTest(CIBaseTest):
     """
     def test_cross(self):
         targets = [
-            'mc:qemuarm-stretch:isar-image-base',
             'mc:qemuarm-buster:isar-image-base',
             'mc:qemuarm-bullseye:isar-image-base',
-            'mc:qemuarm64-stretch:isar-image-base',
-            'mc:qemuamd64-stretch:isar-image-base',
+            'mc:qemuarm64-bullseye:isar-image-base',
             'mc:de0-nano-soc-bullseye:isar-image-base',
             'mc:stm32mp15x-buster:isar-image-base',
             'mc:rpi-stretch:isar-image-base'
@@ -100,7 +98,7 @@ class SdkTest(CIBaseTest):
     :avocado: tags=sdk,fast,full
     """
     def test_sdk(self):
-        targets = ['mc:qemuarm-stretch:isar-image-base']
+        targets = ['mc:qemuarm-bullseye:isar-image-base']
 
         self.perform_build_test(targets, 1, 'do_populate_sdk')
 
@@ -113,20 +111,17 @@ class NoCrossTest(CIBaseTest):
     """
     def test_nocross(self):
         targets = [
-            'mc:qemuarm-stretch:isar-image-base',
             'mc:qemuarm-buster:isar-image-base',
             'mc:qemuarm-bullseye:isar-image-base',
-            'mc:qemuarm64-stretch:isar-image-base',
+            'mc:qemuarm64-bullseye:isar-image-base',
             'mc:qemui386-stretch:isar-image-base',
             'mc:qemui386-buster:isar-image-base',
             'mc:qemui386-bullseye:isar-image-base',
-            'mc:qemuamd64-stretch:isar-image-base',
             'mc:qemuamd64-buster:isar-image-base',
             'mc:qemuamd64-buster-tgz:isar-image-base',
             'mc:qemuamd64-buster-cpiogz:isar-image-base',
             'mc:qemuamd64-buster:isar-initramfs',
             'mc:qemuamd64-bullseye:isar-image-base',
-            'mc:qemumipsel-stretch:isar-image-base',
             'mc:qemumipsel-buster:isar-image-base',
             'mc:qemumipsel-bullseye:isar-image-base',
             'mc:qemuriscv64-sid-ports:isar-image-base',
@@ -180,7 +175,7 @@ class RebuildTest(CIBaseTest):
             file.write('do_fetch_append() {\n\n}')
 
         try:
-            self.perform_build_test('mc:qemuamd64-stretch:isar-image-base',
+            self.perform_build_test('mc:qemuamd64-bullseye:isar-image-base',
                                     is_cross_build, None)
         finally:
             self.restorefile(dpkgbase_file)
