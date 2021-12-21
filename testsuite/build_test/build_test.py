@@ -62,6 +62,7 @@ class CrossTest(CIBaseTest):
         targets = [
             'mc:qemuarm-stretch:isar-image-base',
             'mc:qemuarm-buster:isar-image-base',
+            'mc:qemuarm-bullseye:isar-image-base',
             'mc:qemuarm64-stretch:isar-image-base',
             'mc:qemuamd64-stretch:isar-image-base',
             'mc:de0-nano-soc-buster:isar-image-base',
@@ -74,16 +75,6 @@ class CrossTest(CIBaseTest):
     def test_cross_ubuntu(self):
         targets = [
             'mc:qemuarm64-focal:isar-image-base'
-                  ]
-
-        try:
-            self.perform_build_test(targets, 1, None)
-        except:
-            self.cancel('KFAIL')
-
-    def test_cross_bullseye(self):
-        targets = [
-            'mc:qemuarm-bullseye:isar-image-base'
                   ]
 
         try:
@@ -124,18 +115,24 @@ class NoCrossTest(CIBaseTest):
         targets = [
             'mc:qemuarm-stretch:isar-image-base',
             'mc:qemuarm-buster:isar-image-base',
+            'mc:qemuarm-bullseye:isar-image-base',
             'mc:qemuarm64-stretch:isar-image-base',
             'mc:qemui386-stretch:isar-image-base',
             'mc:qemui386-buster:isar-image-base',
+            'mc:qemui386-bullseye:isar-image-base',
             'mc:qemuamd64-stretch:isar-image-base',
             'mc:qemuamd64-buster:isar-image-base',
             'mc:qemuamd64-buster-tgz:isar-image-base',
             'mc:qemuamd64-buster-cpiogz:isar-image-base',
             'mc:qemuamd64-buster:isar-initramfs',
+            'mc:qemuamd64-bullseye:isar-image-base',
             'mc:qemumipsel-stretch:isar-image-base',
             'mc:qemumipsel-buster:isar-image-base',
+            'mc:qemumipsel-bullseye:isar-image-base',
             'mc:nand-ubi-demo-buster:isar-image-ubi',
             'mc:rpi-stretch:isar-image-base',
+            'mc:hikey-bullseye:isar-image-base',
+            'mc:virtualbox-bullseye:isar-image-base',
             'mc:qemuamd64-focal:isar-image-base'
                   ]
 
@@ -144,21 +141,6 @@ class NoCrossTest(CIBaseTest):
                        default=os.path.dirname(__file__) + '/../../build'))
 
         self.perform_build_test(targets, 0, None)
-
-    def test_nocross_bullseye(self):
-        targets = [
-            'mc:qemuamd64-bullseye:isar-image-base',
-            'mc:qemuarm-bullseye:isar-image-base',
-            'mc:qemui386-bullseye:isar-image-base',
-            'mc:qemumipsel-bullseye:isar-image-base',
-            'mc:hikey-bullseye:isar-image-base',
-            'mc:virtualbox-bullseye:isar-image-base'
-                  ]
-
-        try:
-            self.perform_build_test(targets, 0, None)
-        except:
-            self.cancel('KFAIL')
 
     def test_nocross_bookworm(self):
         targets = [
