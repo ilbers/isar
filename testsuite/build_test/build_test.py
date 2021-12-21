@@ -135,6 +135,7 @@ class NoCrossTest(CIBaseTest):
             'mc:virtualbox-bullseye:isar-image-base',
             'mc:bananapi-bullseye:isar-image-base',
             'mc:nanopi-neo-bullseye:isar-image-base',
+            'mc:stm32mp15x-bullseye:isar-image-base',
             'mc:qemuamd64-focal:isar-image-base'
                   ]
 

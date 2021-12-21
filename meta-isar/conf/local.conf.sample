@@ -75,6 +75,7 @@ BBMULTICONFIG = " \
     nanopi-neo-buster \
     nanopi-neo-bullseye \
     stm32mp15x-buster \
+    stm32mp15x-bullseye \
     virtualbox-bullseye \
     rpi-stretch \
     sifive-fu540-sid-ports \
