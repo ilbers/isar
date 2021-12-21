@@ -22,7 +22,7 @@ class ReproTest(CIBaseTest):
     """
     Test cached base repository
 
-    :avocado: tags=repro,fast,full
+    :avocado: tags=repro,full
     """
     def test_repro_signed(self):
         targets = [
