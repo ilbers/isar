@@ -129,7 +129,7 @@ class NoCrossTest(CIBaseTest):
             'mc:qemumipsel-stretch:isar-image-base',
             'mc:qemumipsel-buster:isar-image-base',
             'mc:qemumipsel-bullseye:isar-image-base',
-            'mc:nand-ubi-demo-buster:isar-image-ubi',
+            'mc:nand-ubi-demo-bullseye:isar-image-ubi',
             'mc:rpi-stretch:isar-image-base',
             'mc:hikey-bullseye:isar-image-base',
             'mc:virtualbox-bullseye:isar-image-base',
