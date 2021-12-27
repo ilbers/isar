@@ -139,6 +139,7 @@ EOF
 }
 
 do_copy_boot_files[dirs] = "${DEPLOY_DIR_IMAGE}"
+do_copy_boot_files[lockfiles] += "${DEPLOY_DIR_IMAGE}/isar.lock"
 do_copy_boot_files() {
     kernel="$(realpath -q '${IMAGE_ROOTFS}'/vmlinu[xz])"
     if [ ! -f "$kernel" ]; then
