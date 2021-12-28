@@ -1,3 +1,51 @@
+Release next
+
+Release v0.8
+
+ * Add Debian Sid Ports support
+ * Add Debian Bullseye support
+ * Drop Debian Jessie support
+ * Add Ubuntu Focal support
+ * Add RISC-V architecture support
+ * Add MIPSel architecture support
+ * Add STM32MP15x eval board target
+ * Add NanoPi NEO board target
+ * Add HiFive Unleashed board target
+ * Add qemuriscv64 virtual target
+ * Update BitBake version to 1.46.2 release
+ * Update WIC to the revision b85a09ea4
+ * Update U-Boot version to 2020.10
+ * Update linux-mainline version to 5.4.70
+ * Migrate CI to Avocado Framework
+ * Split CI on fast and full builds
+ * Add Sstate (Shared State) Cache support
+ * Add Ccache support
+ * Add deb-src caching support
+ * Add UEFI boot with systemd-boot
+ * Add CPIO image type (initramfs like filesystem) generation support
+ * Add VMWare/Virtualbox image generation support
+ * Add containerized filesystem and sdk generation support
+ * Add initramfs generation support
+ * Add multiple image types support
+ * Add Linux Kernel Selftests recipe
+ * Add prebuilt debs injecting support
+ * Add devshell and devshell_nodep targets
+ * Add git-buildpackage support
+ * Add buildstats generation and pybootchartgui
+ * Force running GPG-agent on demand
+ * Allow clear-text passwords for users
+ * Add compat architecture support via multiarch
+ * Add image versioning
+ * Add build dependencies defining support for debianization
+ * Add multiple DTBs deploying support
+ * Add BB_NO_NETWORK option
+ * Migrate to deb.debian.org in apt sources.list
+ * Add AUTOREV support for SRCREV
+ * Add support for patches in sub-directories
+ * Add rootfs postprocessing
+ * Allow downgrades when installing packages
+ * Deprecate isar-image
+
 Release v0.7
 
  * Improved CI scripts

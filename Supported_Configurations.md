@@ -4,6 +4,9 @@ Supported Configurations
 Release next
 ------------
 
+Release v0.8
+------------
+
 ### Host System : debian-jessie-amd64
 
 Not supported
