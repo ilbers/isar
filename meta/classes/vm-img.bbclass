@@ -7,7 +7,7 @@
 inherit buildchroot
 inherit wic-img
 
-FILESEXTRAPATHS_prepend := "${FILE_DIRNAME}/vm-img:"
+FILESEXTRAPATHS_prepend := "${LAYERDIR_core}/classes/vm-img:"
 OVF_TEMPLATE_FILE ?= "vm-img-virtualbox.ovf.tmpl"
 SRC_URI += "file://${OVF_TEMPLATE_FILE}"
 
