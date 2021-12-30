@@ -75,6 +75,7 @@ BBMULTICONFIG = " \
     hikey-bookworm \
     imx6-sabrelite-buster \
     imx6-sabrelite-bullseye \
+    phyboard-mira-bullseye \
     nanopi-neo-buster \
     nanopi-neo-bullseye \
     stm32mp15x-buster \

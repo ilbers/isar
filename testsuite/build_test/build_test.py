@@ -127,6 +127,7 @@ class NoCrossTest(CIBaseTest):
             'mc:qemuriscv64-sid-ports:isar-image-base',
             'mc:sifive-fu540-sid-ports:isar-image-base',
             'mc:imx6-sabrelite-bullseye:isar-image-ubi',
+            'mc:phyboard-mira-bullseye:isar-image-ubi',
             'mc:rpi-stretch:isar-image-base',
             'mc:hikey-bullseye:isar-image-base',
             'mc:virtualbox-bullseye:isar-image-base',
