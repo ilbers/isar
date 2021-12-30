@@ -233,7 +233,7 @@ USER_isar[password] = "isar"
 USER_isar[flags] += "clear-text-password"
 
 # Use buildstats by default
-USE_BUILDSTATS = "1"
+#USE_BUILDSTATS = "1"
 
 # Uncomment the below line to debug WIC.
 # WIC_CREATE_EXTRA_ARGS += "-D"
