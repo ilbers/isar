@@ -73,8 +73,8 @@ BBMULTICONFIG = " \
     de0-nano-soc-bullseye \
     hikey-bullseye \
     hikey-bookworm \
-    nand-ubi-demo-buster \
-    nand-ubi-demo-bullseye \
+    imx6-sabrelite-buster \
+    imx6-sabrelite-bullseye \
     nanopi-neo-buster \
     nanopi-neo-bullseye \
     stm32mp15x-buster \

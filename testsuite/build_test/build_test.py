@@ -126,7 +126,7 @@ class NoCrossTest(CIBaseTest):
             'mc:qemumipsel-bullseye:isar-image-base',
             'mc:qemuriscv64-sid-ports:isar-image-base',
             'mc:sifive-fu540-sid-ports:isar-image-base',
-            'mc:nand-ubi-demo-bullseye:isar-image-ubi',
+            'mc:imx6-sabrelite-bullseye:isar-image-ubi',
             'mc:rpi-stretch:isar-image-base',
             'mc:hikey-bullseye:isar-image-base',
             'mc:virtualbox-bullseye:isar-image-base',
