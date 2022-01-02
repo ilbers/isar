@@ -91,6 +91,16 @@ class CrossTest(CIBaseTest):
         except:
             self.cancel('KFAIL')
 
+    def test_cross_bookworm(self):
+        targets = [
+            'mc:qemuarm-bookworm:isar-image-base'
+                  ]
+
+        try:
+            self.perform_build_test(targets, 1, None)
+        except:
+            self.cancel('KFAIL')
+
 class SdkTest(CIBaseTest):
 
     """
@@ -150,6 +160,20 @@ class NoCrossTest(CIBaseTest):
         except:
             self.cancel('KFAIL')
 
+    def test_nocross_bookworm(self):
+        targets = [
+            'mc:qemuamd64-bookworm:isar-image-base',
+            'mc:qemuarm-bookworm:isar-image-base',
+            'mc:qemui386-bookworm:isar-image-base',
+            'mc:qemumipsel-bookworm:isar-image-base',
+            'mc:hikey-bookworm:isar-image-base'
+                  ]
+
+        try:
+            self.perform_build_test(targets, 0, None)
+        except:
+            self.cancel('KFAIL')
+
 class RebuildTest(CIBaseTest):
 
     """
@@ -186,7 +210,8 @@ class ContainerImageTest(CIBaseTest):
         targets = [
             'mc:container-amd64-stretch:isar-image-base',
             'mc:container-amd64-buster:isar-image-base',
-            'mc:container-amd64-bullseye:isar-image-base'
+            'mc:container-amd64-bullseye:isar-image-base',
+            'mc:container-amd64-bookworm:isar-image-base'
                   ]
 
         self.perform_container_test(targets, None)
