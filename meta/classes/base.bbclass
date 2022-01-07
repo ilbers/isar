@@ -237,7 +237,13 @@ python do_clean() {
 }
 
 # Derived from OpenEmbedded Core: meta/classes/base.bbclass
-addtask cleanall after do_clean
+addtask cleansstate after do_clean
+do_cleansstate[nostamp] = "1"
+python do_cleansstate() {
+    sstate_clean_cachefiles(d)
+}
+
+addtask cleanall after do_cleansstate
 do_cleanall[nostamp] = "1"
 python do_cleanall() {
     src_uri = (d.getVar('SRC_URI', True) or "").split()
