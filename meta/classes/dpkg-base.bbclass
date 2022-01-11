@@ -222,13 +222,15 @@ do_dpkg_build[sstate-plaindirs] = "${DPKG_SSTATE}"
 do_dpkg_build[sstate-interceptfuncs] = "dpkg_build_sstate_prepare"
 
 dpkg_build_sstate_prepare() {
-    test -n "$(find ${S}/.. -maxdepth 1 -name '*.deb' -print -quit)" &&
+    if [ -n "$(find ${S}/.. -maxdepth 1 -name '*.deb' -print -quit)" ]; then
         ln -f ${S}/../*.deb -t ${DPKG_SSTATE}
+    fi
 }
 
 dpkg_build_sstate_finalize() {
-    test -n "$(find ${DPKG_SSTATE} -maxdepth 1 -name '*.deb' -print -quit)" &&
+    if [ -n "$(find ${DPKG_SSTATE} -maxdepth 1 -name '*.deb' -print -quit)" ]; then
         ln -f ${DPKG_SSTATE}/*.deb -t ${S}/..
+    fi
 }
 
 python do_dpkg_build_setscene() {
