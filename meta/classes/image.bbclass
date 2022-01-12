@@ -28,7 +28,7 @@ INITRD_IMAGE ?= "${IMAGE_FULLNAME}-initrd.img"
 DTB_FILES ?= ""
 
 # Useful variables for imager implementations:
-PP = "/home/builder/${PN}-${IMAGE_SUFFIX}"
+PP = "/home/builder/${PN}-${MACHINE}-${IMAGE_SUFFIX}"
 PP_DEPLOY = "${PP}/deploy"
 PP_ROOTFS = "${PP}/rootfs"
 PP_WORK = "${PP}/work"
