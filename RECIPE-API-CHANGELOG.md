@@ -314,3 +314,11 @@ The "NAME" used to be rather static and the TAG was always "latest", now the val
 ### Renamed variable CONTAINER_FORMATS to CONTAINER_IMAGE_FORMATS
 
 The meaning remains the same, just the name changed.
+
+### Changed location of deployed *.dpkg_status and *.manifest files
+
+Now, parallel multiconfigs for different machines with same architectures don't
+share the same location for image *.manifest and *.dpkg_status files, so they
+are not owerwritten by last build ones anymore.
+
+Output file names now include distro name and architecture/machine name parts.

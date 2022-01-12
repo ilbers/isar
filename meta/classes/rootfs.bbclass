@@ -19,6 +19,8 @@ ROOTFS_APT_ARGS="install --yes -o Debug::pkgProblemResolver=yes"
 
 ROOTFS_CLEAN_FILES="/etc/hostname /etc/resolv.conf"
 
+ROOTFS_PACKAGE_SUFFIX ?= "${PN}-${DISTRO}-${DISTRO_ARCH}"
+
 # Useful environment variables:
 export E = "${@ isar_export_proxies(d)}"
 export DEBIAN_FRONTEND = "noninteractive"
@@ -231,14 +233,14 @@ rootfs_generate_manifest () {
     sudo -E chroot --userspec=$(id -u):$(id -g) '${ROOTFSDIR}' \
         dpkg-query -W -f \
             '${source:Package}|${source:Version}|${binary:Package}|${Version}\n' > \
-        ${ROOTFS_MANIFEST_DEPLOY_DIR}/"${PF}".manifest
+        '${ROOTFS_MANIFEST_DEPLOY_DIR}'/'${ROOTFS_PACKAGE_SUFFIX}'.manifest
 }
 
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'export-dpkg-status', 'rootfs_export_dpkg_status', '', d)}"
 rootfs_export_dpkg_status() {
     mkdir -p ${ROOTFS_DPKGSTATUS_DEPLOY_DIR}
     cp '${ROOTFSDIR}'/var/lib/dpkg/status \
-       '${ROOTFS_DPKGSTATUS_DEPLOY_DIR}'/'${PF}'.dpkg_status
+       '${ROOTFS_DPKGSTATUS_DEPLOY_DIR}'/'${ROOTFS_PACKAGE_SUFFIX}'.dpkg_status
 }
 
 do_rootfs_postprocess[vardeps] = "${ROOTFS_POSTPROCESS_COMMAND}"
