@@ -46,6 +46,7 @@ class VmBase(Test):
         fd, output_file = tempfile.mkstemp(suffix='_log.txt',
                                            prefix='vm_start_' + distro + '_' +
                                            arch + '_', dir=build_dir, text=True)
+        os.chmod(output_file, 0o644)
 
         cmdline = start_vm.format_qemu_cmdline(arch, build_dir, distro,
                                                output_file, None)
