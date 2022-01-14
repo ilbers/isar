@@ -14,7 +14,7 @@ SRC_URI = " \
     file://u-boot-script \
     file://zz-u-boot-script"
 
-DEBIAN_DEPENDS = "u-boot-tools, linux-image-${KERNEL_NAME}"
+DEBIAN_DEPENDS = "u-boot-tools"
 
 do_install() {
 	install -v -d ${D}/usr/sbin
