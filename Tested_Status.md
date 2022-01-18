@@ -1,6 +1,109 @@
 Tested Status
 =============
 
+Release next
+------------
+
+Release v0.8
+------------
+
+### Host System : debian-stretch-amd64
+
+NOT TESTED
+
+### Host System : debian-jessie-amd64
+
+NOT SUPPORTED
+
+### Host System : debian-buster-amd64
+
+|Target System              |Native Build |Cross Build  |Login prompt ("smoke" test)|SDK Support  |Cached repo    |Version  |
+|:-------------------------:|:-----------:|:------------|:-------------------------:|:-----------:|:-------------:|:-------:|
+| qemuarm-stretch           |PASSED       |PASSED       |PASSED (QEMU)              |UNTESTED     |UNTESTED       |49642d3  |
+| qemuarm-buster            |PASSED       |PASSED       |PASSED (QEMU)              |UNTESTED     |UNTESTED       |49642d3  |
+| qemuarm-bullseye          |PASSED       |PASSED       |PASSED (QEMU)              |UNTESTED     |UNTESTED       |49642d3  |
+| qemuarm-bookworm          |PASSED       |PASSED       |PASSED (QEMU)              |UNTESTED     |UNTESTED       |49642d3  |
+| qemuarm64-stretch         |PASSED       |PASSED       |PASSED (QEMU)              |UNTESTED     |UNTESTED       |49642d3  |
+| qemuarm64-buster          |PASSED       |PASSED       |PASSED (QEMU)              |UNTESTED     |UNTESTED       |49642d3  |
+| qemuarm64-bullseye        |PASSED       |PASSED       |PASSED (QEMU)              |UNTESTED     |UNTESTED       |49642d3  |
+| qemuarm64-bookworm        |PASSED       |PASSED       |PASSED (QEMU)              |UNTESTED     |UNTESTED       |49642d3  |
+| qemui386-stretch          |PASSED       |PASSED       |PASSED (QEMU)              |UNTESTED     |UNTESTED       |49642d3  |
+| qemui386-buster           |PASSED       |PASSED       |PASSED (QEMU)              |UNTESTED     |UNTESTED       |49642d3  |
+| qemui386-bullseye         |PASSED       |PASSED       |PASSED (QEMU)              |UNTESTED     |UNTESTED       |49642d3  |
+| qemui386-bookworm         |PASSED       |PASSED       |PASSED (QEMU)              |UNTESTED     |UNTESTED       |49642d3  |
+| qemuamd64-stretch         |PASSED       |PASSED       |PASSED (QEMU)              |UNTESTED     |UNTESTED       |49642d3  |
+| qemuamd64-buster          |PASSED       |PASSED       |PASSED (QEMU)              |UNTESTED     |UNTESTED       |49642d3  |
+| qemuamd64-buster-tgz      |PASSED       |PASSED       |PASSED (QEMU)              |UNTESTED     |UNTESTED       |49642d3  |
+| qemuamd64-buster-cpiogz   |PASSED       |PASSED       |PASSED (QEMU)              |UNTESTED     |UNTESTED       |49642d3  |
+| qemuamd64-bullseye        |PASSED       |PASSED       |PASSED (QEMU)              |UNTESTED     |UNTESTED       |49642d3  |
+| qemuamd64-bullseye-tgz    |PASSED       |PASSED       |PASSED (QEMU)              |UNTESTED     |UNTESTED       |49642d3  |
+| qemuamd64-bullseye-cpiogz |PASSED       |PASSED       |PASSED (QEMU)              |UNTESTED     |UNTESTED       |49642d3  |
+| qemuamd64-bookworm        |PASSED       |PASSED       |PASSED (QEMU)              |UNTESTED     |UNTESTED       |49642d3  |
+| qemumipsel-stretch        |PASSED       |PASSED       |PASSED (QEMU)              |UNTESTED     |UNTESTED       |49642d3  |
+| qemumipsel-buster         |PASSED       |PASSED       |PASSED (QEMU)              |UNTESTED     |UNTESTED       |49642d3  |
+| qemumipsel-bullseye       |PASSED       |PASSED       |PASSED (QEMU)              |UNTESTED     |UNTESTED       |49642d3  |
+| qemumipsel-bookworm       |PASSED       |PASSED       |PASSED (QEMU)              |UNTESTED     |UNTESTED       |49642d3  |
+| qemuriscv64-sid-ports     |PASSED       |PASSED       |PASSED (QEMU)              |UNTESTED     |UNTESTED       |49642d3  |
+| qemuarm64-focal           |PASSED       |PASSED       |PASSED (QEMU)              |UNTESTED     |UNTESTED       |49642d3  |
+| qemuamd64-focal           |PASSED       |PASSED       |PASSED (QEMU)              |UNTESTED     |UNTESTED       |49642d3  |
+| container-amd64-stretch   |PASSED       |PASSED       |UNTESTED                   |UNTESTED     |UNTESTED       |49642d3  |
+| container-amd64-buster    |PASSED       |PASSED       |UNTESTED                   |UNTESTED     |UNTESTED       |49642d3  |
+| container-amd64-bullseye  |PASSED       |PASSED       |UNTESTED                   |UNTESTED     |UNTESTED       |49642d3  |
+| container-amd64-bookworm  |PASSED       |PASSED       |UNTESTED                   |UNTESTED     |UNTESTED       |49642d3  |
+| virtualbox-bullseye       |PASSED       |PASSED       |UNTESTED                   |UNTESTED     |UNTESTED       |49642d3  |
+| bananapi-buster           |PASSED       |PASSED       |UNTESTED                   |UNTESTED     |UNTESTED       |5989136  |
+| bananapi-bullseye         |PASSED       |PASSED       |UNTESTED                   |UNTESTED     |UNTESTED       |5989136  |
+| de0-nano-soc-buster       |PASSED       |PASSED       |PASSED                     |UNTESTED     |UNTESTED       |5989136  |
+| de0-nano-soc-bullseye     |PASSED       |PASSED       |PASSED, not #6             |UNTESTED     |UNTESTED       |5989136  |
+| hikey-bullseye            |PASSED       |PASSED       |PASSED, not #4, #6         |UNTESTED     |UNTESTED       |5989136  |
+| hikey-bookworm            |PASSED       |PASSED       |PASSED, not #4, #6         |UNTESTED     |UNTESTED       |5989136  |
+| imx6-sabrelite-buster     |PASSED       |PASSED       |UNTESTED                   |UNTESTED     |UNTESTED       |5989136  |
+| imx6-sabrelite-bullseye   |PASSED       |PASSED       |UNTESTED                   |UNTESTED     |UNTESTED       |5989136  |
+| nanopi-neo-buster         |PASSED       |PASSED       |PASSED                     |UNTESTED     |UNTESTED       |5989136  |
+| nanopi-neo-bullseye       |PASSED       |PASSED       |PASSED                     |UNTESTED     |UNTESTED       |5989136  |
+| stm32mp15x-buster         |PASSED       |PASSED       |UNTESTED                   |UNTESTED     |UNTESTED       |5989136  |
+| stm32mp15x-bullseye       |PASSED       |PASSED       |UNTESTED                   |UNTESTED     |UNTESTED       |5989136  |
+| rpi-stretch               |PASSED       |PASSED       |PASSED                     |UNTESTED     |UNTESTED       |5989136  |
+| rpi-arm-bullseye          |PASSED       |PASSED       |PASSED                     |UNTESTED     |UNTESTED       |2911926d |
+| rpi-arm-v7-bullseye       |PASSED       |PASSED       |PASSED, not #6             |UNTESTED     |UNTESTED       |2911926d |
+| rpi-arm-v7l-bullseye      |PASSED       |PASSED       |PASSED, not #6             |UNTESTED     |UNTESTED       |2911926d |
+| rpi-arm64-v8-bullseye     |PASSED       |PASSED       |PASSED                     |UNTESTED     |UNTESTED       |2911926d |
+| sifive-fu540-sid-ports    |PASSED       |PASSED       |UNTESTED                   |UNTESTED     |UNTESTED       |5989136  |
+
+"Smoke" test:
+1. system boots
+2. seial connection with grkterm established
+3. login prompt
+4. no service failed
+5. packages from IMAGE_INSTALL installed
+6. example_module loaded
+7. shutdown
+
+debian-bullseye-hikey, debian-bookworm-hikey:
+ - systemd-modules-load.service failed
+ - e2scrub_reap.service failed
+ - no modules are loaded
+
+### Host System : debian-bullseye-amd64
+
+NOT TESTED
+
+### Host System : debian-bookworm-amd64
+
+NOT TESTED
+
+### Host System : debian-jessie-i386
+
+NOT SUPPORTED
+
+### Host System : debian-stretch-i386
+
+NOT TESTED
+
+### Host System : debian-buster-i386
+
+NOT TESTED
+
 Release v0.7
 ------------
 

@@ -331,3 +331,7 @@ This naming may be different in other distributions like Raspberry Pi OS.
 
 KERNEL_IMAGE_PKG and KERNEL_HEADERS_PKG variables allow to use custom package
 names for kernel/headers.
+
+Changes in next
+---------------
+

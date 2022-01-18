@@ -3,15 +3,19 @@ Release next
 Release v0.8
 
  * Add Debian Sid Ports support
+ * Add Debian Bookworm support
  * Add Debian Bullseye support
  * Drop Debian Jessie support
  * Add Ubuntu Focal support
+ * Add Raspberry Pi OS support
  * Add RISC-V architecture support
  * Add MIPSel architecture support
  * Add STM32MP15x eval board target
  * Add NanoPi NEO board target
  * Add HiFive Unleashed board target
  * Add qemuriscv64 virtual target
+ * Add iMX6 SabreLite target
+ * Add Raspberry Pi 1B, 1B+, 2B, 3 targets
  * Update BitBake version to 1.46.2 release
  * Update WIC to the revision b85a09ea4
  * Update U-Boot version to 2020.10
