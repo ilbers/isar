@@ -57,7 +57,7 @@ debsrc_download() {
         [ -n "$dscfile" ] && continue
 
         sudo -E chroot --userspec=$( id -u ):$( id -g ) ${rootfs} \
-            sh -c ' mkdir -p "/deb-src/${1}/${2}" && cd "/deb-src/${1}/${2}" && apt-get -y --download-only --only-source source "$2"="$3" ' download-src "${rootfs_distro}" "${src}" "${version}"
+            sh -c ' mkdir -p "/deb-src/${1}/${2}" && cd "/deb-src/${1}/${2}" && apt-get -y -o Acquire::Retries=3 --download-only --only-source source "$2"="$3" ' download-src "${rootfs_distro}" "${src}" "${version}"
     done
     ) 9>"${DEBSRCDIR}/${rootfs_distro}.lock"
 
