@@ -53,6 +53,7 @@ configurations:
  - QEMU amd64 with Debian Stretch
  - QEMU amd64 with Debian Buster
  - Raspberry Pi 1 Model B with Raspbian Stretch
+ - Raspberry Pi various models with Raspberry OS Bullseye
  - Banana Pi BPI-M1
  - LeMaker HiKey
  - Terasic DE0-Nano-SoC
@@ -432,6 +433,7 @@ In Isar, each machine can use its specific Linux distro to generate `buildchroot
  - debian-stretch
  - debian-buster
  - raspbian-stretch
+ - raspios-bullseye
 
 User can select appropriate distro for specific machine by setting the following variable in machine configuration file:
 ```
@@ -491,6 +493,12 @@ DISTRO_BOOTSTRAP_KEYS += "https://archive.raspbian.org/raspbian.public.key;sha25
 DISTRO_CONFIG_SCRIPT?= "raspbian-configscript.sh"
 DISTRO_KERNELS ?= "rpi rpi2 rpi-rpfv rpi2-rpfv"
 ```
+
+For RaspiOS a different DISTRO_KERNELS list is used:
+ - `kernel` - for Raspberry Pi 1, Pi Zero, Pi Zero W, and Compute Module
+ - `kernel7` - for Raspberry Pi 2, Pi 3, Pi 3+, and Compute Module 3
+ - `kernel7l` - for Raspberry Pi 4 (32 bit OS)
+ - `kernel8` - for Raspberry Pi 4 (64 bit OS)
 
 To add new distro, user should perform the following steps:
 
