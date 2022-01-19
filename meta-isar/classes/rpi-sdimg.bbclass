@@ -14,7 +14,7 @@ BOOT_SPACE ?= "40960"
 # Set alignment to 4MB [in KiB]
 IMAGE_ROOTFS_ALIGNMENT = "4096"
 
-SDIMG = "${DEPLOY_DIR_IMAGE}/${PN}.rpi-sdimg"
+SDIMG = "${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.sdimg"
 SDIMG_ROOTFS = "${DEPLOY_DIR_IMAGE}/${EXT4_IMAGE_FILE}"
 
 do_rpi_sdimg () {
