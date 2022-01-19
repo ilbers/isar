@@ -82,6 +82,10 @@ BBMULTICONFIG = " \
     stm32mp15x-bullseye \
     virtualbox-bullseye \
     rpi-stretch \
+    rpi-arm-bullseye \
+    rpi-arm-v7-bullseye \
+    rpi-arm-v7l-bullseye \
+    rpi-arm64-v8-bullseye \
     sifive-fu540-sid-ports \
     qemuarm64-focal \
     qemuamd64-focal \

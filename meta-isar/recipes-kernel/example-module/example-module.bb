@@ -19,6 +19,10 @@ python() {
         '686-pae',
         '4kc-malta',
         'riscv64',
+        'kernel',
+        'kernel7',
+        'kernel7l',
+        'kernel8',
     ]:
         d.setVar('ISAR_CROSS_COMPILE', '0')
 }
