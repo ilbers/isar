@@ -65,7 +65,7 @@ class CrossTest(CIBaseTest):
             'mc:qemuarm64-bullseye:isar-image-base',
             'mc:de0-nano-soc-bullseye:isar-image-base',
             'mc:stm32mp15x-buster:isar-image-base',
-            'mc:rpi-stretch:isar-image-base'
+            'mc:rpi-arm-v7-bullseye:isar-image-base'
                   ]
 
         self.perform_build_test(targets, 1, None)
@@ -128,7 +128,10 @@ class NoCrossTest(CIBaseTest):
             'mc:sifive-fu540-sid-ports:isar-image-base',
             'mc:imx6-sabrelite-bullseye:isar-image-ubi',
             'mc:phyboard-mira-bullseye:isar-image-ubi',
-            'mc:rpi-stretch:isar-image-base',
+            'mc:rpi-arm-bullseye:isar-image-base',
+            'mc:rpi-arm-v7-bullseye:isar-image-base',
+            'mc:rpi-arm-v7l-bullseye:isar-image-base',
+            'mc:rpi-arm64-v8-bullseye:isar-image-base',
             'mc:hikey-bullseye:isar-image-base',
             'mc:virtualbox-bullseye:isar-image-base',
             'mc:bananapi-bullseye:isar-image-base',
