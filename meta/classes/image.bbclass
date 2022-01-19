@@ -15,7 +15,8 @@ IMAGE_INSTALL ?= ""
 IMAGE_FSTYPES ?= "${@ d.getVar("IMAGE_TYPE", True) if d.getVar("IMAGE_TYPE", True) else "ext4-img"}"
 IMAGE_ROOTFS ?= "${WORKDIR}/rootfs"
 
-IMAGE_INSTALL += "${@ ("linux-image-" + d.getVar("KERNEL_NAME", True)) if d.getVar("KERNEL_NAME", True) else ""}"
+KERNEL_IMAGE_PKG ??= "${@ ("linux-image-" + d.getVar("KERNEL_NAME", True)) if d.getVar("KERNEL_NAME", True) else ""}"
+IMAGE_INSTALL += "${KERNEL_IMAGE_PKG}"
 
 # Name of the image including distro&machine names
 IMAGE_FULLNAME = "${PN}-${DISTRO}-${MACHINE}"

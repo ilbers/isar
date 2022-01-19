@@ -322,3 +322,12 @@ share the same location for image *.manifest and *.dpkg_status files, so they
 are not owerwritten by last build ones anymore.
 
 Output file names now include distro name and architecture/machine name parts.
+
+### Using custom package name for linux kernel and headers
+
+Isar assumes that linux kernel is provided by linux-image-${KERNEL_NAME}
+package, while headers are provided by linux-image-${KERNEL_NAME} package.
+This naming may be different in other distributions like Raspberry Pi OS.
+
+KERNEL_IMAGE_PKG and KERNEL_HEADERS_PKG variables allow to use custom package
+names for kernel/headers.
