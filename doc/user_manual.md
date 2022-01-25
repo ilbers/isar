@@ -406,7 +406,7 @@ If BitBake is called with multiconfig targets (e.g.,
 all supported configurations:
 
  - `BBMULTICONFIG` - The list of the complete configuration definition files.
-   BitBake looks for conf/multiconfig/<CONFIG>.conf in every layer. Every
+   BitBake looks for `conf/multiconfig/<CONFIG>.conf` in every layer. Every
    configuration must define `MACHINE`, `DISTRO` and `DISTRO_ARCH`.
 
 Some other variables include:
