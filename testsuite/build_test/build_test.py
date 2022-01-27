@@ -124,8 +124,6 @@ class NoCrossTest(CIBaseTest):
             'mc:qemuamd64-bullseye:isar-initramfs',
             'mc:qemumipsel-buster:isar-image-base',
             'mc:qemumipsel-bullseye:isar-image-base',
-            'mc:qemuriscv64-sid-ports:isar-image-base',
-            'mc:sifive-fu540-sid-ports:isar-image-base',
             'mc:imx6-sabrelite-bullseye:isar-image-ubi',
             'mc:phyboard-mira-bullseye:isar-image-ubi',
             'mc:rpi-arm-bullseye:isar-image-base',
@@ -153,6 +151,17 @@ class NoCrossTest(CIBaseTest):
             'mc:qemui386-bookworm:isar-image-base',
             'mc:qemumipsel-bookworm:isar-image-base',
             'mc:hikey-bookworm:isar-image-base'
+                  ]
+
+        try:
+            self.perform_build_test(targets, 0, None)
+        except:
+            self.cancel('KFAIL')
+
+    def test_nocross_sidports(self):
+        targets = [
+            'mc:qemuriscv64-sid-ports:isar-image-base',
+            'mc:sifive-fu540-sid-ports:isar-image-base'
                   ]
 
         try:
