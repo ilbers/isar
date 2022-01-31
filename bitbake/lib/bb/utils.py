@@ -129,6 +129,7 @@ def vercmp(ta, tb):
     return r
 
 def vercmp_string(a, b):
+    """ Split version strings and compare them """
     ta = split_version(a)
     tb = split_version(b)
     return vercmp(ta, tb)
@@ -247,6 +248,12 @@ def explode_dep_versions2(s, *, sort=True):
     return r
 
 def explode_dep_versions(s):
+    """
+    Take an RDEPENDS style string of format:
+    "DEPEND1 (optional version) DEPEND2 (optional version) ..."
+    skip null value and items appeared in dependancy string multiple times
+    and return a dictionary of dependencies and versions.
+    """
     r = explode_dep_versions2(s)
     for d in r:
         if not r[d]:
@@ -402,8 +409,8 @@ def better_exec(code, context, text = None, realfile = "<code>", pythonexception
         (t, value, tb) = sys.exc_info()
         try:
             _print_exception(t, value, tb, realfile, text, context)
-        except Exception as e:
-            logger.error("Exception handler error: %s" % str(e))
+        except Exception as e2:
+            logger.error("Exception handler error: %s" % str(e2))
 
         e = bb.BBHandledException(e)
         raise e
@@ -432,20 +439,6 @@ def fileslocked(files):
     finally:
         for lock in locks:
             bb.utils.unlockfile(lock)
-
-@contextmanager
-def timeout(seconds):
-    def timeout_handler(signum, frame):
-        pass
-
-    original_handler = signal.signal(signal.SIGALRM, timeout_handler)
-
-    try:
-        signal.alarm(seconds)
-        yield
-    finally:
-        signal.alarm(0)
-        signal.signal(signal.SIGALRM, original_handler)
 
 def lockfile(name, shared=False, retry=True, block=False):
     """
@@ -580,7 +573,6 @@ def preserved_envvars_exported():
         'PATH',
         'PWD',
         'SHELL',
-        'TERM',
         'USER',
         'LC_ALL',
         'BBSERVER',
@@ -617,7 +609,7 @@ def filter_environment(good_vars):
     os.environ["LC_ALL"] = "en_US.UTF-8"
 
     if removed_vars:
-        logger.debug(1, "Removed the following variables from the environment: %s", ", ".join(removed_vars.keys()))
+        logger.debug("Removed the following variables from the environment: %s", ", ".join(removed_vars.keys()))
 
     return removed_vars
 
@@ -707,7 +699,7 @@ def remove(path, recurse=False, ionice=False):
                 raise
 
 def prunedir(topdir, ionice=False):
-    # Delete everything reachable from the directory named in 'topdir'.
+    """ Delete everything reachable from the directory named in 'topdir'. """
     # CAUTION:  This is dangerous!
     if _check_unsafe_delete_path(topdir):
         raise Exception('bb.utils.prunedir: called with dangerous path "%s", refusing to delete!' % topdir)
@@ -718,8 +710,10 @@ def prunedir(topdir, ionice=False):
 # but thats possibly insane and suffixes is probably going to be small
 #
 def prune_suffix(var, suffixes, d):
-    # See if var ends with any of the suffixes listed and
-    # remove it if found
+    """ 
+    See if var ends with any of the suffixes listed and
+    remove it if found 
+    """
     for suffix in suffixes:
         if suffix and var.endswith(suffix):
             return var[:-len(suffix)]
@@ -959,7 +953,22 @@ def which(path, item, direction = 0, history = False, executable=False):
         return "", hist
     return ""
 
+@contextmanager
+def umask(new_mask):
+    """
+    Context manager to set the umask to a specific mask, and restore it afterwards.
+    """
+    current_mask = os.umask(new_mask)
+    try:
+        yield
+    finally:
+        os.umask(current_mask)
+
 def to_boolean(string, default=None):
+    """ 
+    Check input string and return boolean value True/False/None
+    depending upon the checks 
+    """
     if not string:
         return default
 
@@ -1003,6 +1012,23 @@ def contains(variable, checkvalues, truevalue, falsevalue, d):
     return falsevalue
 
 def contains_any(variable, checkvalues, truevalue, falsevalue, d):
+    """Check if a variable contains any values specified.
+
+    Arguments:
+
+    variable -- the variable name. This will be fetched and expanded (using
+    d.getVar(variable)) and then split into a set().
+
+    checkvalues -- if this is a string it is split on whitespace into a set(),
+    otherwise coerced directly into a set().
+
+    truevalue -- the value to return if checkvalues is a subset of variable.
+
+    falsevalue -- the value to return if variable is empty or if checkvalues is
+    not a subset of variable.
+
+    d -- the data store.
+    """
     val = d.getVar(variable)
     if not val:
         return falsevalue
@@ -1086,21 +1112,20 @@ def process_profilelog(fn, pout = None):
     # Either call with a list of filenames and set pout or a filename and optionally pout.
     if not pout:
         pout = fn + '.processed'
-    pout = open(pout, 'w')
-   
-    import pstats
-    if isinstance(fn, list):
-        p = pstats.Stats(*fn, stream=pout)
-    else:
-        p = pstats.Stats(fn, stream=pout)
-    p.sort_stats('time')
-    p.print_stats()
-    p.print_callers()
-    p.sort_stats('cumulative')
-    p.print_stats()
 
-    pout.flush()
-    pout.close()  
+    with open(pout, 'w') as pout:
+        import pstats
+        if isinstance(fn, list):
+            p = pstats.Stats(*fn, stream=pout)
+        else:
+            p = pstats.Stats(fn, stream=pout)
+        p.sort_stats('time')
+        p.print_stats()
+        p.print_callers()
+        p.sort_stats('cumulative')
+        p.print_stats()
+
+        pout.flush()
 
 #
 # Was present to work around multiprocessing pool bugs in python < 2.7.3
@@ -1473,13 +1498,19 @@ def edit_bblayers_conf(bblayers_conf, add, remove, edit_cb=None):
 
     return (notadded, notremoved)
 
-
-def get_file_layer(filename, d):
-    """Determine the collection (as defined by a layer's layer.conf file) containing the specified file"""
+def get_collection_res(d):
     collections = (d.getVar('BBFILE_COLLECTIONS') or '').split()
     collection_res = {}
     for collection in collections:
         collection_res[collection] = d.getVar('BBFILE_PATTERN_%s' % collection) or ''
+
+    return collection_res
+
+
+def get_file_layer(filename, d, collection_res={}):
+    """Determine the collection (as defined by a layer's layer.conf file) containing the specified file"""
+    if not collection_res:
+        collection_res = get_collection_res(d)
 
     def path_to_layer(path):
         # Use longest path so we handle nested layers
@@ -1492,12 +1523,13 @@ def get_file_layer(filename, d):
         return match
 
     result = None
-    bbfiles = (d.getVar('BBFILES') or '').split()
+    bbfiles = (d.getVar('BBFILES_PRIORITIZED') or '').split()
     bbfilesmatch = False
     for bbfilesentry in bbfiles:
-        if fnmatch.fnmatch(filename, bbfilesentry):
+        if fnmatch.fnmatchcase(filename, bbfilesentry):
             bbfilesmatch = True
             result = path_to_layer(bbfilesentry)
+            break
 
     if not bbfilesmatch:
         # Probably a bbclass
@@ -1558,8 +1590,8 @@ def set_process_name(name):
     except:
         pass
 
-# export common proxies variables from datastore to environment
 def export_proxies(d):
+    """ export common proxies variables from datastore to environment """
     import os
 
     variables = ['http_proxy', 'HTTP_PROXY', 'https_proxy', 'HTTPS_PROXY',
@@ -1581,12 +1613,12 @@ def export_proxies(d):
 
 def load_plugins(logger, plugins, pluginpath):
     def load_plugin(name):
-        logger.debug(1, 'Loading plugin %s' % name)
+        logger.debug('Loading plugin %s' % name)
         spec = importlib.machinery.PathFinder.find_spec(name, path=[pluginpath] )
         if spec:
             return spec.loader.load_module()
 
-    logger.debug(1, 'Loading plugins from %s...' % pluginpath)
+    logger.debug('Loading plugins from %s...' % pluginpath)
 
     expanded = (glob.glob(os.path.join(pluginpath, '*' + ext))
                 for ext in python_extensions)

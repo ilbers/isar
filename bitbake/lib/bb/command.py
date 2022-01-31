@@ -54,13 +54,20 @@ class Command:
         self.cooker = cooker
         self.cmds_sync = CommandsSync()
         self.cmds_async = CommandsAsync()
-        self.remotedatastores = bb.remotedata.RemoteDatastores(cooker)
+        self.remotedatastores = None
 
         # FIXME Add lock for this
         self.currentAsyncCommand = None
 
     def runCommand(self, commandline, ro_only = False):
         command = commandline.pop(0)
+
+        # Ensure cooker is ready for commands
+        if command != "updateConfig" and command != "setFeatures":
+            self.cooker.init_configdata()
+            if not self.remotedatastores:
+                self.remotedatastores = bb.remotedata.RemoteDatastores(self.cooker)
+
         if hasattr(CommandsSync, command):
             # Can run synchronous commands straight away
             command_method = getattr(self.cmds_sync, command)
@@ -74,8 +81,12 @@ class Command:
                 result = command_method(self, commandline)
             except CommandError as exc:
                 return None, exc.args[0]
-            except (Exception, SystemExit):
+            except (Exception, SystemExit) as exc:
                 import traceback
+                if isinstance(exc, bb.BBHandledException):
+                    # We need to start returning real exceptions here. Until we do, we can't
+                    # tell if an exception is an instance of bb.BBHandledException
+                    return None, "bb.BBHandledException()\n" + traceback.format_exc()
                 return None, traceback.format_exc()
             else:
                 return result, None
@@ -84,7 +95,7 @@ class Command:
         if command not in CommandsAsync.__dict__:
             return None, "No such command"
         self.currentAsyncCommand = (command, commandline)
-        self.cooker.configuration.server_register_idlecallback(self.cooker.runCommands, self.cooker)
+        self.cooker.idleCallBackRegister(self.cooker.runCommands, self.cooker)
         return True, None
 
     def runAsyncCommand(self):
@@ -136,13 +147,8 @@ class Command:
         self.cooker.finishcommand()
 
     def reset(self):
-        self.remotedatastores = bb.remotedata.RemoteDatastores(self.cooker)
-
-def split_mc_pn(pn):
-    if pn.startswith("multiconfig:"):
-        _, mc, pn = pn.split(":", 2)
-        return (mc, pn)
-    return ('', pn)
+        if self.remotedatastores:
+           self.remotedatastores = bb.remotedata.RemoteDatastores(self.cooker)
 
 class CommandsSync:
     """
@@ -232,7 +238,11 @@ class CommandsSync:
 
     def matchFile(self, command, params):
         fMatch = params[0]
-        return command.cooker.matchFile(fMatch)
+        try:
+            mc = params[0]
+        except IndexError:
+            mc = ''
+        return command.cooker.matchFile(fMatch, mc)
     matchFile.needconfig = False
 
     def getUIHandlerNum(self, command, params):
@@ -395,22 +405,38 @@ class CommandsSync:
     def getSkippedRecipes(self, command, params):
         # Return list sorted by reverse priority order
         import bb.cache
-        skipdict = OrderedDict(sorted(command.cooker.skiplist.items(),
-                                      key=lambda x: (-command.cooker.collection.calc_bbfile_priority(bb.cache.virtualfn2realfn(x[0])[0]), x[0])))
+        def sortkey(x):
+            vfn, _ = x
+            realfn, _, mc = bb.cache.virtualfn2realfn(vfn)
+            return (-command.cooker.collections[mc].calc_bbfile_priority(realfn)[0], vfn)
+
+        skipdict = OrderedDict(sorted(command.cooker.skiplist.items(), key=sortkey))
         return list(skipdict.items())
     getSkippedRecipes.readonly = True
 
     def getOverlayedRecipes(self, command, params):
-        return list(command.cooker.collection.overlayed.items())
+        try:
+            mc = params[0]
+        except IndexError:
+            mc = ''
+        return list(command.cooker.collections[mc].overlayed.items())
     getOverlayedRecipes.readonly = True
 
     def getFileAppends(self, command, params):
         fn = params[0]
-        return command.cooker.collection.get_file_appends(fn)
+        try:
+            mc = params[1]
+        except IndexError:
+            mc = ''
+        return command.cooker.collections[mc].get_file_appends(fn)
     getFileAppends.readonly = True
 
     def getAllAppends(self, command, params):
-        return command.cooker.collection.bbappends
+        try:
+            mc = params[0]
+        except IndexError:
+            mc = ''
+        return command.cooker.collections[mc].bbappends
     getAllAppends.readonly = True
 
     def findProviders(self, command, params):
@@ -422,7 +448,7 @@ class CommandsSync:
     findProviders.readonly = True
 
     def findBestProvider(self, command, params):
-        (mc, pn) = split_mc_pn(params[0])
+        (mc, pn) = bb.runqueue.split_mc(params[0])
         return command.cooker.findBestProvider(pn, mc)
     findBestProvider.readonly = True
 
@@ -496,6 +522,7 @@ class CommandsSync:
         for the recipe.
         """
         fn = params[0]
+        mc = bb.runqueue.mc_from_tid(fn)
         appends = params[1]
         appendlist = params[2]
         if len(params) > 3:
@@ -507,7 +534,7 @@ class CommandsSync:
             if appendlist is not None:
                 appendfiles = appendlist
             else:
-                appendfiles = command.cooker.collection.get_file_appends(fn)
+                appendfiles = command.cooker.collections[mc].get_file_appends(fn)
         else:
             appendfiles = []
         # We are calling bb.cache locally here rather than on the server,
@@ -517,7 +544,7 @@ class CommandsSync:
         if config_data:
             # We have to use a different function here if we're passing in a datastore
             # NOTE: we took a copy above, so we don't do it here again
-            envdata = bb.cache.parse_recipe(config_data, fn, appendfiles)['']
+            envdata = bb.cache.parse_recipe(config_data, fn, appendfiles, mc)['']
         else:
             # Use the standard path
             parser = bb.cache.NoCache(command.cooker.databuilder)
@@ -708,10 +735,10 @@ class CommandsAsync:
         """
         Find signature info files via the signature generator
         """
-        pn = params[0]
+        (mc, pn) = bb.runqueue.split_mc(params[0])
         taskname = params[1]
         sigs = params[2]
-        res = bb.siggen.find_siginfo(pn, taskname, sigs, command.cooker.data)
-        bb.event.fire(bb.event.FindSigInfoResult(res), command.cooker.data)
+        res = bb.siggen.find_siginfo(pn, taskname, sigs, command.cooker.databuilder.mcdata[mc])
+        bb.event.fire(bb.event.FindSigInfoResult(res), command.cooker.databuilder.mcdata[mc])
         command.finishAsyncCommand()
     findSigInfo.needcache = False

@@ -28,7 +28,7 @@ logger = logging.getLogger("BitBake.Data")
 
 __setvar_keyword__ = ["_append", "_prepend", "_remove"]
 __setvar_regexp__ = re.compile(r'(?P<base>.*?)(?P<keyword>_append|_prepend|_remove)(_(?P<add>[^A-Z]*))?$')
-__expand_var_regexp__ = re.compile(r"\${[a-zA-Z0-9\-_+./~]+?}")
+__expand_var_regexp__ = re.compile(r"\${[a-zA-Z0-9\-_+./~:]+?}")
 __expand_python_regexp__ = re.compile(r"\${@.+?}")
 __whitespace_split__ = re.compile(r'(\s)')
 __override_regexp__ = re.compile(r'[a-z0-9]+')
@@ -189,7 +189,7 @@ class IncludeHistory(object):
         if self.current.parent:
             self.current = self.current.parent
         else:
-            bb.warn("Include log: Tried to finish '%s' at top level." % filename)
+            bb.warn("Include log: Tried to finish '%s' at top level." % self.filename)
         return False
 
     def emit(self, o, level = 0):
@@ -411,6 +411,8 @@ class DataSmart(MutableMapping):
                 raise
             except bb.parse.SkipRecipe:
                 raise
+            except bb.BBHandledException:
+                raise
             except Exception as exc:
                 tb = sys.exc_info()[2]
                 raise ExpansionError(varname, s, exc).with_traceback(tb) from exc
@@ -481,6 +483,7 @@ class DataSmart(MutableMapping):
 
     def setVar(self, var, value, **loginfo):
         #print("var=" + str(var) + "  val=" + str(value))
+        var = var.replace(":", "_")
         self.expand_cache = {}
         parsing=False
         if 'parsing' in loginfo:
@@ -589,6 +592,8 @@ class DataSmart(MutableMapping):
         """
         Rename the variable key to newkey
         """
+        key = key.replace(":", "_")
+        newkey = newkey.replace(":", "_")
         if key == newkey:
             bb.warn("Calling renameVar with equivalent keys (%s) is invalid" % key)
             return
@@ -637,6 +642,7 @@ class DataSmart(MutableMapping):
         self.setVar(var + "_prepend", value, ignore=True, parsing=True)
 
     def delVar(self, var, **loginfo):
+        var = var.replace(":", "_")
         self.expand_cache = {}
 
         loginfo['detail'] = ""
@@ -664,6 +670,7 @@ class DataSmart(MutableMapping):
                          override = None
 
     def setVarFlag(self, var, flag, value, **loginfo):
+        var = var.replace(":", "_")
         self.expand_cache = {}
 
         if 'op' not in loginfo:
@@ -687,6 +694,7 @@ class DataSmart(MutableMapping):
             self.dict["__exportlist"]["_content"].add(var)
 
     def getVarFlag(self, var, flag, expand=True, noweakdefault=False, parsing=False, retparser=False):
+        var = var.replace(":", "_")
         if flag == "_content":
             cachename = var
         else:
@@ -814,6 +822,7 @@ class DataSmart(MutableMapping):
         return value
 
     def delVarFlag(self, var, flag, **loginfo):
+        var = var.replace(":", "_")
         self.expand_cache = {}
 
         local_var, _ = self._findVar(var)
@@ -831,6 +840,7 @@ class DataSmart(MutableMapping):
             del self.dict[var][flag]
 
     def appendVarFlag(self, var, flag, value, **loginfo):
+        var = var.replace(":", "_")
         loginfo['op'] = 'append'
         loginfo['flag'] = flag
         self.varhistory.record(**loginfo)
@@ -838,6 +848,7 @@ class DataSmart(MutableMapping):
         self.setVarFlag(var, flag, newvalue, ignore=True)
 
     def prependVarFlag(self, var, flag, value, **loginfo):
+        var = var.replace(":", "_")
         loginfo['op'] = 'prepend'
         loginfo['flag'] = flag
         self.varhistory.record(**loginfo)
@@ -845,6 +856,7 @@ class DataSmart(MutableMapping):
         self.setVarFlag(var, flag, newvalue, ignore=True)
 
     def setVarFlags(self, var, flags, **loginfo):
+        var = var.replace(":", "_")
         self.expand_cache = {}
         infer_caller_details(loginfo)
         if not var in self.dict:
@@ -859,6 +871,7 @@ class DataSmart(MutableMapping):
             self.dict[var][i] = flags[i]
 
     def getVarFlags(self, var, expand = False, internalflags=False):
+        var = var.replace(":", "_")
         local_var, _ = self._findVar(var)
         flags = {}
 
@@ -875,6 +888,7 @@ class DataSmart(MutableMapping):
 
 
     def delVarFlags(self, var, **loginfo):
+        var = var.replace(":", "_")
         self.expand_cache = {}
         if not var in self.dict:
             self._makeShadowCopy(var)
@@ -1005,7 +1019,7 @@ class DataSmart(MutableMapping):
             else:
                 data.update({key:value})
 
-            varflags = d.getVarFlags(key, internalflags = True)
+            varflags = d.getVarFlags(key, internalflags = True, expand=["vardepvalue"])
             if not varflags:
                 continue
             for f in varflags:

@@ -14,6 +14,7 @@ import sys
 import copy
 import logging
 import logging.config
+import os
 from itertools import groupby
 import bb
 import bb.event
@@ -146,18 +147,12 @@ class LogFilterLTLevel(logging.Filter):
 #
 
 loggerDefaultLogLevel = BBLogFormatter.NOTE
-loggerDefaultVerbose = False
-loggerVerboseLogs = False
 loggerDefaultDomains = {}
 
 def init_msgconfig(verbose, debug, debug_domains=None):
     """
     Set default verbosity and debug levels config the logger
     """
-    bb.msg.loggerDefaultVerbose = verbose
-    if verbose:
-        bb.msg.loggerVerboseLogs = True
-
     if debug:
         bb.msg.loggerDefaultLogLevel = BBLogFormatter.DEBUG - debug + 1
     elif verbose:
@@ -283,7 +278,7 @@ def setLoggingConfig(defaultconfig, userconfigfile=None):
         with open(os.path.normpath(userconfigfile), 'r') as f:
             if userconfigfile.endswith('.yml') or userconfigfile.endswith('.yaml'):
                 import yaml
-                userconfig = yaml.load(f)
+                userconfig = yaml.safe_load(f)
             elif userconfigfile.endswith('.json') or userconfigfile.endswith('.cfg'):
                 import json
                 userconfig = json.load(f)
