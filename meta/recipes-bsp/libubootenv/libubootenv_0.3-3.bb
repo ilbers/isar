@@ -19,7 +19,4 @@ SRCREV = "a1a3504e5cda1883928a8747a0bedc56afff6910"
 
 S = "${WORKDIR}/git"
 
-
-dpkg_runbuild_prepend() {
-	export DEB_BUILD_OPTIONS="nocheck"
-}
+DEB_BUILD_OPTIONS += "nocheck"

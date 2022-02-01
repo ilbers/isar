@@ -15,16 +15,12 @@ SRC_URI = "apt://${PN}"
 MAINTAINER = "isar-users <isar-users@googlegroups.com>"
 CHANGELOG_V = "<orig-version>+isar"
 
+DEB_BUILD_OPTIONS += "${@ 'nocheck' if d.getVar('ISAR_CROSS_COMPILE', True) == '1' else '' }"
+
 do_prepare_build() {
 	deb_add_changelog
 	# this seems to be a build dep missing in the upstream control file
 	if ! grep texinfo ${S}/debian/control; then
 		sed -i -e 's/Build-Depends:/Build-Depends: texinfo,/g' ${S}/debian/control
-	fi
-}
-
-dpkg_runbuild_prepend() {
-	if [ ${ISAR_CROSS_COMPILE} -eq 1 ]; then
-		export DEB_BUILD_OPTIONS="nocheck"
 	fi
 }

@@ -335,3 +335,11 @@ names for kernel/headers.
 Changes in next
 ---------------
 
+### Introduce debian build profiles
+
+All recipes that inherit from dpkg and dpkg-base can utilize the variables `DEB_BUILD_PROFILES` and `DEB_BUILD_OPTIONS`.
+The bitbake variable defines the respective environment variable which is available in `do_install_builddeps` and `do_dpkg_build`.
+When cross compiling, `cross` is added to the `DEB_BUILD_PROFILES` environment variable.
+Please note, that manually exported versions of the variables are overwritten.
+
+For a list of well-known Debian build profiles and common practices, we refer to Debian's BuildProfileSpec.

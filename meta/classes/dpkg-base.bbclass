@@ -13,6 +13,8 @@ inherit deb-dl-dir
 DEPENDS ?= ""
 
 DEPENDS_append_riscv64 = "${@' crossbuild-essential-riscv64' if d.getVar('ISAR_CROSS_COMPILE', True) == '1' and d.getVar('PN') != 'crossbuild-essential-riscv64' else ''}"
+DEB_BUILD_PROFILES ?= ""
+DEB_BUILD_OPTIONS ?= ""
 
 python do_adjust_git() {
     import subprocess
@@ -201,6 +203,22 @@ dpkg_runbuild() {
     die "This should never be called, overwrite it in your derived class"
 }
 
+def isar_deb_build_profiles(d):
+    deb_build_profiles = d.getVar('DEB_BUILD_PROFILES', True)
+    if d.getVar('ISAR_CROSS_COMPILE', True) == "1":
+        deb_build_profiles += ' cross'
+    return deb_build_profiles.strip()
+
+def isar_deb_build_options(d):
+    deb_build_options = d.getVar('DEB_BUILD_OPTIONS', True)
+    return deb_build_options.strip()
+
+# use with caution: might contaminate multiple tasks
+def isar_export_build_settings(d):
+    import os
+    os.environ['DEB_BUILD_OPTIONS']  = isar_deb_build_options(d)
+    os.environ['DEB_BUILD_PROFILES'] = isar_deb_build_profiles(d)
+
 python do_dpkg_build() {
     lock = bb.utils.lockfile(d.getVar("REPO_ISAR_DIR") + "/isar.lock",
                              shared=True)
@@ -281,6 +299,7 @@ python do_devshell() {
 
     isar_export_proxies(d)
     isar_export_ccache(d)
+    isar_export_build_settings(d)
 
     buildchroot = d.getVar('BUILDCHROOT_DIR')
     pp_pps = os.path.join(d.getVar('PP'), d.getVar('PPS'))

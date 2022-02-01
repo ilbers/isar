@@ -9,10 +9,13 @@ PACKAGE_ARCH ?= "${DISTRO_ARCH}"
 do_install_builddeps() {
     dpkg_do_mounts
     E="${@ isar_export_proxies(d)}"
+    export DEB_BUILD_OPTIONS="${@ isar_deb_build_options(d)}"
+    export DEB_BUILD_PROFILES="${@ isar_deb_build_profiles(d)}"
     distro="${DISTRO}"
     if [ ${ISAR_CROSS_COMPILE} -eq 1 ]; then
-       distro="${HOST_DISTRO}"
+        distro="${HOST_DISTRO}"
     fi
+
     deb_dl_dir_import "${BUILDCHROOT_DIR}" "${distro}"
     sudo -E chroot ${BUILDCHROOT_DIR} /isar/deps.sh \
         ${PP}/${PPS} ${PACKAGE_ARCH} --download-only
@@ -33,6 +36,8 @@ addtask devshell after do_install_builddeps
 dpkg_runbuild() {
     E="${@ isar_export_proxies(d)}"
     E="${@ isar_export_ccache(d)}"
+    export DEB_BUILD_OPTIONS="${@ isar_deb_build_options(d)}"
+    export DEB_BUILD_PROFILES="${@ isar_deb_build_profiles(d)}"
     export PARALLEL_MAKE="${PARALLEL_MAKE}"
     sudo -E chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} \
          /isar/build.sh ${PP}/${PPS} ${PACKAGE_ARCH}

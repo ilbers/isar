@@ -117,6 +117,14 @@ def config_fragments(d):
             fragments.append(local)
     return fragments
 
+def get_additional_build_profiles(d):
+    profiles = d.getVar('BASE_DISTRO', True)
+    if d.getVar('KERNEL_LIBC_DEV_DEPLOY', True) != '1':
+        profiles += ' nolibcdev'
+    return profiles
+
+DEB_BUILD_PROFILES += "${@get_additional_build_profiles(d)}"
+
 do_prepare_build_prepend() {
 	# copy meta-data over to source tree
 	rm -rf ${S}/debian
@@ -176,10 +184,5 @@ dpkg_configure_kernel() {
 }
 
 dpkg_runbuild_prepend() {
-	profiles="${BASE_DISTRO}"
-	if [ "${KERNEL_LIBC_DEV_DEPLOY}" != "1" ]; then
-		profiles="${profiles} nolibcdev"
-	fi
-	export DEB_BUILD_PROFILES="${profiles}"
 	dpkg_configure_kernel
 }
