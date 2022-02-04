@@ -262,7 +262,7 @@ python do_rootfs_postprocess() {
         bb.build.exec_func(cmd, d)
         progress_reporter.update(int(i / len(cmds) * 100))
 }
-addtask rootfs_postprocess before do_rootfs
+addtask rootfs_postprocess before do_rootfs after do_unpack
 
 python do_rootfs() {
     """Virtual task"""
@@ -270,9 +270,10 @@ python do_rootfs() {
 }
 addtask rootfs before do_build
 
+do_rootfs_postprocess[depends] = "base-apt:do_cache isar-apt:do_cache_config"
+
 SSTATETASKS += "do_rootfs_install"
 ROOTFS_SSTATE = "${WORKDIR}/rootfs-sstate"
-do_rootfs_install[depends] += " base-apt:do_cache isar-apt:do_cache_config"
 do_rootfs_install[dirs] += "${ROOTFS_SSTATE} ${WORKDIR}/mnt/rootfs"
 do_rootfs_install[cleandirs] += "${ROOTFS_SSTATE}"
 do_rootfs_install[sstate-plaindirs] = "${ROOTFS_SSTATE}"
