@@ -270,29 +270,28 @@ python do_rootfs() {
 }
 addtask rootfs before do_build
 
-do_rootfs[depends] = "base-apt:do_cache isar-apt:do_cache_config"
-
-SSTATETASKS += "do_rootfs"
+SSTATETASKS += "do_rootfs_install"
 ROOTFS_SSTATE = "${WORKDIR}/rootfs-sstate"
-do_rootfs[dirs] += "${ROOTFS_SSTATE} ${WORKDIR}/mnt/rootfs"
-do_rootfs[cleandirs] += "${ROOTFS_SSTATE}"
-do_rootfs[sstate-plaindirs] = "${ROOTFS_SSTATE}"
-do_rootfs[sstate-interceptfuncs] = "rootfs_sstate_prepare"
+do_rootfs_install[depends] += " base-apt:do_cache isar-apt:do_cache_config"
+do_rootfs_install[dirs] += "${ROOTFS_SSTATE} ${WORKDIR}/mnt/rootfs"
+do_rootfs_install[cleandirs] += "${ROOTFS_SSTATE}"
+do_rootfs_install[sstate-plaindirs] = "${ROOTFS_SSTATE}"
+do_rootfs_install[sstate-interceptfuncs] = "rootfs_install_sstate_prepare"
 
 # the buildchroot is owned by root, so we need some sudoing to pack and unpack
-rootfs_sstate_prepare() {
+rootfs_install_sstate_prepare() {
     sudo mount --bind ${WORKDIR}/rootfs ${WORKDIR}/mnt/rootfs -o ro
     sudo tar -C ${WORKDIR}/mnt -cpf ${ROOTFS_SSTATE}/rootfs.tar --one-file-system rootfs
     sudo umount ${WORKDIR}/mnt/rootfs
 }
-do_rootfs_sstate_prepare[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
+do_rootfs_install_sstate_prepare[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
 
-rootfs_sstate_finalize() {
+rootfs_install_sstate_finalize() {
     sudo tar -C ${WORKDIR} -xpf ${ROOTFS_SSTATE}/rootfs.tar
 }
 
-python do_rootfs_setscene() {
+python do_rootfs_install_setscene() {
     sstate_setscene(d)
-    bb.build.exec_func('rootfs_sstate_finalize', d)
+    bb.build.exec_func('rootfs_install_sstate_finalize', d)
 }
-addtask do_rootfs_setscene
+addtask do_rootfs_install_setscene
