@@ -105,8 +105,11 @@ rootfs_configure_apt() {
     set -e
 
     mkdir -p '${ROOTFSDIR}/etc/apt/apt.conf.d'
-    echo 'APT::Acquire::Retries "3";' > \
-        '${ROOTFSDIR}/etc/apt/apt.conf.d/80isar'
+    {
+        echo 'APT::Acquire::Retries "3";'
+        echo 'APT::Install-Recommends "0";'
+        echo 'APT::Install-Suggests "0";'
+    } > '${ROOTFSDIR}/etc/apt/apt.conf.d/50isar'
 EOSUDO
 }
 

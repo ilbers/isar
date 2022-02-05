@@ -9,7 +9,6 @@ LICENSE = "gpl-2.0"
 LIC_FILES_CHKSUM = "file://${LAYERDIR_core}/licenses/COPYING.GPLv2;md5=751419260aa954499f7abaabaa882bbe"
 FILESPATH_prepend := "${THISDIR}/files:"
 SRC_URI = " \
-    file://isar-apt.conf \
     file://isar-apt-fallback.conf \
     file://locale \
     file://chroot-setup.sh"
@@ -327,9 +326,6 @@ do_bootstrap() {
         install -v -m644 "${APTSRCS_INIT}" "${ROOTFSDIR}/etc/apt/sources-list"
         rm -f "${ROOTFSDIR}/etc/apt/sources.list"
         rm -rf "${ROOTFSDIR}/var/lib/apt/lists/"*
-        mkdir -p "${ROOTFSDIR}/etc/apt/apt.conf.d"
-        install -v -m644 "${WORKDIR}/isar-apt.conf" \
-                         "${ROOTFSDIR}/etc/apt/apt.conf.d/50isar.conf"
         find ${APT_KEYS_DIR}/ -type f | while read keyfile
         do
             MY_GPGHOME="$(chroot "${ROOTFSDIR}" mktemp -d /tmp/gpghomeXXXXXXXXXX)"
@@ -348,6 +344,7 @@ do_bootstrap() {
         done
 
         if [ "${@get_distro_suite(d)}" = "stretch" ] && [ "${@get_host_release().split('.')[0]}" -lt "4" ]; then
+            mkdir -p "${ROOTFSDIR}/etc/apt/apt.conf.d"
             install -v -m644 "${WORKDIR}/isar-apt-fallback.conf" \
                              "${ROOTFSDIR}/etc/apt/apt.conf.d/55isar-fallback.conf"
         fi
