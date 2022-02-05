@@ -98,6 +98,19 @@ EOF
 EOSUDO
 }
 
+ROOTFS_CONFIGURE_COMMAND += "rootfs_configure_apt"
+rootfs_configure_apt[weight] = "2"
+rootfs_configure_apt() {
+    sudo -s <<'EOSUDO'
+    set -e
+
+    mkdir -p '${ROOTFSDIR}/etc/apt/apt.conf.d'
+    echo 'APT::Acquire::Retries "3";' > \
+        '${ROOTFSDIR}/etc/apt/apt.conf.d/80isar'
+EOSUDO
+}
+
+
 ROOTFS_INSTALL_COMMAND += "rootfs_install_pkgs_update"
 rootfs_install_pkgs_update[weight] = "5"
 rootfs_install_pkgs_update[isar-apt-lock] = "acquire-before"
