@@ -22,9 +22,13 @@ python do_adjust_git() {
     rootdir = d.getVar('WORKDIR', True)
 
     git_link = os.path.join(d.getVar('GIT_DL_LINK_DIR'), '.git-downloads')
-    git_dl = os.path.join(d.getVar("DL_DIR"), "git")
+    dl_dir = d.getVar("DL_DIR")
+    git_dl = os.path.join(dl_dir, "git")
 
-    if not os.path.exists(git_link) or os.path.realpath(git_link) != git_dl:
+    if os.path.exists(git_link) and os.path.realpath(git_link) != os.path.realpath(git_dl):
+        os.unlink(git_link)
+
+    if not os.path.exists(git_link):
         os.symlink(git_dl, git_link)
 
     for src_uri in (d.getVar("SRC_URI", True) or "").split():
@@ -36,7 +40,7 @@ python do_adjust_git() {
 
             if os.path.islink(ud.localpath):
                 realpath = os.path.realpath(ud.localpath)
-                filter_out = os.path.join(d.getVar("DL_DIR"), "git") + "/"
+                filter_out = git_dl + "/"
                 if realpath.startswith(filter_out):
                     # make the link relative
                     link = realpath.replace(filter_out, '', 1)
