@@ -59,7 +59,7 @@ show_help() {
 
 # Set default values, that can be overwritten from command line
 ARCH=arm
-DISTRO=buster
+DISTRO=bullseye
 BUILD_DIR=$PWD
 
 # Parse command line to get user configuration
