@@ -22,8 +22,8 @@ DEBIAN_BUILD_DEPENDS ?= "python3-pycryptodome:native, python3-pyelftools"
 
 PROVIDES += "optee-os-${OPTEE_NAME}"
 
-TEMPLATE_FILES = "debian/control.tmpl"
-TEMPLATE_VARS += "OPTEE_NAME DEBIAN_BUILD_DEPENDS"
+TEMPLATE_FILES = "debian/control.tmpl debian/rules.tmpl"
+TEMPLATE_VARS += "OPTEE_NAME DEBIAN_BUILD_DEPENDS OPTEE_PLATFORM OPTEE_EXTRA_BUILDARGS"
 
 # split strip platform flavor, if any, from the specified platform string
 OPTEE_PLATFORM_BASE = "${@d.getVar('OPTEE_PLATFORM').split('-')[0]}"
@@ -38,9 +38,4 @@ do_prepare_build() {
         echo "out/arm-plat-${OPTEE_PLATFORM_BASE}/core/$binary /usr/lib/optee-os/${OPTEE_NAME}/" >> \
             ${S}/debian/optee-os-${OPTEE_NAME}.install
     done
-}
-
-dpkg_runbuild_prepend() {
-    export OPTEE_PLATFORM="${OPTEE_PLATFORM}"
-    export OPTEE_EXTRA_BUILDARGS="${OPTEE_EXTRA_BUILDARGS}"
 }
