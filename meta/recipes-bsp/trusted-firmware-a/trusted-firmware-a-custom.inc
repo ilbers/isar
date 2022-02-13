@@ -22,8 +22,8 @@ DEBIAN_BUILD_DEPENDS ?= ""
 
 PROVIDES += "trusted-firmware-a-${TF_A_NAME}"
 
-TEMPLATE_FILES = "debian/control.tmpl"
-TEMPLATE_VARS += "TF_A_NAME DEBIAN_BUILD_DEPENDS"
+TEMPLATE_FILES = "debian/control.tmpl debian/rules.tmpl"
+TEMPLATE_VARS += "TF_A_NAME DEBIAN_BUILD_DEPENDS TF_A_PLATFORM TF_A_EXTRA_BUILDARGS"
 
 do_prepare_build() {
     cp -r ${WORKDIR}/debian ${S}/
@@ -35,9 +35,4 @@ do_prepare_build() {
         echo "build/${TF_A_PLATFORM}/$binary /usr/lib/trusted-firmware-a/${TF_A_NAME}/" >> \
             ${S}/debian/trusted-firmware-a-${TF_A_NAME}.install
     done
-}
-
-dpkg_runbuild_prepend() {
-    export TF_A_PLATFORM="${TF_A_PLATFORM}"
-    export TF_A_EXTRA_BUILDARGS="${TF_A_EXTRA_BUILDARGS}"
 }
