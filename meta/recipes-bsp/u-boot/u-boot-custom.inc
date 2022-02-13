@@ -26,8 +26,8 @@ python() {
 
 DEBIAN_BUILD_DEPENDS ?= "bc, bison, flex, device-tree-compiler, git"
 
-TEMPLATE_FILES = "debian/control.tmpl"
-TEMPLATE_VARS += "MACHINE DEBIAN_BUILD_DEPENDS"
+TEMPLATE_FILES = "debian/control.tmpl debian/rules.tmpl"
+TEMPLATE_VARS += "MACHINE DEBIAN_BUILD_DEPENDS U_BOOT_CONFIG U_BOOT_BIN"
 
 U_BOOT_TOOLS_PACKAGE ?= "0"
 U_BOOT_CONFIG_PACKAGE ?= "0"
@@ -70,9 +70,4 @@ u-boot-initial-env /etc
 fw_env.config      /etc
 EOF
     fi
-}
-
-dpkg_runbuild_prepend() {
-    export U_BOOT_CONFIG="${U_BOOT_CONFIG}"
-    export U_BOOT_BIN="${U_BOOT_BIN}"
 }
