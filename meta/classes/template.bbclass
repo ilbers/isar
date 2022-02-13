@@ -8,7 +8,7 @@ TEMPLATE_VARS ?= "PN PV DESCRIPTION HOMEPAGE MAINTAINER DISTRO_ARCH"
 
 do_transform_template[vardeps] = "TEMPLATE_FILES ${TEMPLATE_VARS}"
 python do_transform_template() {
-    import subprocess, contextlib
+    import subprocess, contextlib, shutil
 
     workdir = os.path.normpath(d.getVar('WORKDIR', True))
 
@@ -56,5 +56,7 @@ python do_transform_template() {
                                           stdout=output, env=env))
             if process.wait() != 0:
                 bb.fatal("processing of template failed")
+
+        shutil.copymode(template_file, output_file)
 }
 addtask do_transform_template after do_unpack
