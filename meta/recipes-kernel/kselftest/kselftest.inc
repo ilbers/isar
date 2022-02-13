@@ -33,26 +33,21 @@ DEBIAN_BUILD_DEPENDS ?= " \
     llvm:native, \
 "
 
-SRC_URI += "file://rules"
+SRC_URI += "file://rules.tmpl"
 S = "${WORKDIR}/linux-${PV}"
+
+TEMPLATE_FILES = "rules.tmpl"
+TEMPLATE_VARS += "KSELFTEST_ARGS"
 
 KSELFTEST_TARGETS ?= ""
 KSELFTEST_SKIP_TARGETS ?= ""
 KSELFTEST_FORCE_TARGETS ?= "0"
 
+KSELFTEST_ARGS = "${@ "TARGETS=\"${KSELFTEST_TARGETS}\"" if d.getVar('KSELFTEST_TARGETS', True) else ''}"
+KSELFTEST_ARGS_append = "${@ " FORCE_TARGETS=1" if d.getVar('KSELFTEST_FORCE_TARGETS', True) == '1' else ''}"
+KSELFTEST_ARGS_append .= "${@ " SKIP_TARGETS=\"${KSELFTEST_SKIP_TARGETS}\"" if d.getVar('KSELFTEST_SKIP_TARGETS', True) else ''}"
+
 do_prepare_build[cleandirs] += "${S}/debian"
 do_prepare_build() {
     deb_debianize
-}
-
-dpkg_runbuild_prepend() {
-    if [ -n "${KSELFTEST_TARGETS}" ];then
-        export KSELFTEST_ARGS="TARGETS=\"${KSELFTEST_TARGETS}\""
-    fi
-    if [ ${KSELFTEST_FORCE_TARGETS} -eq 1 ];then
-        export KSELFTEST_ARGS="${KSELFTEST_ARGS} FORCE_TARGETS=1"
-    fi
-    if [ -n "${KSELFTEST_SKIP_TARGETS}" ];then
-        export KSELFTEST_ARGS="${KSELFTEST_ARGS} SKIP_TARGETS=\"${KSELFTEST_SKIP_TARGETS}\""
-    fi
 }
