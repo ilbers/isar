@@ -52,6 +52,7 @@ TEMPLATE_FILES += "                  \
     debian/isar/build.tmpl           \
     debian/isar/clean.tmpl           \
     debian/isar/common.tmpl          \
+    debian/isar/configure.tmpl       \
     debian/isar/install.tmpl         \
     debian/isar/version.cfg.tmpl     \
     debian/linux-image.postinst.tmpl \
@@ -71,6 +72,8 @@ TEMPLATE_VARS += "                \
     KERNEL_HEADERS_DEBIAN_DEPENDS \
     LINUX_VERSION_EXTENSION       \
     KERNEL_NAME_PROVIDED          \
+    KERNEL_CONFIG_TARGET          \
+    KERNEL_CONFIG_FRAGMENTS       \
 "
 
 inherit dpkg
@@ -146,41 +149,51 @@ do_prepare_build_prepend() {
 # build directory for our "full" kernel build
 KERNEL_BUILD_DIR = "build-full"
 
+def get_kernel_config_target(d):
+    kernel_defconfig = d.getVar('KERNEL_DEFCONFIG', True)
+
+    config_target = kernel_defconfig
+
+    if kernel_defconfig:
+        workdir=d.getVar('WORKDIR', True)
+        if os.path.isfile(workdir + "/" + kernel_defconfig):
+            config_target = "olddefconfig"
+        else:
+            config_target = "defconfig KBUILD_DEFCONFIG=" + kernel_defconfig
+    else:
+        config_target = "defconfig"
+
+    return config_target
+
+KERNEL_CONFIG_TARGET = "${@get_kernel_config_target(d)}"
+
+def get_kernel_config_fragments(d):
+    src_frags = " ".join(config_fragments(d))
+    out_frags = " ".join(map(lambda frag: 'debian/fragments/' + frag, config_fragments(d)))
+
+    linux_version_extension = d.getVar('LINUX_VERSION_EXTENSION', True)
+    if linux_version_extension:
+        out_frags += " debian/isar/version.cfg"
+
+    return out_frags
+
+KERNEL_CONFIG_FRAGMENTS = "${@get_kernel_config_fragments(d)}"
+
 dpkg_configure_kernel() {
-	config_target="${KERNEL_DEFCONFIG}"
 	rm -rf ${S}/${KERNEL_BUILD_DIR} && mkdir -p ${S}/${KERNEL_BUILD_DIR}
 	if [ -n "${KERNEL_DEFCONFIG}" ]; then
 		if [ -e "${WORKDIR}/${KERNEL_DEFCONFIG}" ]; then
 			cp ${WORKDIR}/${KERNEL_DEFCONFIG} ${S}/${KERNEL_BUILD_DIR}/.config
-			config_target="olddefconfig"
-		else
-			config_target="defconfig KBUILD_DEFCONFIG=${KERNEL_DEFCONFIG}"
 		fi
-	else
-		config_target="defconfig"
 	fi
 
 	# copy config fragments over to the kernel tree
 	src_frags="${@ " ".join(config_fragments(d)) }"
-	out_frags="${@ " ".join(map(lambda frag: 'debian/fragments/' + frag, config_fragments(d))) }"
-	if [ -n "${LINUX_VERSION_EXTENSION}" ]; then
-		out_frags="${out_frags} debian/isar/version.cfg"
-	fi
 	rm -rf ${S}/debian/fragments
 	if [ -n "${src_frags}" ]; then
 		mkdir -p ${S}/debian/fragments
 		(cd ${WORKDIR} && cp ${src_frags} ${S}/debian/fragments/)
 	fi
-
-	sudo -E chroot --userspec=$(id -u):$(id -g) ${BUILDCHROOT_DIR} sh -c " \
-		export ARCH=${KERNEL_ARCH} &&                                  \
-		cd ${PP}/${PPS} &&                                             \
-		make O=${KERNEL_BUILD_DIR} ${config_target} &&                 \
-		./scripts/kconfig/merge_config.sh                              \
-			-O ${KERNEL_BUILD_DIR}/                                \
-			${KERNEL_BUILD_DIR}/.config                            \
-			${out_frags}                                           \
-        "
 }
 
 dpkg_runbuild_prepend() {

@@ -22,6 +22,9 @@ isar_env=$(strip \
 override_dh_auto_clean:
 	$(isar_env) && bash $(deb_top_dir)/isar/clean
 
+override_dh_auto_configure:
+	$(isar_env) && bash $(deb_top_dir)/isar/configure
+
 override_dh_auto_build:
 	$(isar_env) && bash $(deb_top_dir)/isar/build
 

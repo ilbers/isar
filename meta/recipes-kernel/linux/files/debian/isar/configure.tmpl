@@ -1,0 +1,19 @@
+#!/bin/bash
+# Copyright (c) Mentor Graphics, a Siemens business, 2019
+# SPDX-License-Identifier: MIT
+
+# Load common stuff
+. ${S}/debian/isar/common || exit ${?}
+
+do_configure() {
+
+    # Process kernel config target and fragments
+    ${MAKE} O=${KERNEL_BUILD_DIR} ${KERNEL_CONFIG_TARGET} || exit ${?}
+    ./scripts/kconfig/merge_config.sh -O ${KERNEL_BUILD_DIR}/ \
+    ${KERNEL_BUILD_DIR}/.config ${KERNEL_CONFIG_FRAGMENTS}
+
+    # Stop tracing
+    set +x
+}
+
+main configure ${*}
