@@ -7,7 +7,7 @@
 Description=Enable fsck for mounted devices
 DefaultDependencies=no
 Conflicts=shutdown.target
-After=systemd-remount-fs.service
+After=systemd-remount-fs.service systemd-udev-trigger.service
 Before=sysinit.target shutdown.target
 ConditionPathIsReadWrite=/etc
 
