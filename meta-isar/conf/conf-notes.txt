@@ -1,4 +1,4 @@
 Common targets are:
     mc:qemuarm-bullseye:isar-image-base
+    mc:qemuarm64-bullseye:isar-image-base
     mc:qemuamd64-bullseye:isar-image-base
-    mc:rpi-stretch:isar-image-base
