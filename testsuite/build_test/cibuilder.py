@@ -2,7 +2,6 @@
 
 import logging
 import os
-import re
 import select
 import shutil
 import subprocess
@@ -11,7 +10,7 @@ from avocado import Test
 from avocado.utils import path
 from avocado.utils import process
 
-isar_root = os.path.dirname(__file__) + '/../..'
+isar_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 backup_prefix = '.ci-backup'
 
 app_log = logging.getLogger("avocado.app")
@@ -28,17 +27,60 @@ class CIBuilder(Test):
         self._file_handler.setFormatter(formatter)
         app_log.addHandler(self._file_handler)
 
-    def init(self, build_dir):
+    def init(self, build_dir='build'):
+        # initialize build_dir and setup environment
+        # needs to run once (per test case)
+        if hasattr(self, 'build_dir'):
+            self.error("Broken test implementation: init() called multiple times.")
+        self.build_dir = os.path.join(isar_root, build_dir)
         os.chdir(isar_root)
-        path.usable_rw_dir(build_dir)
+        path.usable_rw_dir(self.build_dir)
         output = process.getoutput('/bin/bash -c "source isar-init-build-env \
-                                    %s 2>&1 >/dev/null; env"' % build_dir)
+                                    %s 2>&1 >/dev/null; env"' % self.build_dir)
         env = dict(((x.split('=', 1) + [''])[:2] \
                     for x in output.splitlines() if x != ''))
         os.environ.update(env)
 
-    def confprepare(self, build_dir, compat_arch, cross, debsrc_cache):
-        with open(build_dir + '/conf/ci_build.conf', 'w') as f:
+    def check_init(self):
+        if not hasattr(self, 'build_dir'):
+            self.error("Broken test implementation: need to call init().")
+
+    def configure(self, compat_arch=True, cross=None, debsrc_cache=True,
+                  container=False, ccache=False, sstate=False, offline=False,
+                  gpg_pub_key=None, **kwargs):
+        # write configuration file and set bitbake_args
+        # can run multiple times per test case
+        self.check_init()
+
+        # get parameters from avocado cmdline
+        quiet = bool(int(self.params.get('quiet', default=0)))
+        if cross is None:
+            cross = bool(int(self.params.get('cross', default=0)))
+
+        # get parameters from environment
+        distro_apt_premir = os.getenv('DISTRO_APT_PREMIRRORS')
+
+        self.log.info(f'===================================================\n'
+                      f'Configuring build_dir {self.build_dir}\n'
+                      f'  compat_arch = {compat_arch}\n'
+                      f'  cross = {cross}\n'
+                      f'  debsrc_cache = {debsrc_cache}\n'
+                      f'  offline = {offline}\n'
+                      f'  container = {container}\n'
+                      f'  ccache = {ccache}\n'
+                      f'  sstate = {sstate}\n'
+                      f'  gpg_pub_key = {gpg_pub_key}\n'
+                      f'===================================================')
+
+        # determine bitbake_args
+        self.bitbake_args = []
+        if not quiet:
+            self.bitbake_args.append('-v')
+        if not sstate:
+            self.bitbake_args.append('--no-setscene')
+
+        # write ci_build.conf
+        with open(self.build_dir + '/conf/ci_build.conf', 'w') as f:
             if compat_arch:
                 f.write('ISAR_ENABLE_COMPAT_ARCH_amd64 = "1"\n')
                 f.write('ISAR_ENABLE_COMPAT_ARCH_arm64 = "1"\n')
@@ -48,36 +90,45 @@ class CIBuilder(Test):
                 f.write('ISAR_CROSS_COMPILE = "1"\n')
             if debsrc_cache:
                 f.write('BASE_REPO_FEATURES = "cache-deb-src"\n')
-            distro_apt_premir = os.getenv('DISTRO_APT_PREMIRRORS')
+            if offline:
+                f.write('ISAR_USE_CACHED_BASE_REPO = "1"\n')
+                f.write('BB_NO_NETWORK = "1"\n')
+            if container:
+                f.write('SDK_FORMATS = "docker-archive"\n')
+                f.write('IMAGE_INSTALL_remove = "example-module-${KERNEL_NAME} enable-fsck"\n')
+            if gpg_pub_key:
+                f.write('BASE_REPO_KEY="file://' + gpg_pub_key + '"\n')
             if distro_apt_premir:
                 f.write('DISTRO_APT_PREMIRRORS = "%s"\n' % distro_apt_premir)
 
-        with open(build_dir + '/conf/local.conf', 'r+') as f:
+        # include ci_build.conf in local.conf
+        with open(self.build_dir + '/conf/local.conf', 'r+') as f:
             for line in f:
                 if 'include ci_build.conf' in line:
                     break
             else:
                 f.write('\ninclude ci_build.conf')
 
-    def containerprep(self, build_dir):
-        with open(build_dir + '/conf/ci_build.conf', 'a') as f:
-            f.write('SDK_FORMATS = "docker-archive"\n')
-            f.write('IMAGE_INSTALL_remove = "example-module-${KERNEL_NAME} enable-fsck"\n')
+    def unconfigure(self):
+        self.check_init()
+        open(self.build_dir + '/conf/ci_build.conf', 'w').close()
 
-    def confcleanup(self, build_dir):
-        open(build_dir + '/conf/ci_build.conf', 'w').close()
+    def delete_from_build_dir(self, path):
+        self.check_init()
+        process.run('rm -rf ' + self.build_dir + '/' + path, sudo=True)
 
-    def deletetmp(self, build_dir):
-        process.run('rm -rf ' + build_dir + '/tmp', sudo=True)
-
-    def bitbake(self, build_dir, target, cmd, args):
-        os.chdir(build_dir)
+    def bitbake(self, target, bitbake_cmd=None, **kwargs):
+        self.check_init()
+        self.log.info('===================================================')
+        self.log.info('Building ' + str(target))
+        self.log.info('===================================================')
+        os.chdir(self.build_dir)
         cmdline = ['bitbake']
-        if args:
-            cmdline.append(args)
-        if cmd:
+        if self.bitbake_args:
+            cmdline.extend(self.bitbake_args)
+        if bitbake_cmd:
             cmdline.append('-c')
-            cmdline.append(cmd)
+            cmdline.append(bitbake_cmd)
         if isinstance(target, list):
             cmdline.extend(target)
         else:
@@ -103,30 +154,28 @@ class CIBuilder(Test):
                 self.fail('Bitbake failed')
 
     def backupfile(self, path):
+        self.check_init()
         try:
             shutil.copy2(path, path + backup_prefix)
         except FileNotFoundError:
             self.log.warn(path + ' not exist')
 
     def backupmove(self, path):
+        self.check_init()
         try:
             shutil.move(path, path + backup_prefix)
         except FileNotFoundError:
             self.log.warn(path + ' not exist')
 
     def restorefile(self, path):
+        self.check_init()
         try:
             shutil.move(path + backup_prefix, path)
         except FileNotFoundError:
             self.log.warn(path + backup_prefix + ' not exist')
 
     def getlayerdir(self, layer):
-        try:
-            path.find_command('bitbake')
-        except path.CmdNotFoundError:
-            build_dir = self.params.get('build_dir',
-                                        default=isar_root + '/build')
-            self.init(build_dir)
+        self.check_init()
         output = process.getoutput('bitbake -e | grep "^LAYERDIR_.*="')
         env = dict(((x.split('=', 1) + [''])[:2] \
                     for x in output.splitlines() if x != ''))

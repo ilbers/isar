@@ -30,7 +30,8 @@ class ReproTest(CIBaseTest):
             'mc:qemuarm64-bullseye:isar-image-base'
                   ]
 
-        self.perform_repro_test(targets, 1)
+        self.init()
+        self.perform_repro_test(targets, signed=True)
 
     def test_repro_unsigned(self):
         targets = [
@@ -38,7 +39,8 @@ class ReproTest(CIBaseTest):
             'mc:qemuarm-bullseye:isar-image-base'
                   ]
 
-        self.perform_repro_test(targets, 0)
+        self.init()
+        self.perform_repro_test(targets)
 
 class CcacheTest(CIBaseTest):
 
@@ -49,6 +51,7 @@ class CcacheTest(CIBaseTest):
     """
     def test_ccache_rebuild(self):
         targets = ['mc:de0-nano-soc-bullseye:isar-image-base']
+        self.init()
         self.perform_ccache_test(targets)
 
 class CrossTest(CIBaseTest):
@@ -68,15 +71,17 @@ class CrossTest(CIBaseTest):
             'mc:rpi-arm-v7-bullseye:isar-image-base'
                   ]
 
-        self.perform_build_test(targets, 1, None)
+        self.init()
+        self.perform_build_test(targets, cross=True)
 
     def test_cross_ubuntu(self):
         targets = [
             'mc:qemuarm64-focal:isar-image-base'
                   ]
 
+        self.init()
         try:
-            self.perform_build_test(targets, 1, None)
+            self.perform_build_test(targets, cross=True)
         except:
             self.cancel('KFAIL')
 
@@ -85,8 +90,9 @@ class CrossTest(CIBaseTest):
             'mc:qemuarm-bookworm:isar-image-base'
                   ]
 
+        self.init()
         try:
-            self.perform_build_test(targets, 1, None)
+            self.perform_build_test(targets, cross=True)
         except:
             self.cancel('KFAIL')
 
@@ -100,7 +106,8 @@ class SdkTest(CIBaseTest):
     def test_sdk(self):
         targets = ['mc:qemuarm-bullseye:isar-image-base']
 
-        self.perform_build_test(targets, 1, 'do_populate_sdk')
+        self.init()
+        self.perform_build_test(targets, bitbake_cmd='do_populate_sdk')
 
 class NoCrossTest(CIBaseTest):
 
@@ -138,11 +145,10 @@ class NoCrossTest(CIBaseTest):
             'mc:qemuamd64-focal:isar-image-base'
                   ]
 
+        self.init()
         # Cleanup after cross build
-        self.deletetmp(self.params.get('build_dir',
-                       default=os.path.dirname(__file__) + '/../../build'))
-
-        self.perform_build_test(targets, 0, None)
+        self.delete_from_build_dir('tmp')
+        self.perform_build_test(targets, cross=False)
 
     def test_nocross_bookworm(self):
         targets = [
@@ -153,8 +159,9 @@ class NoCrossTest(CIBaseTest):
             'mc:hikey-bookworm:isar-image-base'
                   ]
 
+        self.init()
         try:
-            self.perform_build_test(targets, 0, None)
+            self.perform_build_test(targets, cross=False)
         except:
             self.cancel('KFAIL')
 
@@ -177,8 +184,7 @@ class RebuildTest(CIBaseTest):
     :avocado: tags=rebuild,fast,full
     """
     def test_rebuild(self):
-        is_cross_build = int(self.params.get('cross', default=0))
-
+        self.init()
         layerdir_core = self.getlayerdir('core')
 
         dpkgbase_file = layerdir_core + '/classes/dpkg-base.bbclass'
@@ -188,8 +194,7 @@ class RebuildTest(CIBaseTest):
             file.write('do_fetch_append() {\n\n}')
 
         try:
-            self.perform_build_test('mc:qemuamd64-bullseye:isar-image-base',
-                                    is_cross_build, None)
+            self.perform_build_test('mc:qemuamd64-bullseye:isar-image-base')
         finally:
             self.restorefile(dpkgbase_file)
 
@@ -209,7 +214,8 @@ class ContainerImageTest(CIBaseTest):
             'mc:container-amd64-bookworm:isar-image-base'
                   ]
 
-        self.perform_container_test(targets, None)
+        self.init()
+        self.perform_build_test(targets, container=True)
 
 class ContainerSdkTest(CIBaseTest):
 
@@ -222,4 +228,5 @@ class ContainerSdkTest(CIBaseTest):
     def test_container_sdk(self):
         targets = ['mc:container-amd64-stretch:isar-image-base']
 
-        self.perform_container_test(targets, 'do_populate_sdk')
+        self.init()
+        self.perform_build_test(targets, bitbake_cmd='do_populate_sdk', container=True)

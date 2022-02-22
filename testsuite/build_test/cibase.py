@@ -8,50 +8,21 @@ import time
 from cibuilder import CIBuilder
 from avocado.utils import process
 
-isar_root = os.path.dirname(__file__) + '/../..'
-
 class CIBaseTest(CIBuilder):
-
-    def prep(self, testname, targets, cross, debsrc_cache):
-        build_dir = self.params.get('build_dir', default=isar_root + '/build')
-        build_dir = os.path.realpath(build_dir)
-        quiet = int(self.params.get('quiet', default=0))
-        bitbake_args = '-v'
-
-        if quiet:
-            bitbake_args = ''
-
-        self.log.info('===================================================')
-        self.log.info('Running ' + testname + ' test for:')
-        self.log.info(targets)
-        self.log.info('Isar build folder is: ' + build_dir)
-        self.log.info('===================================================')
-
-        self.init(build_dir)
-        self.confprepare(build_dir, 1, cross, debsrc_cache)
-
-        return build_dir, bitbake_args;
-
-    def perform_build_test(self, targets, cross, bitbake_cmd):
-        build_dir, bb_args = self.prep('Isar build', targets, cross, 1)
+    def perform_build_test(self, targets, **kwargs):
+        self.configure(**kwargs)
 
         self.log.info('Starting build...')
 
-        self.bitbake(build_dir, targets, bitbake_cmd, bb_args)
+        self.bitbake(targets, **kwargs)
 
-    def perform_repro_test(self, targets, signed):
-        cross = int(self.params.get('cross', default=0))
-        build_dir, bb_args = self.prep('repro Isar build', targets, cross, 0)
-
+    def perform_repro_test(self, targets, signed=False, **kwargs):
         gpg_pub_key = os.path.dirname(__file__) + '/../base-apt/test_pub.key'
         gpg_priv_key = os.path.dirname(__file__) + '/../base-apt/test_priv.key'
 
-        if signed:
-            with open(build_dir + '/conf/ci_build.conf', 'a') as file:
-                # Enable use of signed cached base repository
-                file.write('BASE_REPO_KEY="file://' + gpg_pub_key + '"\n')
+        self.configure(gpg_pub_key=gpg_pub_key if signed else None, **kwargs)
 
-        os.chdir(build_dir)
+        os.chdir(self.build_dir)
 
         os.environ['GNUPGHOME'] = tempfile.mkdtemp()
         result = process.run('gpg --import %s %s' % (gpg_pub_key, gpg_priv_key))
@@ -59,33 +30,22 @@ class CIBaseTest(CIBuilder):
         if result.exit_status:
             self.fail('GPG import failed')
 
-        self.bitbake(build_dir, targets, None, bb_args)
+        self.bitbake(targets, **kwargs)
 
-        self.deletetmp(build_dir)
-        with open(build_dir + '/conf/ci_build.conf', 'a') as file:
-            file.write('ISAR_USE_CACHED_BASE_REPO = "1"\n')
-            file.write('BB_NO_NETWORK = "1"\n')
+        self.delete_from_build_dir('tmp')
+        self.configure(gpg_pub_key=gpg_pub_key if signed else None, offline=True, **kwargs)
 
-        self.bitbake(build_dir, targets, None, bb_args)
+        self.bitbake(targets, **kwargs)
 
         # Disable use of cached base repository
-        self.confcleanup(build_dir)
+        self.unconfigure()
 
         if not signed:
             # Try to build with changed configuration with no cleanup
-            self.bitbake(build_dir, targets, None, bb_args)
+            self.bitbake(targets, **kwargs)
 
         # Cleanup
-        self.deletetmp(build_dir)
-
-    def perform_container_test(self, targets, bitbake_cmd):
-        cross = int(self.params.get('cross', default=0))
-        build_dir, bb_args = self.prep('Isar Container', targets, cross, 1)
-
-        self.containerprep(build_dir)
-
-        self.bitbake(build_dir, targets, bitbake_cmd, bb_args)
-
+        self.delete_from_build_dir('tmp')
 
     def perform_ccache_test(self, targets):
         build_dir, bb_args = self.prep('Isar ccache build', targets, 0, 0)
@@ -93,21 +53,20 @@ class CIBaseTest(CIBuilder):
         self.deletetmp(build_dir)
         process.run('rm -rf ' + build_dir + '/ccache', sudo=True)
 
-        with open(build_dir + '/conf/ci_build.conf', 'a') as file:
-            file.write('USE_CCACHE = "1"\n')
-            file.write('CCACHE_TOP_DIR = "${TOPDIR}/ccache"')
+        self.delete_from_build_dir('tmp')
+        self.delete_from_build_dir('ccache')
 
         self.log.info('Starting build and filling ccache dir...')
         start = time.time()
-        self.bitbake(build_dir, targets, None, bb_args)
+        self.bitbake(targets, **kwargs)
         first_time = time.time() - start
         self.log.info('Non-cached build: ' + str(round(first_time)) + 's')
 
-        self.deletetmp(build_dir)
+        self.delete_from_build_dir('tmp')
 
         self.log.info('Starting build and using ccache dir...')
         start = time.time()
-        self.bitbake(build_dir, targets, None, bb_args)
+        self.bitbake(targets, **kwargs)
         second_time = time.time() - start
         self.log.info('Cached build: ' + str(round(second_time)) + 's')
 
@@ -116,5 +75,5 @@ class CIBaseTest(CIBuilder):
             self.fail('No speedup after rebuild with ccache')
 
         # Cleanup
-        self.deletetmp(build_dir)
-        process.run('rm -rf ' + build_dir + '/ccache', sudo=True)
+        self.delete_from_build_dir('tmp')
+        self.delete_from_build_dir('ccache')

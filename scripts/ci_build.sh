@@ -27,8 +27,8 @@ fi
 # Get Avocado build tests path
 BUILD_TEST_DIR="$(pwd)/testsuite/build_test"
 
-# Start build in Isar tree by default
-BUILD_DIR=./build
+# Start tests in current path by default
+BASE_DIR=./build
 
 # Check dependencies
 DEPENDENCIES="umoci skopeo"
@@ -45,8 +45,8 @@ show_help() {
     echo "    $0 [params]"
     echo
     echo "Parameters:"
-    echo "    -b, --build BUILD_DIR    set path to build directory. If not set,"
-    echo "                             the build will be started in current path."
+    echo "    -b, --base BASE_DIR      set path to base directory. If not set,"
+    echo "                             the tests will be started in current path."
     echo "    -c, --cross              enable cross-compilation."
     echo "    -d, --debug              enable debug bitbake output."
     echo "    -f, --fast               cross build reduced set of configurations."
@@ -73,8 +73,8 @@ do
         show_help
         exit 0
         ;;
-    -b|--build)
-        BUILD_DIR="$2"
+    -b|--base)
+        BASE_DIR="$2"
         shift
         ;;
     -c|--cross)
@@ -117,10 +117,10 @@ fi
 mkdir -p .config/avocado
 cat <<EOF > .config/avocado/avocado.conf
 [datadir.paths]
-base_dir = $(realpath $BUILD_DIR)/
-test_dir = $(realpath $BUILD_DIR)/tests
-data_dir = $(realpath $BUILD_DIR)/data
-logs_dir = $(realpath $BUILD_DIR)/job-results
+base_dir = $(realpath $BASE_DIR)/
+test_dir = $(realpath $BASE_DIR)/tests
+data_dir = $(realpath $BASE_DIR)/data
+logs_dir = $(realpath $BASE_DIR)/job-results
 EOF
 export VIRTUAL_ENV="./"
 
@@ -129,4 +129,4 @@ set -x
 
 avocado $VERBOSE run "$BUILD_TEST_DIR/build_test.py" \
     -t $TAGS --test-runner=runner --disable-sysinfo \
-    -p build_dir="$BUILD_DIR" -p quiet=$QUIET -p cross=$CROSS_BUILD
+    -p quiet=$QUIET -p cross=$CROSS_BUILD
