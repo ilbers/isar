@@ -20,6 +20,7 @@ Copyright (C) 2016-2019, ilbers GmbH
  - [Build statistics collection](#build-statistics-collection)
  - [Enabling Cross-compilation](#isar-cross-compilation)
  - [Using ccache for custom packages](#using-ccache-for-custom-packages)
+ - [Using sstate-cache](#using-sstate-cache)
  - [Create an ISAR SDK root filesystem](#create-an-isar-sdk-root-filesystem)
  - [Create a containerized Isar SDK root filesystem](#create-a-containerized-isar-sdk-root-filesystem)
  - [Creation of local apt repo caching upstream Debian packages](#creation-of-local-apt-repo-caching-upstream-debian-packages)
@@ -970,6 +971,29 @@ By default, ccache directory is created inside `TMPDIR`, but it can be
 adjusted by `CCACHE_TOP_DIR` variable in `local.conf`. Ccache directory
 `CCACHE_DIR` default value is `"${CCACHE_TOP_DIR}/${DISTRO}-${DISTRO_ARCH}"`,
 that means caches for different distros and architectures are not overlapped.
+
+
+## Using sstate-cache
+
+Isar supports caching of bitbake task artifacts using the sstate-cache
+feature known from OpenEmbedded. Isar caches
+
+  * the Debian bootstrap (`isar-bootstrap` recipe)
+  * Debian packages (built with the `dpkg` or `dpkg-raw` classes)
+  * root file systems (buildchroot and image rootfs)
+
+The location of the sstate-cache is controlled by the variable `SSTATE_DIR`
+and defaults to `${TMPDIR}/sstate-cache`.
+
+Note that cached rootfs artifacts (bootstrap and buildchroot) have a limited
+"lifetime": Isar updates their package lists for the upstream package sources
+only once, when they are initially created. So as packages on the upstream
+mirrors change, those lists will be out-of-date and the rootfs becomes useless.
+To avoid this, it is recommended to regularly delete the contents of the
+sstate-cache.
+
+To build without using any sstate caching, you can use the bitbake argument
+`--no-setscene`.
 
 
 ## Create an ISAR SDK root filesystem
