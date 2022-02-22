@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import glob
 import os
 import re
 import tempfile
@@ -77,3 +78,92 @@ class CIBaseTest(CIBuilder):
         # Cleanup
         self.delete_from_build_dir('tmp')
         self.delete_from_build_dir('ccache')
+
+    def perform_sstate_test(self, image_target, package_target, **kwargs):
+        def check_executed_tasks(target, expected):
+            taskorder_file = glob.glob(f'{self.build_dir}/tmp/work/*/{target}/*/temp/log.task_order')
+            try:
+                with open(taskorder_file[0], 'r') as f:
+                    tasks = [l.split()[0] for l in f.readlines()]
+            except (FileNotFoundError, IndexError):
+                tasks = []
+            if expected is None:
+                # require that no tasks were executed
+                return len(tasks) == 0
+            for e in expected:
+                should_run = True
+                if e.startswith('!'):
+                    should_run = False
+                    e = e[1:]
+                if should_run != (e in tasks):
+                    self.log.error(f"{target}: executed tasks {str(tasks)} did not match expected {str(expected)}")
+                    return False
+            return True
+
+        self.configure(sstate=True, **kwargs)
+
+        # Cleanup sstate and tmp before test
+        self.delete_from_build_dir('sstate-cache')
+        self.delete_from_build_dir('tmp')
+
+        # Populate cache
+        self.bitbake(image_target, **kwargs)
+
+        # Save contents of image deploy dir
+        expected_files = set(glob.glob(f'{self.build_dir}/tmp/deploy/images/*/*'))
+
+        # Rebuild image
+        self.delete_from_build_dir('tmp')
+        self.bitbake(image_target, **kwargs)
+        if not all([
+                check_executed_tasks('isar-bootstrap-target',
+                    ['do_bootstrap_setscene', '!do_bootstrap']),
+                check_executed_tasks('buildchroot-target',
+                    ['do_rootfs_install_setscene', '!do_rootfs_install']),
+                check_executed_tasks('isar-image-base-*-wic-img',
+                    ['do_rootfs_install_setscene', '!do_rootfs_install'])
+            ]):
+            self.fail("Failed rebuild image")
+
+        # Verify content of image deploy dir
+        deployed_files = set(glob.glob(f'{self.build_dir}/tmp/deploy/images/*/*'))
+        if not deployed_files == expected_files:
+            if len(expected_files - deployed_files) > 0:
+                self.log.error(f"{target}: files missing from deploy dir after rebuild with sstate cache:"
+                               f"{expected_files - deployed_files}")
+            if len(deployed_files - expected_files) > 0:
+                self.log.error(f"{target}: additional files in deploy dir after rebuild with sstate cache:"
+                               f"{deployed_files - expected_files}")
+            self.fail("Failed rebuild image")
+
+        # Rebuild single package
+        self.delete_from_build_dir('tmp')
+        self.bitbake(package_target, **kwargs)
+        if not all([
+                check_executed_tasks('isar-bootstrap-target',
+                    ['do_bootstrap_setscene']),
+                check_executed_tasks('buildchroot-target',
+                    ['!do_buildchroot_deploy']),
+                check_executed_tasks('hello',
+                    ['do_dpkg_build_setscene', 'do_deploy_deb', '!do_dpkg_build'])
+            ]):
+            self.fail("Failed rebuild single package")
+
+        # Rebuild package and image
+        self.delete_from_build_dir('tmp')
+        process.run(f'find {self.build_dir}/sstate-cache/ -name sstate:hello:* -delete')
+        self.bitbake(image_target, **kwargs)
+        if not all([
+                check_executed_tasks('isar-bootstrap-target',
+                    ['do_bootstrap_setscene', '!do_bootstrap']),
+                check_executed_tasks('buildchroot-target',
+                    ['do_rootfs_install_setscene', '!do_rootfs_install']),
+                check_executed_tasks('hello',
+                    ['do_fetch', 'do_dpkg_build']),
+                # TODO: if we actually make a change to hello, then we could test
+                #       that do_rootfs is executed. currently, hello is rebuilt,
+                #       but its sstate sig/hash does not change.
+                check_executed_tasks('isar-image-base-*-wic-img',
+                    ['do_rootfs_install_setscene', '!do_rootfs_install'])
+            ]):
+            self.fail("Failed rebuild package and image")

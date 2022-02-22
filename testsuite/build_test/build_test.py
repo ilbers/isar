@@ -230,3 +230,17 @@ class ContainerSdkTest(CIBaseTest):
 
         self.init()
         self.perform_build_test(targets, bitbake_cmd='do_populate_sdk', container=True)
+
+class SstateTest(CIBaseTest):
+
+    """
+    Test builds with artifacts taken from sstate cache
+
+    :avocado: tags=sstate,fast,full
+    """
+    def test_sstate(self):
+        image_target = 'mc:qemuamd64-bullseye:isar-image-base'
+        package_target = 'mc:qemuamd64-bullseye:hello'
+
+        self.init('build-sstate')
+        self.perform_sstate_test(image_target, package_target)
