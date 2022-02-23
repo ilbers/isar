@@ -21,7 +21,8 @@ OPTEE_BINARIES = "tee-header_v2.stm32 tee-pageable_v2.stm32 tee-pager_v2.stm32"
 # Set version manually to PV, the tarball does not contain any hint.
 # Alternative: pull from git and add git as build dependency.
 dpkg_runbuild_prepend() {
-    cat << EOF >> ${S}/debian/rules
+    grep -q "^export TEE_IMPL_VERSION" ${S}/debian/rules ||
+        cat << EOF >> ${S}/debian/rules
 
 export TEE_IMPL_VERSION=${PV}
 EOF

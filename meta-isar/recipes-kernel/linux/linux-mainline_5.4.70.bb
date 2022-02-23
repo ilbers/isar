@@ -25,7 +25,8 @@ LINUX_VERSION_EXTENSION = "-isar"
 
 # For testing purposes only
 dpkg_configure_kernel_append() {
-cat << EOF | sed -i '/^override_dh_auto_build/ r /dev/stdin' ${S}/debian/rules
+    grep -q "# CONFIG_MTD is not set" ${S}/debian/rules ||
+        cat << EOF | sed -i '/^override_dh_auto_build/ r /dev/stdin' ${S}/debian/rules
 	if ! grep "# CONFIG_MTD is not set" \$(O)/.config && \\
 	   ! grep "# CONFIG_MTD_UBI is not set" \$(O)/.config; then \\
 	    grep "# CONFIG_UBIFS_FS is not set" \$(O)/.config || \\
