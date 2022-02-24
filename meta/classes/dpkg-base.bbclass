@@ -237,27 +237,25 @@ python do_dpkg_build() {
 addtask dpkg_build
 
 SSTATETASKS += "do_dpkg_build"
-DPKG_SSTATE = "${WORKDIR}/dpkg-sstate"
-do_dpkg_build[dirs] += "${DPKG_SSTATE} ${S}/.."
-do_dpkg_build[cleandirs] += "${DPKG_SSTATE}"
-do_dpkg_build[sstate-plaindirs] = "${DPKG_SSTATE}"
-do_dpkg_build[sstate-interceptfuncs] = "dpkg_build_sstate_prepare"
+SSTATECREATEFUNCS += "dpkg_build_sstate_prepare"
+SSTATEPOSTINSTFUNCS += "dpkg_build_sstate_finalize"
 
 dpkg_build_sstate_prepare() {
+    # this runs in SSTATE_BUILDDIR, which will be deleted automatically
     if [ -n "$(find ${S}/.. -maxdepth 1 -name '*.deb' -print -quit)" ]; then
-        ln -f ${S}/../*.deb -t ${DPKG_SSTATE}
+        cp -f ${S}/../*.deb -t .
     fi
 }
 
 dpkg_build_sstate_finalize() {
-    if [ -n "$(find ${DPKG_SSTATE} -maxdepth 1 -name '*.deb' -print -quit)" ]; then
-        ln -f ${DPKG_SSTATE}/*.deb -t ${S}/..
+    # this runs in SSTATE_INSTDIR
+    if [ -n "$(find . -maxdepth 1 -name '*.deb' -print -quit)" ]; then
+        mv -f ./*.deb -t ${S}/..
     fi
 }
 
 python do_dpkg_build_setscene() {
     sstate_setscene(d)
-    bb.build.exec_func('dpkg_build_sstate_finalize', d)
 }
 
 addtask dpkg_build_setscene

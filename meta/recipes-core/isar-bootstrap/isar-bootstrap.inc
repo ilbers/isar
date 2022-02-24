@@ -395,24 +395,28 @@ EOSUDO
 addtask bootstrap before do_build after do_generate_keyrings
 
 SSTATETASKS += "do_bootstrap"
-BOOTSTRAP_SSTATE = "${WORKDIR}/bootstrap-sstate"
-do_bootstrap[dirs] += "${BOOTSTRAP_SSTATE}"
-do_bootstrap[cleandirs] += "${BOOTSTRAP_SSTATE}"
-do_bootstrap[sstate-plaindirs] = "${BOOTSTRAP_SSTATE}"
-do_bootstrap[sstate-interceptfuncs] = "bootstrap_sstate_prepare"
+SSTATECREATEFUNCS += "bootstrap_sstate_prepare"
+SSTATEPOSTINSTFUNCS += "bootstrap_sstate_finalize"
 
 bootstrap_sstate_prepare() {
-    sudo tar -C $(dirname "${ROOTFSDIR}") -cpf ${BOOTSTRAP_SSTATE}/bootstrap.tar --one-file-system $(basename "${ROOTFSDIR}")
+    # this runs in SSTATE_BUILDDIR, which will be deleted automatically
+    sudo tar -C $(dirname "${ROOTFSDIR}") -cpf bootstrap.tar --one-file-system $(basename "${ROOTFSDIR}")
+    sudo chown $(id -u):$(id -g) bootstrap.tar
 }
 
 bootstrap_sstate_finalize() {
-    sudo tar -C $(dirname "${ROOTFSDIR}") -xpf ${BOOTSTRAP_SSTATE}/bootstrap.tar
-    sudo ln -Tfsr "${ROOTFSDIR}" "${DEPLOY_ISAR_BOOTSTRAP}"
+    # this runs in SSTATE_INSTDIR
+    # - after building the bootstrap, the tar won't be there, but we also don't need to unpack
+    # - after restoring from cache, there will be a tar which we unpack and then delete
+    if [ -f bootstrap.tar ]; then
+        sudo tar -C $(dirname "${ROOTFSDIR}") -xpf bootstrap.tar
+        sudo ln -Tfsr "${ROOTFSDIR}" "${DEPLOY_ISAR_BOOTSTRAP}"
+        rm bootstrap.tar
+    fi
 }
 
 python do_bootstrap_setscene() {
     sstate_setscene(d)
-    bb.build.exec_func('bootstrap_sstate_finalize', d)
 }
 
 addtask do_bootstrap_setscene

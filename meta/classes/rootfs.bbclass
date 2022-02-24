@@ -289,26 +289,33 @@ addtask rootfs before do_build
 do_rootfs_postprocess[depends] = "base-apt:do_cache isar-apt:do_cache_config"
 
 SSTATETASKS += "do_rootfs_install"
-ROOTFS_SSTATE = "${WORKDIR}/rootfs-sstate"
-do_rootfs_install[dirs] += "${ROOTFS_SSTATE} ${WORKDIR}/mnt/rootfs"
-do_rootfs_install[cleandirs] += "${ROOTFS_SSTATE}"
-do_rootfs_install[sstate-plaindirs] = "${ROOTFS_SSTATE}"
-do_rootfs_install[sstate-interceptfuncs] = "rootfs_install_sstate_prepare"
+SSTATECREATEFUNCS += "rootfs_install_sstate_prepare"
+SSTATEPOSTINSTFUNCS += "rootfs_install_sstate_finalize"
 
-# the buildchroot is owned by root, so we need some sudoing to pack and unpack
+# the rootfs is owned by root, so we need some sudoing to pack and unpack
 rootfs_install_sstate_prepare() {
+    # this runs in SSTATE_BUILDDIR, which will be deleted automatically
+    # tar --one-file-system will cross bind-mounts to the same filesystem,
+    # so we use some mount magic to prevent that
+    mkdir -p ${WORKDIR}/mnt/rootfs
     sudo mount --bind ${WORKDIR}/rootfs ${WORKDIR}/mnt/rootfs -o ro
-    sudo tar -C ${WORKDIR}/mnt -cpf ${ROOTFS_SSTATE}/rootfs.tar --one-file-system rootfs
+    sudo tar -C ${WORKDIR}/mnt -cpf rootfs.tar --one-file-system rootfs
     sudo umount ${WORKDIR}/mnt/rootfs
+    sudo chown $(id -u):$(id -g) rootfs.tar
 }
 do_rootfs_install_sstate_prepare[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
 
 rootfs_install_sstate_finalize() {
-    sudo tar -C ${WORKDIR} -xpf ${ROOTFS_SSTATE}/rootfs.tar
+    # this runs in SSTATE_INSTDIR
+    # - after building the rootfs, the tar won't be there, but we also don't need to unpack
+    # - after restoring from cache, there will be a tar which we unpack and then delete
+    if [ -f rootfs.tar ]; then
+        sudo tar -C ${WORKDIR} -xpf rootfs.tar
+        rm rootfs.tar
+    fi
 }
 
 python do_rootfs_install_setscene() {
     sstate_setscene(d)
-    bb.build.exec_func('rootfs_install_sstate_finalize', d)
 }
 addtask do_rootfs_install_setscene
