@@ -72,7 +72,6 @@ TEMPLATE_VARS += "                \
     KERNEL_HEADERS_DEBIAN_DEPENDS \
     LINUX_VERSION_EXTENSION       \
     KERNEL_NAME_PROVIDED          \
-    KERNEL_CONFIG_TARGET          \
     KERNEL_CONFIG_FRAGMENTS       \
 "
 
@@ -165,8 +164,6 @@ def get_kernel_config_target(d):
 
     return config_target
 
-KERNEL_CONFIG_TARGET = "${@get_kernel_config_target(d)}"
-
 def get_kernel_config_fragments(d):
     src_frags = " ".join(config_fragments(d))
     out_frags = " ".join(map(lambda frag: 'debian/fragments/' + frag, config_fragments(d)))
@@ -180,6 +177,11 @@ def get_kernel_config_fragments(d):
 KERNEL_CONFIG_FRAGMENTS = "${@get_kernel_config_fragments(d)}"
 
 dpkg_configure_kernel() {
+	grep -q "KERNEL_CONFIG_TARGET=" ${S}/debian/isar/configure ||
+		cat << EOF | sed -i '/^do_configure() {/ r /dev/stdin' ${S}/debian/isar/configure
+    KERNEL_CONFIG_TARGET="${@get_kernel_config_target(d)}"
+EOF
+
 	rm -rf ${S}/${KERNEL_BUILD_DIR} && mkdir -p ${S}/${KERNEL_BUILD_DIR}
 	if [ -n "${KERNEL_DEFCONFIG}" ]; then
 		if [ -e "${WORKDIR}/${KERNEL_DEFCONFIG}" ]; then
