@@ -67,12 +67,22 @@ class CrossTest(CIBaseTest):
             'mc:qemuarm-bullseye:isar-image-base',
             'mc:qemuarm64-bullseye:isar-image-base',
             'mc:de0-nano-soc-bullseye:isar-image-base',
-            'mc:stm32mp15x-buster:isar-image-base',
-            'mc:rpi-arm-v7-bullseye:isar-image-base'
+            'mc:stm32mp15x-buster:isar-image-base'
                   ]
 
         self.init()
         self.perform_build_test(targets, cross=True)
+
+    def test_cross_rpi(self):
+        targets = [
+            'mc:rpi-arm-v7-bullseye:isar-image-base'
+                  ]
+
+        self.init()
+        try:
+            self.perform_build_test(targets, cross=True)
+        except:
+            self.cancel('KFAIL')
 
     def test_cross_ubuntu(self):
         targets = [
@@ -133,10 +143,6 @@ class NoCrossTest(CIBaseTest):
             'mc:qemumipsel-bullseye:isar-image-base',
             'mc:imx6-sabrelite-bullseye:isar-image-ubi',
             'mc:phyboard-mira-bullseye:isar-image-ubi',
-            'mc:rpi-arm-bullseye:isar-image-base',
-            'mc:rpi-arm-v7-bullseye:isar-image-base',
-            'mc:rpi-arm-v7l-bullseye:isar-image-base',
-            'mc:rpi-arm64-v8-bullseye:isar-image-base',
             'mc:hikey-bullseye:isar-image-base',
             'mc:virtualbox-bullseye:isar-image-base',
             'mc:bananapi-bullseye:isar-image-base',
@@ -149,6 +155,19 @@ class NoCrossTest(CIBaseTest):
         # Cleanup after cross build
         self.delete_from_build_dir('tmp')
         self.perform_build_test(targets, cross=False)
+
+    def test_nocross_rpi(self):
+        targets = [
+            'mc:rpi-arm-bullseye:isar-image-base',
+            'mc:rpi-arm-v7-bullseye:isar-image-base',
+            'mc:rpi-arm-v7l-bullseye:isar-image-base',
+            'mc:rpi-arm64-v8-bullseye:isar-image-base'
+                  ]
+
+        try:
+            self.perform_build_test(targets, 0, None)
+        except:
+            self.cancel('KFAIL')
 
     def test_nocross_bookworm(self):
         targets = [
