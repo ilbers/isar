@@ -31,7 +31,7 @@ TEMPLATE_VARS += "KERNEL_NAME KERNEL_TYPE KERNEL_IMAGE_PKG KERNEL_HEADERS_PKG PN
 do_prepare_build() {
     cp -r ${WORKDIR}/debian ${S}/
 
-    for module in "${AUTOLOAD}"; do
+    for module in ${AUTOLOAD}; do
         echo "echo $module >> /etc/modules" >> ${S}/debian/postinst
     done
 }
