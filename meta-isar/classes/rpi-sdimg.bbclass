@@ -84,3 +84,16 @@ append_boot_fstab() {
 restore_fstab() {
     sudo cp -f ${WORKDIR}/fstab.orig ${IMAGE_ROOTFS}/etc/fstab
 }
+
+do_ext4_image[prefuncs] += " empty_boot_folder"
+do_ext4_image[postfuncs] += " restore_boot_folder"
+
+empty_boot_folder() {
+    sudo mv ${IMAGE_ROOTFS}/boot ${WORKDIR}/boot.orig
+    sudo mkdir -p ${IMAGE_ROOTFS}/boot
+}
+
+restore_boot_folder() {
+    sudo rm -rf ${IMAGE_ROOTFS}/boot
+    sudo mv ${WORKDIR}/boot.orig ${IMAGE_ROOTFS}/boot
+}
