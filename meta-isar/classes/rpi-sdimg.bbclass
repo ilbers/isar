@@ -17,6 +17,7 @@ IMAGE_ROOTFS_ALIGNMENT = "4096"
 SDIMG = "${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.sdimg"
 SDIMG_ROOTFS = "${DEPLOY_DIR_IMAGE}/${EXT4_IMAGE_FILE}"
 
+do_rpi_sdimg[cleandirs] = "${WORKDIR}/rpi_sdimg/"
 do_rpi_sdimg () {
     # Align partitions
     ROOTFS_SIZE=$(du -b ${SDIMG_ROOTFS} | cut -f 1)
@@ -47,7 +48,22 @@ do_rpi_sdimg () {
     BOOT_BLOCKS=$(LC_ALL=C parted -s ${SDIMG} unit b print | awk '/ 1 / { print substr($4, 1, length($4 -1)) / 512 /2 }')
     rm -f ${WORKDIR}/boot.img
     mkfs.vfat -n "${BOOTDD_VOLUME_ID}" -S 512 -C ${WORKDIR}/boot.img $BOOT_BLOCKS
-    mcopy -i ${WORKDIR}/boot.img -s ${IMAGE_ROOTFS}/boot/* ::/
+    cp -a ${IMAGE_ROOTFS}/boot ${WORKDIR}/rpi_sdimg/
+    cat > ${WORKDIR}/rpi_sdimg/boot/config.txt << EOF
+[pi3]
+# Restore UART0/ttyAMA0 over GPIOs 14 & 15
+dtoverlay=miniuart-bt
+
+[all]
+EOF
+
+    cat > ${WORKDIR}/rpi_sdimg/boot/cmdline.txt << EOF
+console=${MACHINE_SERIAL},${BAUDRATE_TTY} console=tty1 \
+root=/dev/mmcblk0p2 rootfstype=ext4 fsck.repair=yes \
+rootwait quiet
+EOF
+
+    mcopy -i ${WORKDIR}/boot.img -s ${WORKDIR}/rpi_sdimg/boot/* ::/
 
     # Burn Partitions
     dd if=${WORKDIR}/boot.img of=${SDIMG} conv=notrunc seek=1 bs=$(expr ${IMAGE_ROOTFS_ALIGNMENT} \* 1024) && sync && sync
@@ -55,3 +71,16 @@ do_rpi_sdimg () {
 }
 
 addtask rpi_sdimg before do_build after do_ext4_image
+
+do_ext4_image[prefuncs] += " append_boot_fstab"
+do_ext4_image[postfuncs] += " restore_fstab"
+
+append_boot_fstab() {
+    grep boot ${IMAGE_ROOTFS} && return 0
+    cp -f ${IMAGE_ROOTFS}/etc/fstab ${WORKDIR}/fstab.orig
+    echo "/dev/mmcblk0p1  /boot           vfat    defaults          0       2" | sudo tee -a ${IMAGE_ROOTFS}/etc/fstab
+}
+
+restore_fstab() {
+    sudo cp -f ${WORKDIR}/fstab.orig ${IMAGE_ROOTFS}/etc/fstab
+}
