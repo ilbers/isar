@@ -231,5 +231,33 @@ EOSUDO
 }
 addtask rootfs_finalize before do_rootfs after do_rootfs_postprocess
 
+ROOTFS_QA_FIND_ARGS ?= ""
+
+do_rootfs_quality_check() {
+    rootfs_install_stamp=$( ls -1 "${STAMP}".do_rootfs_install* | head -1 )
+    test -f "$rootfs_install_stamp"
+
+    args="$ROOTFS_QA_FIND_ARGS"
+    # rootfs_finalize chroot-setup.sh
+    args="${args} ! -path ${ROOTFSDIR}/var/lib/dpkg/diversions"
+    for cmd in ${ROOTFS_POSTPROCESS_COMMAND}; do
+        case "${cmd}" in
+	    image_postprocess_mark)
+	        args="${args} ! -path ${ROOTFSDIR}/etc/os-release";;
+	    image_postprocess_machine_id)
+	        args="${args} ! -path ${ROOTFSDIR}/etc/machine-id";;
+	esac
+    done
+    found=$( sudo find ${ROOTFSDIR} -type f -newer $rootfs_install_stamp $args )
+    if [ -n "$found" ]; then
+        bbwarn "Files changed after package install. The following files seem"
+	bbwarn "to have changed where they probably should not have."
+	bbwarn "You might have a custom task or writing POSTPROCESS function."
+	bbwarn "$found"
+    fi
+}
+
+addtask rootfs_quality_check after do_rootfs_finalize before do_rootfs
+
 # Last so that the image type can overwrite tasks if needed
 inherit ${IMAGE_FSTYPES}
