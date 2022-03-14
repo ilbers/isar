@@ -8,6 +8,8 @@
 
 import os
 
+from wic import WicError
+
 def isar_populate_boot_cmd(rootfs_dir, hdddir):
     # copy all files from rootfs/boot into boot partition
     # no not copy symlinks (ubuntu places them here) because targetfs is fat
