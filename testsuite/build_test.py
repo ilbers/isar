@@ -263,3 +263,49 @@ class SstateTest(CIBaseTest):
 
         self.init('build-sstate')
         self.perform_sstate_test(image_target, package_target)
+
+class VmBootTestFast(CIBaseTest):
+
+    """
+    Test QEMU image start (fast)
+
+    :avocado: tags=startvm,fast,full
+    """
+    def test_arm_bullseye(self):
+        self.init()
+        self.vm_start('arm','bullseye')
+
+    def test_arm_buster(self):
+        self.init()
+        self.vm_start('arm','buster')
+
+    def test_arm64_bullseye(self):
+        self.init()
+        self.vm_start('arm64','bullseye')
+
+    def test_amd64_bullseye(self):
+        self.init()
+        self.vm_start('amd64','bullseye')
+
+class VmBootTestFull(CIBaseTest):
+
+    """
+    Test QEMU image start (full)
+
+    :avocado: tags=startvm,full
+    """
+    def test_i386_stretch(self):
+        self.init()
+        self.vm_start('i386','stretch')
+
+    def test_i386_buster(self):
+        self.init()
+        self.vm_start('i386','buster')
+
+    def test_amd64_buster(self):
+        self.init()
+        self.vm_start('amd64','buster')
+
+    def test_amd64_focal(self):
+        self.init()
+        self.vm_start('amd64','focal')

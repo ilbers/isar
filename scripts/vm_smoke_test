@@ -95,7 +95,7 @@ logs_dir = $BUILD_DIR/job-results
 EOF
 export VIRTUAL_ENV="./"
 
-if avocado $VERBOSE run "$TESTSUITE_DIR/vm_boot_test.py" -t $TAGS \
+if avocado $VERBOSE run "$TESTSUITE_DIR/build_test.py" -t $TAGS,startvm \
     --test-runner=runner --disable-sysinfo \
     -p build_dir="$BUILD_DIR" -p time_to_wait=$TIMEOUT; then
     RET=$ES_OK
