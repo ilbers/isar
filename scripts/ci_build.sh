@@ -52,6 +52,7 @@ show_help() {
     echo "    -f, --fast               cross build reduced set of configurations."
     echo "    -q, --quiet              suppress verbose bitbake output."
     echo "    -r, --repro              enable use of cached base repository."
+    echo "    -n, --norun              do not execute QEMU run tests."
     echo "    --help                   display this message and exit."
     echo
     echo "Exit status:"
@@ -100,6 +101,9 @@ do
         -s|--sign) shift ;;
         esac
         ;;
+    -n|--norun)
+        NORUN="1"
+        ;;
     *)
         echo "error: invalid parameter '$key', please try '--help' to get list of supported parameters"
         exit $ES_BUG
@@ -111,6 +115,10 @@ done
 
 if [ -z "$REPRO_BUILD" ]; then
     TAGS="$TAGS,-repro"
+fi
+
+if [ -n "$NORUN" ]; then
+    TAGS="$TAGS,-startvm"
 fi
 
 # Provide working path
