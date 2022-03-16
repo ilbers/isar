@@ -25,7 +25,7 @@ if ! command -v avocado > /dev/null; then
 fi
 
 # Get Avocado build tests path
-BUILD_TEST_DIR="$(pwd)/testsuite/build_test"
+TESTSUITE_DIR="$(pwd)/testsuite"
 
 # Start tests in current path by default
 BASE_DIR=./build
@@ -127,6 +127,6 @@ export VIRTUAL_ENV="./"
 # the real stuff starts here, trace commands from now on
 set -x
 
-avocado $VERBOSE run "$BUILD_TEST_DIR/build_test.py" \
+avocado $VERBOSE run "$TESTSUITE_DIR/build_test.py" \
     -t $TAGS --test-runner=runner --disable-sysinfo \
     -p quiet=$QUIET -p cross=$CROSS_BUILD

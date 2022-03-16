@@ -10,7 +10,7 @@ from avocado import Test
 from avocado.utils import path
 from avocado.utils import process
 
-isar_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+isar_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 backup_prefix = '.ci-backup'
 
 app_log = logging.getLogger("avocado.app")

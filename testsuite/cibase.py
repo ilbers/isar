@@ -18,8 +18,8 @@ class CIBaseTest(CIBuilder):
         self.bitbake(targets, **kwargs)
 
     def perform_repro_test(self, targets, signed=False, **kwargs):
-        gpg_pub_key = os.path.dirname(__file__) + '/../base-apt/test_pub.key'
-        gpg_priv_key = os.path.dirname(__file__) + '/../base-apt/test_priv.key'
+        gpg_pub_key = os.path.dirname(__file__) + '/keys/base-apt/test_pub.key'
+        gpg_priv_key = os.path.dirname(__file__) + '/keys/base-apt/test_priv.key'
 
         self.configure(gpg_pub_key=gpg_pub_key if signed else None, **kwargs)
 

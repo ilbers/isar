@@ -10,9 +10,29 @@ The framework could be installed by using standard HOWTO:
 
 # Run test
 
-Each testsuite directory contains:
- - run_*.sh - script to start tests
- - *.py - test case
+## Fast build test
+
+```
+$ avocado run build_test.py -t fast -p quiet=1 -p cross=1
+```
+
+## Full build test
+
+```
+$ avocado run build_test.py -t full -p quiet=1
+```
+
+## Fast boot test
+
+```
+$ avocado run vm_boot_test.py -t fast -p build_dir="$BUILDDIR" -p time_to_wait=300
+```
+
+## Full boot test
+
+```
+$ avocado run vm_boot_test.py -t full -p build_dir="$BUILDDIR" -p time_to_wait=300
+```
 
 # Other
 
