@@ -216,7 +216,7 @@ class CIBuilder(Test):
         timeout = time.time() + int(time_to_wait)
 
         p1 = subprocess.Popen(cmdline, stdout=subprocess.PIPE,
-                              stderr=subprocess.PIPE)
+                              stderr=subprocess.PIPE, universal_newlines=True)
         try:
             poller = select.poll()
             poller.register(p1.stdout, select.POLLIN)
@@ -224,6 +224,8 @@ class CIBuilder(Test):
             while time.time() < timeout and p1.poll() is None:
                 events = poller.poll(1000 * (timeout - time.time()))
                 for fd, event in events:
+                    if event != select.POLLIN:
+                        continue
                     if fd == p1.stdout.fileno():
                         # Wait for the complete string if it is read in chunks
                         # like "i", "sar", " login:"
@@ -232,7 +234,7 @@ class CIBuilder(Test):
                         if login_prompt in data:
                             raise CanBeFinished
                     if fd == p1.stderr.fileno():
-                        self.log.error(p1.stderr.readline())
+                        app_log.error(p1.stderr.readline().rstrip())
         except CanBeFinished:
             self.log.debug('Got login prompt')
         finally:
@@ -240,12 +242,12 @@ class CIBuilder(Test):
                 p1.kill()
             p1.wait()
 
-        if os.path.exists(output_file):
+        if os.path.exists(output_file) and os.path.getsize(output_file) > 0:
             with open(output_file, "rb") as f1:
                 data = f1.read()
                 if service_prompt in data and login_prompt in data:
                     return
                 else:
-                    self.log.error(data)
+                    app_log.error(data.decode(errors='replace'))
 
         self.fail('Log ' + output_file)
