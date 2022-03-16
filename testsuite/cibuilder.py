@@ -199,10 +199,18 @@ class CIBuilder(Test):
 
         self.check_init()
 
-        fd, output_file = tempfile.mkstemp(suffix='_log.txt',
-                                           prefix='vm_start_' + distro + '_' +
-                                           arch + '_', dir=self.build_dir, text=True)
+        logdir = '%s/vm_start' % self.build_dir
+        if not os.path.exists(logdir):
+            os.mkdir(logdir)
+        prefix = '%s-vm_start_%s_%s_' % (time.strftime('%Y%m%d-%H%M%S'),
+                                         distro, arch)
+        fd, output_file = tempfile.mkstemp(suffix='_log.txt', prefix=prefix,
+                                           dir=logdir, text=True)
         os.chmod(output_file, 0o644)
+        latest_link = '%s/vm_start_%s_%s_latest.txt' % (logdir, distro, arch)
+        if os.path.exists(latest_link):
+            os.unlink(latest_link)
+        os.symlink(os.path.basename(output_file), latest_link)
 
         cmdline = start_vm.format_qemu_cmdline(arch, self.build_dir, distro,
                                                output_file, None)
