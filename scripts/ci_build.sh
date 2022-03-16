@@ -53,6 +53,8 @@ show_help() {
     echo "    -q, --quiet              suppress verbose bitbake output."
     echo "    -r, --repro              enable use of cached base repository."
     echo "    -n, --norun              do not execute QEMU run tests."
+    echo "    -t, --timeout SEC        specify time in seconds to wait before stop QEMU."
+    echo "                             The default is: 300"
     echo "    --help                   display this message and exit."
     echo
     echo "Exit status:"
@@ -63,6 +65,7 @@ show_help() {
 TAGS="full"
 CROSS_BUILD="0"
 QUIET="0"
+TIMEOUT=300
 
 # Parse command line to get user configuration
 while [ $# -gt 0 ]
@@ -104,6 +107,10 @@ do
     -n|--norun)
         NORUN="1"
         ;;
+    -t|--timeout)
+        TIMEOUT=$2
+        shift
+        ;;
     *)
         echo "error: invalid parameter '$key', please try '--help' to get list of supported parameters"
         exit $ES_BUG
@@ -137,4 +144,4 @@ set -x
 
 avocado $VERBOSE run "$TESTSUITE_DIR/citest.py" \
     -t $TAGS --test-runner=runner --disable-sysinfo \
-    -p quiet=$QUIET -p cross=$CROSS_BUILD
+    -p quiet=$QUIET -p cross=$CROSS_BUILD -p time_to_wait=$TIMEOUT
