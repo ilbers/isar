@@ -164,8 +164,9 @@ class NoCrossTest(CIBaseTest):
             'mc:rpi-arm64-v8-bullseye:isar-image-base'
                   ]
 
+        self.init()
         try:
-            self.perform_build_test(targets, 0, None)
+            self.perform_build_test(targets, cross=False)
         except:
             self.cancel('KFAIL')
 
@@ -190,8 +191,9 @@ class NoCrossTest(CIBaseTest):
             'mc:sifive-fu540-sid-ports:isar-image-base'
                   ]
 
+        self.init()
         try:
-            self.perform_build_test(targets, 0, None)
+            self.perform_build_test(targets, cross=False)
         except:
             self.cancel('KFAIL')
 
