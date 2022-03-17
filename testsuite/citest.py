@@ -26,7 +26,7 @@ class ReproTest(CIBaseTest):
     """
     def test_repro_signed(self):
         targets = [
-            'mc:de0-nano-soc-bullseye:isar-image-base',
+            'mc:bananapi-bullseye:isar-image-base',
             'mc:qemuarm64-bullseye:isar-image-base'
                   ]
 
