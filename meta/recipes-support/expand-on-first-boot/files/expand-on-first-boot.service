@@ -16,8 +16,6 @@ Type=oneshot
 RemainAfterExit=yes
 ExecStart=/usr/share/expand-on-first-boot/expand-last-partition.sh
 ExecStartPost=-/bin/systemctl disable expand-on-first-boot.service
-StandardOutput=syslog
-StandardError=syslog
 
 [Install]
 WantedBy=sysinit.target

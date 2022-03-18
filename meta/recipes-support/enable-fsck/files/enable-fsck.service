@@ -16,8 +16,6 @@ Type=oneshot
 RemainAfterExit=yes
 ExecStart=/usr/share/enable-fsck/enable-fsck.sh
 ExecStartPost=-/bin/systemctl disable enable-fsck.service
-StandardOutput=syslog
-StandardError=syslog
 
 [Install]
 WantedBy=sysinit.target
