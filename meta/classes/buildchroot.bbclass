@@ -42,8 +42,8 @@ buildchroot_do_mounts() {
                 mount --bind '${CCACHE_DIR}' '${BUILDCHROOT_DIR}/ccache'
         fi
         mountpoint -q '${BUILDCHROOT_DIR}/dev' ||
-            mount --rbind /dev '${BUILDCHROOT_DIR}/dev'
-        mount --make-rslave '${BUILDCHROOT_DIR}/dev'
+            ( mount --bind /dev '${BUILDCHROOT_DIR}/dev' &&
+              mount -t tmpfs none '${BUILDCHROOT_DIR}/dev/shm' )
         mountpoint -q '${BUILDCHROOT_DIR}/proc' ||
             mount -t proc none '${BUILDCHROOT_DIR}/proc'
         mountpoint -q '${BUILDCHROOT_DIR}/sys' ||

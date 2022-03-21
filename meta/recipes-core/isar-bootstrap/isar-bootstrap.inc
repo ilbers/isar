@@ -360,8 +360,8 @@ do_bootstrap() {
         "${ROOTFSDIR}/chroot-setup.sh" "setup" "${ROOTFSDIR}"
 
         # update APT
-        mount --rbind /dev ${ROOTFSDIR}/dev
-        mount --make-rslave ${ROOTFSDIR}/dev
+        mount --bind /dev ${ROOTFSDIR}/dev
+        mount -t tmpfs none "${ROOTFSDIR}/dev/shm"
         mount -t proc none ${ROOTFSDIR}/proc
         mount --rbind /sys ${ROOTFSDIR}/sys
         mount --make-rslave ${ROOTFSDIR}/sys
@@ -381,6 +381,7 @@ do_bootstrap() {
         chroot "${ROOTFSDIR}" /usr/bin/apt-get dist-upgrade -y \
                                 -o Debug::pkgProblemResolver=yes
 
+        umount -l "${ROOTFSDIR}/dev/shm"
         umount -l "${ROOTFSDIR}/dev"
         umount -l "${ROOTFSDIR}/proc"
         umount -l "${ROOTFSDIR}/sys"
