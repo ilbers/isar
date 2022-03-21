@@ -343,3 +343,9 @@ When cross compiling, `cross` is added to the `DEB_BUILD_PROFILES` environment v
 Please note, that manually exported versions of the variables are overwritten.
 
 For a list of well-known Debian build profiles and common practices, we refer to Debian's BuildProfileSpec.
+
+### `rpi-sdimg.bbclass` class is now deprecated and will be removed soon
+
+It was replaced by WIC and no more needed.
+Machines that use `rpi-sdimg` image type should be modified to use `wic` type
+with `rpi-sdimg` wks file instead.
