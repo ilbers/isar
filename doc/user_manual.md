@@ -208,7 +208,7 @@ tmp/deploy/images/qemui386/isar-image-base-debian-stretch-qemui386.wic.img
 tmp/deploy/images/qemui386/isar-image-base-debian-buster-qemui386.wic.img
 tmp/deploy/images/qemuamd64/isar-image-base-debian-stretch-qemuamd64.wic.img
 tmp/deploy/images/qemuamd64/isar-image-base-debian-buster-qemuamd64.wic.img
-tmp/deploy/images/rpi/isar-image-base.rpi-sdimg
+tmp/deploy/images/rpi/isar-image-base-raspbian-stretch-rpi.wic.img
 ```
 
 ### Generate full disk image
@@ -461,7 +461,6 @@ image to be generated may be specified through the `IMAGE_FSTYPES` variable.
 Currently, the following image types are provided:
 
  - `ext4` - Raw ext4 filesystem image (default option for `qemuarm` machine).
- - `rpi-sdimg` - A complete, partitioned Raspberry Pi SD card image (default option for the `rpi` machine).
  - `wic-img` - A full disk image with user-specified partitions created and populated using the wic tool.
  - `ubi-img` - A image for use on mtd nand partitions employing UBI
  - `vm-img` - A image for use on VirtualBox or VMware
@@ -540,7 +539,8 @@ IMAGE_PREINSTALL = "linux-image-rpi-rpfv \
 KERNEL_IMAGE = "vmlinuz-4.4.0-1-rpi"
 INITRD_IMAGE = "initrd.img-4.4.0-1-rpi"
 MACHINE_SERIAL = "ttyAMA0"
-IMAGE_FSTYPES = "rpi-sdimg"
+IMAGE_FSTYPES = "wic-img"
+WKS_FILE = "rpi-sdimg"
 ```
 
 To add new machine user should perform the following steps:
@@ -604,7 +604,6 @@ IMAGE_FSTYPES = "my-image"
 Isar contains additional image type classes that can be used as reference:
 
  - `ext4-img`
- - `rpi-sdimg`
  - `targz-img`
  - `ubifs-img`
  - `ubi-img`
