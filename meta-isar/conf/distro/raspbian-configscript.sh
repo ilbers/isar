@@ -13,9 +13,3 @@ if [ -f /etc/inittab ]; then
     echo "T0:23:respawn:/sbin/getty -L $MACHINE_SERIAL $BAUDRATE_TTY vt100" \
         >> /etc/inittab
 fi
-
-KERNEL_IMAGE="$(find /boot -maxdepth 1 -name "vmlinuz*" -printf "%P\n")"
-
-cat > /boot/config.txt << EOF
-kernel=$KERNEL_IMAGE
-EOF

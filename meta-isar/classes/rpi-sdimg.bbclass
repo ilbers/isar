@@ -49,19 +49,6 @@ do_rpi_sdimg () {
     rm -f ${WORKDIR}/boot.img
     mkfs.vfat -n "${BOOTDD_VOLUME_ID}" -S 512 -C ${WORKDIR}/boot.img $BOOT_BLOCKS
     cp -a ${IMAGE_ROOTFS}/boot ${WORKDIR}/rpi_sdimg/
-    cat > ${WORKDIR}/rpi_sdimg/boot/config.txt << EOF
-[pi3]
-# Restore UART0/ttyAMA0 over GPIOs 14 & 15
-dtoverlay=miniuart-bt
-
-[all]
-EOF
-
-    cat > ${WORKDIR}/rpi_sdimg/boot/cmdline.txt << EOF
-console=${MACHINE_SERIAL},${BAUDRATE_TTY} console=tty1 \
-root=/dev/mmcblk0p2 rootfstype=ext4 fsck.repair=yes \
-rootwait quiet
-EOF
 
     mcopy -i ${WORKDIR}/boot.img -s ${WORKDIR}/rpi_sdimg/boot/* ::/
 

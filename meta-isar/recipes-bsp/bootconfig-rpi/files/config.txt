@@ -1,0 +1,5 @@
+[pi3]
+# Restore UART0/ttyAMA0 over GPIOs 14 & 15
+dtoverlay=miniuart-bt
+
+[all]
