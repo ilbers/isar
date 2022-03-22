@@ -91,7 +91,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-a', '--arch', choices=['arm', 'arm64', 'amd64', 'i386', 'mipsel'], help='set isar machine architecture.', default='arm')
     parser.add_argument('-b', '--build', help='set path to build directory.', default=os.getcwd())
-    parser.add_argument('-d', '--distro', choices=['jessie', 'stretch'], help='set isar Debian distribution.', default='stretch')
+    parser.add_argument('-d', '--distro', choices=['jessie', 'stretch', 'buster', 'bullseye', 'bookworm'], help='set isar Debian distribution.', default='stretch')
     parser.add_argument('-o', '--out', help='Route QEMU console output to specified file.')
     parser.add_argument('-p', '--pid', help='Store QEMU pid to specified file.')
     args = parser.parse_args()
