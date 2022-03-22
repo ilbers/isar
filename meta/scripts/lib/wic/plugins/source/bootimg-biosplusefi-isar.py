@@ -75,10 +75,10 @@ class BootimgBiosPlusEFIPlugin(SourcePlugin):
                --ondisk sda --label os_boot --active --align 1024 --use-uuid
     """
 
-    name = 'bootimg-biosplusefi'
+    name = 'bootimg-biosplusefi-isar'
 
-    __PCBIOS_MODULE_NAME = "bootimg-pcbios"
-    __EFI_MODULE_NAME = "bootimg-efi"
+    __PCBIOS_MODULE_NAME = "bootimg-pcbios-isar"
+    __EFI_MODULE_NAME = "bootimg-efi-isar"
 
     __imgEFIObj = None
     __imgBiosObj = None
@@ -106,7 +106,7 @@ class BootimgBiosPlusEFIPlugin(SourcePlugin):
         loader = SourceFileLoader(cls.__PCBIOS_MODULE_NAME, modulePath)
         mod = types.ModuleType(loader.name)
         loader.exec_module(mod)
-        cls.__imgBiosObj = mod.BootimgPcbiosPlugin()
+        cls.__imgBiosObj = mod.BootimgPcbiosIsarPlugin()
 
         # Import bootimg-efi (class name "BootimgEFIPlugin")
         modulePath = os.path.join(os.path.dirname(os.path.realpath(__file__)),
