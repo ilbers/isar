@@ -20,8 +20,10 @@ from wic.pluginbase import SourcePlugin
 from wic.misc import (exec_cmd, exec_native_cmd,
                       get_bitbake_var, BOOTDD_EXTRA_SPACE)
 
-import sys
-sys.path[0] = os.path.dirname(os.path.abspath(__file__)) + "/.."
+# allow plugins to import from isarpluginbase
+if '__file__' in globals():
+    import sys
+    sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
 from isarpluginbase import (isar_get_filenames, isar_populate_boot_cmd)
 
 logger = logging.getLogger('wic')
