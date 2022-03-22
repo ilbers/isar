@@ -189,7 +189,7 @@ class CIBuilder(Test):
 
         return env['LAYERDIR_' + layer].strip('"')
 
-    def vm_start(self, arch='amd64', distro='buster'):
+    def vm_start(self, arch='amd64', distro='buster', enforce_pcbios=False):
         time_to_wait = self.params.get('time_to_wait', default=60)
 
         self.log.info('===================================================')
@@ -213,7 +213,7 @@ class CIBuilder(Test):
         os.symlink(os.path.basename(output_file), latest_link)
 
         cmdline = start_vm.format_qemu_cmdline(arch, self.build_dir, distro,
-                                               output_file, None)
+                                               output_file, None, enforce_pcbios)
         cmdline.insert(1, '-nographic')
 
         self.log.info('QEMU boot line: ' + str(cmdline))

@@ -306,7 +306,10 @@ class VmBootTestFull(CIBaseTest):
 
     def test_amd64_buster(self):
         self.init()
+        # test efi boot
         self.vm_start('amd64','buster')
+        # test pcbios boot
+        self.vm_start('amd64', 'buster', True)
 
     def test_amd64_focal(self):
         self.init()
