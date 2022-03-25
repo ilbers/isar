@@ -54,8 +54,9 @@ rootfs_do_mounts() {
                 mount --bind '${REPO_ISAR_DIR}/${DISTRO}' '${ROOTFSDIR}/isar-apt'
         fi
 
-        # Mount base-apt if 'ISAR_USE_CACHED_BASE_REPO' is set
-        if [ "${@repr(bb.utils.to_boolean(d.getVar('ISAR_USE_CACHED_BASE_REPO')))}" = 'True' ]
+        # Mount base-apt if 'ISAR_PREFETCH_BASE_APT' or 'ISAR_USE_CACHED_BASE_REPO' is set
+        if [ "${@repr(bb.utils.to_boolean(d.getVar('ISAR_PREFETCH_BASE_APT')))}" = 'True' ] || \
+           [ "${@repr(bb.utils.to_boolean(d.getVar('ISAR_USE_CACHED_BASE_REPO')))}" = 'True' ]
         then
             mkdir -p '${ROOTFSDIR}/base-apt'
             mountpoint -q '${ROOTFSDIR}/base-apt' || \
