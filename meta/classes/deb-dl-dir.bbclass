@@ -12,7 +12,7 @@ is_not_part_of_current_build() {
     # Since we are parsing all the debs in DEBDIR, we can to some extend
     # try to eliminate some debs that are not part of the current multiconfig
     # build using the below method.
-    local output="$( grep -hs "status installed ${package}:${arch} ${version}" \
+    local output="$( grep -hs "status installed ${package}:${arch} ${version}$" \
             "${IMAGE_ROOTFS}"/var/log/dpkg.log \
             "${BUILDCHROOT_HOST_DIR}"/var/log/dpkg.log \
             "${BUILDCHROOT_TARGET_DIR}"/var/log/dpkg.log | head -1 )"
