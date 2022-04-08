@@ -34,7 +34,7 @@ class ReproTest(CIBaseTest):
         try:
             self.perform_repro_test(targets, signed=True)
         finally:
-            self.delete_from_build_dir('tmp')
+            self.move_in_build_dir('tmp', 'tmp_repro_signed')
 
     def test_repro_unsigned(self):
         targets = [
@@ -46,7 +46,7 @@ class ReproTest(CIBaseTest):
         try:
             self.perform_repro_test(targets)
         finally:
-            self.delete_from_build_dir('tmp')
+            self.move_in_build_dir('tmp', 'tmp_repro_unsigned')
 
 class CcacheTest(CIBaseTest):
 

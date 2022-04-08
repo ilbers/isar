@@ -124,6 +124,10 @@ class CIBuilder(Test):
         self.check_init()
         process.run('rm -rf ' + self.build_dir + '/' + path, sudo=True)
 
+    def move_in_build_dir(self, src, dst):
+        self.check_init()
+        process.run('mv ' + self.build_dir + '/' + src + ' ' + self.build_dir + '/' + dst, sudo=True)
+
     def bitbake(self, target, bitbake_cmd=None, **kwargs):
         self.check_init()
         self.log.info('===================================================')
