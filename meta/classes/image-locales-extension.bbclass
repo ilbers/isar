@@ -60,6 +60,16 @@ __EOF__
     # Install configuration into image:
     sudo -E -s <<'EOSUDO'
         set -e
+        localepurge_state='i'
+        if chroot '${ROOTFSDIR}' dpkg -s localepurge 2>/dev/null >&2
+        then
+            echo 'localepurge was installed (leaving it installed later)'
+        else
+            localepurge_state='p'
+            echo 'localepurge was not installed (removing it later)'
+            chroot '${ROOTFSDIR}' apt-get ${ROOTFS_APT_ARGS} localepurge
+        fi
+
         cat '${WORKDIR}/locale.gen' >> '${ROOTFSDIR}/etc/locale.gen'
         cat '${WORKDIR}/locale.default' > '${ROOTFSDIR}/etc/default/locale'
         cat '${WORKDIR}/locale.nopurge' > '${ROOTFSDIR}/etc/locale.nopurge'
@@ -67,15 +77,6 @@ __EOF__
 
         # Enter image and trigger locales config and localepurge:
         chroot '${ROOTFSDIR}' /bin/sh <<'EOSH'
-            localepurge_state='i'
-            if dpkg -s localepurge 2>/dev/null >&2
-            then
-                echo 'localepurge was installed (leaving it installed later)'
-            else
-                localepurge_state='p'
-                echo 'localepurge was not installed (removing it later)'
-                apt-get ${ROOTFS_APT_ARGS} localepurge
-            fi
 
             echo 'running locale debconf-set-selections'
             debconf-set-selections /tmp/locale.debconf
@@ -86,13 +87,13 @@ __EOF__
 
             echo 'running localepurge'
             localepurge
-
-            if [ "$localepurge_state" = 'p' ]
-            then
-                echo removing localepurge...
-                apt-get purge --yes localepurge 
-                apt-get autoremove --purge --yes
-            fi
 EOSH
+
+        if [ "$localepurge_state" = 'p' ]
+        then
+            echo removing localepurge...
+            chroot '${ROOTFSDIR}' apt-get purge --yes localepurge
+            chroot '${ROOTFSDIR}' apt-get autoremove --purge --yes
+        fi
 EOSUDO
 }
