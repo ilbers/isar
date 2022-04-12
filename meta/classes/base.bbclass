@@ -105,14 +105,16 @@ python do_listtasks() {
 root_cleandirs() {
     ROOT_CLEANDIRS_DIRS_PY="${@d.getVar("ROOT_CLEANDIRS_DIRS", True) or ""}"
     ROOT_CLEANDIRS_DIRS="${ROOT_CLEANDIRS_DIRS-${ROOT_CLEANDIRS_DIRS_PY}}"
+    TMPDIR_PY="${@d.getVar("TMPDIR", True) or ""}"
+    TMPDIR="${TMPDIR-${TMPDIR_PY}}"
     for i in $ROOT_CLEANDIRS_DIRS; do
         awk '{ print $2 }' /proc/mounts | grep -q "^${i}\(/\|\$\)" && \
             die "Could not remove $i, because subdir is mounted"
     done
-    if [ -n "$ROOT_CLEANDIRS_DIRS" ]; then
-        sudo rm -rf --one-file-system $ROOT_CLEANDIRS_DIRS
-        mkdir -p $ROOT_CLEANDIRS_DIRS
-    fi
+    for i in $ROOT_CLEANDIRS_DIRS; do
+        sudo rm -rf --one-file-system "$TMPDIR$i"
+        mkdir -p "$TMPDIR$i"
+    done
 }
 
 python() {
@@ -148,8 +150,10 @@ python() {
                     )
 
                 ws = re.match(r"^\s*", d.getVar(e, False)).group()
+                # remove prefix ${TMPDIR}, so we don't have absolute paths in variable e
+                dirs = [dir[len(tmpdir):] for dir in rcleandirs]
                 d.prependVar(
-                    e, cleandir_code.format(ws=ws, dirlist=" ".join(rcleandirs))
+                    e, cleandir_code.format(ws=ws, dirlist=" ".join(dirs))
                 )
 }
 
