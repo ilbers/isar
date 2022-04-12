@@ -29,6 +29,7 @@ DISTRO_BOOTSTRAP_BASE_PACKAGES_append_gnupg = ",gnupg"
 DISTRO_BOOTSTRAP_BASE_PACKAGES_append_https-support = "${@https_support(d)}"
 DISTRO_VARS_PREFIX ?= "${@'HOST_' if d.getVar('BOOTSTRAP_FOR_HOST') == '1' else ''}"
 BOOTSTRAP_DISTRO = "${@d.getVar('HOST_DISTRO' if d.getVar('BOOTSTRAP_FOR_HOST') == '1' else 'DISTRO')}"
+FILESEXTRAPATHS_append = ":${BBPATH}"
 
 inherit deb-dl-dir
 
@@ -60,11 +61,11 @@ python () {
 
     distro_apt_sources = d.getVar(d.getVar("DISTRO_VARS_PREFIX") + "DISTRO_APT_SOURCES", True) or ""
     for file in distro_apt_sources.split():
-        d.appendVar("SRC_URI", " file://%s" % bb.parse.resolve_file(file, d))
+        d.appendVar("SRC_URI", " file://%s" % file)
 
     distro_apt_preferences = d.getVar(d.getVar("DISTRO_VARS_PREFIX") + "DISTRO_APT_PREFERENCES", True) or ""
     for file in distro_apt_preferences.split():
-        d.appendVar("SRC_URI", " file://%s" % bb.parse.resolve_file(file, d))
+        d.appendVar("SRC_URI", " file://%s" % file)
 }
 
 def aggregate_files(d, file_list, file_out):
