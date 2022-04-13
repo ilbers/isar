@@ -200,7 +200,7 @@ kernel_headers() {
 
 install_headers() {
     headers_check
-    [ -z ${kern_pkgs["linux-libc-headers"]} ] || libc_headers
+    [ -z ${kern_pkgs["linux-libc-dev"]} ] || libc_headers
     kernel_headers
 }
 
