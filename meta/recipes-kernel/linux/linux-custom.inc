@@ -22,7 +22,8 @@ KBUILD_DEPENDS ?= "build-essential:native, \
                    cpio, \
                    flex, \
                    git, \
-                   kmod,"
+                   kmod, \
+                   rsync,"
 
 KERNEL_DEBIAN_DEPENDS ?= "initramfs-tools | linux-initramfs-tool, \
                           kmod, \
