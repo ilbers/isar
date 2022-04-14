@@ -39,6 +39,13 @@ MKIMAGE_ARGS ??= ""
 FIT_IMAGE_SOURCE ??= "fitimage.its"
 IMAGER_INSTALL_fit += "u-boot-tools device-tree-compiler"
 
+IMAGE_SRC_URI_fit = "file://${FIT_IMAGE_SOURCE}.tmpl"
+IMAGE_TEMPLATE_FILES_fit = "${FIT_IMAGE_SOURCE}.tmpl"
+IMAGE_TEMPLATE_VARS_fit = "KERNEL_IMG INITRD_IMG DTB_IMG"
+
+# Default fit image deploy path (inside imager)
+FIT_IMG ?= "${PP_DEPLOY}/${IMAGE_FULLNAME}.fit"
+
 IMAGE_CMD_fit() {
     if [ ! -e "${WORKDIR}/${FIT_IMAGE_SOURCE}" ]; then
         die "FIT_IMAGE_SOURCE does not contain fitimage source file"
@@ -52,6 +59,9 @@ IMAGE_CMD_fit[depends] = "${PN}:do_transform_template"
 # image type: ubifs
 IMAGER_INSTALL_ubifs += "mtd-utils"
 IMAGE_CMD_REQUIRED_ARGS_ubifs = "MKUBIFS_ARGS"
+
+# Default UBIFS image deploy path (inside imager)
+UBIFS_IMG ?= "${PP_DEPLOY}/${IMAGE_FULLNAME}.ubifs"
 
 # glibc bug 23960 https://sourceware.org/bugzilla/show_bug.cgi?id=23960
 # should not use QEMU on armhf target with mkfs.ubifs < v2.1.3
@@ -67,6 +77,10 @@ IMAGE_CMD_ubifs() {
 IMAGER_INSTALL_ubi += "mtd-utils"
 IMAGE_CMD_REQUIRED_ARGS_ubi = "UBINIZE_ARGS"
 UBINIZE_CFG ??= "ubinize.cfg"
+
+IMAGE_SRC_URI_ubi = "file://${UBINIZE_CFG}.tmpl"
+IMAGE_TEMPLATE_FILES_ubi = "${UBINIZE_CFG}.tmpl"
+IMAGE_TEMPLATE_VARS_ubi = "KERNEL_IMG INITRD_IMG DTB_IMG UBIFS_IMG FIT_IMG"
 
 IMAGE_CMD_ubi() {
     if [ ! -e "${WORKDIR}/${UBINIZE_CFG}" ]; then

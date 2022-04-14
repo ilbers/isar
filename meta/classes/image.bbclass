@@ -328,6 +328,12 @@ devtmpfs	/dev		devtmpfs	mode=0755,nosuid	0	0
 EOF
 }
 
+# Default kernel, initrd and dtb image deploy paths (inside imager)
+KERNEL_IMG = "${PP_DEPLOY}/${KERNEL_IMAGE}"
+INITRD_IMG = "${PP_DEPLOY}/${INITRD_IMAGE}"
+# only one dtb file supported, pick the first
+DTB_IMG = "${PP_DEPLOY}/${@(d.getVar('DTB_FILES').split() or [''])[0]}"
+
 do_copy_boot_files[dirs] = "${DEPLOY_DIR_IMAGE}"
 do_copy_boot_files[lockfiles] += "${DEPLOY_DIR_IMAGE}/isar.lock"
 do_copy_boot_files() {
