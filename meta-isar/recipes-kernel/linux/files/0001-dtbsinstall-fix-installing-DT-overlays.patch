@@ -1,0 +1,30 @@
+From 74c2d5edf5d9d601b1caac0cae8be785e45e9af0 Mon Sep 17 00:00:00 2001
+From: Anton Mikanovich <amikan@ilbers.de>
+Date: Tue, 8 Feb 2022 19:47:35 +0300
+Subject: [PATCH] dtbsinstall: fix installing DT overlays
+
+Add dtbo target needed for __dtbs_install to fix 'make dtbs_install'
+call. 'No rule to make target' error will occur otherwise.
+
+Signed-off-by: Anton Mikanovich <amikan@ilbers.de>
+---
+ scripts/Makefile.dtbinst | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/scripts/Makefile.dtbinst b/scripts/Makefile.dtbinst
+index 50d580d77ae9..829609ce29cf 100644
+--- a/scripts/Makefile.dtbinst
++++ b/scripts/Makefile.dtbinst
+@@ -29,6 +29,9 @@ quiet_cmd_dtb_install = INSTALL $@
+ $(dst)/%.dtb: $(obj)/%.dtb
+ 	$(call cmd,dtb_install)
+ 
++$(dst)/%.dtbo: $(obj)/%.dtbo
++	$(call cmd,dtb_install)
++
+ PHONY += $(subdirs)
+ $(subdirs):
+ 	$(Q)$(MAKE) $(dtbinst)=$@ dst=$(patsubst $(obj)/%,$(dst)/%,$@)
+-- 
+2.25.1
+
