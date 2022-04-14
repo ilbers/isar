@@ -1,0 +1,14 @@
+#!/bin/sh
+
+detect mmc0
+
+global.bootm.image="/mnt/mmc0.0/zImage"
+global.bootm.oftree="/mnt/mmc0.0/oftree"
+global.linux.bootargs.dyn.root="root=/dev/mmcblk0p2 rootflags='data=journal'"
+
+[ -e /env/config-expansions ] && /env/config-expansions
+
+if [ -e /env/expansions/dt-overlays ] ; then
+    global overlays.path="/mnt/mmc0.1/overlays"
+    /env/expansions/dt-overlays
+fi

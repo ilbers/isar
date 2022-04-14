@@ -1,0 +1,21 @@
+#!/bin/sh
+
+path="/mnt/tftp"
+
+global.bootm.image="${path}/${global.user}-linux-${global.hostname}"
+
+oftree="${path}/${global.user}-oftree-${global.hostname}"
+if [ -f "${oftree}" ]; then
+    global.bootm.oftree="$oftree"
+fi
+
+nfsroot="/home/${global.user}/nfsroot/${global.hostname}"
+ip_route_get -b ${global.net.server} global.linux.bootargs.dyn.ip
+global.linux.bootargs.dyn.root="root=/dev/nfs nfsroot=$nfsroot,vers=3,tcp"
+
+[ -e /env/config-expansions ] && /env/config-expansions
+
+if [ -e /env/expansions/dt-overlays ] ; then
+    global overlays.path="/mnt/nfs/overlays"
+    /env/expansions/dt-overlays
+fi

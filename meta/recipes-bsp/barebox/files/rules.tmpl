@@ -1,0 +1,45 @@
+#!/usr/bin/make -f
+
+# Debian rules for custom Barebox build
+#
+# This software is a part of ISAR.
+# Copyright (C) 2022 ilbers GmbH
+
+ifneq ($(DEB_BUILD_GNU_TYPE),$(DEB_HOST_GNU_TYPE))
+export CROSS_COMPILE=$(DEB_HOST_GNU_TYPE)-
+endif
+
+ifeq ($(DEB_HOST_GNU_CPU), arm)
+export ARCH=arm
+endif
+ifeq ($(DEB_HOST_GNU_CPU), aarch64)
+export ARCH=arm64
+endif
+ifeq ($(DEB_HOST_GNU_CPU), riscv64)
+export ARCH=riscv
+endif
+ifneq (,$(findstring 86,$(DEB_HOST_GNU_CPU)))
+export ARCH=x86
+endif
+
+export KBUILD_OUTPUT=${BAREBOX_BUILD_DIR}
+
+export LDFLAGS="--no-dynamic-linker"
+
+override_dh_auto_configure:
+	$(MAKE) $(PARALLEL_MAKE) ${BAREBOX_CONFIG}
+ifneq (,${BAREBOX_CONFIG_FRAGMENTS})
+	./scripts/kconfig/merge_config.sh -m -O ${BAREBOX_BUILD_DIR} ${BAREBOX_BUILD_DIR}/.config ${BAREBOX_CONFIG_FRAGMENTS}
+endif
+	$(MAKE) $(PARALLEL_MAKE) olddefconfig
+
+override_dh_auto_build:
+	$(MAKE) $(PARALLEL_MAKE) all
+
+override_dh_auto_install:
+	install -d $(CURDIR)/debian/barebox/usr/lib/barebox
+	install -m 644 ${BAREBOX_BUILD_DIR}/images/${BAREBOX_BASE_BIN}.img $(CURDIR)/debian/barebox/usr/lib/barebox/barebox.bin
+	install -m 644 ${BAREBOX_BUILD_DIR}/.config $(CURDIR)/debian/barebox/usr/lib/barebox/barebox.config
+
+%:
+	dh $@ --parallel

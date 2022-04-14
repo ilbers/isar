@@ -1,0 +1,2 @@
+of_fixup_status /ldb/lvds-channel@0
+of_fixup_status /soc/$bus@2100000/i2c@21a0000/touchctrl@44

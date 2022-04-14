@@ -1,0 +1,17 @@
+#!/bin/sh
+ROOTFSSIZE=479M
+KERNELSIZE=16M
+DTBSIZE=1M
+echo "WARNING! This script is deprecated. Please use "rauc-flash-nand" in a Linux environment!"
+echo "Formatting /dev/nand0.root"
+
+ubiformat -q /dev/nand0.root
+ubiattach /dev/nand0.root
+ubimkvol -t static /dev/nand0.root.ubi kernel0 ${KERNELSIZE}
+ubimkvol -t static /dev/nand0.root.ubi oftree0 ${DTBSIZE}
+ubimkvol /dev/nand0.root.ubi root0 ${ROOTFSSIZE}
+ubimkvol -t static /dev/nand0.root.ubi kernel1 ${KERNELSIZE}
+ubimkvol -t static /dev/nand0.root.ubi oftree1 ${DTBSIZE}
+ubimkvol /dev/nand0.root.ubi root1 ${ROOTFSSIZE}
+
+ubidetach 0

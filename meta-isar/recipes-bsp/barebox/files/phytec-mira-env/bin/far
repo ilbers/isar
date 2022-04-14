@@ -1,0 +1,14 @@
+#!/bin/sh
+# barebox script far (="Fetch And Reset"):
+#
+# The script is useful for a rapid compile and execute development cycle. If
+# the deployment directory of yocto is the root directory of the tftp server
+# (e.g. use a bind mount), you can fetch and execute a newly compiled barebox
+# with this script.
+
+cp /mnt/tftp/barebox.bin /dev/ram0
+if [ $? != 0 ]; then
+    echo "Error: Cannot fetch file "barebox.bin" from host!"
+else
+    go /dev/ram0
+fi

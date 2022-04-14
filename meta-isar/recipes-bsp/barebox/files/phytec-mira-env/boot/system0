@@ -1,0 +1,16 @@
+#!/bin/sh
+
+[ ! -e /dev/nand0.root.ubi ] && ubiattach /dev/nand0.root
+
+global.bootm.image="/dev/nand0.root.ubi.kernel0"
+global.bootm.oftree="/dev/nand0.root.ubi.oftree0"
+global.linux.bootargs.dyn.root="root=ubi0:root0 ubi.mtd=root rootfstype=ubifs"
+
+[ -e /env/config-expansions ] && /env/config-expansions
+
+if [ -e /env/expansions/dt-overlays ] ; then
+    mkdir /mnt/rootfs
+    mount -t ubifs /dev/nand0.root.ubi.root0 /mnt/rootfs
+    global overlays.path="/mnt/rootfs/overlays"
+    /env/expansions/dt-overlays
+fi

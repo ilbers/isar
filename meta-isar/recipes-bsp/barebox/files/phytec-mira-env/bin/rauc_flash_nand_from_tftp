@@ -1,0 +1,10 @@
+#!/bin/sh
+echo "WARNING! This script is deprecated. Please use "rauc-flash-nand" in a Linux environment!"
+echo "Initializing NAND flash from TFTP"
+[ ! -e /dev/nand0.root.ubi ] && ubiattach /dev/nand0.root
+ubiupdatevol /dev/nand0.root.ubi.kernel0 /mnt/tftp/zImage
+ubiupdatevol /dev/nand0.root.ubi.kernel1 /mnt/tftp/zImage
+ubiupdatevol /dev/nand0.root.ubi.oftree0 /mnt/tftp/oftree
+ubiupdatevol /dev/nand0.root.ubi.oftree1 /mnt/tftp/oftree
+cp /mnt/tftp/root.ubifs /dev/nand0.root.ubi.root0
+cp /mnt/tftp/root.ubifs /dev/nand0.root.ubi.root1

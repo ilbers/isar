@@ -1,0 +1,3 @@
+of_fixup_status /panel-lcd
+of_fixup_status /display@di0
+of_fixup_status /soc/$bus@2100000/i2c@21a0000/touchctrl@44

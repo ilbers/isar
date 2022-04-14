@@ -1,0 +1,3 @@
+of_fixup_status /gpio-keys
+of_fixup_status /user-leds
+of_property -s -f -e $global.bootm.oftree /soc/$bus@2100000/serial@21ec000 pinctrl-0 </soc/$bus@2000000/pinctrl@20e0000/uart3grp>

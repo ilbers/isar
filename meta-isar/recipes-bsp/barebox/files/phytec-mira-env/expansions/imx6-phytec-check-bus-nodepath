@@ -1,0 +1,7 @@
+bus="bus"
+of_dump -e /soc/$bus@2000000
+
+if [ $? != 0 ]; then
+    echo "Changing node-name bus to aips-bus"
+    bus="aips-bus"
+fi

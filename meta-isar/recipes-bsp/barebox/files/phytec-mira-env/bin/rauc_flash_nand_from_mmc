@@ -1,0 +1,10 @@
+#!/bin/sh
+echo "WARNING! This script is deprecated. Please use "rauc-flash-nand" in a Linux environment!"
+echo "Initializing NAND flash from MMC"
+[ ! -e /dev/nand0.root.ubi ] && ubiattach /dev/nand0.root
+ubiupdatevol /dev/nand0.root.ubi.kernel0 /mnt/mmc0.0/zImage
+ubiupdatevol /dev/nand0.root.ubi.kernel1 /mnt/mmc0.0/zImage
+ubiupdatevol /dev/nand0.root.ubi.oftree0 /mnt/mmc0.0/oftree
+ubiupdatevol /dev/nand0.root.ubi.oftree1 /mnt/mmc0.0/oftree
+cp /mnt/mmc0.0/root.ubifs /dev/nand0.root.ubi.root0
+cp /mnt/mmc0.0/root.ubifs /dev/nand0.root.ubi.root1

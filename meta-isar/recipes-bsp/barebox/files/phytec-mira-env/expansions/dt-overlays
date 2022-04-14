@@ -1,0 +1,14 @@
+#!/bin/sh
+
+path="$global.overlays.path"
+
+if [ -e ${path}/select ] ; then
+    readf ${path}/select global.overlays.select
+fi
+
+for o in $global.overlays.select ; do
+    if [ -e ${path}/${o} ] ; then
+        echo "Add ${path}/${o} overlay"
+        of_overlay ${path}/${o}
+    fi
+done

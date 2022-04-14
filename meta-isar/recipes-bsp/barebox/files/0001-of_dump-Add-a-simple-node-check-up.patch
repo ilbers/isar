@@ -1,0 +1,61 @@
+From 4abae0d9cc23ef055c0054e41c515e92fa5267ce Mon Sep 17 00:00:00 2001
+From: Yunus Bas <y.bas@phytec.de>
+Date: Fri, 4 Jun 2021 19:03:04 +0200
+Subject: [PATCH] of_dump: Add a simple node check-up
+
+In case a node is found, the whole node and it's subnodes will be
+printed. This patch extends the of_dump command with a simple check-up.
+This is needed e.g. when other scripts need to determine if a
+devicetree node exists or not.
+
+Zero is returned in case the node is found, an error code if not.
+
+Signed-off-by: Yunus Bas <y.bas@phytec.de>
+---
+ commands/of_dump.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/commands/of_dump.c b/commands/of_dump.c
+index 6792af3af..d4d9c46a5 100644
+--- a/commands/of_dump.c
++++ b/commands/of_dump.c
+@@ -32,14 +32,17 @@ static int do_of_dump(int argc, char *argv[])
+ 	int opt;
+ 	int ret = 0;
+ 	int fix = 0;
++	int exists = 0;
+ 	struct device_node *root = NULL, *node, *of_free = NULL;
+ 	char *dtbfile = NULL;
+ 	size_t size;
+ 	const char *nodename;
+ 	int names_only = 0, properties_only = 0;
+ 
+-	while ((opt = getopt(argc, argv, "Ff:np")) > 0) {
++	while ((opt = getopt(argc, argv, "eFf:np")) > 0) {
+ 		switch (opt) {
++		case 'e':
++			exists = 1;
+ 		case 'f':
+ 			dtbfile = optarg;
+ 			break;
+@@ -109,6 +112,9 @@ static int do_of_dump(int argc, char *argv[])
+ 		printf("Cannot find nodepath %s\n", nodename);
+ 		ret = -ENOENT;
+ 		goto out;
++	} else if (exists) {
++		printf("Found node %s\n", nodename);
++		goto out;
+ 	}
+ 
+ 	if (names_only)
+@@ -125,6 +131,7 @@ out:
+ 
+ BAREBOX_CMD_HELP_START(of_dump)
+ BAREBOX_CMD_HELP_TEXT("Options:")
++BAREBOX_CMD_HELP_OPT  ("-e",  "only check if path or alias exists")
+ BAREBOX_CMD_HELP_OPT  ("-f dtb",  "work on dtb instead of internal devicetree")
+ BAREBOX_CMD_HELP_OPT  ("-F",  "return fixed devicetree")
+ BAREBOX_CMD_HELP_OPT  ("-n",  "Print node names only, no properties")
+-- 
+2.30.0
+
