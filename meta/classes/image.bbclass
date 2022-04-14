@@ -232,6 +232,17 @@ python() {
         d.delVarFlag('IMAGE_CMD_' + bt_clean, 'func')
         task_deps = d.getVarFlag('IMAGE_CMD_' + bt_clean, 'depends')
 
+        image_src = localdata.getVar('IMAGE_SRC_URI_' + bt_clean)
+        if image_src:
+            d.appendVar("SRC_URI", ' ' + image_src)
+
+        image_tmpl_files = localdata.getVar('IMAGE_TEMPLATE_FILES_' + bt_clean)
+        image_tmpl_vars = localdata.getVar('IMAGE_TEMPLATE_VARS_' + bt_clean)
+        if image_tmpl_files:
+            d.appendVar("TEMPLATE_FILES", ' ' + image_tmpl_files)
+        if image_tmpl_vars:
+            d.appendVar("TEMPLATE_VARS", ' ' + image_tmpl_vars)
+
         # add conversions
         conversion_depends = set()
         rm_images = set()
