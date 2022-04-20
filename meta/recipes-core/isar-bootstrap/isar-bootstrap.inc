@@ -148,14 +148,22 @@ def aggregate_aptsources_list(d, file_list, file_out):
             out_fd.write("\n".encode())
 
 def get_aptsources_list(d):
+    import errno
     apt_sources_var = d.getVar("DISTRO_VARS_PREFIX") + "DISTRO_APT_SOURCES"
-    return (d.getVar(apt_sources_var, True) or "").split()
+    list = (d.getVar(apt_sources_var, True) or "").split()
+    ret = []
+    for p in list:
+        try:
+            f = bb.parse.resolve_file(p, d)
+            ret.append(f)
+        except FileNotFoundError as e:
+            bb.fatal(os.strerror(errno.ENOENT) + ' "' + p + '"')
+    return ret
 
 def generate_distro_sources(d):
     apt_sources_list = get_aptsources_list(d)
     for entry in apt_sources_list:
-        entry_real = bb.parse.resolve_file(entry, d)
-        with open(entry_real, "r") as in_fd:
+        with open(entry, "r") as in_fd:
             for line in in_fd:
                 parsed = parse_aptsources_list_line(line)
                 if parsed:
