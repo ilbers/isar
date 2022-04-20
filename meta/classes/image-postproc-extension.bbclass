@@ -57,7 +57,7 @@ ROOTFS_POSTPROCESS_COMMAND =+ "image_postprocess_machine_id"
 image_postprocess_machine_id() {
     # systemd(1) takes care of recreating the machine-id on first boot
     sudo rm -f '${IMAGE_ROOTFS}/var/lib/dbus/machine-id'
-    sudo install -m 644 '/dev/null' '${IMAGE_ROOTFS}/etc/machine-id'
+    sudo rm -f '${IMAGE_ROOTFS}/etc/machine-id'
 }
 
 ROOTFS_POSTPROCESS_COMMAND =+ "image_postprocess_sshd_key_regen"
