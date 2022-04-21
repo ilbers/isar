@@ -1,5 +1,5 @@
 part /boot --source bootimg-partition --ondisk mmcblk0 --fstype=vfat --label boot --active --align 4096 --size 10
 
-part / --source rootfs --ondisk mmcblk0 --fstype=ext2 --label root --align 4096 --exclude-path=boot
+part / --source rootfs --ondisk mmcblk0 --fstype=ext4 --mkfs-extraopts "-T default" --label root --align 4096 --exclude-path=boot
 
 bootloader
