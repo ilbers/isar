@@ -10,8 +10,13 @@
 set -e
 
 ROOT_DEV="$(findmnt / -o source -n)"
-BOOT_DEV="$(echo "${ROOT_DEV}" | sed 's/p\?[0-9]*$//')"
+ROOT_DEV_NAME=${ROOT_DEV##*/}
+ROOT_DEV_SLAVE=$(ls -d /sys/block/${ROOT_DEV_NAME}/slaves/* 2>/dev/null | head -1)
+if [ -n ${ROOT_DEV_SLAVE} ]; then
+	ROOT_DEV=/dev/${ROOT_DEV_SLAVE##*/}
+fi
 
+BOOT_DEV="$(echo "${ROOT_DEV}" | sed 's/p\?[0-9]*$//')"
 if [ "${ROOT_DEV}" = "${BOOT_DEV}" ]; then
 	echo "Boot device equals root device - no partitioning found" >&2
 	exit 1
