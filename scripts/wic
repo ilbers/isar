@@ -22,9 +22,9 @@ import sys
 import argparse
 import logging
 import subprocess
+import shutil
 
 from collections import namedtuple
-from distutils import spawn
 
 # External modules
 scripts_path = os.path.dirname(os.path.realpath(__file__))
@@ -47,7 +47,7 @@ if os.environ.get('SDKTARGETSYSROOT'):
             break
         sdkroot = os.path.dirname(sdkroot)
 
-bitbake_exe = spawn.find_executable('bitbake')
+bitbake_exe = shutil.which('bitbake')
 if bitbake_exe:
     bitbake_path = scriptpath.add_bitbake_lib_path()
     import bb
@@ -158,6 +158,9 @@ def wic_create_subcommand(options, usage_str):
             raise WicError("Image name is not specified, exiting. "
                            "(Use -e/--image-name to specify it)")
         native_sysroot = options.native_sysroot
+
+    if options.kernel_dir:
+        kernel_dir = options.kernel_dir
 
     if not options.vars_dir and (not native_sysroot or not os.path.isdir(native_sysroot)):
         logger.info("Building wic-tools...\n")
@@ -346,6 +349,8 @@ def wic_init_parser_create(subparser):
                       default=False, help="output debug information")
     subparser.add_argument("-i", "--imager", dest="imager",
                       default="direct", help="the wic imager plugin")
+    subparser.add_argument("--extra-space", type=int, dest="extra_space",
+                      default=0, help="additional free disk space to add to the image")
     return
 
 
