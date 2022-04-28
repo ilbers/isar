@@ -11,7 +11,6 @@ SSTATE_MANIFESTS = "${TMPDIR}/sstate-control/${MACHINE}-${DISTRO}-${DISTRO_ARCH}
 
 IMAGE_INSTALL ?= ""
 IMAGE_FSTYPES ?= "${@ d.getVar("IMAGE_TYPE", True) if d.getVar("IMAGE_TYPE", True) else "ext4"}"
-IMAGE_CONVERSIONS = "gz xz"
 IMAGE_ROOTFS ?= "${WORKDIR}/rootfs"
 
 KERNEL_IMAGE_PKG ??= "${@ ("linux-image-" + d.getVar("KERNEL_NAME", True)) if d.getVar("KERNEL_NAME", True) else ""}"
@@ -85,6 +84,26 @@ inherit image-postproc-extension
 inherit image-locales-extension
 inherit image-account-extension
 
+# Extra space for rootfs in MB
+ROOTFS_EXTRA ?= "64"
+
+def get_rootfs_size(d):
+    import subprocess
+    rootfs_extra = int(d.getVar("ROOTFS_EXTRA", True))
+
+    output = subprocess.check_output(
+        ["sudo", "du", "-xs", "--block-size=1k", d.getVar("IMAGE_ROOTFS", True)]
+    )
+    base_size = int(output.split()[0])
+
+    return base_size + rootfs_extra * 1024
+
+python set_image_size () {
+    rootfs_size = get_rootfs_size(d)
+    d.setVar('ROOTFS_SIZE', str(rootfs_size))
+    d.setVarFlag('ROOTFS_SIZE', 'export', '1')
+}
+
 def get_base_type(t, d):
     bt = t
     for c in d.getVar('IMAGE_CONVERSIONS').split():
@@ -120,21 +139,9 @@ IMAGE_BASETYPES = "${@get_image_basetypes(d)}"
 
 # image types
 IMAGE_CLASSES ??= ""
-IMGCLASSES = "container-img cpiogz-img ext4-img fit-img targz-img ubi-img ubifs-img vm-img wic-img"
+IMGCLASSES = "imagetypes imagetypes_wic imagetypes_vm imagetypes_container"
 IMGCLASSES += "${IMAGE_CLASSES}"
 inherit ${IMGCLASSES}
-
-# image conversions
-CONVERSION_CMD_gz = "${SUDO_CHROOT} sh -c 'gzip -f -9 -n -c --rsyncable ${IMAGE_FILE_CHROOT} > ${IMAGE_FILE_CHROOT}.gz'"
-CONVERSION_DEPS_gz = "gzip"
-
-XZ_MEMLIMIT ?= "50%"
-XZ_THREADS ?= "${@oe.utils.cpu_count(at_least=2)}"
-XZ_THREADS[vardepvalue] = "1"
-XZ_OPTIONS ?= "--memlimit=${XZ_MEMLIMIT} --threads=${XZ_THREADS}"
-XZ_OPTIONS[vardepsexclude] += "XZ_MEMLIMIT XZ_THREADS"
-CONVERSION_CMD_xz = "${SUDO_CHROOT} sh -c 'xz -c ${XZ_OPTIONS} ${IMAGE_FILE_CHROOT} > ${IMAGE_FILE_CHROOT}.xz'"
-CONVERSION_DEPS_xz = "xz-utils"
 
 # hook up IMAGE_CMD_*
 python() {
@@ -276,19 +283,6 @@ python() {
     d.appendVar('IMAGER_BUILD_DEPS', ' ' + ' '.join(sorted(imager_build_deps)))
 }
 
-# Extra space for rootfs in MB
-ROOTFS_EXTRA ?= "64"
-
-def get_rootfs_size(d):
-    import subprocess
-    rootfs_extra = int(d.getVar("ROOTFS_EXTRA", True))
-
-    output = subprocess.check_output(
-        ["sudo", "du", "-xs", "--block-size=1k", d.getVar("IMAGE_ROOTFS", True)]
-    )
-    base_size = int(output.split()[0])
-
-    return base_size + rootfs_extra * 1024
 
 # here we call a command that should describe your whole build system,
 # this could be "git describe" or something similar.
@@ -305,12 +299,6 @@ get_build_id() {
 		bbwarn "\"${ISAR_RELEASE_CMD}\" failed, returning empty build_id."
 		echo ""
 	fi
-}
-
-python set_image_size () {
-    rootfs_size = get_rootfs_size(d)
-    d.setVar('ROOTFS_SIZE', str(rootfs_size))
-    d.setVarFlag('ROOTFS_SIZE', 'export', '1')
 }
 
 ROOTFS_CONFIGURE_COMMAND += "image_configure_fstab"
