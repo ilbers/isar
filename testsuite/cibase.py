@@ -117,7 +117,7 @@ class CIBaseTest(CIBuilder):
                     ['do_bootstrap_setscene', '!do_bootstrap']),
                 check_executed_tasks('buildchroot-target',
                     ['do_rootfs_install_setscene', '!do_rootfs_install']),
-                check_executed_tasks('isar-image-base-*-wic-img',
+                check_executed_tasks('isar-image-base-*',
                     ['do_rootfs_install_setscene', '!do_rootfs_install'])
             ]):
             self.fail("Failed rebuild image")
@@ -160,7 +160,7 @@ class CIBaseTest(CIBuilder):
                 # TODO: if we actually make a change to hello, then we could test
                 #       that do_rootfs is executed. currently, hello is rebuilt,
                 #       but its sstate sig/hash does not change.
-                check_executed_tasks('isar-image-base-*-wic-img',
+                check_executed_tasks('isar-image-base-*',
                     ['do_rootfs_install_setscene', '!do_rootfs_install'])
             ]):
             self.fail("Failed rebuild package and image")

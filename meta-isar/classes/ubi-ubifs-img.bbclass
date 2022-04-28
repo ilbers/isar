@@ -5,6 +5,11 @@
 #
 # SPDX-License-Identifier: MIT
 
-inherit ubi-img ubifs-img fit-img
-addtask do_ubi_image after do_ubifs_image
-addtask do_ubi_image after do_fit_image
+IMAGE_TYPEDEP_ubi_ubifs = "ubi"
+IMAGE_TYPEDEP_ubi += "ubifs fit"
+
+IMAGE_CMD_ubi_ubifs() {
+    # we need to produce output (with extension .ubi-ubifs),
+    # so just create a symlink
+    ln -sf ${IMAGE_FULLNAME}.ubi ${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.ubi-ubifs
+}

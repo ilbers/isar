@@ -23,5 +23,5 @@ INITRD_IMG = "${PP_DEPLOY}/${INITRD_IMAGE}"
 # only one dtb file supported, pick the first
 DTB_IMG = "${PP_DEPLOY}/${@(d.getVar('DTB_FILES').split() or [''])[0]}"
 
-UBIFS_IMG = "${PP_DEPLOY}/${UBIFS_IMAGE_FILE}"
-FIT_IMG = "${PP_DEPLOY}/${FIT_IMAGE_FILE}"
+UBIFS_IMG = "${PP_DEPLOY}/${IMAGE_FULLNAME}.ubifs"
+FIT_IMG = "${PP_DEPLOY}/${IMAGE_FULLNAME}.fit"

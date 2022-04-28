@@ -3,7 +3,7 @@
 #
 # Based on SD class from meta-raspberrypi
 
-inherit wic-img
+IMAGE_TYPEDEP_rpi_sdimg = "wic"
 
 WKS_FILE ?= "rpi-sdimg"
 
