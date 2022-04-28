@@ -78,7 +78,7 @@ ROOTFS_PACKAGE_SUFFIX ?= "${PN}-${DISTRO}-${MACHINE}"
 ROOTFS_POSTPROCESS_COMMAND_prepend = "${@bb.utils.contains('BASE_REPO_FEATURES', 'cache-deb-src', 'cache_deb_src', '', d)} "
 
 inherit rootfs
-inherit image-sdk-extension
+inherit sdk
 inherit image-tools-extension
 inherit image-postproc-extension
 inherit image-locales-extension
