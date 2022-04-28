@@ -1,15 +1,13 @@
 # This software is a part of ISAR.
 # Copyright (C) 2015-2017 ilbers GmbH
 
-# Replace possible multiple spaces with single underscores
-IMAGE_SUFFIX = "${@'_'.join(d.getVar("IMAGE_FSTYPES", True).split())}"
 # Make workdir and stamps machine-specific without changing common PN target
-WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}-${IMAGE_SUFFIX}/${PV}-${PR}"
-STAMP = "${STAMPS_DIR}/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}-${IMAGE_SUFFIX}/${PV}-${PR}"
-STAMPCLEAN = "${STAMPS_DIR}/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}-${IMAGE_SUFFIX}/*-*"
+WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}/${PV}-${PR}"
+STAMP = "${STAMPS_DIR}/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}/${PV}-${PR}"
+STAMPCLEAN = "${STAMPS_DIR}/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}/*-*"
 
 # Sstate also needs to be machine-specific
-SSTATE_MANIFESTS = "${TMPDIR}/sstate-control/${MACHINE}-${DISTRO}-${DISTRO_ARCH}-${IMAGE_SUFFIX}"
+SSTATE_MANIFESTS = "${TMPDIR}/sstate-control/${MACHINE}-${DISTRO}-${DISTRO_ARCH}"
 
 IMAGE_INSTALL ?= ""
 IMAGE_FSTYPES ?= "${@ d.getVar("IMAGE_TYPE", True) if d.getVar("IMAGE_TYPE", True) else "ext4-img"}"
@@ -29,7 +27,7 @@ INITRD_IMAGE ?= "${IMAGE_FULLNAME}-initrd.img"
 DTB_FILES ?= ""
 
 # Useful variables for imager implementations:
-PP = "/home/builder/${PN}-${MACHINE}-${IMAGE_SUFFIX}"
+PP = "/home/builder/${PN}-${MACHINE}"
 PP_DEPLOY = "${PP}/deploy"
 PP_ROOTFS = "${PP}/rootfs"
 PP_WORK = "${PP}/work"
