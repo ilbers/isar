@@ -113,8 +113,8 @@ eval $(bitbake -e mc:qemu$ARCH-$DISTRO:isar-image-base | grep "\(^IMAGE_FSTYPES=
 # Take first image type for VM if there are several defined
 IMAGE_FSTYPES=$(echo "$IMAGE_FSTYPES" | awk '{print $1}')
 case "$IMAGE_FSTYPES" in
-    ext4-img)
-    readonly ROOTFS_IMAGE=$IMAGE_FULLNAME.ext4.img
+    ext4)
+    readonly ROOTFS_IMAGE=$IMAGE_FULLNAME.ext4
 
     eval $(bitbake -e mc:qemu$ARCH-$DISTRO:isar-image-base | grep "^KERNEL_IMAGE=")
     eval $(bitbake -e mc:qemu$ARCH-$DISTRO:isar-image-base | grep "^INITRD_IMAGE=")
@@ -130,8 +130,8 @@ case "$IMAGE_FSTYPES" in
 	-initrd $QINITRD"
     KARGS="console=$MACHINE_SERIAL root=/dev/$QEMU_ROOTFS_DEV rw $QEMU_KARGS"
     ;;
-    wic-img)
-    readonly ROOTFS_IMAGE=$IMAGE_FULLNAME.wic.img
+    wic)
+    readonly ROOTFS_IMAGE=$IMAGE_FULLNAME.wic
     EXTRA_ARGS="$EXTRA_ARGS -snapshot"
     ;;
     *)
