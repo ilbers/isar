@@ -3,30 +3,18 @@
 #
 # SPDX-License-Identifier: MIT
 
-python() {
-    if not d.getVar("UBINIZE_ARGS"):
-        raise bb.parse.SkipRecipe("UBINIZE_ARGS must be set")
-}
-
 UBINIZE_CFG ??= "ubinize.cfg"
-UBI_IMAGE_FILE ?= "${IMAGE_FULLNAME}.ubi.img"
 
-IMAGER_INSTALL += "mtd-utils"
+IMAGER_INSTALL_ubi += "mtd-utils"
 
 # Generate ubi filesystem image
-do_ubi_image() {
+IMAGE_CMD_ubi() {
     if [ ! -e "${WORKDIR}/${UBINIZE_CFG}" ]; then
         die "UBINIZE_CFG does not contain ubinize config file."
     fi
 
-    rm -f '${DEPLOY_DIR_IMAGE}/${UBI_IMAGE_FILE}'
-
-    image_do_mounts
-
-    # Create ubi image using buildchroot tools
-    sudo chroot ${BUILDCHROOT_DIR} /usr/sbin/ubinize ${UBINIZE_ARGS} \
-                -o '${PP_DEPLOY}/${UBI_IMAGE_FILE}' '${PP_WORK}/${UBINIZE_CFG}'
-    sudo chown $(id -u):$(id -g) '${DEPLOY_DIR_IMAGE}/${UBI_IMAGE_FILE}'
+    ${SUDO_CHROOT} /usr/sbin/ubinize ${UBINIZE_ARGS} \
+                -o '${IMAGE_FILE_CHROOT}' '${PP_WORK}/${UBINIZE_CFG}'
 }
-addtask ubi_image before do_image after do_image_tools do_transform_template
-do_ubi_image[dirs] = "${DEPLOY_DIR_IMAGE}"
+IMAGE_CMD_ubi[depends] = "${PN}:do_transform_template"
+IMAGE_CMD_REQUIRED_ARGS_ubi = "UBINIZE_ARGS"

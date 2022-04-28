@@ -5,16 +5,18 @@
 #
 
 inherit buildchroot
-inherit wic-img
+
+USING_OVA = "${@bb.utils.contains('IMAGE_BASETYPES', 'ova', '1', '0', d)}"
 
 FILESEXTRAPATHS_prepend := "${LAYERDIR_core}/classes/vm-img:"
 OVF_TEMPLATE_FILE ?= "vm-img-virtualbox.ovf.tmpl"
-SRC_URI += "file://${OVF_TEMPLATE_FILE}"
+SRC_URI += "${@'file://${OVF_TEMPLATE_FILE}' if d.getVar('USING_OVA') == '1' else ''}"
 
-IMAGER_INSTALL += "qemu-utils gawk uuid-runtime"
+IMAGE_TYPEDEP_ova = "wic"
+IMAGER_INSTALL_ova += "qemu-utils gawk uuid-runtime"
 
 # virtual machine disk settings
-SOURCE_IMAGE_FILE ?= "${IMAGE_FULLNAME}.wic.img"
+SOURCE_IMAGE_FILE ?= "${IMAGE_FULLNAME}.wic"
 
 # For VirtualBox, this needs to be "monolithicSparse" (default to it).
 # VMware needs this to be "streamOptimized".
@@ -34,7 +36,7 @@ def set_convert_options(d):
 
 CONVERSION_OPTIONS = "${@set_convert_options(d)}"
 
-do_convert_wic() {
+convert_wic() {
     rm -f '${DEPLOY_DIR_IMAGE}/${VIRTUAL_MACHINE_IMAGE_FILE}'
     image_do_mounts
     bbnote "Creating ${VIRTUAL_MACHINE_IMAGE_FILE} from ${SOURCE_IMAGE_FILE}"
@@ -42,8 +44,6 @@ do_convert_wic() {
     /usr/bin/qemu-img convert -f raw -O ${VIRTUAL_MACHINE_IMAGE_TYPE} ${CONVERSION_OPTIONS} \
         '${PP_DEPLOY}/${SOURCE_IMAGE_FILE}' '${VIRTUAL_MACHINE_DISK}'
 }
-
-addtask convert_wic before do_build after do_wic_image do_copy_boot_files do_install_imager_deps do_transform_template
 
 # User settings for OVA
 OVA_NAME ?= "${IMAGE_FULLNAME}"
@@ -67,10 +67,11 @@ OVA_VARS = "OVA_NAME OVA_MEMORY OVA_NUMBER_OF_CPU OVA_VRAM \
             OVA_FIRMWARE OVA_ACPI OVA_3D_ACCEL \
             OVA_SHA_ALG VIRTUAL_MACHINE_IMAGE_FILE"
 
-TEMPLATE_FILES += "${OVF_TEMPLATE_FILE}"
+TEMPLATE_FILES += "${@'${OVF_TEMPLATE_FILE}' if d.getVar('USING_OVA') == '1' else ''}"
 TEMPLATE_VARS += "${OVA_VARS}"
 
-do_create_ova() {
+do_image_ova[prefuncs] += "convert_wic"
+IMAGE_CMD_ova() {
     if [ ! ${VIRTUAL_MACHINE_IMAGE_TYPE} = "vmdk" ]; then
         exit 0
     fi
@@ -81,10 +82,7 @@ do_create_ova() {
     export PRIMARY_MAC=$(macgen)
     export LAST_CHANGE=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
     export OVA_FIRMWARE_UPPERCASE=$(echo ${OVA_FIRMWARE} | tr '[a-z]' '[A-Z]')
-
     export OVF_TEMPLATE_STAGE2=$(echo ${OVF_TEMPLATE_FILE} | sed 's/.tmpl$//' )
-    image_do_mounts
-
     sudo -Es chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} <<'EOSUDO'
         set -e
         export DISK_SIZE_BYTES=$(qemu-img info -f vmdk "${VIRTUAL_MACHINE_DISK}" \
@@ -104,5 +102,3 @@ do_create_ova() {
         tar -uvf ${PP_DEPLOY}/${OVA_NAME}.ova -C ${PP_DEPLOY} ${VIRTUAL_MACHINE_IMAGE_FILE}
 EOSUDO
 }
-
-addtask do_create_ova after do_convert_wic before do_deploy

@@ -6,24 +6,17 @@
 MKIMAGE_ARGS ??= ""
 
 FIT_IMAGE_SOURCE ??= "fitimage.its"
-FIT_IMAGE_FILE ?= "${IMAGE_FULLNAME}.fit.img"
 
-IMAGER_INSTALL += "u-boot-tools device-tree-compiler"
+IMAGER_INSTALL_fit += "u-boot-tools device-tree-compiler"
 
 # Generate fit image
-do_fit_image() {
+IMAGE_CMD_fit() {
     if [ ! -e "${WORKDIR}/${FIT_IMAGE_SOURCE}" ]; then
         die "FIT_IMAGE_SOURCE does not contain fitimage source file"
     fi
 
-    rm -f '${DEPLOY_DIR_IMAGE}/${FIT_IMAGE_FILE}'
-
-    image_do_mounts
-
     # Create fit image using buildchroot tools
-    sudo chroot ${BUILDCHROOT_DIR} /usr/bin/mkimage ${MKIMAGE_ARGS} \
-                -f '${PP_WORK}/${FIT_IMAGE_SOURCE}' '${PP_DEPLOY}/${FIT_IMAGE_FILE}'
-    sudo chown $(id -u):$(id -g) '${DEPLOY_DIR_IMAGE}/${FIT_IMAGE_FILE}'
+    ${SUDO_CHROOT} /usr/bin/mkimage ${MKIMAGE_ARGS} \
+                -f '${PP_WORK}/${FIT_IMAGE_SOURCE}' '${IMAGE_FILE_CHROOT}'
 }
-addtask fit_image before do_image after do_image_tools do_transform_template
-do_fit_image[dirs] = "${DEPLOY_DIR_IMAGE}"
+IMAGE_CMD_fit[depends] = "${PN}:do_transform_template"

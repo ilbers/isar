@@ -3,30 +3,17 @@
 #
 # SPDX-License-Identifier: MIT
 
-python() {
-    if not d.getVar("MKUBIFS_ARGS"):
-        raise bb.parse.SkipRecipe("mkubifs_args must be set")
-}
-
-UBIFS_IMAGE_FILE ?= "${IMAGE_FULLNAME}.ubifs.img"
-
-IMAGER_INSTALL += "mtd-utils"
+IMAGER_INSTALL_ubifs += "mtd-utils"
 
 # glibc bug 23960 https://sourceware.org/bugzilla/show_bug.cgi?id=23960
 # should not use QEMU on armhf target with mkfs.ubifs < v2.1.3
-ISAR_CROSS_COMPILE_armhf = "1"
+THIS_ISAR_CROSS_COMPILE := "${ISAR_CROSS_COMPILE}"
+ISAR_CROSS_COMPILE_armhf = "${@bb.utils.contains('IMAGE_BASETYPES', 'ubifs', '1', '${THIS_ISAR_CROSS_COMPILE}', d)}"
 
 # Generate ubifs filesystem image
-do_ubifs_image() {
-    rm -f '${DEPLOY_DIR_IMAGE}/${UBIFS_IMAGE_FILE}'
-
-    image_do_mounts
-
+IMAGE_CMD_ubifs() {
     # Create ubifs image using buildchroot tools
-    sudo chroot ${BUILDCHROOT_DIR} /usr/sbin/mkfs.ubifs ${MKUBIFS_ARGS} \
-                -r '${PP_ROOTFS}' '${PP_DEPLOY}/${UBIFS_IMAGE_FILE}'
-    sudo chown $(id -u):$(id -g) '${DEPLOY_DIR_IMAGE}/${UBIFS_IMAGE_FILE}'
+    ${SUDO_CHROOT} /usr/sbin/mkfs.ubifs ${MKUBIFS_ARGS} \
+                -r '${PP_ROOTFS}' '${IMAGE_FILE_CHROOT}'
 }
-
-addtask ubifs_image before do_image after do_image_tools
-do_ubifs_image[dirs] = "${DEPLOY_DIR_IMAGE}"
+IMAGE_CMD_REQUIRED_ARGS_ubifs = "MKUBIFS_ARGS"

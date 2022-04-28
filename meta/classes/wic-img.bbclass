@@ -4,7 +4,8 @@
 # this class is heavily inspired by OEs ./meta/classes/image_types_wic.bbclass
 #
 
-WKS_FILE_CHECKSUM = "${@'${WKS_FULL_PATH}:%s' % os.path.exists('${WKS_FULL_PATH}')}"
+USING_WIC = "${@bb.utils.contains('IMAGE_BASETYPES', 'wic', '1', '0', d)}"
+WKS_FILE_CHECKSUM = "${@'${WKS_FULL_PATH}:%s' % os.path.exists('${WKS_FULL_PATH}') if d.getVar('USING_WIC') == '1' else ''}"
 
 WKS_FILE ??= "sdimage-efi"
 
@@ -14,6 +15,9 @@ do_copy_wks_template () {
 }
 
 python () {
+    if not d.getVar('USING_WIC') == '1':
+        return
+
     import itertools
     import re
 
@@ -74,13 +78,13 @@ python () {
         except (IOError, OSError) as exc:
             pass
         else:
-            bb.build.addtask('do_copy_wks_template', 'do_transform_template do_wic_image', None, d)
-            bb.build.addtask('do_transform_template', 'do_wic_image', None, d)
+            bb.build.addtask('do_copy_wks_template', 'do_transform_template do_image_wic', None, d)
+            bb.build.addtask('do_transform_template', 'do_image_wic', None, d)
 }
 
 inherit buildchroot
 
-IMAGER_INSTALL += "${WIC_IMAGER_INSTALL}"
+IMAGER_INSTALL_wic += "${WIC_IMAGER_INSTALL}"
 # wic comes with reasonable defaults, and the proper interface is the wks file
 ROOTFS_EXTRA ?= "0"
 
@@ -125,32 +129,23 @@ python do_rootfs_wicenv () {
 
 }
 
-addtask do_rootfs_wicenv after do_rootfs before do_wic_image
+addtask do_rootfs_wicenv after do_rootfs before do_image_wic
 do_rootfs_wicenv[vardeps] += "${WICVARS}"
 do_rootfs_wicenv[prefuncs] = 'set_image_size'
 
-WIC_IMAGE_FILE ="${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.wic.img"
-
-python check_for_wic_warnings() {
-    with open("{}/log.do_wic_image".format(d.getVar("T"))) as f:
-        for line in f.readlines():
-            if line.startswith("WARNING"):
-                bb.warn(line.strip())
+check_for_wic_warnings() {
+    WARN="$(grep -e '^WARNING' ${T}/log.do_image_wic || true)"
+    if [ -n "$WARN" ]; then
+        bbwarn "$WARN"
+    fi
 }
 
-do_wic_image[file-checksums] += "${WKS_FILE_CHECKSUM}"
-do_wic_image[dirs] = "${DEPLOY_DIR_IMAGE}"
-python do_wic_image() {
-    cmds = ['wic_do_mounts', 'generate_wic_image', 'check_for_wic_warnings']
-    weights = [5, 90, 5]
-    progress_reporter = bb.progress.MultiStageProgressReporter(d, weights)
-
-    for cmd in cmds:
-        progress_reporter.next_stage()
-        bb.build.exec_func(cmd, d)
-    progress_reporter.finish()
+do_image_wic[file-checksums] += "${WKS_FILE_CHECKSUM}"
+IMAGE_CMD_wic() {
+    wic_do_mounts
+    generate_wic_image
+    check_for_wic_warnings
 }
-addtask wic_image before do_image after do_image_tools
 
 wic_do_mounts() {
     buildchroot_do_mounts
@@ -209,7 +204,7 @@ generate_wic_image() {
     sudo chown -R $(id -u):$(id -g) ${BUILDCHROOT_DIR}/${WICTMP}
     find ${BUILDCHROOT_DIR}/${WICTMP} -type f -name "*.direct*" | while read f; do
         suffix=$(basename $f | sed 's/\(.*\)\(\.direct\)\(.*\)/\3/')
-        mv -f ${f} ${WIC_IMAGE_FILE}${suffix}
+        mv -f ${f} "${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.wic${suffix}"
     done
     rm -rf ${BUILDCHROOT_DIR}/${WICTMP}
     rm -rf ${IMAGE_ROOTFS}/../pseudo

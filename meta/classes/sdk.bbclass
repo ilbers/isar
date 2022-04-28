@@ -31,7 +31,7 @@ SDKCHROOT_DIR = "${DEPLOY_DIR_SDKCHROOT}/${BPN}-${MACHINE}"
 
 # SDK settings
 SDK_INCLUDE_ISAR_APT ?= "0"
-SDK_FORMATS ?= "targz-img"
+SDK_FORMATS ?= "tar.xz"
 SDK_INSTALL ?= ""
 SDK_PREINSTALL += " \
     debhelper \

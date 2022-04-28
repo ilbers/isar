@@ -10,7 +10,8 @@ STAMPCLEAN = "${STAMPS_DIR}/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}/*-*"
 SSTATE_MANIFESTS = "${TMPDIR}/sstate-control/${MACHINE}-${DISTRO}-${DISTRO_ARCH}"
 
 IMAGE_INSTALL ?= ""
-IMAGE_FSTYPES ?= "${@ d.getVar("IMAGE_TYPE", True) if d.getVar("IMAGE_TYPE", True) else "ext4-img"}"
+IMAGE_FSTYPES ?= "${@ d.getVar("IMAGE_TYPE", True) if d.getVar("IMAGE_TYPE", True) else "ext4"}"
+IMAGE_CONVERSIONS = "gz xz"
 IMAGE_ROOTFS ?= "${WORKDIR}/rootfs"
 
 KERNEL_IMAGE_PKG ??= "${@ ("linux-image-" + d.getVar("KERNEL_NAME", True)) if d.getVar("KERNEL_NAME", True) else ""}"
@@ -83,7 +84,197 @@ inherit image-tools-extension
 inherit image-postproc-extension
 inherit image-locales-extension
 inherit image-account-extension
-inherit image-container-extension
+
+def get_base_type(t, d):
+    bt = t
+    for c in d.getVar('IMAGE_CONVERSIONS').split():
+        if t.endswith('.' + c):
+            bt = t[:-len('.' + c)]
+            break
+    return bt if bt == t else get_base_type(bt, d)
+
+# Calculate IMAGE_BASETYPES as list of all image types that need to be built,
+# also due to dependencies, but withoug any conversions.
+# This is only for use in imagetype classes, e.g., for conditional expressions
+# in the form of "${@bb.utils.contains('IMAGE_BASETYPES', type, a, b, d)}"
+# All this dependency resolution (including conversions) is then done again
+# below when the actual image tasks are constructed.
+def get_image_basetypes(d):
+    def recurse(t):
+        bt = get_base_type(t, d)
+        if bt.endswith('-img'):
+            # be backwards-compatible
+            bt = bt[:-len('-img')]
+            bb.warn("IMAGE_TYPE '{0}-img' is deprecated. Please use '{0}' instead.".format(bt))
+        deps = (d.getVar('IMAGE_TYPEDEP_' + bt.replace('-', '_').replace('.', '_')) or '').split()
+        ret = set([bt])
+        for dep in deps:
+            ret |= recurse(dep)
+        return ret
+    basetypes = set()
+    for t in (d.getVar('IMAGE_FSTYPES') or '').split():
+        basetypes |= recurse(t)
+    return ' '.join(list(basetypes))
+
+IMAGE_BASETYPES = "${@get_image_basetypes(d)}"
+
+# image types
+IMAGE_CLASSES ??= ""
+IMGCLASSES = "container-img cpiogz-img ext4-img fit-img targz-img ubi-img ubifs-img vm-img wic-img"
+IMGCLASSES += "${IMAGE_CLASSES}"
+inherit ${IMGCLASSES}
+
+# image conversions
+CONVERSION_CMD_gz = "${SUDO_CHROOT} sh -c 'gzip -f -9 -n -c --rsyncable ${IMAGE_FILE_CHROOT} > ${IMAGE_FILE_CHROOT}.gz'"
+CONVERSION_DEPS_gz = "gzip"
+
+XZ_MEMLIMIT ?= "50%"
+XZ_THREADS ?= "${@oe.utils.cpu_count(at_least=2)}"
+XZ_THREADS[vardepvalue] = "1"
+XZ_OPTIONS ?= "--memlimit=${XZ_MEMLIMIT} --threads=${XZ_THREADS}"
+XZ_OPTIONS[vardepsexclude] += "XZ_MEMLIMIT XZ_THREADS"
+CONVERSION_CMD_xz = "${SUDO_CHROOT} sh -c 'xz -c ${XZ_OPTIONS} ${IMAGE_FILE_CHROOT} > ${IMAGE_FILE_CHROOT}.xz'"
+CONVERSION_DEPS_xz = "xz-utils"
+
+# hook up IMAGE_CMD_*
+python() {
+    image_types = (d.getVar('IMAGE_FSTYPES') or '').split()
+    conversions = set(d.getVar('IMAGE_CONVERSIONS').split())
+
+    basetypes = {}
+    typedeps = {}
+    vardeps = set()
+
+    def collect_image_type(t):
+        bt = get_base_type(t, d)
+        if bt.endswith('-img'):
+            # be backwards-compatible
+            bt = bt[:-len('-img')]
+            bb.warn("IMAGE_TYPE '{0}-img' is deprecated. Please use '{0}' instead.".format(bt))
+
+        if bt not in basetypes:
+            basetypes[bt] = []
+        if t not in basetypes[bt]:
+            basetypes[bt].append(t)
+        t_clean = t.replace('-', '_').replace('.', '_')
+        deps = (d.getVar('IMAGE_TYPEDEP_' + t_clean) or '').split()
+        vardeps.add('IMAGE_TYPEDEP_' + t_clean)
+        if bt not in typedeps:
+            typedeps[bt] = set()
+        for dep in deps:
+            if dep not in image_types:
+                image_types.append(dep)
+            collect_image_type(dep)
+            typedeps[bt].add(get_base_type(dep, d))
+        if bt != t:
+            collect_image_type(bt)
+
+    for t in image_types[:]:
+        collect_image_type(t)
+
+    # TODO: OE uses do_image, but Isar is different...
+    d.appendVarFlag('do_image_tools', 'vardeps', ' '.join(vardeps))
+
+    imager_install = set()
+    imager_build_deps = set()
+    conversion_install = set()
+    for bt in basetypes:
+        vardeps = set()
+        cmds = []
+        bt_clean = bt.replace('-', '_').replace('.', '_')
+
+        # prepare local environment
+        localdata = bb.data.createCopy(d)
+        localdata.setVar('OVERRIDES', bt_clean + ':' + d.getVar('OVERRIDES', False))
+        localdata.setVar('PV', d.getVar('PV'))
+        localdata.delVar('DATETIME')
+        localdata.delVar('DATE')
+        localdata.delVar('TMPDIR')
+        vardepsexclude = (d.getVarFlag('IMAGE_CMD_' + bt_clean, 'vardepsexclude', True) or '').split()
+        for dep in vardepsexclude:
+            localdata.delVar(dep)
+
+        # check if required args are set
+        required_args = (localdata.getVar('IMAGE_CMD_REQUIRED_ARGS') or '').split()
+        if any([d.getVar(arg) is None for arg in required_args]):
+            bb.fatal("IMAGE_TYPE '%s' requires these arguments: %s" % (image_type, ', '.join(required_args)))
+
+        # convenience variables to be used by CMDs
+        localdata.setVar('IMAGE_FILE_HOST', '${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.${type}')
+        #bb.warn("FULLNAME is %s -> %s" % (localdata.getVar('IMAGE_FULLNAME', False), localdata.getVar('IMAGE_FULLNAME', True)))
+        localdata.setVar('IMAGE_FILE_CHROOT', '${PP_DEPLOY}/${IMAGE_FULLNAME}.${type}')
+        localdata.setVar('SUDO_CHROOT', localdata.expand('sudo chroot ${BUILDCHROOT_DIR}'))
+
+        # imager install
+        for dep in (d.getVar('IMAGER_INSTALL_' + bt_clean) or '').split():
+            imager_install.add(dep)
+        for dep in (d.getVar('IMAGER_BUILD_DEPS_' + bt_clean) or '').split():
+            imager_build_deps.add(dep)
+
+        # construct image command
+        cmds.append('\timage_do_mounts')
+        image_cmd = localdata.getVar('IMAGE_CMD_' + bt_clean)
+        if image_cmd:
+            localdata.setVar('type', bt)
+            cmds.append(localdata.expand(image_cmd))
+            #bb.warn("IMAGE_CMD\n*** %s\n*** %s" % (image_cmd, localdata.expand(image_cmd)))
+            cmds.append(localdata.expand('\tsudo chown $(id -u):$(id -g) ${IMAGE_FILE_HOST}'))
+        else:
+            bb.fatal("No IMAGE_CMD for %s" % bt)
+        vardeps.add('IMAGE_CMD_' + bt_clean)
+        d.delVarFlag('IMAGE_CMD_' + bt_clean, 'func')
+        task_deps = d.getVarFlag('IMAGE_CMD_' + bt_clean, 'depends')
+
+        # add conversions
+        conversion_depends = set()
+        rm_images = set()
+        def create_conversions(t):
+            for c in sorted(conversions):
+                if t.endswith('.' + c):
+                    t = t[:-len(c) - 1]
+                    create_conversions(t)
+                    localdata.setVar('type', t)
+                    cmd = '\t' + localdata.getVar('CONVERSION_CMD_' + c)
+                    if cmd not in cmds:
+                        cmds.append(cmd)
+                        cmds.append(localdata.expand('\tsudo chown $(id -u):$(id -g) ${IMAGE_FILE_HOST}.%s' % c))
+                    vardeps.add('CONVERSION_CMD_' + c)
+                    for dep in (localdata.getVar('CONVERSION_DEPS_' + c) or '').split():
+                        conversion_install.add(dep)
+                    # remove temporary image files
+                    if t not in image_types:
+                        rm_images.add(localdata.expand('${IMAGE_FILE_HOST}'))
+
+        for t in basetypes[bt]:
+            create_conversions(t)
+
+        if bt not in image_types:
+            localdata.setVar('type', t)
+            rm_images.add(localdata.expand('${IMAGE_FILE_HOST}'))
+
+        for image in rm_images:
+            cmds.append('\trm ' + image)
+
+        # image type dependencies
+        after = 'do_image_tools'
+        for dep in typedeps[bt]:
+            after += ' do_image_%s' % dep.replace('-', '_').replace('.', '_')
+
+        # create the task
+        task = 'do_image_%s' % bt_clean
+        d.setVar(task, '\n'.join(cmds))
+        d.setVarFlag(task, 'func', '1')
+        d.appendVarFlag(task, 'prefuncs', ' set_image_size')
+        d.appendVarFlag(task, 'vardeps', ' ' + ' '.join(vardeps))
+        d.appendVarFlag(task, 'vardepsexclude', ' ' + ' '.join(vardepsexclude))
+        d.appendVarFlag(task, 'dirs', localdata.expand(' ${DEPLOY_DIR_IMAGE}'))
+        if task_deps:
+            d.appendVarFlag(task, 'depends', task_deps)
+        bb.build.addtask(task, 'do_image', after, d)
+
+    d.appendVar('IMAGER_INSTALL', ' ' + ' '.join(sorted(imager_install | conversion_install)))
+    d.appendVar('IMAGER_BUILD_DEPS', ' ' + ' '.join(sorted(imager_build_deps)))
+}
 
 # Extra space for rootfs in MB
 ROOTFS_EXTRA ?= "64"
@@ -256,6 +447,3 @@ do_rootfs_quality_check() {
 }
 
 addtask rootfs_quality_check after do_rootfs_finalize before do_rootfs
-
-# Last so that the image type can overwrite tasks if needed
-inherit ${IMAGE_FSTYPES}
