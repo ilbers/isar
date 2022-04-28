@@ -213,7 +213,7 @@ tmp/deploy/images/rpi/isar-image-base-raspbian-stretch-rpi.wic.img
 
 ### Generate full disk image
 
-A bootable disk image is generated if `wic-img` is listed in IMAGE_FSTYPES.
+A bootable disk image is generated if `wic` is listed in IMAGE_FSTYPES.
 Behind the scenes a tool called `wic` is used to assemble the images.
 It is controlled by a `.wks` file which you can choose with changing WKS_FILE.
 Some examples in the tree use that feature already.
@@ -253,7 +253,8 @@ https://github.com/intel/bmap-tools
 ### Generate container image with root filesystem
 
 A runnable container image is generated if IMAGE_FSTYPES variable includes
-'container-img'.
+one of the supported container formats `oci`, `oci-archive`, `docker-archive`,
+`docker-daemon`, or `containers-storage`.
 Getting a container image can be the main purpose of an Isar configuration, 
 but not only.
 A container image created from an Isar configuration meant for bare-metal or 
@@ -261,10 +262,9 @@ virtual machines can be helpfull to test certain applications which
 requirements (e.g. libraries) can be easily resolved in a containerized 
 environment.
 
-Container images can be generated in different formats, selected with the 
-variable `CONTAINER_IMAGE_FORMATS`. One or more (whitespace separated) of following 
-options can be given:
- - `docker-archive`: (default) an archive containing a Docker image that can 
+Container images can be generated in different formats. One or more (whitespace
+separated) of following options can be given:
+ - `docker-archive`: an archive containing a Docker image that can
    be imported with [`docker load`](https://docs.docker.com/engine/reference/commandline/load)
  - `docker-daemon`: resulting container image is made available on the local 
    Docker Daemon
@@ -280,12 +280,6 @@ It's technically possible, but requires making host resources (e.g. the
 Docker Daemon socket) accessible in the container, which can endanger the 
 stability and security of the host.
 
-The resulting container image archives (only for `docker-archive` and 
-`oci-archive`) are made available as 
-`tmp/deploy/images/${MACHINE}/${DISTRO}-${DISTRO_ARCH}-${container_format}.tar.xz` 
-(being `container_format` each one of the formats specified in 
-`CONTAINER_IMAGE_FORMATS`).
-
 ### Example
 
  - Make the relevant environment variables available to the task
@@ -293,9 +287,8 @@ The resulting container image archives (only for `docker-archive` and
 For one-shot builds (use `local.conf` otherwise):
 
 ```
-export BB_ENV_EXTRAWHITE="$BB_ENV_EXTRAWHITE IMAGE_TYPE CONTAINER_IMAGE_FORMATS"
-export IMAGE_FSTYPES="container-img"
-export CONTAINER_IMAGE_FORMATS="docker-archive"
+export BB_ENV_EXTRAWHITE="$BB_ENV_EXTRAWHITE IMAGE_FSTYPES"
+export IMAGE_FSTYPES="docker-archive.xz"
 ```
 
  - Trigger creation of container image from root filesystem
@@ -307,7 +300,7 @@ bitbake mc:qemuarm-buster:isar-image-base
  - Load the container image into the Docker Daemon
 
 ```
-docker load -i build/tmp/deploy/images/qemuarm/isar-image-base-debian-buster-armhf-1.0-r0-docker-archive.tar.xz
+docker load -i build/tmp/deploy/images/qemuarm/isar-image-base-debian-buster-armhf-1.0-r0.docker-archive.xz
 ```
 
  - Run a container using the container image (following commands starting with 
@@ -460,10 +453,15 @@ Isar can generate various images types for specific machine. The type of the
 image to be generated may be specified through the `IMAGE_FSTYPES` variable.
 Currently, the following image types are provided:
 
- - `ext4` - Raw ext4 filesystem image (default option for `qemuarm` machine).
- - `wic-img` - A full disk image with user-specified partitions created and populated using the wic tool.
- - `ubi-img` - A image for use on mtd nand partitions employing UBI
- - `vm-img` - A image for use on VirtualBox or VMware
+ - `tar` - tarball of the root file system
+ - `cpio` - cpio archive
+ - `ext4` - raw ext4 filesystem image (default option for `qemuarm` machine)
+ - `wic` - full disk image with user-specified partitions created and populated using the wic tool
+ - `ubi` - image for use on mtd nand partitions employing UBI
+ - `ova` - Open Virtual Appliance: image for use on VirtualBox or VMware
+
+In addition, image types can be converted using suffixes, e.g. `tar.gz`.
+Available conversions are `gz` and `xz`, which both provide image compression.
 
 There are several image types can be listed in `IMAGE_FSTYPES` divided by space.
 
@@ -539,7 +537,7 @@ IMAGE_PREINSTALL = "linux-image-rpi-rpfv \
 KERNEL_IMAGE = "vmlinuz-4.4.0-1-rpi"
 INITRD_IMAGE = "initrd.img-4.4.0-1-rpi"
 MACHINE_SERIAL = "ttyAMA0"
-IMAGE_FSTYPES = "wic-img"
+IMAGE_FSTYPES = "wic"
 WKS_FILE = "rpi-sdimg"
 ```
 
@@ -579,22 +577,44 @@ Every image type in Isar is implemented as a `bitbake` class. The goal of these 
 
 ### Create Custom Image Type
 
-As already mentioned, Isar uses `bitbake`to accomplish the work. The whole build process is a sequence of tasks. This sequence is generated using task dependencies, so the next task in chain requires completion of previous ones.
-The last task of image recipe is `do_populate`, so the class that implement new image type should continue execution from this point. According to the BitBake syntax, this can be implemented as follows:
+The following steps are required to implement a custom image type:
 
 Create a new class:
 ```
 $ vim meta-user/classes/my-image.bbclass
 ```
-Add these lines:
-```
-do_my_image() {
-}
-addtask my_image before do_build after do_populate
-```
-The content of `do_my_image` function can be implemented either in shell or in Python.
 
-In the machine configuration file, set the following:
+Specify the command to generate the new image, and optionally image type
+dependencies or required arguments:
+```
+IMAGE_TYPEDEPS_my_image = "ext4"
+IMAGE_CMD_REQUIRED_ARGS_my_image = "MY_ARG"
+IMAGE_CMD_my_image() {
+    INPUT="${PP_DEPLOY}/${IMAGE_FULLNAME}.ext4"
+    ${SUDO_CHROOT} my_command ${MY_ARG} -i ${INPUT} -o ${IMAGE_FILE_CHROOT}
+}
+```
+The IMAGE_CMD is a shell function, and the environment has some pre-set
+variables:
+
+ - `IMAGE_FILE_HOST` and `IMAGE_FILE_CHROOT` are the paths of the output image
+   (including extension) in the host or buildchroot.
+ - `SUDO_CHROOT` is a prefix you can use to have a command run inside the
+   buildchroot.
+
+If the code you provide in `IMAGE_CMD` requires the building and/or installation
+of additional packages in the buildchroot, you can specify this:
+```
+IMAGER_BULID_DEPS_my_image = "my_command"
+IMAGER_INSTALL_my_image = "my_command"
+```
+
+To use your custom image class, add it to `IMAGE_CLASSES` in your machine config:
+```
+IMAGE_CLASSES += "my-image"
+```
+
+And finally select the new image type:
 ```
 IMAGE_FSTYPES = "my-image"
 ```
@@ -603,11 +623,11 @@ IMAGE_FSTYPES = "my-image"
 
 Isar contains additional image type classes that can be used as reference:
 
- - `ext4-img`
- - `targz-img`
- - `ubifs-img`
- - `ubi-img`
- - `wic-img`
+ - `ext4`
+ - `tar.gz`
+ - `ubifs`
+ - `ubi`
+ - `wic`
 
 ---
 
