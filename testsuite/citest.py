@@ -142,8 +142,6 @@ class NoCrossTest(CIBaseTest):
             'mc:qemui386-bullseye:isar-image-base',
             'mc:qemuamd64-buster:isar-image-base',
             'mc:qemuamd64-bullseye:isar-image-base',
-            'mc:qemuamd64-bullseye-tgz:isar-image-base',
-            'mc:qemuamd64-bullseye-cpiogz:isar-image-base',
             'mc:qemuamd64-bullseye:isar-initramfs',
             'mc:qemumipsel-buster:isar-image-base',
             'mc:qemumipsel-bullseye:isar-image-base',
