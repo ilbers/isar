@@ -283,6 +283,8 @@ deb_clean() {
         done
     fi
 }
+# the clean function modifies isar-apt
+do_clean[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
 
 do_deploy_deb() {
     deb_clean
