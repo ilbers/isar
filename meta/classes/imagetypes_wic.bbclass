@@ -166,7 +166,7 @@ EOSUDO
 generate_wic_image[vardepsexclude] += "BITBAKEDIR"
 generate_wic_image() {
     export FAKEROOTCMD=${FAKEROOTCMD}
-    export BUILDDIR=${BUILDDIR}
+    export BUILDDIR=${TOPDIR}
     export MTOOLS_SKIP_CHECK=1
     mkdir -p ${IMAGE_ROOTFS}/../pseudo
     touch ${IMAGE_ROOTFS}/../pseudo/files.db
