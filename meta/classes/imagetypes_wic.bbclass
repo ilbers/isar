@@ -147,6 +147,7 @@ IMAGE_CMD_wic() {
     check_for_wic_warnings
 }
 
+wic_do_mounts[vardepsexclude] += "BITBAKEDIR"
 wic_do_mounts() {
     buildchroot_do_mounts
     sudo -s <<'EOSUDO'
@@ -162,6 +163,7 @@ wic_do_mounts() {
 EOSUDO
 }
 
+generate_wic_image[vardepsexclude] += "BITBAKEDIR"
 generate_wic_image() {
     export FAKEROOTCMD=${FAKEROOTCMD}
     export BUILDDIR=${BUILDDIR}
