@@ -81,7 +81,7 @@ SRC_APT ?= ""
 
 # filter out all "apt://" URIs out of SRC_URI and stick them into SRC_APT
 python() {
-    src_uri = (d.getVar('SRC_URI') or "").split()
+    src_uri = (d.getVar('SRC_URI', False) or "").split()
 
     prefix = "apt://"
     new_src_uri = []

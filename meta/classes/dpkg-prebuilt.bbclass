@@ -7,7 +7,7 @@ inherit dpkg-base
 
 python do_unpack_prepend() {
     # enforce unpack=false
-    src_uri = (d.getVar('SRC_URI', True) or '').split()
+    src_uri = (d.getVar('SRC_URI', False) or '').split()
     if len(src_uri) == 0:
         return
     def ensure_unpack_false(uri):
