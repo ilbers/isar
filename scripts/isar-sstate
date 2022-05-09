@@ -1,0 +1,794 @@
+#!/usr/bin/env python3
+"""
+This software is part of Isar
+Copyright (c) Siemens AG, 2022
+
+# isar-sstate: Helper for management of shared sstate caches
+
+Isar uses the sstate cache feature of bitbake to cache the output of certain
+build tasks, potentially speeding up builds significantly. This script is
+meant to help managing shared sstate caches, speeding up builds using cache
+artifacts created elsewhere. There are two main ways of accessing a shared
+sstate cache:
+  - Point `SSTATE_DIR` to a persistent location that is used by multiple
+    builds. bitbake will read artifacts from there, and also immediately
+    store generated cache artifacts in this location. This speeds up local
+    builds, and if `SSTATE_DIR` is located on a shared filesystem, it can
+    also benefit others.
+  - Point `SSTATE_DIR` to a local directory (e.g., simply use the default
+    value `${TOPDIR}/sstate-cache`), and additionally set `SSTATE_MIRRORS`
+    to a remote sstate cache. bitbake will use artifacts from both locations,
+    but will write newly created artifacts only to the local folder
+    `SSTATE_DIR`. To share them, you need to explicitly upload them to
+    the shared location, which is what isar-sstate is for.
+
+isar-sstate implements four commands (upload, clean, info, analyze),
+and supports three remote backends (filesystem, http/webdav, AWS S3).
+
+## Commands
+
+### upload
+
+The `upload` command pushes the contents of a local sstate cache to the
+remote location, uploading all files that don't already exist on the remote.
+
+### clean
+
+The `clean` command deletes old artifacts from the remote cache. It takes two
+arguments, `--max-age` and `--max-sig-age`, each of which must be a number,
+followed by one of `w`, `d`, `h`, `m`, or `s` (for weeks, days, hours, minutes,
+seconds, respectively).
+
+`--max-age` specifies up to which age artifacts should be kept in the cache.
+Anything older will be removed. Note that this only applies to the `.tgz` files
+containing the actual cached items, not the `.siginfo` files containing the
+cache metadata (signatures and hashes).
+To permit analysis of caching details using the `analyze` command, the siginfo
+files can be kept longer, as indicated by `--max-sig-age`. If not set explicitly,
+this defaults to `max_age`, and any explicitly given value can't be smaller
+than `max_age`.
+
+### info
+
+The `info` command scans the remote cache and displays some basic statistics.
+The argument `--verbose` increases the amount of information displayed.
+
+### analyze
+
+The `analyze` command iterates over all artifacts in the local sstate cache,
+and compares them to the contents of the remote cache. If an item is not
+present in the remote cache, the signature of the local item is compared
+to all potential matches in the remote cache, identified by matching
+architecture, recipe (`PN`), and task. This analysis has the same output
+format as `bitbake-diffsigs`.
+
+## Backends
+
+### Filesystem backend
+
+This uses a filesystem location as the remote cache. In case you can access
+your remote cache this way, you could also have bitbake write to the cache
+directly, by setting `SSTATE_DIR`. However, using `isar-sstate` gives
+you a uniform interface, and lets you use the same code/CI scripts across
+heterogeneous setups. Also, it gives you the `analyze` command.
+
+### http backend
+
+A http server with webdav extension can be used as remote cache.
+Apache can easily be configured to function as a remote sstate cache, e.g.:
+```
+<VirtualHost *:80>
+    Alias /sstate/ /path/to/sstate/location/
+    <Location /sstate/>
+        Dav on
+        Options Indexes
+        Require all granted
+    </Location>
+</VirtualHost>
+```
+In addition you need to load Apache's dav module:
+```
+a2enmod dav
+```
+
+To use the http backend, you need to install the Python webdavclient library.
+On Debian you would:
+```
+apt-get install python3-webdavclient
+```
+
+### S3 backend
+
+An AWS S3 bucket can be used as remote cache. You need to ensure that AWS
+credentials are present (e.g., in your AWS config file or as environment
+variables).
+
+To use the S3 backend you need to install the Python botocore library.
+On Debian you would:
+```
+apt-get install python3-botocore
+```
+"""
+
+import argparse
+from collections import namedtuple
+import datetime
+import os
+import re
+import shutil
+import sys
+from tempfile import NamedTemporaryFile
+import time
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'bitbake', 'lib'))
+from bb.siggen import compare_sigfiles
+
+# runtime detection of supported targets
+webdav_supported = True
+try:
+    import webdav3.client
+    import webdav3.exceptions
+except ModuleNotFoundError:
+    webdav_supported = False
+
+s3_supported = True
+try:
+    import botocore.exceptions
+    import botocore.session
+except ModuleNotFoundError:
+    s3_supported = False
+
+SstateCacheEntry = namedtuple(
+        'SstateCacheEntry', 'hash path arch pn task suffix islink age size'.split())
+
+# The filename of sstate items is defined in Isar:
+#   SSTATE_PKGSPEC = "sstate:${PN}:${PACKAGE_ARCH}${TARGET_VENDOR}-${TARGET_OS}:"
+#                    "${PV}:${PR}:${SSTATE_PKGARCH}:${SSTATE_VERSION}:"
+
+# This regex extracts relevant fields:
+SstateRegex = re.compile(r'sstate:(?P<pn>[^:]*):[^:]*:[^:]*:[^:]*:'
+                         r'(?P<arch>[^:]*):[^:]*:(?P<hash>[0-9a-f]*)_'
+                         r'(?P<task>[^\.]*)\.(?P<suffix>.*)')
+
+
+class SstateTargetBase(object):
+    def __init__(self, path, cached=False):
+        """Constructor
+
+        :param path: URI of the remote (without leading 'protocol://')
+        """
+        self.use_cache = False
+        if cached:
+            self.enable_cache()
+
+    def __del__(self):
+        if self.use_cache:
+            self.cleanup_cache()
+
+    def __repr__(self):
+        """Format remote for printing
+
+        :returns: URI string, including 'protocol://'
+        """
+        pass
+
+    def exists(self, path=''):
+        """Check if a remote path exists
+
+        :param path: path (file or directory) to check
+        :returns: True if path exists, False otherwise
+        """
+        pass
+
+    def create(self):
+        """Try to create the remote
+
+        :returns: True if remote could be created, False otherwise
+        """
+        pass
+
+    def mkdir(self, path):
+        """Create a directory on the remote
+
+        :param path: path to create
+        :returns: True on success, False on failure
+        """
+        pass
+
+    def upload(self, path, filename):
+        """Uploads a local file to the remote
+
+        :param path: remote path to upload to
+        :param filename: local file to upload
+        """
+        pass
+
+    def delete(self, path):
+        """Delete remote file and remove potential empty directories
+
+        :param path: remote file to delete
+        """
+        pass
+
+    def list_all(self):
+        """List all sstate files in the remote
+
+        :returns: list of SstateCacheEntry objects
+        """
+        pass
+
+    def download(self, path):
+        """Prepare to temporarily access a remote file for reading
+
+        This is meant to provide access to siginfo files during analysis. Files
+        must not be modified, and should be released using release() once they
+        are no longer used.
+
+        :param path: remote path
+        :returns: local path to file
+        """
+        pass
+
+    def release(self, download_path):
+        """Release a temporary file
+
+        :param download_path: local file
+        """
+        pass
+
+    def enable_cache(self):
+        """Enable caching of downloads
+
+        This is a separate function, so you can decide after creation
+        if you want to enable caching.
+        """
+        self.use_cache = True
+        self.cache = {}
+        self.real_download = self.download
+        self.real_release = self.release
+        self.download = self.download_cached
+        self.release = self.release_cached
+
+    def download_cached(self, path):
+        """Download using cache
+
+        This function replaces download() when using the cache.
+        DO NOT OVERRIDE.
+        """
+        if path in self.cache:
+            return self.cache[path]
+        data = self.real_download(path)
+        self.cache[path] = data
+        return data
+
+    def release_cached(self, download_path):
+        """Release when using cache
+
+        This function replaces release() when using the cache.
+        DO NOT OVERRIDE.
+        """
+        pass
+
+    def cleanup_cache(self):
+        """Clean up all cached downloads.
+
+        Called by destructor.
+        """
+        for k, v in list(self.cache.items()):
+            self.real_release(v)
+            del(self.cache[k])
+
+
+class SstateFileTarget(SstateTargetBase):
+    def __init__(self, path, **kwargs):
+        super().__init__(path, **kwargs)
+        if path.startswith('file://'):
+            path = path[len('file://'):]
+        self.path = path
+        self.basepath = os.path.abspath(path)
+
+    def __repr__(self):
+        return f"file://{self.path}"
+
+    def exists(self, path=''):
+        return os.path.exists(os.path.join(self.basepath, path))
+
+    def create(self):
+        return self.mkdir('')
+
+    def mkdir(self, path):
+        try:
+            os.makedirs(os.path.join(self.basepath, path), exist_ok=True)
+        except OSError:
+            return False
+        return True
+
+    def upload(self, path, filename):
+        shutil.copy(filename, os.path.join(self.basepath, path))
+
+    def delete(self, path):
+        try:
+            os.remove(os.path.join(self.basepath, path))
+        except FileNotFoundError:
+            pass
+        dirs = path.split('/')[:-1]
+        for d in [dirs[:i] for i in range(len(dirs), 0, -1)]:
+            try:
+                os.rmdir(os.path.join(self.basepath, '/'.join(d)))
+            except FileNotFoundError:
+                pass
+            except OSError:  # directory is not empty
+                break
+
+    def list_all(self):
+        all_files = []
+        now = time.time()
+        for subdir, dirs, files in os.walk(self.basepath):
+            reldir = subdir[(len(self.basepath)+1):]
+            for f in files:
+                m = SstateRegex.match(f)
+                if m is not None:
+                    islink = os.path.islink(os.path.join(subdir, f))
+                    age = int(now - os.path.getmtime(os.path.join(subdir, f)))
+                    all_files.append(SstateCacheEntry(
+                        path=os.path.join(reldir, f),
+                        size=os.path.getsize(os.path.join(subdir, f)),
+                        islink=islink,
+                        age=age,
+                        **(m.groupdict())))
+        return all_files
+
+    def download(self, path):
+        # we don't actually download, but instead just pass the local path
+        if not self.exists(path):
+            return None
+        return os.path.join(self.basepath, path)
+
+    def release(self, download_path):
+        # as we didn't download, there is nothing to clean up
+        pass
+
+
+class SstateDavTarget(SstateTargetBase):
+    def __init__(self, url, **kwargs):
+        if not webdav_supported:
+            print("ERROR: No webdav support. Please install the webdav3 Python module.")
+            print("INFO: on Debian: 'apt-get install python3-webdavclient'")
+            sys.exit(1)
+        super().__init__(url, **kwargs)
+        m = re.match('^([^:]+://[^/]+)/(.*)', url)
+        if not m:
+            print(f"Cannot parse target path: {url}")
+            sys.exit(1)
+        self.host = m.group(1)
+        self.basepath = m.group(2)
+        if not self.basepath.endswith('/'):
+            self.basepath += '/'
+        self.dav = webdav3.client.Client({'webdav_hostname': self.host})
+        self.tmpfiles = []
+
+    def __repr__(self):
+        return f"{self.host}/{self.basepath}"
+
+    def exists(self, path=''):
+        return self.dav.check(self.basepath + path)
+
+    def create(self):
+        return self.mkdir('')
+
+    def mkdir(self, path):
+        dirs = (self.basepath + path).split('/')
+
+        for i in range(len(dirs)):
+            d = '/'.join(dirs[:(i+1)]) + '/'
+            if not self.dav.check(d):
+                if not self.dav.mkdir(d):
+                    return False
+        return True
+
+    def upload(self, path, filename):
+        return self.dav.upload_sync(remote_path=self.basepath + path, local_path=filename)
+
+    def delete(self, path):
+        self.dav.clean(self.basepath + path)
+        dirs = path.split('/')[1:-1]
+        for d in [dirs[:i] for i in range(len(dirs), 0, -1)]:
+            items = self.dav.list(self.basepath + '/'.join(d), get_info=True)
+            if len(items) > 0:
+                # collection is not empty
+                break
+            self.dav.clean(self.basepath + '/'.join(d))
+
+    def list_all(self):
+        now = time.time()
+
+        def recurse_dir(path):
+            files = []
+            for item in self.dav.list(path, get_info=True):
+                if item['isdir'] and not item['path'] == path:
+                    files.extend(recurse_dir(item['path']))
+                elif not item['isdir']:
+                    m = SstateRegex.match(item['path'][len(path):])
+                    if m is not None:
+                        modified = time.mktime(
+                            datetime.datetime.strptime(
+                                item['created'],
+                                '%Y-%m-%dT%H:%M:%SZ').timetuple())
+                        age = int(now - modified)
+                        files.append(SstateCacheEntry(
+                            path=item['path'][len(self.basepath):],
+                            size=int(item['size']),
+                            islink=False,
+                            age=age,
+                            **(m.groupdict())))
+            return files
+        return recurse_dir(self.basepath)
+
+    def download(self, path):
+        # download to a temporary file
+        tmp = NamedTemporaryFile(prefix='isar-sstate-', delete=False)
+        tmp.close()
+        try:
+            self.dav.download_sync(remote_path=self.basepath + path, local_path=tmp.name)
+        except webdav3.exceptions.RemoteResourceNotFound:
+            return None
+        self.tmpfiles.append(tmp.name)
+        return tmp.name
+
+    def release(self, download_path):
+        # remove the temporary download
+        if download_path is not None and download_path in self.tmpfiles:
+            os.remove(download_path)
+            self.tmpfiles = [f for f in self.tmpfiles if not f == download_path]
+
+
+class SstateS3Target(SstateTargetBase):
+    def __init__(self, path, **kwargs):
+        if not s3_supported:
+            print("ERROR: No S3 support. Please install the botocore Python module.")
+            print("INFO: on Debian: 'apt-get install python3-botocore'")
+            sys.exit(1)
+        super().__init__(path, **kwargs)
+        session = botocore.session.get_session()
+        self.s3 = session.create_client('s3')
+        if path.startswith('s3://'):
+            path = path[len('s3://'):]
+        m = re.match('^([^/]+)(?:/(.+)?)?$', path)
+        self.bucket = m.group(1)
+        if m.group(2):
+            self.basepath = m.group(2)
+            if not self.basepath.endswith('/'):
+                self.basepath += '/'
+        else:
+            self.basepath = ''
+        self.tmpfiles = []
+
+    def __repr__(self):
+        return f"s3://{self.bucket}/{self.basepath}"
+
+    def exists(self, path=''):
+        if path == '':
+            # check if the bucket exists
+            try:
+                self.s3.head_bucket(Bucket=self.bucket)
+            except botocore.exceptions.ClientError as e:
+                print(e)
+                print(e.response['Error']['Message'])
+                return False
+            return True
+        try:
+            self.s3.head_object(Bucket=self.bucket, Key=self.basepath + path)
+        except botocore.exceptions.ClientError as e:
+            if e.response['ResponseMetadata']['HTTPStatusCode'] != 404:
+                print(e)
+                print(e.response['Error']['Message'])
+            return False
+        return True
+
+    def create(self):
+        return self.exists()
+
+    def mkdir(self, path):
+        # in S3, folders are implicit and don't need to be created
+        return True
+
+    def upload(self, path, filename):
+        try:
+            self.s3.put_object(Body=open(filename, 'rb'), Bucket=self.bucket, Key=self.basepath + path)
+        except botocore.exceptions.ClientError as e:
+            print(e)
+            print(e.response['Error']['Message'])
+
+    def delete(self, path):
+        try:
+            self.s3.delete_object(Bucket=self.bucket, Key=self.basepath + path)
+        except botocore.exceptions.ClientError as e:
+            print(e)
+            print(e.response['Error']['Message'])
+
+    def list_all(self):
+        now = time.time()
+
+        def recurse_dir(path):
+            files = []
+            try:
+                result = self.s3.list_objects(Bucket=self.bucket, Prefix=path, Delimiter='/')
+            except botocore.exceptions.ClientError as e:
+                print(e)
+                print(e.response['Error']['Message'])
+                return []
+            for f in result.get('Contents', []):
+                m = SstateRegex.match(f['Key'][len(path):])
+                if m is not None:
+                    modified = time.mktime(f['LastModified'].timetuple())
+                    age = int(now - modified)
+                    files.append(SstateCacheEntry(
+                        path=f['Key'][len(self.basepath):],
+                        size=f['Size'],
+                        islink=False,
+                        age=age,
+                        **(m.groupdict())))
+            for p in result.get('CommonPrefixes', []):
+                files.extend(recurse_dir(p['Prefix']))
+            return files
+        return recurse_dir(self.basepath)
+
+    def download(self, path):
+        # download to a temporary file
+        tmp = NamedTemporaryFile(prefix='isar-sstate-', delete=False)
+        try:
+            result = self.s3.get_object(Bucket=self.bucket, Key=self.basepath + path)
+        except botocore.exceptions.ClientError:
+            return None
+        tmp.write(result['Body'].read())
+        tmp.close()
+        self.tmpfiles.append(tmp.name)
+        return tmp.name
+
+    def release(self, download_path):
+        # remove the temporary download
+        if download_path is not None and download_path in self.tmpfiles:
+            os.remove(download_path)
+            self.tmpfiles = [f for f in self.tmpfiles if not f == download_path]
+
+
+def arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        'command', type=str, metavar='command',
+        choices='info upload clean analyze'.split(),
+        help="command to execute (info, upload, clean, analyze)")
+    parser.add_argument(
+        'source', type=str, nargs='?',
+        help="local sstate dir (for uploads or analysis)")
+    parser.add_argument(
+        'target', type=str,
+        help="remote sstate location (a file://, http://, or s3:// URI)")
+    parser.add_argument(
+        '-v', '--verbose', default=False, action='store_true')
+    parser.add_argument(
+        '--max-age', type=str, default='1d',
+        help="clean: remove tgz files older than MAX_AGE (a number followed by w|d|h|m|s)")
+    parser.add_argument(
+        '--max-sig-age', type=str, default=None,
+        help="clean: remove siginfo files older than MAX_SIG_AGE (defaults to MAX_AGE)")
+
+    args = parser.parse_args()
+    if args.command in 'upload analyze'.split() and args.source is None:
+        print(f"ERROR: '{args.command}' needs a source and target")
+        sys.exit(1)
+    elif args.command in 'info clean'.split() and args.source is not None:
+        print(f"ERROR: '{args.command}' must not have a source (only a target)")
+        sys.exit(1)
+    return args
+
+
+def sstate_upload(source, target, verbose, **kwargs):
+    if not os.path.isdir(source):
+        print(f"WARNING: source {source} does not exist. Not uploading.")
+        return 0
+
+    if not target.exists() and not target.create():
+        print(f"ERROR: target {target} does not exist and could not be created.")
+        return -1
+
+    print(f"INFO: uploading {source} to {target}")
+    os.chdir(source)
+    upload, exists = [], []
+    for subdir, dirs, files in os.walk('.'):
+        target_dirs = subdir.split('/')[1:]
+        for f in files:
+            file_path = (('/'.join(target_dirs) + '/') if len(target_dirs) > 0 else '') + f
+            if target.exists(file_path):
+                if verbose:
+                    print(f"[EXISTS] {file_path}")
+                exists.append(file_path)
+            else:
+                upload.append((file_path, target_dirs))
+    upload_gb = (sum([os.path.getsize(f[0]) for f in upload]) / 1024.0 / 1024.0 / 1024.0)
+    print(f"INFO: uploading {len(upload)} files ({upload_gb:.02f} GB)")
+    print(f"INFO: {len(exists)} files already present on target")
+    for file_path, target_dirs in upload:
+        if verbose:
+            print(f"[UPLOAD] {file_path}")
+        target.mkdir('/'.join(target_dirs))
+        target.upload(file_path, file_path)
+    return 0
+
+
+def sstate_clean(target, max_age, max_sig_age, verbose, **kwargs):
+    def convert_to_seconds(x):
+        seconds_per_unit = {'s': 1, 'm': 60, 'h': 3600, 'd': 86400, 'w': 604800}
+        m = re.match(r'^(\d+)(w|d|h|m|s)?', x)
+        if m is None:
+            print(f"ERROR: cannot parse MAX_AGE '{max_age}', needs to be a number followed by w|d|h|m|s")
+            sys.exit(-1)
+        unit = m.group(2)
+        if unit is None:
+            print("WARNING: MAX_AGE without unit, assuming 'days'")
+            unit = 'd'
+        return int(m.group(1)) * seconds_per_unit[unit]
+
+    max_age_seconds = convert_to_seconds(max_age)
+    if max_sig_age is None:
+        max_sig_age = max_age
+    max_sig_age_seconds = max(max_age_seconds, convert_to_seconds(max_sig_age))
+
+    if not target.exists():
+        print(f"INFO: cannot access target {target}. Nothing to clean.")
+        return 0
+
+    print(f"INFO: scanning {target}")
+    all_files = target.list_all()
+    links = [f for f in all_files if f.islink]
+    if links:
+        print(f"NOTE: we have links: {links}")
+    tgz_files = [f for f in all_files if f.suffix == 'tgz']
+    siginfo_files = [f for f in all_files if f.suffix == 'tgz.siginfo']
+    del_tgz_files = [f for f in tgz_files if f.age >= max_age_seconds]
+    del_tgz_hashes = [f.hash for f in del_tgz_files]
+    del_siginfo_files = [f for f in siginfo_files if
+                         f.age >= max_sig_age_seconds or f.hash in del_tgz_hashes]
+    print(f"INFO: found {len(tgz_files)} tgz files, {len(del_tgz_files)} of which are older than {max_age}")
+    print(f"INFO: found {len(siginfo_files)} siginfo files, {len(del_siginfo_files)} of which "
+          f"correspond to old tgz files or are older than {max_sig_age}")
+
+    for f in del_tgz_files + del_siginfo_files:
+        if verbose:
+            print(f"[DELETE] {f.path}")
+        target.delete(f.path)
+    freed_gb = sum([x.size for x in del_tgz_files + del_siginfo_files]) / 1024.0 / 1024.0 / 1024.0
+    print(f"INFO: freed {freed_gb:.02f} GB")
+    return 0
+
+
+def sstate_info(target, verbose, **kwargs):
+    if not target.exists():
+        print(f"INFO: cannot access target {target}. No info to show.")
+        return 0
+
+    print(f"INFO: scanning {target}")
+    all_files = target.list_all()
+    size_gb = sum([x.size for x in all_files]) / 1024.0 / 1024.0 / 1024.0
+    print(f"INFO: found {len(all_files)} files ({size_gb:0.2f} GB)")
+
+    if not verbose:
+        return 0
+
+    archs = list(set([f.arch for f in all_files]))
+    print(f"INFO: found the following archs: {archs}")
+
+    key_task = {'deb': 'dpkg_build',
+                'rootfs': 'rootfs_install',
+                'bootstrap': 'bootstrap'}
+    recipes = {k: [] for k in key_task.keys()}
+    others = []
+    for pn in set([f.pn for f in all_files]):
+        tasks = set([f.task for f in all_files if f.pn == pn])
+        ks = [k for k, v in key_task.items() if v in tasks]
+        if len(ks) == 1:
+            recipes[ks[0]].append(pn)
+        elif len(ks) == 0:
+            others.append(pn)
+        else:
+            print(f"WARNING: {pn} could be any of {ks}")
+    for k, entries in recipes.items():
+        print(f"Cache hits for {k}:")
+        for pn in entries:
+            hits = [f for f in all_files if f.pn == pn and f.task == key_task[k] and f.suffix == 'tgz']
+            print(f"  - {pn}: {len(hits)} hits")
+    print("Other cache hits:")
+    for pn in others:
+        print(f"  - {pn}")
+    return 0
+
+
+def sstate_analyze(source, target, **kwargs):
+    if not os.path.isdir(source):
+        print(f"ERROR: source {source} does not exist. Nothing to analyze.")
+        return -1
+    if not target.exists():
+        print(f"ERROR: target {target} does not exist. Nothing to analyze.")
+        return -1
+
+    source = SstateFileTarget(source)
+    target.enable_cache()
+    local_sigs = {s.hash: s for s in source.list_all() if s.suffix.endswith('.siginfo')}
+    remote_sigs = {s.hash: s for s in target.list_all() if s.suffix.endswith('.siginfo')}
+
+    key_tasks = 'dpkg_build rootfs_install bootstrap'.split()
+
+    check = [k for k, v in local_sigs.items() if v.task in key_tasks]
+    for local_hash in check:
+        s = local_sigs[local_hash]
+        print(f"\033[1;33m==== checking local item {s.arch}:{s.pn}:{s.task} ({s.hash[:8]}) ====\033[0m")
+        if local_hash in remote_sigs:
+            print(" -> found hit in remote cache")
+            continue
+        remote_matches = [k for k, v in remote_sigs.items() if s.arch == v.arch and s.pn == v.pn and s.task == v.task]
+        if len(remote_matches) == 0:
+            print(" -> found no hit, and no potential remote matches")
+        else:
+            print(f" -> found no hit, but {len(remote_matches)} potential remote matches")
+        for r in remote_matches:
+            t = remote_sigs[r]
+            print(f"\033[0;33m**** comparing to {r[:8]} ****\033[0m")
+
+            def recursecb(key, remote_hash, local_hash):
+                recout = []
+                if remote_hash in remote_sigs.keys():
+                    remote_file = target.download(remote_sigs[remote_hash].path)
+                elif remote_hash in local_sigs.keys():
+                    recout.append(f"found remote hash in local signatures ({key})!?! (please implement that case!)")
+                    return recout
+                else:
+                    recout.append(f"could not find remote signature {remote_hash[:8]} for job {key}")
+                    return recout
+                if local_hash in local_sigs.keys():
+                    local_file = source.download(local_sigs[local_hash].path)
+                elif local_hash in remote_sigs.keys():
+                    local_file = target.download(remote_sigs[local_hash].path)
+                else:
+                    recout.append(f"could not find local signature {local_hash[:8]} for job {key}")
+                    return recout
+                if local_file is None or remote_file is None:
+                    out = "Aborting analysis because siginfo files disappered unexpectedly"
+                else:
+                    out = compare_sigfiles(remote_file, local_file, recursecb, color=True)
+                if local_hash in local_sigs.keys():
+                    source.release(local_file)
+                else:
+                    target.release(local_file)
+                target.release(remote_file)
+                for change in out:
+                    recout.extend(['    ' + line for line in change.splitlines()])
+                return recout
+
+            local_file = source.download(s.path)
+            remote_file = target.download(t.path)
+            out = compare_sigfiles(remote_file, local_file, recursecb, color=True)
+            source.release(local_file)
+            target.release(remote_file)
+            # shorten hashes from 64 to 8 characters for better readability
+            out = [re.sub(r'([0-9a-f]{8})[0-9a-f]{56}', r'\1', line) for line in out]
+            print('\n'.join(out))
+
+
+def main():
+    args = arguments()
+
+    if args.target.startswith('http://'):
+        target = SstateDavTarget(args.target)
+    elif args.target.startswith('s3://'):
+        target = SstateS3Target(args.target)
+    elif args.target.startswith('file://'):
+        target = SstateFileTarget(args.target)
+    else:  # no protocol given, assume file://
+        target = SstateFileTarget(args.target)
+
+    args.target = target
+    return globals()[f'sstate_{args.command}'](**vars(args))
+
+
+if __name__ == '__main__':
+    sys.exit(main())
