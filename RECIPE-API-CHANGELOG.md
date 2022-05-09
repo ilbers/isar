@@ -349,3 +349,51 @@ For a list of well-known Debian build profiles and common practices, we refer to
 It was replaced by WIC and no more needed.
 Machines that use `rpi-sdimg` image type should be modified to use `wic` type
 with `rpi-sdimg` wks file instead.
+
+### Changes to image types
+
+The way different image types are handled has changed to be closer to the
+implementation in OE.
+
+Changes when using the built-in types:
+  * Image recipes no longer inherit their image type class.
+  * Names of image types, as defined using IMAGE_FSTYPES, no longer have the
+    suffix `-img`, i.e., `wic-img` becomes `wic`, `ext4-img` becomes `ext4`,
+    and so on.
+  * Image types defined in IMAGE_FSTYPES can be suffixed with conversions.
+    To get a compressed image, set IMAGE_FSTYPES to `wic.xz`, `ext4.gz`, etc.
+    That also means that the type of the previous `targz-img` is not `tar.gz`.
+  * Container types (previously CONTAINER_IMAGE_FORMATS) are now
+    first class image types (oci, oci-archive, docker-archive,
+    docker-daemon, containers-storage)
+  * The VM image now has type `ova` (instead of `vm-img`)
+
+Changes when defining custom image classes:
+  * Custom image classes that only add a compression step should be removed
+    and replaced by an image conversion (see below).
+  * Instead of providing a do_image_mytype task, custom image classes should
+    now provide IMAGE_CMD_mytype
+  * Imager dependencies are set as IMAGER_INSTALL_mytype
+  * Required arguments (variables that must be set) are modelled by
+    IMAGE_CMD_REQUIRED_ARGS_mytype = "A B C"
+  * When extending an existing image type, instead of inheriting the base
+    image class, IMAGE_TYPEDEP_mytype can be set to define dependencies
+    between image types.
+  * In the IMAGE_CMD_mytype function:
+    - image_do_mounts is inserted automatically
+    - a final chown is inserted automatically
+    - variables IMAGE_FILE_HOST and IMAGE_FILE_CHROOT are
+      set to reference the image
+    - variable SUDO_CHROOT contains the chroot command needed to run in the
+      build changeroot
+  * Custom image classes need to be added to IMAGE_CLASSES (e.g., in local.conf
+    or machine config) so Isar will include them.
+
+New conversions can be added by defining CONVERSION_CMD_type.
+  * Dependencies that need to be installed are given as CONVERSION_DEP_type.
+  * New conversions must be added to CONVERSION_TYPES before they can be used.
+  * In conversion commands
+    - the input file is named ${IMAGE_FULLNAME}.${type}
+    - the conversions appends its own type, e.g. the output file of a conversion `xz`
+      would be ${IMAGE_FULLNAME}.${type}.xz
+    - a final chown is appended automatically
