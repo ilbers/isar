@@ -45,11 +45,8 @@ class CIBaseTest(CIBuilder):
             # Try to build with changed configuration with no cleanup
             self.bitbake(targets, **kwargs)
 
-    def perform_ccache_test(self, targets):
-        build_dir, bb_args = self.prep('Isar ccache build', targets, 0, 0)
-
-        self.deletetmp(build_dir)
-        process.run('rm -rf ' + build_dir + '/ccache', sudo=True)
+    def perform_ccache_test(self, targets, **kwargs):
+        self.configure(ccache=True, **kwargs)
 
         self.delete_from_build_dir('tmp')
         self.delete_from_build_dir('ccache')
