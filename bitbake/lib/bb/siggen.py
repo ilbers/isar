@@ -944,8 +944,8 @@ def compare_sigfiles(a, b, recursecb=None, color=False, collapsed=False):
 
 
     if 'runtaskhashes' in a_data and 'runtaskhashes' in b_data:
-        a = a_data['runtaskhashes']
-        b = b_data['runtaskhashes']
+        a = clean_basepaths(a_data['runtaskhashes'])
+        b = clean_basepaths(b_data['runtaskhashes'])
         changed, added, removed = dict_diff(a, b)
         if added:
             for dep in added:
@@ -956,7 +956,7 @@ def compare_sigfiles(a, b, recursecb=None, color=False, collapsed=False):
                             #output.append("Dependency on task %s was replaced by %s with same hash" % (dep, bdep))
                             bdep_found = True
                 if not bdep_found:
-                    output.append(color_format("{color_title}Dependency on task %s was added{color_default} with hash %s") % (clean_basepath(dep), b[dep]))
+                    output.append(color_format("{color_title}Dependency on task %s was added{color_default} with hash %s") % (dep, b[dep]))
         if removed:
             for dep in removed:
                 adep_found = False
@@ -966,11 +966,11 @@ def compare_sigfiles(a, b, recursecb=None, color=False, collapsed=False):
                             #output.append("Dependency on task %s was replaced by %s with same hash" % (adep, dep))
                             adep_found = True
                 if not adep_found:
-                    output.append(color_format("{color_title}Dependency on task %s was removed{color_default} with hash %s") % (clean_basepath(dep), a[dep]))
+                    output.append(color_format("{color_title}Dependency on task %s was removed{color_default} with hash %s") % (dep, a[dep]))
         if changed:
             for dep in changed:
                 if not collapsed:
-                    output.append(color_format("{color_title}Hash for dependent task %s changed{color_default} from %s to %s") % (clean_basepath(dep), a[dep], b[dep]))
+                    output.append(color_format("{color_title}Hash for dependent task %s changed{color_default} from %s to %s") % (dep, a[dep], b[dep]))
                 if callable(recursecb):
                     recout = recursecb(dep, a[dep], b[dep])
                     if recout:
