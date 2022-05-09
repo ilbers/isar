@@ -6,7 +6,7 @@ import re
 import tempfile
 import time
 
-from cibuilder import CIBuilder
+from cibuilder import CIBuilder, isar_root
 from avocado.utils import process
 
 class CIBaseTest(CIBuilder):
@@ -102,6 +102,12 @@ class CIBaseTest(CIBuilder):
 
         # Populate cache
         self.bitbake(image_target, **kwargs)
+
+        # Check signature files for cachability issues like absolute paths in signatures
+        result = process.run(f'{isar_root}/scripts/isar-sstate lint {self.build_dir}/sstate-cache '
+                             f'--build-dir {self.build_dir} --sources-dir {isar_root}')
+        if result.exit_status > 0:
+            self.fail("Detected cachability issues")
 
         # Save contents of image deploy dir
         expected_files = set(glob.glob(f'{self.build_dir}/tmp/deploy/images/*/*'))
