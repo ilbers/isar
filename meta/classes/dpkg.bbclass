@@ -26,7 +26,7 @@ do_install_builddeps() {
 }
 
 addtask install_builddeps after do_prepare_build before do_dpkg_build
-do_install_builddeps[depends] += "isar-apt:do_cache_config"
+do_install_builddeps[depends] += "${BUILDCHROOT_DEP} isar-apt:do_cache_config"
 # apt and reprepro may not run in parallel, acquire the Isar lock
 do_install_builddeps[lockfiles] += "${REPO_ISAR_DIR}/isar.lock"
 

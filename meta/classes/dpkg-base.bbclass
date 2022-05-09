@@ -95,10 +95,9 @@ python() {
     d.setVar('SRC_URI', ' '.join(new_src_uri))
     d.prependVar('SRC_APT', ' '.join(src_apt))
 
-    if d.getVar('SRC_APT').strip() == '':
-        d.setVarFlag('do_apt_fetch', 'noexec', '1')
-        d.setVarFlag('do_apt_unpack', 'noexec', '1')
-        d.setVarFlag('do_cleanall_apt', 'noexec', '1')
+    if len(d.getVar('SRC_APT').strip()) > 0:
+        bb.build.addtask('apt_unpack', 'do_patch', '', d)
+        bb.build.addtask('cleanall_apt', 'do_cleanall', '', d)
 }
 
 do_apt_fetch() {
@@ -117,11 +116,11 @@ do_apt_fetch() {
     dpkg_undo_mounts
 }
 
-addtask apt_fetch after do_unpack before do_apt_unpack
+addtask apt_fetch
 do_apt_fetch[lockfiles] += "${REPO_ISAR_DIR}/isar.lock"
 
 # Add dependency from the correct buildchroot: host or target
-do_apt_fetch[depends] = "${BUILDCHROOT_DEP}"
+do_apt_fetch[depends] += "${BUILDCHROOT_DEP}"
 
 do_apt_unpack() {
     rm -rf ${S}
@@ -142,9 +141,8 @@ do_apt_unpack() {
     dpkg_undo_mounts
 }
 
-addtask apt_unpack after do_apt_fetch before do_patch
+addtask apt_unpack after do_apt_fetch
 
-addtask cleanall_apt before do_cleanall
 do_cleanall_apt[nostamp] = "1"
 do_cleanall_apt() {
     for uri in "${SRC_APT}"; do
