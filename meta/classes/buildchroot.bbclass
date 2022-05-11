@@ -43,7 +43,8 @@ buildchroot_do_mounts() {
         fi
         mountpoint -q '${BUILDCHROOT_DIR}/dev' ||
             ( mount --bind /dev '${BUILDCHROOT_DIR}/dev' &&
-              mount -t tmpfs none '${BUILDCHROOT_DIR}/dev/shm' )
+              mount -t tmpfs none '${BUILDCHROOT_DIR}/dev/shm' &&
+              mount --bind /dev/pts '${BUILDCHROOT_DIR}/dev/pts' )
         mountpoint -q '${BUILDCHROOT_DIR}/proc' ||
             mount -t proc none '${BUILDCHROOT_DIR}/proc'
         mountpoint -q '${BUILDCHROOT_DIR}/sys' ||

@@ -370,6 +370,7 @@ do_bootstrap() {
 
         # update APT
         mount --bind /dev ${ROOTFSDIR}/dev
+        mount --bind /dev/pts ${ROOTFSDIR}/dev/pts
         mount -t tmpfs none "${ROOTFSDIR}/dev/shm"
         mount -t proc none ${ROOTFSDIR}/proc
         mount --rbind /sys ${ROOTFSDIR}/sys
@@ -391,6 +392,7 @@ do_bootstrap() {
                                 -o Debug::pkgProblemResolver=yes
 
         umount -l "${ROOTFSDIR}/dev/shm"
+        umount -l "${ROOTFSDIR}/dev/pts"
         umount -l "${ROOTFSDIR}/dev"
         umount -l "${ROOTFSDIR}/proc"
         umount -l "${ROOTFSDIR}/sys"

@@ -35,7 +35,8 @@ rootfs_do_mounts() {
         set -e
         mountpoint -q '${ROOTFSDIR}/dev' || \
             ( mount --bind /dev '${ROOTFSDIR}/dev' &&
-              mount -t tmpfs none '${ROOTFSDIR}/dev/shm' )
+              mount -t tmpfs none '${ROOTFSDIR}/dev/shm' &&
+              mount --bind /dev/pts '${ROOTFSDIR}/dev/pts' )
         mountpoint -q '${ROOTFSDIR}/proc' || \
             mount -t proc none '${ROOTFSDIR}/proc'
         mountpoint -q '${ROOTFSDIR}/sys' || \
