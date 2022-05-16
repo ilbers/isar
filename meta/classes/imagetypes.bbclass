@@ -8,7 +8,7 @@ IMAGER_INSTALL_tar = "tar"
 TAR_OPTIIONS ?= ""
 
 IMAGE_CMD_tar() {
-    ${SUDO_CHROOT} tar ${TAR_OPTIONS} -cvzf \
+    ${SUDO_CHROOT} tar ${TAR_OPTIONS} -cvf \
                  ${IMAGE_FILE_CHROOT} --one-file-system -C ${PP_ROOTFS} .
 }
 
