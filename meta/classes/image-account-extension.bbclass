@@ -17,7 +17,7 @@ USERS ??= ""
 #USER_root[home] = "/home/root"
 #USER_root[shell] = "/bin/sh"
 #USER_root[groups] = "audio video"
-#USER_root[flags] = "no-create-home create-home system allow-empty-password clear-text-password"
+#USER_root[flags] = "no-create-home create-home system allow-empty-password clear-text-password force-passwd-change"
 
 GROUPS ??= ""
 
@@ -257,6 +257,11 @@ image_postprocess_accounts() {
             fi
             printf '%s:%s' "$name" "$password" | sudo chroot '${ROOTFSDIR}' \
                 /usr/sbin/chpasswd $chpasswd_args
+        fi
+        if [ "${flags}" != "${flags%*,force-passwd-change,*}" ]; then
+            echo "Execute passwd to force password change on first boot for \"$name\""
+            sudo -E chroot '${ROOTFSDIR}' \
+                /usr/bin/passwd --expire "$name"
         fi
     done
 }
