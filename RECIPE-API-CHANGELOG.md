@@ -397,3 +397,9 @@ New conversions can be added by defining CONVERSION_CMD_type.
     - the conversions appends its own type, e.g. the output file of a conversion `xz`
       would be ${IMAGE_FULLNAME}.${type}.xz
     - a final chown is appended automatically
+
+### Handling of variables USERS and GROUPS is moved to image post processing
+
+The user and groups defined by the variables `USERS` and `GROUPS`
+was moved from image configuration to image post processing. The users and
+groups are now created after all packages are installed.

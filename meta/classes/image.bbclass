@@ -440,6 +440,15 @@ do_rootfs_quality_check() {
 	        args="${args} ! -path ${ROOTFSDIR}/etc/os-release";;
 	    image_postprocess_machine_id)
 	        args="${args} ! -path ${ROOTFSDIR}/etc/machine-id";;
+	    image_postprocess_accounts)
+	        args="${args} ! -path ${ROOTFSDIR}/etc/passwd \
+                          ! -path ${ROOTFSDIR}/etc/subgid \
+                          ! -path ${ROOTFSDIR}/etc/subuid \
+                          ! -path ${ROOTFSDIR}/etc/shadow- \
+                          ! -path ${ROOTFSDIR}/etc/gshadow \
+                          ! -path ${ROOTFSDIR}/etc/shadow \
+                          ! -path ${ROOTFSDIR}/etc/group"
+            ;;
 	esac
     done
     found=$( sudo find ${ROOTFSDIR} -type f -newer $rootfs_install_stamp $args )

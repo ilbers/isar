@@ -58,9 +58,8 @@ IMAGE_ACCOUNTS_GROUPS =+ "${@gen_accounts_array(d, 'GROUPS', 'GROUP', ['gid', 'f
 
 do_rootfs_install[vardeps] += "${IMAGE_ACCOUNTS_GROUPS} ${IMAGE_ACCOUNTS_USERS}"
 
-ROOTFS_CONFIGURE_COMMAND += "image_configure_accounts"
-image_configure_accounts[weight] = "3"
-image_configure_accounts() {
+ROOTFS_POSTPROCESS_COMMAND += "image_postprocess_accounts"
+image_postprocess_accounts() {
     # Create groups
     # Add space to the end of the list:
     list='${@" ".join(d.getVar('IMAGE_ACCOUNTS_GROUPS', True).split())} '
