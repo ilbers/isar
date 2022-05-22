@@ -71,7 +71,7 @@ class CrossTest(CIBaseTest):
                   ]
 
         self.init()
-        self.perform_build_test(targets, cross=True)
+        self.perform_build_test(targets, cross=True, debsrc_cache=True)
 
     def test_cross_rpi(self):
         targets = [
@@ -80,7 +80,7 @@ class CrossTest(CIBaseTest):
 
         self.init()
         try:
-            self.perform_build_test(targets, cross=True)
+            self.perform_build_test(targets, cross=True, debsrc_cache=True)
         except:
             self.cancel('KFAIL')
 
@@ -154,7 +154,7 @@ class NoCrossTest(CIBaseTest):
         self.init()
         # Cleanup after cross build
         self.delete_from_build_dir('tmp')
-        self.perform_build_test(targets, cross=False)
+        self.perform_build_test(targets, cross=False, debsrc_cache=True)
 
     def test_nocross_rpi(self):
         targets = [
@@ -166,7 +166,7 @@ class NoCrossTest(CIBaseTest):
 
         self.init()
         try:
-            self.perform_build_test(targets, cross=False)
+            self.perform_build_test(targets, cross=False, debsrc_cache=True)
         except:
             self.cancel('KFAIL')
 
@@ -215,7 +215,7 @@ class RebuildTest(CIBaseTest):
             file.write('do_fetch_append() {\n\n}')
 
         try:
-            self.perform_build_test('mc:qemuamd64-bullseye:isar-image-base')
+            self.perform_build_test('mc:qemuamd64-bullseye:isar-image-base', debsrc_cache=True)
         finally:
             self.restorefile(dpkgbase_file)
 

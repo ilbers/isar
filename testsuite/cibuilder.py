@@ -52,7 +52,7 @@ class CIBuilder(Test):
         if not hasattr(self, 'build_dir'):
             self.error("Broken test implementation: need to call init().")
 
-    def configure(self, compat_arch=True, cross=None, debsrc_cache=True,
+    def configure(self, compat_arch=True, cross=None, debsrc_cache=False,
                   container=False, ccache=False, sstate=False, offline=False,
                   gpg_pub_key=None, **kwargs):
         # write configuration file and set bitbake_args
