@@ -32,12 +32,38 @@ do_install_builddeps[lockfiles] += "${REPO_ISAR_DIR}/isar.lock"
 
 addtask devshell after do_install_builddeps
 
+DPKG_PREBUILD_ENV_FILE="${WORKDIR}/dpkg_prebuild.env"
+
+do_prepare_build_append() {
+    env > ${DPKG_PREBUILD_ENV_FILE}
+}
+
 # Build package from sources using build script
 dpkg_runbuild() {
     E="${@ isar_export_proxies(d)}"
     E="${@ isar_export_ccache(d)}"
     export DEB_BUILD_OPTIONS="${@ isar_deb_build_options(d)}"
     export PARALLEL_MAKE="${PARALLEL_MAKE}"
+
+    env | while read -r line; do
+        # Filter the same lines
+        grep -q "^${line}" ${DPKG_PREBUILD_ENV_FILE} && continue
+        # Filter some standard variables
+        echo ${line} | grep -q "^HOME=" && continue
+        echo ${line} | grep -q "^PWD=" && continue
+
+        var=$(echo "${line}" | cut -d '=' -f1)
+        value=$(echo "${line}" | cut -d '=' -f2-)
+        sbuild_export $var "$value"
+
+        # Don't warn some variables
+        [ "${var}" = "PARALLEL_MAKE" ] && continue
+        [ "${var}" = "CCACHE_DIR" ] && continue
+        [ "${var}" = "PATH_PREPEND" ] && continue
+        [ "${var}" = "DEB_BUILD_OPTIONS" ] && continue
+
+        bbwarn "Export of '${line}' detected, please migrate to templates"
+    done
 
     profiles="${@ isar_deb_build_profiles(d)}"
     if [ ! -z "$profiles" ]; then
