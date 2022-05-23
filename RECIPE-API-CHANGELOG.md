@@ -406,3 +406,16 @@ groups are now created after all packages are installed.
 
 Changes in next
 ---------------
+
+### Buildchroot no longer used for package building
+
+Packages are now built with sbuild which takes care of dependency
+installation.
+The task do_install_builddeps has been removed.
+
+The migration to sbuild also means that all changes in the rootfs made during
+package building will not be shared between the build sessions of different
+packages and will be lost after a given build session finishes.
+
+Any package build requirements for the rootfs should be satisfied in the
+Debian way via package dependencies.
