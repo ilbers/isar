@@ -30,5 +30,9 @@ do_install_builddeps_append() {
 }
 
 dpkg_runbuild_prepend() {
-    export GBP_PREFIX="gbp buildpackage --git-ignore-new ${GBP_EXTRA_OPTIONS} --git-builder="
+    sudo -E chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} \
+        sh -c "cd ${PP}/${PPS} && gbp buildpackage --git-ignore-new --git-builder=/bin/true ${GBP_EXTRA_OPTIONS}"
+    # NOTE: `buildpackage --git-builder=/bin/true --git-pristine-tar` is used
+    # for compatibility with gbp version froms debian-stretch. In newer distros
+    # it's possible to use a subcommand `export-orig --pristine-tar`
 }
