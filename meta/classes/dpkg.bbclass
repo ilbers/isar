@@ -55,7 +55,8 @@ dpkg_runbuild() {
     deb_dl_dir_import "${WORKDIR}/rootfs" "${distro}"
 
     deb_dir="/var/cache/apt/archives"
-    ext_deb_dir="${PP}/rootfs/${deb_dir}"
+    ext_root="${PP}/rootfs"
+    ext_deb_dir="${ext_root}${deb_dir}"
 
     if [ ${USE_CCACHE} -eq 1 ]; then
         schroot_configure_ccache
@@ -82,12 +83,15 @@ dpkg_runbuild() {
     sbuild -A -n -c ${SBUILD_CHROOT} --extra-repository="${ISAR_APT_REPO}" \
         --host=${PACKAGE_ARCH} --build=${SBUILD_HOST_ARCH} ${profiles} \
         --no-run-lintian --no-run-piuparts --no-run-autopkgtest \
+        --chroot-setup-commands="rm -f /var/log/dpkg.log" \
         --chroot-setup-commands="cp -n --no-preserve=owner ${ext_deb_dir}/*.deb -t ${deb_dir}/ || :" \
         --finished-build-commands="rm -f ${deb_dir}/sbuild-build-depends-main-dummy_*.deb" \
         --finished-build-commands="cp -n --no-preserve=owner ${deb_dir}/*.deb -t ${ext_deb_dir}/ || :" \
+        --finished-build-commands="cp /var/log/dpkg.log ${ext_root}/dpkg_partial.log" \
         --debbuildopts="--source-option=-I" \
         --build-dir=${WORKDIR} --dist="isar" ${WORKDIR}/${DSC}
 
+    sbuild_dpkg_log_export "${WORKDIR}/rootfs/dpkg_partial.log"
     deb_dl_dir_export "${WORKDIR}/rootfs" "${distro}"
 
     # Cleanup apt artifacts

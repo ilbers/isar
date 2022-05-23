@@ -148,3 +148,12 @@ END
         echo "command-prefix=/ccache/sbuild-setup" >> "${SCHROOT_CONF_FILE}"
 EOSUDO
 }
+
+sbuild_dpkg_log_export() {
+    export dpkg_partial_log="${1}"
+
+    ( flock 9
+    set -e
+    cat ${dpkg_partial_log} >> ${SCHROOT_DIR}/tmp/dpkg_common.log
+    )  9>"${SCHROOT_DIR}/tmp/dpkg_common.log.lock"
+}
