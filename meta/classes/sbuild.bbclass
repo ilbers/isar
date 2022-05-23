@@ -8,7 +8,6 @@ SCHROOT_MOUNTS ?= ""
 python __anonymous() {
     import pwd
     d.setVar('SCHROOT_USER', pwd.getpwuid(os.geteuid()).pw_name)
-    d.setVar('SCHROOT_USER_HOME', pwd.getpwuid(os.geteuid()).pw_dir)
 
     mode = d.getVar('ISAR_CROSS_COMPILE', True)
     distro_arch = d.getVar('DISTRO_ARCH')
