@@ -37,13 +37,17 @@ dpkg_runbuild() {
     E="${@ isar_export_proxies(d)}"
     E="${@ isar_export_ccache(d)}"
     export DEB_BUILD_OPTIONS="${@ isar_deb_build_options(d)}"
-    export DEB_BUILD_PROFILES="${@ isar_deb_build_profiles(d)}"
     export PARALLEL_MAKE="${PARALLEL_MAKE}"
+
+    profiles="${@ isar_deb_build_profiles(d)}"
+    if [ ! -z "$profiles" ]; then
+        profiles=$(echo --profiles="$profiles" | sed -e 's/ \+/,/g')
+    fi
 
     export SBUILD_CONFIG="${SBUILD_CONFIG}"
 
     sbuild -A -n -c ${SBUILD_CHROOT} --extra-repository="${ISAR_APT_REPO}" \
-        --host=${PACKAGE_ARCH} --build=${SBUILD_HOST_ARCH} \
+        --host=${PACKAGE_ARCH} --build=${SBUILD_HOST_ARCH} ${profiles} \
         --no-run-lintian --no-run-piuparts --no-run-autopkgtest \
         --debbuildopts="--source-option=-I" \
         --build-dir=${WORKDIR} ${WORKDIR}/${PPS}
