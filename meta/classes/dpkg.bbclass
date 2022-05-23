@@ -48,6 +48,10 @@ dpkg_runbuild() {
     deb_dir="/var/cache/apt/archives"
     ext_deb_dir="${PP}/rootfs/${deb_dir}"
 
+    if [ ${USE_CCACHE} -eq 1 ]; then
+        schroot_configure_ccache
+    fi
+
     profiles="${@ isar_deb_build_profiles(d)}"
     if [ ! -z "$profiles" ]; then
         profiles=$(echo --profiles="$profiles" | sed -e 's/ \+/,/g')
