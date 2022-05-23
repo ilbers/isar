@@ -104,19 +104,12 @@ python() {
 }
 
 do_apt_fetch() {
-    dpkg_do_mounts
-    E="${@ isar_export_proxies(d)}"
-    sudo -E chroot ${BUILDCHROOT_DIR} /usr/bin/apt-get update \
-        -o Dir::Etc::SourceList="sources.list.d/isar-apt.list" \
-        -o Dir::Etc::SourceParts="-" \
-        -o APT::Get::List-Cleanup="0"
-
+    schroot_create_configs
     for uri in "${SRC_APT}"; do
-        sudo -E chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} \
+        schroot -d / -c ${SBUILD_CHROOT} -- \
             sh -c 'mkdir -p /downloads/deb-src/"$1"/"$2" && cd /downloads/deb-src/"$1"/"$2" && apt-get -y --download-only --only-source source "$2"' my_script "${DISTRO}" "${uri}"
     done
-
-    dpkg_undo_mounts
+    schroot_delete_configs
 }
 
 addtask apt_fetch
@@ -125,13 +118,14 @@ do_apt_fetch[lockfiles] += "${REPO_ISAR_DIR}/isar.lock"
 # Add dependency from the correct buildchroot: host or target
 do_apt_fetch[depends] += "${BUILDCHROOT_DEP}"
 
+# Add dependency from the correct schroot: host or target
+do_apt_fetch[depends] += "${SCHROOT_DEP}"
+
 do_apt_unpack() {
     rm -rf ${S}
-    dpkg_do_mounts
-    E="${@ isar_export_proxies(d)}"
-
+    schroot_create_configs
     for uri in "${SRC_APT}"; do
-        sudo -E chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} \
+        schroot -d / -c ${SBUILD_CHROOT} -- \
             sh -c ' \
                 set -e
                 dscfile="$(apt-get -y -qq --print-uris --only-source source "${2}" | cut -d " " -f2 | grep -E "*.dsc")"
@@ -140,8 +134,7 @@ do_apt_unpack() {
                 dpkg-source -x "${dscfile}" "${PPS}"' \
                     my_script "${DISTRO}" "${uri}"
     done
-
-    dpkg_undo_mounts
+    schroot_delete_configs
 }
 
 addtask apt_unpack after do_apt_fetch
