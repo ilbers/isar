@@ -296,7 +296,7 @@ do_clean[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
 do_deploy_deb() {
     deb_clean
     repo_add_packages "${REPO_ISAR_DIR}"/"${DISTRO}" \
-        "${REPO_ISAR_DB_DIR}"/"${DISTRO}" "${DEBDISTRONAME}" ${S}/../*.deb
+        "${REPO_ISAR_DB_DIR}"/"${DISTRO}" "${DEBDISTRONAME}" ${WORKDIR}/*.deb
 }
 
 addtask deploy_deb after do_dpkg_build before do_build
