@@ -35,6 +35,15 @@ dpkg_runbuild() {
         [ "${var}" = "PATH_PREPEND" ] && continue
         [ "${var}" = "DEB_BUILD_OPTIONS" ] && continue
 
+        [ "${var}" = "http_proxy" ] && continue
+        [ "${var}" = "HTTP_PROXY" ] && continue
+        [ "${var}" = "https_proxy" ] && continue
+        [ "${var}" = "HTTPS_PROXY" ] && continue
+        [ "${var}" = "ftp_proxy" ] && continue
+        [ "${var}" = "FTP_PROXY" ] && continue
+        [ "${var}" = "no_proxy" ] && continue
+        [ "${var}" = "NO_PROXY" ] && continue
+
         bbwarn "Export of '${line}' detected, please migrate to templates"
     done
 
@@ -58,6 +67,11 @@ dpkg_runbuild() {
     fi
 
     export SBUILD_CONFIG="${SBUILD_CONFIG}"
+
+    for envvar in http_proxy HTTP_PROXY https_proxy HTTPS_PROXY \
+        ftp_proxy FTP_PROXY no_proxy NO_PROXY; do
+        sbuild_add_env_filter "$envvar"
+    done
 
     echo '$apt_keep_downloaded_packages = 1;' >> ${SBUILD_CONFIG}
 

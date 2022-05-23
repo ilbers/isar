@@ -76,16 +76,33 @@ schroot_delete_configs() {
 EOSUDO
 }
 
+sbuild_add_env_filter() {
+    [ -w ${SBUILD_CONFIG} ] || touch ${SBUILD_CONFIG}
+
+    if ! grep -q "^\$environment_filter =" ${SBUILD_CONFIG}; then
+        echo "\$environment_filter = [" >> ${SBUILD_CONFIG}
+        echo "];" >> ${SBUILD_CONFIG}
+    fi
+
+    FILTER=${1}
+
+    sed -i -e "/'\^${FILTER}\\$/d" \
+        -e "/^\$environment_filter =.*/a '^${FILTER}\$'," ${SBUILD_CONFIG}
+}
+
 sbuild_export() {
-    VAR=${1}; shift
-    VAR_LINE="'${VAR}' => '${@}',"
-    if [ -s "${SBUILD_CONFIG}" ]; then
-        sed -i -e "\$i\\" -e "${VAR_LINE}" ${SBUILD_CONFIG}
-    else
-        echo "\$build_environment = {" > ${SBUILD_CONFIG}
-        echo "${VAR_LINE}" >> ${SBUILD_CONFIG}
+    [ -w ${SBUILD_CONFIG} ] || touch ${SBUILD_CONFIG}
+
+    if ! grep -q "^\$build_environment =" ${SBUILD_CONFIG}; then
+        echo "\$build_environment = {" >> ${SBUILD_CONFIG}
         echo "};" >> ${SBUILD_CONFIG}
     fi
+
+    VAR=${1}; shift
+    VAR_LINE="'${VAR}' => '${@}',"
+
+    sed -i -e "/^'${VAR}' =>/d" ${SBUILD_CONFIG} \
+        -e "/^\$build_environment =.*/a ${VAR_LINE}" ${SBUILD_CONFIG}
 }
 
 insert_mounts() {
