@@ -78,8 +78,8 @@ debsrc_download() {
 deb_dl_dir_import() {
     export pc="${DEBDIR}/${2}"
     export rootfs="${1}"
-    [ ! -d "${pc}" ] && return 0
     sudo mkdir -p "${rootfs}"/var/cache/apt/archives/
+    [ ! -d "${pc}" ] && return 0
     flock -s "${pc}".lock -c '
         set -e
         printenv | grep -q BB_VERBOSE_LOGS && set -x
