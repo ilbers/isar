@@ -1,0 +1,19 @@
+#!/usr/bin/make -f
+
+# Debian rules for custom Trusted Firmware A build
+#
+# This software is a part of ISAR.
+# Copyright (c) Siemens AG, 2020
+#
+# SPDX-License-Identifier: MIT
+
+ifneq ($(DEB_BUILD_GNU_TYPE),$(DEB_HOST_GNU_TYPE))
+export CROSS_COMPILE=$(DEB_HOST_GNU_TYPE)-
+endif
+
+override_dh_auto_build:
+	CFLAGS= LDFLAGS= $(MAKE) $(PARALLEL_MAKE) PLAT=${TF_A_PLATFORM} \
+		${TF_A_EXTRA_BUILDARGS}
+
+%:
+	dh $@
