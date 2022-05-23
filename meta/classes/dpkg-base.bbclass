@@ -106,6 +106,13 @@ python() {
 do_apt_fetch() {
     E="${@ isar_export_proxies(d)}"
     schroot_create_configs
+
+    schroot_cleanup() {
+        schroot_delete_configs
+    }
+    trap 'exit 1' INT HUP QUIT TERM ALRM USR1
+    trap 'schroot_cleanup' EXIT
+
     for uri in "${SRC_APT}"; do
         schroot -d / -c ${SBUILD_CHROOT} -- \
             sh -c 'mkdir -p /downloads/deb-src/"$1"/"$2" && cd /downloads/deb-src/"$1"/"$2" && apt-get -y --download-only --only-source source "$2"' my_script "${DISTRO}" "${uri}"
@@ -125,6 +132,13 @@ do_apt_fetch[depends] += "${SCHROOT_DEP}"
 do_apt_unpack() {
     rm -rf ${S}
     schroot_create_configs
+
+    schroot_cleanup() {
+        schroot_delete_configs
+    }
+    trap 'exit 1' INT HUP QUIT TERM ALRM USR1
+    trap 'schroot_cleanup' EXIT
+
     for uri in "${SRC_APT}"; do
         schroot -d / -c ${SBUILD_CHROOT} -- \
             sh -c ' \
