@@ -86,6 +86,24 @@ apt install \
   pristine-tar
 ```
 
+Additional setup is required since `sbuild` is now used for package build.
+Install the following packages:
+```
+apt install \
+  sbuild \
+  schroot
+```
+Also, user who runs isar should be added to `sbuild` group.
+
+**NOTE:** sbuild version (<=0.78.1) packaged in Debian Buster doesn't support
+`$apt_keep_downloaded_packages` option which is required in Isar for
+populating `${DL_DIR}/deb`. So, host `sbuild` in this case should be manually
+upgraded to >=0.81.2 version from Debian Bullseye.
+
+```
+sudo gpasswd -a <username> sbuild
+```
+
 If your host is >= buster, also install the following package.
 ```
 apt install python3-distutils
