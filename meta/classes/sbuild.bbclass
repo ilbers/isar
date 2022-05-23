@@ -14,11 +14,11 @@ python __anonymous() {
     if mode == "0" or d.getVar('HOST_ARCH') ==  distro_arch or \
        (d.getVar('HOST_DISTRO') == "debian-stretch" and distro_arch == "i386"):
         d.setVar('SBUILD_HOST_ARCH', distro_arch)
-        d.setVar('SCHROOT_DIR', d.getVar('SCHROOT_TARGET_DIR'))
+        d.setVar('SCHROOT_DIR', d.getVar('SCHROOT_TARGET_DIR', False))
         dep = "sbuild-chroot-target:do_build"
     else:
         d.setVar('SBUILD_HOST_ARCH', d.getVar('HOST_ARCH'))
-        d.setVar('SCHROOT_DIR', d.getVar('SCHROOT_HOST_DIR'))
+        d.setVar('SCHROOT_DIR', d.getVar('SCHROOT_HOST_DIR', False))
         dep = "sbuild-chroot-host:do_build"
     d.setVar('SCHROOT_DEP', dep)
 }
