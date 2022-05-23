@@ -1,0 +1,72 @@
+#Custom U-boot build for ECI
+
+SUMMARY = "Universal Boot Loader for embedded devices"
+#PROVIDES = "virtual/bootloader"
+
+#PACKAGE_ARCH = "${MACHINE_ARCH}"
+
+FILESEXTRAPATHS_prepend := "${FILE_DIRNAME}/files:"
+
+PROVIDES += "u-boot-${MACHINE} u-boot-${MACHINE}-dev"
+PROVIDES += "${@'u-boot-tools' if d.getVar('U_BOOT_TOOLS_PACKAGE') == '1' else ''}"
+PROVIDES += "${@('u-boot-config u-boot-' + d.getVar('MACHINE') + '-config') \
+    if d.getVar('U_BOOT_CONFIG_PACKAGE') == '1' else ''}"
+
+inherit dpkg
+
+SRC_URI += "file://debian/"
+
+python() {
+    if d.getVar('BUILD_DEPENDS'):
+        bb.warn("u-boot-custom: Deprecated use of BUILD_DEPENDS, please switch to DEBIAN_BUILD_DEPENDS")
+        d.setVar('DEBIAN_BUILD_DEPENDS', d.getVar('BUILD_DEPENDS'))
+}
+
+DEBIAN_BUILD_DEPENDS ?= "bc, bison, flex, device-tree-compiler, git"
+
+TEMPLATE_FILES = "debian/control.tmpl debian/rules.tmpl"
+TEMPLATE_VARS += "MACHINE DEBIAN_BUILD_DEPENDS U_BOOT_CONFIG U_BOOT_BIN"
+
+U_BOOT_TOOLS_PACKAGE ?= "0"
+U_BOOT_CONFIG_PACKAGE ?= "0"
+
+do_prepare_build() {
+    cp -r ${WORKDIR}/debian ${S}/
+
+    deb_add_changelog
+
+    echo "${U_BOOT_BIN} /usr/lib/u-boot/${MACHINE}" > \
+        ${S}/debian/u-boot-${MACHINE}.install
+
+    echo "tools/env/libubootenv.a usr/lib" > \
+        ${S}/debian/u-boot-${MACHINE}-dev.install
+
+    if [ "${U_BOOT_TOOLS_PACKAGE}" = "1" ]; then
+        cat <<EOF >>${S}/debian/control
+
+Package: u-boot-tools
+Architecture: linux-any
+Depends: \${shlibs:Depends}, \${misc:Depends}
+Description: ${DESCRIPTION}, companion tools
+EOF
+    fi
+
+    if [ "${U_BOOT_CONFIG_PACKAGE}" = "1" ]; then
+        cp ${WORKDIR}/fw_env.config ${S}/ || \
+            die "U_BOOT_CONFIG_PACKAGE requires a fw_env.config in SRC_URI"
+
+        cat <<EOF >>${S}/debian/control
+Package: u-boot-${MACHINE}-config
+Provides: u-boot-config
+Architecture: ${DISTRO_ARCH}
+Description: ${DESCRIPTION}, environment configuration
+EOF
+
+        cat <<EOF >>${S}/debian/u-boot-${MACHINE}-config.install
+u-boot-initial-env /etc
+fw_env.config      /etc
+EOF
+    fi
+}
+
+

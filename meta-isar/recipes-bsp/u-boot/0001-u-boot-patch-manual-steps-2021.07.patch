@@ -1,0 +1,114 @@
+From 54a93a61e9dc8f92c6c693704be1f6bed397229d Mon Sep 17 00:00:00 2001
+From: Joe Yie Chong <joe.yie.chong@intel.com>
+Date: Sun, 22 May 2022 17:50:45 +0800
+Subject: [PATCH] u-boot-patch-manual-steps-2021.07
+
+---
+ arch/arm/config.mk                            | 2 +-
+ arch/arm/dts/socfpga_agilex_socdk-u-boot.dtsi | 5 ++---
+ arch/arm/dts/socfpga_soc64_fit-u-boot.dtsi    | 4 ++--
+ configs/socfpga_agilex_defconfig              | 9 ---------
+ 4 files changed, 5 insertions(+), 15 deletions(-)
+
+diff --git a/arch/arm/config.mk b/arch/arm/config.mk
+index 16c63e1266..3d1d99c6ee 100644
+--- a/arch/arm/config.mk
++++ b/arch/arm/config.mk
+@@ -32,7 +32,7 @@ LLVM_RELFLAGS		:= $(call cc-option,-mllvm,) \
+ 			$(call cc-option,-mno-movt,)
+ PLATFORM_RELFLAGS	+= $(LLVM_RELFLAGS)
+ 
+-PLATFORM_CPPFLAGS += -D__ARM__
++PLATFORM_CPPFLAGS += -D__ARM__ -gdwarf-4
+ 
+ ifdef CONFIG_ARM64
+ PLATFORM_ELFFLAGS += -B aarch64 -O elf64-littleaarch64
+diff --git a/arch/arm/dts/socfpga_agilex_socdk-u-boot.dtsi b/arch/arm/dts/socfpga_agilex_socdk-u-boot.dtsi
+index 6efe2f0952..da2fd978ca 100644
+--- a/arch/arm/dts/socfpga_agilex_socdk-u-boot.dtsi
++++ b/arch/arm/dts/socfpga_agilex_socdk-u-boot.dtsi
+@@ -10,7 +10,7 @@
+ /{
+ 	chosen {
+ 		stdout-path = "serial0:115200n8";
+-		u-boot,spl-boot-order = &mmc,&flash0,&nand;
++		u-boot,spl-boot-order = &mmc;
+ 	};
+ 
+ 	aliases {
+@@ -46,7 +46,7 @@
+ };
+ 
+ &nand {
+-	status = "okay";
++	status = "disabled";
+ 	nand-bus-width = <16>;
+ 	u-boot,dm-pre-reloc;
+ };
+@@ -99,7 +99,6 @@
+ };
+ 
+ &binman {
+-	/delete-node/ kernel;
+ };
+ #endif
+ 
+diff --git a/arch/arm/dts/socfpga_soc64_fit-u-boot.dtsi b/arch/arm/dts/socfpga_soc64_fit-u-boot.dtsi
+index e10f8e1757..7325d69290 100644
+--- a/arch/arm/dts/socfpga_soc64_fit-u-boot.dtsi
++++ b/arch/arm/dts/socfpga_soc64_fit-u-boot.dtsi
+@@ -122,8 +122,8 @@
+ 			};
+ 
+ 			configurations {
+-				default = "conf";
+-				conf {
++				default = "board-0";
++				board-0 {
+ 					description = "Intel SoC64 FPGA";
+ 					kernel = "kernel";
+ 					fdt = "fdt";
+diff --git a/configs/socfpga_agilex_defconfig b/configs/socfpga_agilex_defconfig
+index b4f4251bf2..f221619320 100644
+--- a/configs/socfpga_agilex_defconfig
++++ b/configs/socfpga_agilex_defconfig
+@@ -20,7 +20,6 @@ CONFIG_SPL_FIT_SIGNATURE=y
+ CONFIG_SPL_LOAD_FIT=y
+ CONFIG_SPL_LOAD_FIT_ADDRESS=0x02000000
+ # CONFIG_USE_SPL_FIT_GENERATOR is not set
+-CONFIG_NAND_BOOT=y
+ CONFIG_QSPI_BOOT=y
+ CONFIG_BOOTDELAY=5
+ CONFIG_USE_BOOTARGS=y
+@@ -28,7 +27,6 @@ CONFIG_BOOTARGS="earlycon panic=-1"
+ # CONFIG_SPL_RAW_IMAGE_SUPPORT is not set
+ CONFIG_SPL_CRC32_SUPPORT=y
+ CONFIG_SPL_MTD_SUPPORT=y
+-CONFIG_SPL_NAND_SUPPORT=y
+ CONFIG_SPL_CACHE=y
+ CONFIG_SPL_SPI_LOAD=y
+ CONFIG_SPL_ATF=y
+@@ -40,8 +38,6 @@ CONFIG_CMD_GPIO=y
+ CONFIG_CMD_I2C=y
+ CONFIG_CMD_MMC=y
+ CONFIG_CMD_MTD=y
+-CONFIG_CMD_NAND_TRIMFFS=y
+-CONFIG_CMD_NAND_LOCK_UNLOCK=y
+ CONFIG_CMD_SPI=y
+ CONFIG_CMD_USB=y
+ CONFIG_CMD_CACHE=y
+@@ -73,11 +69,6 @@ CONFIG_MISC=y
+ CONFIG_MMC_DW=y
+ CONFIG_MTD=y
+ CONFIG_DM_MTD=y
+-CONFIG_NAND_DENALI_DT=y
+-CONFIG_SYS_NAND_U_BOOT_LOCATIONS=y
+-CONFIG_SYS_NAND_U_BOOT_OFFS=0x0
+-CONFIG_SYS_NAND_U_BOOT_OFFS_REDUND=0x100000
+-CONFIG_SPL_NAND_FRAMEWORK=y
+ CONFIG_SF_DEFAULT_MODE=0x2003
+ CONFIG_SPI_FLASH_SPANSION=y
+ CONFIG_SPI_FLASH_STMICRO=y
+-- 
+2.25.1
+
