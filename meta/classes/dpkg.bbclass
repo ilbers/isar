@@ -39,6 +39,12 @@ dpkg_runbuild() {
     export DEB_BUILD_OPTIONS="${@ isar_deb_build_options(d)}"
     export DEB_BUILD_PROFILES="${@ isar_deb_build_profiles(d)}"
     export PARALLEL_MAKE="${PARALLEL_MAKE}"
-    sudo -E chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} \
-         /isar/build.sh ${PP}/${PPS} ${PACKAGE_ARCH}
+
+    export SBUILD_CONFIG="${SBUILD_CONFIG}"
+
+    sbuild -A -n -c ${SBUILD_CHROOT} --extra-repository="${ISAR_APT_REPO}" \
+        --host=${PACKAGE_ARCH} --build=${SBUILD_HOST_ARCH} \
+        --no-run-lintian --no-run-piuparts --no-run-autopkgtest \
+        --debbuildopts="--source-option=-I" \
+        --build-dir=${WORKDIR} ${WORKDIR}/${PPS}
 }

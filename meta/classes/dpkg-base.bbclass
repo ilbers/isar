@@ -4,6 +4,7 @@
 #
 # SPDX-License-Identifier: MIT
 
+inherit sbuild
 inherit buildchroot
 inherit debianize
 inherit terminal
@@ -15,6 +16,8 @@ DEPENDS ?= ""
 DEPENDS_append_riscv64 = "${@' crossbuild-essential-riscv64' if d.getVar('ISAR_CROSS_COMPILE', True) == '1' and d.getVar('PN') != 'crossbuild-essential-riscv64' else ''}"
 DEB_BUILD_PROFILES ?= ""
 DEB_BUILD_OPTIONS ?= ""
+
+ISAR_APT_REPO ?= "deb [trusted=yes] file:///home/builder/${PN}/isar-apt/${DISTRO}-${DISTRO_ARCH}/apt/${DISTRO} ${DEBDISTRONAME} main"
 
 python do_adjust_git() {
     import subprocess
@@ -175,6 +178,7 @@ addtask prepare_build after do_patch do_transform_template before do_dpkg_build
 # If Isar recipes depend on each other, they typically need the package
 # deployed to isar-apt
 do_prepare_build[deptask] = "do_deploy_deb"
+do_prepare_build[depends] = "${SCHROOT_DEP}"
 
 BUILDROOT = "${BUILDCHROOT_DIR}/${PP}"
 
@@ -200,6 +204,15 @@ dpkg_undo_mounts() {
     sudo rmdir ${BUILDROOT}
 }
 
+do_prepare_build_append() {
+    # Make a local copy of isar-apt repo that is not affected by other parallel builds
+    mkdir -p ${WORKDIR}/isar-apt/${DISTRO}-${DISTRO_ARCH}
+    rm -rf ${WORKDIR}/isar-apt/${DISTRO}-${DISTRO_ARCH}/*
+    cp -Rl ${REPO_ISAR_DIR} ${WORKDIR}/isar-apt/${DISTRO}-${DISTRO_ARCH}
+}
+
+do_prepare_build[lockfiles] += "${REPO_ISAR_DIR}/isar.lock"
+
 # Placeholder for actual dpkg_runbuild() implementation
 dpkg_runbuild() {
     die "This should never be called, overwrite it in your derived class"
@@ -222,14 +235,11 @@ def isar_export_build_settings(d):
     os.environ['DEB_BUILD_PROFILES'] = isar_deb_build_profiles(d)
 
 python do_dpkg_build() {
-    lock = bb.utils.lockfile(d.getVar("REPO_ISAR_DIR") + "/isar.lock",
-                             shared=True)
-    bb.build.exec_func("dpkg_do_mounts", d)
+    bb.build.exec_func('schroot_create_configs', d)
     try:
         bb.build.exec_func("dpkg_runbuild", d)
     finally:
-        bb.build.exec_func("dpkg_undo_mounts", d)
-        bb.utils.unlockfile(lock)
+        bb.build.exec_func('schroot_delete_configs', d)
 }
 
 addtask dpkg_build
@@ -259,7 +269,7 @@ python do_dpkg_build_setscene() {
 addtask dpkg_build_setscene
 do_dpkg_build_setscene[dirs] += "${S}/.."
 
-KEEP_INSTALLED_ON_CLEAN ?= "0"
+do_dpkg_build[depends] = "${SCHROOT_DEP}"
 
 CLEANFUNCS += "deb_clean"
 
@@ -269,15 +279,6 @@ deb_clean() {
         for d in ${DEBS}; do
             repo_del_package "${REPO_ISAR_DIR}"/"${DISTRO}" \
                 "${REPO_ISAR_DB_DIR}"/"${DISTRO}" "${DEBDISTRONAME}" "${d}"
-            if [ "${KEEP_INSTALLED_ON_CLEAN}" = "1" ]; then
-                continue;
-            fi
-            package=$(basename "${d}")
-            package_remove="/usr/bin/apt-get remove -y ${package%%_*}"
-            sudo -E chroot ${BUILDCHROOT_DIR} ${package_remove} || true
-            if [ "${BUILDCHROOT_DIR}" != "${BUILDCHROOT_TARGET_DIR}" ]; then
-                    sudo -E chroot ${BUILDCHROOT_TARGET_DIR} ${package_remove} || true
-            fi
         done
     fi
 }

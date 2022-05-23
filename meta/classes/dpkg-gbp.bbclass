@@ -11,6 +11,8 @@ PATCHTOOL ?= "git"
 
 GBP_EXTRA_OPTIONS ?= "--git-pristine-tar"
 
+SCHROOT_MOUNTS = "${WORKDIR}:${PP} ${GITDIR}:/home/.git-downloads"
+
 dpkg_runbuild_prepend() {
     sh -c "
         cd ${WORKDIR}/${PPS}
