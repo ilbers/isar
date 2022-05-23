@@ -56,6 +56,9 @@ EOF
         fstab_baseapt="${REPO_BASE_DIR} /base-apt none rw,bind 0 0"
         grep -qxF "${fstab_baseapt}" ${sbuild_fstab} || echo "${fstab_baseapt}" >> ${sbuild_fstab}
 
+        fstab_pkgdir="${WORKDIR} /home/builder/${PN} none rw,bind 0 0"
+        grep -qxF "${fstab_pkgdir}" ${sbuild_fstab} || echo "${fstab_pkgdir}" >> ${sbuild_fstab}
+
         if [ -d ${DL_DIR} ]; then
             fstab_downloads="${DL_DIR} /downloads none rw,bind 0 0"
             grep -qxF "${fstab_downloads}" ${sbuild_fstab} || echo "${fstab_downloads}" >> ${sbuild_fstab}

@@ -15,6 +15,8 @@ SBUILD_CHROOT_PREINSTALL_COMMON = " \
     build-essential \
     debhelper \
     ccache \
+    devscripts \
+    equivs \
 "
 
 SBUILD_CHROOT_PREINSTALL ?= " \

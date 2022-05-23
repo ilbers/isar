@@ -298,19 +298,30 @@ do_deploy_deb[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
 do_deploy_deb[dirs] = "${S}"
 
 python do_devshell() {
-    bb.build.exec_func('dpkg_do_mounts', d)
+    bb.build.exec_func('schroot_create_configs', d)
 
     isar_export_proxies(d)
     isar_export_ccache(d)
     isar_export_build_settings(d)
 
-    buildchroot = d.getVar('BUILDCHROOT_DIR')
+    schroot = d.getVar('SBUILD_CHROOT')
+    isar_apt = d.getVar('ISAR_APT_REPO')
     pp_pps = os.path.join(d.getVar('PP'), d.getVar('PPS'))
-    # the PATH variable is not forwarded by sudo -E.
-    termcmd = "sudo -E chroot {0} sh -c 'cd {1}; export PATH=$PATH_PREPEND:$PATH; $SHELL -i'"
-    oe_terminal(termcmd.format(buildchroot, pp_pps), "Isar devshell", d)
 
-    bb.build.exec_func('dpkg_undo_mounts', d)
+    install_deps = ":" if d.getVar('BB_CURRENTTASK') == "devshell_nodeps" else "mk-build-deps -i -t \
+        \"apt-get -y -q -o Debug::pkgProblemResolver=yes --no-install-recommends --allow-downgrades\" \
+        debian/control"
+
+    termcmd = "schroot -d / -c {0} -u root -- sh -c ' \
+        cd {1}; \
+        echo {2} > /etc/apt/sources.list.d/isar_apt.list; \
+        apt-get -y -q update; \
+        {3}; \
+        $SHELL -i \
+    '"
+    oe_terminal(termcmd.format(schroot, pp_pps, isar_apt, install_deps), "Isar devshell", d)
+
+    bb.build.exec_func('schroot_delete_configs', d)
 }
 
 addtask devshell after do_prepare_build
