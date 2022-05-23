@@ -77,8 +77,10 @@ dpkg_runbuild() {
     echo '$apt_keep_downloaded_packages = 1;' >> ${SBUILD_CONFIG}
 
     # Create a .dsc file from source directory to use it with sbuild
+    DEB_SOURCE_NAME=$(dpkg-parsechangelog --show-field Source --file ${WORKDIR}/${PPS}/debian/changelog)
+    find ${WORKDIR} -name "${DEB_SOURCE_NAME}*.dsc" -delete
     sh -c "cd ${WORKDIR}; dpkg-source -q -b ${PPS}"
-    DSC=$(head -n1 ${WORKDIR}/${PPS}/debian/changelog | awk '{gsub(/[()]/,""); printf "%s_%s.dsc", $1, $2}')
+    DSC_FILE=$(find ${WORKDIR} -name "${DEB_SOURCE_NAME}*.dsc" -print)
 
     sbuild -A -n -c ${SBUILD_CHROOT} --extra-repository="${ISAR_APT_REPO}" \
         --host=${PACKAGE_ARCH} --build=${SBUILD_HOST_ARCH} ${profiles} \
@@ -89,7 +91,7 @@ dpkg_runbuild() {
         --finished-build-commands="cp -n --no-preserve=owner ${deb_dir}/*.deb -t ${ext_deb_dir}/ || :" \
         --finished-build-commands="cp /var/log/dpkg.log ${ext_root}/dpkg_partial.log" \
         --debbuildopts="--source-option=-I" \
-        --build-dir=${WORKDIR} --dist="isar" ${WORKDIR}/${DSC}
+        --build-dir=${WORKDIR} --dist="isar" ${DSC_FILE}
 
     sbuild_dpkg_log_export "${WORKDIR}/rootfs/dpkg_partial.log"
     deb_dl_dir_export "${WORKDIR}/rootfs" "${distro}"
