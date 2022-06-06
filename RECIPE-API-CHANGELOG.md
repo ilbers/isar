@@ -332,7 +332,7 @@ This naming may be different in other distributions like Raspberry Pi OS.
 KERNEL_IMAGE_PKG and KERNEL_HEADERS_PKG variables allow to use custom package
 names for kernel/headers.
 
-Changes in next
+Changes in v0.9
 ---------------
 
 ### Introduce debian build profiles
@@ -403,3 +403,6 @@ New conversions can be added by defining CONVERSION_CMD_type.
 The user and groups defined by the variables `USERS` and `GROUPS`
 was moved from image configuration to image post processing. The users and
 groups are now created after all packages are installed.
+
+Changes in next
+---------------

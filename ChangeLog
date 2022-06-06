@@ -1,5 +1,41 @@
 Release next
 
+Release v0.9
+
+ * Add linux-phy kernel recipe
+ * Add Barebox building support
+ * Update BitBake version to 1.50.5 release
+ * Update WIC to the revision b8878cf0d
+ * Refactored and reorganized testsuite
+ * Add sstate test case
+ * Add sstate maintenance script
+ * Improve sstate cacheability
+ * Improve builds reproducibility
+ * Improve templates handling
+ * Improve expand-on-first-boot package
+ * Minimize shell environment usage
+ * Add quality check helper to image class
+ * Improve build errors handling
+ * Add flag to force password change on first login
+ * Use bullseye as default distro in startvm
+ * Move kernel cfg fragments handling to debian/rules
+ * Set stable kas container version
+ * Add support for debian build profiles and options
+ * Add support for devicemapper
+ * Rebuild image generation logic
+ * Refactoring SDK creation
+ * Improve wks configuration fields
+ * Migrate Raspberry targets to WIC
+ * Add wks to split rootfs across partitions
+ * Introduce template support for imagetypes
+ * Refactoring UBI/UBIFS support
+ * Add EFI+PCBIOS wks configuration
+ * Update debian ports signing key
+ * Update documentation
+ * Deprecate ubi-ubifs-img bbclass
+ * Deprecate rpi-sdimg bbclass
+ * Remove isar-image
+
 Release v0.8
 
  * Add Debian Sid Ports support
