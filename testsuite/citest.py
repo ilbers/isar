@@ -53,7 +53,7 @@ class CcacheTest(CIBaseTest):
     """
     Test rebuild speed improve with ccache
 
-    :avocado: tags=ccache
+    :avocado: tags=ccache,fast,full
     """
     def test_ccache_rebuild(self):
         targets = ['mc:qemuamd64-bullseye:hello-isar']
