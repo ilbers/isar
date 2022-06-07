@@ -46,32 +46,47 @@ class CIBaseTest(CIBuilder):
             self.bitbake(targets, **kwargs)
 
     def perform_ccache_test(self, targets, **kwargs):
+        def ccache_stats(dir, field):
+            # Look ccache source's 'src/core/Statistic.hpp' for field meanings
+            count = 0
+            for filename in glob.iglob(dir + '/**/stats', recursive=True):
+                if os.path.isfile(filename):
+                    with open(filename,'r') as file:
+                        content = file.readlines()
+                        if (field < len(content)):
+                            count += int(content[field])
+            return count
+
         self.configure(ccache=True, **kwargs)
 
+        # Field that stores direct ccache hits
+        direct_cache_hit = 22
+
         self.delete_from_build_dir('tmp')
+        self.delete_from_build_dir('sstate-cache')
         self.delete_from_build_dir('ccache')
 
         self.log.info('Starting build and filling ccache dir...')
-        start = time.time()
         self.bitbake(targets, **kwargs)
-        first_time = time.time() - start
-        self.log.info('Non-cached build: ' + str(round(first_time)) + 's')
+        hit1 = ccache_stats(self.build_dir + '/ccache', direct_cache_hit)
+        self.log.info('Ccache hits 1: ' + str(hit1))
 
         self.delete_from_build_dir('tmp')
+        self.delete_from_build_dir('sstate-cache')
 
         self.log.info('Starting build and using ccache dir...')
-        start = time.time()
         self.bitbake(targets, **kwargs)
-        second_time = time.time() - start
-        self.log.info('Cached build: ' + str(round(second_time)) + 's')
+        hit2 = ccache_stats(self.build_dir + '/ccache', direct_cache_hit)
+        self.log.info('Ccache hits 2: ' + str(hit2))
 
-        speedup_k = 1.1
-        if first_time / second_time < speedup_k:
-            self.fail('No speedup after rebuild with ccache')
+        if hit2 <= hit1:
+            self.fail('Ccache was not used on second build')
 
         # Cleanup
         self.delete_from_build_dir('tmp')
+        self.delete_from_build_dir('sstate-cache')
         self.delete_from_build_dir('ccache')
+        self.unconfigure()
 
     def perform_sstate_test(self, image_target, package_target, **kwargs):
         def check_executed_tasks(target, expected):

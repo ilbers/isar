@@ -107,6 +107,9 @@ class CIBuilder(Test):
                 f.write('BASE_REPO_KEY="file://' + gpg_pub_key + '"\n')
             if distro_apt_premir:
                 f.write('DISTRO_APT_PREMIRRORS = "%s"\n' % distro_apt_premir)
+            if ccache:
+                f.write('USE_CCACHE = "1"\n')
+                f.write('CCACHE_TOP_DIR = "${TOPDIR}/ccache"\n')
 
         # include ci_build.conf in local.conf
         with open(self.build_dir + '/conf/local.conf', 'r+') as f:

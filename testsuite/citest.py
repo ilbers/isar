@@ -56,7 +56,7 @@ class CcacheTest(CIBaseTest):
     :avocado: tags=ccache
     """
     def test_ccache_rebuild(self):
-        targets = ['mc:de0-nano-soc-bullseye:isar-image-base']
+        targets = ['mc:qemuamd64-bullseye:hello-isar']
         self.init()
         self.perform_ccache_test(targets)
 
