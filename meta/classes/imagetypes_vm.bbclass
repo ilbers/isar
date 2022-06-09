@@ -102,3 +102,4 @@ IMAGE_CMD_ova() {
         tar -uvf ${PP_DEPLOY}/${OVA_NAME}.ova -C ${PP_DEPLOY} ${VIRTUAL_MACHINE_IMAGE_FILE}
 EOSUDO
 }
+IMAGE_CMD_ova[depends] = "${PN}:do_transform_template"
