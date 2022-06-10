@@ -42,7 +42,7 @@ buildchroot_do_mounts() {
                 mount --bind '${CCACHE_DIR}' '${BUILDCHROOT_DIR}/ccache'
         fi
         mountpoint -q '${BUILDCHROOT_DIR}/dev' ||
-            ( mount --bind /dev '${BUILDCHROOT_DIR}/dev' &&
+            ( mount -o bind,private /dev '${BUILDCHROOT_DIR}/dev' &&
               mount -t tmpfs none '${BUILDCHROOT_DIR}/dev/shm' &&
               mount --bind /dev/pts '${BUILDCHROOT_DIR}/dev/pts' )
         mountpoint -q '${BUILDCHROOT_DIR}/proc' ||

@@ -369,7 +369,7 @@ do_bootstrap() {
         "${ROOTFSDIR}/chroot-setup.sh" "setup" "${ROOTFSDIR}"
 
         # update APT
-        mount --bind /dev ${ROOTFSDIR}/dev
+        mount -o bind,private /dev ${ROOTFSDIR}/dev
         mount --bind /dev/pts ${ROOTFSDIR}/dev/pts
         mount -t tmpfs none "${ROOTFSDIR}/dev/shm"
         mount -t proc none ${ROOTFSDIR}/proc

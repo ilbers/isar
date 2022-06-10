@@ -34,7 +34,7 @@ rootfs_do_mounts() {
     sudo -s <<'EOSUDO'
         set -e
         mountpoint -q '${ROOTFSDIR}/dev' || \
-            ( mount --bind /dev '${ROOTFSDIR}/dev' &&
+            ( mount -o bind,private /dev '${ROOTFSDIR}/dev' &&
               mount -t tmpfs none '${ROOTFSDIR}/dev/shm' &&
               mount --bind /dev/pts '${ROOTFSDIR}/dev/pts' )
         mountpoint -q '${ROOTFSDIR}/proc' || \
