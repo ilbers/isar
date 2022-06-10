@@ -11,7 +11,7 @@ set -e
 
 ROOT_DEV="$(findmnt / -o source -n)"
 ROOT_DEV_NAME=${ROOT_DEV##*/}
-ROOT_DEV_SLAVE=$(find /sys/block/"${ROOT_DEV_NAME}"/slaves -mindepth 1 -print -quit 2>/dev/null)
+ROOT_DEV_SLAVE=$(find /sys/block/"${ROOT_DEV_NAME}"/slaves -mindepth 1 -print -quit 2>/dev/null || true)
 if [ -n "${ROOT_DEV_SLAVE}" ]; then
 	ROOT_DEV=/dev/${ROOT_DEV_SLAVE##*/}
 fi
