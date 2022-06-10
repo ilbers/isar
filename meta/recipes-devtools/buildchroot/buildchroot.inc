@@ -32,7 +32,7 @@ BUILDCHROOT_PREINSTALL_COMMON = " \
     make \
     debhelper \
     autotools-dev \
-    ccache \
+    ${@ 'ccache' if d.getVar('USE_CCACHE') == '1' else ''} \
     dpkg \
     locales \
     docbook-to-man \
