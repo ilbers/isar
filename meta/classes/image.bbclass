@@ -42,6 +42,17 @@ python(){
         bb.warn("IMAGE_TRANSIENT_PACKAGES is set and no longer supported")
     if (d.getVar('IMAGE_TYPE')):
         bb.warn("IMAGE_TYPE is deprecated, please switch to IMAGE_FSTYPES")
+
+    # Debian Sid-Ports stores deb and deb-src in separate repos, which fails
+    # sometimes on fetching sources if repos are not in sync during packages
+    # version update. It makes Isar to fail on cache-deb-src, so disable it.
+    base_repo_features = d.getVar('BASE_REPO_FEATURES') or ""
+    feature_list = base_repo_features.split()
+    if ('cache-deb-src' in feature_list):
+        if (d.getVar('DISTRO') == 'debian-sid-ports'):
+            bb.warn("BASE_REPO_FEATURES for debian-sid-ports is not supported, disabling")
+            feature_list.remove("cache-deb-src")
+            d.setVar('BASE_REPO_FEATURES', ' '.join(feature_list))
 }
 
 def cfg_script(d):
