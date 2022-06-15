@@ -362,7 +362,7 @@ Changes when using the built-in types:
     and so on.
   * Image types defined in IMAGE_FSTYPES can be suffixed with conversions.
     To get a compressed image, set IMAGE_FSTYPES to `wic.xz`, `ext4.gz`, etc.
-    That also means that the type of the previous `targz-img` is not `tar.gz`.
+    That also means that the type of the previous `targz-img` is now `tar.gz`.
   * Container types (previously CONTAINER_IMAGE_FORMATS) are now
     first class image types (oci, oci-archive, docker-archive,
     docker-daemon, containers-storage)
