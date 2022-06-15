@@ -26,9 +26,6 @@ python sdk_virtclass_handler() {
 addhandler sdk_virtclass_handler
 sdk_virtclass_handler[eventmask] = "bb.event.RecipePreFinalise"
 
-# SDK is image-specific:
-SDKCHROOT_DIR = "${DEPLOY_DIR_SDKCHROOT}/${BPN}-${MACHINE}"
-
 # SDK settings
 SDK_INCLUDE_ISAR_APT ?= "0"
 SDK_FORMATS ?= "tar.xz"
