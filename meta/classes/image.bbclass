@@ -80,7 +80,7 @@ image_do_mounts() {
 }
 
 ROOTFSDIR = "${IMAGE_ROOTFS}"
-ROOTFS_FEATURES += "clean-package-cache generate-manifest export-dpkg-status clean-log-files"
+ROOTFS_FEATURES += "clean-package-cache generate-manifest export-dpkg-status clean-log-files clean-debconf-cache"
 ROOTFS_PACKAGES += "${IMAGE_PREINSTALL} ${IMAGE_INSTALL}"
 ROOTFS_MANIFEST_DEPLOY_DIR ?= "${DEPLOY_DIR_IMAGE}"
 ROOTFS_DPKGSTATUS_DEPLOY_DIR ?= "${DEPLOY_DIR_IMAGE}"

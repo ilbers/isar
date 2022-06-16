@@ -245,6 +245,12 @@ rootfs_postprocess_clean_log_files() {
         -exec rm -f {} ';'
 }
 
+ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'clean-debconf-cache', 'rootfs_postprocess_clean_debconf_cache', '', d)}"
+rootfs_postprocess_clean_debconf_cache() {
+    # Delete debconf cache files
+    sudo rm -rf "${ROOTFSDIR}/var/cache/debconf/"*
+}
+
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'generate-manifest', 'rootfs_generate_manifest', '', d)}"
 rootfs_generate_manifest () {
     mkdir -p ${ROOTFS_MANIFEST_DEPLOY_DIR}
