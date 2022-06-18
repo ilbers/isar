@@ -219,7 +219,6 @@ python() {
 
         # convenience variables to be used by CMDs
         localdata.setVar('IMAGE_FILE_HOST', '${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.${type}')
-        #bb.warn("FULLNAME is %s -> %s" % (localdata.getVar('IMAGE_FULLNAME', False), localdata.getVar('IMAGE_FULLNAME', True)))
         localdata.setVar('IMAGE_FILE_CHROOT', '${PP_DEPLOY}/${IMAGE_FULLNAME}.${type}')
         localdata.setVar('SUDO_CHROOT', localdata.expand('sudo chroot ${BUILDCHROOT_DIR}'))
 
@@ -235,7 +234,6 @@ python() {
         if image_cmd:
             localdata.setVar('type', bt)
             cmds.append(localdata.expand(image_cmd))
-            #bb.warn("IMAGE_CMD\n*** %s\n*** %s" % (image_cmd, localdata.expand(image_cmd)))
             cmds.append(localdata.expand('\tsudo chown $(id -u):$(id -g) ${IMAGE_FILE_HOST}'))
         else:
             bb.fatal("No IMAGE_CMD for %s" % bt)
