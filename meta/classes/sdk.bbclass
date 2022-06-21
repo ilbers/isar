@@ -41,9 +41,7 @@ SDK_PREINSTALL += " \
     devscripts \
     equivs"
 
-TOOLCHAIN = "crossbuild-essential-${DISTRO_ARCH}"
-TOOLCHAIN_${HOST_ARCH} = "build-essential"
-TOOLCHAIN_i386 = "build-essential"
+TOOLCHAIN = "${@'crossbuild-essential-${DISTRO_ARCH}' if d.getVar('ISAR_CROSS_COMPILE', True) == '1' else 'build-essential'}"
 TOOLCHAIN_append_compat-arch = " crossbuild-essential-${COMPAT_DISTRO_ARCH}"
 
 # rootfs/image overrides for the SDK
