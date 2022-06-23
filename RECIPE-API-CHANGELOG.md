@@ -572,3 +572,12 @@ the module build recipe.
 Remove all uses of the function deb_compat. The functionality was replaced with
 a dependency to the package debhelper-compat.
 
+### "Prefetch" mode for base-apt
+
+Originally, `base-apt` repo is created only during second build when variable
+ISAR_USE_CACHED_BASE_REPO is set. The repo is populated with every package that
+took part in the first build and was cached in DL_DIR.
+
+New ISAR_PREFETCH_BASE_APT variable changes the way `base-apt` is populated.
+Packages added to the repo before running any task that need them. Separate
+`debrepo` script is used for populating base-apt repo.
