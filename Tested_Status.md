@@ -7,7 +7,91 @@ Release next
 Release v0.9
 ------------
 
-TBD
+### Host System : debian-stretch-amd64
+
+NOT TESTED
+
+### Host System : debian-jessie-amd64
+
+NOT SUPPORTED
+
+### Host System : debian-buster-amd64
+
+NOT TESTED
+
+### Host System : debian-bullseye-amd64
+
+| Target System            | Native Build  | Cross Build   |Login prompt ("smoke" test)|SDK Support|Cached repo| Version |
+|:------------------------:|:-------------:|:-------------:|:-------------------------:|:---------:|:---------:|:-------:|
+| qemuarm-stretch          | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | c806c9d |
+| qemuarm-buster           | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | c806c9d |
+| qemuarm-bullseye         | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | PASSED    | c806c9d |
+| qemuarm-bookworm         | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | c806c9d |
+| qemuarm64-stretch        | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | c806c9d |
+| qemuarm64-buster         | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | c806c9d |
+| qemuarm64-bullseye       | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | PASSED    | c806c9d |
+| qemuarm64-bookworm       | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | c806c9d |
+| qemui386-stretch         | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | c806c9d |
+| qemui386-buster          | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | c806c9d |
+| qemui386-bullseye        | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | c806c9d |
+| qemui386-bookworm        | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | c806c9d |
+| qemuamd64-stretch        | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | c806c9d |
+| qemuamd64-buster         | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | c806c9d |
+| qemuamd64-bullseye       | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | PASSED    | c806c9d |
+| qemuamd64-bookworm       | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | c806c9d |
+| qemumipsel-stretch       | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | c806c9d |
+| qemumipsel-buster        | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | c806c9d |
+| qemumipsel-bullseye      | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | c806c9d |
+| qemumipsel-bookworm      | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | c806c9d |
+| qemuriscv64-sid-ports    | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | 79fe150 |
+| qemuarm64-focal          | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | c806c9d |
+| qemuamd64-focal          | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | c806c9d |
+| container-amd64-stretch  | PASSED        | UNTESTED      | PASSED (Docker)           | UNTESTED  | UNTESTED  | 1000df8 |
+| container-amd64-buster   | PASSED        | UNTESTED      | PASSED (Docker)           | UNTESTED  | UNTESTED  | 1000df8 |
+| container-amd64-bullseye | PASSED        | UNTESTED      | PASSED (Docker)           | UNTESTED  | UNTESTED  | 1000df8 |
+| container-amd64-bookworm | PASSED        | UNTESTED      | PASSED (Docker)           | UNTESTED  | UNTESTED  | 1000df8 |
+| virtualbox-bullseye      | PASSED        | UNTESTED      | PASSED (Virtualbox)       | UNTESTED  | UNTESTED  | fb1370b |
+| bananapi-buster          | PASSED        | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 1000df8 |
+| bananapi-bullseye        | PASSED        | PASSED        | PASSED                    | UNTESTED  | PASSED    | 1000df8 |
+| de0-nano-soc-buster      | PASSED        | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 1000df8 |
+| de0-nano-soc-bullseye    | PASSED        | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 1000df8 |
+| hikey-bullseye           | PASSED        | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 1000df8 |
+| hikey-bookworm           | PASSED        | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 1000df8 |
+| imx6-sabrelite-buster    | PASSED        | PASSED        | UNTESTED                  | UNTESTED  | UNTESTED  | 1000df8 |
+| imx6-sabrelite-bullseye  | PASSED        | PASSED        | UNTESTED                  | UNTESTED  | UNTESTED  | 1000df8 |
+| nanopi-neo-buster        | PASSED        | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 1000df8 |
+| nanopi-neo-bullseye      | PASSED        | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 1000df8 |
+| stm32mp15x-buster        | PASSED        | PASSED        | UNTESTED                  | UNTESTED  | UNTESTED  | 1000df8 |
+| stm32mp15x-bullseye      | PASSED        | PASSED        | UNTESTED                  | UNTESTED  | UNTESTED  | 1000df8 |
+| rpi-stretch              | PASSED        | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | c806c9d |
+| rpi-arm-bullseye         | PASSED        | PASSED        | PASSED but #1             | UNTESTED  | UNTESTED  | c806c9d |
+| rpi-arm-v7-bullseye      | PASSED        | PASSED        | PASSED but #1             | UNTESTED  | UNTESTED  | c806c9d |
+| rpi-arm-v7l-bullseye     | PASSED        | PASSED        | PASSED but #1             | UNTESTED  | UNTESTED  | c806c9d |
+| rpi-arm64-v8-bullseye    | PASSED        | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | c806c9d |
+| sifive-fu540-sid-ports   | PASSED        | PASSED        | UNTESTED                  | UNTESTED  | UNTESTED  | 79fe150 |
+
+#1:
+ - raspi-os provides three different kernel/modules sets for different hardware
+(e.g. kernel/5.15.32+, kernel7/5.15.32-v7+, kernel7l/5.15.32-v7l+). So, rpi-arm,
+rpi-arm-v7 and rpi-arm-v7l builds differ in kernel example-module.ko build for.
+All three images can boot on any RPi hardware, but only on corresponding boards
+example-module is autoloaded.
+
+### Host System : debian-bookworm-amd64
+
+NOT TESTED
+
+### Host System : debian-jessie-i386
+
+NOT SUPPORTED
+
+### Host System : debian-stretch-i386
+
+NOT TESTED
+
+### Host System : debian-buster-i386
+
+NOT TESTED
 
 Release v0.8
 ------------

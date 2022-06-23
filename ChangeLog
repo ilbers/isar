@@ -4,6 +4,7 @@ Release v0.9
 
  * Add linux-phy kernel recipe
  * Add Barebox building support
+ * Drop separate tgz and cpiogz multiconfigs
  * Update BitBake version to 1.50.5 release
  * Update WIC to the revision b8878cf0d
  * Refactored and reorganized testsuite
@@ -21,6 +22,7 @@ Release v0.9
  * Move kernel cfg fragments handling to debian/rules
  * Set stable kas container version
  * Add support for debian build profiles and options
+ * Disable cache-deb-src for Sid-Ports
  * Add support for devicemapper
  * Rebuild image generation logic
  * Refactoring SDK creation
