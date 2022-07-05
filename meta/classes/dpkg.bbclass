@@ -84,7 +84,7 @@ dpkg_runbuild() {
 
     sbuild -A -n -c ${SBUILD_CHROOT} --extra-repository="${ISAR_APT_REPO}" \
         --host=${PACKAGE_ARCH} --build=${SBUILD_HOST_ARCH} ${profiles} \
-        --no-run-lintian --no-run-piuparts --no-run-autopkgtest \
+        --no-run-lintian --no-run-piuparts --no-run-autopkgtest --resolve-alternatives \
         --chroot-setup-commands="rm -f /var/log/dpkg.log" \
         --chroot-setup-commands="cp -n --no-preserve=owner ${ext_deb_dir}/*.deb -t ${deb_dir}/ || :" \
         --finished-build-commands="rm -f ${deb_dir}/sbuild-build-depends-main-dummy_*.deb" \
