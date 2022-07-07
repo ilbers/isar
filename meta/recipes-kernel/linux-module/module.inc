@@ -16,6 +16,7 @@ PN .= "-${KERNEL_NAME}"
 KERNEL_IMAGE_PKG ??= "linux-image-${KERNEL_NAME}"
 KERNEL_HEADERS_PKG ??= "linux-headers-${KERNEL_NAME}"
 DEPENDS += "${KERNEL_HEADERS_PKG}"
+DEBIAN_BUILD_DEPENDS = "${KERNEL_HEADERS_PKG}"
 
 SRC_URI += "file://debian/"
 
@@ -26,7 +27,7 @@ inherit dpkg
 TEMPLATE_FILES = "debian/control.tmpl \
                   debian/changelog.tmpl \
                   debian/rules.tmpl"
-TEMPLATE_VARS += "KERNEL_NAME KERNEL_TYPE KERNEL_IMAGE_PKG KERNEL_HEADERS_PKG PN"
+TEMPLATE_VARS += "KERNEL_NAME KERNEL_TYPE KERNEL_IMAGE_PKG KERNEL_HEADERS_PKG DEBIAN_BUILD_DEPENDS PN"
 
 do_prepare_build() {
     cp -r ${WORKDIR}/debian ${S}/
