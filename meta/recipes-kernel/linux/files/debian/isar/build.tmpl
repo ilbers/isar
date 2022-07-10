@@ -10,6 +10,9 @@ do_build() {
     # Print a few things that are of particular interest
     print_settings
 
+    # Trace what we do here
+    set -x
+
     # Process existing kernel configuration to make sure it is complete
     # (use defaults for options that were not specified)
     ${MAKE} O=${KERNEL_BUILD_DIR} olddefconfig prepare
@@ -17,9 +20,6 @@ do_build() {
     # Transfer effective kernel version into control file and scripts
     KR=$(${MAKE} O=${KERNEL_BUILD_DIR} -s --no-print-directory kernelrelease)
     sed -i "s/@KR@/${KR}/g" ${S}/debian/control ${S}/debian/linux-image-${KERNEL_NAME_PROVIDED}.*
-
-    # Trace what we do here
-    set -x
 
     # Build the Linux kernel
     ${MAKE} O=${KERNEL_BUILD_DIR} ${PARALLEL_MAKE}

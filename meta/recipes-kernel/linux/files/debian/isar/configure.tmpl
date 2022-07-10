@@ -7,6 +7,9 @@
 
 do_configure() {
 
+    # Trace what we do here
+    set -x
+
     # Process kernel config target and fragments
     ${MAKE} O=${KERNEL_BUILD_DIR} ${KERNEL_CONFIG_TARGET}
     ./scripts/kconfig/merge_config.sh -O ${KERNEL_BUILD_DIR}/ \
