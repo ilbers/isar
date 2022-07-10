@@ -3,14 +3,14 @@
 # SPDX-License-Identifier: MIT
 
 # Load common stuff
-. ${S}/debian/isar/common || exit ${?}
+. ${S}/debian/isar/common
 
 do_configure() {
 
     # Process kernel config target and fragments
-    ${MAKE} O=${KERNEL_BUILD_DIR} ${KERNEL_CONFIG_TARGET} || exit ${?}
+    ${MAKE} O=${KERNEL_BUILD_DIR} ${KERNEL_CONFIG_TARGET}
     ./scripts/kconfig/merge_config.sh -O ${KERNEL_BUILD_DIR}/ \
-    ${KERNEL_BUILD_DIR}/.config ${KERNEL_CONFIG_FRAGMENTS}
+        ${KERNEL_BUILD_DIR}/.config ${KERNEL_CONFIG_FRAGMENTS}
 
     # Stop tracing
     set +x

@@ -2,6 +2,8 @@
 # Copyright (c) Mentor Graphics, a Siemens business, 2019
 # SPDX-License-Identifier: MIT
 
+set -e
+
 # Isar settings
 ARCH=${KERNEL_ARCH}
 KERNEL_PKG_IMAGE=linux-image-${KERNEL_NAME_PROVIDED}
@@ -45,5 +47,5 @@ main() {
     fi
 
     # call the actual target script
-    do_${target} || return ${?}
+    do_${target}
 }
