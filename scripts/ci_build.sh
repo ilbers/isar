@@ -143,5 +143,5 @@ export VIRTUAL_ENV="./"
 set -x
 
 avocado $VERBOSE run "$TESTSUITE_DIR/citest.py" \
-    -t $TAGS --test-runner=runner --disable-sysinfo \
+    -t $TAGS --nrunner-max-parallel-tasks=1 --disable-sysinfo \
     -p quiet=$QUIET -p cross=$CROSS_BUILD -p time_to_wait=$TIMEOUT
