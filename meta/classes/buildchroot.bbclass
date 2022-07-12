@@ -25,7 +25,7 @@ MOUNT_LOCKFILE = "${BUILDCHROOT_DIR}.lock"
 
 buildchroot_do_mounts() {
     if [ "${USE_CCACHE}" = "1" ]; then
-        mkdir -p ${CCACHE_DIR}
+        mkdir -p ${CCACHE_DIR}/debug
     fi
 
     sudo -s <<'EOSUDO'

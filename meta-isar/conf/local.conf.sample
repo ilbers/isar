@@ -250,3 +250,5 @@ USER_isar[flags] += "clear-text-password"
 #USE_CCACHE = "1"
 # Uncomment and set own top level ccache directory to share between builds
 #CCACHE_TOP_DIR ?= "${TMPDIR}/ccache"
+# Enable ccache debug mode
+#CCACHE_DEBUG = "1"

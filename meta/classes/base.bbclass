@@ -174,6 +174,9 @@ def isar_export_ccache(d):
     if d.getVar('USE_CCACHE') == '1':
         os.environ['CCACHE_DIR'] = '/ccache'
         os.environ['PATH_PREPEND'] = '/usr/lib/ccache'
+        if d.getVar('CCACHE_DEBUG') == '1':
+            os.environ['CCACHE_DEBUG'] = '1'
+            os.environ['CCACHE_DEBUGDIR'] = '/ccache/debug'
 
 do_fetch[dirs] = "${DL_DIR}"
 do_fetch[file-checksums] = "${@bb.fetch.get_checksum_file_list(d)}"

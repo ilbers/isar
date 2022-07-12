@@ -1012,6 +1012,10 @@ adjusted by `CCACHE_TOP_DIR` variable in `local.conf`. Ccache directory
 `CCACHE_DIR` default value is `"${CCACHE_TOP_DIR}/${DISTRO}-${DISTRO_ARCH}"`,
 that means caches for different distros and architectures are not overlapped.
 
+The ccache debug mode can be enabled by setting `CCACHE_DEBUG = "1"`
+in the `local.conf`.
+The debug artifacts will be placed in `${CCACHE_DIR}/debug`.
+
 
 ## Using sstate-cache
 
