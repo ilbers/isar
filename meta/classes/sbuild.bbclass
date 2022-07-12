@@ -31,6 +31,7 @@ SCHROOT_CONF_FILE ?= "${SCHROOT_CONF}/chroot.d/${SBUILD_CHROOT}"
 SBUILD_CONFIG="${WORKDIR}/sbuild.conf"
 
 schroot_create_configs() {
+    mkdir -p "${TMPDIR}/schroot-overlay"
     sudo -s <<'EOSUDO'
         set -e
 
@@ -46,6 +47,7 @@ root-groups=root,sbuild
 source-root-users=${SCHROOT_USER}
 source-root-groups=root,sbuild
 union-type=overlay
+union-overlay-directory=${TMPDIR}/schroot-overlay
 preserve-environment=true
 EOF
 
