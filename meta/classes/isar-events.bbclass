@@ -60,6 +60,9 @@ python build_completed() {
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
                 )
+
+    # Cleanup build UUID, the next bitbake run will generate new one
+    bb.persist_data.persist('BB_ISAR_UUID_DATA', d).clear()
 }
 
 build_completed[eventmask] = "bb.event.BuildCompleted"

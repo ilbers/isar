@@ -281,3 +281,17 @@ def base_set_filespath(path, d):
             if p != "":
                 filespath.append(os.path.join(p, o))
     return ":".join(filespath)
+
+def calculate_build_uuid(d):
+    import uuid
+
+    uuid_data = bb.persist_data.persist('BB_ISAR_UUID_DATA', d)
+    if "uuid" not in uuid_data or not uuid_data["uuid"]:
+        # Generate new UUID
+        uuid_data["uuid"] = str(uuid.uuid4())
+
+    return uuid_data["uuid"]
+
+# Unique ID for this build, used to avoid name clashes on external mountpoints
+# When running parallel builds in different PID namespaces
+ISAR_BUILD_UUID = "${@ calculate_build_uuid(d)}"
