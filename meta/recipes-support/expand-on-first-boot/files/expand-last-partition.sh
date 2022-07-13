@@ -22,6 +22,22 @@ if [ "${ROOT_DEV}" = "${BOOT_DEV}" ]; then
 	exit 1
 fi
 
+# this value is in blocks. Normally a block has 512 bytes.
+BUFFER_SIZE=32768
+BOOT_DEV_NAME=${BOOT_DEV##*/}
+DISK_SIZE="$(cat /sys/class/block/"${BOOT_DEV_NAME}"/size)"
+ALL_PARTS_SIZE=0
+for PARTITION in /sys/class/block/"${BOOT_DEV_NAME}"/"${BOOT_DEV_NAME}"*; do
+	PART_SIZE=$(cat "${PARTITION}"/size)
+	ALL_PARTS_SIZE=$((ALL_PARTS_SIZE + PART_SIZE))
+done
+
+MINIMAL_SIZE=$((ALL_PARTS_SIZE + BUFFER_SIZE))
+if [ "$DISK_SIZE" -lt "$MINIMAL_SIZE" ]; then
+	echo "Disk is practically already full, doing nothing." >&2
+	exit 0
+fi
+
 LAST_PART="$(sfdisk -d "${BOOT_DEV}" 2>/dev/null | tail -1 | cut -d ' ' -f 1)"
 
 # Transform the partition table as follows:
