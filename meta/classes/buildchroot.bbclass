@@ -12,10 +12,10 @@ python __anonymous() {
     if mode == "0" or d.getVar('HOST_ARCH') ==  distro_arch or \
        (d.getVar('HOST_DISTRO') == "debian-stretch" and distro_arch == "i386"):
         dep = "buildchroot-target:do_build"
-        rootfs = d.getVar('BUILDCHROOT_TARGET_DIR', True)
+        rootfs = d.getVar('BUILDCHROOT_TARGET_DIR', False)
     else:
         dep = "buildchroot-host:do_build"
-        rootfs = d.getVar('BUILDCHROOT_HOST_DIR', True)
+        rootfs = d.getVar('BUILDCHROOT_HOST_DIR', False)
 
     d.setVar('BUILDCHROOT_DEP', dep)
     d.setVar('BUILDCHROOT_DIR', rootfs)
