@@ -602,10 +602,9 @@ def sstate_upload(source, target, verbose, **kwargs):
     if not os.path.isdir(source):
         print(f"WARNING: source {source} does not exist. Not uploading.")
         return 0
-
     if not target.exists() and not target.create():
-        print(f"ERROR: target {target} does not exist and could not be created.")
-        return -1
+        print(f"WARNING: target {target} does not exist and could not be created. Not uploading.")
+        return 0
 
     print(f"INFO: uploading {source} to {target}")
     os.chdir(source)
@@ -636,8 +635,7 @@ def sstate_clean(target, max_age, max_sig_age, verbose, **kwargs):
         seconds_per_unit = {'s': 1, 'm': 60, 'h': 3600, 'd': 86400, 'w': 604800}
         m = re.match(r'^(\d+)(w|d|h|m|s)?', x)
         if m is None:
-            print(f"ERROR: cannot parse MAX_AGE '{max_age}', needs to be a number followed by w|d|h|m|s")
-            sys.exit(-1)
+            return None
         unit = m.group(2)
         if unit is None:
             print("WARNING: MAX_AGE without unit, assuming 'days'")
@@ -645,12 +643,15 @@ def sstate_clean(target, max_age, max_sig_age, verbose, **kwargs):
         return int(m.group(1)) * seconds_per_unit[unit]
 
     max_age_seconds = convert_to_seconds(max_age)
+    if max_age_seconds is None:
+        print(f"ERROR: cannot parse MAX_AGE '{max_age}', needs to be a number followed by w|d|h|m|s")
+        return 1
     if max_sig_age is None:
         max_sig_age = max_age
     max_sig_age_seconds = max(max_age_seconds, convert_to_seconds(max_sig_age))
 
     if not target.exists():
-        print(f"INFO: cannot access target {target}. Nothing to clean.")
+        print(f"WARNING: cannot access target {target}. Nothing to clean.")
         return 0
 
     print(f"INFO: scanning {target}")
@@ -679,7 +680,7 @@ def sstate_clean(target, max_age, max_sig_age, verbose, **kwargs):
 
 def sstate_info(target, verbose, **kwargs):
     if not target.exists():
-        print(f"INFO: cannot access target {target}. No info to show.")
+        print(f"WARNING: cannot access target {target}. No info to show.")
         return 0
 
     print(f"INFO: scanning {target}")
@@ -720,11 +721,11 @@ def sstate_info(target, verbose, **kwargs):
 
 def sstate_analyze(source, target, **kwargs):
     if not os.path.isdir(source):
-        print(f"ERROR: source {source} does not exist. Nothing to analyze.")
-        return -1
+        print(f"WARNING: source {source} does not exist. Nothing to analyze.")
+        return 0
     if not target.exists():
-        print(f"ERROR: target {target} does not exist. Nothing to analyze.")
-        return -1
+        print(f"INFO: target {target} does not exist. Nothing to analyze.")
+        return 0
 
     source = SstateFileTarget(source)
     target.enable_cache()
@@ -795,8 +796,8 @@ def sstate_analyze(source, target, **kwargs):
 def sstate_lint(target, verbose, sources_dir, build_dir, exit_code, **kwargs):
     ADDITIONAL_IGNORED_VARNAMES = 'PP'.split()
     if not target.exists():
-        print(f"ERROR: target {target} does not exist. Nothing to analyze.")
-        return -1
+        print(f"WARNING: target {target} does not exist. Nothing to analyze.")
+        return 0
 
     cache_sigs = {s.hash: s for s in target.list_all() if s.suffix.endswith('.siginfo')}
 
@@ -843,7 +844,7 @@ def sstate_lint(target, verbose, sources_dir, build_dir, exit_code, **kwargs):
     if sum_hits == 0:
         print(f'no cachability issues found (scanned {len(cache_sigs)} signatures)')
     else:
-        print(f'warning: found cachability issues (scanned {len(cache_sigs)} signatures)')
+        print(f'found cachability issues (scanned {len(cache_sigs)} signatures)')
         print(f'-> absolute paths: sources-dir {hits_srcdir}, build-dir {hits_builddir}, other {hits_other}')
     if exit_code is not None:
         return exit_code
