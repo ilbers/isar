@@ -781,7 +781,10 @@ def sstate_analyze(source, target, **kwargs):
 
             local_file = source.download(s.path)
             remote_file = target.download(t.path)
-            out = compare_sigfiles(remote_file, local_file, recursecb, color=True)
+            try:
+                out = compare_sigfiles(remote_file, local_file, recursecb, color=True)
+            except:
+                out = ["Failed to compare signatures."]
             source.release(local_file)
             target.release(remote_file)
             # shorten hashes from 64 to 8 characters for better readability
@@ -803,8 +806,12 @@ def sstate_lint(target, verbose, sources_dir, build_dir, exit_code, **kwargs):
     for sig in cache_sigs.values():
         sig_file = target.download(sig.path)
         with open(sig_file, 'rb') as f:
-            sigdata_raw = pickle.Unpickler(f)
-            sigdata = sigdata_raw.load()
+            try:
+                sigdata_raw = pickle.Unpickler(f)
+                sigdata = sigdata_raw.load()
+            except:
+                # invalid file or format... never mind
+                continue
 
             pn_issues = []
             for name, val in sigdata['varvals'].items():
