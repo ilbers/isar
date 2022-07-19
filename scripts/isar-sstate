@@ -22,7 +22,7 @@ sstate cache:
     `SSTATE_DIR`. To share them, you need to explicitly upload them to
     the shared location, which is what isar-sstate is for.
 
-isar-sstate implements four commands (upload, clean, info, analyze),
+isar-sstate implements five commands (upload, clean, info, analyze, lint),
 and supports three remote backends (filesystem, http/webdav, AWS S3).
 
 ## Commands
@@ -64,8 +64,10 @@ format as `bitbake-diffsigs`.
 
 ### lint
 
-The `lint` command searches form common flaws that reduce the
-cachability of a layer.
+The `lint` command searches for common flaws that reduce the cachability
+of a layer, e.g., signatures containing absolute paths from the host
+environment. Issues found this way usually indicate errors in recipes
+or in Isar itself.
 
 ## Backends
 
