@@ -154,6 +154,11 @@ IMGCLASSES = "imagetypes imagetypes_wic imagetypes_vm imagetypes_container"
 IMGCLASSES += "${IMAGE_CLASSES}"
 inherit ${IMGCLASSES}
 
+# convenience variables to be used by CMDs
+IMAGE_FILE_HOST = "${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.${type}"
+IMAGE_FILE_CHROOT = "${PP_DEPLOY}/${IMAGE_FULLNAME}.${type}"
+SUDO_CHROOT = "sudo chroot ${BUILDCHROOT_DIR}"
+
 # hook up IMAGE_CMD_*
 python() {
     image_types = (d.getVar('IMAGE_FSTYPES') or '').split()
@@ -216,11 +221,6 @@ python() {
         required_args = (localdata.getVar('IMAGE_CMD_REQUIRED_ARGS') or '').split()
         if any([d.getVar(arg) is None for arg in required_args]):
             bb.fatal("IMAGE_TYPE '%s' requires these arguments: %s" % (image_type, ', '.join(required_args)))
-
-        # convenience variables to be used by CMDs
-        localdata.setVar('IMAGE_FILE_HOST', '${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.${type}')
-        localdata.setVar('IMAGE_FILE_CHROOT', '${PP_DEPLOY}/${IMAGE_FULLNAME}.${type}')
-        localdata.setVar('SUDO_CHROOT', localdata.expand('sudo chroot ${BUILDCHROOT_DIR}'))
 
         # imager install
         for dep in (d.getVar('IMAGER_INSTALL_' + bt_clean) or '').split():
