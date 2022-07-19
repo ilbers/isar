@@ -18,6 +18,8 @@ dpkg_runbuild() {
     export DEB_BUILD_OPTIONS="${@ isar_deb_build_options(d)}"
     export PARALLEL_MAKE="${PARALLEL_MAKE}"
 
+    rm -f ${SBUILD_CONFIG}
+
     env | while read -r line; do
         # Filter the same lines
         grep -q "^${line}" ${DPKG_PREBUILD_ENV_FILE} && continue
