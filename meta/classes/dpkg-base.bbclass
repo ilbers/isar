@@ -258,15 +258,15 @@ SSTATEPOSTINSTFUNCS += "dpkg_build_sstate_finalize"
 
 dpkg_build_sstate_prepare() {
     # this runs in SSTATE_BUILDDIR, which will be deleted automatically
-    if [ -n "$(find ${S}/.. -maxdepth 1 -name '*.deb' -print -quit)" ]; then
-        cp -f ${S}/../*.deb -t .
+    if [ -n "$(find ${WORKDIR} -maxdepth 1 -name '*.deb' -print -quit)" ]; then
+        cp -f ${WORKDIR}/*.deb -t .
     fi
 }
 
 dpkg_build_sstate_finalize() {
     # this runs in SSTATE_INSTDIR
     if [ -n "$(find . -maxdepth 1 -name '*.deb' -print -quit)" ]; then
-        mv -f ./*.deb -t ${S}/..
+        mv -f ./*.deb -t ${WORKDIR}/
     fi
 }
 
@@ -282,7 +282,7 @@ do_dpkg_build[depends] = "${SCHROOT_DEP}"
 CLEANFUNCS += "deb_clean"
 
 deb_clean() {
-    DEBS=$( find ${S}/.. -maxdepth 1 -name "*.deb" || [ ! -d ${S} ] )
+    DEBS=$( find ${WORKDIR} -maxdepth 1 -name "*.deb" || [ ! -d ${S} ] )
     if [ -n "${DEBS}" ]; then
         for d in ${DEBS}; do
             repo_del_package "${REPO_ISAR_DIR}"/"${DISTRO}" \
