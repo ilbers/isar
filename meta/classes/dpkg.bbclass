@@ -62,6 +62,8 @@ dpkg_runbuild() {
 
     if [ ${USE_CCACHE} -eq 1 ]; then
         schroot_configure_ccache
+    else
+        sbuild_export CCACHE_DISABLE "1"
     fi
 
     profiles="${@ isar_deb_build_profiles(d)}"
