@@ -13,7 +13,7 @@ ConditionPathIsReadWrite=/etc
 
 [Service]
 Type=oneshot
-RemainAfterExit=yes
+ExitType=cgroup
 ExecStart=/usr/share/expand-on-first-boot/expand-last-partition.sh
 ExecStartPost=-/bin/systemctl disable expand-on-first-boot.service
 
