@@ -235,6 +235,9 @@ cache_deb_src() {
     sudo cp -Trpn --reflink=auto "${BOOTSTRAP_SRC}/var/lib/apt/lists/" "${ROOTFSDIR}/var/lib/apt/lists/"
 
     deb_dl_dir_import ${ROOTFSDIR} ${ROOTFS_BASE_DISTRO}-${BASE_DISTRO_CODENAME}
+
+    debsrc_fill_base_apt ${ROOTFSDIR}
+    debrepo_update_apt_source_list "${ROOTFSDIR}" "base-apt"
     debsrc_download ${ROOTFSDIR} ${ROOTFS_BASE_DISTRO}-${BASE_DISTRO_CODENAME}
 
     sudo rm -f "${ROOTFSDIR}"/etc/resolv.conf
