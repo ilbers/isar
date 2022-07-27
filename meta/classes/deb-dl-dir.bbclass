@@ -64,7 +64,8 @@ debsrc_download() {
         # TODO: get back to the code below when debian bug #1004372 is fixed
         # local src="$( dpkg-deb --show --showformat '${source:Package}' "${package}" )"
         # local version="$( dpkg-deb --show --showformat '${source:Version}' "${package}" )"
-        local dscfile=$(find "${DEBSRCDIR}"/"${rootfs_distro}" -name "${src}_${version}.dsc")
+        local dscname="$(echo ${src}_${version} | sed -e 's/_[0-9]\+:/_/')"
+        local dscfile=$(find "${DEBSRCDIR}"/"${rootfs_distro}" -name "${dscname}.dsc")
         [ -n "$dscfile" ] && continue
 
         sudo -E chroot --userspec=$( id -u ):$( id -g ) ${rootfs} \
