@@ -173,7 +173,10 @@ kernel_headers() {
     (cd ${S}; find arch/${ARCH} -name module.lds -o -name Kbuild.platforms -o -name Platform) >>${src_hdr_files}
     (cd ${S}; find $(find arch/${ARCH} -name include -o -name scripts -type d) -type f) >>${src_hdr_files}
 
-    (cd ${O}; find arch/${ARCH}/include Module.symvers include scripts -type f) >>${obj_hdr_files}
+    if [ -n "${CONFIG_MODULES}" ]; then
+        echo Module.symvers >> ${obj_hdr_files}
+    fi
+    (cd ${O}; find arch/${ARCH}/include include scripts -type f) >>${obj_hdr_files}
     if [ -n "${CONFIG_STACK_VALIDATION}" ]; then
         (cd ${O}; find tools/objtool -type f -executable) >>${obj_hdr_files}
     fi
