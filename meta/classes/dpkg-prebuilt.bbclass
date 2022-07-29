@@ -1,5 +1,5 @@
 # This software is a part of ISAR.
-# Copyright (C) 2021 Siemens AG
+# Copyright (C) 2021-2022 Siemens AG
 #
 # SPDX-License-Identifier: MIT
 
@@ -16,5 +16,9 @@ python do_unpack_prepend() {
     d.setVar('SRC_URI', ' '.join(src_uri))
 }
 
+# break dependencies on do_patch, etc... but still support sstate caching
 deltask dpkg_build
-addtask unpack before do_deploy_deb
+addtask dpkg_build after do_unpack before do_deploy_deb
+do_dpkg_build() {
+    true
+}
