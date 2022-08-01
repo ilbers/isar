@@ -34,6 +34,8 @@ dpkg_runbuild() {
         # Don't warn some variables
         [ "${var}" = "PARALLEL_MAKE" ] && continue
         [ "${var}" = "CCACHE_DIR" ] && continue
+        [ "${var}" = "CCACHE_DEBUGDIR" ] && continue
+        [ "${var}" = "CCACHE_DEBUG" ] && continue
         [ "${var}" = "CCACHE_DISABLE" ] && continue
         [ "${var}" = "PATH_PREPEND" ] && continue
         [ "${var}" = "DEB_BUILD_OPTIONS" ] && continue
