@@ -314,10 +314,13 @@ python do_devshell() {
 
     schroot = d.getVar('SBUILD_CHROOT')
     isar_apt = d.getVar('ISAR_APT_REPO')
+    pkg_arch = d.getVar('PACKAGE_ARCH', True)
+    build_arch = d.getVar('SBUILD_HOST_ARCH', True)
     pp_pps = os.path.join(d.getVar('PP'), d.getVar('PPS'))
 
-    install_deps = ":" if d.getVar('BB_CURRENTTASK') == "devshell_nodeps" else "mk-build-deps -i -t \
-        \"apt-get -y -q -o Debug::pkgProblemResolver=yes --no-install-recommends --allow-downgrades\" \
+    install_deps = ":" if d.getVar('BB_CURRENTTASK') == "devshell_nodeps" else f"mk-build-deps -i \
+        --host-arch {pkg_arch} --build-arch {build_arch}  \
+        -t \"apt-get -y -q -o Debug::pkgProblemResolver=yes --no-install-recommends --allow-downgrades\" \
         debian/control"
 
     termcmd = "schroot -d / -c {0} -u root -- sh -c ' \
