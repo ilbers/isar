@@ -34,6 +34,7 @@ dpkg_runbuild() {
         # Don't warn some variables
         [ "${var}" = "PARALLEL_MAKE" ] && continue
         [ "${var}" = "CCACHE_DIR" ] && continue
+        [ "${var}" = "CCACHE_DISABLE" ] && continue
         [ "${var}" = "PATH_PREPEND" ] && continue
         [ "${var}" = "DEB_BUILD_OPTIONS" ] && continue
 
@@ -62,8 +63,6 @@ dpkg_runbuild() {
 
     if [ ${USE_CCACHE} -eq 1 ]; then
         schroot_configure_ccache
-    else
-        sbuild_export CCACHE_DISABLE "1"
     fi
 
     profiles="${@ isar_deb_build_profiles(d)}"
