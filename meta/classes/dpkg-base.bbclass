@@ -311,6 +311,8 @@ python do_devshell() {
     isar_export_proxies(d)
     isar_export_ccache(d)
     isar_export_build_settings(d)
+    if d.getVar('USE_CCACHE') == '1':
+        bb.build.exec_func('schroot_configure_ccache', d)
 
     schroot = d.getVar('SBUILD_CHROOT')
     isar_apt = d.getVar('ISAR_APT_REPO')
@@ -328,6 +330,7 @@ python do_devshell() {
         echo {2} > /etc/apt/sources.list.d/isar_apt.list; \
         apt-get -y -q update; \
         {3}; \
+        export PATH=$PATH_PREPEND:$PATH; \
         $SHELL -i \
     '"
     oe_terminal(termcmd.format(schroot, pp_pps, isar_apt, install_deps), "Isar devshell", d)
