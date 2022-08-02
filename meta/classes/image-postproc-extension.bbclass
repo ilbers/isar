@@ -56,8 +56,15 @@ image_postprocess_mark() {
 ROOTFS_POSTPROCESS_COMMAND =+ "image_postprocess_machine_id"
 image_postprocess_machine_id() {
     # systemd(1) takes care of recreating the machine-id on first boot
+    # for systemd < v247, set to empty string, else set to uninitialized
+    # (required if initramfs with ro root is used)
+    SYSTEMD_VERSION=$( sudo chroot ${IMAGE_ROOTFS} dpkg-query --showformat='${source:Upstream-Version}' --show systemd || echo "0" )
+    MACHINE_ID="uninitialized"
+    if dpkg --compare-versions "$SYSTEMD_VERSION" "lt" "247"; then
+        MACHINE_ID=""
+    fi
+    echo "$MACHINE_ID" | sudo tee '${IMAGE_ROOTFS}/etc/machine-id'
     sudo rm -f '${IMAGE_ROOTFS}/var/lib/dbus/machine-id'
-    sudo rm -f '${IMAGE_ROOTFS}/etc/machine-id'
 }
 
 ROOTFS_POSTPROCESS_COMMAND =+ "image_postprocess_sshd_key_regen"
