@@ -35,8 +35,8 @@ inherit deb-dl-dir
 
 python () {
     distro_bootstrap_keys = (d.getVar("DISTRO_BOOTSTRAP_KEYS") or "").split()
-
     third_party_apt_keys = (d.getVar("THIRD_PARTY_APT_KEYS") or "").split()
+    topdir = d.getVar("TOPDIR", True)
 
     # The cached repo key can be both for bootstrapping and apt package
     # installation afterwards. However, debootstrap will include the key into
@@ -50,14 +50,14 @@ python () {
     for key in distro_bootstrap_keys:
         d.appendVar("SRC_URI", " %s" % key)
         fetcher = bb.fetch2.Fetch([key], d)
-        filename = fetcher.localpath(key)
-        d.appendVar("DISTRO_BOOTSTRAP_KEYFILES", " %s" % filename)
+        filename = os.path.relpath(fetcher.localpath(key), topdir)
+        d.appendVar("DISTRO_BOOTSTRAP_KEYFILES", " ${TOPDIR}/%s" % filename)
 
     for key in third_party_apt_keys:
         d.appendVar("SRC_URI", " %s" % key)
         fetcher = bb.fetch2.Fetch([key], d)
-        filename = fetcher.localpath(key)
-        d.appendVar("THIRD_PARTY_APT_KEYFILES", " %s" % filename)
+        filename = os.path.relpath(fetcher.localpath(key), topdir)
+        d.appendVar("THIRD_PARTY_APT_KEYFILES", " ${TOPDIR}/%s" % filename)
 
     distro_apt_sources = d.getVar(d.getVar("DISTRO_VARS_PREFIX") + "DISTRO_APT_SOURCES", True) or ""
     for file in distro_apt_sources.split():
