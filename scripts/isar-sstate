@@ -824,9 +824,12 @@ def sstate_lint(target, verbose, sources_dir, build_dir, exit_code, **kwargs):
                    sigdata['taskwhitelist'] and name in sigdata['taskwhitelist'] or \
                    name in ADDITIONAL_IGNORED_VARNAMES:
                     continue
-                if not val or not val[0] == '/':
+                if not val:
                     continue
-                task = sigdata['task']
+                # remove leading whitespaces possibly added by appending
+                val = val.lstrip()
+                if not val[0] == '/':
+                    continue
                 if val.startswith(build_dir):
                     pn_issues.append(f'\033[0;31m-> path in build-dir:   {name} = "{val}"\033[0m')
                     hits_builddir += 1
