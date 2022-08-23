@@ -50,7 +50,7 @@ python(){
     feature_list = base_repo_features.split()
     if ('cache-deb-src' in feature_list):
         if (d.getVar('DISTRO') == 'debian-sid-ports'):
-            bb.warn("BASE_REPO_FEATURES for debian-sid-ports is not supported, disabling")
+            bb.warn("cache-deb-src for debian-sid-ports is not supported, disabling")
             feature_list.remove("cache-deb-src")
             d.setVar('BASE_REPO_FEATURES', ' '.join(feature_list))
 }
