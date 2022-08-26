@@ -78,35 +78,28 @@ apt install \
   parted \
   python3 \
   quilt \
-  qemu \
   qemu-user-static \
   reprepro \
   sudo \
   git-buildpackage \
-  pristine-tar
-```
-
-Additional setup is required since `sbuild` is now used for package build.
-Install the following packages:
-```
-apt install \
+  pristine-tar \
   sbuild \
   schroot
 ```
-Also, user who runs isar should be added to `sbuild` group.
+
+If your host is >= buster, also install the following package.
+```
+apt install python3-distutils
+```
 
 **NOTE:** sbuild version (<=0.78.1) packaged in Debian Buster doesn't support
 `$apt_keep_downloaded_packages` option which is required in Isar for
 populating `${DL_DIR}/deb`. So, host `sbuild` in this case should be manually
 upgraded to >=0.81.2 version from Debian Bullseye.
 
+Next, the user who should run Isar needs to be added to `sbuild` group.
 ```
 sudo gpasswd -a <username> sbuild
-```
-
-If your host is >= buster, also install the following package.
-```
-apt install python3-distutils
 ```
 
 If you want to generate containerized SDKs, also install the following 
@@ -128,6 +121,11 @@ Notes:
   apt-get install --reinstall qemu-user-static` to register binary formats
   handled by QEMU (check e.g. `qemu-arm` in `/usr/sbin/update-binfmts
   --display`).
+
+To run images built for QEMU, you also need to install the related package:
+```
+apt install qemu
+```
 
 ### Setup Sudo
 
