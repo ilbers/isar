@@ -587,6 +587,9 @@ def arguments():
         '--build-dir', type=str, default='/build/tmp/',
         help="lint: absolute path to build folder")
     parser.add_argument(
+        '--pedantic', default=False, action='store_true',
+        help="lint: also check non-cacheable tasks")
+    parser.add_argument(
         '--exit-code', type=int, default=None,
         help="lint: return this instead of number of found issues")
 
@@ -795,8 +798,13 @@ def sstate_analyze(source, target, **kwargs):
             print('\n'.join(out))
 
 
-def sstate_lint(target, verbose, sources_dir, build_dir, exit_code, **kwargs):
+def sstate_lint(target, verbose, sources_dir, build_dir, exit_code, pedantic, **kwargs):
     ADDITIONAL_IGNORED_VARNAMES = 'PP'.split()
+    # only list non-cacheable tasks here
+    # note that these still can break caching of other tasks that depend on these.
+    # Run in pedantic mode to also look for these issues (e.g. in image-in-image builds)
+    # To make a build fully cacheable, avoid absolute paths in BBLAYERS
+    ADDITIONAL_IGNORED_TASKS = list() if pedantic else 'rootfs_wicenv image_wic'.split()
     if not target.exists():
         print(f"WARNING: target {target} does not exist. Nothing to analyze.")
         return 0
@@ -807,6 +815,9 @@ def sstate_lint(target, verbose, sources_dir, build_dir, exit_code, **kwargs):
     hits_builddir = 0
     hits_other = 0
     for sig in cache_sigs.values():
+        if sig.task in ADDITIONAL_IGNORED_TASKS:
+            continue
+
         sig_file = target.download(sig.path)
         with open(sig_file, 'rb') as f:
             try:
