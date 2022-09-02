@@ -5,7 +5,7 @@ export CROSS_COMPILE=$(DEB_HOST_GNU_TYPE)-
 endif
 
 override_dh_auto_build:
-	CFLAGS= LDFLAGS= $(MAKE) $(PARALLEL_MAKE) PLATFORM=sifive/fu540 \
+	CFLAGS= LDFLAGS= $(MAKE) $(PARALLEL_MAKE) PLATFORM=generic \
 		FW_PAYLOAD_PATH=/usr/lib/u-boot/sifive_unleashed/u-boot.bin
 
 %:

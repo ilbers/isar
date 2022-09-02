@@ -8,7 +8,7 @@ inherit dpkg
 SRC_URI = " \
     https://github.com/riscv/opensbi/archive/v${PV}.tar.gz;downloadfilename=opensbi-${PV}.tar.gz \
     file://sifive-fu540-rules"
-SRC_URI[sha256sum] = "60f995cb3cd03e3cf5e649194d3395d0fe67499fd960a36cf7058a4efde686f0"
+SRC_URI[sha256sum] = "d183cb890130983a4f01e75fc03ee4f7ea0e16a7923b8af9c6dff7deb2fedaec"
 
 S = "${WORKDIR}/opensbi-${PV}"
 
@@ -19,5 +19,5 @@ do_prepare_build() {
     cp ${WORKDIR}/sifive-fu540-rules ${WORKDIR}/rules
     deb_debianize
 
-    echo "build/platform/sifive/fu540/firmware/fw_payload.bin /usr/lib/opensbi/sifive-fu540/" > ${S}/debian/install
+    echo "build/platform/generic/firmware/fw_payload.bin /usr/lib/opensbi/sifive-fu540/" > ${S}/debian/install
 }
