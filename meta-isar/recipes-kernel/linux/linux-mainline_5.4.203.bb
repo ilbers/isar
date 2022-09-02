@@ -15,7 +15,7 @@ SRC_URI += " \
     file://no-ubifs-fs.cfg \
     file://no-root-nfs.cfg;apply=no"
 
-SRC_URI[sha256sum] = "c0b3d8085c5ba235df38b00b740e053659709e8a5ca21957a239f6bc22c45007"
+SRC_URI[sha256sum] = "fc933f5b13066cfa54aacb5e86747a167bad1d8d23972e4a03ab5ee36c29798a"
 
 S = "${WORKDIR}/linux-${ARCHIVE_VERSION}"
 
