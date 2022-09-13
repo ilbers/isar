@@ -33,12 +33,12 @@ do_install_imager_deps() {
             -o APT::Get::List-Cleanup="0"
         apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y \
             --allow-unauthenticated --allow-downgrades --download-only install \
-            ${IMAGER_INSTALL}'
+            --no-install-suggests ${IMAGER_INSTALL}'
 
     deb_dl_dir_export ${BUILDCHROOT_DIR} ${DISTRO}
     sudo -E chroot ${BUILDCHROOT_DIR} sh -c ' \
         apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y \
             --allow-unauthenticated --allow-downgrades install \
-            ${IMAGER_INSTALL}'
+            --no-install-suggests ${IMAGER_INSTALL}'
 }
 addtask install_imager_deps before do_image_tools
