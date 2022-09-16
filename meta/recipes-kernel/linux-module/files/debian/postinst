@@ -1,2 +1,4 @@
 #!/bin/sh
-depmod -a $(ls /lib/modules)
+for i in $(ls /lib/modules); do
+	sudo depmod -a $i
+ done 2>/dev/null || true
