@@ -308,6 +308,7 @@ python() {
 # this could be "git describe" or something similar.
 # set ISAR_RELEASE_CMD to customize, or override do_mark_rootfs to do something
 # completely different
+get_build_id[vardepsexclude] += "BBLAYERS"
 get_build_id() {
 	if [ $(echo ${BBLAYERS} | wc -w) -ne 2 ] &&
 	   [ "${ISAR_RELEASE_CMD}" = "${ISAR_RELEASE_CMD_DEFAULT}" ]; then
