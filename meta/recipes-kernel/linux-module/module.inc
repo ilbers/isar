@@ -30,6 +30,7 @@ TEMPLATE_FILES = "debian/control.tmpl \
 TEMPLATE_VARS += "KERNEL_NAME KERNEL_TYPE KERNEL_IMAGE_PKG KERNEL_HEADERS_PKG DEBIAN_BUILD_DEPENDS PN"
 
 do_prepare_build() {
+    rm -rf ${S}/debian
     cp -r ${WORKDIR}/debian ${S}/
 
     for module in ${AUTOLOAD}; do
