@@ -29,9 +29,10 @@ KERNEL_DEBIAN_DEPENDS ?= "initramfs-tools | linux-initramfs-tool, \
                           kmod, \
                           linux-base (>= 4.3~),"
 
-LIBSSL_DEP = "libssl1.1"
-LIBSSL_DEP_debian-sid = "libssl3"
-LIBSSL_DEP_debian-sid-ports = "libssl3"
+LIBSSL_DEP = "libssl3"
+LIBSSL_DEP_debian-stretch = "libssl1.1"
+LIBSSL_DEP_debian-buster = "libssl1.1"
+LIBSSL_DEP_debian-bullseye = "libssl1.1"
 
 KERNEL_HEADERS_DEBIAN_DEPENDS ?= "libc6, \
                                   ${LIBSSL_DEP},"
