@@ -436,10 +436,15 @@ class BootimgEFIPlugin(SourcePlugin):
                     grub_cmd += "reiserfs regexp " + grub_modules
                     exec_cmd(grub_cmd)
             elif source_params['loader'] == 'systemd-boot':
+                # backup kernel dir before overwriting
+                kernel_dir_orig = kernel_dir
                 kernel_dir = os.path.join(rootfs_dir['ROOTFS_DIR'], "usr/lib/systemd/boot/efi/")
+
                 for mod in [x for x in os.listdir(kernel_dir) if x.startswith("systemd-")]:
                     cp_cmd = "cp %s/%s %s/EFI/BOOT/%s" % (kernel_dir, mod, hdddir, mod[8:])
                     exec_cmd(cp_cmd, True)
+
+                kernel_dir = kernel_dir_orig
             else:
                 raise WicError("unrecognized bootimg-efi-isar loader: %s" %
                                source_params['loader'])
