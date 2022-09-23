@@ -438,7 +438,7 @@ class BootimgEFIPlugin(SourcePlugin):
             elif source_params['loader'] == 'systemd-boot':
                 # backup kernel dir before overwriting
                 kernel_dir_orig = kernel_dir
-                kernel_dir = os.path.join(rootfs_dir['ROOTFS_DIR'], "usr/lib/systemd/boot/efi/")
+                kernel_dir = "/usr/lib/systemd/boot/efi/"
 
                 for mod in [x for x in os.listdir(kernel_dir) if x.startswith("systemd-")]:
                     cp_cmd = "cp %s/%s %s/EFI/BOOT/%s" % (kernel_dir, mod, hdddir, mod[8:])
