@@ -3,5 +3,5 @@
 # time and do not need to be "the first" package
 # what we delete needs to be in sync with the dpkg configuration we ship
 
-rm -rf /usr/share/man/*
+find /usr/share/man/ -type f -exec rm -rf {} \;
 find /usr/share/doc/ -type f ! -name "copyright" ! -name "changelog.*" -exec rm -rf {} \;
