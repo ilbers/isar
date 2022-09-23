@@ -1,8 +1,8 @@
 # Custom kernel build
 #
 # This software is a part of ISAR.
-# Copyright (c) Siemens AG, 2018
-# Copyright (c) Mentor Graphics, a Siemens business, 2019
+# Copyright (c) Siemens AG, 2022
+# Copyright (c) Mentor Graphics, a Siemens business, 2022
 #
 # SPDX-License-Identifier: MIT
 
@@ -30,9 +30,9 @@ KERNEL_DEBIAN_DEPENDS ?= "initramfs-tools | linux-initramfs-tool, \
                           linux-base (>= 4.3~),"
 
 LIBSSL_DEP = "libssl3"
-LIBSSL_DEP_debian-stretch = "libssl1.1"
-LIBSSL_DEP_debian-buster = "libssl1.1"
-LIBSSL_DEP_debian-bullseye = "libssl1.1"
+LIBSSL_DEP_stretch = "libssl1.1"
+LIBSSL_DEP_buster = "libssl1.1"
+LIBSSL_DEP_bullseye = "libssl1.1"
 
 KERNEL_HEADERS_DEBIAN_DEPENDS ?= "libc6, \
                                   ${LIBSSL_DEP},"
