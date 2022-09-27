@@ -714,11 +714,11 @@ def sstate_info(target, verbose, **kwargs):
         else:
             print(f"WARNING: {pn} could be any of {ks}")
     for k, entries in recipes.items():
-        print(f"Cache hits for {k}:")
+        print(f"Cache entries for {k}:")
         for pn in entries:
-            hits = [f for f in all_files if f.pn == pn and f.task == key_task[k] and f.suffix == 'tgz']
-            print(f"  - {pn}: {len(hits)} hits")
-    print("Other cache hits:")
+            artifacts = [f for f in all_files if f.pn == pn and f.task == key_task[k] and f.suffix == 'tgz']
+            print(f"  - {pn}: {len(artifacts)} entries")
+    print("Other cache entries:")
     for pn in others:
         print(f"  - {pn}")
     return 0
