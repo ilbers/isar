@@ -98,6 +98,7 @@ RECIPE_SYSROOT_NATIVE ?= "/"
 BUILDCHROOT_DIR = "${BUILDCHROOT_TARGET_DIR}"
 
 WIC_CREATE_EXTRA_ARGS ?= ""
+WIC_DEPLOY_PARTITIONS ?= "0"
 
 # taken from OE, do not touch directly
 WICVARS += "\
@@ -208,6 +209,14 @@ generate_wic_image() {
     sudo chown -R $(id -u):$(id -g) ${BUILDCHROOT_DIR}/${WICTMP}
     mv -f ${WIC_DIRECT} ${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.wic
     mv -f ${WIC_DIRECT}.bmap ${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.bmap
+    # deploy partition files if requested (ending with .p<x>)
+    if [ "${WIC_DEPLOY_PARTITIONS}" -eq "1" ]; then
+        # locate *.direct.p<x> partition files
+        find ${BUILDCHROOT_DIR}/${WICTMP} -type f -regextype sed -regex ".*\.direct.*\.p[0-9]\{1,\}" | while read f; do
+            suffix=$(basename $f | sed 's/.*\.direct\(.*\)/\1/')
+            mv -f ${f} ${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.wic${suffix}
+        done
+    fi
     rm -rf ${BUILDCHROOT_DIR}/${WICTMP}
     rm -rf ${IMAGE_ROOTFS}/../pseudo
 }

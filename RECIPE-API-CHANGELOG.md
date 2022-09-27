@@ -419,3 +419,12 @@ packages and will be lost after a given build session finishes.
 
 Any package build requirements for the rootfs should be satisfied in the
 Debian way via package dependencies.
+
+### Individual WIC partitions are no longer automatically deployed
+
+We used to copy all temporary WIC files, like the partitions, into the deploy directory.
+That was intended actually only for compressed wic images where wic itself would do the compression.
+It was never intended to also deploy those partitions, so that will also not be done (automatically) anymore.
+To explicitly deploy the individual partition files (e.g. for swupdate), set `WIC_DEPLOY_PARTITIONS = "1"`.
+
+For compressed wic images `IMAGE_FSTYPES` should simply be extended with a compressed wic format, like "wic.xz".

@@ -246,6 +246,9 @@ USER_isar[flags] += "clear-text-password"
 # Uncomment the below line to debug WIC.
 # WIC_CREATE_EXTRA_ARGS += "-D"
 
+# Uncomment this to also deploy each wic partition as separate file (e.g. for swupdate)
+#WIC_DEPLOY_PARTITIONS = "1"
+
 # Uncomment this to use ccache for custom packages
 #USE_CCACHE = "1"
 # Uncomment and set own top level ccache directory to share between builds
