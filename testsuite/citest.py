@@ -72,6 +72,7 @@ class CrossTest(CIBaseTest):
             'mc:qemuarm-buster:isar-image-base',
             'mc:qemuarm-bullseye:isar-image-base',
             'mc:qemuarm64-bullseye:isar-image-base',
+            'mc:qemuarm64-bookworm:isar-image-base',
             'mc:de0-nano-soc-bullseye:isar-image-base',
             'mc:stm32mp15x-buster:isar-image-base'
                   ]
