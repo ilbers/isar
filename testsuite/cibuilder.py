@@ -54,7 +54,7 @@ class CIBuilder(Test):
 
     def configure(self, compat_arch=True, cross=None, debsrc_cache=False,
                   container=False, ccache=False, sstate=False, offline=False,
-                  gpg_pub_key=None, **kwargs):
+                  gpg_pub_key=None, wic_deploy_parts=False, **kwargs):
         # write configuration file and set bitbake_args
         # can run multiple times per test case
         self.check_init()
@@ -77,6 +77,7 @@ class CIBuilder(Test):
                       f'  ccache = {ccache}\n'
                       f'  sstate = {sstate}\n'
                       f'  gpg_pub_key = {gpg_pub_key}\n'
+                      f'  wic_deploy_parts = {wic_deploy_parts}\n'
                       f'===================================================')
 
         # determine bitbake_args
@@ -105,6 +106,8 @@ class CIBuilder(Test):
                 f.write('IMAGE_INSTALL_remove = "example-module-${KERNEL_NAME} enable-fsck"\n')
             if gpg_pub_key:
                 f.write('BASE_REPO_KEY="file://' + gpg_pub_key + '"\n')
+            if wic_deploy_parts:
+                f.write('WIC_DEPLOY_PARTITIONS = "1"\n')
             if distro_apt_premir:
                 f.write('DISTRO_APT_PREMIRRORS = "%s"\n' % distro_apt_premir)
             if ccache:

@@ -17,6 +17,16 @@ class CIBaseTest(CIBuilder):
 
         self.bitbake(targets, **kwargs)
 
+    def perform_wic_partition_test(self, targets, wic_deploy_parts, **kwargs):
+        self.configure(wic_deploy_parts=wic_deploy_parts, **kwargs)
+        self.bitbake(targets, **kwargs)
+
+        partition_files = set(glob.glob(f'{self.build_dir}/tmp/deploy/images/*/*.wic.p1'))
+        if wic_deploy_parts and len(partition_files) == 0:
+            self.fail('Found raw wic partitions in DEPLOY_DIR')
+        if not wic_deploy_parts and len(partition_files) != 0:
+            self.fail('Did not find raw wic partitions in DEPLOY_DIR')
+
     def perform_repro_test(self, targets, signed=False, **kwargs):
         gpg_pub_key = os.path.dirname(__file__) + '/keys/base-apt/test_pub.key'
         gpg_priv_key = os.path.dirname(__file__) + '/keys/base-apt/test_priv.key'
