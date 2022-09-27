@@ -41,8 +41,18 @@ SDK_PREINSTALL += " \
     devscripts \
     equivs"
 
-TOOLCHAIN = "${@'crossbuild-essential-${DISTRO_ARCH}' if d.getVar('ISAR_CROSS_COMPILE', True) == '1' else 'build-essential'}"
-TOOLCHAIN_append_compat-arch = " crossbuild-essential-${COMPAT_DISTRO_ARCH}"
+# Choose the correct toolchain: cross or native
+python __anonymous() {
+    mode = d.getVar('ISAR_CROSS_COMPILE', True)
+    distro_arch = d.getVar('DISTRO_ARCH')
+    if mode == "0" or d.getVar('HOST_ARCH') ==  distro_arch:
+        toolchain = "build-essential"
+    else:
+        toolchain = "crossbuild-essential-" + distro_arch
+    if d.getVar('ISAR_ENABLE_COMPAT_ARCH', True) == "1":
+        toolchain += " crossbuild-essential-" + d.getVar('COMPAT_DISTRO_ARCH')
+    d.setVar('TOOLCHAIN', toolchain)
+}
 
 # rootfs/image overrides for the SDK
 ROOTFS_ARCH_class-sdk = "${HOST_ARCH}"
