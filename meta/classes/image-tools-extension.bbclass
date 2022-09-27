@@ -5,9 +5,6 @@
 #
 # This file extends the image.bbclass to supply tools for futher imager functions
 
-# Imager are expected to run natively, thus will use the target buildchroot.
-ISAR_CROSS_COMPILE = "0"
-
 inherit buildchroot
 
 IMAGER_INSTALL ??= ""

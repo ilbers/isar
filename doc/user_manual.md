@@ -986,6 +986,17 @@ built for the compat arch need to be tagged individually by setting
 `PACKAGE_ARCH = "${COMPAT_DISTRO_ARCH}"` in the package recipe. Non-tagged
 packages will continue to be built for the primary target architecture.
 
+### Cross Support for Imagers
+
+If `ISAR_CROSS_COMPILE = "1"`, the imager and optional compression tasks
+run in the host buildchroot instead of the target buildchroot.
+This gives a significant speedup when compressing the generated image,
+as the compression is not emulated.
+
+In case your setup does not support cross-imaging, you can disable this
+just for the particular image by adding `ISAR_CROSS_COMPILE = "0"` to your
+image recipe.
+
 
 ## Examining and debugging package generation inside their buildchroot
 
