@@ -204,11 +204,10 @@ generate_wic_image() {
               ${WIC_CREATE_EXTRA_ARGS}
 
     sudo chown -R $(stat -c "%U" ${LAYERDIR_core}) ${LAYERDIR_core} ${LAYERDIR_isar} ${SCRIPTSDIR} || true
+    WIC_DIRECT=$(ls -t -1 ${BUILDCHROOT_DIR}/$WICTMP/${IMAGE_FULLNAME}.wic/*.direct | head -1)
     sudo chown -R $(id -u):$(id -g) ${BUILDCHROOT_DIR}/${WICTMP}
-    find ${BUILDCHROOT_DIR}/${WICTMP} -type f -name "*.direct*" | while read f; do
-        suffix=$(basename $f | sed 's/\(.*\)\(\.direct\)\(.*\)/\3/')
-        mv -f ${f} "${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.wic${suffix}"
-    done
+    mv -f ${WIC_DIRECT} ${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.wic
+    mv -f ${WIC_DIRECT}.bmap ${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.bmap
     rm -rf ${BUILDCHROOT_DIR}/${WICTMP}
     rm -rf ${IMAGE_ROOTFS}/../pseudo
 }
