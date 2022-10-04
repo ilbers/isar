@@ -327,7 +327,6 @@ image_configure_fstab[weight] = "2"
 image_configure_fstab() {
     sudo tee '${IMAGE_ROOTFS}/etc/fstab' << EOF
 # Begin /etc/fstab
-/dev/root	/		auto		defaults		0	0
 proc		/proc		proc		nosuid,noexec,nodev	0	0
 sysfs		/sys		sysfs		nosuid,noexec,nodev	0	0
 devpts		/dev/pts	devpts		gid=5,mode=620		0	0
