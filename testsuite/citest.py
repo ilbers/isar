@@ -126,6 +126,29 @@ class SdkTest(CIBaseTest):
         self.init()
         self.perform_build_test(targets, bitbake_cmd='do_populate_sdk')
 
+class WicTest(CIBaseTest):
+
+    """
+    Test creation of wic images
+
+    :avocado: tags=wic,full
+    """
+    def test_wic_nodeploy_partitions(self):
+        targets = ['mc:qemuarm64-bookworm:isar-image-base']
+
+        self.init()
+        self.delete_from_build_dir('tmp')
+        self.perform_wic_partition_test(targets,
+            wic_deploy_parts=False, debsrc_cache=True, compat_arch=False)
+
+    def test_wic_deploy_partitions(self):
+        targets = ['mc:qemuarm64-bookworm:isar-image-base']
+
+        self.init()
+        # reuse artifacts
+        self.perform_wic_partition_test(targets,
+            wic_deploy_parts=True, debsrc_cache=True, compat_arch=False)
+
 class NoCrossTest(CIBaseTest):
 
     """
@@ -319,26 +342,3 @@ class VmBootTestFull(CIBaseTest):
     def test_amd64_focal(self):
         self.init()
         self.vm_start('amd64','focal')
-
-class WicTest(CIBaseTest):
-
-    """
-    Test creation of wic images
-
-    :avocado: tags=wic,full
-    """
-    def test_wic_nodeploy_partitions(self):
-        targets = ['mc:qemuarm64-bookworm:isar-image-base']
-
-        self.init()
-        self.delete_from_build_dir('tmp')
-        self.perform_wic_partition_test(targets,
-            wic_deploy_parts=False, debsrc_cache=True, compat_arch=False)
-
-    def test_wic_deploy_partitions(self):
-        targets = ['mc:qemuarm64-bookworm:isar-image-base']
-
-        self.init()
-        # reuse artifacts
-        self.perform_wic_partition_test(targets,
-            wic_deploy_parts=True, debsrc_cache=True, compat_arch=False)
