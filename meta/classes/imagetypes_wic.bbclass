@@ -208,7 +208,7 @@ generate_wic_image() {
     WIC_DIRECT=$(ls -t -1 ${BUILDCHROOT_DIR}/$WICTMP/${IMAGE_FULLNAME}.wic/*.direct | head -1)
     sudo chown -R $(id -u):$(id -g) ${BUILDCHROOT_DIR}/${WICTMP}
     mv -f ${WIC_DIRECT} ${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.wic
-    mv -f ${WIC_DIRECT}.bmap ${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.bmap
+    mv -f ${WIC_DIRECT}.bmap ${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.wic.bmap
     # deploy partition files if requested (ending with .p<x>)
     if [ "${WIC_DEPLOY_PARTITIONS}" -eq "1" ]; then
         # locate *.direct.p<x> partition files
