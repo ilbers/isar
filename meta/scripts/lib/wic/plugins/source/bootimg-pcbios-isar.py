@@ -141,9 +141,11 @@ class BootimgPcbiosIsarPlugin(SourcePlugin):
             syslinux_conf += "APPEND label=boot root=%s %s\n" % \
                              (creator.rootdev, bootloader.append)
 
-            # we are using an initrd, smuggle it in
-            syslinux_conf = syslinux_conf.replace(" root=%s " % (creator.rootdev),
-                                                  " root=%s initrd=%s " % (creator.rootdev, initrd))
+            # if we are using an initrd, smuggle it in
+            if initrd:
+                syslinux_conf = syslinux_conf.replace(
+                    " root=%s " % (creator.rootdev),
+                    " root=%s initrd=%s " % (creator.rootdev, initrd))
 
         logger.debug("Writing syslinux config %s/hdd/boot/syslinux.cfg",
                      cr_workdir)

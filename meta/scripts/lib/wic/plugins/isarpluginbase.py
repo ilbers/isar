@@ -36,6 +36,6 @@ def isar_get_filenames(rootfs_dir):
     if not os.path.isfile(os.path.join(rootfs_dir, "boot", kernel)):
         raise WicError("kernel %s not found" % (os.path.join(rootfs_dir, "boot", kernel)))
     if not os.path.isfile(os.path.join(rootfs_dir, "boot", initrd)):
-        raise WicError("initrd %s not found" % (os.path.join(rootfs_dir, "boot", initrd)))
+        initrd = None
 
     return kernel, initrd
