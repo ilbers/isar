@@ -19,10 +19,15 @@ do_install_imager_deps() {
         exit
     fi
 
+    distro="${DISTRO}"
+    if [ ${ISAR_CROSS_COMPILE} -eq 1 ]; then
+        distro="${HOST_DISTRO}"
+    fi
+
     buildchroot_do_mounts
 
     E="${@ isar_export_proxies(d)}"
-    deb_dl_dir_import ${BUILDCHROOT_DIR} ${DISTRO}
+    deb_dl_dir_import ${BUILDCHROOT_DIR} ${distro}
     sudo -E chroot ${BUILDCHROOT_DIR} sh -c ' \
         apt-get update \
             -o Dir::Etc::SourceList="sources.list.d/isar-apt.list" \
@@ -32,7 +37,7 @@ do_install_imager_deps() {
             --allow-unauthenticated --allow-downgrades --download-only install \
             ${IMAGER_INSTALL}'
 
-    deb_dl_dir_export ${BUILDCHROOT_DIR} ${DISTRO}
+    deb_dl_dir_export ${BUILDCHROOT_DIR} ${distro}
     sudo -E chroot ${BUILDCHROOT_DIR} sh -c ' \
         apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y \
             --allow-unauthenticated --allow-downgrades install \
