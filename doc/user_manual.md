@@ -605,7 +605,7 @@ $ vim meta-user/classes/my-image.bbclass
 Specify the command to generate the new image, and optionally image type
 dependencies or required arguments:
 ```
-IMAGE_TYPEDEPS_my_image = "ext4"
+IMAGE_TYPEDEP_my_image = "ext4"
 IMAGE_CMD_REQUIRED_ARGS_my_image = "MY_ARG"
 IMAGE_CMD_my_image() {
     INPUT="${PP_DEPLOY}/${IMAGE_FULLNAME}.ext4"
