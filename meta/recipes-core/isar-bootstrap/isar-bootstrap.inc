@@ -386,7 +386,8 @@ do_bootstrap() {
             chroot "${ROOTFSDIR}" /usr/bin/dpkg --add-architecture ${COMPAT_DISTRO_ARCH}
         fi
 
-        chroot "${ROOTFSDIR}" /usr/bin/apt-get update -y
+        chroot "${ROOTFSDIR}" /usr/bin/apt-get update -y \
+                                -o APT::Update::Error-Mode=any
         chroot "${ROOTFSDIR}" /usr/bin/apt-get install -y -f
         chroot "${ROOTFSDIR}" /usr/bin/apt-get dist-upgrade -y \
                                 -o Debug::pkgProblemResolver=yes
