@@ -16,6 +16,7 @@ python sdk_virtclass_handler() {
         e.data.appendVar('OVERRIDES', ':class-sdk')
         # sdkchroot deploy only for sdk image
         bb.build.addtask('deploy_sdkchroot', 'do_build', 'do_rootfs', d)
+        bb.build.deltask('copy_boot_files', d)
     else:
         # add do_populate_sdk only to the non-sdk variant
         # it only exists to preserve the interface...
