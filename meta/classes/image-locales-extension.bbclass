@@ -83,6 +83,14 @@ __EOF__
             debconf-set-selections /tmp/locale.debconf
             rm -f '/tmp/locale.debconf'
 
+            SYSTEMD_VERSION=$(dpkg-query \
+                --showformat='${source:Upstream-Version}' \
+                --show systemd || echo "0" )
+
+            if dpkg --compare-versions "$SYSTEMD_VERSION" "ge" "251"; then
+                ln -s /etc/default/locale /etc/locale.conf
+            fi
+
             echo 'reconfigure locales'
             dpkg-reconfigure -f noninteractive locales
 
