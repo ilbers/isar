@@ -77,6 +77,7 @@ __EOF__
 
         # Enter image and trigger locales config and localepurge:
         chroot '${ROOTFSDIR}' /bin/sh <<'EOSH'
+            set -e
 
             echo 'running locale debconf-set-selections'
             debconf-set-selections /tmp/locale.debconf
