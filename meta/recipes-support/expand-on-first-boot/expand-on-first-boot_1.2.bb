@@ -1,13 +1,14 @@
 # Resize last partition to full medium size on fist boot
 #
 # This software is a part of ISAR.
-# Copyright (c) Siemens AG, 2018
+# Copyright (c) Siemens AG, 2018-2022
 #
 # SPDX-License-Identifier: MIT
 
 inherit dpkg-raw
 
 DESCRIPTION = "This service grows the last partition to the full medium during first boot"
+MAINTAINER = "isar-users <isar-users@googlegroups.com>"
 
 DEBIAN_DEPENDS = "systemd, sed, grep, coreutils, mount, e2fsprogs, fdisk (>=2.29.2-3) | util-linux (<2.29.2-3), util-linux"
 
