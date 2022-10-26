@@ -9,7 +9,7 @@ inherit dpkg-raw
 
 DESCRIPTION = "This service grows the last partition to the full medium during first boot"
 
-DEBIAN_DEPENDS = "systemd, sed, grep, coreutils, mount, e2fsprogs, fdisk, util-linux"
+DEBIAN_DEPENDS = "systemd, sed, grep, coreutils, mount, e2fsprogs, fdisk (>=2.29.2-3) | util-linux (<2.29.2-3), util-linux"
 
 SRC_URI = " \
     file://expand-on-first-boot.service \
