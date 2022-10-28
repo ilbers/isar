@@ -72,7 +72,6 @@ class CrossTest(CIBaseTest):
             'mc:qemuarm-buster:isar-image-base',
             'mc:qemuarm-bullseye:isar-image-base',
             'mc:qemuarm64-bullseye:isar-image-base',
-            'mc:qemuarm64-bookworm:isar-image-base',
             'mc:de0-nano-soc-bullseye:isar-image-base',
             'mc:stm32mp15x-buster:isar-image-base'
                   ]
@@ -104,7 +103,8 @@ class CrossTest(CIBaseTest):
 
     def test_cross_bookworm(self):
         targets = [
-            'mc:qemuarm-bookworm:isar-image-base'
+            'mc:qemuarm-bookworm:isar-image-base',
+            'mc:qemuarm64-bookworm:isar-image-base'
                   ]
 
         self.init()
@@ -255,7 +255,7 @@ class ContainerImageTest(CIBaseTest):
     :avocado: tags=containerbuild,fast,full,container
     """
     @skipUnless(UMOCI_AVAILABLE and SKOPEO_AVAILABLE, 'umoci/skopeo not found')
-    def test_nocross(self):
+    def test_container_image(self):
         targets = [
             'mc:container-amd64-stretch:isar-image-base',
             'mc:container-amd64-buster:isar-image-base',
