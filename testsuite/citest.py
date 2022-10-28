@@ -317,6 +317,10 @@ class VmBootTestFast(CIBaseTest):
         self.init()
         self.vm_start('amd64','bullseye')
 
+    def test_arm_bookworm(self):
+        self.init()
+        self.vm_start('arm','bookworm')
+
 class VmBootTestFull(CIBaseTest):
 
     """
@@ -358,3 +362,19 @@ class VmBootTestFull(CIBaseTest):
     def test_amd64_focal(self):
         self.init()
         self.vm_start('amd64','focal')
+
+    def test_amd64_bookworm(self):
+        self.init()
+        self.vm_start('amd64','bookworm')
+
+    def test_arm_bookworm(self):
+        self.init()
+        self.vm_start('arm','bookworm')
+
+    def test_i386_bookworm(self):
+        self.init()
+        self.vm_start('i386','bookworm')
+
+    def test_mipsel_bookworm(self):
+        self.init()
+        self.vm_start('mipsel','bookworm')
