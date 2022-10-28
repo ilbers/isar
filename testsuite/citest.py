@@ -299,7 +299,7 @@ class VmBootTestFast(CIBaseTest):
     """
     Test QEMU image start (fast)
 
-    :avocado: tags=startvm,fast,full
+    :avocado: tags=startvm,fast
     """
     def test_arm_bullseye(self):
         self.init()
@@ -324,6 +324,22 @@ class VmBootTestFull(CIBaseTest):
 
     :avocado: tags=startvm,full
     """
+    def test_arm_bullseye(self):
+        self.init()
+        self.vm_start('arm','bullseye')
+
+    def test_arm_buster(self):
+        self.init()
+        self.vm_start('arm','buster')
+
+    def test_arm64_bullseye(self):
+        self.init()
+        self.vm_start('arm64','bullseye')
+
+    def test_amd64_bullseye(self):
+        self.init()
+        self.vm_start('amd64','bullseye')
+
     def test_i386_stretch(self):
         self.init()
         self.vm_start('i386','stretch')
