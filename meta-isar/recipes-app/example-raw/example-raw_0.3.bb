@@ -5,7 +5,7 @@
 
 DESCRIPTION = "Sample application for ISAR"
 MAINTAINER = "Your name here <you@domain.com>"
-DEBIAN_DEPENDS = "apt (>= 0.4.2), passwd"
+DEBIAN_DEPENDS = "adduser, apt (>= 0.4.2)"
 
 SRC_URI = "file://README \
 	   file://postinst \
