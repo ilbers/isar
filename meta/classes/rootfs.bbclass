@@ -107,7 +107,7 @@ rootfs_configure_apt() {
 
     mkdir -p '${ROOTFSDIR}/etc/apt/apt.conf.d'
     {
-        echo 'APT::Acquire::Retries "3";'
+        echo 'Acquire::Retries "3";'
         echo 'APT::Install-Recommends "0";'
         echo 'APT::Install-Suggests "0";'
     } > '${ROOTFSDIR}/etc/apt/apt.conf.d/50isar'
