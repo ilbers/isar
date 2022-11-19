@@ -79,3 +79,14 @@ image_postprocess_sshd_key_regen() {
        exit 1
     fi
 }
+
+ROOTFS_POSTPROCESS_COMMAND =+ "image_posprocess_disable_systemd_firstboot"
+image_posprocess_disable_systemd_firstboot() {
+    SYSTEMD_VERSION=$(sudo chroot '${ROOTFSDIR}' dpkg-query \
+        --showformat='${source:Upstream-Version}' \
+        --show systemd || echo "0" )
+
+    if dpkg --compare-versions "$SYSTEMD_VERSION" "ge" "251"; then
+        sudo chroot '${ROOTFSDIR}' systemctl mask systemd-firstboot
+    fi
+}
