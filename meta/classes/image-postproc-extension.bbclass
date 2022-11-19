@@ -88,5 +88,10 @@ image_posprocess_disable_systemd_firstboot() {
 
     if dpkg --compare-versions "$SYSTEMD_VERSION" "ge" "251"; then
         sudo chroot '${ROOTFSDIR}' systemctl mask systemd-firstboot
+        if ! cmd_output=$(sudo chroot '${ROOTFSDIR}' systemd-firstboot \
+               --prompt --welcome=false </dev/null 2>/dev/null); then
+            bbwarn "Your image is not configured completely according to systemd-firstboot."
+            bbwarn "It prompted: \"${cmd_output}\""
+        fi
     fi
 }
