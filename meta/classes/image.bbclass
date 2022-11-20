@@ -440,7 +440,7 @@ do_rootfs_quality_check() {
     rootfs_install_stamp=$( ls -1 "${STAMP}".do_rootfs_install* | head -1 )
     test -f "$rootfs_install_stamp"
 
-    args="$ROOTFS_QA_FIND_ARGS"
+    args="${ROOTFS_QA_FIND_ARGS}"
     # rootfs_finalize chroot-setup.sh
     args="${args} ! -path ${ROOTFSDIR}/var/lib/dpkg/diversions"
     for cmd in ${ROOTFS_POSTPROCESS_COMMAND}; do
