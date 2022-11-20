@@ -70,6 +70,10 @@ def format_qemu_cmdline(arch, build, distro, out, pid, enforce_pcbios=False):
         bios_idx = qemu_disk_args.index('-bios')
         del qemu_disk_args[bios_idx : bios_idx+2]
 
+    # Support SSH access from host via port 22222
+    extra_args.extend(['-device', 'e1000,netdev=net0'])
+    extra_args.extend(['-netdev', 'user,id=net0,hostfwd=tcp::22222-:22'])
+
     cmd = ['qemu-system-' + qemu_arch, '-m', '1024M']
 
     if qemu_machine:
