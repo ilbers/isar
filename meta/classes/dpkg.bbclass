@@ -7,11 +7,24 @@ PACKAGE_ARCH ?= "${DISTRO_ARCH}"
 
 DPKG_PREBUILD_ENV_FILE="${WORKDIR}/dpkg_prebuild.env"
 
+# bitbake variables that should be passed into sbuild env
+# Note: must not have any logical influence on the generated package
+SBUILD_PASSTHROUGH_ADDITIONS ?= ""
+
+def expand_sbuild_pt_additions(d):
+    cmds = ''
+    for var in d.getVar('SBUILD_PASSTHROUGH_ADDITIONS', True).split():
+        varval = d.getVar(var, True)
+        if varval != None:
+            cmds += 'sbuild_export ' + var + ' "' + varval + '"\n'
+    return cmds
+
 do_prepare_build_append() {
     env > ${DPKG_PREBUILD_ENV_FILE}
 }
 
 # Build package from sources using build script
+dpkg_runbuild[vardepsexclude] += "${SBUILD_PASSTHROUGH_ADDITIONS}"
 dpkg_runbuild() {
     E="${@ isar_export_proxies(d)}"
     E="${@ isar_export_ccache(d)}"
@@ -78,6 +91,7 @@ dpkg_runbuild() {
         ftp_proxy FTP_PROXY no_proxy NO_PROXY; do
         sbuild_add_env_filter "$envvar"
     done
+    ${@ expand_sbuild_pt_additions(d)}
 
     echo '$apt_keep_downloaded_packages = 1;' >> ${SBUILD_CONFIG}
 
