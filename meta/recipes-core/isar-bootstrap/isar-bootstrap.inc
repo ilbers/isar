@@ -29,6 +29,7 @@ DISTRO_BOOTSTRAP_BASE_PACKAGES_append_gnupg = ",gnupg"
 DISTRO_BOOTSTRAP_BASE_PACKAGES_append_https-support = "${@https_support(d)}"
 DISTRO_VARS_PREFIX ?= "${@'HOST_' if d.getVar('BOOTSTRAP_FOR_HOST') == '1' else ''}"
 BOOTSTRAP_DISTRO = "${@d.getVar('HOST_DISTRO' if d.getVar('BOOTSTRAP_FOR_HOST') == '1' else 'DISTRO')}"
+BOOTSTRAP_BASE_DISTRO = "${@d.getVar('HOST_BASE_DISTRO' if d.getVar('BOOTSTRAP_FOR_HOST') == '1' else 'BASE_DISTRO')}"
 FILESEXTRAPATHS_append = ":${BBPATH}"
 
 inherit deb-dl-dir
@@ -111,7 +112,7 @@ def get_apt_source_mirror(d, aptsources_entry_list):
     import re
 
     if bb.utils.to_boolean(d.getVar('ISAR_USE_CACHED_BASE_REPO')):
-        premirrors = "\S* file://${REPO_BASE_DIR}/${BASE_DISTRO}\n"
+        premirrors = "\S* file://${REPO_BASE_DIR}/${BOOTSTRAP_BASE_DISTRO}\n"
     else:
         premirrors = d.getVar('DISTRO_APT_PREMIRRORS', True) or ""
     mirror_list = [entry.split()
@@ -319,11 +320,15 @@ do_bootstrap() {
                          "${ROOTFSDIR}/etc/apt/preferences.d/bootstrap"
         mkdir -p "${ROOTFSDIR}/etc/apt/sources.list.d"
         if [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" ]; then
-            line="file:///base-apt/${BASE_DISTRO} ${BASE_DISTRO_CODENAME} main"
+            line="file:///base-apt/${BOOTSTRAP_BASE_DISTRO} ${BASE_DISTRO_CODENAME} main"
             if [ -z "${BASE_REPO_KEY}" ]; then
                 line="[trusted=yes] ${line}"
             fi
             echo "deb ${line}" >  "${ROOTFSDIR}/etc/apt/sources.list.d/base-apt.list"
+            line="file:///base-apt/${BASE_DISTRO} ${BASE_DISTRO_CODENAME} main"
+            if [ -z "${BASE_REPO_KEY}" ]; then
+                line="[trusted=yes] ${line}"
+            fi
             echo "deb-src ${line}" >>  "${ROOTFSDIR}/etc/apt/sources.list.d/base-apt.list"
 
             mkdir -p ${ROOTFSDIR}/base-apt

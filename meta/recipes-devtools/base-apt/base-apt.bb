@@ -13,7 +13,10 @@ KEYFILES ?= ""
 BASE_REPO_FEATURES ?= ""
 
 populate_base_apt() {
-    find "${DEBDIR}"/"${DISTRO}" -name '*\.deb' | while read package; do
+    distro="${1}"
+    base_distro="${2}"
+
+    find "${DEBDIR}"/"${distro}" -name '*\.deb' | while read package; do
         # NOTE: due to packages stored by reprepro are not modified, we can
         # use search by filename to check if package is already in repo. In
         # addition, md5sums are compared to ensure that the package is the
@@ -22,25 +25,25 @@ populate_base_apt() {
 
         # Check if this package is already in base-apt
         ret=0
-        repo_contains_package "${REPO_BASE_DIR}/${BASE_DISTRO}" "${package}" ||
+        repo_contains_package "${REPO_BASE_DIR}/${base_distro}" "${package}" ||
             ret=$?
         [ "${ret}" = "0" ] && continue
         if [ "${ret}" = "1" ]; then
-            repo_del_package "${REPO_BASE_DIR}"/"${BASE_DISTRO}" \
-                "${REPO_BASE_DB_DIR}"/"${BASE_DISTRO}" \
+            repo_del_package "${REPO_BASE_DIR}"/"${base_distro}" \
+                "${REPO_BASE_DB_DIR}"/"${base_distro}" \
                 "${BASE_DISTRO_CODENAME}" \
-                "${base_apt_p}"
+                "${package}"
         fi
 
-        repo_add_packages "${REPO_BASE_DIR}"/"${BASE_DISTRO}" \
-            "${REPO_BASE_DB_DIR}"/"${BASE_DISTRO}" \
+        repo_add_packages "${REPO_BASE_DIR}"/"${base_distro}" \
+            "${REPO_BASE_DB_DIR}"/"${base_distro}" \
             "${BASE_DISTRO_CODENAME}" \
             "${package}"
     done
 
-    find "${DEBSRCDIR}"/"${DISTRO}" -name '*\.dsc' | while read package; do
-        repo_add_srcpackage "${REPO_BASE_DIR}"/"${BASE_DISTRO}" \
-            "${REPO_BASE_DB_DIR}"/"${BASE_DISTRO}" \
+    find "${DEBSRCDIR}"/"${distro}" -name '*\.dsc' | while read package; do
+        repo_add_srcpackage "${REPO_BASE_DIR}"/"${base_distro}" \
+            "${REPO_BASE_DB_DIR}"/"${base_distro}" \
             "${BASE_DISTRO_CODENAME}" \
             "${package}"
     done
@@ -55,20 +58,20 @@ repo() {
         "${BASE_DISTRO_CODENAME}" \
         "${WORKDIR}/distributions.in" \
         "${KEYFILES}"
-
-    if [ -d '${BUILDCHROOT_HOST_DIR}/var/cache/apt' ] &&
-        [ '${DISTRO}' != '${HOST_DISTRO}' ]; then
-        # We would need two separate repository paths for that.
-        # Otherwise packages (especially the 'all' arch ones) from one
-        # distribution can influence the package versions of the other
-        # distribution.
-        bbfatal "Different host and target distributions are currently not supported." \
-                "Try it without cross-build."
-    fi
-
-    populate_base_apt
+    populate_base_apt "${DISTRO}" "${BASE_DISTRO}"
     repo_sanity_test "${REPO_BASE_DIR}"/"${BASE_DISTRO}" \
         "${REPO_BASE_DB_DIR}"/"${BASE_DISTRO}"
+
+    if [ '${DISTRO}' != '${HOST_DISTRO}' ]; then
+        repo_create "${REPO_BASE_DIR}"/"${HOST_BASE_DISTRO}" \
+            "${REPO_BASE_DB_DIR}"/"${HOST_BASE_DISTRO}" \
+            "${BASE_DISTRO_CODENAME}" \
+            "${WORKDIR}/distributions.in" \
+            "${KEYFILES}"
+        populate_base_apt "${HOST_DISTRO}" "${HOST_BASE_DISTRO}"
+        repo_sanity_test "${REPO_BASE_DIR}"/"${HOST_BASE_DISTRO}" \
+            "${REPO_BASE_DB_DIR}"/"${HOST_BASE_DISTRO}"
+    fi
 }
 
 python do_cache() {
