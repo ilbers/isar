@@ -13,10 +13,9 @@ KEYFILES ?= ""
 BASE_REPO_FEATURES ?= ""
 
 populate_base_apt() {
-    distro="${1}"
-    base_distro="${2}"
+    base_distro="${1}"
 
-    find "${DEBDIR}"/"${distro}" -name '*\.deb' | while read package; do
+    find "${DEBDIR}"/"${base_distro}-${BASE_DISTRO_CODENAME}" -name '*\.deb' | while read package; do
         # NOTE: due to packages stored by reprepro are not modified, we can
         # use search by filename to check if package is already in repo. In
         # addition, md5sums are compared to ensure that the package is the
@@ -41,7 +40,7 @@ populate_base_apt() {
             "${package}"
     done
 
-    find "${DEBSRCDIR}"/"${distro}" -name '*\.dsc' | while read package; do
+    find "${DEBSRCDIR}"/"${base_distro}-${BASE_DISTRO_CODENAME}" -name '*\.dsc' | while read package; do
         repo_add_srcpackage "${REPO_BASE_DIR}"/"${base_distro}" \
             "${REPO_BASE_DB_DIR}"/"${base_distro}" \
             "${BASE_DISTRO_CODENAME}" \
@@ -58,17 +57,17 @@ repo() {
         "${BASE_DISTRO_CODENAME}" \
         "${WORKDIR}/distributions.in" \
         "${KEYFILES}"
-    populate_base_apt "${DISTRO}" "${BASE_DISTRO}"
+    populate_base_apt "${BASE_DISTRO}"
     repo_sanity_test "${REPO_BASE_DIR}"/"${BASE_DISTRO}" \
         "${REPO_BASE_DB_DIR}"/"${BASE_DISTRO}"
 
-    if [ '${DISTRO}' != '${HOST_DISTRO}' ]; then
+    if [ '${BASE_DISTRO}' != '${HOST_BASE_DISTRO}' ]; then
         repo_create "${REPO_BASE_DIR}"/"${HOST_BASE_DISTRO}" \
             "${REPO_BASE_DB_DIR}"/"${HOST_BASE_DISTRO}" \
             "${BASE_DISTRO_CODENAME}" \
             "${WORKDIR}/distributions.in" \
             "${KEYFILES}"
-        populate_base_apt "${HOST_DISTRO}" "${HOST_BASE_DISTRO}"
+        populate_base_apt "${HOST_BASE_DISTRO}"
         repo_sanity_test "${REPO_BASE_DIR}"/"${HOST_BASE_DISTRO}" \
             "${REPO_BASE_DB_DIR}"/"${HOST_BASE_DISTRO}"
     fi

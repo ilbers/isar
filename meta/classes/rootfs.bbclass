@@ -6,6 +6,7 @@ inherit deb-dl-dir
 ROOTFS_ARCH ?= "${DISTRO_ARCH}"
 ROOTFS_DISTRO ?= "${DISTRO}"
 ROOTFS_PACKAGES ?= ""
+ROOTFS_BASE_DISTRO ?= "${BASE_DISTRO}"
 
 # Features of the rootfs creation:
 # available features are:
@@ -137,7 +138,7 @@ rootfs_install_resolvconf() {
 ROOTFS_INSTALL_COMMAND += "rootfs_import_package_cache"
 rootfs_import_package_cache[weight] = "5"
 rootfs_import_package_cache() {
-    deb_dl_dir_import ${ROOTFSDIR} ${ROOTFS_DISTRO}
+    deb_dl_dir_import ${ROOTFSDIR} ${ROOTFS_BASE_DISTRO}-${BASE_DISTRO_CODENAME}
 }
 
 ROOTFS_INSTALL_COMMAND += "rootfs_install_pkgs_download"
@@ -154,7 +155,7 @@ ROOTFS_INSTALL_COMMAND += "${ROOTFS_INSTALL_COMMAND_BEFORE_EXPORT}"
 ROOTFS_INSTALL_COMMAND += "rootfs_export_package_cache"
 rootfs_export_package_cache[weight] = "5"
 rootfs_export_package_cache() {
-    deb_dl_dir_export ${ROOTFSDIR} ${ROOTFS_DISTRO}
+    deb_dl_dir_export ${ROOTFSDIR} ${ROOTFS_BASE_DISTRO}-${BASE_DISTRO_CODENAME}
 }
 
 ROOTFS_INSTALL_COMMAND += "${@ 'rootfs_install_clean_files' if (d.getVar('ROOTFS_CLEAN_FILES') or '').strip() else ''}"
@@ -219,8 +220,8 @@ cache_deb_src() {
     # which generates a new state from upstream.
     sudo cp -Trpn "${BOOTSTRAP_SRC}/var/lib/apt/lists/" "${ROOTFSDIR}/var/lib/apt/lists/"
 
-    deb_dl_dir_import ${ROOTFSDIR} ${ROOTFS_DISTRO}
-    debsrc_download ${ROOTFSDIR} ${ROOTFS_DISTRO}
+    deb_dl_dir_import ${ROOTFSDIR} ${ROOTFS_BASE_DISTRO}-${BASE_DISTRO_CODENAME}
+    debsrc_download ${ROOTFSDIR} ${ROOTFS_BASE_DISTRO}-${BASE_DISTRO_CODENAME}
 
     sudo rm -f "${ROOTFSDIR}"/etc/resolv.conf
     if [ -e "${ROOTFSDIR}"/etc/resolv.conf.isar ] ||

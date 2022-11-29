@@ -115,7 +115,7 @@ do_apt_fetch() {
 
     for uri in "${SRC_APT}"; do
         schroot -d / -c ${SBUILD_CHROOT} -- \
-            sh -c 'mkdir -p /downloads/deb-src/"$1"/"$2" && cd /downloads/deb-src/"$1"/"$2" && apt-get -y --download-only --only-source source "$2"' my_script "${DISTRO}" "${uri}"
+            sh -c 'mkdir -p /downloads/deb-src/"$1"/"$2" && cd /downloads/deb-src/"$1"/"$2" && apt-get -y --download-only --only-source source "$2"' my_script "${BASE_DISTRO}-${BASE_DISTRO_CODENAME}" "${uri}"
     done
     schroot_delete_configs
 }
@@ -147,7 +147,7 @@ do_apt_unpack() {
                 cd ${PP}
                 cp /downloads/deb-src/"${1}"/"${2}"/* ${PP}
                 dpkg-source -x "${dscfile}" "${PPS}"' \
-                    my_script "${DISTRO}" "${uri}"
+                    my_script "${BASE_DISTRO}-${BASE_DISTRO_CODENAME}" "${uri}"
     done
     schroot_delete_configs
 }

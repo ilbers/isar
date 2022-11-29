@@ -19,9 +19,9 @@ do_install_imager_deps() {
         exit
     fi
 
-    distro="${DISTRO}"
+    distro="${BASE_DISTRO}-${BASE_DISTRO_CODENAME}"
     if [ ${ISAR_CROSS_COMPILE} -eq 1 ]; then
-        distro="${HOST_DISTRO}"
+        distro="${HOST_BASE_DISTRO}-${BASE_DISTRO_CODENAME}"
     fi
 
     buildchroot_do_mounts

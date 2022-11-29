@@ -65,9 +65,9 @@ dpkg_runbuild() {
         bbwarn "Export of '${line}' detected, please migrate to templates"
     done
 
-    distro="${DISTRO}"
+    distro="${BASE_DISTRO}-${BASE_DISTRO_CODENAME}"
     if [ ${ISAR_CROSS_COMPILE} -eq 1 ]; then
-        distro="${HOST_DISTRO}"
+        distro="${HOST_BASE_DISTRO}-${BASE_DISTRO_CODENAME}"
     fi
 
     deb_dl_dir_import "${WORKDIR}/rootfs" "${distro}"

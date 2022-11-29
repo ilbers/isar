@@ -299,7 +299,7 @@ do_bootstrap() {
     export BOOTSTRAP_FOR_HOST debootstrap_args E
 
     sudo rm -rf --one-file-system "${ROOTFSDIR}"
-    deb_dl_dir_import "${ROOTFSDIR}" "${BOOTSTRAP_DISTRO}"
+    deb_dl_dir_import "${ROOTFSDIR}" "${BOOTSTRAP_BASE_DISTRO}-${BASE_DISTRO_CODENAME}"
 
     sudo -E -s <<'EOSUDO'
         set -e
@@ -407,7 +407,7 @@ do_bootstrap() {
         # Finalize debootstrap by setting the link in deploy
         ln -Tfsr "${ROOTFSDIR}" "${DEPLOY_ISAR_BOOTSTRAP}"
 EOSUDO
-    deb_dl_dir_export "${ROOTFSDIR}" "${BOOTSTRAP_DISTRO}"
+    deb_dl_dir_export "${ROOTFSDIR}" "${BOOTSTRAP_BASE_DISTRO}-${BASE_DISTRO_CODENAME}"
 }
 
 addtask bootstrap before do_build after do_generate_keyrings
