@@ -32,7 +32,7 @@ class ReproTest(CIBaseTest):
 
         self.init()
         try:
-            self.perform_repro_test(targets, signed=True)
+            self.perform_repro_test(targets, signed=True, cross=True)
         finally:
             self.move_in_build_dir('tmp', 'tmp_repro_signed')
 
