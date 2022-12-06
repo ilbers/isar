@@ -1,3 +1,4 @@
 *~
 /*.patch
 __pycache__
+.gitpasswd
