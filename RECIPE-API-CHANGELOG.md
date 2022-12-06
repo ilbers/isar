@@ -436,8 +436,8 @@ specific bitbake variables as environment variables into the sbuild environment.
 The motivation behind it is to allow the use of external mirrors for programming languages with builtin
 package managers (like rust and go). By that, the variables are also excluded from the bitbake signatures.
 This helps in areas where default mirrors can either not be reached or provide only little throughput.
-Please note, the forwarded variables do not have to exist. While they are not forwared in case they do not
+Please note, the forwarded variables do not have to exist. While they are not forwarded in case they do not
 exist, empty variables are forwarded.
 
-**Note about reproducability**: the forwarded variables must not have any influence on the generated package.
+**Note about reproducibility**: the forwarded variables must not have any influence on the generated package.
 This mechanism must also not be used to inject build configurations. For these cases, templates should be used.
