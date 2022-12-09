@@ -57,29 +57,13 @@ sfdisk -d "${BOOT_DEV}" 2>/dev/null | \
 # Inform the kernel about the partitioning change
 partx -u "${LAST_PART}"
 
-# this is for debian stretch or systemd < 236
-if [ ! -x /lib/systemd/systemd-growfs ]; then
-	# Do not fail resize2fs if no mtab entry is found, e.g.,
-	# when using systemd mount units.
-	export EXT2FS_NO_MTAB_OK=1
-
-	resize2fs "${LAST_PART}"
-	exit 0
-fi
-
 if grep -q x-systemd.growfs /etc/fstab; then
-	echo "Found x-systemd.growfs option in /etc/fstab, won't call it explicitly." >&2
+	echo "Found x-systemd.growfs option in /etc/fstab, won't grow." >&2
 	exit 0
 fi
 
-# mount $LAST_PART out of tree, so we won't conflict with other mounts
-MOUNT_POINT=$(mktemp -d -p /mnt "$(basename "$0").XXXXXXXXXX")
-if [ ! -d "${MOUNT_POINT}" ]; then
-	echo "Cannot create temporary mount point ${MOUNT_POINT}." >&2
-	exit 1
-fi
+# Do not fail resize2fs if no mtab entry is found, e.g.,
+# when using systemd mount units.
+export EXT2FS_NO_MTAB_OK=1
 
-mount "${LAST_PART}" "${MOUNT_POINT}"
-/lib/systemd/systemd-growfs "${MOUNT_POINT}"
-umount "${MOUNT_POINT}"
-rmdir "${MOUNT_POINT}"
+resize2fs "${LAST_PART}"
