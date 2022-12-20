@@ -93,7 +93,6 @@ class CIBuilder(Test):
             if compat_arch:
                 f.write('ISAR_ENABLE_COMPAT_ARCH_amd64 = "1"\n')
                 f.write('ISAR_ENABLE_COMPAT_ARCH_arm64 = "1"\n')
-                f.write('ISAR_ENABLE_COMPAT_ARCH_debian-stretch_amd64 = "0"\n')
                 f.write('IMAGE_INSTALL += "kselftest"\n')
             if cross:
                 f.write('ISAR_CROSS_COMPILE = "1"\n')

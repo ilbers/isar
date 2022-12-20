@@ -11,8 +11,7 @@ python __anonymous() {
 
     mode = d.getVar('ISAR_CROSS_COMPILE', True)
     distro_arch = d.getVar('DISTRO_ARCH')
-    if mode == "0" or d.getVar('HOST_ARCH') ==  distro_arch or \
-       (d.getVar('HOST_DISTRO') == "debian-stretch" and distro_arch == "i386"):
+    if mode == "0" or d.getVar('HOST_ARCH') ==  distro_arch:
         d.setVar('SBUILD_HOST_ARCH', distro_arch)
         d.setVar('SCHROOT_DIR', d.getVar('SCHROOT_TARGET_DIR', False))
         dep = "sbuild-chroot-target:do_build"

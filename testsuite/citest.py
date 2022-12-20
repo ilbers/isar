@@ -161,7 +161,6 @@ class NoCrossTest(CIBaseTest):
             'mc:qemuarm-buster:isar-image-base',
             'mc:qemuarm-bullseye:isar-image-base',
             'mc:qemuarm64-bullseye:isar-image-base',
-            'mc:qemui386-stretch:isar-image-base',
             'mc:qemui386-buster:isar-image-base',
             'mc:qemui386-bullseye:isar-image-base',
             'mc:qemuamd64-buster:isar-image-base',
@@ -257,7 +256,6 @@ class ContainerImageTest(CIBaseTest):
     @skipUnless(UMOCI_AVAILABLE and SKOPEO_AVAILABLE, 'umoci/skopeo not found')
     def test_container_image(self):
         targets = [
-            'mc:container-amd64-stretch:isar-image-base',
             'mc:container-amd64-buster:isar-image-base',
             'mc:container-amd64-bullseye:isar-image-base',
             'mc:container-amd64-bookworm:isar-image-base'
@@ -343,10 +341,6 @@ class VmBootTestFull(CIBaseTest):
     def test_amd64_bullseye(self):
         self.init()
         self.vm_start('amd64','bullseye')
-
-    def test_i386_stretch(self):
-        self.init()
-        self.vm_start('i386','stretch')
 
     def test_i386_buster(self):
         self.init()

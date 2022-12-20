@@ -38,27 +38,21 @@ DISTRO_ARCH ??= "armhf"
 #
 # This sets the default multiple configurations used:
 BBMULTICONFIG = " \
-    qemuarm-stretch \
     qemuarm-buster \
     qemuarm-bullseye \
     qemuarm-bookworm \
-    qemuarm64-stretch \
     qemuarm64-buster \
     qemuarm64-bullseye \
     qemuarm64-bookworm \
-    qemui386-stretch \
     qemui386-buster \
     qemui386-bullseye \
     qemui386-bookworm \
-    qemuamd64-stretch \
     qemuamd64-buster \
     qemuamd64-bullseye \
     qemuamd64-bookworm \
-    container-amd64-stretch \
     container-amd64-buster \
     container-amd64-bullseye \
     container-amd64-bookworm \
-    qemumipsel-stretch \
     qemumipsel-buster \
     qemumipsel-bullseye \
     qemumipsel-bookworm \
@@ -77,7 +71,6 @@ BBMULTICONFIG = " \
     stm32mp15x-buster \
     stm32mp15x-bullseye \
     virtualbox-bullseye \
-    rpi-stretch \
     rpi-arm-bullseye \
     rpi-arm-v7-bullseye \
     rpi-arm-v7l-bullseye \

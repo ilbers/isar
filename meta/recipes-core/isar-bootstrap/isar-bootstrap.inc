@@ -9,7 +9,6 @@ LICENSE = "gpl-2.0"
 LIC_FILES_CHKSUM = "file://${LAYERDIR_core}/licenses/COPYING.GPLv2;md5=751419260aa954499f7abaabaa882bbe"
 FILESPATH_prepend := "${THISDIR}/files:"
 SRC_URI = " \
-    file://isar-apt-fallback.conf \
     file://locale \
     file://chroot-setup.sh"
 PV = "1.0"
@@ -26,7 +25,7 @@ THIRD_PARTY_APT_KEYFILES = ""
 DEPLOY_ISAR_BOOTSTRAP ?= ""
 DISTRO_BOOTSTRAP_BASE_PACKAGES = "locales"
 DISTRO_BOOTSTRAP_BASE_PACKAGES_append_gnupg = ",gnupg"
-DISTRO_BOOTSTRAP_BASE_PACKAGES_append_https-support = "${@https_support(d)}"
+DISTRO_BOOTSTRAP_BASE_PACKAGES_append_https-support = ",ca-certificates"
 DISTRO_VARS_PREFIX ?= "${@'HOST_' if d.getVar('BOOTSTRAP_FOR_HOST') == '1' else ''}"
 BOOTSTRAP_DISTRO = "${@d.getVar('HOST_DISTRO' if d.getVar('BOOTSTRAP_FOR_HOST') == '1' else 'DISTRO')}"
 BOOTSTRAP_BASE_DISTRO = "${@d.getVar('HOST_BASE_DISTRO' if d.getVar('BOOTSTRAP_FOR_HOST') == '1' else 'BASE_DISTRO')}"
@@ -180,12 +179,6 @@ def get_distro_primary_source_entry(d):
 def get_distro_have_https_source(d):
     return any(source[2].startswith("https://") for source in generate_distro_sources(d))
 
-def https_support(d):
-    if get_distro_suite(d) == "stretch":
-        return ",apt-transport-https,ca-certificates"
-    else:
-        return ",ca-certificates"
-
 def get_distro_needs_https_support(d):
     if get_distro_have_https_source(d):
         return "https-support"
@@ -284,9 +277,6 @@ do_bootstrap() {
         if [ -z "${COMPAT_DISTRO_ARCH}" ]; then
             bbfatal "${DISTRO_ARCH} does not have a compat arch"
         fi
-        if [ "${@get_distro_suite(d)}-${COMPAT_DISTRO_ARCH}" = "stretch-i386" ]; then
-            bbfatal "compat arch build for stretch-i386 not supported"
-        fi
     fi
     debootstrap_args="--verbose --variant=minbase --include=${DISTRO_BOOTSTRAP_BASE_PACKAGES}"
     if [ -f "${DISTRO_BOOTSTRAP_KEYRING}" ]; then
@@ -356,12 +346,6 @@ do_bootstrap() {
             echo "Removing ${MY_GPGHOME}"
             rm -rf "${ROOTFSDIR}${MY_GPGHOME}"
         done
-
-        if [ "${@get_distro_suite(d)}" = "stretch" ] && [ "${@get_host_release().split('.')[0]}" -lt "4" ]; then
-            mkdir -p "${ROOTFSDIR}/etc/apt/apt.conf.d"
-            install -v -m644 "${WORKDIR}/isar-apt-fallback.conf" \
-                             "${ROOTFSDIR}/etc/apt/apt.conf.d/55isar-fallback.conf"
-        fi
 
         # Set locale
         install -v -m644 "${WORKDIR}/locale" "${ROOTFSDIR}/etc/locale"

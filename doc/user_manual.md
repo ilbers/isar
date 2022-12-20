@@ -45,15 +45,10 @@ Isar provides:
 For demonstration purposes, Isar provides support for the following
 configurations:
 
- - QEMU ARM with Debian Stretch
  - QEMU ARM with Debian Buster
- - QEMU ARM64 with Debian Stretch
  - QEMU ARM64 with Debian Buster (for host >= buster)
- - QEMU i386 with Debian Stretch
  - QEMU i386 with Debian Buster
- - QEMU amd64 with Debian Stretch
  - QEMU amd64 with Debian Buster
- - Raspberry Pi 1 Model B with Raspbian Stretch
  - Raspberry Pi various models with Raspberry OS Bullseye
  - Banana Pi BPI-M1
  - LeMaker HiKey
@@ -63,7 +58,7 @@ The steps below describe how to build the images provided by default.
 
 ### Install Host Tools
 
-The supported host system is >= stretch.
+The supported host system is >= buster.
 
 Install the following packages:
 ```
@@ -190,15 +185,10 @@ a single call. List all configurations in `conf/local.conf`:
 
 ```
 BBMULTICONFIG = " \
-    qemuarm-stretch \
     qemuarm-buster \
-    qemuarm64-stretch \
     qemuarm64-buster \
-    qemui386-stretch \
     qemui386-buster \
-    qemuamd64-stretch \
     qemuamd64-buster \
-    rpi-stretch \
 "
 ```
 
@@ -206,27 +196,19 @@ The following command will produce `isar-image-base` images for all targets:
 
 ```
 $ bitbake \
-    mc:qemuarm-stretch:isar-image-base \
     mc:qemuarm-buster:isar-image-base \
-    mc:qemuarm64-stretch:isar-image-base \
-    mc:qemui386-stretch:isar-image-base \
+    mc:qemuarm64-buster:isar-image-base \
     mc:qemui386-buster:isar-image-base \
-    mc:qemuamd64-stretch:isar-image-base \
     mc:qemuamd64-buster:isar-image-base \
-    mc:rpi-stretch:isar-image-base
 ```
 
 Created images are:
 
 ```
-tmp/deploy/images/qemuarm/isar-image-base-debian-stretch-qemuarm.ext4.img
 tmp/deploy/images/qemuarm/isar-image-base-debian-buster-qemuarm.ext4.img
-tmp/deploy/images/qemuarm64/isar-image-base-debian-stretch-qemuarm64.ext4.img
-tmp/deploy/images/qemui386/isar-image-base-debian-stretch-qemui386.wic.img
+tmp/deploy/images/qemuarm64/isar-image-base-debian-buster-qemuarm64.ext4.img
 tmp/deploy/images/qemui386/isar-image-base-debian-buster-qemui386.wic.img
-tmp/deploy/images/qemuamd64/isar-image-base-debian-stretch-qemuamd64.wic.img
 tmp/deploy/images/qemuamd64/isar-image-base-debian-buster-qemuamd64.wic.img
-tmp/deploy/images/rpi/isar-image-base-raspbian-stretch-rpi.wic.img
 ```
 
 ### Generate full disk image
@@ -247,7 +229,7 @@ Variables may be used in `.wks.in` files; Isar will expand them and generate a r
 In order to run the EFI images with `qemu`, an EFI firmware is required and available at the following address:
 https://github.com/tianocore/edk2/tree/3858b4a1ff09d3243fea8d07bd135478237cb8f7
 
-Note that the `ovmf` package in Debian stretch/buster contains a pre-compiled firmware, but doesn't seem to be recent
+Note that the `ovmf` package in Debian Buster contains a pre-compiled firmware, but doesn't seem to be recent
 enough to allow images to be testable under `qemu`.
 
 ```
@@ -408,7 +390,7 @@ following variables define the default configuration to build for:
  - `MACHINE` - The board to build for (e.g., `qemuarm`, `rpi`). BitBake looks
    for conf/multiconfig/${MACHINE}.conf in every layer.
 
- - `DISTRO` - The distro to use (e.g. `raspbian-stretch`, `debian-stretch`).
+ - `DISTRO` - The distro to use (e.g. `raspios-bullseye`, `debian-bookworm`).
    BitBake looks for conf/distro/${DISTRO}.conf in every layer.
 
  - `DISTRO_ARCH` - The Debian architecture to build for (e.g., `armhf`).
@@ -442,9 +424,10 @@ Some other variables include:
 
 In Isar, each machine can use its specific Linux distro to generate `buildchroot` and target filesystem. By default, Isar provides configuration files for the following distros:
 
- - debian-stretch
  - debian-buster
- - raspbian-stretch
+ - debian-bullseye
+ - debian-bookworm
+ - ubuntu-focal
  - raspios-bullseye
 
 User can select appropriate distro for specific machine by setting the following variable in machine configuration file:
@@ -527,8 +510,8 @@ To add new distro, user should perform the following steps:
  - Create the `.conf` file in distro folder with the name of your distribution. We recommend to name distribution in the following format: `name`-`suite`, for example:
 
     ```
-    debian-stretch
-    debian-buster
+    debian-bullseye
+    debian-bookworm
     ```
 
  - In this file, define the variables described above.
@@ -962,14 +945,17 @@ put into Isar apt.
 
 ### Limitation
 
-Debian cross-compilation works out of the box starting from Debian stretch distribution. Currently the following build configurations are supported in Isar:
+Debian cross-compilation works out of the box. Currently the following build configurations are supported in Isar:
 
- - stretch armhf
- - stretch arm64
- - stretch mipsel
  - buster armhf
  - buster arm64 (for host >= buster)
  - buster mipsel (for host >= buster)
+ - bullseye armhf
+ - bullseye arm64
+ - bullseye mipsel
+ - bookworm armhf
+ - bookworm arm64
+ - bookworm mipsel
 
 Experimental support for riscv64 is available as well.
 

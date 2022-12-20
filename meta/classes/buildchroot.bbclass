@@ -9,8 +9,7 @@ ISAR_CROSS_COMPILE ??= "0"
 python __anonymous() {
     mode = d.getVar('ISAR_CROSS_COMPILE', True)
     distro_arch = d.getVar('DISTRO_ARCH')
-    if mode == "0" or d.getVar('HOST_ARCH') ==  distro_arch or \
-       (d.getVar('HOST_DISTRO') == "debian-stretch" and distro_arch == "i386"):
+    if mode == "0" or d.getVar('HOST_ARCH') ==  distro_arch:
         dep = "buildchroot-target:do_build"
         rootfs = d.getVar('BUILDCHROOT_TARGET_DIR', False)
     else:

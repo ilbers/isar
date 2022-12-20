@@ -4,8 +4,6 @@
 # use pseudo. And we call wic as root to begin with, so this script could be a
 # dummy doing nothing. It is almost a dummy ...
 #
-# If the fsck hack ever becomes obsolete, FAKEROOTCMD ?= "true;" can be used
-#
 # This software is a part of Isar.
 # Copyright (C) 2018 Siemens AG
 #
@@ -29,11 +27,5 @@ assert os.geteuid() == 0, "wic_fakeroot must be run as root!"
 # for standalone pseudo operations.
 if cmd.startswith('-'):
     sys.exit(0)
-
-# e2fsck <= 1.43.5 returns 1 on non-errors (stretch and before affected)
-# treat 1 as safe ... the filesystem was successfully repaired and is OK
-if cmd.startswith('fsck.'):
-    ret = subprocess.call(args)
-    sys.exit(0 if ret == 1 else ret)
 
 os.execvp(cmd, args)
