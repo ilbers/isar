@@ -303,6 +303,10 @@ class BootimgEFIPlugin(SourcePlugin):
             if not kernel_dir:
                 raise WicError("Couldn't find DEPLOY_DIR_IMAGE, exiting")
 
+        if source_params.get('use-debian-sb-stub') == "true":
+            if get_bitbake_var("DISTRO_ARCH") != "amd64" or source_params['loader'] != 'grub-efi':
+                raise WicError("use-debian-sb-stub only supported in grub-efi on amd64")
+
         staging_kernel_dir = kernel_dir
 
         hdddir = "%s/hdd/boot" % cr_workdir
@@ -435,6 +439,18 @@ class BootimgEFIPlugin(SourcePlugin):
                     grub_cmd += "memdisk ls search_fs_uuid udf btrfs xfs lvm "
                     grub_cmd += "reiserfs regexp " + grub_modules
                     exec_cmd(grub_cmd)
+
+                if source_params.get('use-debian-sb-stub') == "true":
+                    files = [
+                        # src, efiname, mandatory
+                        ("/usr/lib/shim/shimx64.efi.signed", "bootx64.efi", True),
+                        ("/usr/lib/shim/mmx64.efi.signed", "mmx64.efi", False),
+                        ("/usr/lib/grub/x86_64-efi-signed/grubx64.efi.signed", "grubx64.efi", True)
+                    ]
+                    for s,e,m in files:
+                        cp_cmd = "cp %s %s/EFI/BOOT/%s" % (s, bootimg_dir, e)
+                        exec_cmd(cp_cmd, m)
+
             elif source_params['loader'] == 'systemd-boot':
                 # backup kernel dir before overwriting
                 kernel_dir_orig = kernel_dir
