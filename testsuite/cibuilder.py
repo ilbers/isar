@@ -234,6 +234,23 @@ class CIBuilder(Test):
         login_prompt = b'isar login:'
         # the printk of recipes-kernel/example-module
         module_output = b'Just an example'
+        resize_output = None
+
+        bb_output = start_vm.get_bitbake_env(arch, distro).decode()
+        image_fstypes = start_vm.get_bitbake_var(bb_output, 'IMAGE_FSTYPES')
+        wks_file = start_vm.get_bitbake_var(bb_output, 'WKS_FILE')
+        # only the first type will be tested in start_vm.py
+        if image_fstypes.split()[0] == 'wic':
+            if wks_file:
+                bbdistro = start_vm.get_bitbake_var(bb_output, 'DISTRO')
+                # ubuntu is less verbose so we do not see the message
+                # /etc/sysctl.d/10-console-messages.conf
+                if bbdistro and "ubuntu" not in bbdistro:
+                    if "sdimage-efi-sd" in wks_file:
+                        # output we see when expand-on-first-boot runs on ext4
+                        resize_output = b'resized filesystem to'
+                    if "sdimage-efi-btrfs" in wks_file:
+                        resize_output = b': resize device '
 
         timeout = time.time() + int(time_to_wait)
 
@@ -268,8 +285,11 @@ class CIBuilder(Test):
             with open(output_file, "rb") as f1:
                 data = f1.read()
                 if module_output in data and login_prompt in data:
-                    return
-                else:
-                    app_log.error(data.decode(errors='replace'))
+                    if resize_output:
+                        if resize_output in data:
+                            return
+                    else:
+                        return
+                app_log.error(data.decode(errors='replace'))
 
         self.fail('Log ' + output_file)
