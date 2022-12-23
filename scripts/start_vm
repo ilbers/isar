@@ -19,6 +19,7 @@ bb2sh() {
 start_qemu() {
     root=`echo $QEMU_DISK_ARGS \
         | sed 's,##ROOTFS_IMAGE##,'$IMAGE_DIR/$ROOTFS_IMAGE','`
+    [ -n "$KARGS$EXTRA_KARGS" ] && OPT_KERNEL_ARGS="-append $KARGS$EXTRA_KARGS"
     local had_x
     echo $- | grep -q x && had_x=1 || had_x=0
     [ $had_x -eq 0 ] && set -x
@@ -28,7 +29,7 @@ start_qemu() {
 	$QCPU \
 	-nographic \
 	$EXTRA_ARGS \
-        -append "$KARGS$EXTRA_KARGS" \
+    $OPT_KERNEL_ARGS \
 	$root
     [ $had_x -eq 0 ] && set +x
 }
