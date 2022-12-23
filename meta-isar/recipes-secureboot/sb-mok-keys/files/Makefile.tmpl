@@ -1,0 +1,27 @@
+# Base image recipe for ISAR
+#
+# This software is a part of ISAR.
+# Copyright (C) 2022 Siemens AG
+
+CN=${COMMON_NAME}
+
+all: create_key
+
+create_key:
+	mkdir MOK
+	openssl req -new -x509 -newkey rsa:2048 -keyout MOK/MOK.priv -outform DER -out MOK/MOK.der -nodes -days 36500 -subj "/CN=$(CN)/"
+	chmod 600 MOK/MOK.priv
+
+install:
+	install -d $(DESTDIR)/etc/sb-mok-keys/MOK
+	# note that this will later be changed by dh_fixperms
+	# this is also required so that the non-privileged sbuild
+	# user can read the file
+	install -m 644 MOK/MOK.priv $(DESTDIR)/etc/sb-mok-keys/MOK/
+	install -m 644 MOK/MOK.der  $(DESTDIR)/etc/sb-mok-keys/MOK/
+
+clean:
+ifneq (,$(wildcard ./MOK/MOK.priv))
+	shred MOK/MOK.priv
+endif
+	rm -rf MOK
