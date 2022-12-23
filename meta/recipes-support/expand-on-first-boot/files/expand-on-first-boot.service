@@ -15,6 +15,7 @@ ConditionPathIsReadWrite=/etc
 Type=oneshot
 ExecStart=/usr/share/expand-on-first-boot/expand-last-partition.sh
 ExecStartPost=-/bin/systemctl disable expand-on-first-boot.service
+ExecStopPost=-/bin/systemctl disable expand-on-first-boot.service
 
 [Install]
 WantedBy=sysinit.target
