@@ -62,8 +62,31 @@ if grep -q x-systemd.growfs /etc/fstab; then
 	exit 0
 fi
 
-# Do not fail resize2fs if no mtab entry is found, e.g.,
-# when using systemd mount units.
-export EXT2FS_NO_MTAB_OK=1
+# some filesystems need to be mounted i.e. btrfs, but mounting also helps
+# detect the filesystem type without having to wait for udev
+# mount $LAST_PART out of tree, so we won't conflict with other mounts
+MOUNT_POINT=$(mktemp -d -p "" "$(basename "$0").XXXXXXXXXX")
+mount "${LAST_PART}" "${MOUNT_POINT}"
 
-resize2fs "${LAST_PART}"
+ret=0
+# Determine the filesystem type and perform the appropriate resize function
+FS_TYPE=$(findmnt -fno FSTYPE "${MOUNT_POINT}" )
+case ${FS_TYPE} in
+ext*)
+	# Do not fail resize2fs if no mtab entry is found, e.g.,
+	# when using systemd mount units.
+	export EXT2FS_NO_MTAB_OK=1
+	resize2fs "${LAST_PART}"
+	;;
+btrfs)
+	btrfs filesystem resize max "${MOUNT_POINT}"
+	;;
+*)
+	echo "Unrecognized filesystem type ${FS_TYPE} - no resize performed"
+	ret=1
+	;;
+esac
+
+umount "${MOUNT_POINT}"
+rmdir "${MOUNT_POINT}"
+exit $ret
