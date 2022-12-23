@@ -50,6 +50,9 @@ override_dh_auto_clean:
 
 override_dh_auto_build:
 	$(MAKE) -C $(KDIR) M=$(PWD) $(PARALLEL_MAKE) modules
+ifneq ($(filter pkg.sign,$(DEB_BUILD_PROFILES)),)
+	find . -name "*.ko" -print -exec $(KDIR)/scripts/sign-file ${SIGNATURE_HASHFN} ${SIGNATURE_KEYFILE} ${SIGNATURE_CERTFILE} {} \;
+endif
 
 override_dh_auto_install:
 	$(MAKE) -C $(KDIR) M=$(PWD) INSTALL_MOD_PATH=$(PWD)/debian/${PN} modules_install
