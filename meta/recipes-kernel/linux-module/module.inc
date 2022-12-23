@@ -27,7 +27,13 @@ inherit dpkg
 TEMPLATE_FILES = "debian/control.tmpl \
                   debian/changelog.tmpl \
                   debian/rules.tmpl"
-TEMPLATE_VARS += "KERNEL_NAME KERNEL_TYPE KERNEL_IMAGE_PKG KERNEL_HEADERS_PKG DEBIAN_BUILD_DEPENDS PN"
+TEMPLATE_VARS += " \
+    KERNEL_NAME \
+    KERNEL_TYPE \
+    KERNEL_IMAGE_PKG \
+    KERNEL_HEADERS_PKG \
+    DEBIAN_BUILD_DEPENDS \
+    PN"
 
 do_prepare_build() {
     rm -rf ${S}/debian
