@@ -232,7 +232,8 @@ class CIBuilder(Test):
         self.log.info('QEMU boot line: ' + str(cmdline))
 
         login_prompt = b'isar login:'
-        service_prompt = b'Just an example'
+        # the printk of recipes-kernel/example-module
+        module_output = b'Just an example'
 
         timeout = time.time() + int(time_to_wait)
 
@@ -266,7 +267,7 @@ class CIBuilder(Test):
         if os.path.exists(output_file) and os.path.getsize(output_file) > 0:
             with open(output_file, "rb") as f1:
                 data = f1.read()
-                if service_prompt in data and login_prompt in data:
+                if module_output in data and login_prompt in data:
                     return
                 else:
                     app_log.error(data.decode(errors='replace'))
