@@ -51,6 +51,7 @@ show_help() {
     echo "    -o, --out FILE        Route QEMU console output to"
     echo "                          specified file."
     echo "    -p, --pid FILE        Store QEMU pid to file."
+    echo "    -s, --secureboot      Enable secureboot with default MS keys."
     echo "    --help                display this message and exit."
     echo
     echo "Exit status:"
@@ -92,6 +93,12 @@ do
     -p|--pid)
         EXTRA_ARGS="$EXTRA_ARGS -pidfile $2"
         shift
+        ;;
+    -s|--secureboot)
+        OVMF_VARS_ORIG="/usr/share/OVMF/OVMF_VARS_4M.ms.fd"
+        OVMF_VARS="$(basename "${OVMF_VARS_ORIG}")"
+        cp "${OVMF_VARS_ORIG}" "${OVMF_VARS}"
+        EXTRA_ARGS="$EXTRA_ARGS -drive if=pflash,format=raw,unit=1,file=${OVMF_VARS}"
         ;;
     *)
         echo "error: invalid parameter '$key', please try '--help' to get list of supported parameters"
