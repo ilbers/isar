@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # This software is a part of ISAR.
-# Copyright (c) Siemens AG, 2020
+# Copyright (c) Siemens AG, 2020-2023
 #
 # SPDX-License-Identifier: MIT
 
@@ -34,6 +34,7 @@ for binary in $(find ${sdkroot}/usr/bin ${sdkroot}/usr/sbin ${sdkroot}/usr/lib/g
 	if [ -n "${interpreter}" ]; then
 		patchelf --set-interpreter ${new_sdkroot}${interpreter} \
 			--set-rpath ${new_sdkroot}/usr/lib:${new_sdkroot}/usr/lib/${arch}-linux-gnu \
+			--force-rpath \
 			$binary 2>/dev/null
 	fi
 done
