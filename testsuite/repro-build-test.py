@@ -25,7 +25,7 @@ class ReproBuild(CIBuilder):
         self.compare_repro_image('image1.tar.gz', 'image2.tar.gz')
 
     def git_last_commit_timestamp(self):
-        return process.run('git log -1 --pretty=%ct').stdout
+        return process.run('git log -1 --pretty=%ct').stdout.decode().strip()
 
     def get_image_path(self, target_name):
         image_dir = "tmp/deploy/images"
