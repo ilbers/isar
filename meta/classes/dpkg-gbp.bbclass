@@ -9,13 +9,13 @@ S = "${WORKDIR}/git"
 
 PATCHTOOL ?= "git"
 
-GBP_EXTRA_OPTIONS ?= "--pristine-tar"
+GBP_EXTRA_OPTIONS ?= "--git-pristine-tar"
 
 SCHROOT_MOUNTS = "${WORKDIR}:${PP} ${GITDIR}:/home/.git-downloads"
 
 dpkg_runbuild_prepend() {
     sh -c "
         cd ${WORKDIR}/${PPS}
-        gbp export-orig ${GBP_EXTRA_OPTIONS}
+        gbp buildpackage --git-ignore-new --git-builder=/bin/true ${GBP_EXTRA_OPTIONS}
     "
 }
