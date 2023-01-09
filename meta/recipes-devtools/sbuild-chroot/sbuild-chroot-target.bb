@@ -8,3 +8,7 @@ DESCRIPTION = "Isar sbuild/schroot filesystem for target"
 SBUILD_VARIANT = "target"
 
 require sbuild-chroot.inc
+
+SBUILD_CHROOT_PREINSTALL ?= " \
+    ${SBUILD_CHROOT_PREINSTALL_COMMON} \
+    "

@@ -10,17 +10,19 @@ PV = "1.0"
 
 inherit rootfs
 
+SBUILD_CHROOT_COMPAT_PREINSTALL_compat-arch = " \
+    libc6-dev:${COMPAT_DISTRO_ARCH} \
+    crossbuild-essential-${COMPAT_DISTRO_ARCH}"
+
 SBUILD_CHROOT_PREINSTALL_COMMON = " \
+    ${SBUILD_CHROOT_COMPAT_PREINSTALL} \
+    libc6-dev:${DISTRO_ARCH} \
     fakeroot \
     build-essential \
     debhelper \
     ${@ 'ccache' if d.getVar('USE_CCACHE') == '1' else ''} \
     devscripts \
     equivs \
-"
-
-SBUILD_CHROOT_PREINSTALL ?= " \
-    ${SBUILD_CHROOT_PREINSTALL_COMMON} \
 "
 
 SBUILD_CHROOT_DIR = "${WORKDIR}/rootfs"

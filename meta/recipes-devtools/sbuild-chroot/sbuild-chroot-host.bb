@@ -12,3 +12,14 @@ require sbuild-chroot.inc
 ROOTFS_ARCH = "${HOST_ARCH}"
 ROOTFS_DISTRO = "${HOST_DISTRO}"
 ROOTFS_BASE_DISTRO = "${HOST_BASE_DISTRO}"
+
+SBUILD_CHROOT_PREINSTALL ?= " \
+    ${SBUILD_CHROOT_PREINSTALL_COMMON} \
+    crossbuild-essential-${DISTRO_ARCH} \
+    "
+
+SBUILD_CHROOT_PREINSTALL_riscv64 ?= " \
+    ${SBUILD_CHROOT_PREINSTALL_COMMON} \
+    gcc-riscv64-linux-gnu \
+    g++-riscv64-linux-gnu \
+    dpkg-cross"
