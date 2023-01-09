@@ -8,8 +8,6 @@ inherit dpkg-raw
 
 DPKG_ARCH = "all"
 
-ISAR_CROSS_COMPILE = "0"
-
 DEBIAN_DEPENDS = " \
     gcc-riscv64-linux-gnu, \
     g++-riscv64-linux-gnu, \
