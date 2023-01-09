@@ -29,11 +29,14 @@ class ReproBuild(CIBuilder):
 
     def get_image_path(self, target_name):
         image_dir = "tmp/deploy/images"
-        target_params = target_name.split(":")
-        machine = target_params[1].split("-")[0]
-        distro = "debian-" + target_params[1].split("-")[1]
-        image_type = target_params[2]
-        return f"{image_dir}/{machine}/{image_type}-{distro}-{machine}.tar.gz"
+        output = process.getoutput(
+            f'bitbake -e {target_name} '
+            r'| grep "^MACHINE=\|^IMAGE_FULLNAME="'
+        )
+        env = dict(d.split("=", 1) for d in output.splitlines())
+        machine = env["MACHINE"].strip("\"")
+        image_name = env["IMAGE_FULLNAME"].strip("\"")
+        return f"{image_dir}/{machine}/{image_name}.tar.gz"
 
     def build_repro_image(
         self, target, source_date_epoch=None, image_name="image.tar.gz"
