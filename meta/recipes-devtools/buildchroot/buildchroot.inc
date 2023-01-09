@@ -23,22 +23,10 @@ ROOTFS_MANIFEST_DEPLOY_DIR = "${DEPLOY_DIR_BUILDCHROOT}"
 ROOTFS_DPKGSTATUS_DEPLOY_DIR = "${DEPLOY_DIR_BUILDCHROOT}"
 ROOTFS_FEATURES += "generate-manifest export-dpkg-status"
 
-BUILDCHROOT_COMPAT_PREINSTALL_compat-arch = " \
-    libc6:${COMPAT_DISTRO_ARCH} \
-    crossbuild-essential-${COMPAT_DISTRO_ARCH}"
-
-BUILDCHROOT_PREINSTALL_COMMON = " \
-    ${BUILDCHROOT_COMPAT_PREINSTALL} \
-    make \
-    debhelper \
-    autotools-dev \
-    ${@ 'ccache' if d.getVar('USE_CCACHE') == '1' else ''} \
+BUILDCHROOT_PREINSTALL ?= " \
     dpkg \
     locales \
-    docbook-to-man \
     apt \
-    automake \
-    devscripts \
     equivs \
     adduser"
 

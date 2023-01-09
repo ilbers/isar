@@ -8,8 +8,3 @@ DESCRIPTION = "Isar development filesystem for target"
 BUILDCHROOT_VARIANT = "target"
 
 require buildchroot.inc
-
-BUILDCHROOT_PREINSTALL ?= " \
-    ${BUILDCHROOT_PREINSTALL_COMMON} \
-    gcc \
-    build-essential"
