@@ -10,6 +10,24 @@ PV = "1.0"
 
 inherit rootfs
 
+python() {
+    distro_gcc = d.getVar('DISTRO_GCC')
+    distro_arch = d.getVar('DISTRO_ARCH')
+
+    if d.getVar('DISTRO_GCC'):
+        d.appendVar('SBUILD_CHROOT_PREINSTALL_COMMON',
+                    ' libgcc-{}-dev:{}'.format(distro_gcc, distro_arch))
+        d.appendVar('SBUILD_CHROOT_PREINSTALL_COMMON',
+                    ' libstdc++-{}-dev:{}'.format(distro_gcc, distro_arch))
+
+        if d.getVar('ISAR_ENABLE_COMPAT_ARCH') == '1':
+            compat_arch = d.getVar('COMPAT_DISTRO_ARCH')
+            d.appendVar('SBUILD_CHROOT_COMPAT_PREINSTALL',
+                        ' libgcc-{}-dev:{}'.format(distro_gcc, compat_arch))
+            d.appendVar('SBUILD_CHROOT_COMPAT_PREINSTALL',
+                        ' libstdc++-{}-dev:{}'.format(distro_gcc, compat_arch))
+}
+
 SBUILD_CHROOT_COMPAT_PREINSTALL_compat-arch = " \
     libc6-dev:${COMPAT_DISTRO_ARCH} \
     crossbuild-essential-${COMPAT_DISTRO_ARCH}"
