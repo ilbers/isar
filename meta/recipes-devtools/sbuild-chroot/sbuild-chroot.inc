@@ -14,7 +14,7 @@ SBUILD_CHROOT_PREINSTALL_COMMON = " \
     fakeroot \
     build-essential \
     debhelper \
-    ccache \
+    ${@ 'ccache' if d.getVar('USE_CCACHE') == '1' else ''} \
     devscripts \
     equivs \
 "
