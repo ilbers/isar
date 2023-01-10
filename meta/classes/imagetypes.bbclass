@@ -5,7 +5,7 @@
 
 #image type: tar
 IMAGER_INSTALL_tar = "tar"
-TAR_OPTIIONS ?= ""
+TAR_OPTIONS ?= ""
 
 IMAGE_CMD_tar() {
     ${SUDO_CHROOT} tar ${TAR_OPTIONS} -cvSf \
