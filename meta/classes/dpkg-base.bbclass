@@ -5,7 +5,6 @@
 # SPDX-License-Identifier: MIT
 
 inherit sbuild
-inherit buildchroot
 inherit debianize
 inherit terminal
 inherit repository
@@ -123,9 +122,6 @@ do_apt_fetch() {
 addtask apt_fetch
 do_apt_fetch[lockfiles] += "${REPO_ISAR_DIR}/isar.lock"
 
-# Add dependency from the correct buildchroot: host or target
-do_apt_fetch[depends] += "${BUILDCHROOT_DEP}"
-
 # Add dependency from the correct schroot: host or target
 do_apt_fetch[depends] += "${SCHROOT_DEP}"
 
@@ -187,30 +183,6 @@ addtask prepare_build after do_patch do_transform_template before do_dpkg_build
 # deployed to isar-apt
 do_prepare_build[deptask] = "do_deploy_deb"
 do_prepare_build[depends] = "${SCHROOT_DEP}"
-
-BUILDROOT = "${BUILDCHROOT_DIR}/${PP}"
-
-dpkg_do_mounts() {
-    mkdir -p ${BUILDROOT}
-    sudo mount --bind ${WORKDIR} ${BUILDROOT}
-
-    buildchroot_do_mounts
-}
-
-dpkg_undo_mounts() {
-    i=0
-    while ! sudo umount ${BUILDROOT}; do
-        sleep 0.1
-        if [ `expr $i % 100` -eq 0 ] ; then
-            bbwarn "${BUILDROOT}: Couldn't unmount ($i), retrying..."
-        fi
-        if [ $i -ge 10000 ]; then
-            bbfatal "${BUILDROOT}: Couldn't unmount after timeout"
-        fi
-        i=`expr $i + 1`
-    done
-    sudo rmdir ${BUILDROOT}
-}
 
 do_prepare_build_append() {
     # Make a local copy of isar-apt repo that is not affected by other parallel builds
