@@ -293,6 +293,7 @@ python do_devshell() {
     pkg_arch = d.getVar('PACKAGE_ARCH', True)
     build_arch = d.getVar('SBUILD_HOST_ARCH', True)
     pp_pps = os.path.join(d.getVar('PP'), d.getVar('PPS'))
+    debdistroname = d.getVar('DEBDISTRONAME')
 
     install_deps = ":" if d.getVar('BB_CURRENTTASK') == "devshell_nodeps" else f"mk-build-deps -i \
         --host-arch {pkg_arch} --build-arch {build_arch}  \
@@ -302,12 +303,14 @@ python do_devshell() {
     termcmd = "schroot -d / -c {0} -u root -- sh -c ' \
         cd {1}; \
         echo {2} > /etc/apt/sources.list.d/isar_apt.list; \
+        echo \"Package: *\nPin: release n={3}\nPin-Priority: 1000\" > /etc/apt/preferences.d/isar-apt; \
+        echo \"APT::Get::allow-downgrades 1;\" > /etc/apt/apt.conf.d/50isar-apt; \
         apt-get -y -q update; \
-        {3}; \
+        {4}; \
         export PATH=$PATH_PREPEND:$PATH; \
         $SHELL -i \
     '"
-    oe_terminal(termcmd.format(schroot, pp_pps, isar_apt, install_deps), "Isar devshell", d)
+    oe_terminal(termcmd.format(schroot, pp_pps, isar_apt, debdistroname, install_deps), "Isar devshell", d)
 
     bb.build.exec_func('schroot_delete_configs', d)
 }
