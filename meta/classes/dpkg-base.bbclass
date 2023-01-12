@@ -11,6 +11,7 @@ inherit repository
 inherit deb-dl-dir
 
 DEPENDS ?= ""
+RPROVIDES ?= "${PROVIDES}"
 
 DEPENDS_append_riscv64 = "${@' crossbuild-essential-riscv64' if d.getVar('ISAR_CROSS_COMPILE', True) == '1' and d.getVar('PN') != 'crossbuild-essential-riscv64' else ''}"
 DEB_BUILD_PROFILES ?= ""
