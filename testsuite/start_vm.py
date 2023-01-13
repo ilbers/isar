@@ -5,6 +5,7 @@
 
 import argparse
 import os
+import socket
 import subprocess
 import sys
 import time
@@ -70,9 +71,12 @@ def format_qemu_cmdline(arch, build, distro, out, pid, enforce_pcbios=False):
         bios_idx = qemu_disk_args.index('-bios')
         del qemu_disk_args[bios_idx : bios_idx+2]
 
-    # Support SSH access from host via port 22222
+    # Support SSH access from host
+    ssh_sock = socket.socket()
+    ssh_sock.bind(('', 0))
+    ssh_port=ssh_sock.getsockname()[1]
     extra_args.extend(['-device', 'e1000,netdev=net0'])
-    extra_args.extend(['-netdev', 'user,id=net0,hostfwd=tcp::22222-:22'])
+    extra_args.extend(['-netdev', 'user,id=net0,hostfwd=tcp::' + str(ssh_port) + '-:22'])
 
     cmd = ['qemu-system-' + qemu_arch, '-m', '1024M']
 
