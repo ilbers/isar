@@ -258,6 +258,13 @@ rootfs_postprocess_clean_pycache() {
     sudo find ${ROOTFSDIR}/usr -type d -name '__pycache__' -delete -print
 }
 
+ROOTFS_POSTPROCESS_COMMAND += "rootfs_postprocess_clean_ldconfig_cache"
+rootfs_postprocess_clean_ldconfig_cache() {
+    # the ldconfig aux-cache is not portable and breaks reproducability
+    # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=845034#49
+    sudo rm -f ${ROOTFSDIR}/var/cache/ldconfig/aux-cache
+}
+
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'generate-manifest', 'rootfs_generate_manifest', '', d)}"
 rootfs_generate_manifest () {
     mkdir -p ${ROOTFS_MANIFEST_DEPLOY_DIR}
