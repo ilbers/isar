@@ -432,6 +432,17 @@ do_rootfs_finalize() {
                 "${ROOTFSDIR}/etc/apt/sources.list.d/bootstrap.list"
         fi
 EOSUDO
+
+    # Set same time-stamps to the newly generated file/folders in the
+    # rootfs image for the purpose of reproducible builds.
+    if [ -n "${SOURCE_DATE_EPOCH}" ]; then
+        sudo find ${ROOTFSDIR} -newermt \
+            "$(date -d@${SOURCE_DATE_EPOCH} '+%Y-%m-%d %H:%M:%S')" \
+            -printf "%y %p\n" \
+            -exec touch '{}' -h -d@${SOURCE_DATE_EPOCH} ';' > ${DEPLOY_DIR_IMAGE}/files.modified_timestamps && \
+            bbwarn "$(grep ^f ${DEPLOY_DIR_IMAGE}/files.modified_timestamps) \nModified above file timestamps to build image reproducibly"
+    fi
+
 }
 addtask rootfs_finalize before do_rootfs after do_rootfs_postprocess
 
