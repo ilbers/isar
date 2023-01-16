@@ -14,7 +14,7 @@ MAINTAINER ??= "Unknown maintainer <unknown@example.com>"
 
 deb_add_changelog() {
 	changelog_v="${CHANGELOG_V}"
-	timestamp=0
+	timestamp=3600
 	if [ -f ${S}/debian/changelog ]; then
 		if [ ! -f ${WORKDIR}/changelog.orig ]; then
 			cp ${S}/debian/changelog ${WORKDIR}/changelog.orig
