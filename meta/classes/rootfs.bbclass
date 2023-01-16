@@ -252,6 +252,12 @@ rootfs_postprocess_clean_debconf_cache() {
     sudo rm -rf "${ROOTFSDIR}/var/cache/debconf/"*
 }
 
+ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'clean-pycache', 'rootfs_postprocess_clean_pycache', '', d)}"
+rootfs_postprocess_clean_pycache() {
+    sudo find ${ROOTFSDIR}/usr -type f -name '*.pyc'       -delete -print
+    sudo find ${ROOTFSDIR}/usr -type d -name '__pycache__' -delete -print
+}
+
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'generate-manifest', 'rootfs_generate_manifest', '', d)}"
 rootfs_generate_manifest () {
     mkdir -p ${ROOTFS_MANIFEST_DEPLOY_DIR}
