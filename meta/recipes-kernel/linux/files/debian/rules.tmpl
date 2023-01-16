@@ -2,6 +2,11 @@
 
 CROSS_COMPILE:=$(DEB_HOST_GNU_TYPE)-
 
+MAINTAINER := $(shell sed -ne 's,^Maintainer: .[^<]*<\([^>]*\)>,\1,p' debian/control)
+DISTRIBUTOR := ${DISTRIBUTOR}
+SOURCE_DATE := $(shell dpkg-parsechangelog -SDate)
+SOURCE_DATE_UTC_ISO := $(shell date -u -d '$(SOURCE_DATE)' +%Y-%m-%d)
+
 O:=$(CURDIR)/${KERNEL_BUILD_DIR}
 S:=$(CURDIR)
 deb_top_dir:=$(S)/debian
@@ -14,7 +19,11 @@ isar_env=$(strip \
 	export MAKE='$(MAKE)' && \
 	export O='${O}' && \
 	export S='${S}' && \
-	export CURDIR='$(CURDIR)' \
+	export CURDIR='$(CURDIR)' && \
+	export KBUILD_BUILD_TIMESTAMP='$(SOURCE_DATE)' && \
+	export KBUILD_BUILD_VERSION_TIMESTAMP='$(DISTRIBUTOR) $(DEB_VERSION_UPSTREAM) ($(SOURCE_DATE_UTC_ISO))' && \
+	export KBUILD_BUILD_USER='$(word 1,$(subst @, ,$(MAINTAINER)))' && \
+	export KBUILD_BUILD_HOST='$(word 2,$(subst @, ,$(MAINTAINER)))' \
 )
 
 %:
@@ -33,6 +42,9 @@ override_dh_auto_install:
 	$(isar_env) && bash $(deb_top_dir)/isar/install
 
 override_dh_auto_test:
+	true
+
+override_dh_strip_nondeterminism:
 	true
 
 override_dh_strip:

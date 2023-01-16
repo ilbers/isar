@@ -12,6 +12,7 @@
 CHANGELOG_V = "${PV}+${PR}"
 DESCRIPTION ?= "Custom kernel"
 MAINTAINER ?= "isar-users <isar-users@googlegroups.com>"
+DISTRIBUTOR ?= "ISAR"
 
 KBUILD_DEPENDS ?= "build-essential:native, \
                    libelf-dev:native, \
@@ -79,6 +80,7 @@ TEMPLATE_VARS += "                \
     KERNEL_NAME_PROVIDED          \
     KERNEL_CONFIG_FRAGMENTS       \
     KCFLAGS                       \
+    DISTRIBUTOR                   \
 "
 
 inherit dpkg
