@@ -19,11 +19,14 @@ deb_add_changelog() {
 		if [ ! -f ${WORKDIR}/changelog.orig ]; then
 			cp ${S}/debian/changelog ${WORKDIR}/changelog.orig
 		fi
-		orig_version=$(dpkg-parsechangelog -l ${WORKDIR}/changelog.orig -S Version)
-		changelog_v=$(echo "${changelog_v}" | sed 's/<orig-version>/'${orig_version}'/')
-		orig_date=$(dpkg-parsechangelog -l ${WORKDIR}/changelog.orig -S Date)
-		orig_seconds=$(date --date="${orig_date}" +'%s')
-		timestamp=$(expr ${orig_seconds} + 42)
+		# we have a non auto-generated original changelog
+		if [ -s ${WORKDIR}/changelog.orig ]; then
+			orig_version=$(dpkg-parsechangelog -l ${WORKDIR}/changelog.orig -S Version)
+			changelog_v=$(echo "${changelog_v}" | sed 's/<orig-version>/'${orig_version}'/')
+			orig_date=$(dpkg-parsechangelog -l ${WORKDIR}/changelog.orig -S Date)
+			orig_seconds=$(date --date="${orig_date}" +'%s')
+			timestamp=$(expr ${orig_seconds} + 42)
+		fi
 	fi
 
 	date=$(LANG=C date -R -d @${timestamp})
@@ -34,7 +37,10 @@ ${PN} (${changelog_v}) UNRELEASED; urgency=low
 
  -- ${MAINTAINER}  ${date}
 EOF
-	if [ -f ${WORKDIR}/changelog.orig ]; then
+	# ensure that we always start with the orig version of the
+	# changelog on repeated invocations (e.g. on partial rebuilds)
+	touch ${WORKDIR}/changelog.orig
+	if [ -s ${WORKDIR}/changelog.orig ]; then
 		# prepend our entry to the original changelog
 		echo >> ${S}/debian/changelog
 		cat ${WORKDIR}/changelog.orig >> ${S}/debian/changelog
