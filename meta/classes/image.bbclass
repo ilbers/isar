@@ -396,13 +396,16 @@ addtask deploy before do_build after do_image
 do_rootfs_finalize() {
     sudo -s <<'EOSUDO'
         set -e
-        test -e "${ROOTFSDIR}/chroot-setup.sh" && \
+
+        if [ -e "${ROOTFSDIR}/chroot-setup.sh" ]; then
             "${ROOTFSDIR}/chroot-setup.sh" "cleanup" "${ROOTFSDIR}"
+        fi
         rm -f "${ROOTFSDIR}/chroot-setup.sh"
 
-        test ! -e "${ROOTFSDIR}/usr/share/doc/qemu-user-static" && \
+        if [ ! -e "${ROOTFSDIR}/usr/share/doc/qemu-user-static" ]; then
             find "${ROOTFSDIR}/usr/bin" \
                 -maxdepth 1 -name 'qemu-*-static' -type f -delete
+        fi
 
         mountpoint -q '${ROOTFSDIR}/isar-apt' && \
             umount -l ${ROOTFSDIR}/isar-apt && \
@@ -424,10 +427,10 @@ do_rootfs_finalize() {
         rm -f "${ROOTFSDIR}/etc/apt/sources.list.d/base-apt.list"
         rm -f "${ROOTFSDIR}/etc/apt/apt.conf.d/50isar"
 
-        mv "${ROOTFSDIR}/etc/apt/sources-list" \
-            "${ROOTFSDIR}/etc/apt/sources.list.d/bootstrap.list"
-
-        rm -f "${ROOTFSDIR}/etc/apt/sources-list"
+        if [ -e "${ROOTFSDIR}/etc/apt/sources-list" ]; then
+            mv "${ROOTFSDIR}/etc/apt/sources-list" \
+                "${ROOTFSDIR}/etc/apt/sources.list.d/bootstrap.list"
+        fi
 EOSUDO
 }
 addtask rootfs_finalize before do_rootfs after do_rootfs_postprocess
