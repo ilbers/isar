@@ -253,7 +253,15 @@ image_postprocess_accounts() {
         if [ -n "$password" -o "${flags}" != "${flags%*,allow-empty-password,*}" ]; then
             chpasswd_args="-e"
             if [ "${flags}" != "${flags%*,clear-text-password,*}" ]; then
-                chpasswd_args=""
+                # chpasswd adds a random salt when running against a clear-text password.
+                # For reproducible images, we manually generate the password and use the
+                # SOURCE_DATE_EPOCH to generate the salt in a deterministic way.
+                if [ -z "${SOURCE_DATE_EPOCH}" ]; then
+                    chpasswd_args=""
+                else
+                    salt="$(echo "${SOURCE_DATE_EPOCH}" | sha256sum -z | cut -c 1-15)"
+                    password="$(openssl passwd -6 -salt $salt "$password")"
+                fi
             fi
             printf '%s:%s' "$name" "$password" | sudo chroot '${ROOTFSDIR}' \
                 /usr/sbin/chpasswd $chpasswd_args
