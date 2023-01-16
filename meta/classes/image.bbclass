@@ -304,6 +304,17 @@ python() {
 }
 
 
+# make generation of initramfs reproducible
+# note: this function is shared across multiple rootfs, but we only want to make the
+#       image rootfs reproducible. Otherwise changes of SOURCE_DATE_EPOCH would
+#       invalidate the SSTATE entries for most packages, even if they don't use the
+#       global SOURCE_DATE_EPOCH variable.
+rootfs_install_pkgs_install_prepend() {
+    if [ ! -z "${SOURCE_DATE_EPOCH}" ]; then
+        export SOURCE_DATE_EPOCH="${SOURCE_DATE_EPOCH}"
+    fi
+}
+
 # here we call a command that should describe your whole build system,
 # this could be "git describe" or something similar.
 # set ISAR_RELEASE_CMD to customize, or override do_mark_rootfs to do something
