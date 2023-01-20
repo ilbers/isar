@@ -308,7 +308,8 @@ rootfs_install_sstate_prepare() {
     # so we use some mount magic to prevent that
     mkdir -p ${WORKDIR}/mnt/rootfs
     sudo mount --bind ${WORKDIR}/rootfs ${WORKDIR}/mnt/rootfs -o ro
-    sudo tar -C ${WORKDIR}/mnt -cpSf rootfs.tar --one-file-system rootfs
+    lopts="--one-file-system --exclude=var/cache/apt/archives"
+    sudo tar -C ${WORKDIR}/mnt -cpSf rootfs.tar $lopts rootfs
     sudo umount ${WORKDIR}/mnt/rootfs
     sudo chown $(id -u):$(id -g) rootfs.tar
 }
