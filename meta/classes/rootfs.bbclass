@@ -78,7 +78,7 @@ BOOTSTRAP_SRC_${ROOTFS_ARCH} = "${DEPLOY_DIR_BOOTSTRAP}/${ROOTFS_DISTRO}-${ROOTF
 
 rootfs_prepare[weight] = "25"
 rootfs_prepare(){
-    sudo cp -Trpfx '${BOOTSTRAP_SRC}/' '${ROOTFSDIR}'
+    sudo cp -Trpfx --reflink=auto '${BOOTSTRAP_SRC}/' '${ROOTFSDIR}'
 }
 
 ROOTFS_CONFIGURE_COMMAND += "rootfs_configure_isar_apt"
@@ -218,7 +218,7 @@ cache_deb_src() {
     # Note: ISAR updates the apt state information(apt-get update) only once during bootstrap and
     # relies on that through out the build. Copy that state information instead of apt-get update
     # which generates a new state from upstream.
-    sudo cp -Trpn "${BOOTSTRAP_SRC}/var/lib/apt/lists/" "${ROOTFSDIR}/var/lib/apt/lists/"
+    sudo cp -Trpn --reflink=auto "${BOOTSTRAP_SRC}/var/lib/apt/lists/" "${ROOTFSDIR}/var/lib/apt/lists/"
 
     deb_dl_dir_import ${ROOTFSDIR} ${ROOTFS_BASE_DISTRO}-${BASE_DISTRO_CODENAME}
     debsrc_download ${ROOTFSDIR} ${ROOTFS_BASE_DISTRO}-${BASE_DISTRO_CODENAME}

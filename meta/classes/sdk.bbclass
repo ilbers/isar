@@ -82,7 +82,7 @@ do_rootfs_install[vardeps] += "${SDKROOTFSVARDEPS}"
 ROOTFS_CONFIGURE_COMMAND_append_class-sdk = " ${@'rootfs_configure_isar_apt_dir' if d.getVar('SDK_INCLUDE_ISAR_APT') == '1' else ''}"
 rootfs_configure_isar_apt_dir() {
     # Copy isar-apt instead of mounting:
-    sudo cp -Trpfx ${REPO_ISAR_DIR}/${DISTRO} ${ROOTFSDIR}/isar-apt
+    sudo cp -Trpfx --reflink=auto ${REPO_ISAR_DIR}/${DISTRO} ${ROOTFSDIR}/isar-apt
 }
 
 ROOTFS_POSTPROCESS_COMMAND_prepend_class-sdk = "sdkchroot_configscript "

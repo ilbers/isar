@@ -40,7 +40,7 @@ do_containerize() {
         "${oci_img_dir}_unpacked"
 
     # add root filesystem as the flesh of the skeleton
-    sudo cp -a "${rootfs}"/* "${oci_img_dir}_unpacked/rootfs/"
+    sudo cp --reflink=auto -a "${rootfs}"/* "${oci_img_dir}_unpacked/rootfs/"
     # clean-up temporary files
     sudo find "${oci_img_dir}_unpacked/rootfs/tmp" -mindepth 1 -delete
 
