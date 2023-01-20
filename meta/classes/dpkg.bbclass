@@ -108,9 +108,9 @@ dpkg_runbuild() {
         --chroot-setup-commands="echo \"Package: *\nPin: release n=${DEBDISTRONAME}\nPin-Priority: 1000\" > /etc/apt/preferences.d/isar-apt" \
         --chroot-setup-commands="echo \"APT::Get::allow-downgrades 1;\" > /etc/apt/apt.conf.d/50isar-apt" \
         --chroot-setup-commands="rm -f /var/log/dpkg.log" \
-        --chroot-setup-commands="cp -n --no-preserve=owner ${ext_deb_dir}/*.deb -t ${deb_dir}/ || :" \
+        --chroot-setup-commands="ln -sf ${ext_deb_dir}/*.deb -t ${deb_dir}/ || :" \
         --finished-build-commands="rm -f ${deb_dir}/sbuild-build-depends-main-dummy_*.deb" \
-        --finished-build-commands="cp -n --no-preserve=owner ${deb_dir}/*.deb -t ${ext_deb_dir}/ || :" \
+        --finished-build-commands="cp -Ln --no-preserve=owner ${deb_dir}/*.deb -t ${ext_deb_dir}/ || :" \
         --finished-build-commands="cp /var/log/dpkg.log ${ext_root}/dpkg_partial.log" \
         --debbuildopts="--source-option=-I" \
         --build-dir=${WORKDIR} --dist="isar" ${DSC_FILE}
