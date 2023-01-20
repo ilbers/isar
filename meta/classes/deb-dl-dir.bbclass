@@ -86,7 +86,7 @@ deb_dl_dir_import() {
         printenv | grep -q BB_VERBOSE_LOGS && set -x
 
         sudo find "${pc}" -type f -iname "*\.deb" -exec \
-            cp -n --no-preserve=owner -t "${rootfs}"/var/cache/apt/archives/ {} +
+            ln -Pf -t "${rootfs}"/var/cache/apt/archives/ {} +
     '
 }
 
@@ -109,7 +109,7 @@ deb_dl_dir_export() {
             if [ -n "$package" ]; then
                 cmp --silent "$package" "$p" && continue
             fi
-            sudo cp -n "${p}" "${pc}"
+            sudo ln -Pf "${p}" "${pc}"
         done
         sudo chown -R $(id -u):$(id -g) "${pc}"
     '
