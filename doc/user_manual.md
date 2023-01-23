@@ -64,6 +64,7 @@ Install the following packages:
 ```
 apt install \
   binfmt-support \
+  bzip2 \
   debootstrap \
   dosfstools \
   dpkg-dev \
@@ -76,6 +77,8 @@ apt install \
   qemu-user-static \
   reprepro \
   sudo \
+  unzip \
+  xz-utils \
   git-buildpackage \
   pristine-tar \
   sbuild \
