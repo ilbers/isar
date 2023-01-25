@@ -449,11 +449,14 @@ EOSUDO
     # Set same time-stamps to the newly generated file/folders in the
     # rootfs image for the purpose of reproducible builds.
     if [ -n "${SOURCE_DATE_EPOCH}" ]; then
-        sudo find ${ROOTFSDIR} -newermt \
-            "$(date -d@${SOURCE_DATE_EPOCH} '+%Y-%m-%d %H:%M:%S')" \
-            -printf "%y %p\n" \
-            -exec touch '{}' -h -d@${SOURCE_DATE_EPOCH} ';' > ${DEPLOY_DIR_IMAGE}/files.modified_timestamps && \
-            bbwarn "$(grep ^f ${DEPLOY_DIR_IMAGE}/files.modified_timestamps) \nModified above file timestamps to build image reproducibly"
+        fn="${DEPLOY_DIR_IMAGE}/files.modified_timestamps"
+        if sudo find ${ROOTFSDIR} -newermt "$(date -d@${SOURCE_DATE_EPOCH} '+%Y-%m-%d %H:%M:%S')" \
+            -printf "%y %p\n" -exec touch '{}' -h -d@${SOURCE_DATE_EPOCH} ';' | egrep ^f >"$fn"; then
+            if [ -e "$fn" ]; then
+                bbwarn "modified timestamp (${SOURCE_DATE_EPOCH}) of $(cat "$fn" | wc -l) files for image reproducibly." \
+                       "List of files modified can be found in: .${DEPLOY_DIR_IMAGE}/files.modified_timestamps"
+            fi
+        fi
     fi
 
 }
