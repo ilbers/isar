@@ -253,9 +253,11 @@ def spawn(name, sh_cmd, title=None, env=None, d=None):
     finally:
         os.unlink(pidfile)
 
+    # Test for /proc entry so that target pid can also be privileged
+    procpid = "/proc/%d" % pid
     while True:
         try:
-            os.kill(pid, 0)
+            os.stat(procpid)
             time.sleep(0.1)
         except OSError:
            return
