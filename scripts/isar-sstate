@@ -126,7 +126,7 @@ import shutil
 import sys
 from tempfile import NamedTemporaryFile
 import time
-import pickle
+import json
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'bitbake', 'lib'))
 from bb.siggen import compare_sigfiles
@@ -819,41 +819,41 @@ def sstate_lint(target, verbose, sources_dir, build_dir, exit_code, pedantic, **
             continue
 
         sig_file = target.download(sig.path)
-        with open(sig_file, 'rb') as f:
-            try:
-                sigdata_raw = pickle.Unpickler(f)
-                sigdata = sigdata_raw.load()
-            except:
-                # invalid file or format... never mind
-                continue
+        try:
+            with bb.compress.zstd.open(sig_file, "rt", encoding="utf-8", num_threads=1) as f:
+                sigdata = json.load(f, object_hook=bb.siggen.SetDecoder)
+            bb.siggen.handle_renames(sigdata)
+        except:
+            # invalid file or format... never mind
+            continue
 
-            pn_issues = []
-            for name, val in sigdata['varvals'].items():
-                if not name[0].isupper():
-                    continue
-                if sigdata['basewhitelist'] and name in sigdata['basewhitelist'] or \
-                   sigdata['taskwhitelist'] and name in sigdata['taskwhitelist'] or \
-                   name in ADDITIONAL_IGNORED_VARNAMES:
-                    continue
-                if not val:
-                    continue
-                # remove leading whitespaces possibly added by appending
-                val = val.lstrip()
-                if not val[0] == '/':
-                    continue
-                if val.startswith(build_dir):
-                    pn_issues.append(f'\033[0;31m-> path in build-dir:   {name} = "{val}"\033[0m')
-                    hits_builddir += 1
-                elif val.startswith(sources_dir):
-                    pn_issues.append(f'\033[0;31m-> path in sources-dir: {name} = "{val}"\033[0m')
-                    hits_srcdir += 1
-                else:
-                    hits_other += 1
-                    if verbose:
-                        pn_issues.append(f'\033[0;34m-> other absolute path: {name} = "{val}"\033[0m')
-            if len(pn_issues) > 0:
-                print(f"\033[1;33m==== issues found in {sig.arch}:{sig.pn}:{sig.task} ({sig.hash[:8]}) ====\033[0m")
-                print('\n'.join(pn_issues))
+        pn_issues = []
+        for name, val in sigdata['varvals'].items():
+            if not name[0].isupper():
+                continue
+            if sigdata['basehash_ignore_vars'] and name in sigdata['basehash_ignore_vars'] or \
+               sigdata['taskhash_ignore_tasks'] and name in sigdata['taskhash_ignore_tasks'] or \
+               name in ADDITIONAL_IGNORED_VARNAMES:
+                continue
+            if not val:
+                continue
+            # remove leading whitespaces possibly added by appending
+            val = val.lstrip()
+            if not val[0] == '/':
+                continue
+            if val.startswith(build_dir):
+                pn_issues.append(f'\033[0;31m-> path in build-dir:   {name} = "{val}"\033[0m')
+                hits_builddir += 1
+            elif val.startswith(sources_dir):
+                pn_issues.append(f'\033[0;31m-> path in sources-dir: {name} = "{val}"\033[0m')
+                hits_srcdir += 1
+            else:
+                hits_other += 1
+                if verbose:
+                    pn_issues.append(f'\033[0;34m-> other absolute path: {name} = "{val}"\033[0m')
+        if len(pn_issues) > 0:
+            print(f"\033[1;33m==== issues found in {sig.arch}:{sig.pn}:{sig.task} ({sig.hash[:8]}) ====\033[0m")
+            print('\n'.join(pn_issues))
         target.release(sig_file)
 
     sum_hits = hits_srcdir + hits_builddir
