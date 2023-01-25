@@ -79,7 +79,8 @@ apt install \
   git-buildpackage \
   pristine-tar \
   sbuild \
-  schroot
+  schroot \
+  zstd
 ```
 
 If your host is >= buster, also install the following package.
