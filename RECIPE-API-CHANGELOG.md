@@ -441,3 +441,38 @@ exist, empty variables are forwarded.
 
 **Note about reproducibility**: the forwarded variables must not have any influence on the generated package.
 This mechanism must also not be used to inject build configurations. For these cases, templates should be used.
+
+### Override syntax changes
+
+Using `_` in override syntax was changed to `:`.
+All the recipes should be changed manually or with helper script:
+
+```
+$ python3 scripts/contrib/convert-overrides.py <layer_path>
+```
+
+The script should be adopted to the downstream layer by adding all new
+overrides like machine names or custom distro names.
+
+### SRC_URI should always have some branch specified
+
+All the recipes with git fetcher now should have branch name in SRC_URI because
+"master" is no longer the default.
+
+### SRCREV must always be a hash
+
+Tag/branch names, including the pattern `SRCREV = "v${PV}"`, are no longer
+allowed.
+
+### Network usage tasks should be marked
+
+With the new bitbake version all the tasks need network access should be marked
+with the flag [network] = '1'.
+
+### Sstate artifacts are now packed with ZStandard
+
+Share State cache compression was moved from Gzip to ZStandard (zstd) in
+Bitbake 2.0 for better performance. It also requires isar-sstate script to be
+migrated to zstd.
+Mixing old Gzip-based and new ZStandatd-based sstate cache is not recommended
+and should be avoid for correct compatibility.
