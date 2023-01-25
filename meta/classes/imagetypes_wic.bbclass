@@ -85,7 +85,7 @@ python () {
 
 inherit buildchroot
 
-IMAGER_INSTALL_wic += "${WIC_IMAGER_INSTALL}"
+IMAGER_INSTALL:wic += "${WIC_IMAGER_INSTALL}"
 # wic comes with reasonable defaults, and the proper interface is the wks file
 ROOTFS_EXTRA ?= "0"
 
@@ -144,7 +144,7 @@ check_for_wic_warnings() {
 }
 
 do_image_wic[file-checksums] += "${WKS_FILE_CHECKSUM}"
-IMAGE_CMD_wic() {
+IMAGE_CMD:wic() {
     wic_do_mounts
     generate_wic_image
     check_for_wic_warnings

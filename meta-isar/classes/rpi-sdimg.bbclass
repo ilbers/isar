@@ -3,7 +3,7 @@
 #
 # Based on SD class from meta-raspberrypi
 
-IMAGE_TYPEDEP_rpi_sdimg = "wic"
+IMAGE_TYPEDEP:rpi_sdimg = "wic"
 
 WKS_FILE ?= "rpi-sdimg"
 
@@ -19,6 +19,6 @@ IMAGE_BOOT_FILES ?= "${IMAGE_ROOTFS}/boot/*.*;./ \
 
 IMAGE_INSTALL += "bootconfig-${MACHINE}"
 
-python do_wic_image_prepend() {
+python do_wic_image:prepend() {
     bb.warn("rpi-sdimg image type is deprecated, please change to wic.")
 }

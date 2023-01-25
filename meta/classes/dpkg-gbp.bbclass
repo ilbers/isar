@@ -13,7 +13,7 @@ GBP_EXTRA_OPTIONS ?= "--git-pristine-tar"
 
 SCHROOT_MOUNTS = "${WORKDIR}:${PP} ${GITDIR}:/home/.git-downloads"
 
-dpkg_runbuild_prepend() {
+dpkg_runbuild:prepend() {
     sh -c "
         cd ${WORKDIR}/${PPS}
         gbp buildpackage --git-ignore-new --git-builder=/bin/true ${GBP_EXTRA_OPTIONS}

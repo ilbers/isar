@@ -13,9 +13,9 @@ TEMPLATE_VARS = "MACHINE_SERIAL BAUDRATE_TTY"
 TEMPLATE_FILES = "cmdline.txt.tmpl"
 
 # Exceptions for RPi1
-SRC_URI_append_rpi = " file://postinst"
-SRC_URI_remove_rpi = "file://cmdline.txt.tmpl"
-TEMPLATE_FILES_remove_rpi = "cmdline.txt.tmpl"
+SRC_URI:append:rpi = " file://postinst"
+SRC_URI:remove:rpi = "file://cmdline.txt.tmpl"
+TEMPLATE_FILES:remove:rpi = "cmdline.txt.tmpl"
 
 PN = "bootconfig-${MACHINE}"
 

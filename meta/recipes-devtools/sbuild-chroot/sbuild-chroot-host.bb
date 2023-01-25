@@ -18,7 +18,7 @@ SBUILD_CHROOT_PREINSTALL ?= " \
     crossbuild-essential-${DISTRO_ARCH} \
     "
 
-SBUILD_CHROOT_PREINSTALL_riscv64 ?= " \
+SBUILD_CHROOT_PREINSTALL:riscv64 ?= " \
     ${SBUILD_CHROOT_PREINSTALL_COMMON} \
     gcc-riscv64-linux-gnu \
     g++-riscv64-linux-gnu \

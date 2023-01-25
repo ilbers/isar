@@ -13,4 +13,4 @@ SRC_URI += " \
 
 SRCREV = "af3adf9f9c633ac0e1d68487d7fad22285dda8a3"
 
-KERNEL_DEFCONFIG_qemuamd64 = "x86_64_defconfig"
+KERNEL_DEFCONFIG:qemuamd64 = "x86_64_defconfig"

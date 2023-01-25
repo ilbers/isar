@@ -31,8 +31,8 @@ KERNEL_DEBIAN_DEPENDS ?= "initramfs-tools | linux-initramfs-tool, \
                           linux-base (>= 4.3~),"
 
 LIBSSL_DEP = "libssl3"
-LIBSSL_DEP_buster = "libssl1.1"
-LIBSSL_DEP_bullseye = "libssl1.1"
+LIBSSL_DEP:buster = "libssl1.1"
+LIBSSL_DEP:bullseye = "libssl1.1"
 
 KERNEL_HEADERS_DEBIAN_DEPENDS ?= "libc6, \
                                   ${LIBSSL_DEP},"
@@ -47,7 +47,7 @@ LINUX_VERSION_EXTENSION ?= ""
 KERNEL_DEFCONFIG ??= ""
 
 # Add our template meta-data to the sources
-FILESEXTRAPATHS_prepend := "${FILE_DIRNAME}/files:"
+FILESEXTRAPATHS:prepend := "${FILE_DIRNAME}/files:"
 SRC_URI += "file://debian"
 
 # Variables and files that make our templates
@@ -138,7 +138,7 @@ def get_additional_build_profiles(d):
 
 DEB_BUILD_PROFILES += "${@get_additional_build_profiles(d)}"
 
-do_prepare_build_prepend() {
+do_prepare_build:prepend() {
 	# copy meta-data over to source tree
 	rm -rf ${S}/debian
 	cp -r ${WORKDIR}/debian ${S}/
@@ -209,6 +209,6 @@ EOF
 	fi
 }
 
-dpkg_runbuild_prepend() {
+dpkg_runbuild:prepend() {
 	dpkg_configure_kernel
 }

@@ -5,7 +5,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-FILESEXTRAPATHS_prepend := "${FILE_DIRNAME}/files:"
+FILESEXTRAPATHS:prepend := "${FILE_DIRNAME}/files:"
 
 DESCRIPTION ?= "Custom kernel module ${PN}"
 

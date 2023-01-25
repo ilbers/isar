@@ -56,41 +56,41 @@ python __anonymous() {
 }
 
 # rootfs/image overrides for the SDK
-ROOTFS_ARCH_class-sdk = "${HOST_ARCH}"
-ROOTFS_DISTRO_class-sdk = "${HOST_DISTRO}"
-ROOTFS_PACKAGES_class-sdk = "sdk-files ${TOOLCHAIN} ${SDK_PREINSTALL} ${SDK_INSTALL}"
-ROOTFS_FEATURES_append_class-sdk = " clean-package-cache generate-manifest export-dpkg-status"
-ROOTFS_MANIFEST_DEPLOY_DIR_class-sdk = "${DEPLOY_DIR_SDKCHROOT}"
-ROOTFS_DPKGSTATUS_DEPLOY_DIR_class-sdk = "${DEPLOY_DIR_SDKCHROOT}"
+ROOTFS_ARCH:class-sdk = "${HOST_ARCH}"
+ROOTFS_DISTRO:class-sdk = "${HOST_DISTRO}"
+ROOTFS_PACKAGES:class-sdk = "sdk-files ${TOOLCHAIN} ${SDK_PREINSTALL} ${SDK_INSTALL}"
+ROOTFS_FEATURES:append:class-sdk = " clean-package-cache generate-manifest export-dpkg-status"
+ROOTFS_MANIFEST_DEPLOY_DIR:class-sdk = "${DEPLOY_DIR_SDKCHROOT}"
+ROOTFS_DPKGSTATUS_DEPLOY_DIR:class-sdk = "${DEPLOY_DIR_SDKCHROOT}"
 
-IMAGE_FSTYPES_class-sdk = "${SDK_FORMATS}"
+IMAGE_FSTYPES:class-sdk = "${SDK_FORMATS}"
 
 # bitbake dependencies
 SDKDEPENDS += "sdk-files ${SDK_INSTALL}"
-SDKDEPENDS_append_riscv64 = "${@' crossbuild-essential-riscv64' if d.getVar('ISAR_CROSS_COMPILE', True) == '1' and d.getVar('PN') != 'crossbuild-essential-riscv64' else ''}"
-DEPENDS_class-sdk = "${SDKDEPENDS}"
+SDKDEPENDS:append:riscv64 = "${@' crossbuild-essential-riscv64' if d.getVar('ISAR_CROSS_COMPILE', True) == '1' and d.getVar('PN') != 'crossbuild-essential-riscv64' else ''}"
+DEPENDS:class-sdk = "${SDKDEPENDS}"
 
 SDKROOTFSDEPENDS = ""
-SDKROOTFSDEPENDS_class-sdk = "${BPN}:do_rootfs"
+SDKROOTFSDEPENDS:class-sdk = "${BPN}:do_rootfs"
 do_rootfs_install[depends] += "${SDKROOTFSDEPENDS}"
 
 SDKROOTFSVARDEPS = ""
-SDKROOTFSVARDEPS_class-sdk = "SDK_INCLUDE_ISAR_APT"
+SDKROOTFSVARDEPS:class-sdk = "SDK_INCLUDE_ISAR_APT"
 do_rootfs_install[vardeps] += "${SDKROOTFSVARDEPS}"
 
 # additional SDK steps
-ROOTFS_CONFIGURE_COMMAND_append_class-sdk = " ${@'rootfs_configure_isar_apt_dir' if d.getVar('SDK_INCLUDE_ISAR_APT') == '1' else ''}"
+ROOTFS_CONFIGURE_COMMAND:append:class-sdk = " ${@'rootfs_configure_isar_apt_dir' if d.getVar('SDK_INCLUDE_ISAR_APT') == '1' else ''}"
 rootfs_configure_isar_apt_dir() {
     # Copy isar-apt instead of mounting:
     sudo cp -Trpfx --reflink=auto ${REPO_ISAR_DIR}/${DISTRO} ${ROOTFSDIR}/isar-apt
 }
 
-ROOTFS_POSTPROCESS_COMMAND_prepend_class-sdk = "sdkchroot_configscript "
+ROOTFS_POSTPROCESS_COMMAND:prepend:class-sdk = "sdkchroot_configscript "
 sdkchroot_configscript () {
     sudo chroot ${ROOTFSDIR} /configscript.sh ${DISTRO_ARCH}
 }
 
-ROOTFS_POSTPROCESS_COMMAND_append_class-sdk = " sdkchroot_finalize"
+ROOTFS_POSTPROCESS_COMMAND:append:class-sdk = " sdkchroot_finalize"
 sdkchroot_finalize() {
     if [ "${SDK_INCLUDE_ISAR_APT}" = "0" ]; then
         # Remove isar-apt repo entry
@@ -132,7 +132,7 @@ do_deploy_sdkchroot() {
     ln -Tfsr "${ROOTFSDIR}" "${SDKCHROOT_DIR}"
 }
 
-CLEANFUNCS_class-sdk = "clean_deploy"
+CLEANFUNCS:class-sdk = "clean_deploy"
 clean_deploy() {
     rm -f "${SDKCHROOT_DIR}"
 }

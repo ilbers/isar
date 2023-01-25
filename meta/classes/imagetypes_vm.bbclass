@@ -8,12 +8,12 @@ inherit buildchroot
 
 USING_OVA = "${@bb.utils.contains('IMAGE_BASETYPES', 'ova', '1', '0', d)}"
 
-FILESEXTRAPATHS_prepend := "${LAYERDIR_core}/classes/vm-img:"
+FILESEXTRAPATHS:prepend := "${LAYERDIR_core}/classes/vm-img:"
 OVF_TEMPLATE_FILE ?= "vm-img-virtualbox.ovf.tmpl"
 SRC_URI += "${@'file://${OVF_TEMPLATE_FILE}' if d.getVar('USING_OVA') == '1' else ''}"
 
-IMAGE_TYPEDEP_ova = "wic"
-IMAGER_INSTALL_ova += "qemu-utils gawk uuid-runtime"
+IMAGE_TYPEDEP:ova = "wic"
+IMAGER_INSTALL:ova += "qemu-utils gawk uuid-runtime"
 
 # virtual machine disk settings
 SOURCE_IMAGE_FILE ?= "${IMAGE_FULLNAME}.wic"
@@ -71,7 +71,7 @@ TEMPLATE_FILES += "${@'${OVF_TEMPLATE_FILE}' if d.getVar('USING_OVA') == '1' els
 TEMPLATE_VARS += "${OVA_VARS}"
 
 do_image_ova[prefuncs] += "convert_wic"
-IMAGE_CMD_ova() {
+IMAGE_CMD:ova() {
     if [ ! ${VIRTUAL_MACHINE_IMAGE_TYPE} = "vmdk" ]; then
         exit 0
     fi
@@ -102,4 +102,4 @@ IMAGE_CMD_ova() {
         tar -uvf ${PP_DEPLOY}/${OVA_NAME}.ova -C ${PP_DEPLOY} ${VIRTUAL_MACHINE_IMAGE_FILE}
 EOSUDO
 }
-IMAGE_CMD_ova[depends] = "${PN}:do_transform_template"
+IMAGE_CMD:ova[depends] = "${PN}:do_transform_template"

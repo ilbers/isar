@@ -13,7 +13,7 @@ inherit deb-dl-dir
 DEPENDS ?= ""
 RPROVIDES ?= "${PROVIDES}"
 
-DEPENDS_append_riscv64 = "${@' crossbuild-essential-riscv64' if d.getVar('ISAR_CROSS_COMPILE', True) == '1' and d.getVar('PN') != 'crossbuild-essential-riscv64' else ''}"
+DEPENDS:append:riscv64 = "${@' crossbuild-essential-riscv64' if d.getVar('ISAR_CROSS_COMPILE', True) == '1' and d.getVar('PN') != 'crossbuild-essential-riscv64' else ''}"
 DEB_BUILD_PROFILES ?= ""
 DEB_BUILD_OPTIONS ?= ""
 
@@ -187,7 +187,7 @@ addtask prepare_build after do_patch do_transform_template before do_dpkg_build
 do_prepare_build[deptask] = "do_deploy_deb"
 do_prepare_build[depends] = "${SCHROOT_DEP}"
 
-do_prepare_build_append() {
+do_prepare_build:append() {
     # Make a local copy of isar-apt repo that is not affected by other parallel builds
     mkdir -p ${WORKDIR}/isar-apt/${DISTRO}-${DISTRO_ARCH}
     rm -rf ${WORKDIR}/isar-apt/${DISTRO}-${DISTRO_ARCH}/*

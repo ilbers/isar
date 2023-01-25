@@ -19,12 +19,12 @@ SRC_URI[sha256sum] = "fc933f5b13066cfa54aacb5e86747a167bad1d8d23972e4a03ab5ee36c
 
 S = "${WORKDIR}/linux-${ARCHIVE_VERSION}"
 
-KERNEL_DEFCONFIG_qemuamd64 = "x86_64_defconfig"
+KERNEL_DEFCONFIG:qemuamd64 = "x86_64_defconfig"
 
 LINUX_VERSION_EXTENSION = "-isar"
 
 # For testing purposes only
-dpkg_configure_kernel_append() {
+dpkg_configure_kernel:append() {
     grep -q "# CONFIG_MTD is not set" ${S}/debian/rules ||
         cat << EOF | sed -i '/^override_dh_auto_build/ r /dev/stdin' ${S}/debian/rules
 	if ! grep "# CONFIG_MTD is not set" \$(O)/.config && \\

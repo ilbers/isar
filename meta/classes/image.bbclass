@@ -86,7 +86,7 @@ ROOTFS_MANIFEST_DEPLOY_DIR ?= "${DEPLOY_DIR_IMAGE}"
 ROOTFS_DPKGSTATUS_DEPLOY_DIR ?= "${DEPLOY_DIR_IMAGE}"
 ROOTFS_PACKAGE_SUFFIX ?= "${PN}-${DISTRO}-${MACHINE}"
 
-ROOTFS_POSTPROCESS_COMMAND_prepend = "${@bb.utils.contains('BASE_REPO_FEATURES', 'cache-deb-src', 'cache_deb_src', '', d)} "
+ROOTFS_POSTPROCESS_COMMAND:prepend = "${@bb.utils.contains('BASE_REPO_FEATURES', 'cache-deb-src', 'cache_deb_src', '', d)} "
 
 inherit rootfs
 inherit sdk
@@ -136,7 +136,7 @@ def get_image_basetypes(d):
             # be backwards-compatible
             bt = bt[:-len('-img')]
             bb.warn("IMAGE_TYPE '{0}-img' is deprecated. Please use '{0}' instead.".format(bt))
-        deps = (d.getVar('IMAGE_TYPEDEP_' + bt.replace('-', '_').replace('.', '_')) or '').split()
+        deps = (d.getVar('IMAGE_TYPEDEP:' + bt.replace('-', '_').replace('.', '_')) or '').split()
         ret = set([bt])
         for dep in deps:
             ret |= recurse(dep)
@@ -180,8 +180,8 @@ python() {
         if t not in basetypes[bt]:
             basetypes[bt].append(t)
         t_clean = t.replace('-', '_').replace('.', '_')
-        deps = (d.getVar('IMAGE_TYPEDEP_' + t_clean) or '').split()
-        vardeps.add('IMAGE_TYPEDEP_' + t_clean)
+        deps = (d.getVar('IMAGE_TYPEDEP:' + t_clean) or '').split()
+        vardeps.add('IMAGE_TYPEDEP:' + t_clean)
         if bt not in typedeps:
             typedeps[bt] = set()
         for dep in deps:
@@ -213,7 +213,7 @@ python() {
         localdata.delVar('DATETIME')
         localdata.delVar('DATE')
         localdata.delVar('TMPDIR')
-        vardepsexclude = (d.getVarFlag('IMAGE_CMD_' + bt_clean, 'vardepsexclude', True) or '').split()
+        vardepsexclude = (d.getVarFlag('IMAGE_CMD:' + bt_clean, 'vardepsexclude', True) or '').split()
         for dep in vardepsexclude:
             localdata.delVar(dep)
 
@@ -223,30 +223,30 @@ python() {
             bb.fatal("IMAGE_TYPE '%s' requires these arguments: %s" % (image_type, ', '.join(required_args)))
 
         # imager install
-        for dep in (d.getVar('IMAGER_INSTALL_' + bt_clean) or '').split():
+        for dep in (d.getVar('IMAGER_INSTALL:' + bt_clean) or '').split():
             imager_install.add(dep)
-        for dep in (d.getVar('IMAGER_BUILD_DEPS_' + bt_clean) or '').split():
+        for dep in (d.getVar('IMAGER_BUILD_DEPS:' + bt_clean) or '').split():
             imager_build_deps.add(dep)
 
         # construct image command
         cmds.append('\timage_do_mounts')
-        image_cmd = localdata.getVar('IMAGE_CMD_' + bt_clean)
+        image_cmd = localdata.getVar('IMAGE_CMD:' + bt_clean)
         if image_cmd:
             localdata.setVar('type', bt)
             cmds.append(localdata.expand(image_cmd))
             cmds.append(localdata.expand('\tsudo chown $(id -u):$(id -g) ${IMAGE_FILE_HOST}'))
         else:
             bb.fatal("No IMAGE_CMD for %s" % bt)
-        vardeps.add('IMAGE_CMD_' + bt_clean)
-        d.delVarFlag('IMAGE_CMD_' + bt_clean, 'func')
-        task_deps = d.getVarFlag('IMAGE_CMD_' + bt_clean, 'depends')
+        vardeps.add('IMAGE_CMD:' + bt_clean)
+        d.delVarFlag('IMAGE_CMD:' + bt_clean, 'func')
+        task_deps = d.getVarFlag('IMAGE_CMD:' + bt_clean, 'depends')
 
-        image_src = localdata.getVar('IMAGE_SRC_URI_' + bt_clean)
+        image_src = localdata.getVar('IMAGE_SRC_URI:' + bt_clean)
         if image_src:
             d.appendVar("SRC_URI", ' ' + image_src)
 
-        image_tmpl_files = localdata.getVar('IMAGE_TEMPLATE_FILES_' + bt_clean)
-        image_tmpl_vars = localdata.getVar('IMAGE_TEMPLATE_VARS_' + bt_clean)
+        image_tmpl_files = localdata.getVar('IMAGE_TEMPLATE_FILES:' + bt_clean)
+        image_tmpl_vars = localdata.getVar('IMAGE_TEMPLATE_VARS:' + bt_clean)
         if image_tmpl_files:
             d.appendVar("TEMPLATE_FILES", ' ' + image_tmpl_files)
         if image_tmpl_vars:
@@ -261,12 +261,12 @@ python() {
                     t = t[:-len(c) - 1]
                     create_conversions(t)
                     localdata.setVar('type', t)
-                    cmd = '\t' + localdata.getVar('CONVERSION_CMD_' + c)
+                    cmd = '\t' + localdata.getVar('CONVERSION_CMD:' + c)
                     if cmd not in cmds:
                         cmds.append(cmd)
                         cmds.append(localdata.expand('\tsudo chown $(id -u):$(id -g) ${IMAGE_FILE_HOST}.%s' % c))
-                    vardeps.add('CONVERSION_CMD_' + c)
-                    for dep in (localdata.getVar('CONVERSION_DEPS_' + c) or '').split():
+                    vardeps.add('CONVERSION_CMD:' + c)
+                    for dep in (localdata.getVar('CONVERSION_DEPS:' + c) or '').split():
                         conversion_install.add(dep)
                     # remove temporary image files
                     if t not in image_types:
@@ -310,7 +310,7 @@ python() {
 #       image rootfs reproducible. Otherwise changes of SOURCE_DATE_EPOCH would
 #       invalidate the SSTATE entries for most packages, even if they don't use the
 #       global SOURCE_DATE_EPOCH variable.
-rootfs_install_pkgs_install_prepend() {
+rootfs_install_pkgs_install:prepend() {
     if [ ! -z "${SOURCE_DATE_EPOCH}" ]; then
         export SOURCE_DATE_EPOCH="${SOURCE_DATE_EPOCH}"
     fi

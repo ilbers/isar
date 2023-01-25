@@ -14,7 +14,7 @@ BAREBOX_BUILD_DIR ?= "build"
 BAREBOX_VERSION_EXTENSION ?= ""
 BAREBOX_ENV ?= ""
 
-FILESEXTRAPATHS_prepend := "${FILE_DIRNAME}/files:"
+FILESEXTRAPATHS:prepend := "${FILE_DIRNAME}/files:"
 SRC_URI += "file://rules.tmpl \
             file://version.cfg.tmpl \
             file://defaultenv.cfg.tmpl"

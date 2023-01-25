@@ -7,7 +7,7 @@ SRC_URI[sha256sum] = "ce0cff708da9f3dca1f6f8d6c433589fd5a5ea8db9e33114f44497ecf8
 
 S = "${WORKDIR}/linux-mainline-${PV}"
 
-KBUILD_DEPENDS_append = "lzop"
+KBUILD_DEPENDS:append = "lzop"
 
 KERNEL_DEFCONFIG = "imx_v6_v7_defconfig"
 
