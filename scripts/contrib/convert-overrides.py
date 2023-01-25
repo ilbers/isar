@@ -29,18 +29,16 @@ if len(sys.argv) < 2:
 
 # List of strings to treat as overrides
 vars = ["append", "prepend", "remove"]
-vars = vars + ["qemuarm", "qemux86", "qemumips", "qemuppc", "qemuriscv", "qemuall"]
-vars = vars + ["genericx86", "edgerouter", "beaglebone-yocto"]
-vars = vars + ["armeb", "arm", "armv5", "armv6", "armv4", "powerpc64", "aarch64", "riscv32", "riscv64", "x86", "mips64", "powerpc"]
-vars = vars + ["mipsarch", "x86-x32", "mips16e", "microblaze", "e5500-64b", "mipsisa32", "mipsisa64"]
-vars = vars + ["class-native", "class-target", "class-cross-canadian", "class-cross", "class-devupstream"]
-vars = vars + ["tune-",  "pn-", "forcevariable"]
-vars = vars + ["libc-musl", "libc-glibc", "libc-newlib","libc-baremetal"]
-vars = vars + ["task-configure", "task-compile", "task-install", "task-clean", "task-image-qa", "task-rm_work", "task-image-complete", "task-populate-sdk"]
-vars = vars + ["toolchain-clang", "mydistro", "nios2", "sdkmingw32", "overrideone", "overridetwo"]
-vars = vars + ["linux-gnux32", "linux-muslx32", "linux-gnun32", "mingw32", "poky", "darwin", "linuxstdbase"]
-vars = vars + ["linux-gnueabi", "eabi"]
-vars = vars + ["virtclass-multilib", "virtclass-mcextend"]
+vars = vars + ["qemuamd64", "qemuarm", "qemuarm64", "qemui386", "qemumipsel", "qemuriscv64"]
+vars = vars + ["container-amd64", "virtualbox", "vmware"]
+vars = vars + ["bananapi", "de0-nano-soc", "hikey", "imx6-sabrelite", "nanopi-neo", "phyboard-mira", "sifive-fu540", "stm32mp15x"]
+vars = vars + ["rpi-arm-v7", "rpi-arm-v7l", "rpi-arm", "rpi-arm64-v8", "rpi"]
+vars = vars + ["amd64", "armhf", "arm64", "i386", "mipsel", "riscv64"]
+vars = vars + ["debian-stretch", "debian-buster", "debian-bullseye", "debian-bookworm", "debian-sid", "debian-sid-ports"]
+vars = vars + ["stretch", "buster", "bullseye", "bookworm", "sid", "sid-ports"]
+vars = vars + ["raspbian-stretch", "raspios-bullseye", "ubuntu-focal"]
+vars = vars + ["oci", "oci-archive", "docker-archive", "docker-daemon", "containers-storage"]
+vars = vars + ["compat-arch", "class-sdk", "gnupg", "https-support", "forcevariable"]
 
 # List of strings to treat as overrides but only with whitespace following or another override (more restricted matching).
 # Handles issues with arc matching arch.
@@ -63,8 +61,11 @@ skips = skips + ["run_loaddata_poky", "determine_if_poky_env", "do_populate_poky
 skips = skips + ["get_appends_for_files", "test_doubleref_remove", "test_bitbakelayers_add_remove", "elf32_x86_64", "colour_remove", "revmap_remove"]
 skips = skips + ["test_rpm_remove", "test_bitbakelayers_add_remove", "recipe_append_file", "log_data_removed", "recipe_append", "systemd_machine_unit_append"]
 skips = skips + ["recipetool_append", "changetype_remove", "try_appendfile_wc", "test_qemux86_directdisk", "test_layer_appends", "tgz_removed"]
+skips = skips + ["self._removePatch", "self._removePatchFile", "self._appendPatchFile", "script_prepend"]
 
 imagevars = ["IMAGE_CMD", "EXTRA_IMAGECMD", "IMAGE_TYPEDEP", "CONVERSION_CMD", "COMPRESS_CMD"]
+imagevars = imagevars + ["TOOLCHAIN", "BOOTSTRAP_SRC", "IMAGE_FSTYPES", "IMAGE_SRC_URI", "IMAGE_TEMPLATE_FILES", "IMAGE_TEMPLATE_VARS", "IMAGE_CMD_REQUIRED_ARGS"]
+imagevars = imagevars + ["IMAGE_FULLNAME", "CONVERSION_DEPS", "BUILDCHROOT_PREINSTALL", "IMAGER_BUILD_DEPS", "IMAGER_INSTALL"]
 packagevars = packagevars + imagevars
 
 vars_re = {}
