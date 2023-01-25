@@ -239,6 +239,8 @@ rootfs_postprocess_clean_package_cache() {
     sudo -E chroot '${ROOTFSDIR}' \
         /usr/bin/apt-get clean
     sudo rm -rf "${ROOTFSDIR}/var/lib/apt/lists/"*
+    # remove apt-cache folder itself (required in case rootfs is provided by sstate cache)
+    sudo rm -rf "${ROOTFSDIR}/var/cache/apt/archives"
 }
 
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'clean-log-files', 'rootfs_postprocess_clean_log_files', '', d)}"
