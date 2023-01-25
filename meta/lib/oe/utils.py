@@ -1,4 +1,6 @@
 #
+# Imported from openembedded-core
+#
 # SPDX-License-Identifier: GPL-2.0-only
 #
 
@@ -221,12 +223,12 @@ def packages_filter_out_system(d):
     PN-dbg PN-doc PN-locale-eb-gb removed.
     """
     pn = d.getVar('PN')
-    blacklist = [pn + suffix for suffix in ('', '-dbg', '-dev', '-doc', '-locale', '-staticdev', '-src')]
+    pkgfilter = [pn + suffix for suffix in ('', '-dbg', '-dev', '-doc', '-locale', '-staticdev', '-src')]
     localepkg = pn + "-locale-"
     pkgs = []
 
     for pkg in d.getVar('PACKAGES').split():
-        if pkg not in blacklist and localepkg not in pkg:
+        if pkg not in pkgfilter and localepkg not in pkg:
             pkgs.append(pkg)
     return pkgs
 
@@ -248,9 +250,9 @@ def trim_version(version, num_parts=2):
     trimmed = ".".join(parts[:num_parts])
     return trimmed
 
-def cpu_count(at_least=1):
+def cpu_count(at_least=1, at_most=64):
     cpus = len(os.sched_getaffinity(0))
-    return max(cpus, at_least)
+    return max(min(cpus, at_most), at_least)
 
 def execute_pre_post_process(d, cmds):
     if cmds is None:
@@ -344,7 +346,29 @@ def squashspaces(string):
     import re
     return re.sub(r"\s+", " ", string).strip()
 
-def format_pkg_list(pkg_dict, ret_format=None):
+def rprovides_map(pkgdata_dir, pkg_dict):
+    # Map file -> pkg provider
+    rprov_map = {}
+
+    for pkg in pkg_dict:
+        path_to_pkgfile = os.path.join(pkgdata_dir, 'runtime-reverse', pkg)
+        if not os.path.isfile(path_to_pkgfile):
+            continue
+        with open(path_to_pkgfile) as f:
+            for line in f:
+                if line.startswith('RPROVIDES') or line.startswith('FILERPROVIDES'):
+                    # List all components provided by pkg.
+                    # Exclude version strings, i.e. those starting with (
+                    provides = [x for x in line.split()[1:] if not x.startswith('(')]
+                    for prov in provides:
+                        if prov in rprov_map:
+                            rprov_map[prov].append(pkg)
+                        else:
+                            rprov_map[prov] = [pkg]
+
+    return rprov_map
+
+def format_pkg_list(pkg_dict, ret_format=None, pkgdata_dir=None):
     output = []
 
     if ret_format == "arch":
@@ -357,9 +381,15 @@ def format_pkg_list(pkg_dict, ret_format=None):
         for pkg in sorted(pkg_dict):
             output.append("%s %s %s" % (pkg, pkg_dict[pkg]["arch"], pkg_dict[pkg]["ver"]))
     elif ret_format == "deps":
+        rprov_map = rprovides_map(pkgdata_dir, pkg_dict)
         for pkg in sorted(pkg_dict):
             for dep in pkg_dict[pkg]["deps"]:
-                output.append("%s|%s" % (pkg, dep))
+                if dep in rprov_map:
+                    # There could be multiple providers within the image
+                    for pkg_provider in rprov_map[dep]:
+                        output.append("%s|%s * %s [RPROVIDES]" % (pkg, pkg_provider, dep))
+                else:
+                    output.append("%s|%s" % (pkg, dep))
     else:
         for pkg in sorted(pkg_dict):
             output.append(pkg)
@@ -455,8 +485,8 @@ from threading import Thread
 
 class ThreadedWorker(Thread):
     """Thread executing tasks from a given tasks queue"""
-    def __init__(self, tasks, worker_init, worker_end):
-        Thread.__init__(self)
+    def __init__(self, tasks, worker_init, worker_end, name=None):
+        Thread.__init__(self, name=name)
         self.tasks = tasks
         self.daemon = True
 
@@ -480,19 +510,19 @@ class ThreadedWorker(Thread):
             try:
                 func(self, *args, **kargs)
             except Exception as e:
-                print(e)
+                # Eat all exceptions
+                bb.mainlogger.debug("Worker task raised %s" % e, exc_info=e)
             finally:
                 self.tasks.task_done()
 
 class ThreadedPool:
     """Pool of threads consuming tasks from a queue"""
-    def __init__(self, num_workers, num_tasks, worker_init=None,
-            worker_end=None):
+    def __init__(self, num_workers, num_tasks, worker_init=None, worker_end=None, name="ThreadedPool-"):
         self.tasks = Queue(num_tasks)
         self.workers = []
 
-        for _ in range(num_workers):
-            worker = ThreadedWorker(self.tasks, worker_init, worker_end)
+        for i in range(num_workers):
+            worker = ThreadedWorker(self.tasks, worker_init, worker_end, name=name + str(i))
             self.workers.append(worker)
 
     def start(self):
@@ -508,17 +538,6 @@ class ThreadedPool:
         self.tasks.join()
         for worker in self.workers:
             worker.join()
-
-def write_ld_so_conf(d):
-    # Some utils like prelink may not have the correct target library paths
-    # so write an ld.so.conf to help them
-    ldsoconf = d.expand("${STAGING_DIR_TARGET}${sysconfdir}/ld.so.conf")
-    if os.path.exists(ldsoconf):
-        bb.utils.remove(ldsoconf)
-    bb.utils.mkdirhier(os.path.dirname(ldsoconf))
-    with open(ldsoconf, "w") as f:
-        f.write(d.getVar("base_libdir") + '\n')
-        f.write(d.getVar("libdir") + '\n')
 
 class ImageQAFailed(Exception):
     def __init__(self, description, name=None, logfile=None):

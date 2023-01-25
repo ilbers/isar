@@ -1,4 +1,6 @@
 #
+# Imported from openembedded-core
+#
 # SPDX-License-Identifier: GPL-2.0-only
 #
 
@@ -264,3 +266,80 @@ def realpath(file, root, use_physdir = True, loop_cnt = 100, assume_dir = False)
         raise
 
     return file
+
+def is_path_parent(possible_parent, *paths):
+    """
+    Return True if a path is the parent of another, False otherwise.
+    Multiple paths to test can be specified in which case all
+    specified test paths must be under the parent in order to
+    return True.
+    """
+    def abs_path_trailing(pth):
+        pth_abs = os.path.abspath(pth)
+        if not pth_abs.endswith(os.sep):
+            pth_abs += os.sep
+        return pth_abs
+
+    possible_parent_abs = abs_path_trailing(possible_parent)
+    if not paths:
+        return False
+    for path in paths:
+        path_abs = abs_path_trailing(path)
+        if not path_abs.startswith(possible_parent_abs):
+            return False
+    return True
+
+def which_wild(pathname, path=None, mode=os.F_OK, *, reverse=False, candidates=False):
+    """Search a search path for pathname, supporting wildcards.
+
+    Return all paths in the specific search path matching the wildcard pattern
+    in pathname, returning only the first encountered for each file. If
+    candidates is True, information on all potential candidate paths are
+    included.
+    """
+    paths = (path or os.environ.get('PATH', os.defpath)).split(':')
+    if reverse:
+        paths.reverse()
+
+    seen, files = set(), []
+    for index, element in enumerate(paths):
+        if not os.path.isabs(element):
+            element = os.path.abspath(element)
+
+        candidate = os.path.join(element, pathname)
+        globbed = glob.glob(candidate)
+        if globbed:
+            for found_path in sorted(globbed):
+                if not os.access(found_path, mode):
+                    continue
+                rel = os.path.relpath(found_path, element)
+                if rel not in seen:
+                    seen.add(rel)
+                    if candidates:
+                        files.append((found_path, [os.path.join(p, rel) for p in paths[:index+1]]))
+                    else:
+                        files.append(found_path)
+
+    return files
+
+def canonicalize(paths, sep=','):
+    """Given a string with paths (separated by commas by default), expand
+    each path using os.path.realpath() and return the resulting paths as a
+    string (separated using the same separator a the original string).
+    """
+    # Ignore paths containing "$" as they are assumed to be unexpanded bitbake
+    # variables. Normally they would be ignored, e.g., when passing the paths
+    # through the shell they would expand to empty strings. However, when they
+    # are passed through os.path.realpath(), it will cause them to be prefixed
+    # with the absolute path to the current directory and thus not be empty
+    # anymore.
+    #
+    # Also maintain trailing slashes, as the paths may actually be used as
+    # prefixes in sting compares later on, where the slashes then are important.
+    canonical_paths = []
+    for path in (paths or '').split(sep):
+        if '$' not in path:
+            trailing_slash = path.endswith('/') and '/' or ''
+            canonical_paths.append(os.path.realpath(path) + trailing_slash)
+
+    return sep.join(canonical_paths)
