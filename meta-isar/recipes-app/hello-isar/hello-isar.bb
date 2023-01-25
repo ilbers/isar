@@ -15,7 +15,7 @@ PV = "0.3-a18c14c"
 DEPENDS += "libhello"
 
 SRC_URI = " \
-    git://github.com/ilbers/hello.git;protocol=https;destsuffix=${P} \
+    git://github.com/ilbers/hello.git;protocol=https;branch=master;destsuffix=${P} \
     file://subdir/0001-Add-some-help.patch \
     file://yet-another-change.txt;apply=yes;striplevel=0"
 SRCREV = "a18c14cc11ce6b003f3469e89223cffb4016861d"

@@ -14,7 +14,7 @@ PROVIDES = "libubootenv-tool libubootenv-dev libubootenv-doc libubootenv0.1"
 
 inherit dpkg-gbp
 
-SRC_URI = "git://salsa.debian.org/debian/libubootenv.git;protocol=https"
+SRC_URI = "git://salsa.debian.org/debian/libubootenv.git;protocol=https;branch=master"
 SRCREV = "a1a3504e5cda1883928a8747a0bedc56afff6910"
 
 S = "${WORKDIR}/git"
