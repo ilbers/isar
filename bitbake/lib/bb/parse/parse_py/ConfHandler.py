@@ -48,10 +48,7 @@ __unset_regexp__ = re.compile( r"unset\s+([a-zA-Z0-9\-_+.${}/~]+)$" )
 __unset_flag_regexp__ = re.compile( r"unset\s+([a-zA-Z0-9\-_+.${}/~]+)\[([a-zA-Z0-9\-_+.]+)\]$" )
 
 def init(data):
-    topdir = data.getVar('TOPDIR', False)
-    if not topdir:
-        data.setVar('TOPDIR', os.getcwd())
-
+    return
 
 def supports(fn, d):
     return fn[-5:] == ".conf"
@@ -128,16 +125,21 @@ def handle(fn, data, include):
             s = f.readline()
             if not s:
                 break
+            origlineno = lineno
+            origline = s
             w = s.strip()
             # skip empty lines
             if not w:
                 continue
             s = s.rstrip()
             while s[-1] == '\\':
-                s2 = f.readline().rstrip()
+                line = f.readline()
+                origline += line
+                s2 = line.rstrip()
                 lineno = lineno + 1
                 if (not s2 or s2 and s2[0] != "#") and s[0] == "#" :
-                    bb.fatal("There is a confusing multiline, partially commented expression on line %s of file %s (%s).\nPlease clarify whether this is all a comment or should be parsed." % (lineno, fn, s))
+                    bb.fatal("There is a confusing multiline, partially commented expression starting on line %s of file %s:\n%s\nPlease clarify whether this is all a comment or should be parsed." % (origlineno, fn, origline))
+
                 s = s[:-1] + s2
             # skip comments
             if s[0] == '#':
@@ -149,8 +151,6 @@ def handle(fn, data, include):
     statements.eval(data)
     if oldfile:
         data.setVar('FILE', oldfile)
-
-    f.close()
 
     for f in confFilters:
         f(fn, data)

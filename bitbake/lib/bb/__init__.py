@@ -9,11 +9,11 @@
 # SPDX-License-Identifier: GPL-2.0-only
 #
 
-__version__ = "1.50.0"
+__version__ = "2.0.0"
 
 import sys
-if sys.version_info < (3, 5, 0):
-    raise RuntimeError("Sorry, python 3.5.0 or later is required for this version of bitbake")
+if sys.version_info < (3, 6, 0):
+    raise RuntimeError("Sorry, python 3.6.0 or later is required for this version of bitbake")
 
 
 class BBHandledException(Exception):
@@ -70,6 +70,13 @@ class BBLoggerMixin(object):
 
     def verbnote(self, msg, *args, **kwargs):
         return self.log(logging.INFO + 2, msg, *args, **kwargs)
+
+    def warnonce(self, msg, *args, **kwargs):
+        return self.log(logging.WARNING - 1, msg, *args, **kwargs)
+
+    def erroronce(self, msg, *args, **kwargs):
+        return self.log(logging.ERROR - 1, msg, *args, **kwargs)
+
 
 Logger = logging.getLoggerClass()
 class BBLogger(Logger, BBLoggerMixin):
@@ -157,8 +164,14 @@ def verbnote(*args):
 def warn(*args):
     mainlogger.warning(''.join(args))
 
+def warnonce(*args):
+    mainlogger.warnonce(''.join(args))
+
 def error(*args, **kwargs):
     mainlogger.error(''.join(args), extra=kwargs)
+
+def erroronce(*args):
+    mainlogger.erroronce(''.join(args))
 
 def fatal(*args, **kwargs):
     mainlogger.critical(''.join(args), extra=kwargs)

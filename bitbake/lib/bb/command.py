@@ -20,6 +20,7 @@ Commands are queued in a CommandQueue
 
 from collections import OrderedDict, defaultdict
 
+import io
 import bb.event
 import bb.cooker
 import bb.remotedata
@@ -64,9 +65,17 @@ class Command:
 
         # Ensure cooker is ready for commands
         if command != "updateConfig" and command != "setFeatures":
-            self.cooker.init_configdata()
-            if not self.remotedatastores:
-                self.remotedatastores = bb.remotedata.RemoteDatastores(self.cooker)
+            try:
+                self.cooker.init_configdata()
+                if not self.remotedatastores:
+                    self.remotedatastores = bb.remotedata.RemoteDatastores(self.cooker)
+            except (Exception, SystemExit) as exc:
+                import traceback
+                if isinstance(exc, bb.BBHandledException):
+                    # We need to start returning real exceptions here. Until we do, we can't
+                    # tell if an exception is an instance of bb.BBHandledException
+                    return None, "bb.BBHandledException()\n" + traceback.format_exc()
+                return None, traceback.format_exc()
 
         if hasattr(CommandsSync, command):
             # Can run synchronous commands straight away
@@ -500,6 +509,17 @@ class CommandsSync:
         d = command.remotedatastores[dsindex].varhistory
         return getattr(d, method)(*args, **kwargs)
 
+    def dataStoreConnectorVarHistCmdEmit(self, command, params):
+        dsindex = params[0]
+        var = params[1]
+        oval = params[2]
+        val = params[3]
+        d = command.remotedatastores[params[4]]
+
+        o = io.StringIO()
+        command.remotedatastores[dsindex].varhistory.emit(var, oval, val, o, d)
+        return o.getvalue()
+
     def dataStoreConnectorIncHistCmd(self, command, params):
         dsindex = params[0]
         method = params[1]
@@ -646,6 +666,16 @@ class CommandsAsync:
         command.cooker.findFilesMatchingInDir(pattern, directory)
         command.finishAsyncCommand()
     findFilesMatchingInDir.needcache = False
+
+    def testCookerCommandEvent(self, command, params):
+        """
+        Dummy command used by OEQA selftest to test tinfoil without IO
+        """
+        pattern = params[0]
+
+        command.cooker.testCookerCommandEvent(pattern)
+        command.finishAsyncCommand()
+    testCookerCommandEvent.needcache = False
 
     def findConfigFilePath(self, command, params):
         """

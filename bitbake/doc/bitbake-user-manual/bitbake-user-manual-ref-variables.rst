@@ -23,18 +23,15 @@ overview of their function and contents.
       systems extend the functionality of the variable as it is
       described here in this glossary.
 
-   -  Finally, there are variables mentioned in this glossary that do
-      not appear in the BitBake glossary. These other variables are
-      variables used in systems that use BitBake.
-
 .. glossary::
+   :sorted:
 
    :term:`ASSUME_PROVIDED`
       Lists recipe names (:term:`PN` values) BitBake does not
       attempt to build. Instead, BitBake assumes these recipes have already
       been built.
 
-      In OpenEmbedded-Core, ``ASSUME_PROVIDED`` mostly specifies native
+      In OpenEmbedded-Core, :term:`ASSUME_PROVIDED` mostly specifies native
       tools that should not be built. An example is ``git-native``, which
       when specified allows for the Git binary from the host to be used
       rather than building ``git-native``.
@@ -87,14 +84,25 @@ overview of their function and contents.
 
       -  Attempts to access networks not in the host list cause a failure.
 
-      Using ``BB_ALLOWED_NETWORKS`` in conjunction with
+      Using :term:`BB_ALLOWED_NETWORKS` in conjunction with
       :term:`PREMIRRORS` is very useful. Adding the
-      host you want to use to ``PREMIRRORS`` results in the source code
+      host you want to use to :term:`PREMIRRORS` results in the source code
       being fetched from an allowed location and avoids raising an error
       when a host that is not allowed is in a
       :term:`SRC_URI` statement. This is because the
-      fetcher does not attempt to use the host listed in ``SRC_URI`` after
-      a successful fetch from the ``PREMIRRORS`` occurs.
+      fetcher does not attempt to use the host listed in :term:`SRC_URI` after
+      a successful fetch from the :term:`PREMIRRORS` occurs.
+
+   :term:`BB_BASEHASH_IGNORE_VARS`
+      Lists variables that are excluded from checksum and dependency data.
+      Variables that are excluded can therefore change without affecting
+      the checksum mechanism. A common example would be the variable for
+      the path of the build. BitBake's output should not (and usually does
+      not) depend on the directory in which it was built.
+
+   :term:`BB_CHECK_SSL_CERTS`
+      Specifies if SSL certificates should be checked when fetching. The default
+      value is ``1`` and certificates are not checked if the value is set to ``0``.
 
    :term:`BB_CONSOLELOG`
       Specifies the path to a log file into which BitBake's user interface
@@ -130,14 +138,14 @@ overview of their function and contents.
       you to control the build based on these parameters.
 
       Disk space monitoring is disabled by default. When setting this
-      variable, use the following form: ::
+      variable, use the following form::
 
          BB_DISKMON_DIRS = "<action>,<dir>,<threshold> [...]"
 
          where:
 
             <action> is:
-               ABORT:     Immediately abort the build when
+               HALT:      Immediately halt the build when
                           a threshold is broken.
                STOPTASKS: Stop the build after the currently
                           executing tasks have finished when
@@ -166,48 +174,48 @@ overview of their function and contents.
                not specify G, M, or K, Kbytes is assumed by
                default.  Do not use GB, MB, or KB.
 
-      Here are some examples: ::
+      Here are some examples::
 
-         BB_DISKMON_DIRS = "ABORT,${TMPDIR},1G,100K WARN,${SSTATE_DIR},1G,100K"
+         BB_DISKMON_DIRS = "HALT,${TMPDIR},1G,100K WARN,${SSTATE_DIR},1G,100K"
          BB_DISKMON_DIRS = "STOPTASKS,${TMPDIR},1G"
-         BB_DISKMON_DIRS = "ABORT,${TMPDIR},,100K"
+         BB_DISKMON_DIRS = "HALT,${TMPDIR},,100K"
 
       The first example works only if you also set the
       :term:`BB_DISKMON_WARNINTERVAL`
-      variable. This example causes the build system to immediately abort
+      variable. This example causes the build system to immediately halt
       when either the disk space in ``${TMPDIR}`` drops below 1 Gbyte or
       the available free inodes drops below 100 Kbytes. Because two
       directories are provided with the variable, the build system also
       issues a warning when the disk space in the ``${SSTATE_DIR}``
       directory drops below 1 Gbyte or the number of free inodes drops
       below 100 Kbytes. Subsequent warnings are issued during intervals as
-      defined by the ``BB_DISKMON_WARNINTERVAL`` variable.
+      defined by the :term:`BB_DISKMON_WARNINTERVAL` variable.
 
       The second example stops the build after all currently executing
       tasks complete when the minimum disk space in the ``${TMPDIR}``
       directory drops below 1 Gbyte. No disk monitoring occurs for the free
       inodes in this case.
 
-      The final example immediately aborts the build when the number of
+      The final example immediately halts the build when the number of
       free inodes in the ``${TMPDIR}`` directory drops below 100 Kbytes. No
       disk space monitoring for the directory itself occurs in this case.
 
    :term:`BB_DISKMON_WARNINTERVAL`
       Defines the disk space and free inode warning intervals.
 
-      If you are going to use the ``BB_DISKMON_WARNINTERVAL`` variable, you
+      If you are going to use the :term:`BB_DISKMON_WARNINTERVAL` variable, you
       must also use the :term:`BB_DISKMON_DIRS`
       variable and define its action as "WARN". During the build,
       subsequent warnings are issued each time disk space or number of free
       inodes further reduces by the respective interval.
 
-      If you do not provide a ``BB_DISKMON_WARNINTERVAL`` variable and you
-      do use ``BB_DISKMON_DIRS`` with the "WARN" action, the disk
+      If you do not provide a :term:`BB_DISKMON_WARNINTERVAL` variable and you
+      do use :term:`BB_DISKMON_DIRS` with the "WARN" action, the disk
       monitoring interval defaults to the following:
       BB_DISKMON_WARNINTERVAL = "50M,5K"
 
       When specifying the variable in your configuration file, use the
-      following form: ::
+      following form::
 
          BB_DISKMON_WARNINTERVAL = "<disk_space_interval>,<disk_inode_interval>"
 
@@ -223,7 +231,7 @@ overview of their function and contents.
                G, M, or K for Gbytes, Mbytes, or Kbytes,
                respectively. You cannot use GB, MB, or KB.
 
-      Here is an example: ::
+      Here is an example::
 
          BB_DISKMON_DIRS = "WARN,${SSTATE_DIR},1G,100K"
          BB_DISKMON_WARNINTERVAL = "50M,5K"
@@ -235,23 +243,23 @@ overview of their function and contents.
       based on the interval occur each time a respective interval is
       reached beyond the initial warning (i.e. 1 Gbytes and 100 Kbytes).
 
-   :term:`BB_ENV_WHITELIST`
-      Specifies the internal whitelist of variables to allow through from
+   :term:`BB_ENV_PASSTHROUGH`
+      Specifies the internal list of variables to allow through from
       the external environment into BitBake's datastore. If the value of
       this variable is not specified (which is the default), the following
       list is used: :term:`BBPATH`, :term:`BB_PRESERVE_ENV`,
-      :term:`BB_ENV_WHITELIST`, and :term:`BB_ENV_EXTRAWHITE`.
+      :term:`BB_ENV_PASSTHROUGH`, and :term:`BB_ENV_PASSTHROUGH_ADDITIONS`.
 
       .. note::
 
          You must set this variable in the external environment in order
          for it to work.
 
-   :term:`BB_ENV_EXTRAWHITE`
-      Specifies an additional set of variables to allow through (whitelist)
-      from the external environment into BitBake's datastore. This list of
-      variables are on top of the internal list set in
-      :term:`BB_ENV_WHITELIST`.
+   :term:`BB_ENV_PASSTHROUGH_ADDITIONS`
+      Specifies an additional set of variables to allow through from the
+      external environment into BitBake's datastore. This list of variables
+      are on top of the internal list set in
+      :term:`BB_ENV_PASSTHROUGH`.
 
       .. note::
 
@@ -267,7 +275,7 @@ overview of their function and contents.
    :term:`BB_FILENAME`
       Contains the filename of the recipe that owns the currently running
       task. For example, if the ``do_fetch`` task that resides in the
-      ``my-recipe.bb`` is executing, the ``BB_FILENAME`` variable contains
+      ``my-recipe.bb`` is executing, the :term:`BB_FILENAME` variable contains
       "/foo/path/my-recipe.bb".
 
    :term:`BB_GENERATE_MIRROR_TARBALLS`
@@ -280,24 +288,61 @@ overview of their function and contents.
 
          BB_GENERATE_MIRROR_TARBALLS = "1"
 
-   :term:`BB_HASHCONFIG_WHITELIST`
-      Lists variables that are excluded from base configuration checksum,
-      which is used to determine if the cache can be reused.
+   :term:`BB_GENERATE_SHALLOW_TARBALLS`
+      Setting this variable to "1" when :term:`BB_GIT_SHALLOW` is also set to
+      "1" causes bitbake to generate shallow mirror tarballs when fetching git
+      repositories. The number of commits included in the shallow mirror
+      tarballs is controlled by :term:`BB_GIT_SHALLOW_DEPTH`.
 
-      One of the ways BitBake determines whether to re-parse the main
-      metadata is through checksums of the variables in the datastore of
-      the base configuration data. There are variables that you typically
-      want to exclude when checking whether or not to re-parse and thus
-      rebuild the cache. As an example, you would usually exclude ``TIME``
-      and ``DATE`` because these variables are always changing. If you did
-      not exclude them, BitBake would never reuse the cache.
+      If both :term:`BB_GIT_SHALLOW` and :term:`BB_GENERATE_MIRROR_TARBALLS` are
+      enabled, bitbake will generate shallow mirror tarballs by default for git
+      repositories. This separate variable exists so that shallow tarball
+      generation can be enabled without needing to also enable normal mirror
+      generation if it is not desired.
 
-   :term:`BB_HASHBASE_WHITELIST`
-      Lists variables that are excluded from checksum and dependency data.
-      Variables that are excluded can therefore change without affecting
-      the checksum mechanism. A common example would be the variable for
-      the path of the build. BitBake's output should not (and usually does
-      not) depend on the directory in which it was built.
+      For example usage, see :term:`BB_GIT_SHALLOW`.
+
+   :term:`BB_GIT_SHALLOW`
+      Setting this variable to "1" enables the support for fetching, using and
+      generating mirror tarballs of `shallow git repositories <https://riptutorial.com/git/example/4584/shallow-clone>`_.
+      The external `git-make-shallow <https://git.openembedded.org/bitbake/tree/bin/git-make-shallow>`_
+      script is used for shallow mirror tarball creation.
+
+      When :term:`BB_GIT_SHALLOW` is enabled, bitbake will attempt to fetch a shallow
+      mirror tarball. If the shallow mirror tarball cannot be fetched, it will
+      try to fetch the full mirror tarball and use that.
+
+      When a mirror tarball is not available, a full git clone will be performed
+      regardless of whether this variable is set or not. Support for shallow
+      clones is not currently implemented as git does not directly support
+      shallow cloning a particular git commit hash (it only supports cloning
+      from a tag or branch reference).
+
+      See also :term:`BB_GIT_SHALLOW_DEPTH` and
+      :term:`BB_GENERATE_SHALLOW_TARBALLS`.
+
+      Example usage::
+
+         BB_GIT_SHALLOW ?= "1"
+
+         # Keep only the top commit
+         BB_GIT_SHALLOW_DEPTH ?= "1"
+
+         # This defaults to enabled if both BB_GIT_SHALLOW and
+         # BB_GENERATE_MIRROR_TARBALLS are enabled
+         BB_GENERATE_SHALLOW_TARBALLS ?= "1"
+
+   :term:`BB_GIT_SHALLOW_DEPTH`
+      When used with :term:`BB_GENERATE_SHALLOW_TARBALLS`, this variable sets
+      the number of commits to include in generated shallow mirror tarballs.
+      With a depth of 1, only the commit referenced in :term:`SRCREV` is
+      included in the shallow mirror tarball. Increasing the depth includes
+      additional parent commits, working back through the commit history.
+
+      If this variable is unset, bitbake will default to a depth of 1 when
+      generating shallow mirror tarballs.
+
+      For example usage, see :term:`BB_GIT_SHALLOW`.
 
    :term:`BB_HASHCHECK_FUNCTION`
       Specifies the name of the function to call during the "setscene" part
@@ -313,6 +358,51 @@ overview of their function and contents.
       However, the more accurate the data returned, the more efficient the
       build will be.
 
+   :term:`BB_HASHCONFIG_IGNORE_VARS`
+      Lists variables that are excluded from base configuration checksum,
+      which is used to determine if the cache can be reused.
+
+      One of the ways BitBake determines whether to re-parse the main
+      metadata is through checksums of the variables in the datastore of
+      the base configuration data. There are variables that you typically
+      want to exclude when checking whether or not to re-parse and thus
+      rebuild the cache. As an example, you would usually exclude ``TIME``
+      and ``DATE`` because these variables are always changing. If you did
+      not exclude them, BitBake would never reuse the cache.
+
+   :term:`BB_HASHSERVE`
+      Specifies the Hash Equivalence server to use.
+
+      If set to ``auto``, BitBake automatically starts its own server
+      over a UNIX domain socket. An option is to connect this server
+      to an upstream one, by setting :term:`BB_HASHSERVE_UPSTREAM`.
+
+      If set to ``unix://path``, BitBake will connect to an existing
+      hash server available over a UNIX domain socket.
+
+      If set to ``host:port``, BitBake will connect to a remote server on the
+      specified host. This allows multiple clients to share the same
+      hash equivalence data.
+
+      The remote server can be started manually through
+      the ``bin/bitbake-hashserv`` script provided by BitBake,
+      which supports UNIX domain sockets too. This script also allows
+      to start the server in read-only mode, to avoid accepting
+      equivalences that correspond to Share State caches that are
+      only available on specific clients.
+
+   :term:`BB_HASHSERVE_UPSTREAM`
+      Specifies an upstream Hash Equivalence server.
+
+      This optional setting is only useful when a local Hash Equivalence
+      server is started (setting :term:`BB_HASHSERVE` to ``auto``),
+      and you wish the local server to query an upstream server for
+      Hash Equivalence data.
+
+      Example usage::
+
+         BB_HASHSERVE_UPSTREAM = "hashserv.yocto.io:8687"
+
    :term:`BB_INVALIDCONF`
       Used in combination with the ``ConfigParsed`` event to trigger
       re-parsing the base metadata (i.e. all the recipes). The
@@ -327,14 +417,27 @@ overview of their function and contents.
 
    :term:`BB_LOGFMT`
       Specifies the name of the log files saved into
-      ``${``\ :term:`T`\ ``}``. By default, the ``BB_LOGFMT``
-      variable is undefined and the log file names get created using the
-      following form: ::
+      ``${``\ :term:`T`\ ``}``. By default, the :term:`BB_LOGFMT`
+      variable is undefined and the log filenames get created using the
+      following form::
 
          log.{task}.{pid}
 
       If you want to force log files to take a specific name, you can set this
       variable in a configuration file.
+
+   :term:`BB_MULTI_PROVIDER_ALLOWED`
+      Allows you to suppress BitBake warnings caused when building two
+      separate recipes that provide the same output.
+
+      BitBake normally issues a warning when building two different recipes
+      where each provides the same output. This scenario is usually
+      something the user does not want. However, cases do exist where it
+      makes sense, particularly in the ``virtual/*`` namespace. You can use
+      this variable to suppress BitBake's warnings.
+
+      To use the variable, list provider names (e.g. recipe names,
+      ``virtual/kernel``, and so forth).
 
    :term:`BB_NICE_LEVEL`
       Allows BitBake to run at a specific priority (i.e. nice level).
@@ -351,19 +454,20 @@ overview of their function and contents.
       running builds when not connected to the Internet, and when operating
       in certain kinds of firewall environments.
 
+   :term:`BB_NUMBER_PARSE_THREADS`
+      Sets the number of threads BitBake uses when parsing. By default, the
+      number of threads is equal to the number of cores on the system.
+
    :term:`BB_NUMBER_THREADS`
       The maximum number of tasks BitBake should run in parallel at any one
       time. If your host development system supports multiple cores, a good
       rule of thumb is to set this variable to twice the number of cores.
 
-   :term:`BB_NUMBER_PARSE_THREADS`
-      Sets the number of threads BitBake uses when parsing. By default, the
-      number of threads is equal to the number of cores on the system.
-
    :term:`BB_ORIGENV`
       Contains a copy of the original external environment in which BitBake
-      was run. The copy is taken before any whitelisted variable values are
-      filtered into BitBake's datastore.
+      was run. The copy is taken before any variable values configured to
+      pass through from the external environment are filtered into BitBake's
+      datastore.
 
       .. note::
 
@@ -371,8 +475,8 @@ overview of their function and contents.
          queried using the normal datastore operations.
 
    :term:`BB_PRESERVE_ENV`
-      Disables whitelisting and instead allows all variables through from
-      the external environment into BitBake's datastore.
+      Disables environment filtering and instead allows all variables through
+      from the external environment into BitBake's datastore.
 
       .. note::
 
@@ -382,8 +486,8 @@ overview of their function and contents.
    :term:`BB_RUNFMT`
       Specifies the name of the executable script files (i.e. run files)
       saved into ``${``\ :term:`T`\ ``}``. By default, the
-      ``BB_RUNFMT`` variable is undefined and the run file names get
-      created using the following form: ::
+      :term:`BB_RUNFMT` variable is undefined and the run filenames get
+      created using the following form::
 
          run.{task}.{pid}
 
@@ -399,14 +503,14 @@ overview of their function and contents.
       Selects the name of the scheduler to use for the scheduling of
       BitBake tasks. Three options exist:
 
-      -  *basic* - The basic framework from which everything derives. Using
+      -  *basic* --- the basic framework from which everything derives. Using
          this option causes tasks to be ordered numerically as they are
          parsed.
 
-      -  *speed* - Executes tasks first that have more tasks depending on
+      -  *speed* --- executes tasks first that have more tasks depending on
          them. The "speed" option is the default.
 
-      -  *completion* - Causes the scheduler to try to complete a given
+      -  *completion* --- causes the scheduler to try to complete a given
          recipe once its build has started.
 
    :term:`BB_SCHEDULERS`
@@ -425,17 +529,6 @@ overview of their function and contents.
       dependencies also need to be run is highly dependent on the metadata.
       The function specified by this variable returns a "True" or "False"
       depending on whether the dependency needs to be met.
-
-   :term:`BB_SETSCENE_VERIFY_FUNCTION2`
-      Specifies a function to call that verifies the list of planned task
-      execution before the main task execution happens. The function is
-      called once BitBake has a list of setscene tasks that have run and
-      either succeeded or failed.
-
-      The function allows for a task list check to see if they make sense.
-      Even if BitBake was planning to skip a task, the returned value of
-      the function can force BitBake to run the task, which is necessary
-      under certain metadata defined circumstances.
 
    :term:`BB_SIGNATURE_EXCLUDE_FLAGS`
       Lists variable flags (varflags) that can be safely excluded from
@@ -459,39 +552,16 @@ overview of their function and contents.
    :term:`BB_SRCREV_POLICY`
       Defines the behavior of the fetcher when it interacts with source
       control systems and dynamic source revisions. The
-      ``BB_SRCREV_POLICY`` variable is useful when working without a
+      :term:`BB_SRCREV_POLICY` variable is useful when working without a
       network.
 
       The variable can be set using one of two policies:
 
-      -  *cache* - Retains the value the system obtained previously rather
+      -  *cache* --- retains the value the system obtained previously rather
          than querying the source control system each time.
 
-      -  *clear* - Queries the source controls system every time. With this
+      -  *clear* --- queries the source controls system every time. With this
          policy, there is no cache. The "clear" policy is the default.
-
-   :term:`BB_STAMP_POLICY`
-      Defines the mode used for how timestamps of stamp files are compared.
-      You can set the variable to one of the following modes:
-
-      -  *perfile* - Timestamp comparisons are only made between timestamps
-         of a specific recipe. This is the default mode.
-
-      -  *full* - Timestamp comparisons are made for all dependencies.
-
-      -  *whitelist* - Identical to "full" mode except timestamp
-         comparisons are made for recipes listed in the
-         :term:`BB_STAMP_WHITELIST` variable.
-
-      .. note::
-
-         Stamp policies are largely obsolete with the introduction of
-         setscene tasks.
-
-   :term:`BB_STAMP_WHITELIST`
-      Lists files whose stamp file timestamps are compared when the stamp
-      policy mode is set to "whitelist". For information on stamp policies,
-      see the :term:`BB_STAMP_POLICY` variable.
 
    :term:`BB_STRICT_CHECKSUM`
       Sets a more strict checksum mechanism for non-local URLs. Setting
@@ -503,7 +573,7 @@ overview of their function and contents.
       Allows adjustment of a task's Input/Output priority. During
       Autobuilder testing, random failures can occur for tasks due to I/O
       starvation. These failures occur during various QEMU runtime
-      timeouts. You can use the ``BB_TASK_IONICE_LEVEL`` variable to adjust
+      timeouts. You can use the :term:`BB_TASK_IONICE_LEVEL` variable to adjust
       the I/O priority of these tasks.
 
       .. note::
@@ -511,7 +581,7 @@ overview of their function and contents.
          This variable works similarly to the :term:`BB_TASK_NICE_LEVEL`
          variable except with a task's I/O priorities.
 
-      Set the variable as follows: ::
+      Set the variable as follows::
 
          BB_TASK_IONICE_LEVEL = "class.prio"
 
@@ -529,7 +599,7 @@ overview of their function and contents.
          In order for your I/O priority settings to take effect, you need the
          Completely Fair Queuing (CFQ) Scheduler selected for the backing block
          device. To select the scheduler, use the following command form where
-         device is the device (e.g. sda, sdb, and so forth): ::
+         device is the device (e.g. sda, sdb, and so forth)::
 
             $ sudo sh -c "echo cfq > /sys/block/device/queu/scheduler"
 
@@ -538,7 +608,7 @@ overview of their function and contents.
 
       You can use this variable in combination with task overrides to raise
       or lower priorities of specific tasks. For example, on the `Yocto
-      Project <http://www.yoctoproject.org>`__ autobuilder, QEMU emulation
+      Project <https://www.yoctoproject.org>`__ autobuilder, QEMU emulation
       in images is given a higher priority as compared to build tasks to
       ensure that images do not suffer timeouts on loaded systems.
 
@@ -570,20 +640,20 @@ overview of their function and contents.
       To build a different variant of the recipe with a minimal amount of
       code, it usually is as simple as adding the variable to your recipe.
       Here are two examples. The "native" variants are from the
-      OpenEmbedded-Core metadata: ::
+      OpenEmbedded-Core metadata::
 
          BBCLASSEXTEND =+ "native nativesdk"
          BBCLASSEXTEND =+ "multilib:multilib_name"
 
       .. note::
 
-         Internally, the ``BBCLASSEXTEND`` mechanism generates recipe
+         Internally, the :term:`BBCLASSEXTEND` mechanism generates recipe
          variants by rewriting variable values and applying overrides such
          as ``_class-native``. For example, to generate a native version of
          a recipe, a :term:`DEPENDS` on "foo" is
-         rewritten to a ``DEPENDS`` on "foo-native".
+         rewritten to a :term:`DEPENDS` on "foo-native".
 
-         Even when using ``BBCLASSEXTEND``, the recipe is only parsed once.
+         Even when using :term:`BBCLASSEXTEND`, the recipe is only parsed once.
          Parsing once adds some limitations. For example, it is not
          possible to include a different file depending on the variant,
          since ``include`` statements are processed when the recipe is
@@ -616,17 +686,17 @@ overview of their function and contents.
       This variable is useful in situations where the same recipe appears
       in more than one layer. Setting this variable allows you to
       prioritize a layer against other layers that contain the same recipe
-      - effectively letting you control the precedence for the multiple
+      --- effectively letting you control the precedence for the multiple
       layers. The precedence established through this variable stands
       regardless of a recipe's version (:term:`PV` variable).
-      For example, a layer that has a recipe with a higher ``PV`` value but
-      for which the ``BBFILE_PRIORITY`` is set to have a lower precedence
+      For example, a layer that has a recipe with a higher :term:`PV` value but
+      for which the :term:`BBFILE_PRIORITY` is set to have a lower precedence
       still has a lower precedence.
 
-      A larger value for the ``BBFILE_PRIORITY`` variable results in a
+      A larger value for the :term:`BBFILE_PRIORITY` variable results in a
       higher precedence. For example, the value 6 has a higher precedence
-      than the value 5. If not specified, the ``BBFILE_PRIORITY`` variable
-      is set based on layer dependencies (see the ``LAYERDEPENDS`` variable
+      than the value 5. If not specified, the :term:`BBFILE_PRIORITY` variable
+      is set based on layer dependencies (see the :term:`LAYERDEPENDS` variable
       for more information. The default priority, if unspecified for a
       layer with no dependencies, is the lowest defined priority + 1 (or 1
       if no priorities are defined).
@@ -649,7 +719,7 @@ overview of their function and contents.
       Activates content depending on presence of identified layers.  You
       identify the layers by the collections that the layers define.
 
-      Use the ``BBFILES_DYNAMIC`` variable to avoid ``.bbappend`` files whose
+      Use the :term:`BBFILES_DYNAMIC` variable to avoid ``.bbappend`` files whose
       corresponding ``.bb`` file is in a layer that attempts to modify other
       layers through ``.bbappend`` but does not want to introduce a hard
       dependency on those other layers.
@@ -658,12 +728,12 @@ overview of their function and contents.
       ``.bb`` files in case a layer is not present.  Use this avoid hard
       dependency on those other layers.
 
-      Use the following form for ``BBFILES_DYNAMIC``: ::
+      Use the following form for :term:`BBFILES_DYNAMIC`::
 
          collection_name:filename_pattern
 
       The following example identifies two collection names and two filename
-      patterns: ::
+      patterns::
 
          BBFILES_DYNAMIC += "\
              clang-layer:${LAYERDIR}/bbappends/meta-clang/*/*/*.bbappend \
@@ -671,14 +741,14 @@ overview of their function and contents.
          "
 
       When the collection name is prefixed with "!" it will add the file pattern in case
-      the layer is absent: ::
+      the layer is absent::
 
          BBFILES_DYNAMIC += "\
              !clang-layer:${LAYERDIR}/backfill/meta-clang/*/*/*.bb \
          "
 
       This next example shows an error message that occurs because invalid
-      entries are found, which cause parsing to abort: ::
+      entries are found, which cause parsing to fail::
 
          ERROR: BBFILES_DYNAMIC entries must be of the form {!}<collection name>:<filename pattern>, not:
          /work/my-layer/bbappends/meta-security-isafw/*/*/*.bbappend
@@ -695,13 +765,13 @@ overview of their function and contents.
    :term:`BBINCLUDELOGS_LINES`
       If :term:`BBINCLUDELOGS` is set, specifies
       the maximum number of lines from the task log file to print when
-      reporting a failed task. If you do not set ``BBINCLUDELOGS_LINES``,
+      reporting a failed task. If you do not set :term:`BBINCLUDELOGS_LINES`,
       the entire log is printed.
 
    :term:`BBLAYERS`
       Lists the layers to enable during the build. This variable is defined
       in the ``bblayers.conf`` configuration file in the build directory.
-      Here is an example: ::
+      Here is an example::
 
          BBLAYERS = " \
              /home/scottrif/poky/meta \
@@ -721,7 +791,7 @@ overview of their function and contents.
    :term:`BBMASK`
       Prevents BitBake from processing recipes and recipe append files.
 
-      You can use the ``BBMASK`` variable to "hide" these ``.bb`` and
+      You can use the :term:`BBMASK` variable to "hide" these ``.bb`` and
       ``.bbappend`` files. BitBake ignores any recipe or recipe append
       files that match any of the expressions. It is as if BitBake does not
       see them at all. Consequently, matching files are not parsed or
@@ -735,13 +805,13 @@ overview of their function and contents.
 
       The following example uses a complete regular expression to tell
       BitBake to ignore all recipe and recipe append files in the
-      ``meta-ti/recipes-misc/`` directory: ::
+      ``meta-ti/recipes-misc/`` directory::
 
          BBMASK = "meta-ti/recipes-misc/"
 
       If you want to mask out multiple directories or recipes, you can
       specify multiple regular expression fragments. This next example
-      masks out multiple directories and individual recipes: ::
+      masks out multiple directories and individual recipes::
 
          BBMASK += "/meta-ti/recipes-misc/ meta-ti/recipes-ti/packagegroup/"
          BBMASK += "/meta-oe/recipes-support/"
@@ -758,11 +828,11 @@ overview of their function and contents.
       Enables BitBake to perform multiple configuration builds and lists
       each separate configuration (multiconfig). You can use this variable
       to cause BitBake to build multiple targets where each target has a
-      separate configuration. Define ``BBMULTICONFIG`` in your
+      separate configuration. Define :term:`BBMULTICONFIG` in your
       ``conf/local.conf`` configuration file.
 
       As an example, the following line specifies three multiconfigs, each
-      having a separate configuration file: ::
+      having a separate configuration file::
 
          BBMULTIFONFIG = "configA configB configC"
 
@@ -770,7 +840,7 @@ overview of their function and contents.
       build directory within a directory named ``conf/multiconfig`` (e.g.
       build_directory\ ``/conf/multiconfig/configA.conf``).
 
-      For information on how to use ``BBMULTICONFIG`` in an environment
+      For information on how to use :term:`BBMULTICONFIG` in an environment
       that supports building targets with multiple configurations, see the
       ":ref:`bitbake-user-manual/bitbake-user-manual-intro:executing a multiple configuration build`"
       section.
@@ -781,9 +851,9 @@ overview of their function and contents.
       variable.
 
       If you run BitBake from a directory outside of the build directory,
-      you must be sure to set ``BBPATH`` to point to the build directory.
+      you must be sure to set :term:`BBPATH` to point to the build directory.
       Set the variable as you would any environment variable and then run
-      BitBake: ::
+      BitBake::
 
          $ BBPATH="build_directory"
          $ export BBPATH
@@ -796,16 +866,6 @@ overview of their function and contents.
    :term:`BBTARGETS`
       Allows you to use a configuration file to add to the list of
       command-line target recipes you want to build.
-
-   :term:`BBVERSIONS`
-      Allows a single recipe to build multiple versions of a project from a
-      single recipe file. You also able to specify conditional metadata
-      using the :term:`OVERRIDES` mechanism for a
-      single version or for an optionally named range of versions.
-
-      For more information on ``BBVERSIONS``, see the
-      ":ref:`bitbake-user-manual/bitbake-user-manual-metadata:variants - class extension mechanism`"
-      section.
 
    :term:`BITBAKE_UI`
       Used to specify the UI module to use when running BitBake. Using this
@@ -838,7 +898,7 @@ overview of their function and contents.
       The most common usage of this is variable is to set it to "-1" within
       a recipe for a development version of a piece of software. Using the
       variable in this way causes the stable version of the recipe to build
-      by default in the absence of ``PREFERRED_VERSION`` being used to
+      by default in the absence of :term:`PREFERRED_VERSION` being used to
       build the development version.
 
       .. note::
@@ -851,8 +911,8 @@ overview of their function and contents.
       Lists a recipe's build-time dependencies (i.e. other recipe files).
 
       Consider this simple example for two recipes named "a" and "b" that
-      produce similarly named packages. In this example, the ``DEPENDS``
-      statement appears in the "a" recipe: ::
+      produce similarly named packages. In this example, the :term:`DEPENDS`
+      statement appears in the "a" recipe::
 
          DEPENDS = "b"
 
@@ -869,7 +929,7 @@ overview of their function and contents.
 
    :term:`DL_DIR`
       The central download directory used by the build process to store
-      downloads. By default, ``DL_DIR`` gets files suitable for mirroring for
+      downloads. By default, :term:`DL_DIR` gets files suitable for mirroring for
       everything except Git repositories. If you want tarballs of Git
       repositories, use the :term:`BB_GENERATE_MIRROR_TARBALLS` variable.
 
@@ -884,14 +944,14 @@ overview of their function and contents.
 
       .. note::
 
-         Recipes added to ``EXCLUDE_FROM_WORLD`` may still be built during a world
+         Recipes added to :term:`EXCLUDE_FROM_WORLD` may still be built during a world
          build in order to satisfy dependencies of other recipes. Adding a
-         recipe to ``EXCLUDE_FROM_WORLD`` only ensures that the recipe is not
+         recipe to :term:`EXCLUDE_FROM_WORLD` only ensures that the recipe is not
          explicitly added to the list of build targets in a world build.
 
    :term:`FAKEROOT`
       Contains the command to use when running a shell script in a fakeroot
-      environment. The ``FAKEROOT`` variable is obsolete and has been
+      environment. The :term:`FAKEROOT` variable is obsolete and has been
       replaced by the other ``FAKEROOT*`` variables. See these entries in
       the glossary for more information.
 
@@ -954,9 +1014,9 @@ overview of their function and contents.
       Causes the named class or classes to be inherited globally. Anonymous
       functions in the class or classes are not executed for the base
       configuration and in each individual recipe. The OpenEmbedded build
-      system ignores changes to ``INHERIT`` in individual recipes.
+      system ignores changes to :term:`INHERIT` in individual recipes.
 
-      For more information on ``INHERIT``, see the
+      For more information on :term:`INHERIT`, see the
       ":ref:`bitbake-user-manual/bitbake-user-manual-metadata:\`\`inherit\`\` configuration directive`"
       section.
 
@@ -1004,29 +1064,16 @@ overview of their function and contents.
       the build system searches for source code, it first tries the local
       download directory. If that location fails, the build system tries
       locations defined by :term:`PREMIRRORS`, the
-      upstream source, and then locations specified by ``MIRRORS`` in that
+      upstream source, and then locations specified by :term:`MIRRORS` in that
       order.
 
-   :term:`MULTI_PROVIDER_WHITELIST`
-      Allows you to suppress BitBake warnings caused when building two
-      separate recipes that provide the same output.
-
-      BitBake normally issues a warning when building two different recipes
-      where each provides the same output. This scenario is usually
-      something the user does not want. However, cases do exist where it
-      makes sense, particularly in the ``virtual/*`` namespace. You can use
-      this variable to suppress BitBake's warnings.
-
-      To use the variable, list provider names (e.g. recipe names,
-      ``virtual/kernel``, and so forth).
-
    :term:`OVERRIDES`
-      BitBake uses ``OVERRIDES`` to control what variables are overridden
+      BitBake uses :term:`OVERRIDES` to control what variables are overridden
       after BitBake parses recipes and configuration files.
 
       Following is a simple example that uses an overrides list based on
       machine architectures: OVERRIDES = "arm:x86:mips:powerpc" You can
-      find information on how to use ``OVERRIDES`` in the
+      find information on how to use :term:`OVERRIDES` in the
       ":ref:`bitbake-user-manual/bitbake-user-manual-metadata:conditional syntax
       (overrides)`" section.
 
@@ -1040,11 +1087,11 @@ overview of their function and contents.
    :term:`PACKAGES_DYNAMIC`
       A promise that your recipe satisfies runtime dependencies for
       optional modules that are found in other recipes.
-      ``PACKAGES_DYNAMIC`` does not actually satisfy the dependencies, it
+      :term:`PACKAGES_DYNAMIC` does not actually satisfy the dependencies, it
       only states that they should be satisfied. For example, if a hard,
       runtime dependency (:term:`RDEPENDS`) of another
       package is satisfied during the build through the
-      ``PACKAGES_DYNAMIC`` variable, but a package with the module name is
+      :term:`PACKAGES_DYNAMIC` variable, but a package with the module name is
       never actually produced, then the other package will be broken.
 
    :term:`PE`
@@ -1074,7 +1121,7 @@ overview of their function and contents.
       recipes provide the same item. You should always suffix the variable
       with the name of the provided item, and you should set it to the
       :term:`PN` of the recipe to which you want to give
-      precedence. Some examples: ::
+      precedence. Some examples::
 
          PREFERRED_PROVIDER_virtual/kernel ?= "linux-yocto"
          PREFERRED_PROVIDER_virtual/xserver = "xserver-xf86"
@@ -1083,14 +1130,14 @@ overview of their function and contents.
    :term:`PREFERRED_PROVIDERS`
       Determines which recipe should be given preference for cases where
       multiple recipes provide the same item. Functionally,
-      ``PREFERRED_PROVIDERS`` is identical to
-      :term:`PREFERRED_PROVIDER`. However, the ``PREFERRED_PROVIDERS`` variable
+      :term:`PREFERRED_PROVIDERS` is identical to
+      :term:`PREFERRED_PROVIDER`. However, the :term:`PREFERRED_PROVIDERS` variable
       lets you define preferences for multiple situations using the following
-      form: ::
+      form::
 
          PREFERRED_PROVIDERS = "xxx:yyy aaa:bbb ..."
 
-      This form is a convenient replacement for the following: ::
+      This form is a convenient replacement for the following::
 
          PREFERRED_PROVIDER_xxx = "yyy"
          PREFERRED_PROVIDER_aaa = "bbb"
@@ -1102,11 +1149,11 @@ overview of their function and contents.
       select, and you should set :term:`PV` accordingly for
       precedence.
 
-      The ``PREFERRED_VERSION`` variable supports limited wildcard use
+      The :term:`PREFERRED_VERSION` variable supports limited wildcard use
       through the "``%``" character. You can use the character to match any
       number of characters, which can be useful when specifying versions
       that contain long revision numbers that potentially change. Here are
-      two examples: ::
+      two examples::
 
          PREFERRED_VERSION_python = "2.7.3"
          PREFERRED_VERSION_linux-yocto = "4.12%"
@@ -1125,18 +1172,18 @@ overview of their function and contents.
       Specifies additional paths from which BitBake gets source code. When
       the build system searches for source code, it first tries the local
       download directory. If that location fails, the build system tries
-      locations defined by ``PREMIRRORS``, the upstream source, and then
+      locations defined by :term:`PREMIRRORS`, the upstream source, and then
       locations specified by :term:`MIRRORS` in that order.
 
       Typically, you would add a specific server for the build system to
       attempt before any others by adding something like the following to
-      your configuration: ::
+      your configuration::
 
-         PREMIRRORS_prepend = "\
-         git://.*/.* http://www.yoctoproject.org/sources/ \n \
-         ftp://.*/.* http://www.yoctoproject.org/sources/ \n \
-         http://.*/.* http://www.yoctoproject.org/sources/ \n \
-         https://.*/.* http://www.yoctoproject.org/sources/ \n"
+         PREMIRRORS:prepend = "\
+         git://.*/.* http://downloads.yoctoproject.org/mirror/sources/ \
+         ftp://.*/.* http://downloads.yoctoproject.org/mirror/sources/ \
+         http://.*/.* http://downloads.yoctoproject.org/mirror/sources/ \
+         https://.*/.* http://downloads.yoctoproject.org/mirror/sources/"
 
       These changes cause the build system to intercept Git, FTP, HTTP, and
       HTTPS requests and direct them to the ``http://`` sources mirror. You can
@@ -1145,25 +1192,25 @@ overview of their function and contents.
 
    :term:`PROVIDES`
       A list of aliases by which a particular recipe can be known. By
-      default, a recipe's own ``PN`` is implicitly already in its
-      ``PROVIDES`` list. If a recipe uses ``PROVIDES``, the additional
+      default, a recipe's own :term:`PN` is implicitly already in its
+      :term:`PROVIDES` list. If a recipe uses :term:`PROVIDES`, the additional
       aliases are synonyms for the recipe and can be useful satisfying
       dependencies of other recipes during the build as specified by
-      ``DEPENDS``.
+      :term:`DEPENDS`.
 
-      Consider the following example ``PROVIDES`` statement from a recipe
-      file ``libav_0.8.11.bb``: ::
+      Consider the following example :term:`PROVIDES` statement from a recipe
+      file ``libav_0.8.11.bb``::
 
          PROVIDES += "libpostproc"
 
-      The ``PROVIDES`` statement results in the "libav" recipe also being known
+      The :term:`PROVIDES` statement results in the "libav" recipe also being known
       as "libpostproc".
 
       In addition to providing recipes under alternate names, the
-      ``PROVIDES`` mechanism is also used to implement virtual targets. A
+      :term:`PROVIDES` mechanism is also used to implement virtual targets. A
       virtual target is a name that corresponds to some particular
       functionality (e.g. a Linux kernel). Recipes that provide the
-      functionality in question list the virtual target in ``PROVIDES``.
+      functionality in question list the virtual target in :term:`PROVIDES`.
       Recipes that depend on the functionality in question can include the
       virtual target in :term:`DEPENDS` to leave the
       choice of provider open.
@@ -1175,12 +1222,12 @@ overview of their function and contents.
    :term:`PRSERV_HOST`
       The network based :term:`PR` service host and port.
 
-      Following is an example of how the ``PRSERV_HOST`` variable is set: ::
+      Following is an example of how the :term:`PRSERV_HOST` variable is set::
 
          PRSERV_HOST = "localhost:0"
 
       You must set the variable if you want to automatically start a local PR
-      service. You can set ``PRSERV_HOST`` to other values to use a remote PR
+      service. You can set :term:`PRSERV_HOST` to other values to use a remote PR
       service.
 
    :term:`PV`
@@ -1192,26 +1239,26 @@ overview of their function and contents.
       a package in this list cannot be found during the build, you will get
       a build error.
 
-      Because the ``RDEPENDS`` variable applies to packages being built,
+      Because the :term:`RDEPENDS` variable applies to packages being built,
       you should always use the variable in a form with an attached package
       name. For example, suppose you are building a development package
       that depends on the ``perl`` package. In this case, you would use the
-      following ``RDEPENDS`` statement: ::
+      following :term:`RDEPENDS` statement::
 
-         RDEPENDS_${PN}-dev += "perl"
+         RDEPENDS:${PN}-dev += "perl"
 
       In the example, the development package depends on the ``perl`` package.
-      Thus, the ``RDEPENDS`` variable has the ``${PN}-dev`` package name as part
+      Thus, the :term:`RDEPENDS` variable has the ``${PN}-dev`` package name as part
       of the variable.
 
       BitBake supports specifying versioned dependencies. Although the
       syntax varies depending on the packaging format, BitBake hides these
       differences from you. Here is the general syntax to specify versions
-      with the ``RDEPENDS`` variable: ::
+      with the :term:`RDEPENDS` variable::
 
-         RDEPENDS_${PN} = "package (operator version)"
+         RDEPENDS:${PN} = "package (operator version)"
 
-      For ``operator``, you can specify the following: ::
+      For ``operator``, you can specify the following::
 
          =
          <
@@ -1220,9 +1267,9 @@ overview of their function and contents.
          >=
 
       For example, the following sets up a dependency on version 1.2 or
-      greater of the package ``foo``: ::
+      greater of the package ``foo``::
 
-         RDEPENDS_${PN} = "foo (>= 1.2)"
+         RDEPENDS:${PN} = "foo (>= 1.2)"
 
       For information on build-time dependencies, see the :term:`DEPENDS`
       variable.
@@ -1233,41 +1280,41 @@ overview of their function and contents.
 
    :term:`REQUIRED_VERSION`
       If there are multiple versions of a recipe available, this variable
-      determines which version should be given preference. ``REQUIRED_VERSION``
+      determines which version should be given preference. :term:`REQUIRED_VERSION`
       works in exactly the same manner as :term:`PREFERRED_VERSION`, except
       that if the specified version is not available then an error message
       is shown and the build fails immediately.
 
-      If both ``REQUIRED_VERSION`` and ``PREFERRED_VERSION`` are set for
-      the same recipe, the ``REQUIRED_VERSION`` value applies.
+      If both :term:`REQUIRED_VERSION` and :term:`PREFERRED_VERSION` are set for
+      the same recipe, the :term:`REQUIRED_VERSION` value applies.
 
    :term:`RPROVIDES`
       A list of package name aliases that a package also provides. These
       aliases are useful for satisfying runtime dependencies of other
       packages both during the build and on the target (as specified by
-      ``RDEPENDS``).
+      :term:`RDEPENDS`).
 
       As with all package-controlling variables, you must always use the
       variable in conjunction with a package name override. Here is an
-      example: ::
+      example::
 
-         RPROVIDES_${PN} = "widget-abi-2"
+         RPROVIDES:${PN} = "widget-abi-2"
 
    :term:`RRECOMMENDS`
       A list of packages that extends the usability of a package being
       built. The package being built does not depend on this list of
       packages in order to successfully build, but needs them for the
       extended usability. To specify runtime dependencies for packages, see
-      the ``RDEPENDS`` variable.
+      the :term:`RDEPENDS` variable.
 
       BitBake supports specifying versioned recommends. Although the syntax
       varies depending on the packaging format, BitBake hides these
       differences from you. Here is the general syntax to specify versions
-      with the ``RRECOMMENDS`` variable: ::
+      with the :term:`RRECOMMENDS` variable::
 
-         RRECOMMENDS_${PN} = "package (operator version)"
+         RRECOMMENDS:${PN} = "package (operator version)"
 
-      For ``operator``, you can specify the following: ::
+      For ``operator``, you can specify the following::
 
          =
          <
@@ -1276,78 +1323,114 @@ overview of their function and contents.
          >=
 
       For example, the following sets up a recommend on version
-      1.2 or greater of the package ``foo``: ::
+      1.2 or greater of the package ``foo``::
 
-         RRECOMMENDS_${PN} = "foo (>= 1.2)"
+         RRECOMMENDS:${PN} = "foo (>= 1.2)"
 
    :term:`SECTION`
       The section in which packages should be categorized.
 
    :term:`SRC_URI`
-      The list of source files - local or remote. This variable tells
+      The list of source files --- local or remote. This variable tells
       BitBake which bits to pull for the build and how to pull them. For
       example, if the recipe or append file needs to fetch a single tarball
-      from the Internet, the recipe or append file uses a ``SRC_URI`` entry
-      that specifies that tarball. On the other hand, if the recipe or
-      append file needs to fetch a tarball and include a custom file, the
-      recipe or append file needs an ``SRC_URI`` variable that specifies
-      all those sources.
+      from the Internet, the recipe or append file uses a :term:`SRC_URI`
+      entry that specifies that tarball. On the other hand, if the recipe or
+      append file needs to fetch a tarball, apply two patches, and include
+      a custom file, the recipe or append file needs an :term:`SRC_URI`
+      variable that specifies all those sources.
 
-      The following list explains the available URI protocols:
+      The following list explains the available URI protocols. URI
+      protocols are highly dependent on particular BitBake Fetcher
+      submodules. Depending on the fetcher BitBake uses, various URL
+      parameters are employed. For specifics on the supported Fetchers, see
+      the :ref:`bitbake-user-manual/bitbake-user-manual-fetching:fetchers`
+      section.
 
-      -  ``file://`` : Fetches files, which are usually files shipped
-         with the metadata, from the local machine. The path is relative to
-         the :term:`FILESPATH` variable.
+      -  ``az://``: Fetches files from an Azure Storage account using HTTPS.
 
-      -  ``bzr://`` : Fetches files from a Bazaar revision control
+      -  ``bzr://``: Fetches files from a Bazaar revision control
          repository.
 
-      -  ``git://`` : Fetches files from a Git revision control
+      -  ``ccrc://``: Fetches files from a ClearCase repository.
+
+      -  ``cvs://``: Fetches files from a CVS revision control
          repository.
 
-      -  ``osc://`` : Fetches files from an OSC (OpenSUSE Build service)
+      -  ``file://``: Fetches files, which are usually files shipped
+         with the Metadata, from the local machine.
+         The path is relative to the :term:`FILESPATH`
+         variable. Thus, the build system searches, in order, from the
+         following directories, which are assumed to be a subdirectories of
+         the directory in which the recipe file (``.bb``) or append file
+         (``.bbappend``) resides:
+
+         -  ``${BPN}``: the base recipe name without any special suffix
+            or version numbers.
+
+         -  ``${BP}`` - ``${BPN}-${PV}``: the base recipe name and
+            version but without any special package name suffix.
+
+         -  ``files``: files within a directory, which is named ``files``
+            and is also alongside the recipe or append file.
+
+      -  ``ftp://``: Fetches files from the Internet using FTP.
+
+      -  ``git://``: Fetches files from a Git revision control
+         repository.
+
+      -  ``gitsm://``: Fetches submodules from a Git revision control
+         repository.
+
+      -  ``hg://``: Fetches files from a Mercurial (``hg``) revision
+         control repository.
+
+      -  ``http://``: Fetches files from the Internet using HTTP.
+
+      -  ``https://``: Fetches files from the Internet using HTTPS.
+
+      -  ``npm://``: Fetches JavaScript modules from a registry.
+
+      -  ``osc://``: Fetches files from an OSC (OpenSUSE Build service)
          revision control repository.
 
-      -  ``repo://`` : Fetches files from a repo (Git) repository.
-
-      -  ``http://`` : Fetches files from the Internet using HTTP.
-
-      -  ``https://`` : Fetches files from the Internet using HTTPS.
-
-      -  ``ftp://`` : Fetches files from the Internet using FTP.
-
-      -  ``cvs://`` : Fetches files from a CVS revision control
-         repository.
-
-      -  ``hg://`` : Fetches files from a Mercurial (``hg``) revision
+      -  ``p4://``: Fetches files from a Perforce (``p4``) revision
          control repository.
 
-      -  ``p4://`` : Fetches files from a Perforce (``p4``) revision
+      -  ``repo://``: Fetches files from a repo (Git) repository.
+
+      -  ``ssh://``: Fetches files from a secure shell.
+
+      -  ``svn://``: Fetches files from a Subversion (``svn``) revision
          control repository.
-
-      -  ``ssh://`` : Fetches files from a secure shell.
-
-      -  ``svn://`` : Fetches files from a Subversion (``svn``) revision
-         control repository.
-
-      -  ``az://`` : Fetches files from an Azure Storage account using HTTPS.
 
       Here are some additional options worth mentioning:
 
-      -  ``unpack`` : Controls whether or not to unpack the file if it is
-         an archive. The default action is to unpack the file.
+      -  ``downloadfilename``: Specifies the filename used when storing
+         the downloaded file.
 
-      -  ``subdir`` : Places the file (or extracts its contents) into the
+      -  ``name``: Specifies a name to be used for association with
+         :term:`SRC_URI` checksums or :term:`SRCREV` when you have more than one
+         file or git repository specified in :term:`SRC_URI`. For example::
+
+            SRC_URI = "git://example.com/foo.git;branch=main;name=first \
+                       git://example.com/bar.git;branch=main;name=second \
+                       http://example.com/file.tar.gz;name=third"
+
+            SRCREV_first = "f1d2d2f924e986ac86fdf7b36c94bcdf32beec15"
+            SRCREV_second = "e242ed3bffccdf271b7fbaf34ed72d089537b42f"
+            SRC_URI[third.sha256sum] = "13550350a8681c84c861aac2e5b440161c2b33a3e4f302ac680ca5b686de48de"
+
+      -  ``subdir``: Places the file (or extracts its contents) into the
          specified subdirectory. This option is useful for unusual tarballs
          or other archives that do not have their files already in a
          subdirectory within the archive.
 
-      -  ``name`` : Specifies a name to be used for association with
-         ``SRC_URI`` checksums when you have more than one file specified
-         in ``SRC_URI``.
+      -  ``subpath``: Limits the checkout to a specific subpath of the
+         tree when using the Git fetcher is used.
 
-      -  ``downloadfilename`` : Specifies the filename used when storing
-         the downloaded file.
+      -  ``unpack``: Controls whether or not to unpack the file if it is
+         an archive. The default action is to unpack the file.
 
    :term:`SRCDATE`
       The date of the source code used to build the package. This variable
@@ -1359,7 +1442,7 @@ overview of their function and contents.
       variable applies only when using Subversion, Git, Mercurial and
       Bazaar. If you want to build a fixed revision and you want to avoid
       performing a query on the remote repository every time BitBake parses
-      your recipe, you should specify a ``SRCREV`` that is a full revision
+      your recipe, you should specify a :term:`SRCREV` that is a full revision
       identifier and not just a tag.
 
    :term:`SRCREV_FORMAT`
@@ -1368,10 +1451,10 @@ overview of their function and contents.
       :term:`SRC_URI`.
 
       The system needs help constructing these values under these
-      circumstances. Each component in the ``SRC_URI`` is assigned a name
-      and these are referenced in the ``SRCREV_FORMAT`` variable. Consider
+      circumstances. Each component in the :term:`SRC_URI` is assigned a name
+      and these are referenced in the :term:`SRCREV_FORMAT` variable. Consider
       an example with URLs named "machine" and "meta". In this case,
-      ``SRCREV_FORMAT`` could look like "machine_meta" and those names
+      :term:`SRCREV_FORMAT` could look like "machine_meta" and those names
       would have the SCM versions substituted into each position. Only one
       ``AUTOINC`` placeholder is added and if needed. And, this placeholder
       is placed at the start of the returned string.
@@ -1383,7 +1466,7 @@ overview of their function and contents.
 
    :term:`STAMPCLEAN`
       Specifies the base path used to create recipe stamp files. Unlike the
-      :term:`STAMP` variable, ``STAMPCLEAN`` can contain
+      :term:`STAMP` variable, :term:`STAMPCLEAN` can contain
       wildcards to match the range of files a clean operation should
       remove. BitBake uses a clean operation to remove any other stamps it
       should be removing when creating a new stamp.

@@ -8,6 +8,7 @@
 import os
 import sys
 import warnings
+warnings.simplefilter("default")
 import logging
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(sys.argv[0])), 'lib'))
 
@@ -30,8 +31,6 @@ timeout = float(sys.argv[7])
 xmlrpcinterface = (sys.argv[8], int(sys.argv[9]))
 if xmlrpcinterface[0] == "None":
     xmlrpcinterface = (None, xmlrpcinterface[1])
-if timeout == "None":
-    timeout = None
 
 # Replace standard fds with our own
 with open('/dev/null', 'r') as si:

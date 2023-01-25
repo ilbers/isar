@@ -98,8 +98,8 @@ exportD = "d"
 
 
     overridetest = """
-RRECOMMENDS_${PN} = "a"
-RRECOMMENDS_${PN}_libc = "b"
+RRECOMMENDS:${PN} = "a"
+RRECOMMENDS:${PN}:libc = "b"
 OVERRIDES = "libc:${PN}"
 PN = "gtk+"
 """
@@ -110,16 +110,16 @@ PN = "gtk+"
         self.assertEqual(d.getVar("RRECOMMENDS"), "b")
         bb.data.expandKeys(d)
         self.assertEqual(d.getVar("RRECOMMENDS"), "b")
-        d.setVar("RRECOMMENDS_gtk+", "c")
+        d.setVar("RRECOMMENDS:gtk+", "c")
         self.assertEqual(d.getVar("RRECOMMENDS"), "c")
 
     overridetest2 = """
 EXTRA_OECONF = ""
-EXTRA_OECONF_class-target = "b"
-EXTRA_OECONF_append = " c"
+EXTRA_OECONF:class-target = "b"
+EXTRA_OECONF:append = " c"
 """
 
-    def test_parse_overrides(self):
+    def test_parse_overrides2(self):
         f = self.parsehelper(self.overridetest2)
         d = bb.parse.handle(f.name, self.d)['']
         d.appendVar("EXTRA_OECONF", " d")
@@ -128,7 +128,7 @@ EXTRA_OECONF_append = " c"
 
     overridetest3 = """
 DESCRIPTION = "A"
-DESCRIPTION_${PN}-dev = "${DESCRIPTION} B"
+DESCRIPTION:${PN}-dev = "${DESCRIPTION} B"
 PN = "bc"
 """
 
@@ -136,15 +136,15 @@ PN = "bc"
         f = self.parsehelper(self.overridetest3)
         d = bb.parse.handle(f.name, self.d)['']
         bb.data.expandKeys(d)
-        self.assertEqual(d.getVar("DESCRIPTION_bc-dev"), "A B")
+        self.assertEqual(d.getVar("DESCRIPTION:bc-dev"), "A B")
         d.setVar("DESCRIPTION", "E")
-        d.setVar("DESCRIPTION_bc-dev", "C D")
+        d.setVar("DESCRIPTION:bc-dev", "C D")
         d.setVar("OVERRIDES", "bc-dev")
         self.assertEqual(d.getVar("DESCRIPTION"), "C D")
 
 
     classextend = """
-VAR_var_override1 = "B"
+VAR_var:override1 = "B"
 EXTRA = ":override1"
 OVERRIDES = "nothing${EXTRA}"
 
@@ -193,4 +193,27 @@ deltask ${EMPTYVAR}
         self.assertTrue("addtask contained multiple 'after' keywords" in stdout)
         self.assertTrue('addtask ignored: " do_patch"' in stdout)
         #self.assertTrue('dependent task do_foo for do_patch does not exist' in stdout)
+
+    broken_multiline_comment = """
+# First line of comment \\
+# Second line of comment \\
+
+"""
+    def test_parse_broken_multiline_comment(self):
+        f = self.parsehelper(self.broken_multiline_comment)
+        with self.assertRaises(bb.BBHandledException):
+            d = bb.parse.handle(f.name, self.d)['']
+
+
+    comment_in_var = """
+VAR = " \\
+    SOMEVAL \\
+#   some comment \\
+    SOMEOTHERVAL \\
+"
+"""
+    def test_parse_comment_in_var(self):
+        f = self.parsehelper(self.comment_in_var)
+        with self.assertRaises(bb.BBHandledException):
+            d = bb.parse.handle(f.name, self.d)['']
 

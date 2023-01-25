@@ -112,13 +112,6 @@ def _showwarning(message, category, filename, lineno, file=None, line=None):
         warnlog.warning(s)
 
 warnings.showwarning = _showwarning
-warnings.filterwarnings("ignore")
-warnings.filterwarnings("default", module="(<string>$|(oe|bb)\.)")
-warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
-warnings.filterwarnings("ignore", category=ImportWarning)
-warnings.filterwarnings("ignore", category=DeprecationWarning, module="<string>$")
-warnings.filterwarnings("ignore", message="With-statements now directly support multiple context managers")
-
 
 def create_bitbake_parser():
     parser = optparse.OptionParser(
@@ -134,7 +127,7 @@ def create_bitbake_parser():
                       help="Execute tasks from a specific .bb recipe directly. WARNING: Does "
                            "not handle any dependencies from other recipes.")
 
-    parser.add_option("-k", "--continue", action="store_false", dest="abort", default=True,
+    parser.add_option("-k", "--continue", action="store_false", dest="halt", default=True,
                       help="Continue as much as possible after an error. While the target that "
                            "failed and anything depending on it cannot be built, as much as "
                            "possible will be built before stopping.")

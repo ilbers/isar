@@ -52,9 +52,13 @@ def npm_filename(package, version):
     """Get the filename of a npm package"""
     return npm_package(package) + "-" + version + ".tgz"
 
-def npm_localfile(package, version):
+def npm_localfile(package, version=None):
     """Get the local filename of a npm package"""
-    return os.path.join("npm2", npm_filename(package, version))
+    if version is not None:
+        filename = npm_filename(package, version)
+    else:
+        filename = package
+    return os.path.join("npm2", filename)
 
 def npm_integrity(integrity):
     """
@@ -69,17 +73,31 @@ def npm_unpack(tarball, destdir, d):
     bb.utils.mkdirhier(destdir)
     cmd = "tar --extract --gzip --file=%s" % shlex.quote(tarball)
     cmd += " --no-same-owner"
+    cmd += " --delay-directory-restore"
     cmd += " --strip-components=1"
     runfetchcmd(cmd, d, workdir=destdir)
+    runfetchcmd("chmod -R +X '%s'" % (destdir), d, quiet=True, workdir=destdir)
 
 class NpmEnvironment(object):
     """
     Using a npm config file seems more reliable than using cli arguments.
     This class allows to create a controlled environment for npm commands.
     """
-    def __init__(self, d, configs=None):
+    def __init__(self, d, configs=[], npmrc=None):
         self.d = d
-        self.configs = configs
+
+        self.user_config = tempfile.NamedTemporaryFile(mode="w", buffering=1)
+        for key, value in configs:
+            self.user_config.write("%s=%s\n" % (key, value))
+
+        if npmrc:
+            self.global_config_name = npmrc
+        else:
+            self.global_config_name = "/dev/null"
+
+    def __del__(self):
+        if self.user_config:
+            self.user_config.close()
 
     def run(self, cmd, args=None, configs=None, workdir=None):
         """Run npm command in a controlled environment"""
@@ -87,23 +105,19 @@ class NpmEnvironment(object):
             d = bb.data.createCopy(self.d)
             d.setVar("HOME", tmpdir)
 
-            cfgfile = os.path.join(tmpdir, "npmrc")
-
             if not workdir:
                 workdir = tmpdir
 
             def _run(cmd):
-                cmd = "NPM_CONFIG_USERCONFIG=%s " % cfgfile + cmd
-                cmd = "NPM_CONFIG_GLOBALCONFIG=%s " % cfgfile + cmd
+                cmd = "NPM_CONFIG_USERCONFIG=%s " % (self.user_config.name) + cmd
+                cmd = "NPM_CONFIG_GLOBALCONFIG=%s " % (self.global_config_name) + cmd
                 return runfetchcmd(cmd, d, workdir=workdir)
 
-            if self.configs:
-                for key, value in self.configs:
-                    _run("npm config set %s %s" % (key, shlex.quote(value)))
-
             if configs:
+                bb.warn("Use of configs argument of NpmEnvironment.run() function"
+                    " is deprecated. Please use args argument instead.")
                 for key, value in configs:
-                    _run("npm config set %s %s" % (key, shlex.quote(value)))
+                    cmd += " --%s=%s" % (key, shlex.quote(value))
 
             if args:
                 for key, value in args:
@@ -142,12 +156,12 @@ class Npm(FetchMethod):
             raise ParameterError("Invalid 'version' parameter", ud.url)
 
         # Extract the 'registry' part of the url
-        ud.registry = re.sub(r"^npm://", "http://", ud.url.split(";")[0])
+        ud.registry = re.sub(r"^npm://", "https://", ud.url.split(";")[0])
 
         # Using the 'downloadfilename' parameter as local filename
         # or the npm package name.
         if "downloadfilename" in ud.parm:
-            ud.localfile = d.expand(ud.parm["downloadfilename"])
+            ud.localfile = npm_localfile(d.expand(ud.parm["downloadfilename"]))
         else:
             ud.localfile = npm_localfile(ud.package, ud.version)
 
@@ -165,14 +179,14 @@ class Npm(FetchMethod):
 
     def _resolve_proxy_url(self, ud, d):
         def _npm_view():
-            configs = []
-            configs.append(("json", "true"))
-            configs.append(("registry", ud.registry))
+            args = []
+            args.append(("json", "true"))
+            args.append(("registry", ud.registry))
             pkgver = shlex.quote(ud.package + "@" + ud.version)
             cmd = ud.basecmd + " view %s" % pkgver
             env = NpmEnvironment(d)
             check_network_access(d, cmd, ud.registry)
-            view_string = env.run(cmd, configs=configs)
+            view_string = env.run(cmd, args=args)
 
             if not view_string:
                 raise FetchError("Unavailable package %s" % pkgver, ud.url)

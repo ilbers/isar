@@ -1,4 +1,6 @@
 #
+# Copyright BitBake Contributors
+#
 # SPDX-License-Identifier: GPL-2.0-only
 #
 
@@ -142,7 +144,7 @@ def _logged_communicate(pipe, log, input, extrafiles):
         while pipe.poll() is None:
             read_all_pipes(log, rin, outdata, errdata)
 
-        # Pocess closed, drain all pipes...
+        # Process closed, drain all pipes...
         read_all_pipes(log, rin, outdata, errdata)
     finally:
         log.flush()

@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 #
+# Copyright BitBake Contributors
+#
 # SPDX-License-Identifier: GPL-2.0-only
 #
 
 import os
 import sys,logging
 import optparse
+import warnings
+warnings.simplefilter("default")
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)),'lib'))
 
@@ -36,12 +40,14 @@ def main():
                       dest="host", type="string", default=PRHOST_DEFAULT)
     parser.add_option("--port", help="port number(default: 8585)", action="store",
                       dest="port", type="int", default=PRPORT_DEFAULT)
+    parser.add_option("-r", "--read-only", help="open database in read-only mode",
+                      action="store_true")
 
     options, args = parser.parse_args(sys.argv)
     prserv.init_logger(os.path.abspath(options.logfile),options.loglevel)
 
     if options.start:
-        ret=prserv.serv.start_daemon(options.dbfile, options.host, options.port,os.path.abspath(options.logfile))
+        ret=prserv.serv.start_daemon(options.dbfile, options.host, options.port,os.path.abspath(options.logfile), options.read_only)
     elif options.stop:
         ret=prserv.serv.stop_daemon(options.host, options.port)
     else:

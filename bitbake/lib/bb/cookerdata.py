@@ -57,7 +57,7 @@ class ConfigParameters(object):
 
     def updateToServer(self, server, environment):
         options = {}
-        for o in ["abort", "force", "invalidate_stamp",
+        for o in ["halt", "force", "invalidate_stamp",
                   "dry_run", "dump_signatures",
                   "extra_assume_provided", "profile",
                   "prefile", "postfile", "server_timeout",
@@ -86,7 +86,7 @@ class ConfigParameters(object):
                 action['msg'] = "Only one target can be used with the --environment option."
             elif self.options.buildfile and len(self.options.pkgs_to_build) > 0:
                 action['msg'] = "No target should be used with the --environment and --buildfile options."
-            elif len(self.options.pkgs_to_build) > 0:
+            elif self.options.pkgs_to_build:
                 action['action'] = ["showEnvironmentTarget", self.options.pkgs_to_build]
             else:
                 action['action'] = ["showEnvironment", self.options.buildfile]
@@ -124,7 +124,7 @@ class CookerConfiguration(object):
         self.prefile = []
         self.postfile = []
         self.cmd = None
-        self.abort = True
+        self.halt = True
         self.force = False
         self.profile = False
         self.nosetscene = False
@@ -210,7 +210,7 @@ def findConfigFile(configfile, data):
 
 #
 # We search for a conf/bblayers.conf under an entry in BBPATH or in cwd working
-# up to /. If that fails, we search for a conf/bitbake.conf in BBPATH.
+# up to /. If that fails, bitbake would fall back to cwd.
 #
 
 def findTopdir():
@@ -223,11 +223,8 @@ def findTopdir():
     layerconf = findConfigFile("bblayers.conf", d)
     if layerconf:
         return os.path.dirname(os.path.dirname(layerconf))
-    if bbpath:
-        bitbakeconf = bb.utils.which(bbpath, "conf/bitbake.conf")
-        if bitbakeconf:
-            return os.path.dirname(os.path.dirname(bitbakeconf))
-    return None
+
+    return os.path.abspath(os.getcwd())
 
 class CookerDataBuilder(object):
 
@@ -250,6 +247,9 @@ class CookerDataBuilder(object):
         self.savedenv = bb.data.init()
         for k in cookercfg.env:
             self.savedenv.setVar(k, cookercfg.env[k])
+            if k in bb.data_smart.bitbake_renamed_vars:
+                bb.error('Variable %s from the shell environment has been renamed to %s' % (k, bb.data_smart.bitbake_renamed_vars[k]))
+                bb.fatal("Exiting to allow enviroment variables to be corrected")
 
         filtered_keys = bb.utils.approved_variables()
         bb.data.inheritFromOS(self.basedata, self.savedenv, filtered_keys)
@@ -261,12 +261,12 @@ class CookerDataBuilder(object):
         self.data = self.basedata
         self.mcdata = {}
 
-    def parseBaseConfiguration(self):
+    def parseBaseConfiguration(self, worker=False):
         data_hash = hashlib.sha256()
         try:
             self.data = self.parseConfigurationFiles(self.prefiles, self.postfiles)
 
-            if self.data.getVar("BB_WORKERCONTEXT", False) is None:
+            if self.data.getVar("BB_WORKERCONTEXT", False) is None and not worker:
                 bb.fetch.fetcher_init(self.data)
             bb.parse.init_parser(self.data)
             bb.codeparser.parser_cache_init(self.data)
@@ -308,6 +308,26 @@ class CookerDataBuilder(object):
             raise bb.BBHandledException()
         except Exception:
             logger.exception("Error parsing configuration files")
+            raise bb.BBHandledException()
+
+
+        # Handle obsolete variable names
+        d = self.data
+        renamedvars = d.getVarFlags('BB_RENAMED_VARIABLES') or {}
+        renamedvars.update(bb.data_smart.bitbake_renamed_vars)
+        issues = False
+        for v in renamedvars:
+            if d.getVar(v) != None or d.hasOverrides(v):
+                issues = True
+                loginfo = {}
+                history = d.varhistory.get_variable_refs(v)
+                for h in history:
+                    for line in history[h]:
+                        loginfo = {'file' : h, 'line' : line}
+                        bb.data.data_smart._print_rename_error(v, loginfo, renamedvars)
+                if not history:
+                    bb.data.data_smart._print_rename_error(v, loginfo, renamedvars)
+        if issues:
             raise bb.BBHandledException()
 
         # Create a copy so we can reset at a later date when UIs disconnect
@@ -417,6 +437,9 @@ class CookerDataBuilder(object):
                         " invoked bitbake from the wrong directory?")
             raise SystemExit(msg)
 
+        if not data.getVar("TOPDIR"):
+            data.setVar("TOPDIR", os.path.abspath(os.getcwd()))
+
         data = parse_config_file(os.path.join("conf", "bitbake.conf"), data)
 
         # Parse files for loading *after* bitbake.conf and any includes
@@ -428,7 +451,7 @@ class CookerDataBuilder(object):
         for bbclass in bbclasses:
             data = _inherit(bbclass, data)
 
-        # Nomally we only register event handlers at the end of parsing .bb files
+        # Normally we only register event handlers at the end of parsing .bb files
         # We register any handlers we've found so far here...
         for var in data.getVar('__BBHANDLERS', False) or []:
             handlerfn = data.getVarFlag(var, "filename", False)

@@ -52,6 +52,10 @@ class TinfoilDataStoreConnectorVarHistory:
     def remoteCommand(self, cmd, *args, **kwargs):
         return self.tinfoil.run_command('dataStoreConnectorVarHistCmd', self.dsindex, cmd, args, kwargs)
 
+    def emit(self, var, oval, val, o, d):
+        ret = self.tinfoil.run_command('dataStoreConnectorVarHistCmdEmit', self.dsindex, var, oval, val, d.dsindex)
+        o.write(ret)
+
     def __getattr__(self, name):
         if not hasattr(bb.data_smart.VariableHistory, name):
             raise AttributeError("VariableHistory has no such method %s" % name)
@@ -444,7 +448,7 @@ class Tinfoil:
         self.run_actions(config_params)
         self.recipes_parsed = True
 
-    def run_command(self, command, *params):
+    def run_command(self, command, *params, handle_events=True):
         """
         Run a command on the server (as implemented in bb.command).
         Note that there are two types of command - synchronous and
@@ -464,7 +468,7 @@ class Tinfoil:
         try:
             result = self.server_connection.connection.runCommand(commandline)
         finally:
-            while True:
+            while handle_events:
                 event = self.wait_event()
                 if not event:
                     break
@@ -489,7 +493,7 @@ class Tinfoil:
         Wait for an event from the server for the specified time.
         A timeout of 0 means don't wait if there are no events in the queue.
         Returns the next event in the queue or None if the timeout was
-        reached. Note that in order to recieve any events you will
+        reached. Note that in order to receive any events you will
         first need to set the internal event mask using set_event_mask()
         (otherwise whatever event mask the UI set up will be in effect).
         """
@@ -757,7 +761,7 @@ class Tinfoil:
                                 if parseprogress:
                                     parseprogress.update(event.progress)
                                 else:
-                                    bb.warn("Got ProcessProgress event for someting that never started?")
+                                    bb.warn("Got ProcessProgress event for something that never started?")
                                 continue
                             if isinstance(event, bb.event.ProcessFinished):
                                 if self.quiet > 1:

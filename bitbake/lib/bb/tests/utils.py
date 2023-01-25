@@ -418,7 +418,7 @@ MULTILINE = "  stuff \\
                                ['MULTILINE'],
                                handle_var)
 
-        testvalue = re.sub('\s+', ' ', value_in_callback.strip())
+        testvalue = re.sub(r'\s+', ' ', value_in_callback.strip())
         self.assertEqual(expected_value, testvalue)
 
 class EditBbLayersConf(unittest.TestCase):
@@ -666,3 +666,21 @@ class GetReferencedVars(unittest.TestCase):
 
         layers = [{"SRC_URI"}, {"QT_GIT", "QT_MODULE", "QT_MODULE_BRANCH_PARAM", "QT_GIT_PROTOCOL"}, {"QT_GIT_PROJECT", "QT_MODULE_BRANCH", "BPN"}, {"PN", "SPECIAL_PKGSUFFIX"}]
         self.check_referenced("${SRC_URI}", layers)
+
+
+class EnvironmentTests(unittest.TestCase):
+    def test_environment(self):
+        os.environ["A"] = "this is A"
+        self.assertIn("A", os.environ)
+        self.assertEqual(os.environ["A"], "this is A")
+        self.assertNotIn("B", os.environ)
+
+        with bb.utils.environment(B="this is B"):
+            self.assertIn("A", os.environ)
+            self.assertEqual(os.environ["A"], "this is A")
+            self.assertIn("B", os.environ)
+            self.assertEqual(os.environ["B"], "this is B")
+
+        self.assertIn("A", os.environ)
+        self.assertEqual(os.environ["A"], "this is A")
+        self.assertNotIn("B", os.environ)

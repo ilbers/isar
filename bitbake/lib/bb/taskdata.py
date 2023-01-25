@@ -39,7 +39,7 @@ class TaskData:
     """
     BitBake Task Data implementation
     """
-    def __init__(self, abort = True, skiplist = None, allowincomplete = False):
+    def __init__(self, halt = True, skiplist = None, allowincomplete = False):
         self.build_targets = {}
         self.run_targets = {}
 
@@ -57,7 +57,7 @@ class TaskData:
         self.failed_rdeps = []
         self.failed_fns = []
 
-        self.abort = abort
+        self.halt = halt
         self.allowincomplete = allowincomplete
 
         self.skiplist = skiplist
@@ -328,7 +328,7 @@ class TaskData:
         try:
             self.add_provider_internal(cfgData, dataCache, item)
         except bb.providers.NoProvider:
-            if self.abort:
+            if self.halt:
                 raise
             self.remove_buildtarget(item)
 
@@ -451,12 +451,12 @@ class TaskData:
         for target in self.build_targets:
             if fn in self.build_targets[target]:
                 self.build_targets[target].remove(fn)
-                if len(self.build_targets[target]) == 0:
+                if not self.build_targets[target]:
                     self.remove_buildtarget(target, missing_list)
         for target in self.run_targets:
             if fn in self.run_targets[target]:
                 self.run_targets[target].remove(fn)
-                if len(self.run_targets[target]) == 0:
+                if not self.run_targets[target]:
                     self.remove_runtarget(target, missing_list)
 
     def remove_buildtarget(self, target, missing_list=None):
@@ -479,7 +479,7 @@ class TaskData:
                     fn = tid.rsplit(":",1)[0]
                     self.fail_fn(fn, missing_list)
 
-        if self.abort and target in self.external_targets:
+        if self.halt and target in self.external_targets:
             logger.error("Required build target '%s' has no buildable providers.\nMissing or unbuildable dependency chain was: %s", target, missing_list)
             raise bb.providers.NoProvider(target)
 
@@ -516,7 +516,7 @@ class TaskData:
                     self.add_provider_internal(cfgData, dataCache, target)
                     added = added + 1
                 except bb.providers.NoProvider:
-                    if self.abort and target in self.external_targets and not self.allowincomplete:
+                    if self.halt and target in self.external_targets and not self.allowincomplete:
                         raise
                     if not self.allowincomplete:
                         self.remove_buildtarget(target)

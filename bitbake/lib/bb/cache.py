@@ -54,12 +54,12 @@ class RecipeInfoCommon(object):
 
     @classmethod
     def pkgvar(cls, var, packages, metadata):
-        return dict((pkg, cls.depvar("%s_%s" % (var, pkg), metadata))
+        return dict((pkg, cls.depvar("%s:%s" % (var, pkg), metadata))
                     for pkg in packages)
 
     @classmethod
     def taskvar(cls, var, tasks, metadata):
-        return dict((task, cls.getvar("%s_task-%s" % (var, task), metadata))
+        return dict((task, cls.getvar("%s:task-%s" % (var, task), metadata))
                     for task in tasks)
 
     @classmethod
@@ -284,36 +284,15 @@ def parse_recipe(bb_data, bbfile, appends, mc=''):
     Parse a recipe
     """
 
-    chdir_back = False
-
     bb_data.setVar("__BBMULTICONFIG", mc)
 
-    # expand tmpdir to include this topdir
-    bb_data.setVar('TMPDIR', bb_data.getVar('TMPDIR') or "")
     bbfile_loc = os.path.abspath(os.path.dirname(bbfile))
-    oldpath = os.path.abspath(os.getcwd())
     bb.parse.cached_mtime_noerror(bbfile_loc)
 
-    # The ConfHandler first looks if there is a TOPDIR and if not
-    # then it would call getcwd().
-    # Previously, we chdir()ed to bbfile_loc, called the handler
-    # and finally chdir()ed back, a couple of thousand times. We now
-    # just fill in TOPDIR to point to bbfile_loc if there is no TOPDIR yet.
-    if not bb_data.getVar('TOPDIR', False):
-        chdir_back = True
-        bb_data.setVar('TOPDIR', bbfile_loc)
-    try:
-        if appends:
-            bb_data.setVar('__BBAPPEND', " ".join(appends))
-        bb_data = bb.parse.handle(bbfile, bb_data)
-        if chdir_back:
-            os.chdir(oldpath)
-        return bb_data
-    except:
-        if chdir_back:
-            os.chdir(oldpath)
-        raise
-
+    if appends:
+        bb_data.setVar('__BBAPPEND', " ".join(appends))
+    bb_data = bb.parse.handle(bbfile, bb_data)
+    return bb_data
 
 
 class NoCache(object):
@@ -640,7 +619,7 @@ class Cache(NoCache):
                 for f in flist:
                     if not f:
                         continue
-                    f, exist = f.split(":")
+                    f, exist = f.rsplit(":", 1)
                     if (exist == "True" and not os.path.exists(f)) or (exist == "False" and os.path.exists(f)):
                         self.logger.debug2("%s's file checksum list file %s changed",
                                              fn, f)

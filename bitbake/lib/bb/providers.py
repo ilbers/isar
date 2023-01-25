@@ -94,7 +94,7 @@ def versionVariableMatch(cfgData, keyword, pn):
 
     # pn can contain '_', e.g. gcc-cross-x86_64 and an override cannot
     # hence we do this manually rather than use OVERRIDES
-    ver = cfgData.getVar("%s_VERSION_pn-%s" % (keyword, pn))
+    ver = cfgData.getVar("%s_VERSION:pn-%s" % (keyword, pn))
     if not ver:
         ver = cfgData.getVar("%s_VERSION_%s" % (keyword, pn))
     if not ver:
@@ -133,7 +133,7 @@ def findPreferredProvider(pn, cfgData, dataCache, pkg_pn = None, item = None):
 
     if required_v is not None:
         if preferred_v is not None:
-            logger.warn("REQUIRED_VERSION and PREFERRED_VERSION for package %s%s are both set using REQUIRED_VERSION %s", pn, itemstr, required_v)
+            logger.warning("REQUIRED_VERSION and PREFERRED_VERSION for package %s%s are both set using REQUIRED_VERSION %s", pn, itemstr, required_v)
         else:
             logger.debug("REQUIRED_VERSION is set for package %s%s", pn, itemstr)
         # REQUIRED_VERSION always takes precedence over PREFERRED_VERSION
@@ -173,7 +173,7 @@ def findPreferredProvider(pn, cfgData, dataCache, pkg_pn = None, item = None):
             pv_str = '%s:%s' % (preferred_e, pv_str)
         if preferred_file is None:
             if not required:
-                logger.warn("preferred version %s of %s not available%s", pv_str, pn, itemstr)
+                logger.warning("preferred version %s of %s not available%s", pv_str, pn, itemstr)
             available_vers = []
             for file_set in pkg_pn:
                 for f in file_set:
@@ -185,7 +185,7 @@ def findPreferredProvider(pn, cfgData, dataCache, pkg_pn = None, item = None):
                         available_vers.append(ver_str)
             if available_vers:
                 available_vers.sort()
-                logger.warn("versions of %s available: %s", pn, ' '.join(available_vers))
+                logger.warning("versions of %s available: %s", pn, ' '.join(available_vers))
             if required:
                 logger.error("required version %s of %s not available%s", pv_str, pn, itemstr)
         else:
@@ -396,8 +396,8 @@ def getRuntimeProviders(dataCache, rdepend):
         return rproviders
 
     # Only search dynamic packages if we can't find anything in other variables
-    for pattern in dataCache.packages_dynamic:
-        pattern = pattern.replace(r'+', r"\+")
+    for pat_key in dataCache.packages_dynamic:
+        pattern = pat_key.replace(r'+', r"\+")
         if pattern in regexp_cache:
             regexp = regexp_cache[pattern]
         else:
@@ -408,7 +408,7 @@ def getRuntimeProviders(dataCache, rdepend):
                 raise
             regexp_cache[pattern] = regexp
         if regexp.match(rdepend):
-            rproviders += dataCache.packages_dynamic[pattern]
+            rproviders += dataCache.packages_dynamic[pat_key]
             logger.debug("Assuming %s is a dynamic package, but it may not exist" % rdepend)
 
     return rproviders
