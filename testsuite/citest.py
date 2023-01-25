@@ -239,7 +239,7 @@ class RebuildTest(CIBaseTest):
 
         self.backupfile(dpkgbase_file)
         with open(dpkgbase_file, 'a') as file:
-            file.write('do_fetch_append() {\n\n}')
+            file.write('do_fetch:append() {\n\n}')
 
         try:
             self.perform_build_test('mc:qemuamd64-bullseye:isar-image-base', debsrc_cache=True)

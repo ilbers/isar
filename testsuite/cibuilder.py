@@ -91,8 +91,8 @@ class CIBuilder(Test):
         # write ci_build.conf
         with open(self.build_dir + '/conf/ci_build.conf', 'w') as f:
             if compat_arch:
-                f.write('ISAR_ENABLE_COMPAT_ARCH_amd64 = "1"\n')
-                f.write('ISAR_ENABLE_COMPAT_ARCH_arm64 = "1"\n')
+                f.write('ISAR_ENABLE_COMPAT_ARCH:amd64 = "1"\n')
+                f.write('ISAR_ENABLE_COMPAT_ARCH:arm64 = "1"\n')
                 f.write('IMAGE_INSTALL += "kselftest"\n')
             if cross:
                 f.write('ISAR_CROSS_COMPILE = "1"\n')
@@ -103,7 +103,7 @@ class CIBuilder(Test):
                 f.write('BB_NO_NETWORK = "1"\n')
             if container:
                 f.write('SDK_FORMATS = "docker-archive"\n')
-                f.write('IMAGE_INSTALL_remove = "example-module-${KERNEL_NAME} enable-fsck"\n')
+                f.write('IMAGE_INSTALL:remove = "example-module-${KERNEL_NAME} enable-fsck"\n')
             if gpg_pub_key:
                 f.write('BASE_REPO_KEY="file://' + gpg_pub_key + '"\n')
             if wic_deploy_parts:
