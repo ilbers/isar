@@ -119,6 +119,7 @@ EOSUDO
 ROOTFS_INSTALL_COMMAND += "rootfs_install_pkgs_update"
 rootfs_install_pkgs_update[weight] = "5"
 rootfs_install_pkgs_update[isar-apt-lock] = "acquire-before"
+rootfs_install_pkgs_update[network] = "${TASK_USE_NETWORK_AND_SUDO}"
 rootfs_install_pkgs_update() {
     sudo -E chroot '${ROOTFSDIR}' /usr/bin/apt-get update \
         -o Dir::Etc::SourceList="sources.list.d/isar-apt.list" \
@@ -144,6 +145,7 @@ rootfs_import_package_cache() {
 ROOTFS_INSTALL_COMMAND += "rootfs_install_pkgs_download"
 rootfs_install_pkgs_download[weight] = "600"
 rootfs_install_pkgs_download[isar-apt-lock] = "release-after"
+rootfs_install_pkgs_download[network] = "${TASK_USE_NETWORK_AND_SUDO}"
 rootfs_install_pkgs_download() {
     sudo -E chroot '${ROOTFSDIR}' \
         /usr/bin/apt-get ${ROOTFS_APT_ARGS} --download-only ${ROOTFS_PACKAGES}
@@ -167,6 +169,7 @@ rootfs_install_clean_files() {
 
 ROOTFS_INSTALL_COMMAND += "rootfs_install_pkgs_install"
 rootfs_install_pkgs_install[weight] = "8000"
+rootfs_install_pkgs_install[network] = "${TASK_USE_SUDO}"
 rootfs_install_pkgs_install() {
     sudo -E chroot "${ROOTFSDIR}" \
         /usr/bin/apt-get ${ROOTFS_APT_ARGS} ${ROOTFS_PACKAGES}
@@ -177,6 +180,7 @@ do_rootfs_install[vardeps] += "${ROOTFS_CONFIGURE_COMMAND} ${ROOTFS_INSTALL_COMM
 do_rootfs_install[vardepsexclude] += "IMAGE_ROOTFS"
 do_rootfs_install[depends] = "isar-bootstrap-${@'target' if d.getVar('ROOTFS_ARCH') == d.getVar('DISTRO_ARCH') else 'host'}:do_build"
 do_rootfs_install[recrdeptask] = "do_deploy_deb"
+do_rootfs_install[network] = "${TASK_USE_SUDO}"
 python do_rootfs_install() {
     configure_cmds = (d.getVar("ROOTFS_CONFIGURE_COMMAND", True) or "").split()
     install_cmds = (d.getVar("ROOTFS_INSTALL_COMMAND", True) or "").split()
@@ -282,6 +286,7 @@ rootfs_export_dpkg_status() {
 }
 
 do_rootfs_postprocess[vardeps] = "${ROOTFS_POSTPROCESS_COMMAND}"
+do_rootfs_postprocess[network] = "${TASK_USE_SUDO}"
 python do_rootfs_postprocess() {
     # Take care that its correctly mounted:
     bb.build.exec_func('rootfs_do_mounts', d)

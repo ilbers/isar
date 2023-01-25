@@ -216,6 +216,7 @@ DISTRO_BOOTSTRAP_KEYRING = "${WORKDIR}/distro-keyring.gpg"
 do_generate_keyrings[cleandirs] = "${APT_KEYS_DIR}"
 do_generate_keyrings[dirs] = "${DL_DIR}"
 do_generate_keyrings[vardeps] += "DISTRO_BOOTSTRAP_KEYS THIRD_PARTY_APT_KEYS"
+do_generate_keyrings[network] = "${TASK_USE_SUDO}"
 do_generate_keyrings() {
     if [ -n "${@d.getVar("THIRD_PARTY_APT_KEYFILES", True) or ""}" ]; then
         chmod 777 "${APT_KEYS_DIR}"
@@ -271,6 +272,7 @@ do_bootstrap[vardeps] += " \
     "
 do_bootstrap[dirs] = "${DEPLOY_DIR_BOOTSTRAP}"
 do_bootstrap[depends] = "base-apt:do_cache isar-apt:do_cache_config"
+do_bootstrap[network] = "${TASK_USE_NETWORK_AND_SUDO}"
 
 do_bootstrap() {
     if [ "${ISAR_ENABLE_COMPAT_ARCH}" = "1" ]; then

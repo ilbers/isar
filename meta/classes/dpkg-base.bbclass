@@ -122,6 +122,7 @@ do_apt_fetch() {
 
 addtask apt_fetch
 do_apt_fetch[lockfiles] += "${REPO_ISAR_DIR}/isar.lock"
+do_apt_fetch[network] = "${TASK_USE_NETWORK_AND_SUDO}"
 
 # Add dependency from the correct schroot: host or target
 do_apt_fetch[depends] += "${SCHROOT_DEP}"
@@ -148,6 +149,7 @@ do_apt_unpack() {
     done
     schroot_delete_configs
 }
+do_apt_unpack[network] = "${TASK_USE_SUDO}"
 
 addtask apt_unpack after do_apt_fetch
 
@@ -222,6 +224,7 @@ python do_dpkg_build() {
     finally:
         bb.build.exec_func('schroot_delete_configs', d)
 }
+do_dpkg_build[network] = "${TASK_USE_NETWORK_AND_SUDO}"
 
 addtask dpkg_build
 
@@ -265,6 +268,7 @@ deb_clean() {
 }
 # the clean function modifies isar-apt
 do_clean[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
+do_clean[network] = "${TASK_USE_SUDO}"
 
 do_deploy_deb() {
     deb_clean
@@ -319,6 +323,7 @@ addtask devshell after do_prepare_build
 DEVSHELL_STARTDIR ?= "${S}"
 do_devshell[dirs] = "${DEVSHELL_STARTDIR}"
 do_devshell[nostamp] = "1"
+do_devshell[network] = "${TASK_USE_SUDO}"
 
 python do_devshell_nodeps() {
     bb.build.exec_func('do_devshell', d)

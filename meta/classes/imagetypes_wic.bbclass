@@ -134,6 +134,7 @@ python do_rootfs_wicenv () {
 addtask do_rootfs_wicenv after do_rootfs before do_image_wic
 do_rootfs_wicenv[vardeps] += "${WICVARS}"
 do_rootfs_wicenv[prefuncs] = 'set_image_size'
+do_rootfs_wicenv[network] = "${TASK_USE_SUDO}"
 
 check_for_wic_warnings() {
     WARN="$(grep -e '^WARNING' ${T}/log.do_image_wic || true)"

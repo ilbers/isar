@@ -291,6 +291,7 @@ python() {
         task = 'do_image_%s' % bt_clean
         d.setVar(task, '\n'.join(cmds))
         d.setVarFlag(task, 'func', '1')
+        d.setVarFlag(task, 'network', localdata.expand('${TASK_USE_SUDO}'))
         d.appendVarFlag(task, 'prefuncs', ' set_image_size')
         d.appendVarFlag(task, 'vardeps', ' ' + ' '.join(vardeps))
         d.appendVarFlag(task, 'vardepsexclude', ' ' + ' '.join(vardepsexclude))
@@ -356,6 +357,7 @@ DTB_IMG = "${PP_DEPLOY}/${@(d.getVar('DTB_FILES').split() or [''])[0]}"
 
 do_copy_boot_files[dirs] = "${DEPLOY_DIR_IMAGE}"
 do_copy_boot_files[lockfiles] += "${DEPLOY_DIR_IMAGE}/isar.lock"
+do_copy_boot_files[network] = "${TASK_USE_SUDO}"
 do_copy_boot_files() {
     kernel="$(realpath -q '${IMAGE_ROOTFS}'/vmlinu[xz])"
     if [ ! -f "$kernel" ]; then
@@ -455,6 +457,7 @@ EOSUDO
     fi
 
 }
+do_rootfs_finalize[network] = "${TASK_USE_SUDO}"
 addtask rootfs_finalize before do_rootfs after do_rootfs_postprocess
 
 ROOTFS_QA_FIND_ARGS ?= ""
@@ -491,5 +494,6 @@ do_rootfs_quality_check() {
 	bbwarn "$found"
     fi
 }
+do_rootfs_quality_check[network] = "${TASK_USE_SUDO}"
 
 addtask rootfs_quality_check after do_rootfs_finalize before do_rootfs

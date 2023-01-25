@@ -19,6 +19,7 @@ python() {
         t_clean = t.replace('-', '_').replace('.', '_')
         d.setVar('IMAGE_CMD_' + t_clean, 'convert_container %s "${CONTAINER_IMAGE_NAME}" "${IMAGE_FILE_HOST}"' % t)
         d.setVar('IMAGE_FULLNAME_' + t_clean, '${PN}-${DISTRO}-${DISTRO_ARCH}')
+        d.appendVarFlag('do_containerize', 'network', d.getVar('TASK_USE_SUDO'))
         bb.build.addtask('containerize', 'do_image_' + t_clean, 'do_image_tools', d)
 }
 

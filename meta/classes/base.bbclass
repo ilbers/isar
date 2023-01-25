@@ -183,6 +183,7 @@ def isar_export_ccache(d):
 do_fetch[dirs] = "${DL_DIR}"
 do_fetch[file-checksums] = "${@bb.fetch.get_checksum_file_list(d)}"
 do_fetch[vardeps] += "SRCREV"
+do_fetch[network] = "${TASK_USE_NETWORK}"
 
 # Fetch package from the source link
 python do_fetch() {
