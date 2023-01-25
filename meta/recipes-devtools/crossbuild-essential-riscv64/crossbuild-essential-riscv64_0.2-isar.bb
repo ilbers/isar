@@ -7,6 +7,9 @@
 inherit dpkg-raw
 
 DPKG_ARCH = "all"
+# build this package using the host toolchain
+# to break cyclic dependency in the cross chroot
+PACKAGE_ARCH = "${HOST_ARCH}"
 
 DEBIAN_DEPENDS = " \
     gcc-riscv64-linux-gnu, \
