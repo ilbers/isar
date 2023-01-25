@@ -271,6 +271,12 @@ rootfs_postprocess_clean_ldconfig_cache() {
     sudo rm -f ${ROOTFSDIR}/var/cache/ldconfig/aux-cache
 }
 
+ROOTFS_POSTPROCESS_COMMAND += "rootfs_postprocess_clean_tmp"
+rootfs_postprocess_clean_tmp() {
+    # /tmp is by definition non persistent across boots
+    sudo rm -rf "${ROOTFSDIR}/tmp/"*
+}
+
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'generate-manifest', 'rootfs_generate_manifest', '', d)}"
 rootfs_generate_manifest () {
     mkdir -p ${ROOTFS_MANIFEST_DEPLOY_DIR}
