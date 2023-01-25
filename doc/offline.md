@@ -96,9 +96,9 @@ DISTRO_APT_PREMIRRORS = "\
     ftp\.de\.debian\.org localhost\n\
     security\.debian\.org localhost/debian-security\n"
 
-PREMIRRORS_prepend = "git://github.com/ git://localhost/git/\n"
+PREMIRRORS:prepend = "git://github.com/ git://localhost/git/\n"
 
-FETCHCMD_git = "GIT_SSL_NO_VERIFY=1 git -c core.fsyncobjectfiles=0"
+FETCHCMD:git = "GIT_SSL_NO_VERIFY=1 git -c core.fsyncobjectfiles=0"
 ```
 
 Setting `GIT_SSL_NO_VERIFY` is necessary if SSL certificate is self-signed or

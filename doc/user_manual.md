@@ -589,8 +589,8 @@ $ vim meta-user/classes/my-image.bbclass
 Specify the command to generate the new image, and optionally image type
 dependencies or required arguments:
 ```
-IMAGE_TYPEDEP_my_image = "ext4"
-IMAGE_CMD_REQUIRED_ARGS_my_image = "MY_ARG"
+IMAGE_TYPEDEP:my_image = "ext4"
+IMAGE_CMD_REQUIRED_ARGS:my_image = "MY_ARG"
 IMAGE_CMD_my_image() {
     INPUT="${PP_DEPLOY}/${IMAGE_FULLNAME}.ext4"
     ${SUDO_CHROOT} my_command ${MY_ARG} -i ${INPUT} -o ${IMAGE_FILE_CHROOT}
@@ -607,8 +607,8 @@ variables:
 If the code you provide in `IMAGE_CMD` requires the building and/or installation
 of additional packages in the buildchroot, you can specify this:
 ```
-IMAGER_BULID_DEPS_my_image = "my_command"
-IMAGER_INSTALL_my_image = "my_command"
+IMAGER_BULID_DEPS:my_image = "my_command"
+IMAGER_INSTALL:my_image = "my_command"
 ```
 
 To use your custom image class, add it to `IMAGE_CLASSES` in your machine config:
@@ -663,7 +663,7 @@ The `GROUP_<groupname>` variable contains the settings of a group named `groupna
  - `flags` - A list of additional flags of the group. Those are the currently recognized flags:
    - `system` - The group is created using the `--system` parameter.
 
-The `USERS` and `USER_<username>` variable works similar to the `GROUPS` and `GROUP_<groupname>` variable. The difference are the accepted flags of the `USER_<username>` variable. It accepts the following flags:
+The `USERS` and `USER:<username>` variable works similar to the `GROUPS` and `GROUP:<groupname>` variable. The difference are the accepted flags of the `USER:<username>` variable. It accepts the following flags:
 
  - `password` - The crypt(3) encrypted password. To encrypt a password use for example `mkpasswd` or `openssl passwd -6`. You can find `mkpasswd` in the `whois` package of Debian.
  - `expire` - A `YYYY-MM-DD` formatted date on which the user account will be disabled. (see useradd(8))
@@ -1300,8 +1300,8 @@ To the local.conf add:
 
 ```
 IMAGE_PREINSTALL += "docker-ce"
-THIRD_PARTY_APT_KEYS_append = " https://download.docker.com/linux/debian/gpg;md5sum=1afae06b34a13c1b3d9cb61a26285a15"
-DISTRO_APT_SOURCES_append = " conf/distro/docker-buster.list"
+THIRD_PARTY_APT_KEYS:append = " https://download.docker.com/linux/debian/gpg;md5sum=1afae06b34a13c1b3d9cb61a26285a15"
+DISTRO_APT_SOURCES:append = " conf/distro/docker-buster.list"
 ```
 
 And build the corresponding image target:
