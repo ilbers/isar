@@ -28,6 +28,7 @@ ROOTFS_PACKAGES = "initramfs-tools ${INITRAMFS_PREINSTALL} ${INITRAMFS_INSTALL}"
 inherit rootfs
 
 do_generate_initramfs[dirs] = "${DEPLOY_DIR_IMAGE}"
+do_generate_initramfs[network] = "${TASK_USE_SUDO}"
 do_generate_initramfs() {
     rootfs_do_mounts
     rootfs_do_qemu
