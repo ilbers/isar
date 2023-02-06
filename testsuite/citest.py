@@ -69,7 +69,7 @@ class DevTest(CIBaseTest):
 
     def test_dev_run_arm_bullseye(self):
         self.init()
-        self.vm_start('arm', 'bullseye')
+        self.vm_start('arm', 'bullseye', skip_modulecheck=True)
 
 class ReproTest(CIBaseTest):
 

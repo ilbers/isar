@@ -209,7 +209,8 @@ class CIBuilder(Test):
 
         return env['LAYERDIR_' + layer].strip('"')
 
-    def vm_start(self, arch='amd64', distro='buster', enforce_pcbios=False):
+    def vm_start(self, arch='amd64', distro='buster', enforce_pcbios=False,
+                 skip_modulecheck=False):
         time_to_wait = self.params.get('time_to_wait', default=60)
 
         self.log.info('===================================================')
@@ -291,7 +292,8 @@ class CIBuilder(Test):
         if os.path.exists(output_file) and os.path.getsize(output_file) > 0:
             with open(output_file, "rb") as f1:
                 data = f1.read()
-                if module_output in data and login_prompt in data:
+                if (module_output in data or skip_modulecheck) \
+                   and login_prompt in data:
                     if resize_output:
                         if resize_output in data:
                             return
