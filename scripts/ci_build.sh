@@ -127,6 +127,11 @@ fi
 
 if [ -n "$NORUN" ]; then
     TAGS="$TAGS,-startvm"
+else
+    if [ ! -f /usr/share/doc/qemu-system/copyright ]; then
+        sudo apt-get update -qq
+        sudo apt-get install -y --no-install-recommends qemu-system ovmf
+    fi
 fi
 
 # Provide working path
