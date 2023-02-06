@@ -4,34 +4,42 @@ The framework could be installed by using standard HOWTO:
 
   https://github.com/avocado-framework/avocado#installing-with-standard-python-tools
 
-## For Debian (tested on Debian 10.x)
+## For Debian (tested on Debian 11.x)
 
-        $ sudo dpkg -i avocado_91.0_all.deb
+```
+$ pip install avocado-framework==99.0
+```
 
 # Run test
+
+## Quick developers test
+
+```
+$ avocado run ../testsuite/citest.py -t dev --nrunner-max-parallel-tasks=1
+```
 
 ## Fast build test
 
 ```
-$ avocado run build_test.py -t fast -p quiet=1 -p cross=1
+$ avocado run ../testsuite/citest.py -t fast --nrunner-max-parallel-tasks=1 -p quiet=1
 ```
 
 ## Full build test
 
 ```
-$ avocado run build_test.py -t full -p quiet=1
+$ avocado run ../testsuite/citest.py -t full --nrunner-max-parallel-tasks=1 -p quiet=1
 ```
 
 ## Fast boot test
 
 ```
-$ avocado run vm_boot_test.py -t fast -p build_dir="$BUILDDIR" -p time_to_wait=300
+$ avocado run ../testsuite/citest.py -t startvm,fast -p time_to_wait=300
 ```
 
 ## Full boot test
 
 ```
-$ avocado run vm_boot_test.py -t full -p build_dir="$BUILDDIR" -p time_to_wait=300
+$ avocado run ../testsuite/citest.py -t startvm,full -p time_to_wait=300
 ```
 
 # Other
