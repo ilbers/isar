@@ -55,7 +55,7 @@ class CIBuilder(Test):
     def configure(self, compat_arch=True, cross=None, debsrc_cache=False,
                   container=False, ccache=False, sstate=False, offline=False,
                   gpg_pub_key=None, wic_deploy_parts=False, dl_dir=None,
-                  source_date_epoch=None, **kwargs):
+                  source_date_epoch=None, image_install=None, **kwargs):
         # write configuration file and set bitbake_args
         # can run multiple times per test case
         self.check_init()
@@ -84,6 +84,7 @@ class CIBuilder(Test):
                       f'  wic_deploy_parts = {wic_deploy_parts}\n'
                       f'  source_date_epoch = {source_date_epoch} \n'
                       f'  dl_dir = {dl_dir}\n'
+                      f'  image_install = {image_install}\n'
                       f'===================================================')
 
         # determine bitbake_args
@@ -122,6 +123,8 @@ class CIBuilder(Test):
                 f.write('SOURCE_DATE_EPOCH = "%s"\n' % source_date_epoch)
             if dl_dir:
                 f.write('DL_DIR = "%s"\n' % dl_dir)
+            if image_install is not None:
+                f.write('IMAGE_INSTALL = "%s"' % image_install)
 
         # include ci_build.conf in local.conf
         with open(self.build_dir + '/conf/local.conf', 'r+') as f:
