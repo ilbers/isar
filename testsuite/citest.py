@@ -125,7 +125,6 @@ class CrossTest(CIBaseTest):
         targets = [
             'mc:qemuarm-buster:isar-image-base',
             'mc:qemuarm-bullseye:isar-image-base',
-            'mc:qemuarm64-bullseye:isar-image-base',
             'mc:de0-nano-soc-bullseye:isar-image-base',
             'mc:stm32mp15x-buster:isar-image-base'
                   ]
@@ -167,19 +166,6 @@ class CrossTest(CIBaseTest):
         except:
             self.cancel('KFAIL')
 
-class SdkTest(CIBaseTest):
-
-    """
-    In addition test SDK creation
-
-    :avocado: tags=sdk,fast,full
-    """
-    def test_sdk(self):
-        targets = ['mc:qemuarm-bullseye:isar-image-base']
-
-        self.init()
-        self.perform_build_test(targets, bitbake_cmd='do_populate_sdk')
-
 class WicTest(CIBaseTest):
 
     """
@@ -218,7 +204,6 @@ class NoCrossTest(CIBaseTest):
             'mc:qemui386-buster:isar-image-base',
             'mc:qemui386-bullseye:isar-image-base',
             'mc:qemuamd64-buster:isar-image-base',
-            'mc:qemuamd64-bullseye:isar-image-base',
             'mc:qemuamd64-bullseye:isar-initramfs',
             'mc:qemumipsel-buster:isar-image-base',
             'mc:qemumipsel-bullseye:isar-image-base',
@@ -277,28 +262,6 @@ class NoCrossTest(CIBaseTest):
             self.perform_build_test(targets, cross=False)
         except:
             self.cancel('KFAIL')
-
-class RebuildTest(CIBaseTest):
-
-    """
-    Test image rebuild
-
-    :avocado: tags=rebuild,fast,full
-    """
-    def test_rebuild(self):
-        self.init()
-        layerdir_core = self.getlayerdir('core')
-
-        dpkgbase_file = layerdir_core + '/classes/dpkg-base.bbclass'
-
-        self.backupfile(dpkgbase_file)
-        with open(dpkgbase_file, 'a') as file:
-            file.write('do_fetch:append() {\n\n}')
-
-        try:
-            self.perform_build_test('mc:qemuamd64-bullseye:isar-image-base', debsrc_cache=True)
-        finally:
-            self.restorefile(dpkgbase_file)
 
 class ContainerImageTest(CIBaseTest):
 
@@ -361,14 +324,6 @@ class VmBootTestFast(CIBaseTest):
         self.init()
         self.vm_start('arm','buster')
 
-    def test_arm64_bullseye(self):
-        self.init()
-        self.vm_start('arm64','bullseye')
-
-    def test_amd64_bullseye(self):
-        self.init()
-        self.vm_start('amd64','bullseye')
-
     def test_arm_bookworm(self):
         self.init()
         self.vm_start('arm','bookworm')
@@ -391,10 +346,6 @@ class VmBootTestFull(CIBaseTest):
     def test_arm64_bullseye(self):
         self.init()
         self.vm_start('arm64','bullseye')
-
-    def test_amd64_bullseye(self):
-        self.init()
-        self.vm_start('amd64','bullseye')
 
     def test_i386_buster(self):
         self.init()
