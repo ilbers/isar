@@ -33,7 +33,7 @@ class DevTest(CIBaseTest):
                   ]
 
         self.init()
-        self.perform_build_test(targets, cross=True, image_install="example-raw")
+        self.perform_build_test(targets, image_install="example-raw")
 
     def test_dev_apps(self):
         targets = [
@@ -86,7 +86,7 @@ class ReproTest(CIBaseTest):
 
         self.init()
         try:
-            self.perform_repro_test(targets, signed=True, cross=True)
+            self.perform_repro_test(targets, signed=True)
         finally:
             self.move_in_build_dir('tmp', 'tmp_repro_signed')
 
@@ -98,7 +98,7 @@ class ReproTest(CIBaseTest):
 
         self.init()
         try:
-            self.perform_repro_test(targets)
+            self.perform_repro_test(targets, cross=False)
         finally:
             self.move_in_build_dir('tmp', 'tmp_repro_unsigned')
 
@@ -130,7 +130,7 @@ class CrossTest(CIBaseTest):
                   ]
 
         self.init()
-        self.perform_build_test(targets, cross=True, debsrc_cache=True)
+        self.perform_build_test(targets, debsrc_cache=True)
 
     def test_cross_rpi(self):
         targets = [
@@ -139,7 +139,7 @@ class CrossTest(CIBaseTest):
 
         self.init()
         try:
-            self.perform_build_test(targets, cross=True, debsrc_cache=True)
+            self.perform_build_test(targets, debsrc_cache=True)
         except:
             self.cancel('KFAIL')
 
@@ -150,7 +150,7 @@ class CrossTest(CIBaseTest):
 
         self.init()
         try:
-            self.perform_build_test(targets, cross=True)
+            self.perform_build_test(targets)
         except:
             self.cancel('KFAIL')
 
@@ -162,7 +162,7 @@ class CrossTest(CIBaseTest):
 
         self.init()
         try:
-            self.perform_build_test(targets, cross=True)
+            self.perform_build_test(targets)
         except:
             self.cancel('KFAIL')
 

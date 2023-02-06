@@ -52,7 +52,7 @@ class CIBuilder(Test):
         if not hasattr(self, 'build_dir'):
             self.error("Broken test implementation: need to call init().")
 
-    def configure(self, compat_arch=True, cross=False, debsrc_cache=False,
+    def configure(self, compat_arch=True, cross=True, debsrc_cache=False,
                   container=False, ccache=False, sstate=False, offline=False,
                   gpg_pub_key=None, wic_deploy_parts=False, dl_dir=None,
                   source_date_epoch=None, image_install=None, **kwargs):
