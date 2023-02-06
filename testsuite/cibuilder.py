@@ -54,7 +54,8 @@ class CIBuilder(Test):
 
     def configure(self, compat_arch=True, cross=None, debsrc_cache=False,
                   container=False, ccache=False, sstate=False, offline=False,
-                  gpg_pub_key=None, wic_deploy_parts=False, source_date_epoch=None, **kwargs):
+                  gpg_pub_key=None, wic_deploy_parts=False, dl_dir=None,
+                  source_date_epoch=None, **kwargs):
         # write configuration file and set bitbake_args
         # can run multiple times per test case
         self.check_init()
@@ -63,6 +64,9 @@ class CIBuilder(Test):
         quiet = bool(int(self.params.get('quiet', default=0)))
         if cross is None:
             cross = bool(int(self.params.get('cross', default=0)))
+
+        if dl_dir is None:
+            dl_dir = os.path.join(isar_root, 'downloads')
 
         # get parameters from environment
         distro_apt_premir = os.getenv('DISTRO_APT_PREMIRRORS')
@@ -79,6 +83,7 @@ class CIBuilder(Test):
                       f'  gpg_pub_key = {gpg_pub_key}\n'
                       f'  wic_deploy_parts = {wic_deploy_parts}\n'
                       f'  source_date_epoch = {source_date_epoch} \n'
+                      f'  dl_dir = {dl_dir}\n'
                       f'===================================================')
 
         # determine bitbake_args
@@ -115,6 +120,8 @@ class CIBuilder(Test):
                 f.write('CCACHE_TOP_DIR = "${TOPDIR}/ccache"\n')
             if source_date_epoch:
                 f.write('SOURCE_DATE_EPOCH = "%s"\n' % source_date_epoch)
+            if dl_dir:
+                f.write('DL_DIR = "%s"\n' % dl_dir)
 
         # include ci_build.conf in local.conf
         with open(self.build_dir + '/conf/local.conf', 'r+') as f:
