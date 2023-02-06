@@ -52,7 +52,7 @@ class CIBuilder(Test):
         if not hasattr(self, 'build_dir'):
             self.error("Broken test implementation: need to call init().")
 
-    def configure(self, compat_arch=True, cross=None, debsrc_cache=False,
+    def configure(self, compat_arch=True, cross=False, debsrc_cache=False,
                   container=False, ccache=False, sstate=False, offline=False,
                   gpg_pub_key=None, wic_deploy_parts=False, dl_dir=None,
                   source_date_epoch=None, image_install=None, **kwargs):
@@ -62,8 +62,6 @@ class CIBuilder(Test):
 
         # get parameters from avocado cmdline
         quiet = bool(int(self.params.get('quiet', default=0)))
-        if cross is None:
-            cross = bool(int(self.params.get('cross', default=0)))
 
         if dl_dir is None:
             dl_dir = os.path.join(isar_root, 'downloads')

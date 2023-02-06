@@ -48,7 +48,6 @@ show_help() {
     echo "Parameters:"
     echo "    -b, --base BASE_DIR      set path to base directory. If not set,"
     echo "                             the tests will be started in current path."
-    echo "    -c, --cross              enable cross-compilation."
     echo "    -d, --debug              enable debug bitbake output."
     echo "    -f, --fast               cross build reduced set of configurations."
     echo "    -q, --quiet              suppress verbose bitbake output."
@@ -64,7 +63,6 @@ show_help() {
 }
 
 TAGS="full"
-CROSS_BUILD="0"
 QUIET="0"
 TIMEOUT=300
 
@@ -82,17 +80,12 @@ do
         BASE_DIR="$2"
         shift
         ;;
-    -c|--cross)
-        CROSS_BUILD="1"
-        ;;
     -d|--debug)
         VERBOSE="--show=app,test"
         ;;
     -f|--fast)
         # Start build for the reduced set of configurations
-        # Enforce cross-compilation to speed up the build
         TAGS="fast"
-        CROSS_BUILD="1"
         ;;
     -q|--quiet)
         QUIET="1"
@@ -111,6 +104,10 @@ do
     -t|--timeout)
         TIMEOUT=$2
         shift
+        ;;
+    -c|--cross)
+        # Just not to cause CI failures on legacy configs
+        echo "warning: deprecated parameter '$key'"
         ;;
     *)
         echo "error: invalid parameter '$key', please try '--help' to get list of supported parameters"
@@ -150,4 +147,4 @@ set -x
 
 avocado ${VERBOSE} run "${TESTSUITE_DIR}/citest.py" \
     -t "${TAGS}" --nrunner-max-parallel-tasks=1 --disable-sysinfo \
-    -p quiet="${QUIET}" -p cross="${CROSS_BUILD}" -p time_to_wait="${TIMEOUT}"
+    -p quiet="${QUIET}" -p time_to_wait="${TIMEOUT}"
