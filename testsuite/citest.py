@@ -107,7 +107,7 @@ class CcacheTest(CIBaseTest):
     """
     Test rebuild speed improve with ccache
 
-    :avocado: tags=ccache,fast,full
+    :avocado: tags=ccache,full
     """
     def test_ccache_rebuild(self):
         targets = ['mc:qemuamd64-bullseye:hello-isar']
@@ -300,7 +300,7 @@ class SstateTest(CIBaseTest):
     """
     Test builds with artifacts taken from sstate cache
 
-    :avocado: tags=sstate,fast,full
+    :avocado: tags=sstate,full
     """
     def test_sstate(self):
         image_target = 'mc:qemuamd64-bullseye:isar-image-base'
