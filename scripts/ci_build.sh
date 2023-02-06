@@ -20,6 +20,7 @@ if ! command -v avocado > /dev/null; then
     sudo apt-get install -y virtualenv
     rm -rf /tmp/avocado_venv
     virtualenv --python python3 /tmp/avocado_venv
+    # shellcheck source=/dev/null
     source /tmp/avocado_venv/bin/activate
     pip install avocado-framework==99.0
 fi
@@ -33,8 +34,8 @@ BASE_DIR=./build
 # Check dependencies
 DEPENDENCIES="umoci skopeo"
 for prog in ${DEPENDENCIES} ; do
-    if [ ! -x "$(which $prog)" ] ; then
-        echo "missing $prog in PATH" >&2
+    if ! command -v "${prog}" > /dev/null; then
+        echo "missing ${prog} in PATH" >&2
     fi
 done
 
@@ -132,16 +133,16 @@ fi
 mkdir -p .config/avocado
 cat <<EOF > .config/avocado/avocado.conf
 [datadir.paths]
-base_dir = $(realpath $BASE_DIR)/
-test_dir = $(realpath $BASE_DIR)/tests
-data_dir = $(realpath $BASE_DIR)/data
-logs_dir = $(realpath $BASE_DIR)/job-results
+base_dir = $(realpath "${BASE_DIR}")/
+test_dir = $(realpath "${BASE_DIR}")/tests
+data_dir = $(realpath "${BASE_DIR}")/data
+logs_dir = $(realpath "${BASE_DIR}")/job-results
 EOF
 export VIRTUAL_ENV="./"
 
 # the real stuff starts here, trace commands from now on
 set -x
 
-avocado $VERBOSE run "$TESTSUITE_DIR/citest.py" \
-    -t $TAGS --nrunner-max-parallel-tasks=1 --disable-sysinfo \
-    -p quiet=$QUIET -p cross=$CROSS_BUILD -p time_to_wait=$TIMEOUT
+avocado ${VERBOSE} run "${TESTSUITE_DIR}/citest.py" \
+    -t "${TAGS}" --nrunner-max-parallel-tasks=1 --disable-sysinfo \
+    -p quiet="${QUIET}" -p cross="${CROSS_BUILD}" -p time_to_wait="${TIMEOUT}"
