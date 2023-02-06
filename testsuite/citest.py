@@ -17,6 +17,60 @@ try:
 except path.CmdNotFoundError:
     SKOPEO_AVAILABLE = False
 
+class DevTest(CIBaseTest):
+
+    """
+    Developer's test
+
+    :avocado: tags=dev,fast,full
+    """
+    def test_dev(self):
+        targets = [
+            'mc:qemuamd64-bullseye:isar-image-base',
+            'mc:qemuarm-bullseye:isar-image-base',
+            'mc:qemuarm-bullseye:isar-image-base:do_populate_sdk',
+            'mc:qemuarm64-bullseye:isar-image-base'
+                  ]
+
+        self.init()
+        self.perform_build_test(targets, cross=True, image_install="example-raw")
+
+    def test_dev_apps(self):
+        targets = [
+            'mc:qemuamd64-bullseye:isar-image-base',
+            'mc:qemuarm64-bullseye:isar-image-base'
+                  ]
+
+        self.init()
+        self.perform_build_test(targets)
+
+    def test_dev_rebuild(self):
+        self.init()
+        layerdir_core = self.getlayerdir('core')
+
+        dpkgbase_file = layerdir_core + '/classes/dpkg-base.bbclass'
+
+        self.backupfile(dpkgbase_file)
+        with open(dpkgbase_file, 'a') as file:
+            file.write('do_fetch:append() {\n\n}')
+
+        try:
+            self.perform_build_test('mc:qemuamd64-bullseye:isar-image-base')
+        finally:
+            self.restorefile(dpkgbase_file)
+
+    def test_dev_run_amd64_bullseye(self):
+        self.init()
+        self.vm_start('amd64', 'bullseye')
+
+    def test_dev_run_arm64_bullseye(self):
+        self.init()
+        self.vm_start('arm64', 'bullseye')
+
+    def test_dev_run_arm_bullseye(self):
+        self.init()
+        self.vm_start('arm', 'bullseye')
+
 class ReproTest(CIBaseTest):
 
     """
