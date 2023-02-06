@@ -18,6 +18,12 @@ $ pip install avocado-framework==99.0
 $ avocado run ../testsuite/citest.py -t dev --nrunner-max-parallel-tasks=1
 ```
 
+## Single target test
+
+```
+$ avocado run ../testsuite/citest.py -t single --nrunner-max-parallel-tasks=1 -p machine=qemuamd64 -p distro=bullseye
+```
+
 ## Fast build test
 
 ```

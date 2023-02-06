@@ -309,6 +309,28 @@ class SstateTest(CIBaseTest):
         self.init('build-sstate')
         self.perform_sstate_test(image_target, package_target)
 
+class SingleTest(CIBaseTest):
+
+    """
+    Single test for selected target
+
+    :avocado: tags=single
+    """
+    def test_single_build(self):
+        self.init()
+        machine = self.params.get('machine', default='qemuamd64')
+        distro = self.params.get('distro', default='bullseye')
+        image = self.params.get('image', default='isar-image-base')
+
+        self.perform_build_test('mc:%s-%s:%s' % (machine, distro, image))
+
+    def test_single_run(self):
+        self.init()
+        machine = self.params.get('machine', default='qemuamd64')
+        distro = self.params.get('distro', default='bullseye')
+
+        self.vm_start(machine.removeprefix('qemu'), distro)
+
 class VmBootTestFast(CIBaseTest):
 
     """
