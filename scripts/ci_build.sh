@@ -51,7 +51,6 @@ show_help() {
     echo "    -d, --debug              enable debug bitbake output."
     echo "    -f, --fast               cross build reduced set of configurations."
     echo "    -q, --quiet              suppress verbose bitbake output."
-    echo "    -r, --repro              enable use of cached base repository."
     echo "    -n, --norun              do not execute QEMU run tests."
     echo "    -t, --timeout SEC        specify time in seconds to wait before stop QEMU."
     echo "                             The default is: 300"
@@ -90,14 +89,6 @@ do
     -q|--quiet)
         QUIET="1"
         ;;
-    -r|--repro)
-        REPRO_BUILD="1"
-        # This switch is deprecated, just here to not cause failing CI on
-        # legacy configs
-        case "$2" in
-        -s|--sign) shift ;;
-        esac
-        ;;
     -n|--norun)
         NORUN="1"
         ;;
@@ -105,7 +96,7 @@ do
         TIMEOUT=$2
         shift
         ;;
-    -c|--cross)
+    -c|--cross|-r|--repro|-s|--sign)
         # Just not to cause CI failures on legacy configs
         echo "warning: deprecated parameter '$key'"
         ;;
@@ -117,10 +108,6 @@ do
 
     shift
 done
-
-if [ -z "$REPRO_BUILD" ]; then
-    TAGS="$TAGS,-repro"
-fi
 
 if [ -n "$NORUN" ]; then
     TAGS="$TAGS,-startvm"
