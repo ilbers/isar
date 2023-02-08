@@ -1,0 +1,18 @@
+#!/bin/sh
+
+set -e
+
+if ! getent group ci >/dev/null; then
+    groupadd --system ci
+fi
+
+if ! getent passwd ci >/dev/null; then
+    useradd --system --gid ci --create-home \
+        --home-dir /var/lib/isar-ci --no-user-group \
+        --comment "Isar CI user" \
+        ci
+fi
+
+# since the homedir was part of the package, useradd did not include skel
+cp -RTn /etc/skel ~ci
+chown -R ci:ci ~ci
