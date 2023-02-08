@@ -228,6 +228,15 @@ class CIBuilder(Test):
         return rc
 
 
+    def run_script(self, script, cmd_prefix):
+        script_dir = self.params.get('test_script_dir',
+                                     default=os.path.abspath(os.path.dirname(__file__))) + '/'
+        script_path = script_dir + script
+        rc = subprocess.call('cat ' + script_path + ' | ' + str(cmd_prefix), shell=True,
+                             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        return rc
+
+
     def wait_connection(self, proc, cmd_prefix, timeout):
         self.log.debug('Waiting for SSH server ready...')
 
@@ -252,12 +261,13 @@ class CIBuilder(Test):
 
     def vm_start(self, arch='amd64', distro='buster',
                  enforce_pcbios=False, skip_modulecheck=False,
-                 image='isar-image-base', cmd=None):
+                 image='isar-image-base', cmd=None, script=None):
         time_to_wait = self.params.get('time_to_wait', default=60)
 
         self.log.info('===================================================')
         self.log.info('Running Isar VM boot test for (' + distro + '-' + arch + ')')
         self.log.info('Remote command is ' + str(cmd))
+        self.log.info('Remote script is ' + str(script))
         self.log.info('Isar build folder is: ' + self.build_dir)
         self.log.info('===================================================')
 
@@ -309,7 +319,7 @@ class CIBuilder(Test):
                               stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                               universal_newlines=True)
 
-        if cmd is not None:
+        if cmd is not None or script is not None:
             rc = None
             try:
                 port = None
@@ -330,8 +340,13 @@ class CIBuilder(Test):
                 rc = self.wait_connection(p1, cmd_prefix, timeout)
 
                 if rc == 0:
-                    rc = self.exec_cmd(cmd, cmd_prefix)
-                    self.log.debug('`' + cmd + '` returned ' + str(rc))
+                    if cmd is not None:
+                        rc = self.exec_cmd(cmd, cmd_prefix)
+                        self.log.debug('`' + cmd + '` returned ' + str(rc))
+                    elif script is not None:
+                        rc = self.run_script(script, cmd_prefix)
+                        self.log.debug('`' + script + '` returned ' + str(rc))
+
             finally:
                 if p1.poll() is None:
                     self.log.debug('Killing qemu...')
