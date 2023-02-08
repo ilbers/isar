@@ -123,8 +123,8 @@ class CrossTest(CIBaseTest):
     """
     def test_cross(self):
         targets = [
-            'mc:qemuarm-buster:isar-image-base',
-            'mc:qemuarm-bullseye:isar-image-base',
+            'mc:qemuarm-buster:isar-image-ci',
+            'mc:qemuarm-bullseye:isar-image-ci',
             'mc:de0-nano-soc-bullseye:isar-image-base',
             'mc:stm32mp15x-buster:isar-image-base'
                   ]
@@ -156,7 +156,7 @@ class CrossTest(CIBaseTest):
 
     def test_cross_bookworm(self):
         targets = [
-            'mc:qemuarm-bookworm:isar-image-base',
+            'mc:qemuarm-bookworm:isar-image-ci',
             'mc:qemuarm64-bookworm:isar-image-base'
                   ]
 
@@ -198,9 +198,9 @@ class NoCrossTest(CIBaseTest):
     """
     def test_nocross(self):
         targets = [
-            'mc:qemuarm-buster:isar-image-base',
+            'mc:qemuarm-buster:isar-image-ci',
             'mc:qemuarm-bullseye:isar-image-base',
-            'mc:qemuarm64-bullseye:isar-image-base',
+            'mc:qemuarm64-bullseye:isar-image-ci',
             'mc:qemui386-buster:isar-image-base',
             'mc:qemui386-bullseye:isar-image-base',
             'mc:qemuamd64-buster:isar-image-base',
@@ -214,7 +214,7 @@ class NoCrossTest(CIBaseTest):
             'mc:bananapi-bullseye:isar-image-base',
             'mc:nanopi-neo-bullseye:isar-image-base',
             'mc:stm32mp15x-bullseye:isar-image-base',
-            'mc:qemuamd64-focal:isar-image-base'
+            'mc:qemuamd64-focal:isar-image-ci'
                   ]
 
         self.init()
@@ -241,7 +241,7 @@ class NoCrossTest(CIBaseTest):
             'mc:qemuamd64-bookworm:isar-image-base',
             'mc:qemuarm-bookworm:isar-image-base',
             'mc:qemui386-bookworm:isar-image-base',
-            'mc:qemumipsel-bookworm:isar-image-base',
+            'mc:qemumipsel-bookworm:isar-image-ci',
             'mc:hikey-bookworm:isar-image-base'
                   ]
 
@@ -340,15 +340,48 @@ class VmBootTestFast(CIBaseTest):
     """
     def test_arm_bullseye(self):
         self.init()
-        self.vm_start('arm','bullseye')
+        self.vm_start('arm','bullseye', \
+            image='isar-image-ci')
+
+    def test_arm_bullseye_example_module(self):
+        self.init()
+        self.vm_start('arm','bullseye', \
+            image='isar-image-ci', cmd='lsmod | grep example_module')
+
+    def test_arm_bullseye_getty_target(self):
+        self.init()
+        self.vm_start('arm','bullseye', \
+            image='isar-image-ci', script='test_getty_target.sh')
 
     def test_arm_buster(self):
         self.init()
-        self.vm_start('arm','buster')
+        self.vm_start('arm','buster', \
+            image='isar-image-ci')
+
+    def test_arm_buster_getty_target(self):
+        self.init()
+        self.vm_start('arm','buster', \
+            image='isar-image-ci', cmd='systemctl is-active getty.target')
+
+    def test_arm_buster_example_module(self):
+        self.init()
+        self.vm_start('arm','buster', \
+            image='isar-image-ci', script='test_example_module.sh')
 
     def test_arm_bookworm(self):
         self.init()
-        self.vm_start('arm','bookworm')
+        self.vm_start('arm','bookworm', \
+            image='isar-image-ci')
+
+    def test_arm_bookworm_example_module(self):
+        self.init()
+        self.vm_start('arm','bookworm', \
+            image='isar-image-ci', cmd='lsmod | grep example_module')
+
+    def test_arm_bookworm_getty_target(self):
+        self.init()
+        self.vm_start('arm','bookworm', \
+            image='isar-image-ci', script='test_getty_target.sh')
 
 class VmBootTestFull(CIBaseTest):
 
@@ -363,11 +396,33 @@ class VmBootTestFull(CIBaseTest):
 
     def test_arm_buster(self):
         self.init()
-        self.vm_start('arm','buster')
+        self.vm_start('arm','buster', \
+            image='isar-image-ci')
+
+    def test_arm_buster_example_module(self):
+        self.init()
+        self.vm_start('arm','buster', \
+            image='isar-image-ci', cmd='lsmod | grep example_module')
+
+    def test_arm_buster_getty_target(self):
+        self.init()
+        self.vm_start('arm','buster', \
+            image='isar-image-ci', script='test_getty_target.sh')
 
     def test_arm64_bullseye(self):
         self.init()
-        self.vm_start('arm64','bullseye')
+        self.vm_start('arm64','bullseye', \
+            image='isar-image-ci')
+
+    def test_arm64_bullseye_getty_target(self):
+        self.init()
+        self.vm_start('arm64','bullseye', \
+            image='isar-image-ci', cmd='systemctl is-active getty.target')
+
+    def test_arm64_bullseye_example_module(self):
+        self.init()
+        self.vm_start('arm64','bullseye', \
+            image='isar-image-ci', script='test_example_module.sh')
 
     def test_i386_buster(self):
         self.init()
@@ -382,7 +437,18 @@ class VmBootTestFull(CIBaseTest):
 
     def test_amd64_focal(self):
         self.init()
-        self.vm_start('amd64','focal')
+        self.vm_start('amd64','focal', \
+            image='isar-image-ci')
+
+    def test_amd64_focal_example_module(self):
+        self.init()
+        self.vm_start('amd64','focal', \
+            image='isar-image-ci', cmd='lsmod | grep example_module')
+
+    def test_amd64_focal_getty_target(self):
+        self.init()
+        self.vm_start('amd64','focal', \
+            image='isar-image-ci', script='test_getty_target.sh')
 
     def test_amd64_bookworm(self):
         self.init()
@@ -398,4 +464,15 @@ class VmBootTestFull(CIBaseTest):
 
     def test_mipsel_bookworm(self):
         self.init()
-        self.vm_start('mipsel','bookworm')
+        self.vm_start('mipsel','bookworm', \
+            image='isar-image-ci')
+
+    def test_mipsel_bookworm_getty_target(self):
+        self.init()
+        self.vm_start('mipsel','bookworm', \
+            image='isar-image-ci', cmd='systemctl is-active getty.target')
+
+    def test_mipsel_bookworm_example_module(self):
+        self.init()
+        self.vm_start('mipsel','bookworm', \
+            image='isar-image-ci', script='test_example_module.sh')
