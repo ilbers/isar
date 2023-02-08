@@ -96,7 +96,7 @@ def start_qemu(arch, build, distro, out, pid, enforce_pcbios):
     cmdline.insert(1, '-nographic')
 
     print(cmdline)
-    p1 = subprocess.call(cmdline)
+    p1 = subprocess.call('exec ' + ' '.join(cmdline), shell=True)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

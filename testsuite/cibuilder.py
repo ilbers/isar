@@ -262,7 +262,7 @@ class CIBuilder(Test):
 
         timeout = time.time() + int(time_to_wait)
 
-        p1 = subprocess.Popen(cmdline,
+        p1 = subprocess.Popen('exec ' + ' '.join(cmdline), shell=True,
                               stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                               universal_newlines=True)
         try:
