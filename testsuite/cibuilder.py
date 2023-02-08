@@ -209,8 +209,9 @@ class CIBuilder(Test):
 
         return env['LAYERDIR_' + layer].strip('"')
 
-    def vm_start(self, arch='amd64', distro='buster', enforce_pcbios=False,
-                 skip_modulecheck=False):
+    def vm_start(self, arch='amd64', distro='buster',
+                 enforce_pcbios=False, skip_modulecheck=False,
+                 image='isar-image-base'):
         time_to_wait = self.params.get('time_to_wait', default=60)
 
         self.log.info('===================================================')
@@ -233,7 +234,7 @@ class CIBuilder(Test):
             os.unlink(latest_link)
         os.symlink(os.path.basename(output_file), latest_link)
 
-        cmdline = start_vm.format_qemu_cmdline(arch, self.build_dir, distro,
+        cmdline = start_vm.format_qemu_cmdline(arch, self.build_dir, distro, image,
                                                output_file, None, enforce_pcbios)
         cmdline.insert(1, '-nographic')
 
@@ -244,7 +245,7 @@ class CIBuilder(Test):
         module_output = b'Just an example'
         resize_output = None
 
-        bb_output = start_vm.get_bitbake_env(arch, distro).decode()
+        bb_output = start_vm.get_bitbake_env(arch, distro, image).decode()
         image_fstypes = start_vm.get_bitbake_var(bb_output, 'IMAGE_FSTYPES')
         wks_file = start_vm.get_bitbake_var(bb_output, 'WKS_FILE')
         # only the first type will be tested in start_vm.py

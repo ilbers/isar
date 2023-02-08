@@ -10,8 +10,8 @@ import subprocess
 import sys
 import time
 
-def get_bitbake_env(arch, distro):
-    multiconfig = 'mc:qemu' + arch + '-' + distro + ':isar-image-base'
+def get_bitbake_env(arch, distro, image):
+    multiconfig = 'mc:qemu' + arch + '-' + distro + ':' + image
     output = subprocess.check_output(['bitbake', '-e', str(multiconfig)])
     return output
 
@@ -22,18 +22,19 @@ def get_bitbake_var(output, var):
             ret = line.split('"')[1]
     return ret
 
-def format_qemu_cmdline(arch, build, distro, out, pid, enforce_pcbios=False):
-    bb_output = get_bitbake_env(arch, distro).decode()
+def format_qemu_cmdline(arch, build, distro, image, out, pid, enforce_pcbios=False):
+    bb_output = get_bitbake_env(arch, distro, image).decode()
 
-    rootfs_image = ''
     extra_args = ''
     cpu = ['']
 
     image_type = get_bitbake_var(bb_output, 'IMAGE_FSTYPES').split()[0]
     deploy_dir_image = get_bitbake_var(bb_output, 'DEPLOY_DIR_IMAGE')
     base = 'ubuntu' if distro in ['focal', 'bionic'] else 'debian'
+
+    rootfs_image = image + '-' + base + '-' + distro + '-qemu' + arch + '.' + image_type
+
     if image_type == 'ext4':
-        rootfs_image = 'isar-image-base-' + base + '-' + distro + '-qemu' + arch + '.ext4'
         kernel_image = deploy_dir_image + '/' + get_bitbake_var(bb_output, 'KERNEL_IMAGE')
         initrd_image = get_bitbake_var(bb_output, 'INITRD_IMAGE')
 
@@ -49,7 +50,6 @@ def format_qemu_cmdline(arch, build, distro, out, pid, enforce_pcbios=False):
         extra_args = ['-kernel', kernel_image, '-initrd', initrd_image]
         extra_args.extend(kargs)
     elif image_type == 'wic':
-        rootfs_image = 'isar-image-base-' + base + '-' + distro + '-qemu' + arch + '.wic'
         extra_args = ['-snapshot']
     else:
         raise ValueError('Invalid image type: ' + str(image_type))
@@ -91,8 +91,8 @@ def format_qemu_cmdline(arch, build, distro, out, pid, enforce_pcbios=False):
 
     return cmd
 
-def start_qemu(arch, build, distro, out, pid, enforce_pcbios):
-    cmdline = format_qemu_cmdline(arch, build, distro, out, pid, enforce_pcbios)
+def start_qemu(arch, build, distro, image, out, pid, enforce_pcbios):
+    cmdline = format_qemu_cmdline(arch, build, distro, image, out, pid, enforce_pcbios)
     cmdline.insert(1, '-nographic')
 
     print(cmdline)
@@ -103,9 +103,10 @@ if __name__ == "__main__":
     parser.add_argument('-a', '--arch', choices=['arm', 'arm64', 'amd64', 'i386', 'mipsel'], help='set isar machine architecture.', default='arm')
     parser.add_argument('-b', '--build', help='set path to build directory.', default=os.getcwd())
     parser.add_argument('-d', '--distro', choices=['buster', 'bullseye', 'bookworm'], help='set isar Debian distribution.', default='bookworm')
+    parser.add_argument('-i', '--image', help='set image name.', default='isar-image-base')
     parser.add_argument('-o', '--out', help='Route QEMU console output to specified file.')
     parser.add_argument('-p', '--pid', help='Store QEMU pid to specified file.')
     parser.add_argument('--pcbios', action="store_true", help='remove any bios options to enforce use of pc bios')
     args = parser.parse_args()
 
-    start_qemu(args.arch, args.build, args.distro, args.out, args.pid, args.pcbios)
+    start_qemu(args.arch, args.build, args.distro, args.image, args.out, args.pid, args.pcbios)
