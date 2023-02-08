@@ -2,6 +2,7 @@
 
 import logging
 import os
+import re
 import select
 import shutil
 import subprocess
@@ -209,13 +210,54 @@ class CIBuilder(Test):
 
         return env['LAYERDIR_' + layer].strip('"')
 
+    def get_ssh_cmd_prefix(self, port, priv_key):
+        port_args = ''
+        if port:
+            port_args = ' -p ' + str(port)
+
+        cmd_prefix = 'ssh' + port_args + \
+                     ' -o ConnectTimeout=5 -o IdentityFile=' + priv_key + \
+                     ' -o StrictHostKeyChecking=no ci@localhost '
+
+        return cmd_prefix
+
+
+    def exec_cmd(self, cmd, cmd_prefix):
+        rc = subprocess.call('exec ' + str(cmd_prefix) + ' "' + str(cmd) + '"', shell=True,
+                             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        return rc
+
+
+    def wait_connection(self, proc, cmd_prefix, timeout):
+        self.log.debug('Waiting for SSH server ready...')
+
+        rc = None
+        while time.time() < timeout:
+            if proc.poll() is not None:
+                self.log.error('Machine is not running')
+                return rc
+
+            rc = self.exec_cmd('/bin/true', cmd_prefix)
+            time.sleep(1)
+
+            if rc == 0:
+                self.log.debug('SSH server is ready')
+                break
+
+        if rc != 0:
+            self.log.error('SSH server is not ready')
+
+        return rc
+
+
     def vm_start(self, arch='amd64', distro='buster',
                  enforce_pcbios=False, skip_modulecheck=False,
-                 image='isar-image-base'):
+                 image='isar-image-base', cmd=None):
         time_to_wait = self.params.get('time_to_wait', default=60)
 
         self.log.info('===================================================')
         self.log.info('Running Isar VM boot test for (' + distro + '-' + arch + ')')
+        self.log.info('Remote command is ' + str(cmd))
         self.log.info('Isar build folder is: ' + self.build_dir)
         self.log.info('===================================================')
 
@@ -238,7 +280,7 @@ class CIBuilder(Test):
                                                output_file, None, enforce_pcbios)
         cmdline.insert(1, '-nographic')
 
-        self.log.info('QEMU boot line: ' + str(cmdline))
+        self.log.info('QEMU boot line:\n' + ' '.join(cmdline))
 
         login_prompt = b'isar login:'
         # the printk of recipes-kernel/example-module
@@ -266,6 +308,41 @@ class CIBuilder(Test):
         p1 = subprocess.Popen('exec ' + ' '.join(cmdline), shell=True,
                               stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                               universal_newlines=True)
+
+        if cmd is not None:
+            rc = None
+            try:
+                port = None
+                for arg in cmdline:
+                    match = re.match(r".*hostfwd=tcp::(\d*).*", arg)
+                    if match:
+                        port = match.group(1)
+                        break
+
+                # copy private key to build directory
+                priv_key = '%s/ci_priv_key' % self.build_dir
+                if not os.path.exists(priv_key):
+                    shutil.copy(os.path.dirname(__file__) + '/keys/ssh/id_rsa', priv_key)
+                    os.chmod(priv_key, 0o400)
+
+                cmd_prefix = self.get_ssh_cmd_prefix(port, priv_key)
+                self.log.debug('Connect command:\n' + cmd_prefix)
+                rc = self.wait_connection(p1, cmd_prefix, timeout)
+
+                if rc == 0:
+                    rc = self.exec_cmd(cmd, cmd_prefix)
+                    self.log.debug('`' + cmd + '` returned ' + str(rc))
+            finally:
+                if p1.poll() is None:
+                    self.log.debug('Killing qemu...')
+                    p1.kill()
+                p1.wait()
+
+            if rc != 0:
+                self.fail('Log ' + output_file)
+
+            return
+
         try:
             poller = select.poll()
             poller.register(p1.stdout, select.POLLIN)
