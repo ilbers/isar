@@ -482,10 +482,12 @@ do_rootfs_quality_check() {
 	        args="${args} ! -path ${ROOTFSDIR}/etc/passwd \
                           ! -path ${ROOTFSDIR}/etc/subgid \
                           ! -path ${ROOTFSDIR}/etc/subuid \
-                          ! -path ${ROOTFSDIR}/etc/shadow- \
                           ! -path ${ROOTFSDIR}/etc/gshadow \
+                          ! -path ${ROOTFSDIR}/etc/gshadow- \
                           ! -path ${ROOTFSDIR}/etc/shadow \
-                          ! -path ${ROOTFSDIR}/etc/group"
+                          ! -path ${ROOTFSDIR}/etc/shadow- \
+                          ! -path ${ROOTFSDIR}/etc/group \
+                          ! -path ${ROOTFSDIR}/etc/group-"
             ;;
 	esac
     done
