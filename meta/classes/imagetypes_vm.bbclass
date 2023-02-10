@@ -6,11 +6,8 @@
 
 inherit buildchroot
 
-USING_OVA = "${@bb.utils.contains('IMAGE_BASETYPES', 'ova', '1', '0', d)}"
-
-FILESEXTRAPATHS:prepend := "${LAYERDIR_core}/classes/vm-img:"
 OVF_TEMPLATE_FILE ?= "vm-img-virtualbox.ovf.tmpl"
-SRC_URI += "${@'file://${OVF_TEMPLATE_FILE}' if d.getVar('USING_OVA') == '1' else ''}"
+IMAGE_SRC_URI:ova = "file://${OVF_TEMPLATE_FILE}"
 
 IMAGE_TYPEDEP:ova = "wic"
 IMAGER_INSTALL:ova += "qemu-utils gawk uuid-runtime"
@@ -67,8 +64,8 @@ OVA_VARS = "OVA_NAME OVA_MEMORY OVA_NUMBER_OF_CPU OVA_VRAM \
             OVA_FIRMWARE OVA_ACPI OVA_3D_ACCEL \
             OVA_SHA_ALG VIRTUAL_MACHINE_IMAGE_FILE"
 
-TEMPLATE_FILES += "${@'${OVF_TEMPLATE_FILE}' if d.getVar('USING_OVA') == '1' else ''}"
-TEMPLATE_VARS += "${OVA_VARS}"
+IMAGE_TEMPLATE_FILES:ova = "${OVF_TEMPLATE_FILE}"
+IMAGE_TEMPLATE_VARS:ova = "${OVA_VARS}"
 
 do_image_ova[prefuncs] += "convert_wic"
 IMAGE_CMD:ova() {
