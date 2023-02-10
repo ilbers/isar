@@ -40,7 +40,7 @@ followed by one of `w`, `d`, `h`, `m`, or `s` (for weeks, days, hours, minutes,
 seconds, respectively).
 
 `--max-age` specifies up to which age artifacts should be kept in the cache.
-Anything older will be removed. Note that this only applies to the `.tgz` files
+Anything older will be removed. Note that this only applies to the archive files
 containing the actual cached items, not the `.siginfo` files containing the
 cache metadata (signatures and hashes).
 To permit analysis of caching details using the `analyze` command, the siginfo
@@ -576,7 +576,7 @@ def arguments():
         '-v', '--verbose', default=False, action='store_true')
     parser.add_argument(
         '--max-age', type=str, default='1d',
-        help="clean: remove tgz files older than MAX_AGE (a number followed by w|d|h|m|s)")
+        help="clean: remove archive files older than MAX_AGE (a number followed by w|d|h|m|s)")
     parser.add_argument(
         '--max-sig-age', type=str, default=None,
         help="clean: remove siginfo files older than MAX_SIG_AGE (defaults to MAX_AGE)")
@@ -664,21 +664,21 @@ def sstate_clean(target, max_age, max_sig_age, verbose, **kwargs):
     links = [f for f in all_files if f.islink]
     if links:
         print(f"NOTE: we have links: {links}")
-    tgz_files = [f for f in all_files if f.suffix == 'tgz']
-    siginfo_files = [f for f in all_files if f.suffix == 'tgz.siginfo']
-    del_tgz_files = [f for f in tgz_files if f.age >= max_age_seconds]
-    del_tgz_hashes = [f.hash for f in del_tgz_files]
+    archive_files = [f for f in all_files if f.suffix in ['tgz', 'tar.zst']]
+    siginfo_files = [f for f in all_files if f.suffix in ['tgz.siginfo', 'tar.zst.siginfo']]
+    del_archive_files = [f for f in archive_files if f.age >= max_age_seconds]
+    del_archive_hashes = [f.hash for f in del_archive_files]
     del_siginfo_files = [f for f in siginfo_files if
-                         f.age >= max_sig_age_seconds or f.hash in del_tgz_hashes]
-    print(f"INFO: found {len(tgz_files)} tgz files, {len(del_tgz_files)} of which are older than {max_age}")
+                         f.age >= max_sig_age_seconds or f.hash in del_archive_hashes]
+    print(f"INFO: found {len(archive_files)} archive files, {len(del_archive_files)} of which are older than {max_age}")
     print(f"INFO: found {len(siginfo_files)} siginfo files, {len(del_siginfo_files)} of which "
-          f"correspond to old tgz files or are older than {max_sig_age}")
+          f"correspond to old archive files or are older than {max_sig_age}")
 
-    for f in del_tgz_files + del_siginfo_files:
+    for f in del_archive_files + del_siginfo_files:
         if verbose:
             print(f"[DELETE] {f.path}")
         target.delete(f.path)
-    freed_gb = sum([x.size for x in del_tgz_files + del_siginfo_files]) / 1024.0 / 1024.0 / 1024.0
+    freed_gb = sum([x.size for x in del_archive_files + del_siginfo_files]) / 1024.0 / 1024.0 / 1024.0
     print(f"INFO: freed {freed_gb:.02f} GB")
     return 0
 
@@ -716,7 +716,7 @@ def sstate_info(target, verbose, **kwargs):
     for k, entries in recipes.items():
         print(f"Cache entries for {k}:")
         for pn in entries:
-            artifacts = [f for f in all_files if f.pn == pn and f.task == key_task[k] and f.suffix == 'tgz']
+            artifacts = [f for f in all_files if f.pn == pn and f.task == key_task[k] and f.suffix in ['tgz', 'tar.zst']]
             print(f"  - {pn}: {len(artifacts)} entries")
     print("Other cache entries:")
     for pn in others:
