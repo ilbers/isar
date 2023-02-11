@@ -231,6 +231,7 @@ CLEANFUNCS ?= ""
 # Derived from OpenEmbedded Core: meta/classes/utility-tasks.bbclass
 addtask clean
 do_clean[nostamp] = "1"
+do_clean[network] = "${TASK_USE_SUDO}"
 python do_clean() {
     import subprocess
     import glob
