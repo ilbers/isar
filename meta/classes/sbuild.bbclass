@@ -128,12 +128,12 @@ EOSUDO
 }
 
 schroot_configure_ccache() {
+    mkdir -p "${CCACHE_DIR}"
     sudo -s <<'EOSUDO'
         set -e
 
         sbuild_fstab="${SBUILD_CONF_DIR}/fstab"
 
-        install --group=sbuild --mode=2775 -d ${CCACHE_DIR}
         fstab_ccachedir="${CCACHE_DIR} /ccache none rw,bind 0 0"
         grep -qxF "${fstab_ccachedir}" ${sbuild_fstab} || echo "${fstab_ccachedir}" >> ${sbuild_fstab}
 
