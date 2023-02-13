@@ -5,22 +5,7 @@ SCHROOT_CONF ?= "/etc/schroot"
 
 SCHROOT_MOUNTS ?= ""
 
-python __anonymous() {
-    import pwd
-    d.setVar('SCHROOT_USER', pwd.getpwuid(os.geteuid()).pw_name)
-
-    mode = d.getVar('ISAR_CROSS_COMPILE')
-    distro_arch = d.getVar('DISTRO_ARCH')
-    if mode == "0" or d.getVar('HOST_ARCH') ==  distro_arch:
-        d.setVar('SBUILD_HOST_ARCH', distro_arch)
-        d.setVar('SCHROOT_DIR', d.getVar('SCHROOT_TARGET_DIR', False))
-        dep = "sbuild-chroot-target:do_build"
-    else:
-        d.setVar('SBUILD_HOST_ARCH', d.getVar('HOST_ARCH'))
-        d.setVar('SCHROOT_DIR', d.getVar('SCHROOT_HOST_DIR', False))
-        dep = "sbuild-chroot-host:do_build"
-    d.setVar('SCHROOT_DEP', dep)
-}
+inherit crossvars
 
 SBUILD_CHROOT ?= "${DEBDISTRONAME}-${SCHROOT_USER}-${ISAR_BUILD_UUID}-${@os.getpid()}"
 

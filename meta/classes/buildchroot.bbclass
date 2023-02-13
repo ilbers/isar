@@ -3,22 +3,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-ISAR_CROSS_COMPILE ??= "0"
-
-# Choose the correct buildchroot: host or target
-python __anonymous() {
-    mode = d.getVar('ISAR_CROSS_COMPILE')
-    distro_arch = d.getVar('DISTRO_ARCH')
-    if mode == "0" or d.getVar('HOST_ARCH') ==  distro_arch:
-        dep = "buildchroot-target:do_build"
-        rootfs = d.getVar('BUILDCHROOT_TARGET_DIR', False)
-    else:
-        dep = "buildchroot-host:do_build"
-        rootfs = d.getVar('BUILDCHROOT_HOST_DIR', False)
-
-    d.setVar('BUILDCHROOT_DEP', dep)
-    d.setVar('BUILDCHROOT_DIR', rootfs)
-}
+inherit crossvars
 
 MOUNT_LOCKFILE = "${BUILDCHROOT_DIR}.lock"
 

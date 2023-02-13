@@ -297,7 +297,7 @@ python do_devshell() {
     schroot = d.getVar('SBUILD_CHROOT')
     isar_apt = d.getVar('ISAR_APT_REPO')
     pkg_arch = d.getVar('PACKAGE_ARCH')
-    build_arch = d.getVar('SBUILD_HOST_ARCH')
+    build_arch = d.getVar('BUILD_HOST_ARCH')
     pp_pps = os.path.join(d.getVar('PP'), d.getVar('PPS'))
     debdistroname = d.getVar('DEBDISTRONAME')
 

@@ -5,6 +5,8 @@
 #
 # This class extends the image.bbclass to supply the creation of a sdk
 
+inherit crossvars
+
 # hook up the -sdk image variant
 BBCLASSEXTEND = "sdk"
 BPN = "${PN}"
@@ -42,23 +44,10 @@ SDK_PREINSTALL += " \
     devscripts \
     equivs"
 
-# Choose the correct toolchain: cross or native
-python __anonymous() {
-    mode = d.getVar('ISAR_CROSS_COMPILE')
-    distro_arch = d.getVar('DISTRO_ARCH')
-    if mode == "0" or d.getVar('HOST_ARCH') == distro_arch or distro_arch == None:
-        toolchain = "build-essential"
-    else:
-        toolchain = "crossbuild-essential-" + distro_arch
-    if d.getVar('ISAR_ENABLE_COMPAT_ARCH') == "1":
-        toolchain += " crossbuild-essential-" + d.getVar('COMPAT_DISTRO_ARCH')
-    d.setVar('TOOLCHAIN', toolchain)
-}
-
 # rootfs/image overrides for the SDK
 ROOTFS_ARCH:class-sdk = "${HOST_ARCH}"
 ROOTFS_DISTRO:class-sdk = "${HOST_DISTRO}"
-ROOTFS_PACKAGES:class-sdk = "sdk-files ${TOOLCHAIN} ${SDK_PREINSTALL} ${@isar_multiarch_packages('SDK_INSTALL', d)}"
+ROOTFS_PACKAGES:class-sdk = "sdk-files ${SDK_TOOLCHAIN} ${SDK_PREINSTALL} ${@isar_multiarch_packages('SDK_INSTALL', d)}"
 ROOTFS_FEATURES:append:class-sdk = " clean-package-cache generate-manifest export-dpkg-status"
 ROOTFS_MANIFEST_DEPLOY_DIR:class-sdk = "${DEPLOY_DIR_SDKCHROOT}"
 ROOTFS_DPKGSTATUS_DEPLOY_DIR:class-sdk = "${DEPLOY_DIR_SDKCHROOT}"
