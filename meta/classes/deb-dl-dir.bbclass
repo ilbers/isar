@@ -81,20 +81,24 @@ deb_dl_dir_import() {
     export rootfs="${1}"
     sudo mkdir -p "${rootfs}"/var/cache/apt/archives/
     [ ! -d "${pc}" ] && return 0
-    flock -s "${pc}".lock -c '
+    flock -s "${pc}".lock sudo -Es << 'EOSUDO'
         set -e
         printenv | grep -q BB_VERBOSE_LOGS && set -x
 
-        sudo find "${pc}" -type f -iname "*\.deb" -exec \
-            ln -Pf -t "${rootfs}"/var/cache/apt/archives/ {} +
-    '
+        find "${pc}" -type f -iname "*\.deb" |\
+        while read p; do
+            ln -Pf -t "${rootfs}"/var/cache/apt/archives/ "$p" 2>/dev/null ||
+                cp -n --no-preserve=owner -t "${rootfs}"/var/cache/apt/archives/ "$p"
+        done
+EOSUDO
 }
 
 deb_dl_dir_export() {
     export pc="${DEBDIR}/${2}"
     export rootfs="${1}"
+    export owner=$(id -u):$(id -g)
     mkdir -p "${pc}"
-    flock "${pc}".lock -c '
+    flock "${pc}".lock sudo -Es << 'EOSUDO'
         set -e
         printenv | grep -q BB_VERBOSE_LOGS && set -x
 
@@ -109,8 +113,9 @@ deb_dl_dir_export() {
             if [ -n "$package" ]; then
                 cmp --silent "$package" "$p" && continue
             fi
-            sudo ln -Pf "${p}" "${pc}"
+            ln -Pf "${p}" "${pc}" 2>/dev/null ||
+                cp -n "${p}" "${pc}"
         done
-        sudo chown -R $(id -u):$(id -g) "${pc}"
-    '
+        chown -R ${owner} "${pc}"
+EOSUDO
 }
