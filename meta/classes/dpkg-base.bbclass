@@ -10,6 +10,7 @@ inherit debianize
 inherit terminal
 inherit repository
 inherit deb-dl-dir
+inherit essential
 
 DEPENDS ?= ""
 RPROVIDES ?= "${PROVIDES}"

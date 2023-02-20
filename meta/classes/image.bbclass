@@ -83,6 +83,7 @@ image_do_mounts() {
 }
 
 inherit multiarch
+inherit essential
 
 ROOTFSDIR = "${IMAGE_ROOTFS}"
 ROOTFS_FEATURES += "clean-package-cache clean-pycache generate-manifest export-dpkg-status clean-log-files clean-debconf-cache"
