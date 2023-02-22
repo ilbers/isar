@@ -46,7 +46,7 @@ SDK_PREINSTALL += " \
 python __anonymous() {
     mode = d.getVar('ISAR_CROSS_COMPILE', True)
     distro_arch = d.getVar('DISTRO_ARCH')
-    if mode == "0" or d.getVar('HOST_ARCH') ==  distro_arch:
+    if mode == "0" or d.getVar('HOST_ARCH') == distro_arch or distro_arch == None:
         toolchain = "build-essential"
     else:
         toolchain = "crossbuild-essential-" + distro_arch
