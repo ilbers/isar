@@ -23,7 +23,8 @@ IMAGE_FULLNAME = "${PN}-${DISTRO}-${MACHINE}"
 
 # These variables are used by wic and start_vm
 KERNEL_IMAGE ?= "${IMAGE_FULLNAME}-${KERNEL_FILE}"
-INITRD_IMAGE ?= "${IMAGE_FULLNAME}-initrd.img"
+INITRD_IMAGE ?= ""
+INITRD_DEPLOY_FILE = "${@ d.getVar('INITRD_IMAGE') or '${IMAGE_FULLNAME}-initrd.img'}"
 
 # This defines the deployed dtbs for reuse by imagers
 DTB_FILES ?= ""
@@ -353,7 +354,7 @@ EOF
 
 # Default kernel, initrd and dtb image deploy paths (inside imager)
 KERNEL_IMG = "${PP_DEPLOY}/${KERNEL_IMAGE}"
-INITRD_IMG = "${PP_DEPLOY}/${INITRD_IMAGE}"
+INITRD_IMG = "${PP_DEPLOY}/${INITRD_DEPLOY_FILE}"
 # only one dtb file supported, pick the first
 DTB_IMG = "${PP_DEPLOY}/${@(d.getVar('DTB_FILES').split() or [''])[0]}"
 
@@ -370,12 +371,15 @@ do_copy_boot_files() {
         sudo cat "$kernel" > "${DEPLOYDIR}/${KERNEL_IMAGE}"
     fi
 
-    initrd="$(realpath -q '${IMAGE_ROOTFS}/initrd.img')"
-    if [ ! -f "$initrd" ]; then
-        initrd="$(realpath -q '${IMAGE_ROOTFS}/boot/initrd.img')"
-    fi
-    if [ -f "$initrd" ]; then
-        cp -f "$initrd" '${DEPLOYDIR}/${INITRD_IMAGE}'
+    if [ -z "${INITRD_IMAGE}" ]; then
+        # deploy default initrd if no custom one is build
+        initrd="$(realpath -q '${IMAGE_ROOTFS}/initrd.img')"
+        if [ ! -f "$initrd" ]; then
+            initrd="$(realpath -q '${IMAGE_ROOTFS}/boot/initrd.img')"
+        fi
+        if [ -f "$initrd" ]; then
+            cp -f "$initrd" '${DEPLOYDIR}/${INITRD_DEPLOY_FILE}'
+        fi
     fi
 
     for file in ${DTB_FILES}; do

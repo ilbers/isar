@@ -36,7 +36,7 @@ def format_qemu_cmdline(arch, build, distro, image, out, pid, enforce_pcbios=Fal
 
     if image_type == 'ext4':
         kernel_image = deploy_dir_image + '/' + get_bitbake_var(bb_output, 'KERNEL_IMAGE')
-        initrd_image = get_bitbake_var(bb_output, 'INITRD_IMAGE')
+        initrd_image = get_bitbake_var(bb_output, 'INITRD_DEPLOY_FILE')
 
         if not initrd_image:
             initrd_image = '/dev/null'

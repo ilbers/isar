@@ -125,10 +125,10 @@ case "$IMAGE_FSTYPES" in
     readonly ROOTFS_IMAGE=$IMAGE_FULLNAME.ext4
 
     eval $(bitbake -e mc:qemu$ARCH-$DISTRO:isar-image-base | grep "^KERNEL_IMAGE=")
-    eval $(bitbake -e mc:qemu$ARCH-$DISTRO:isar-image-base | grep "^INITRD_IMAGE=")
+    eval $(bitbake -e mc:qemu$ARCH-$DISTRO:isar-image-base | grep "^INITRD_DEPLOY_FILE=")
     QKERNEL=$IMAGE_DIR/${KERNEL_IMAGE}
     QINITRD=/dev/null
-    [ -n "$INITRD_IMAGE" ] && QINITRD=$IMAGE_DIR/${INITRD_IMAGE}
+    [ -n "$INITRD_DEPLOY_FILE" ] && QINITRD=$IMAGE_DIR/${INITRD_DEPLOY_FILE}
     if [ "$ARCH" = "riscv64" ]; then
         EXTRA_ARGS="$EXTRA_ARGS -device loader,file=$QKERNEL,addr=0x80200000"
         QKERNEL="/usr/lib/riscv64-linux-gnu/opensbi/qemu/virt/fw_jump.elf"

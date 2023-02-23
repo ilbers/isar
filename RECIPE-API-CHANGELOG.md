@@ -476,3 +476,11 @@ Bitbake 2.0 for better performance. It also requires isar-sstate script to be
 migrated to zstd.
 Mixing old Gzip-based and new ZStandatd-based sstate cache is not recommended
 and should be avoid for correct compatibility.
+
+### Working with a custom initramfs
+
+The existing `INITRD_IMAGE` variable is defaulted to the empty string and used to
+control if a custom initrd is requrested. Only if this variable is empty, the
+default one is deployed. By that, the variable cannot be used to get the name of
+the images initramfs. Instead, the variable `INITRD_DEPLOY_FILE` is provided which
+always povides the name of the initrd file (also when the default one is used).
