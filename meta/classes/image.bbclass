@@ -3,11 +3,13 @@
 
 # Make workdir and stamps machine-specific without changing common PN target
 WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}/${PV}-${PR}"
+DEPLOYDIR = "${WORKDIR}/deploy"
 STAMP = "${STAMPS_DIR}/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}/${PV}-${PR}"
 STAMPCLEAN = "${STAMPS_DIR}/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}/*-*"
 
 # Sstate also needs to be machine-specific
 SSTATE_MANIFESTS = "${TMPDIR}/sstate-control/${MACHINE}-${DISTRO}-${DISTRO_ARCH}"
+SSTATETASKS += "do_copy_boot_files"
 
 IMAGE_INSTALL ?= ""
 IMAGE_FSTYPES ?= "${@ d.getVar("IMAGE_TYPE") if d.getVar("IMAGE_TYPE") else "ext4"}"
@@ -355,8 +357,9 @@ INITRD_IMG = "${PP_DEPLOY}/${INITRD_IMAGE}"
 # only one dtb file supported, pick the first
 DTB_IMG = "${PP_DEPLOY}/${@(d.getVar('DTB_FILES').split() or [''])[0]}"
 
-do_copy_boot_files[dirs] = "${DEPLOY_DIR_IMAGE}"
-do_copy_boot_files[lockfiles] += "${DEPLOY_DIR_IMAGE}/isar.lock"
+do_copy_boot_files[cleandirs] += "${DEPLOYDIR}"
+do_copy_boot_files[sstate-inputdirs] = "${DEPLOYDIR}"
+do_copy_boot_files[sstate-outputdirs] = "${DEPLOY_DIR_IMAGE}"
 do_copy_boot_files[network] = "${TASK_USE_SUDO}"
 do_copy_boot_files() {
     kernel="$(realpath -q '${IMAGE_ROOTFS}'/vmlinu[xz])"
@@ -364,7 +367,7 @@ do_copy_boot_files() {
         kernel="$(realpath -q '${IMAGE_ROOTFS}'/boot/vmlinu[xz])"
     fi
     if [ -f "$kernel" ]; then
-        sudo cat "$kernel" > "${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGE}"
+        sudo cat "$kernel" > "${DEPLOYDIR}/${KERNEL_IMAGE}"
     fi
 
     initrd="$(realpath -q '${IMAGE_ROOTFS}/initrd.img')"
@@ -372,7 +375,7 @@ do_copy_boot_files() {
         initrd="$(realpath -q '${IMAGE_ROOTFS}/boot/initrd.img')"
     fi
     if [ -f "$initrd" ]; then
-        cp -f "$initrd" '${DEPLOY_DIR_IMAGE}/${INITRD_IMAGE}'
+        cp -f "$initrd" '${DEPLOYDIR}/${INITRD_IMAGE}'
     fi
 
     for file in ${DTB_FILES}; do
@@ -383,10 +386,15 @@ do_copy_boot_files() {
             die "${file} not found"
         fi
 
-        cp -f "$dtb" "${DEPLOY_DIR_IMAGE}/"
+        cp -f "$dtb" "${DEPLOYDIR}/"
     done
 }
 addtask copy_boot_files before do_rootfs_postprocess after do_rootfs_install
+
+python do_copy_boot_files_setscene () {
+    sstate_setscene(d)
+}
+addtask do_copy_boot_files_setscene
 
 python do_image_tools() {
     """Virtual task"""
