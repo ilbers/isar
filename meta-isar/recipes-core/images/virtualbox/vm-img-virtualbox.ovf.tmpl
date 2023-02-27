@@ -64,13 +64,40 @@
         <rasd:ResourceType>5</rasd:ResourceType>
       </Item>
       <Item>
+        <rasd:Address>0</rasd:Address>
+        <rasd:Caption>virtioSCSIController0</rasd:Caption>
+        <rasd:Description>VirtioSCSI Controller</rasd:Description>
+        <rasd:ElementName>virtioSCSIController0</rasd:ElementName>
+        <rasd:InstanceID>5</rasd:InstanceID>
+        <rasd:ResourceSubType>VirtioSCSI</rasd:ResourceSubType>
+        <rasd:ResourceType>20</rasd:ResourceType>
+      </Item>
+      <Item>
+        <rasd:Address>0</rasd:Address>
+        <rasd:Caption>usb</rasd:Caption>
+        <rasd:Description>USB Controller</rasd:Description>
+        <rasd:ElementName>usb</rasd:ElementName>
+        <rasd:InstanceID>6</rasd:InstanceID>
+        <rasd:ResourceType>23</rasd:ResourceType>
+      </Item>
+      <Item>
+        <rasd:AddressOnParent>3</rasd:AddressOnParent>
+        <rasd:AutomaticAllocation>false</rasd:AutomaticAllocation>
+        <rasd:Caption>sound</rasd:Caption>
+        <rasd:Description>Sound Card</rasd:Description>
+        <rasd:ElementName>sound</rasd:ElementName>
+        <rasd:InstanceID>7</rasd:InstanceID>
+        <rasd:ResourceSubType>ensoniq1371</rasd:ResourceSubType>
+        <rasd:ResourceType>35</rasd:ResourceType>
+      </Item>
+      <Item>
         <rasd:AddressOnParent>0</rasd:AddressOnParent>
         <rasd:Caption>disk1</rasd:Caption>
         <rasd:Description>Disk Image</rasd:Description>
         <rasd:ElementName>disk1</rasd:ElementName>
         <rasd:HostResource>/disk/vmdisk1</rasd:HostResource>
-        <rasd:InstanceID>5</rasd:InstanceID>
-        <rasd:Parent>3</rasd:Parent>
+        <rasd:InstanceID>8</rasd:InstanceID>
+        <rasd:Parent>5</rasd:Parent>
         <rasd:ResourceType>17</rasd:ResourceType>
       </Item>
       <Item>
@@ -78,50 +105,56 @@
         <rasd:Caption>Ethernet adapter on 'NAT'</rasd:Caption>
         <rasd:Connection>NAT</rasd:Connection>
         <rasd:ElementName>Ethernet adapter on 'NAT'</rasd:ElementName>
-        <rasd:InstanceID>6</rasd:InstanceID>
+        <rasd:InstanceID>9</rasd:InstanceID>
         <rasd:ResourceType>10</rasd:ResourceType>
       </Item>
     </VirtualHardwareSection>
     <vbox:Machine ovf:required="false" version="1.12-linux" uuid="{${VM_UUID}}" name="${OVA_NAME}" OSType="Debian_64" snapshotFolder="Snapshots" lastStateChange="${LAST_CHANGE}">
       <ovf:Info>Complete VirtualBox machine configuration in VirtualBox format</ovf:Info>
+      <ExtraData>
+        <ExtraDataItem name="GUI/FirstRun" value="no"/>
+      </ExtraData>
       <Hardware>
         <CPU count="${OVA_NUMBER_OF_CPU}">
-          <PAE enabled="true"/>
+          <PAE enabled="false"/>
+          <LongMode enabled="true"/>
+          <X2APIC enabled="true"/>
           <HardwareVirtExLargePages enabled="false"/>
         </CPU>
         <Memory RAMSize="${OVA_MEMORY}"/>
-	<Firmware type="${OVA_FIRMWARE_UPPERCASE}"/>
-        <Boot>
-          <Order position="1" device="HardDisk"/>
-          <Order position="2" device="None"/>
-          <Order position="3" device="None"/>
-          <Order position="4" device="None"/>
-        </Boot>
+        <Firmware type="${OVA_FIRMWARE_UPPERCASE}"/>
+        <HID Pointing="USBTablet"/>
+        <Chipset type="ICH9"/>
         <Display VRAMSize="${OVA_VRAM}" monitorCount="1" accelerate3D="${OVA_3D_ACCEL}" accelerate2DVideo="false"/>
-	<RemoteDisplay enabled="false"/>
-        <BIOS>
-	  <IOAPIC enabled="${OVA_ACPI}"/>
+        <RemoteDisplay enabled="true"/>
+	<BIOS>
+          <IOAPIC enabled="${OVA_ACPI}"/>
         </BIOS>
-        <USBController enabled="false" enabledEhci="false"/>
+        <USB>
+          <Controllers>
+            <Controller name="OHCI" type="OHCI"/>
+            <Controller name="EHCI" type="EHCI"/>
+          </Controllers>
+        </USB>
         <Network>
           <Adapter slot="0" enabled="true" MACAddress="${PRIMARY_MAC}" cable="true" type="virtio">
             <NAT/>
           </Adapter>
         </Network>
-        <LPT>
-          <Port slot="1" enabled="false" IOBase="0x378" IRQ="7"/>
-        </LPT>
         <AudioAdapter driver="Pulse" enabled="false"/>
         <Clipboard/>
         <GuestProperties/>
+        <StorageControllers>
+          <StorageController name="IDE" type="PIIX4" PortCount="2" useHostIOCache="true" Bootable="true">
+            <AttachedDevice passthrough="false" type="DVD" hotpluggable="false" port="1" device="0"/>
+          </StorageController>
+          <StorageController name="SATA" type="VirtioSCSI" PortCount="1" useHostIOCache="false" Bootable="true">
+            <AttachedDevice type="HardDisk" port="0" device="0">
+              <Image uuid="{${DISK_UUID}}"/>
+            </AttachedDevice>
+          </StorageController>
+        </StorageControllers>
       </Hardware>
-      <StorageControllers>
-        <StorageController name="IDE Controller" type="PIIX4" PortCount="2" useHostIOCache="true" Bootable="true">
-          <AttachedDevice type="HardDisk" port="0" device="0">
-            <Image uuid="{${DISK_UUID}}"/>
-          </AttachedDevice>
-        </StorageController>
-      </StorageControllers>
     </vbox:Machine>
   </VirtualSystem>
 </Envelope>
