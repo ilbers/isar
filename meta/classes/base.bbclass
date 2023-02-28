@@ -18,7 +18,7 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-THISDIR = "${@os.path.dirname(d.getVar('FILE', True))}"
+THISDIR = "${@os.path.dirname(d.getVar('FILE'))}"
 FILESPATH = "${@base_set_filespath(["${FILE_DIRNAME}/${PF}", "${FILE_DIRNAME}/${P}", "${FILE_DIRNAME}/${PN}", "${FILE_DIRNAME}/files", "${FILE_DIRNAME}"], d)}"
 
 OE_IMPORTS += "os sys time oe.path oe.patch oe.sstatesig oe.utils"
@@ -71,7 +71,7 @@ do_showdata[nostamp] = "1"
 python do_showdata() {
     for e in d.keys():
         if d.getVarFlag(e, 'python'):
-            code = d.getVar(e, True)
+            code = d.getVar(e)
             if code.startswith("def"):
                 bb.plain("\n" + code + "\n")
             else:
@@ -103,9 +103,9 @@ python do_listtasks() {
 }
 
 root_cleandirs() {
-    ROOT_CLEANDIRS_DIRS_PY="${@d.getVar("ROOT_CLEANDIRS_DIRS", True) or ""}"
+    ROOT_CLEANDIRS_DIRS_PY="${@d.getVar("ROOT_CLEANDIRS_DIRS") or ""}"
     ROOT_CLEANDIRS_DIRS="${ROOT_CLEANDIRS_DIRS-${ROOT_CLEANDIRS_DIRS_PY}}"
-    TMPDIR_PY="${@d.getVar("TMPDIR", True) or ""}"
+    TMPDIR_PY="${@d.getVar("TMPDIR") or ""}"
     TMPDIR="${TMPDIR-${TMPDIR_PY}}"
     for i in $ROOT_CLEANDIRS_DIRS; do
         awk '{ print $2 }' /proc/mounts | grep -q "^${i}\(/\|\$\)" && \
@@ -125,7 +125,7 @@ python() {
         if flags and flags.get('task'):
             rcleandirs = flags.get('root_cleandirs')
             if rcleandirs:
-                tmpdir = os.path.normpath(d.getVar("TMPDIR", True))
+                tmpdir = os.path.normpath(d.getVar("TMPDIR"))
                 rcleandirs = list(
                     os.path.normpath(d.expand(i)) for i in rcleandirs.split()
                 )
@@ -187,7 +187,7 @@ do_fetch[network] = "${TASK_USE_NETWORK}"
 
 # Fetch package from the source link
 python do_fetch() {
-    src_uri = (d.getVar('SRC_URI', True) or "").split()
+    src_uri = (d.getVar('SRC_URI') or "").split()
     if len(src_uri) == 0:
         return
 
@@ -204,11 +204,11 @@ do_unpack[dirs] = "${WORKDIR}"
 
 # Unpack package and put it into working directory
 python do_unpack() {
-    src_uri = (d.getVar('SRC_URI', True) or "").split()
+    src_uri = (d.getVar('SRC_URI') or "").split()
     if len(src_uri) == 0:
         return
 
-    rootdir = d.getVar('WORKDIR', True)
+    rootdir = d.getVar('WORKDIR')
 
     try:
         fetcher = bb.fetch2.Fetch(src_uri, d)
@@ -236,7 +236,7 @@ python do_clean() {
     import subprocess
     import glob
 
-    for f in (d.getVar('CLEANFUNCS', True) or '').split():
+    for f in (d.getVar('CLEANFUNCS') or '').split():
         bb.build.exec_func(f, d)
 
     workdir = d.expand("${WORKDIR}")
@@ -257,7 +257,7 @@ python do_cleansstate() {
 addtask cleanall after do_cleansstate
 do_cleanall[nostamp] = "1"
 python do_cleanall() {
-    src_uri = (d.getVar('SRC_URI', True) or "").split()
+    src_uri = (d.getVar('SRC_URI') or "").split()
     if len(src_uri) == 0:
         return
 

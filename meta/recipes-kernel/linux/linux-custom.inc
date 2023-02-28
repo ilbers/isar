@@ -90,11 +90,11 @@ inherit template
 KCFLAGS ?= "-fdebug-prefix-map=${CURDIR}=."
 
 # Derive name of the kernel packages from the name of this recipe
-KERNEL_NAME_PROVIDED ?= "${@ d.getVar('PN', True).partition('linux-')[2]}"
+KERNEL_NAME_PROVIDED ?= "${@ d.getVar('PN').partition('linux-')[2]}"
 
 # Make bitbake know we will be producing linux-image and linux-headers packages
 python() {
-    kernel_name = d.getVar("KERNEL_NAME_PROVIDED", True)
+    kernel_name = d.getVar("KERNEL_NAME_PROVIDED")
     d.setVar('PROVIDES', 'linux-image-' + kernel_name + ' ' + \
                          'linux-headers-' + kernel_name)
 }
@@ -131,8 +131,8 @@ def config_fragments(d):
     return fragments
 
 def get_additional_build_profiles(d):
-    profiles = d.getVar('BASE_DISTRO', True)
-    if d.getVar('KERNEL_LIBC_DEV_DEPLOY', True) != '1':
+    profiles = d.getVar('BASE_DISTRO')
+    if d.getVar('KERNEL_LIBC_DEV_DEPLOY') != '1':
         profiles += ' nolibcdev'
     return profiles
 
@@ -160,12 +160,12 @@ do_prepare_build:prepend() {
 KERNEL_BUILD_DIR = "build-full"
 
 def get_kernel_config_target(d):
-    kernel_defconfig = d.getVar('KERNEL_DEFCONFIG', True)
+    kernel_defconfig = d.getVar('KERNEL_DEFCONFIG')
 
     config_target = kernel_defconfig
 
     if kernel_defconfig:
-        workdir=d.getVar('WORKDIR', True)
+        workdir=d.getVar('WORKDIR')
         if os.path.isfile(workdir + "/" + kernel_defconfig):
             config_target = "olddefconfig"
         else:
@@ -179,7 +179,7 @@ def get_kernel_config_fragments(d):
     src_frags = " ".join(config_fragments(d))
     out_frags = " ".join(map(lambda frag: 'debian/fragments/' + frag, config_fragments(d)))
 
-    linux_version_extension = d.getVar('LINUX_VERSION_EXTENSION', True)
+    linux_version_extension = d.getVar('LINUX_VERSION_EXTENSION')
     if linux_version_extension:
         out_frags += " debian/isar/version.cfg"
 

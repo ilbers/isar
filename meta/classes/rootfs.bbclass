@@ -182,8 +182,8 @@ do_rootfs_install[depends] = "isar-bootstrap-${@'target' if d.getVar('ROOTFS_ARC
 do_rootfs_install[recrdeptask] = "do_deploy_deb"
 do_rootfs_install[network] = "${TASK_USE_SUDO}"
 python do_rootfs_install() {
-    configure_cmds = (d.getVar("ROOTFS_CONFIGURE_COMMAND", True) or "").split()
-    install_cmds = (d.getVar("ROOTFS_INSTALL_COMMAND", True) or "").split()
+    configure_cmds = (d.getVar("ROOTFS_CONFIGURE_COMMAND") or "").split()
+    install_cmds = (d.getVar("ROOTFS_INSTALL_COMMAND") or "").split()
 
     # Mount after configure commands, so that they have time to copy
     # 'isar-apt' (sdkchroot):

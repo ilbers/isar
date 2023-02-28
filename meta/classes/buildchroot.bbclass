@@ -7,7 +7,7 @@ ISAR_CROSS_COMPILE ??= "0"
 
 # Choose the correct buildchroot: host or target
 python __anonymous() {
-    mode = d.getVar('ISAR_CROSS_COMPILE', True)
+    mode = d.getVar('ISAR_CROSS_COMPILE')
     distro_arch = d.getVar('DISTRO_ARCH')
     if mode == "0" or d.getVar('HOST_ARCH') ==  distro_arch:
         dep = "buildchroot-target:do_build"

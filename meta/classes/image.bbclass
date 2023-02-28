@@ -10,10 +10,10 @@ STAMPCLEAN = "${STAMPS_DIR}/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}/*-*"
 SSTATE_MANIFESTS = "${TMPDIR}/sstate-control/${MACHINE}-${DISTRO}-${DISTRO_ARCH}"
 
 IMAGE_INSTALL ?= ""
-IMAGE_FSTYPES ?= "${@ d.getVar("IMAGE_TYPE", True) if d.getVar("IMAGE_TYPE", True) else "ext4"}"
+IMAGE_FSTYPES ?= "${@ d.getVar("IMAGE_TYPE") if d.getVar("IMAGE_TYPE") else "ext4"}"
 IMAGE_ROOTFS ?= "${WORKDIR}/rootfs"
 
-KERNEL_IMAGE_PKG ??= "${@ ("linux-image-" + d.getVar("KERNEL_NAME", True)) if d.getVar("KERNEL_NAME", True) else ""}"
+KERNEL_IMAGE_PKG ??= "${@ ("linux-image-" + d.getVar("KERNEL_NAME")) if d.getVar("KERNEL_NAME") else ""}"
 IMAGE_INSTALL += "${KERNEL_IMAGE_PKG}"
 
 # Name of the image including distro&machine names
@@ -56,7 +56,7 @@ python(){
 }
 
 def cfg_script(d):
-    cf = d.getVar('DISTRO_CONFIG_SCRIPT', True) or ''
+    cf = d.getVar('DISTRO_CONFIG_SCRIPT') or ''
     if cf:
         return 'file://' + cf
     return ''
@@ -100,10 +100,10 @@ ROOTFS_EXTRA ?= "64"
 
 def get_rootfs_size(d):
     import subprocess
-    rootfs_extra = int(d.getVar("ROOTFS_EXTRA", True))
+    rootfs_extra = int(d.getVar("ROOTFS_EXTRA"))
 
     output = subprocess.check_output(
-        ["sudo", "du", "-xs", "--block-size=1k", d.getVar("IMAGE_ROOTFS", True)]
+        ["sudo", "du", "-xs", "--block-size=1k", d.getVar("IMAGE_ROOTFS")]
     )
     base_size = int(output.split()[0])
 

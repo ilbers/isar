@@ -24,7 +24,7 @@ python () {
 
     wks_full_path = None
 
-    wks_file = d.getVar('WKS_FILE', True)
+    wks_file = d.getVar('WKS_FILE')
     if not wks_file:
         bb.fatal("WKS_FILE must be set")
     if not wks_file.endswith('.wks') and not wks_file.endswith('.wks.in'):
@@ -34,10 +34,10 @@ python () {
         if os.path.exists(wks_file):
             wks_full_path = wks_file
     else:
-        bbpaths = d.getVar('BBPATH', True).split(':')
+        bbpaths = d.getVar('BBPATH').split(':')
         corebase_paths = bbpaths
 
-        corebase = d.getVar('COREBASE', True)
+        corebase = d.getVar('COREBASE')
         if corebase is not None:
             corebase_paths.append(corebase)
 
@@ -110,24 +110,24 @@ WICVARS += "\
 WICVARS += "DISTRO DISTRO_ARCH"
 
 python do_rootfs_wicenv () {
-    wicvars = d.getVar('WICVARS', True)
+    wicvars = d.getVar('WICVARS')
     if not wicvars:
         return
 
-    stdir = d.getVar('STAGING_DIR', True)
-    outdir = os.path.join(stdir, d.getVar('MACHINE', True), 'imgdata')
+    stdir = d.getVar('STAGING_DIR')
+    outdir = os.path.join(stdir, d.getVar('MACHINE'), 'imgdata')
     bb.utils.mkdirhier(outdir)
-    basename = d.getVar('IMAGE_BASENAME', True)
+    basename = d.getVar('IMAGE_BASENAME')
     with open(os.path.join(outdir, basename) + '.env', 'w') as envf:
         for var in wicvars.split():
-            value = d.getVar(var, True)
+            value = d.getVar(var)
             if value:
                 envf.write('{}="{}"\n'.format(var, value.strip()))
 
     # this part is stolen from OE ./meta/recipes-core/meta/wic-tools.bb
     with open(os.path.join(outdir, "wic-tools.env"), 'w') as envf:
         for var in ('RECIPE_SYSROOT_NATIVE', 'STAGING_DATADIR', 'STAGING_LIBDIR'):
-            envf.write('{}="{}"\n'.format(var, d.getVar(var, True).strip()))
+            envf.write('{}="{}"\n'.format(var, d.getVar(var).strip()))
 
 }
 

@@ -36,7 +36,7 @@ inherit deb-dl-dir
 python () {
     distro_bootstrap_keys = (d.getVar("DISTRO_BOOTSTRAP_KEYS") or "").split()
     third_party_apt_keys = (d.getVar("THIRD_PARTY_APT_KEYS") or "").split()
-    topdir = d.getVar("TOPDIR", True)
+    topdir = d.getVar("TOPDIR")
 
     # The cached repo key can be both for bootstrapping and apt package
     # installation afterwards. However, debootstrap will include the key into
@@ -59,11 +59,11 @@ python () {
         filename = os.path.relpath(fetcher.localpath(key), topdir)
         d.appendVar("THIRD_PARTY_APT_KEYFILES", " ${TOPDIR}/%s" % filename)
 
-    distro_apt_sources = d.getVar(d.getVar("DISTRO_VARS_PREFIX") + "DISTRO_APT_SOURCES", True) or ""
+    distro_apt_sources = d.getVar(d.getVar("DISTRO_VARS_PREFIX") + "DISTRO_APT_SOURCES") or ""
     for file in distro_apt_sources.split():
         d.appendVar("SRC_URI", " file://%s" % file)
 
-    distro_apt_preferences = d.getVar(d.getVar("DISTRO_VARS_PREFIX") + "DISTRO_APT_PREFERENCES", True) or ""
+    distro_apt_preferences = d.getVar(d.getVar("DISTRO_VARS_PREFIX") + "DISTRO_APT_PREFERENCES") or ""
     for file in distro_apt_preferences.split():
         d.appendVar("SRC_URI", " file://%s" % file)
 }
@@ -113,7 +113,7 @@ def get_apt_source_mirror(d, aptsources_entry_list):
     if bb.utils.to_boolean(d.getVar('ISAR_USE_CACHED_BASE_REPO')):
         premirrors = "\S* file://${REPO_BASE_DIR}/${BOOTSTRAP_BASE_DISTRO}\n"
     else:
-        premirrors = d.getVar('DISTRO_APT_PREMIRRORS', True) or ""
+        premirrors = d.getVar('DISTRO_APT_PREMIRRORS') or ""
     mirror_list = [entry.split()
                   for entry in premirrors.split('\\n')
                   if any(entry)]
@@ -150,7 +150,7 @@ def aggregate_aptsources_list(d, file_list, file_out):
 def get_aptsources_list(d):
     import errno
     apt_sources_var = d.getVar("DISTRO_VARS_PREFIX") + "DISTRO_APT_SOURCES"
-    list = (d.getVar(apt_sources_var, True) or "").split()
+    list = (d.getVar(apt_sources_var) or "").split()
     ret = []
     for p in list:
         try:
@@ -218,14 +218,14 @@ do_generate_keyrings[dirs] = "${DL_DIR}"
 do_generate_keyrings[vardeps] += "DISTRO_BOOTSTRAP_KEYS THIRD_PARTY_APT_KEYS"
 do_generate_keyrings[network] = "${TASK_USE_SUDO}"
 do_generate_keyrings() {
-    if [ -n "${@d.getVar("THIRD_PARTY_APT_KEYFILES", True) or ""}" ]; then
+    if [ -n "${@d.getVar("THIRD_PARTY_APT_KEYFILES") or ""}" ]; then
         chmod 777 "${APT_KEYS_DIR}"
-        for keyfile in ${@d.getVar("THIRD_PARTY_APT_KEYFILES", True)}; do
+        for keyfile in ${@d.getVar("THIRD_PARTY_APT_KEYFILES")}; do
            cp "$keyfile" "${APT_KEYS_DIR}"/"$(basename "$keyfile")"
         done
     fi
-    if [ -n "${@d.getVar("DISTRO_BOOTSTRAP_KEYFILES", True) or ""}" ]; then
-        for keyfile in ${@d.getVar("DISTRO_BOOTSTRAP_KEYFILES", True)}; do
+    if [ -n "${@d.getVar("DISTRO_BOOTSTRAP_KEYFILES") or ""}" ]; then
+        for keyfile in ${@d.getVar("DISTRO_BOOTSTRAP_KEYFILES")}; do
            sudo apt-key --keyring "${DISTRO_BOOTSTRAP_KEYRING}" add $keyfile
            cp "$keyfile" "${APT_KEYS_DIR}"/"$(basename "$keyfile")"
         done
@@ -243,16 +243,16 @@ do_apt_config_prepare[vardeps] += " \
     DEPLOY_ISAR_BOOTSTRAP \
     "
 python do_apt_config_prepare() {
-    apt_preferences_out = d.getVar("APTPREFS", True)
+    apt_preferences_out = d.getVar("APTPREFS")
     apt_preferences_list = (
-        d.getVar(d.getVar("DISTRO_VARS_PREFIX") + "DISTRO_APT_PREFERENCES", True) or ""
+        d.getVar(d.getVar("DISTRO_VARS_PREFIX") + "DISTRO_APT_PREFERENCES") or ""
     ).split()
     aggregate_files(d, apt_preferences_list, apt_preferences_out)
 
-    apt_sources_out = d.getVar("APTSRCS", True)
-    apt_sources_init_out = d.getVar("APTSRCS_INIT", True)
+    apt_sources_out = d.getVar("APTSRCS")
+    apt_sources_init_out = d.getVar("APTSRCS_INIT")
     apt_sources_list = (
-        d.getVar(d.getVar("DISTRO_VARS_PREFIX") + "DISTRO_APT_SOURCES", True) or ""
+        d.getVar(d.getVar("DISTRO_VARS_PREFIX") + "DISTRO_APT_SOURCES") or ""
     ).split()
 
     aggregate_files(d, apt_sources_list, apt_sources_init_out)

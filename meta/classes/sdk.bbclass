@@ -44,13 +44,13 @@ SDK_PREINSTALL += " \
 
 # Choose the correct toolchain: cross or native
 python __anonymous() {
-    mode = d.getVar('ISAR_CROSS_COMPILE', True)
+    mode = d.getVar('ISAR_CROSS_COMPILE')
     distro_arch = d.getVar('DISTRO_ARCH')
     if mode == "0" or d.getVar('HOST_ARCH') == distro_arch or distro_arch == None:
         toolchain = "build-essential"
     else:
         toolchain = "crossbuild-essential-" + distro_arch
-    if d.getVar('ISAR_ENABLE_COMPAT_ARCH', True) == "1":
+    if d.getVar('ISAR_ENABLE_COMPAT_ARCH') == "1":
         toolchain += " crossbuild-essential-" + d.getVar('COMPAT_DISTRO_ARCH')
     d.setVar('TOOLCHAIN', toolchain)
 }
@@ -67,7 +67,7 @@ IMAGE_FSTYPES:class-sdk = "${SDK_FORMATS}"
 
 # bitbake dependencies
 SDKDEPENDS += "sdk-files ${SDK_INSTALL}"
-SDKDEPENDS:append:riscv64 = "${@' crossbuild-essential-riscv64' if d.getVar('ISAR_CROSS_COMPILE', True) == '1' and d.getVar('PN') != 'crossbuild-essential-riscv64' else ''}"
+SDKDEPENDS:append:riscv64 = "${@' crossbuild-essential-riscv64' if d.getVar('ISAR_CROSS_COMPILE') == '1' and d.getVar('PN') != 'crossbuild-essential-riscv64' else ''}"
 DEPENDS:class-sdk = "${SDKDEPENDS}"
 
 SDKROOTFSDEPENDS = ""

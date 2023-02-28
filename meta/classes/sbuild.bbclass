@@ -9,7 +9,7 @@ python __anonymous() {
     import pwd
     d.setVar('SCHROOT_USER', pwd.getpwuid(os.geteuid()).pw_name)
 
-    mode = d.getVar('ISAR_CROSS_COMPILE', True)
+    mode = d.getVar('ISAR_CROSS_COMPILE')
     distro_arch = d.getVar('DISTRO_ARCH')
     if mode == "0" or d.getVar('HOST_ARCH') ==  distro_arch:
         d.setVar('SBUILD_HOST_ARCH', distro_arch)

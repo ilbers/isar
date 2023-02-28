@@ -13,8 +13,8 @@ SBUILD_PASSTHROUGH_ADDITIONS ?= ""
 
 def expand_sbuild_pt_additions(d):
     cmds = ''
-    for var in d.getVar('SBUILD_PASSTHROUGH_ADDITIONS', True).split():
-        varval = d.getVar(var, True)
+    for var in d.getVar('SBUILD_PASSTHROUGH_ADDITIONS').split():
+        varval = d.getVar(var)
         if varval != None:
             cmds += 'sbuild_export ' + var + ' "' + varval + '"\n'
     return cmds

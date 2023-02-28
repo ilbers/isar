@@ -43,9 +43,9 @@ KSELFTEST_TARGETS ?= ""
 KSELFTEST_SKIP_TARGETS ?= ""
 KSELFTEST_FORCE_TARGETS ?= "0"
 
-KSELFTEST_ARGS = "${@ "TARGETS=\"${KSELFTEST_TARGETS}\"" if d.getVar('KSELFTEST_TARGETS', True) else ''}"
-KSELFTEST_ARGS .= "${@ " FORCE_TARGETS=1" if d.getVar('KSELFTEST_FORCE_TARGETS', True) == '1' else ''}"
-KSELFTEST_ARGS .= "${@ " SKIP_TARGETS=\"${KSELFTEST_SKIP_TARGETS}\"" if d.getVar('KSELFTEST_SKIP_TARGETS', True) else ''}"
+KSELFTEST_ARGS = "${@ "TARGETS=\"${KSELFTEST_TARGETS}\"" if d.getVar('KSELFTEST_TARGETS') else ''}"
+KSELFTEST_ARGS .= "${@ " FORCE_TARGETS=1" if d.getVar('KSELFTEST_FORCE_TARGETS') == '1' else ''}"
+KSELFTEST_ARGS .= "${@ " SKIP_TARGETS=\"${KSELFTEST_SKIP_TARGETS}\"" if d.getVar('KSELFTEST_SKIP_TARGETS') else ''}"
 
 do_prepare_build[cleandirs] += "${S}/debian"
 do_prepare_build() {

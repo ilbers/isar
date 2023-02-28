@@ -11,13 +11,13 @@ LOCALE_GEN ?= "en_US.UTF-8 UTF-8\n\
 LOCALE_DEFAULT ?= "en_US.UTF-8"
 
 def get_locale_gen(d, sep='\n'):
-    locale_gen = d.getVar("LOCALE_GEN", True) or ""
+    locale_gen = d.getVar("LOCALE_GEN") or ""
     return sep.join(sorted(set(i.strip()
                                for i in locale_gen.split('\\n')
                                if i.strip())))
 
 def get_nopurge(d):
-    locale_gen = d.getVar("LOCALE_GEN", True) or ""
+    locale_gen = d.getVar("LOCALE_GEN") or ""
     return '\n'.join(sorted(set(i.strip()
                                 for j in locale_gen.split('\\n')
                                 if j.strip()

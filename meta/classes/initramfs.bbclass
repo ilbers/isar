@@ -14,7 +14,7 @@ INITRAMFS_ROOTFS ?= "${WORKDIR}/rootfs"
 INITRAMFS_IMAGE_FILE = "${DEPLOY_DIR_IMAGE}/${INITRAMFS_FULLNAME}.initrd.img"
 
 # Install proper kernel
-INITRAMFS_INSTALL += "${@ ("linux-image-" + d.getVar("KERNEL_NAME", True)) if d.getVar("KERNEL_NAME", True) else ""}"
+INITRAMFS_INSTALL += "${@ ("linux-image-" + d.getVar("KERNEL_NAME")) if d.getVar("KERNEL_NAME") else ""}"
 
 # Name of the initramfs including distro&machine names
 INITRAMFS_FULLNAME = "${PN}-${DISTRO}-${MACHINE}"

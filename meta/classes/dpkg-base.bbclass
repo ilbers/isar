@@ -13,7 +13,7 @@ inherit deb-dl-dir
 DEPENDS ?= ""
 RPROVIDES ?= "${PROVIDES}"
 
-DEPENDS:append:riscv64 = "${@' crossbuild-essential-riscv64' if d.getVar('ISAR_CROSS_COMPILE', True) == '1' and d.getVar('PN') != 'crossbuild-essential-riscv64' else ''}"
+DEPENDS:append:riscv64 = "${@' crossbuild-essential-riscv64' if d.getVar('ISAR_CROSS_COMPILE') == '1' and d.getVar('PN') != 'crossbuild-essential-riscv64' else ''}"
 DEB_BUILD_PROFILES ?= ""
 DEB_BUILD_OPTIONS ?= ""
 
@@ -22,7 +22,7 @@ ISAR_APT_REPO ?= "deb [trusted=yes] file:///home/builder/${PN}/isar-apt/${DISTRO
 python do_adjust_git() {
     import subprocess
 
-    rootdir = d.getVar('WORKDIR', True)
+    rootdir = d.getVar('WORKDIR')
 
     git_link = os.path.join(d.getVar('GIT_DL_LINK_DIR'), '.git-downloads')
     dl_dir = d.getVar("DL_DIR")
@@ -34,7 +34,7 @@ python do_adjust_git() {
     if not os.path.exists(git_link):
         os.symlink(git_dl, git_link)
 
-    for src_uri in (d.getVar("SRC_URI", True) or "").split():
+    for src_uri in (d.getVar("SRC_URI") or "").split():
         try:
             fetcher = bb.fetch2.Fetch([src_uri], d)
             ud = fetcher.ud[src_uri]
@@ -161,8 +161,8 @@ do_cleanall_apt() {
 }
 
 def get_package_srcdir(d):
-    s = os.path.abspath(d.getVar("S", True))
-    workdir = os.path.abspath(d.getVar("WORKDIR", True))
+    s = os.path.abspath(d.getVar("S"))
+    workdir = os.path.abspath(d.getVar("WORKDIR"))
     if os.path.commonpath([s, workdir]) == workdir:
         if s == workdir:
             bb.warn('S is not a subdir of WORKDIR debian package operations' +
@@ -202,13 +202,13 @@ dpkg_runbuild() {
 }
 
 def isar_deb_build_profiles(d):
-    deb_build_profiles = d.getVar('DEB_BUILD_PROFILES', True)
-    if d.getVar('ISAR_CROSS_COMPILE', True) == "1":
+    deb_build_profiles = d.getVar('DEB_BUILD_PROFILES')
+    if d.getVar('ISAR_CROSS_COMPILE') == "1":
         deb_build_profiles += ' cross'
     return deb_build_profiles.strip()
 
 def isar_deb_build_options(d):
-    deb_build_options = d.getVar('DEB_BUILD_OPTIONS', True)
+    deb_build_options = d.getVar('DEB_BUILD_OPTIONS')
     return deb_build_options.strip()
 
 # use with caution: might contaminate multiple tasks
@@ -294,8 +294,8 @@ python do_devshell() {
 
     schroot = d.getVar('SBUILD_CHROOT')
     isar_apt = d.getVar('ISAR_APT_REPO')
-    pkg_arch = d.getVar('PACKAGE_ARCH', True)
-    build_arch = d.getVar('SBUILD_HOST_ARCH', True)
+    pkg_arch = d.getVar('PACKAGE_ARCH')
+    build_arch = d.getVar('SBUILD_HOST_ARCH')
     pp_pps = os.path.join(d.getVar('PP'), d.getVar('PPS'))
     debdistroname = d.getVar('DEBDISTRONAME')
 

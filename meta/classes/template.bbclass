@@ -10,13 +10,13 @@ do_transform_template[vardeps] = "TEMPLATE_FILES ${TEMPLATE_VARS}"
 python do_transform_template() {
     import subprocess, contextlib, shutil
 
-    workdir = os.path.normpath(d.getVar('WORKDIR', True))
+    workdir = os.path.normpath(d.getVar('WORKDIR'))
 
-    template_vars = (d.getVar('TEMPLATE_VARS', True) or "").split()
+    template_vars = (d.getVar('TEMPLATE_VARS') or "").split()
     if len(template_vars) == 0:
         return
 
-    template_files = (d.getVar('TEMPLATE_FILES', True) or "").split()
+    template_files = (d.getVar('TEMPLATE_FILES') or "").split()
     if len(template_files) == 0:
         return
 
@@ -27,7 +27,7 @@ python do_transform_template() {
     # from bitbake data store:
     env = os.environ.copy()
     for varname in template_vars:
-        value = d.getVar(varname, True)
+        value = d.getVar(varname)
         if value:
             env.update({varname: value})
 

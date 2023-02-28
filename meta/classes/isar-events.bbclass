@@ -45,7 +45,7 @@ addhandler build_completed
 python build_completed() {
     import subprocess
 
-    tmpdir = d.getVar('TMPDIR', True)
+    tmpdir = d.getVar('TMPDIR')
     if not tmpdir:
         return
 

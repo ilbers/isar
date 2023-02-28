@@ -28,7 +28,7 @@ GROUPS ??= ""
 def gen_accounts_array(d, listname, entryname, flags, verb_flags=None):
     from itertools import chain
 
-    entries = (d.getVar(listname, True) or "").split()
+    entries = (d.getVar(listname) or "").split()
     return " ".join(
         ":".join(
             chain(
@@ -62,7 +62,7 @@ ROOTFS_POSTPROCESS_COMMAND += "image_postprocess_accounts"
 image_postprocess_accounts() {
     # Create groups
     # Add space to the end of the list:
-    list='${@" ".join(d.getVar('IMAGE_ACCOUNTS_GROUPS', True).split())} '
+    list='${@" ".join(d.getVar('IMAGE_ACCOUNTS_GROUPS').split())} '
     while true; do
         # Pop first group entry:
         list_rest="${list#*:*:* }"
@@ -125,7 +125,7 @@ image_postprocess_accounts() {
     done
 
     # Create users
-    list='${@" ".join(d.getVar('IMAGE_ACCOUNTS_USERS', True).split())} '
+    list='${@" ".join(d.getVar('IMAGE_ACCOUNTS_USERS').split())} '
     while true; do
         # Pop first user entry:
         list_rest="${list#*:*:*:*:*:*:*:*:*:*:* }"
