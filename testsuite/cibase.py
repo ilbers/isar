@@ -53,6 +53,7 @@ class CIBaseTest(CIBuilder):
 
         if not signed:
             # Try to build with changed configuration with no cleanup
+            self.configure(**kwargs)
             self.bitbake(targets, **kwargs)
 
     def perform_ccache_test(self, targets, **kwargs):
