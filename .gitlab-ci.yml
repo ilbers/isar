@@ -27,14 +27,14 @@ dev-ci:
   except:
     - schedules
   script:
-    - scripts/ci_build.sh -q -T dev
+    - scripts/ci_build.sh -T dev
 
 fast-ci:
   <<: *common-build
   only:
     - schedules
   script:
-    - scripts/ci_build.sh -q -T fast
+    - scripts/ci_build.sh -T fast
 
 full-ci:
   <<: *common-build
@@ -44,7 +44,7 @@ full-ci:
     - PREVIOUS_SHA="$(cat .CI_COMMIT_SHA || true)"
     - if [ "$CI_COMMIT_SHA" != "$PREVIOUS_SHA" ]; then
           echo "$CI_COMMIT_SHA" > .CI_COMMIT_SHA;
-          scripts/ci_build.sh -q -T full;
+          scripts/ci_build.sh -T full;
       fi
   cache:
     key: "$CI_COMMIT_REF_SLUG"

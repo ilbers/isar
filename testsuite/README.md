@@ -27,13 +27,13 @@ $ avocado run ../testsuite/citest.py -t single --max-parallel-tasks=1 -p machine
 ## Fast build test
 
 ```
-$ avocado run ../testsuite/citest.py -t fast --max-parallel-tasks=1 -p quiet=1
+$ avocado run ../testsuite/citest.py -t fast --max-parallel-tasks=1
 ```
 
 ## Full build test
 
 ```
-$ avocado run ../testsuite/citest.py -t full --max-parallel-tasks=1 -p quiet=1
+$ avocado run ../testsuite/citest.py -t full --max-parallel-tasks=1
 ```
 
 ## Fast boot test

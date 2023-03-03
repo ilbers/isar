@@ -50,7 +50,6 @@ show_help() {
     echo "                             the tests will be started in current path."
     echo "    -d, --debug              enable debug bitbake output."
     echo "    -T, --tags               specify basic avocado tags."
-    echo "    -q, --quiet              suppress verbose bitbake output."
     echo "    -n, --norun              do not execute QEMU run tests."
     echo "    --help                   display this message and exit."
     echo
@@ -58,8 +57,6 @@ show_help() {
     echo " 0  if OK,"
     echo " 3  if invalid parameters are passed."
 }
-
-QUIET="0"
 
 # Parse command line to get user configuration
 while [ $# -gt 0 ]
@@ -88,7 +85,7 @@ do
         echo "warning: deprecated parameter '$key', consider using '-T fast' instead"
         ;;
     -q|--quiet)
-        QUIET="1"
+        echo "warning: deprecated parameter '$key', it is applied by default"
         ;;
     -n|--norun)
         NORUN="1"
@@ -143,4 +140,4 @@ set -x
 
 avocado ${VERBOSE} run "${TESTSUITE_DIR}/citest.py" \
     -t "${TAGS}" --max-parallel-tasks=1 --disable-sysinfo \
-    -p quiet="${QUIET}" ${TIMEOUT}
+    ${TIMEOUT}

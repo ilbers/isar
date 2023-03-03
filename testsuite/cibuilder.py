@@ -64,7 +64,7 @@ class CIBuilder(Test):
         self.check_init()
 
         # get parameters from avocado cmdline
-        quiet = bool(int(self.params.get('quiet', default=0)))
+        quiet = bool(int(self.params.get('quiet', default=1)))
 
         if dl_dir is None:
             dl_dir = os.path.join(isar_root, 'downloads')
