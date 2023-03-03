@@ -52,8 +52,6 @@ show_help() {
     echo "    -T, --tags               specify basic avocado tags."
     echo "    -q, --quiet              suppress verbose bitbake output."
     echo "    -n, --norun              do not execute QEMU run tests."
-    echo "    -t, --timeout SEC        specify time in seconds to wait before stop QEMU."
-    echo "                             The default is: 300"
     echo "    --help                   display this message and exit."
     echo
     echo "Exit status:"
@@ -62,7 +60,6 @@ show_help() {
 }
 
 QUIET="0"
-TIMEOUT=300
 
 # Parse command line to get user configuration
 while [ $# -gt 0 ]
@@ -97,7 +94,7 @@ do
         NORUN="1"
         ;;
     -t|--timeout)
-        TIMEOUT=$2
+        TIMEOUT="-p time_to_wait=$2"
         shift
         ;;
     -c|--cross|-r|--repro|-s|--sign)
@@ -146,4 +143,4 @@ set -x
 
 avocado ${VERBOSE} run "${TESTSUITE_DIR}/citest.py" \
     -t "${TAGS}" --max-parallel-tasks=1 --disable-sysinfo \
-    -p quiet="${QUIET}" -p time_to_wait="${TIMEOUT}"
+    -p quiet="${QUIET}" ${TIMEOUT}

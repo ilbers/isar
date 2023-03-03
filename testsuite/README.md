@@ -39,13 +39,13 @@ $ avocado run ../testsuite/citest.py -t full --max-parallel-tasks=1 -p quiet=1
 ## Fast boot test
 
 ```
-$ avocado run ../testsuite/citest.py -t startvm,fast -p time_to_wait=300
+$ avocado run ../testsuite/citest.py -t startvm,fast
 ```
 
 ## Full boot test
 
 ```
-$ avocado run ../testsuite/citest.py -t startvm,full -p time_to_wait=300
+$ avocado run ../testsuite/citest.py -t startvm,full
 ```
 
 # Running qemu images

@@ -15,6 +15,8 @@ from avocado import Test
 from avocado.utils import path
 from avocado.utils import process
 
+DEF_VM_TO_SEC = 600
+
 isar_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 backup_prefix = '.ci-backup'
 
@@ -266,7 +268,7 @@ class CIBuilder(Test):
     def vm_start(self, arch='amd64', distro='buster',
                  enforce_pcbios=False, skip_modulecheck=False,
                  image='isar-image-base', cmd=None, script=None):
-        time_to_wait = self.params.get('time_to_wait', default=60)
+        time_to_wait = self.params.get('time_to_wait', default=DEF_VM_TO_SEC)
 
         self.log.info('===================================================')
         self.log.info('Running Isar VM boot test for (' + distro + '-' + arch + ')')
