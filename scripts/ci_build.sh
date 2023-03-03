@@ -49,7 +49,7 @@ show_help() {
     echo "    -b, --base BASE_DIR      set path to base directory. If not set,"
     echo "                             the tests will be started in current path."
     echo "    -d, --debug              enable debug bitbake output."
-    echo "    -f, --fast               cross build reduced set of configurations."
+    echo "    -T, --tags               specify basic avocado tags."
     echo "    -q, --quiet              suppress verbose bitbake output."
     echo "    -n, --norun              do not execute QEMU run tests."
     echo "    -t, --timeout SEC        specify time in seconds to wait before stop QEMU."
@@ -61,7 +61,6 @@ show_help() {
     echo " 3  if invalid parameters are passed."
 }
 
-TAGS="full"
 QUIET="0"
 TIMEOUT=300
 
@@ -82,9 +81,14 @@ do
     -d|--debug)
         VERBOSE="--show=app,test"
         ;;
+    -T|--tags)
+        TAGS="$2"
+        shift
+        ;;
     -f|--fast)
         # Start build for the reduced set of configurations
-        TAGS="fast"
+        FAST="1"
+        echo "warning: deprecated parameter '$key', consider using '-T fast' instead"
         ;;
     -q|--quiet)
         QUIET="1"
@@ -108,6 +112,14 @@ do
 
     shift
 done
+
+if [ -z "$TAGS" ]; then
+    if [ -n "$FAST" ]; then
+        TAGS="fast"
+    else
+        TAGS="full"
+    fi
+fi
 
 if [ -n "$NORUN" ]; then
     TAGS="$TAGS,-startvm"
