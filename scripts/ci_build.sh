@@ -22,7 +22,7 @@ if ! command -v avocado > /dev/null; then
     virtualenv --python python3 /tmp/avocado_venv
     # shellcheck source=/dev/null
     source /tmp/avocado_venv/bin/activate
-    pip install avocado-framework==99.0
+    pip install avocado-framework==100.1
 fi
 
 # Get Avocado build tests path
@@ -133,5 +133,5 @@ export VIRTUAL_ENV="./"
 set -x
 
 avocado ${VERBOSE} run "${TESTSUITE_DIR}/citest.py" \
-    -t "${TAGS}" --nrunner-max-parallel-tasks=1 --disable-sysinfo \
+    -t "${TAGS}" --max-parallel-tasks=1 --disable-sysinfo \
     -p quiet="${QUIET}" -p time_to_wait="${TIMEOUT}"
