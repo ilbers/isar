@@ -93,3 +93,31 @@ can be executed instead of command:
 The default location of custom scripts is `isar/testsuite/`. It can be changed
 by passing `-p test_script_dir="custom_path"` to `avocado run`
 arguments.
+
+# Custom test case creation
+
+The minimal build test can be look like:
+
+```
+#!/usr/bin/env python3
+
+from cibase import CIBaseTest
+
+class SampleTest(CIBaseTest):
+    def test_sample(self):
+        self.init()
+        self.perform_build_test("mc:qemuamd64-bullseye:isar-image-base")
+```
+
+To show the list of available tests you can run:
+
+```
+$ avocado list sample.py
+avocado-instrumented sample.py:SampleTest.test_sample
+```
+
+And to execute this example:
+
+```
+$ avocado run sample.py:SampleTest.test_sample
+```
