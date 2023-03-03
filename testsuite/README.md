@@ -7,7 +7,12 @@ The framework could be installed by using standard HOWTO:
 ## For Debian (tested on Debian 11.x)
 
 ```
-$ pip install avocado-framework==99.0
+$ sudo apt-get update -qq
+$ sudo apt-get install -y virtualenv
+$ rm -rf /tmp/avocado_venv
+$ virtualenv --python python3 /tmp/avocado_venv
+$ source /tmp/avocado_venv/bin/activate
+$ pip install avocado-framework==100.1
 ```
 
 # Run test
