@@ -58,7 +58,7 @@ class CIBuilder(Test):
     def configure(self, compat_arch=True, cross=True, debsrc_cache=False,
                   container=False, ccache=False, sstate=False, offline=False,
                   gpg_pub_key=None, wic_deploy_parts=False, dl_dir=None,
-                  sstate_dir=None,
+                  sstate_dir=None, ccache_dir=None,
                   source_date_epoch=None, image_install=None, **kwargs):
         # write configuration file and set bitbake_args
         # can run multiple times per test case
@@ -72,6 +72,8 @@ class CIBuilder(Test):
             dl_dir = os.path.join(isar_root, 'downloads')
         if sstate_dir is None:
             sstate_dir = os.path.join(isar_root, 'sstate-cache')
+        if ccache_dir is None:
+            ccache_dir = '${TOPDIR}/ccache'
 
         # get parameters from environment
         distro_apt_premir = os.getenv('DISTRO_APT_PREMIRRORS')
@@ -90,6 +92,7 @@ class CIBuilder(Test):
                       f'  source_date_epoch = {source_date_epoch} \n'
                       f'  dl_dir = {dl_dir}\n'
                       f'  sstate_dir = {sstate_dir}\n'
+                      f'  ccache_dir = {ccache_dir}\n'
                       f'  image_install = {image_install}\n'
                       f'===================================================')
 
@@ -128,7 +131,7 @@ class CIBuilder(Test):
                 f.write('DISTRO_APT_PREMIRRORS = "%s"\n' % distro_apt_premir)
             if ccache:
                 f.write('USE_CCACHE = "1"\n')
-                f.write('CCACHE_TOP_DIR = "${TOPDIR}/ccache"\n')
+                f.write('CCACHE_TOP_DIR = "%s"\n' % ccache_dir)
             if source_date_epoch:
                 f.write('SOURCE_DATE_EPOCH = "%s"\n' % source_date_epoch)
             if dl_dir:
