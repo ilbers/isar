@@ -50,7 +50,6 @@ show_help() {
     echo "                             the tests will be started in current path."
     echo "    -d, --debug              enable debug bitbake output."
     echo "    -T, --tags               specify basic avocado tags."
-    echo "    -n, --norun              do not execute QEMU run tests."
     echo "    --help                   display this message and exit."
     echo
     echo "Exit status:"
@@ -89,6 +88,7 @@ do
         ;;
     -n|--norun)
         NORUN="1"
+        echo "warning: deprecated parameter '$key', consider using '-T <TAG>,-startvm' instead"
         ;;
     -t|--timeout)
         TIMEOUT="-p time_to_wait=$2"
@@ -115,9 +115,12 @@ if [ -z "$TAGS" ]; then
     fi
 fi
 
+# Deprecated
 if [ -n "$NORUN" ]; then
     TAGS="$TAGS,-startvm"
-else
+fi
+
+if echo "$TAGS" | grep -Fqive "-startvm"; then
     if [ ! -f /usr/share/doc/qemu-system/copyright ]; then
         sudo apt-get update -qq
         sudo apt-get install -y --no-install-recommends qemu-system ovmf
