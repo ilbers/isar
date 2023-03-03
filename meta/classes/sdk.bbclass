@@ -58,7 +58,7 @@ python __anonymous() {
 # rootfs/image overrides for the SDK
 ROOTFS_ARCH:class-sdk = "${HOST_ARCH}"
 ROOTFS_DISTRO:class-sdk = "${HOST_DISTRO}"
-ROOTFS_PACKAGES:class-sdk = "sdk-files ${TOOLCHAIN} ${SDK_PREINSTALL} ${SDK_INSTALL}"
+ROOTFS_PACKAGES:class-sdk = "sdk-files ${TOOLCHAIN} ${SDK_PREINSTALL} ${@isar_multiarch_packages('SDK_INSTALL', d)}"
 ROOTFS_FEATURES:append:class-sdk = " clean-package-cache generate-manifest export-dpkg-status"
 ROOTFS_MANIFEST_DEPLOY_DIR:class-sdk = "${DEPLOY_DIR_SDKCHROOT}"
 ROOTFS_DPKGSTATUS_DEPLOY_DIR:class-sdk = "${DEPLOY_DIR_SDKCHROOT}"

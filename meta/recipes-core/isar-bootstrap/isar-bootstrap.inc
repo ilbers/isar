@@ -274,6 +274,8 @@ do_bootstrap[dirs] = "${DEPLOY_DIR_BOOTSTRAP}"
 do_bootstrap[depends] = "base-apt:do_cache isar-apt:do_cache_config"
 do_bootstrap[network] = "${TASK_USE_NETWORK_AND_SUDO}"
 
+inherit compat
+
 do_bootstrap() {
     if [ "${ISAR_ENABLE_COMPAT_ARCH}" = "1" ]; then
         if [ -z "${COMPAT_DISTRO_ARCH}" ]; then

@@ -9,6 +9,7 @@ LIC_FILES_CHKSUM = "file://${LAYERDIR_core}/licenses/COPYING.GPLv2;md5=751419260
 PV = "1.0"
 
 inherit rootfs
+inherit compat
 
 python() {
     distro_gcc = d.getVar('DISTRO_GCC')
@@ -20,17 +21,18 @@ python() {
         d.appendVar('SBUILD_CHROOT_PREINSTALL_COMMON',
                     ' libstdc++-{}-dev:{}'.format(distro_gcc, distro_arch))
 
-        if d.getVar('ISAR_ENABLE_COMPAT_ARCH') == '1':
-            compat_arch = d.getVar('COMPAT_DISTRO_ARCH')
+    if d.getVar('ISAR_ENABLE_COMPAT_ARCH') == '1':
+        compat_arch = d.getVar('COMPAT_DISTRO_ARCH')
+        d.appendVar('SBUILD_CHROOT_COMPAT_PREINSTALL',
+                    ' libc6-dev:{}'.format(compat_arch))
+        d.appendVar('SBUILD_CHROOT_COMPAT_PREINSTALL',
+                    ' crossbuild-essential-{}'.format(compat_arch))
+        if d.getVar('DISTRO_GCC'):
             d.appendVar('SBUILD_CHROOT_COMPAT_PREINSTALL',
                         ' libgcc-{}-dev:{}'.format(distro_gcc, compat_arch))
             d.appendVar('SBUILD_CHROOT_COMPAT_PREINSTALL',
                         ' libstdc++-{}-dev:{}'.format(distro_gcc, compat_arch))
 }
-
-SBUILD_CHROOT_COMPAT_PREINSTALL:compat-arch = " \
-    libc6-dev:${COMPAT_DISTRO_ARCH} \
-    crossbuild-essential-${COMPAT_DISTRO_ARCH}"
 
 SBUILD_CHROOT_PREINSTALL_COMMON = " \
     ${SBUILD_CHROOT_COMPAT_PREINSTALL} \

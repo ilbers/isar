@@ -82,9 +82,11 @@ image_do_mounts() {
     buildchroot_do_mounts
 }
 
+inherit multiarch
+
 ROOTFSDIR = "${IMAGE_ROOTFS}"
 ROOTFS_FEATURES += "clean-package-cache clean-pycache generate-manifest export-dpkg-status clean-log-files clean-debconf-cache"
-ROOTFS_PACKAGES += "${IMAGE_PREINSTALL} ${IMAGE_INSTALL}"
+ROOTFS_PACKAGES += "${IMAGE_PREINSTALL} ${@isar_multiarch_packages('IMAGE_INSTALL', d)}"
 ROOTFS_MANIFEST_DEPLOY_DIR ?= "${DEPLOY_DIR_IMAGE}"
 ROOTFS_DPKGSTATUS_DEPLOY_DIR ?= "${DEPLOY_DIR_IMAGE}"
 ROOTFS_PACKAGE_SUFFIX ?= "${PN}-${DISTRO}-${MACHINE}"

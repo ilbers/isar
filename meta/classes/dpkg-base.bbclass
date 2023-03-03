@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: MIT
 
 inherit sbuild
+inherit multiarch
 inherit debianize
 inherit terminal
 inherit repository

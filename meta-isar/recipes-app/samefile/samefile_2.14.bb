@@ -21,7 +21,7 @@ do_prepare_build() {
     # deb_debianize. Pre-exisiting files will not be recreated, changelog
     # will be prepended unless its latest entry is for CHANGELOG_V.
     cat << EOF > ${WORKDIR}/changelog
-${PN} (0.1) unstable; urgency=low
+${BPN} (0.1) unstable; urgency=low
 
   * a long long time ago there was an early version
 
