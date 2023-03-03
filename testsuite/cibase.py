@@ -3,6 +3,7 @@
 import glob
 import os
 import re
+import shutil
 import tempfile
 import time
 
@@ -35,7 +36,7 @@ class CIBaseTest(CIBuilder):
 
         os.chdir(self.build_dir)
 
-        os.environ['GNUPGHOME'] = tempfile.mkdtemp()
+        os.environ['GNUPGHOME'] = gnupg_home = tempfile.mkdtemp()
         result = process.run('gpg --import %s %s' % (gpg_pub_key, gpg_priv_key))
 
         if result.exit_status:
@@ -55,6 +56,10 @@ class CIBaseTest(CIBuilder):
             # Try to build with changed configuration with no cleanup
             self.configure(**kwargs)
             self.bitbake(targets, **kwargs)
+
+        # Cleanup
+        process.run('gpgconf --kill gpg-agent')
+        shutil.rmtree(gnupg_home, True)
 
     def perform_ccache_test(self, targets, **kwargs):
         def ccache_stats(dir, field):
