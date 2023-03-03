@@ -97,7 +97,11 @@ class CIBuilder(Test):
         with open(self.build_dir + '/conf/ci_build.conf', 'w') as f:
             if compat_arch:
                 f.write('ISAR_ENABLE_COMPAT_ARCH:amd64 = "1"\n')
+                f.write('IMAGE_INSTALL:remove:amd64 = "hello-isar"\n')
+                f.write('IMAGE_INSTALL:append:amd64 = " hello-isar-compat"\n')
                 f.write('ISAR_ENABLE_COMPAT_ARCH:arm64 = "1"\n')
+                f.write('IMAGE_INSTALL:remove:arm64 = "hello-isar"\n')
+                f.write('IMAGE_INSTALL:append:arm64 = " hello-isar-compat"\n')
                 f.write('IMAGE_INSTALL += "kselftest"\n')
             if cross:
                 f.write('ISAR_CROSS_COMPILE = "1"\n')

@@ -20,7 +20,4 @@ SRC_URI = " \
     file://yet-another-change.txt;apply=yes;striplevel=0"
 SRCREV = "a18c14cc11ce6b003f3469e89223cffb4016861d"
 
-# NOTE: This is just to test 32-bit building on 64-bit archs.
-PACKAGE_ARCH:compat-arch = "${COMPAT_DISTRO_ARCH}"
-
 inherit dpkg

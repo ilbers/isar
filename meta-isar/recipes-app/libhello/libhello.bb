@@ -13,7 +13,4 @@ PV = "0.1-98f2e41"
 SRC_URI = "git://github.com/ilbers/libhello.git;protocol=https;branch=master;destsuffix=${P}"
 SRCREV = "98f2e41e7d05ab8d19b0c5d160b104b725c8fd93"
 
-# NOTE: This is just to test 32-bit building on 64-bit archs.
-PACKAGE_ARCH:compat-arch = "${COMPAT_DISTRO_ARCH}"
-
 inherit dpkg
