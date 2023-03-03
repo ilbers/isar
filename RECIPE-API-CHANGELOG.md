@@ -484,3 +484,11 @@ control if a custom initrd is requrested. Only if this variable is empty, the
 default one is deployed. By that, the variable cannot be used to get the name of
 the images initramfs. Instead, the variable `INITRD_DEPLOY_FILE` is provided which
 always povides the name of the initrd file (also when the default one is used).
+
+### The `compat-arch` override was removed
+
+Recipes inheriting dpkg-base now automatically have a bitbake target
+`<foo>-compat`, if `ISAR_ENABLE_COMPAT_ARCH == "1"`, and if a compat architecture
+exists for the current `DISTRO_ARCH`.
+In that case the compat package can be built by adding `<foo>-compat`
+to `DEPENDS` or `IMAGE_INSTALL`.

@@ -963,18 +963,24 @@ Debian cross-compilation works out of the box. Currently the following build con
 
 Experimental support for riscv64 is available as well.
 
-### Cross-building for a compat architecture
+### Building for a compat and/or native architecture
 
 Some architectures, under Isar amd64 and arm64 so far, support running 32-bit
 legacy applications on 64-bit kernels. Debian supports this via the multiarch
 concept.
 
 Isar can build 32-bit packages as part of a 64-bit image build and also enable
-the image with the necessary packages. To activate the compat mode of a build,
-set `ISAR_ENABLE_COMPAT_ARCH = "1"` in `local.conf`. Packages that shall be
-built for the compat arch need to be tagged individually by setting
-`PACKAGE_ARCH = "${COMPAT_DISTRO_ARCH}"` in the package recipe. Non-tagged
-packages will continue to be built for the primary target architecture.
+the image with the necessary packages. To activate compat support,
+set `ISAR_ENABLE_COMPAT_ARCH = "1"` in `local.conf`. This will install neccessary
+build dependencies in the buildchroot.
+
+For all dpkg package recipes, Isar automatically provides a `<package>-compat`
+target that builds the package for the `COMPAT_DISTRO_ARCH`. This can be
+referenced using the `DEPENDS` and `IMAGE_INSTALL` variables.
+
+To explicitly build a package for the build host architecture (in cross build
+scenarios, or when generating an SDK), Isar automatically provides a
+`<package>-native` target for all dpkg package recipes.
 
 ### Cross Support for Imagers
 
@@ -986,7 +992,6 @@ as the compression is not emulated.
 In case your setup does not support cross-imaging, you can disable this
 just for the particular image by adding `ISAR_CROSS_COMPILE = "0"` to your
 image recipe.
-
 
 ## Examining and debugging package generation inside their buildchroot
 
