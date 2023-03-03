@@ -58,6 +58,7 @@ class CIBuilder(Test):
     def configure(self, compat_arch=True, cross=True, debsrc_cache=False,
                   container=False, ccache=False, sstate=False, offline=False,
                   gpg_pub_key=None, wic_deploy_parts=False, dl_dir=None,
+                  sstate_dir=None,
                   source_date_epoch=None, image_install=None, **kwargs):
         # write configuration file and set bitbake_args
         # can run multiple times per test case
@@ -66,8 +67,11 @@ class CIBuilder(Test):
         # get parameters from avocado cmdline
         quiet = bool(int(self.params.get('quiet', default=1)))
 
+        # set those to "" to not set dir value but use system default
         if dl_dir is None:
             dl_dir = os.path.join(isar_root, 'downloads')
+        if sstate_dir is None:
+            sstate_dir = os.path.join(isar_root, 'sstate-cache')
 
         # get parameters from environment
         distro_apt_premir = os.getenv('DISTRO_APT_PREMIRRORS')
@@ -85,6 +89,7 @@ class CIBuilder(Test):
                       f'  wic_deploy_parts = {wic_deploy_parts}\n'
                       f'  source_date_epoch = {source_date_epoch} \n'
                       f'  dl_dir = {dl_dir}\n'
+                      f'  sstate_dir = {sstate_dir}\n'
                       f'  image_install = {image_install}\n'
                       f'===================================================')
 
@@ -128,6 +133,8 @@ class CIBuilder(Test):
                 f.write('SOURCE_DATE_EPOCH = "%s"\n' % source_date_epoch)
             if dl_dir:
                 f.write('DL_DIR = "%s"\n' % dl_dir)
+            if sstate_dir:
+                f.write('SSTATE_DIR = "%s"\n' % sstate_dir)
             if image_install is not None:
                 f.write('IMAGE_INSTALL = "%s"' % image_install)
 

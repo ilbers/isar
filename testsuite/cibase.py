@@ -32,7 +32,7 @@ class CIBaseTest(CIBuilder):
         gpg_pub_key = os.path.dirname(__file__) + '/keys/base-apt/test_pub.key'
         gpg_priv_key = os.path.dirname(__file__) + '/keys/base-apt/test_priv.key'
 
-        self.configure(gpg_pub_key=gpg_pub_key if signed else None, **kwargs)
+        self.configure(gpg_pub_key=gpg_pub_key if signed else None, sstate_dir="", **kwargs)
 
         os.chdir(self.build_dir)
 
@@ -45,7 +45,7 @@ class CIBaseTest(CIBuilder):
         self.bitbake(targets, **kwargs)
 
         self.delete_from_build_dir('tmp')
-        self.configure(gpg_pub_key=gpg_pub_key if signed else None, offline=True, **kwargs)
+        self.configure(gpg_pub_key=gpg_pub_key if signed else None, offline=True, sstate_dir="", **kwargs)
 
         self.bitbake(targets, **kwargs)
 
@@ -73,7 +73,7 @@ class CIBaseTest(CIBuilder):
                             count += int(content[field])
             return count
 
-        self.configure(ccache=True, **kwargs)
+        self.configure(ccache=True, sstate_dir="", **kwargs)
 
         # Field that stores direct ccache hits
         direct_cache_hit = 22
@@ -125,7 +125,7 @@ class CIBaseTest(CIBuilder):
                     return False
             return True
 
-        self.configure(sstate=True, **kwargs)
+        self.configure(sstate=True, sstate_dir="", **kwargs)
 
         # Cleanup sstate and tmp before test
         self.delete_from_build_dir('sstate-cache')
