@@ -3,9 +3,11 @@
 
 ISAR_REBUILD_ESSENTIAL_PKGS ?= ""
 
+inherit compat
+
 python() {
     isar_rebuild_essential_pkgs = (d.getVar('ISAR_REBUILD_ESSENTIAL_PKGS') or '').split()
-    build_compat = d.getVar('ISAR_ENABLE_COMPAT_ARCH') == "1"
+    build_compat = isar_can_build_compat(d)
     build_native = not d.getVar('DISTRO_ARCH') == d.getVar('HOST_ARCH')
 
     # construct list of essential packages that should be rebuilt:
