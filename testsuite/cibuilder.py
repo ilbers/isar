@@ -246,7 +246,7 @@ class CIBuilder(Test):
 
     def run_script(self, script, cmd_prefix):
         script_dir = self.params.get('test_script_dir',
-                                     default=os.path.abspath(os.path.dirname(__file__))) + '/'
+                                     default=os.path.abspath(os.path.dirname(__file__))) + '/scripts/'
         script_path = script_dir + script
         if not os.path.exists(script_path):
             self.log.error('Script not found: ' + script_path)
