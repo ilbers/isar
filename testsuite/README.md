@@ -121,3 +121,22 @@ And to execute this example:
 ```
 $ avocado run sample.py:SampleTest.test_sample
 ```
+
+## Using a different directory for custom testcases
+
+Downstreams may want to keep their testcases in a different directory
+(e.g. `./test/sample.py` as top-level with test description) but reuse
+classes implemented in Isar testsuite (e.g. `./isar/testsuite/*.py`). This is
+a common case for downstream that use `kas` to handle layers they use.
+
+In this case it's important to adjust `PYTHONPATH` variable before running
+avocado so that isar testsuite files could be found:
+
+```
+# TESTSUITEDIR="/work/isar/testsuite"
+export PYTHONPATH=${PYTHONPATH}:${TESTSUITEDIR}
+```
+
+# Example of the downstream testcase
+
+See `meta-isar/test` for an example of the testcase for kas-based downstream.
