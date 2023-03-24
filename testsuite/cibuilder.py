@@ -248,6 +248,10 @@ class CIBuilder(Test):
         script_dir = self.params.get('test_script_dir',
                                      default=os.path.abspath(os.path.dirname(__file__))) + '/'
         script_path = script_dir + script
+        if not os.path.exists(script_path):
+            self.log.error('Script not found: ' + script_path)
+            return 2
+
         rc = subprocess.call('cat ' + script_path + ' | ' + str(cmd_prefix), shell=True,
                              stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         return rc
