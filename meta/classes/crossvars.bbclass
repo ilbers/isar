@@ -31,5 +31,5 @@ python __anonymous() {
     d.setVar('BUILDCHROOT_DEP', buildchroot_dep)
     if isar_can_build_compat(d):
         sdk_toolchain += " crossbuild-essential-" + d.getVar('COMPAT_DISTRO_ARCH')
-    d.setVar('TOOLCHAIN', sdk_toolchain)
+    d.setVar('SDK_TOOLCHAIN', sdk_toolchain)
 }
