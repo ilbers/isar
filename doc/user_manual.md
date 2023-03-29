@@ -137,8 +137,8 @@ In the editor, allow the current user to run sudo without a password, e.g.:
  <user>  ALL=(ALL:ALL) NOPASSWD:ALL
  Defaults env_keep += "ftp_proxy http_proxy https_proxy no_proxy"
 ```
-Replace `<user>` with your user name. Use the tab character between the user name and parameters.
-The second line will make sure your proxy settings will not get lost when using `sudo`. Include it if you are in the unfortunate possition to having to deal with that.
+Replace `<user>` with your username. Use the tab character between the username and parameters.
+The second line will make sure your proxy settings will not get lost when using `sudo`. Include it if you are in the unfortunate position to having to deal with that.
 
 ### Check out Isar
 
@@ -178,8 +178,8 @@ bitbake mc:qemuarm-buster:isar-image-base \
 The following images are created:
 
 ```
-tmp/deploy/images/qemuarm/isar-image-base-qemuarm-debian-buster.ext4.img
-tmp/deploy/images/qemuarm/isar-image-debug-qemuarm-debian-buster.ext4.img
+tmp/deploy/images/qemuarm/isar-image-base-qemuarm-debian-buster.ext4
+tmp/deploy/images/qemuarm/isar-image-debug-qemuarm-debian-buster.ext4
 ```
 
 ### Building Target Images for Multiple Configurations
@@ -209,10 +209,10 @@ $ bitbake \
 Created images are:
 
 ```
-tmp/deploy/images/qemuarm/isar-image-base-debian-buster-qemuarm.ext4.img
-tmp/deploy/images/qemuarm64/isar-image-base-debian-buster-qemuarm64.ext4.img
-tmp/deploy/images/qemui386/isar-image-base-debian-buster-qemui386.wic.img
-tmp/deploy/images/qemuamd64/isar-image-base-debian-buster-qemuamd64.wic.img
+tmp/deploy/images/qemuarm/isar-image-base-debian-buster-qemuarm.ext4
+tmp/deploy/images/qemuarm64/isar-image-base-debian-buster-qemuarm64.ext4
+tmp/deploy/images/qemui386/isar-image-base-debian-buster-qemui386.wic
+tmp/deploy/images/qemuamd64/isar-image-base-debian-buster-qemuamd64.wic
 ```
 
 ### Generate full disk image
@@ -238,18 +238,18 @@ enough to allow images to be testable under `qemu`.
 
 ```
 # AMD64 image, EFI
-qemu-system-x86_64 -m 256M -nographic -bios edk2/Build/OvmfX64/RELEASE_*/FV/OVMF.fd -hda tmp/deploy/images/qemuamd64/isar-image-base-debian-buster-qemuamd64.wic.img
+qemu-system-x86_64 -m 256M -nographic -bios edk2/Build/OvmfX64/RELEASE_*/FV/OVMF.fd -hda tmp/deploy/images/qemuamd64/isar-image-base-debian-buster-qemuamd64.wic
 # i386 image
-qemu-system-i386 -m 256M -nographic -hda tmp/deploy/images/qemui386/isar-image-base-debian-buster-qemui386.wic.img
+qemu-system-i386 -m 256M -nographic -hda tmp/deploy/images/qemui386/isar-image-base-debian-buster-qemui386.wic
 ```
 
 #### Flashing such images to a physical device
 
-wic images can be flashed in multiple ways. The most generic and easy way is probably with [ etcher ](https://etcher.io). That works on many operating systems and is relatively easy to use. On top it can decompress images on the fly, should they be compressed. It also offers some sort of protection so you do not write to the wrong device and maybe break your machine.
+wic images can be flashed in multiple ways. The most generic and easy way is probably with [ etcher ](https://etcher.io). That works on many operating systems and is relatively easy to use. On top it can decompress images on the fly, should they be compressed. It also offers some sort of protection, so you do not write to the wrong device and maybe break your machine.
 
 If you have a unix shell there are other ways. Make sure to always double check the target device, those tools might not warn if you choose the wrong target.
 
-`bmaptool` would be the best choice on a Linux/Unix system. It offers skipping of empty space and will flash much faster than `dd`, it also has some protection so you do not flash over a mounted drive by accident. Unfortunately it is not yet available on all Linux distributions.
+`bmaptool` would be the best choice on a Linux/Unix system. It offers skipping of empty space and will flash much faster than `dd`, it also has some protection, so you do not flash over a mounted drive by accident. Unfortunately, it is not yet available on all Linux distributions.
 https://github.com/intel/bmap-tools
 
 `dd` is the most generic option, available pretty much everywhere. But here you really need to make sure to not write to the wrong target.
@@ -262,7 +262,7 @@ one of the supported container formats `oci`, `oci-archive`, `docker-archive`,
 Getting a container image can be the main purpose of an Isar configuration, 
 but not only.
 A container image created from an Isar configuration meant for bare-metal or 
-virtual machines can be helpfull to test certain applications which 
+virtual machines can be helpful to test certain applications which
 requirements (e.g. libraries) can be easily resolved in a containerized 
 environment.
 
@@ -410,14 +410,14 @@ all supported configurations:
 Some other variables include:
 
  - `IMAGE_INSTALL` - The list of custom packages to build and install to target image, please refer to relative chapter for more information.
- - `BB_NUMBER_THREADS` - The number of `bitbake` jobs that can be run in parallel. Please set this option according your host CPU cores number.
+ - `BB_NUMBER_THREADS` - The number of `bitbake` jobs that can be run in parallel. Please set this option according to your host CPU cores number.
  - `HOST_DISTRO` - The distro to use for SDK root filesystem. This variable is optional.
  - `HOST_ARCH` - The Debian architecture of SDK root filesystem (e.g., `amd64`). By default set to current Debian host architecture. This variable is optional.
  - `HOST_DISTRO_APT_SOURCES` - List of apt source files for SDK root filesystem. This variable is optional.
  - `HOST_DISTRO_APT_PREFERENCES` - List of apt preference files for SDK root filesystem. This variable is optional.
  - `HOST_DISTRO_BOOTSTRAP_KEYS` - Analogously to DISTRO_BOOTSTRAP_KEYS: List of gpg key URIs used to verify apt bootstrap repo for the host.
  - `DISTRO_APT_PREMIRRORS` - The preferred mirror (append it to the default URI in the format `ftp.debian.org my.preferred.mirror`. This variable is optional. PREMIRRORS will be used only for the build. The final images will have the sources list as mentioned in DISTRO_APT_SOURCES.
- - `THIRD_PARTY_APT_KEYS` - List of gpg key URIs used to verify apt repos for apt installation after bootstrapping
+ - `THIRD_PARTY_APT_KEYS` - List of gpg key URIs used to verify apt repos for apt installation after bootstrapping.
  - `FILESEXTRAPATHS` - The default directories BitBake uses when it processes recipes are initially defined by the FILESPATH variable. You can extend FILESPATH variable by using FILESEXTRAPATHS.
  - `FILESOVERRIDES` - A subset of OVERRIDES used by the build system for creating FILESPATH. The FILESOVERRIDES variable uses overrides to automatically extend the FILESPATH variable.
  - `IMAGER_INSTALL` -  The list of package dependencies for an imager like wic.
@@ -861,7 +861,7 @@ You might be able to find a debianization for a component on the internet, i.e. 
 
 You can write it yourself, which can be pretty easy but requires a bit of studying. <https://www.debian.org/doc/debian-policy/index.html>
 
-Isar does actually contain a helper that aims to "debianize" sources for your. If your package uses a build-system that Debian knows and follows the well known "configure", "compile", "install" scheme that debianization might just fit your needs without reading Debian manuals.
+Isar does actually contain a helper that aims to "debianize" sources for you. If your package uses a build-system that Debian knows and follows the well known "configure", "compile", "install" scheme that debianization might just fit your needs without reading Debian manuals.
 If it does not fully fit your needs, it probably gives you a good starting point for your manual tuning.
 
 The shell function `deb_debianize` creates a `debian` folder. But it will not overwrite files that already are in WORKDIR. So you can either just call it to fully generate the `debian` folder. Or you combine it with pre-existing parts.
@@ -874,7 +874,7 @@ If your customization is not about compiling from source there is a second way o
 
  - packaging binaries/files that where built outside of Isar
  - customization of the rootfs with package-hooks
- - pulling in dependancies (meta-packages)
+ - pulling in dependencies (meta-packages)
 
 The bbclass for this approach is called `dpkg-raw`.
 
@@ -971,7 +971,7 @@ concept.
 
 Isar can build 32-bit packages as part of a 64-bit image build and also enable
 the image with the necessary packages. To activate compat support,
-set `ISAR_ENABLE_COMPAT_ARCH = "1"` in `local.conf`. This will install neccessary
+set `ISAR_ENABLE_COMPAT_ARCH = "1"` in `local.conf`. This will install necessary
 build dependencies in the buildchroot.
 
 For all dpkg package recipes, Isar automatically provides a `<package>-compat`
@@ -1050,7 +1050,7 @@ To build without using any sstate caching, you can use the bitbake argument
 ### Motivation
 
 Building applications for targets in ISAR takes a lot of time as they are built under QEMU.
-SDK providing crossbuild environment will help to solve this problem.
+SDK providing cross build environment will help to solve this problem.
 
 ### Approach
 
@@ -1338,7 +1338,7 @@ With the current base-apt implementation, we already cache all the binary packag
 we download and install onto the target rootfs and buildchroot. This is then used to
 generate a local-apt for offline build.
 
-Use rootfs postprocessing to parse through the the list of deb files in ${DEBDIR} and
+Use rootfs postprocessing to parse through the list of deb files in ${DEBDIR} and
 download the corresponding Debian source file using "apt-get source" command.
 This caches the sources of all the Debian packages that are downloaded and installed onto
 the target rootfs and buildchroots.
