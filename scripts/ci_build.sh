@@ -19,7 +19,7 @@ if ! command -v avocado > /dev/null; then
     sudo apt-get update -qq
     sudo apt-get install -y virtualenv
     rm -rf /tmp/avocado_venv
-    virtualenv --python python3 /tmp/avocado_venv
+    virtualenv --python python3 /tmp/avocado_venv --system-site-packages
     # shellcheck source=/dev/null
     source /tmp/avocado_venv/bin/activate
     pip install avocado-framework==103.0
@@ -129,6 +129,12 @@ if echo "$TAGS" | grep -Fqive "-startvm"; then
         sudo apt-get update -qq
         sudo apt-get install -y --no-install-recommends qemu-system ovmf
     fi
+fi
+
+# install python3-apt
+if [ ! -f /usr/share/doc/python3-apt/copyright ]; then
+    sudo apt-get update -qq
+    sudo apt-get install -y python3-apt
 fi
 
 # Provide working path
