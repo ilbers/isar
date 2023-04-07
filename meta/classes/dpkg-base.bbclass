@@ -191,9 +191,12 @@ do_prepare_build[depends] = "${SCHROOT_DEP}"
 
 do_prepare_build:append() {
     # Make a local copy of isar-apt repo that is not affected by other parallel builds
-    mkdir -p ${WORKDIR}/isar-apt/${DISTRO}-${DISTRO_ARCH}
-    rm -rf ${WORKDIR}/isar-apt/${DISTRO}-${DISTRO_ARCH}/*
-    cp -Rl ${REPO_ISAR_DIR} ${WORKDIR}/isar-apt/${DISTRO}-${DISTRO_ARCH}
+    rm -rf "${WORKDIR}/isar-apt/${DISTRO}-${DISTRO_ARCH}/*"
+    mkdir -p "${WORKDIR}/isar-apt/${DISTRO}-${DISTRO_ARCH}/apt/${DISTRO}"
+    cp -Rf "${REPO_ISAR_DIR}/${DISTRO}/dists" "${WORKDIR}/isar-apt/${DISTRO}-${DISTRO_ARCH}/apt/${DISTRO}/"
+    if [ -d "${REPO_ISAR_DIR}/${DISTRO}/pool" ]; then
+        cp -Rlf "${REPO_ISAR_DIR}/${DISTRO}/pool" "${WORKDIR}/isar-apt/${DISTRO}-${DISTRO_ARCH}/apt/${DISTRO}/"
+    fi
 }
 
 do_prepare_build[lockfiles] += "${REPO_ISAR_DIR}/isar.lock"
