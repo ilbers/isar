@@ -55,15 +55,8 @@ debsrc_download() {
     printenv | grep -q BB_VERBOSE_LOGS && set -x
     find "${rootfs}/var/cache/apt/archives/" -maxdepth 1 -type f -iname '*\.deb' | while read package; do
         is_not_part_of_current_build "${package}" && continue
-        # Get source package name if available, fallback to package name
-        local src="$( dpkg-deb --field "${package}" Source | awk '{printf $1}' )"
-        [ -z "$src" ] && src="$( dpkg-deb --field "${package}" Package )"
-        # Get source package version if available, fallback to package version
-        local version="$( dpkg-deb --field "${package}" Source |  awk '{gsub(/[()]/,""); printf $2}')"
-        [ -z "$version" ] && version="$( dpkg-deb --field "${package}" Version )"
-        # TODO: get back to the code below when debian bug #1004372 is fixed
-        # local src="$( dpkg-deb --show --showformat '${source:Package}' "${package}" )"
-        # local version="$( dpkg-deb --show --showformat '${source:Version}' "${package}" )"
+        local src="$( dpkg-deb --show --showformat '${source:Package}' "${package}" )"
+        local version="$( dpkg-deb --show --showformat '${source:Version}' "${package}" )"
         local dscname="$(echo ${src}_${version} | sed -e 's/_[0-9]\+:/_/')"
         local dscfile=$(find "${DEBSRCDIR}"/"${rootfs_distro}" -name "${dscname}.dsc")
         [ -n "$dscfile" ] && continue
