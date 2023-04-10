@@ -1,0 +1,23 @@
+#
+# Copyright (c) Siemens AG, 2023
+#
+# SPDX-License-Identifier: MIT
+
+# The partition layout is based on the VisionFive2 example image:
+# https://github.com/starfive-tech/VisionFive2/blob/JH7110_VisionFive2_devel/Makefile#L394
+# However, instead of booting via ubootenv + fit, we boot fit + efi
+#
+# When booting from the SD card, make sure that the DIP switches are set to SD card.
+# By that, the board reads the u-boot firmware from the SD instead of the internal flash.
+# This is required to boot efi with the correct device tree, which is included in the fit image.
+
+# SPL
+part --source rawcopy --sourceparams "file=/usr/share/jh7110-uboot-spl-image/u-boot-spl.bin.normal.out" --ondisk mmcblk1 --fixed-size  2M --offset 2M --part-type 2E54B353-1271-4842-806F-E436D6AF6985
+# U-Boot FIT
+part --source rawcopy --sourceparams "file=/usr/share/visionfive2-u-boot-firmware/visionfive2_fw_payload.img" --ondisk mmcblk1 --fixed-size  4M --offset 4M --part-type 5B193300-FC78-40CD-8002-E86C45580B47
+# EFI
+part /boot --source bootimg-efi-isar --sourceparams "loader=systemd-boot" --use-uuid --label efi --part-type EF00 --align 1024
+# rootfs
+part / --source rootfs --use-uuid --fstype ext4 --mkfs-extraopts "-T default" --label image --active --align 1024 --exclude-path=boot/
+
+bootloader --ptable gpt --timeout=0 --append "console=tty0 console=ttyS0,115200 earlycon rootwait"
