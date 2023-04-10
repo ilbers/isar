@@ -1,0 +1,41 @@
+/dts-v1/;
+
+/ {
+	description = "U-boot-spl FIT image for JH7110 VisionFive2";
+	#address-cells = <2>;
+
+	images {
+		firmware {
+			description = "u-boot";
+			data = /incbin/("/usr/lib/opensbi/starfive-visionfive2/fw_payload.bin");
+			type = "firmware";
+			arch = "riscv";
+			os = "u-boot";
+			load = <0x0 0x40000000>;
+			entry = <0x0 0x40000000>;
+			compression = "none";
+		};
+		fdt {
+			description = "DTB";
+			data = /incbin/("/usr/lib/linux-image-<KERNEL_VERSION>/${DTB_FILES}");
+			type = "flat_dt";
+			arch = "riscv";
+			compression = "none";
+			load = <0x46000000>;
+			entry = <0x46000000>;
+			hash {
+				algo = "sha1";
+			};
+		};
+	};
+
+	configurations {
+		default = "config-1";
+
+		config-1 {
+			description = "U-boot-spl FIT config for JH7110 VisionFive2";
+			firmware = "firmware";
+			fdt = "fdt";
+		};
+	};
+};
