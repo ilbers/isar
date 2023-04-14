@@ -327,6 +327,8 @@ SSTATETASKS += "do_rootfs_install"
 SSTATECREATEFUNCS += "rootfs_install_sstate_prepare"
 SSTATEPOSTINSTFUNCS += "rootfs_install_sstate_finalize"
 
+SSTATE_TAR_ATTR_FLAGS ?= "--xattrs --xattrs-include='*'"
+
 # the rootfs is owned by root, so we need some sudoing to pack and unpack
 rootfs_install_sstate_prepare() {
     # this runs in SSTATE_BUILDDIR, which will be deleted automatically
@@ -335,7 +337,7 @@ rootfs_install_sstate_prepare() {
     mkdir -p ${WORKDIR}/mnt/rootfs
     sudo mount --bind ${WORKDIR}/rootfs ${WORKDIR}/mnt/rootfs -o ro
     lopts="--one-file-system --exclude=var/cache/apt/archives"
-    sudo tar -C ${WORKDIR}/mnt -cpSf rootfs.tar $lopts rootfs
+    sudo tar -C ${WORKDIR}/mnt -cpSf rootfs.tar $lopts ${SSTATE_TAR_ATTR_FLAGS} rootfs
     sudo umount ${WORKDIR}/mnt/rootfs
     sudo chown $(id -u):$(id -g) rootfs.tar
 }
@@ -346,7 +348,7 @@ rootfs_install_sstate_finalize() {
     # - after building the rootfs, the tar won't be there, but we also don't need to unpack
     # - after restoring from cache, there will be a tar which we unpack and then delete
     if [ -f rootfs.tar ]; then
-        sudo tar -C ${WORKDIR} -xpf rootfs.tar
+        sudo tar -C ${WORKDIR} -xpf rootfs.tar ${SSTATE_TAR_ATTR_FLAGS}
         rm rootfs.tar
     fi
 }
