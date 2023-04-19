@@ -120,6 +120,16 @@ root_cleandirs() {
 python() {
     import re
 
+    needsrcrev = False
+    srcuri = d.getVar('SRC_URI')
+    for uri_string in srcuri.split():
+        uri = bb.fetch.URI(uri_string)
+        if uri.scheme in ("svn", "git", "gitsm", "hg", "p4", "repo"):
+            needsrcrev = True
+
+    if needsrcrev:
+        d.setVar("SRCPV", "${@bb.fetch2.get_srcrev(d)}")
+
     for e in d.keys():
         flags = d.getVarFlags(e)
         if flags and flags.get('task'):
