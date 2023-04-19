@@ -1063,8 +1063,8 @@ User manually triggers creation of SDK root filesystem for his target platform b
 `bitbake -c do_populate_sdk mc:${MACHINE}-${DISTRO}:isar-image-base`.
 Packages that should be additionally installed into the SDK can be appended to `SDK_PREINSTALL` (external repositories) and `SDK_INSTALL` (self-built).
 
-The resulting SDK rootfs is archived into `tmp/deploy/images/${MACHINE}/sdk-${DISTRO}-${DISTRO_ARCH}.tar.xz`.
-It is additionally available for direct use under `tmp/deploy/images/${MACHINE}/sdk-${DISTRO}-${DISTRO_ARCH}/`.
+The resulting SDK rootfs is archived into `tmp/deploy/images/${MACHINE}/${IMAGE_FULLNAME}.tar.xz`.
+Once you untar the compressed file, the content will be extracted into the ${IMAGE_FULLNAME} sub folder.
 The SDK rootfs directory `/isar-apt` contains a copy of isar-apt repo with locally prebuilt target debian packages (for <HOST_DISTRO>).
 One may chroot into the SDK and install required target packages with the help of `apt-get install <package_name>:<DISTRO_ARCH>` command.
 
@@ -1073,7 +1073,7 @@ One may chroot into the SDK and install required target packages with the help o
  - Trigger creation of SDK root filesystem
 
 ```
-bitbake -c do_populate_sdk mc:qemuarm-buster:isar-image-base
+bitbake -c do_populate_sdk mc:qemuarm-bullseye:isar-image-base
 ```
 
  - Mount the following directories in chroot by passing resulting rootfs as an argument to the script `mount_chroot.sh`:
@@ -1091,14 +1091,14 @@ mount devtmpfs $1/dev     -t devtmpfs -o mode=0755,nosuid
 mount devpts   $1/dev/pts -t devpts   -o gid=5,mode=620
 mount tmpfs    $1/dev/shm -t tmpfs    -o rw,seclabel,nosuid,nodev
 
-$ sudo scripts/mount_chroot.sh ../build/tmp/deploy/images/qemuarm/sdk-debian-buster-armhf
+$ sudo scripts/mount_chroot.sh ../build/tmp/deploy/images/qemuarm/isar-image-base-sdk-debian-bullseye-qemuarm
 
 ```
 
  - chroot to isar SDK rootfs:
 
 ```
-$ sudo chroot build/tmp/deploy/images/qemuarm/sdk-debian-buster-armhf
+$ sudo chroot build/tmp/deploy/images/qemuarm/isar-image-base-sdk-debian-bullseye-qemuarm
 ```
  - Check that cross toolchains are installed
 
@@ -1190,7 +1190,7 @@ Daemon socket) accessible in the container.
 What can endanger the stability and security of the host.
 
 The resulting SDK formats are archived into 
-`tmp/deploy/images/${MACHINE}/sdk-${DISTRO}-${DISTRO_ARCH}-${sdk_format}.tar.xz` 
+`tmp/deploy/images/${MACHINE}/isar-image-base-sdk-${DISTRO}-${DISTRO_ARCH}-${sdk_format}.tar.xz`
 (being `sdk_format` each one of the formats specified in `SDK_FORMATS`).
 The SDK container directory `/isar-apt` contains a copy of isar-apt repo with 
 locally prebuilt target debian packages (for <HOST_DISTRO>).
@@ -1207,27 +1207,27 @@ to edit files in the host with an IDE and build in the container.
 For one-shot builds (use `local.conf` otherwise):
 
 ```
-export BB_ENV_EXTRAWHITE="$BB_ENV_EXTRAWHITE SDK_FORMATS"
+export BB_ENV_PASSTHROUGH_ADDITIONS="$BB_ENV_EXTRAWHITE SDK_FORMATS"
 export SDK_FORMATS="docker-archive"
 ```
 
  - Trigger creation of SDK root filesystem
 
 ```
-bitbake -c do_populate_sdk mc:qemuarm-buster:isar-image-base
+bitbake -c do_populate_sdk mc:qemuarm-bullseye:isar-image-base
 ```
 
  - Load the SDK container image into the Docker Daemon
 
 ```
-docker load -i build/tmp/deploy/images/qemuarm/sdk-isar-image-base-debian-buster-armhf-1.0-r0-docker-archive.tar.xz
+docker load -i build/tmp/deploy/images/qemuarm/isar-image-base-sdk-debian-bullseye-armhf-1.0-r0-docker-archive.tar.xz
 ```
 
  - Run a container using the SDK container image (following commands starting 
    with `#~:` are to be run in the container)
 
 ```
-docker run --rm -ti --volume "$(pwd):/build" sdk-isar-image-base-debian-buster-armhf:1.0-r0
+docker run --rm -ti --volume "$(pwd):/build" isar-image-base-sdk-debian-bullseye-armhf:1.0-r0
 ```
 
  - Check that cross toolchains are installed

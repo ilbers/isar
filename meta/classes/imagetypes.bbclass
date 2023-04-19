@@ -9,7 +9,7 @@ TAR_OPTIONS ?= ""
 
 IMAGE_CMD:tar() {
     ${SUDO_CHROOT} tar ${TAR_OPTIONS} -cvSf \
-                 ${IMAGE_FILE_CHROOT} --one-file-system -C ${PP_ROOTFS} .
+                 ${IMAGE_FILE_CHROOT} --one-file-system -C ${PP} rootfs
 }
 
 # image type: ext4
