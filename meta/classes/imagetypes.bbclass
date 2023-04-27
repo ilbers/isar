@@ -93,7 +93,7 @@ IMAGE_CMD:ubi() {
 IMAGE_CMD:ubi[depends] = "${PN}:do_transform_template"
 
 # image conversions
-IMAGE_CONVERSIONS = "gz xz zst"
+IMAGE_CONVERSIONS = "gz xz zst zck"
 
 CONVERSION_CMD:gz = "${SUDO_CHROOT} sh -c 'gzip -f -9 -n -c --rsyncable ${IMAGE_FILE_CHROOT} > ${IMAGE_FILE_CHROOT}.gz'"
 CONVERSION_DEPS:gz = "gzip"
@@ -103,3 +103,6 @@ CONVERSION_DEPS:xz = "xz-utils"
 
 CONVERSION_CMD:zst = "${SUDO_CHROOT} sh -c 'zstd -c --sparse ${ZSTD_DEFAULTS} ${IMAGE_FILE_CHROOT} > ${IMAGE_FILE_CHROOT}.zst'"
 CONVERSION_DEPS:zst = "zstd"
+
+CONVERSION_CMD:zck = "${SUDO_CHROOT} sh -c 'cd $(dirname ${IMAGE_FILE_CHROOT}); zck ${ZCK_DEFAULTS} ${IMAGE_FILE_CHROOT}'"
+CONVERSION_DEPS:zck = "zchunk"
