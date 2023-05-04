@@ -66,14 +66,14 @@ deb_create_compat() {
 deb_create_control() {
 	compat=$( cat ${S}/debian/compat )
 	cat << EOF > ${S}/debian/control
-Source: ${PN}
+Source: ${BPN}
 Section: misc
 Priority: optional
 Standards-Version: 3.9.6
 Maintainer: ${MAINTAINER}
 Build-Depends: debhelper (>= ${compat}), ${DEBIAN_BUILD_DEPENDS}
 
-Package: ${PN}
+Package: ${BPN}
 Architecture: ${DPKG_ARCH}
 Depends: ${DEBIAN_DEPENDS}
 Conflicts: ${DEBIAN_CONFLICTS}
