@@ -80,6 +80,7 @@ TEMPLATE_VARS += "                \
     KERNEL_NAME_PROVIDED          \
     KERNEL_CONFIG_FRAGMENTS       \
     KCFLAGS                       \
+    KAFLAGS                       \
     DISTRIBUTOR                   \
 "
 
@@ -88,6 +89,7 @@ inherit template
 
 # Add custom cflags to the kernel build
 KCFLAGS ?= "-fdebug-prefix-map=${CURDIR}=."
+KAFLAGS ?= "-fdebug-prefix-map=${CURDIR}=."
 
 # Derive name of the kernel packages from the name of this recipe
 KERNEL_NAME_PROVIDED ?= "${@ d.getVar('PN').partition('linux-')[2]}"

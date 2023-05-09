@@ -22,7 +22,7 @@ do_build() {
     sed -i "s/@KR@/${KR}/g" ${S}/debian/control ${S}/debian/linux-image-${KERNEL_NAME_PROVIDED}.*
 
     # Build the Linux kernel
-    ${MAKE} O=${KERNEL_BUILD_DIR} ${PARALLEL_MAKE} KCFLAGS="${KCFLAGS}"
+    ${MAKE} O=${KERNEL_BUILD_DIR} ${PARALLEL_MAKE} KCFLAGS="${KCFLAGS}" KAFLAGS="${KAFLAGS}"
 
     # Stop tracing
     set +x
