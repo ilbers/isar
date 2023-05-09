@@ -42,24 +42,26 @@ class CIBaseTest(CIBuilder):
         if result.exit_status:
             self.fail('GPG import failed')
 
-        self.bitbake(targets, **kwargs)
-
-        self.delete_from_build_dir('tmp')
-        self.configure(gpg_pub_key=gpg_pub_key if signed else None, offline=True, sstate_dir="", **kwargs)
-
-        self.bitbake(targets, **kwargs)
-
-        # Disable use of cached base repository
-        self.unconfigure()
-
-        if not signed:
-            # Try to build with changed configuration with no cleanup
-            self.configure(**kwargs)
+        try:
             self.bitbake(targets, **kwargs)
 
-        # Cleanup
-        process.run('gpgconf --kill gpg-agent')
-        shutil.rmtree(gnupg_home, True)
+            self.delete_from_build_dir('tmp')
+            self.configure(gpg_pub_key=gpg_pub_key if signed else None, offline=True, sstate_dir="", **kwargs)
+
+            self.bitbake(targets, **kwargs)
+
+            # Disable use of cached base repository
+            self.unconfigure()
+
+            if not signed:
+                # Try to build with changed configuration with no cleanup
+                self.configure(**kwargs)
+                self.bitbake(targets, **kwargs)
+
+        finally:
+            # Cleanup
+            process.run('gpgconf --kill gpg-agent')
+            shutil.rmtree(gnupg_home, True)
 
     def perform_ccache_test(self, targets, **kwargs):
         def ccache_stats(dir, field):
