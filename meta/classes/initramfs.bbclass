@@ -43,11 +43,16 @@ do_generate_initramfs() {
         export SOURCE_DATE_EPOCH="${SOURCE_DATE_EPOCH}"
     fi
 
-    sudo -E chroot "${INITRAMFS_ROOTFS}" \
-        update-initramfs -u -v
+    sudo -E chroot "${INITRAMFS_ROOTFS}" sh -c '\
+        export kernel_version=$(basename /boot/vmlinux* | cut -d'-' -f2-); \
+        if [ -n "$kernel_version" ]; then \
+          update-initramfs -u -v -k "$kernel_version"; \
+        else \
+          update-initramfs -u -v ;  \
+        fi'
 
     if [ ! -e "${INITRAMFS_ROOTFS}/initrd.img" ]; then
-        die "No initramfs was found after generation!"
+        bberror "No initramfs was found after generation!"
     fi
     cp ${INITRAMFS_ROOTFS}/initrd.img ${DEPLOYDIR}/${INITRAMFS_IMAGE_NAME}
 }
