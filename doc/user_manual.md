@@ -432,6 +432,7 @@ In Isar, each machine can use its specific Linux distro to generate `buildchroot
  - debian-bullseye
  - debian-bookworm
  - ubuntu-focal
+ - ubuntu-jammy (requires host dpkg >= 1.21)
  - raspios-bullseye
 
 User can select appropriate distro for specific machine by setting the following variable in machine configuration file:

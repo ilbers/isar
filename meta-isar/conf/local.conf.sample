@@ -79,7 +79,9 @@ BBMULTICONFIG = " \
     sifive-fu540-sid-ports \
     starfive-visionfive2-sid-ports \
     qemuarm64-focal \
+    qemuarm64-jammy \
     qemuamd64-focal \
+    qemuamd64-jammy \
 "
 
 #
