@@ -267,10 +267,10 @@ variable. Task `do_populate` performs the following:
 
 This process contains the following steps:
 
-1. Task `do_<..>_image`: creates filesystem or disk images
+1. Shell function `IMAGE_CMD:*`: creates filesystem or disk images
 
-   1.1. `do_ext4_image`: target filesystem is packed to extfs image.
-   1.2. `do_wic_image`: a bootable disk image gets created for the platform
+   1.1. `IMAGE_CMD:ext4`: target filesystem is packed to extfs image.
+   1.2. `IMAGE_CMD:wic`: a bootable disk image gets created for the platform
 
 ## 3.8 Cross-compilation
 
