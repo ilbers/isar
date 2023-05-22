@@ -111,7 +111,7 @@ unstable/bullseye included in `/etc/apt/sources.list[.d]`).
 
 Notes:
 
-* BitBake requires Python 3.4+.
+* BitBake requires Python 3.5+.
 * The python3 package is required for the correct `alternatives` setting.
 * If you'd like to run bitbake in a container (chroot, docker, etc.), install
   the above in the container, and also perform `sudo apt-get install
