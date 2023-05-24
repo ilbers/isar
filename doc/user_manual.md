@@ -983,6 +983,63 @@ To explicitly build a package for the build host architecture (in cross build
 scenarios, or when generating an SDK), Isar automatically provides a
 `<package>-native` target for all dpkg package recipes.
 
+### Using the Debian Secure Boot chain
+
+In case no modification of the bootloader or kernel is required, you can use the
+`qemuamd64-sb-bullseye` machine to create an image that can be bootet on amd64 machines
+where Secure Boot (SB) with the MS keys is enabled. This works, because it implements
+the Debian SB boot chain (shim -> debian grub -> debian kernel). However, none of these
+components must be modified, as this would break the signatures and by that cannot be
+bootet anymore.
+
+Please note, that this workflow is just intended for prototyping. It also does not
+cover SB with self-signed bootloaders or kernels. Do NOT use it for productive images, as
+the key handling needs to be implemented differently (e.g. the private key needs to be
+stored in a TPM).
+
+The example consists of two parts:
+
+- create an image using the debian SB boot chain for MOK deployment
+- create and sign a custom kernel module
+
+**Build the key deployment image:**
+
+```bash
+bitbake mc:qemuamd64-sb-bullseye:isar-image-base
+```
+
+**Start the image:** (consider adding `-enable-kvm` to get some decent performance):
+
+```bash
+start_vm -a amd64-sb -d bullseye -s
+```
+
+**Check if SB is actually enabled (detected):**
+
+```bash
+dmesg | grep -i secure
+# prints something like UEFI Secureboot is enabled
+```
+
+**Try to load the example-module (it should fail):**
+
+```bash
+modprobe example-module
+# this should fail as it is signed with a non trusted key
+```
+
+**Enroll our MOK and reboot into the MOK manager:**
+
+```bash
+mokutil --import /etc/sb-mok-keys/MOK/MOK.der
+```
+
+Use the previously definded password to enroll the key, then reboot.
+
+**Boot self-signed image**:
+
+Now the image should be up again and `modprobe example-module` should work.
+
 ### Cross Support for Imagers
 
 If `ISAR_CROSS_COMPILE = "1"`, the imager and optional compression tasks
