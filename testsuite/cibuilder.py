@@ -311,6 +311,28 @@ class CIBuilder(Test):
         return rc
 
 
+    def ssh_start(self, user='ci', host='localhost', port=22,
+                  cmd=None, script=None):
+        self.log.info('===================================================')
+        self.log.info('Running Isar SSH test for `%s@%s:%s`' % (user, host, port))
+        self.log.info('Remote command is `%s`' % (cmd))
+        self.log.info('Remote script is `%s`' % (script))
+        self.log.info('Isar build folder is: ' + self.build_dir)
+        self.log.info('===================================================')
+
+        self.check_init()
+
+        if cmd is not None or script is not None:
+            rc = self.remote_run(user, host, port, cmd, script)
+
+            if rc != 0:
+                self.fail('Failed with rc=%s' % rc)
+
+            return
+
+        self.fail('No command to run specified')
+
+
     def vm_start(self, arch='amd64', distro='buster',
                  enforce_pcbios=False, skip_modulecheck=False,
                  image='isar-image-base', cmd=None, script=None):
