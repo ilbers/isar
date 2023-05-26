@@ -23,9 +23,28 @@ variables:
     when: always
     expire_in: 1 week
 
+
+.docker-isar: &docker-isar
+  image: ghcr.io/ilbers/docker-isar:3.2.3
+
+
+.use-default-image:
+  rules:
+    - &use-default-image
+      if: $IMAGE
+      when: never
+
+.use-docker-isar-image:
+  rules:
+    - &use-docker-isar-image
+      if: $IMAGE != 'docker-isar'
+      when: never
+
+
 dev-ci:
   <<: *common-build
   rules:
+    - *use-default-image
     - if: $TESTSUITE == 'dev' || $CI_PIPELINE_SOURCE != 'schedule'
   script:
     - scripts/ci_build.sh -T dev
@@ -33,6 +52,7 @@ dev-ci:
 fast-ci:
   <<: *common-build
   rules:
+    - *use-default-image
     - if: $TESTSUITE == 'fast'
   script:
     - scripts/ci_build.sh -T fast
@@ -40,6 +60,7 @@ fast-ci:
 full-ci:
   <<: *common-build
   rules:
+    - *use-default-image
     - if: $TESTSUITE == null && $CI_PIPELINE_SOURCE == 'schedule'
     - if: $TESTSUITE == 'full'
   script:
@@ -52,3 +73,31 @@ full-ci:
     key: "$CI_COMMIT_REF_SLUG"
     paths:
       - .CI_COMMIT_SHA
+
+
+dev-ci-isar:
+  <<: *docker-isar
+  <<: *common-build
+  rules:
+    - *use-docker-isar-image
+    - if: $TESTSUITE == 'dev'
+  script:
+    - scripts/ci_build.sh -T dev
+
+fast-ci-isar:
+  <<: *docker-isar
+  <<: *common-build
+  rules:
+    - *use-docker-isar-image
+    - if: $TESTSUITE == 'fast'
+  script:
+    - scripts/ci_build.sh -T fast
+
+full-ci-isar:
+  <<: *docker-isar
+  <<: *common-build
+  rules:
+    - *use-docker-isar-image
+    - if: $TESTSUITE == 'full'
+  script:
+    - scripts/ci_build.sh -T full
