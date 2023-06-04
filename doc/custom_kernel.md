@@ -58,6 +58,7 @@ The linux-custom recipe provides support for:
    * arm64
    * mips
    * x86
+   * riscv
 
  14. Support `devshell` (kernel configuration shall be applied)
 
