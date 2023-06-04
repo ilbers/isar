@@ -5,8 +5,8 @@
 
 require recipes-bsp/u-boot/u-boot-custom.inc
 
-SRC_URI += "git://github.com/starfive-tech/u-boot.git;branch=JH7110_VisionFive2_devel;protocol=https;destsuffix=u-boot-${PV}"
-SRCREV = "ac0ac696256abf412826d74ee918dd417e207d7b"
+SRC_URI += "git://github.com/starfive-tech/u-boot.git;nobranch=1;protocol=https;destsuffix=u-boot-${PV}"
+SRCREV = "b6e2b0e85c774a18ae668223a6e5f7d335895243"
 
 DEBIAN_BUILD_DEPENDS .= ", libssl-dev:${DISTRO_ARCH}"
 # when cross compiling, we need the library on the host as well, as the signature computation is done locally
