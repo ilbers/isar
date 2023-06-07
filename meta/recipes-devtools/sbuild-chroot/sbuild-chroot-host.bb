@@ -16,6 +16,7 @@ ROOTFS_BASE_DISTRO = "${HOST_BASE_DISTRO}"
 SBUILD_CHROOT_PREINSTALL ?= " \
     ${SBUILD_CHROOT_PREINSTALL_COMMON} \
     crossbuild-essential-${DISTRO_ARCH} \
+    apt-utils \
     "
 
 SBUILD_CHROOT_PREINSTALL:riscv64 ?= " \
