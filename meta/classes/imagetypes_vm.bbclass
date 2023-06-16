@@ -6,6 +6,7 @@
 
 inherit buildchroot
 
+FILESEXTRAPATHS:prepend = "${LAYERDIR_core}/recipes-core/images:"
 OVF_TEMPLATE_FILE ?= "vm-img-virtualbox.ovf.tmpl"
 IMAGE_SRC_URI:ova = "file://${OVF_TEMPLATE_FILE}"
 
