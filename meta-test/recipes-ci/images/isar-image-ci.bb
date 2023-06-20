@@ -37,3 +37,9 @@ IMAGER_INSTALL:append:qemuamd64:ubuntu-focal ?= " ${SYSTEMD_BOOTLOADER_INSTALL}"
 WKS_FILE:qemuamd64:ubuntu-jammy ?= "sdimage-efi-sd"
 IMAGER_INSTALL:remove:qemuamd64:ubuntu-jammy ?= "${GRUB_BOOTLOADER_INSTALL}"
 IMAGER_INSTALL:append:qemuamd64:ubuntu-jammy ?= " ${SYSTEMD_BOOTLOADER_INSTALL}"
+
+# qemuarm-bookworm
+IMAGE_FSTYPES:append:qemuarm:debian-bookworm ?= " wic"
+WKS_FILE:qemuarm:debian-bookworm ?= "sdimage-efi-sd"
+IMAGE_INSTALL:append:qemuarm:debian-bookworm = " expand-on-first-boot"
+IMAGER_INSTALL:append:qemuarm:debian-bookworm ?= " ${SYSTEMD_BOOTLOADER_INSTALL}"
