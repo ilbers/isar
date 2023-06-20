@@ -16,6 +16,8 @@ BOOTSTRAP_KEY = "file://${LAYERDIR_isar}/conf/distro/ubuntu.public.key;sha256sum
 DISTRO_BOOTSTRAP_KEYS += "${BOOTSTRAP_KEY}"
 HOST_DISTRO_BOOTSTRAP_KEYS += "${BOOTSTRAP_KEY}"
 
+# kernel package name is linux-image-generic in Ubuntu
+KERNEL_NAME = "generic"
 
 # that is what debootstrap_1.0.118ubuntu1 does anyways
 DISTRO_DEBOOTSTRAP_SCRIPT = "/usr/share/debootstrap/scripts/gutsy"
