@@ -238,7 +238,7 @@ class NoCrossTest(CIBaseTest):
 
     def test_nocross_bookworm(self):
         targets = [
-            'mc:qemuamd64-bookworm:isar-image-base',
+            'mc:qemuamd64-bookworm:isar-image-ci',
             'mc:qemuarm-bookworm:isar-image-base',
             'mc:qemui386-bookworm:isar-image-base',
             'mc:qemumipsel-bookworm:isar-image-ci',
@@ -452,7 +452,7 @@ class VmBootTestFull(CIBaseTest):
 
     def test_amd64_bookworm(self):
         self.init()
-        self.vm_start('amd64','bookworm')
+        self.vm_start('amd64', 'bookworm', image='isar-image-ci')
 
     def test_arm_bookworm(self):
         self.init()
