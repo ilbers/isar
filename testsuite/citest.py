@@ -204,7 +204,7 @@ class NoCrossTest(CIBaseTest):
             'mc:qemuarm64-bullseye:isar-image-ci',
             'mc:qemui386-buster:isar-image-base',
             'mc:qemui386-bullseye:isar-image-base',
-            'mc:qemuamd64-buster:isar-image-base',
+            'mc:qemuamd64-buster:isar-image-ci',
             'mc:qemuamd64-bullseye:isar-initramfs',
             'mc:qemumipsel-buster:isar-image-base',
             'mc:qemumipsel-bullseye:isar-image-base',
@@ -432,9 +432,11 @@ class VmBootTestFull(CIBaseTest):
     def test_amd64_buster(self):
         self.init()
         # test efi boot
-        self.vm_start('amd64','buster')
+        self.vm_start('amd64','buster', \
+            image='isar-image-ci')
         # test pcbios boot
-        self.vm_start('amd64', 'buster', True)
+        self.vm_start('amd64', 'buster', True, \
+            image='isar-image-ci')
 
     def test_amd64_focal(self):
         self.init()

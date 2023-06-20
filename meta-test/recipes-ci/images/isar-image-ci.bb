@@ -23,6 +23,11 @@ IMAGER_INSTALL:remove:qemuamd64:debian-bullseye ?= "${GRUB_BOOTLOADER_INSTALL}"
 IMAGER_INSTALL:append:qemuamd64:debian-bullseye ?= " ${SYSTEMD_BOOTLOADER_INSTALL} btrfs-progs"
 IMAGE_PREINSTALL:append:qemuamd64:debian-bullseye ?= " btrfs-progs"
 
+# qemuamd64-buster
+IMAGE_FSTYPES:qemuamd64:debian-buster ?= "wic ext4"
+WKS_FILE:qemuamd64:debian-buster ?= "efi-plus-pcbios"
+IMAGER_INSTALL:append:qemuamd64:debian-buster ?= " ${SYSLINUX_BOOTLOADER_INSTALL}"
+
 # qemuamd64-focal
 WKS_FILE:qemuamd64:ubuntu-focal ?= "sdimage-efi-sd"
 IMAGER_INSTALL:remove:qemuamd64:ubuntu-focal ?= "${GRUB_BOOTLOADER_INSTALL}"
