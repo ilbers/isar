@@ -12,6 +12,7 @@ ISAR_RELEASE_CMD = "git -C ${LAYERDIR_test} describe --tags --dirty --match 'v[0
 
 # Setup SSH server on board
 IMAGE_INSTALL += "isar-ci-ssh-setup"
+IMAGE_INSTALL += "sshd-regen-keys"
 
 # qemuamd64-bookworm
 WKS_FILE:qemuamd64:debian-bookworm ?= "multipart-efi.wks"
@@ -19,6 +20,7 @@ WKS_FILE:qemuamd64:debian-bookworm ?= "multipart-efi.wks"
 # qemuamd64-bullseye
 IMAGE_FSTYPES:append:qemuamd64:debian-bullseye ?= " cpio.gz tar.gz"
 WKS_FILE:qemuamd64:debian-bullseye ?= "sdimage-efi-btrfs"
+IMAGE_INSTALL:append:qemuamd64:debian-bullseye = " expand-on-first-boot"
 IMAGER_INSTALL:remove:qemuamd64:debian-bullseye ?= "${GRUB_BOOTLOADER_INSTALL}"
 IMAGER_INSTALL:append:qemuamd64:debian-bullseye ?= " ${SYSTEMD_BOOTLOADER_INSTALL} btrfs-progs"
 IMAGE_PREINSTALL:append:qemuamd64:debian-bullseye ?= " btrfs-progs"

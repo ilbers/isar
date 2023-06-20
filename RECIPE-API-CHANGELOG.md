@@ -497,3 +497,11 @@ to `DEPENDS` or `IMAGE_INSTALL`.
 
 Some CI-related recipes and images moves to meta-test from meta-isar, so if
 a downstream used them, they should update their layers.conf accordingly.
+
+### Cleanup machine configs and multiconfigs from irrelevant packages
+
+Machine configs and multiconfigs should not include any IMAGE_INSTALL and
+IMAGE_PREINSTALL entries that doesn't refers to machine configuration, such as
+`expand-on-first-boot` or `sshd-regen-keys`.
+The configs are cleaned up now and this fact may force downstreams to modify
+their configuration if they relied on these packages.
