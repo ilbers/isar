@@ -44,7 +44,7 @@ do_generate_initramfs() {
     fi
 
     sudo -E chroot "${INITRAMFS_ROOTFS}" sh -c '\
-        export kernel_version=$(basename /boot/vmlinux* | cut -d'-' -f2-); \
+        export kernel_version=$(basename /boot/vmlinu[xz]* | cut -d'-' -f2-); \
         if [ -n "$kernel_version" ]; then \
           update-initramfs -u -v -k "$kernel_version"; \
         else \
