@@ -492,3 +492,8 @@ Recipes inheriting dpkg-base now automatically have a bitbake target
 exists for the current `DISTRO_ARCH`.
 In that case the compat package can be built by adding `<foo>-compat`
 to `DEPENDS` or `IMAGE_INSTALL`.
+
+### Introduce meta-test layer
+
+Some CI-related recipes and images moves to meta-test from meta-isar, so if
+a downstream used them, they should update their layers.conf accordingly.

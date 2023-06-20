@@ -44,6 +44,7 @@ class CIBuilder(Test):
             self.error("Broken test implementation: init() called multiple times.")
         self.build_dir = os.path.join(isar_root, build_dir)
         os.chdir(isar_root)
+        os.environ["TEMPLATECONF"] = "meta-test/conf"
         path.usable_rw_dir(self.build_dir)
         output = process.getoutput('/bin/bash -c "source isar-init-build-env \
                                     %s 2>&1 >/dev/null; env"' % self.build_dir)

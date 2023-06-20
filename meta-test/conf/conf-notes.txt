@@ -1,0 +1,3 @@
+Common CI targets are:
+    mc:qemuamd64-bookworm:isar-image-ci
+    mc:qemuarm-bullseye:isar-image-ci

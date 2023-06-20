@@ -1,0 +1,91 @@
+# This software is a part of ISAR.
+# Copyright (C) 2023 ilbers GmbH
+
+# Machine and distro selection
+MACHINE ??= "qemuarm"
+DISTRO ??= "debian-bullseye"
+DISTRO_ARCH ??= "armhf"
+
+# The list of known multiple configurations
+BBMULTICONFIG = " \
+    qemuarm-buster \
+    qemuarm-bullseye \
+    qemuarm-bookworm \
+    qemuarm64-buster \
+    qemuarm64-bullseye \
+    qemuarm64-bookworm \
+    qemui386-buster \
+    qemui386-bullseye \
+    qemui386-bookworm \
+    qemuamd64-buster \
+    qemuamd64-bullseye \
+    qemuamd64-sb-bullseye \
+    qemuamd64-bookworm \
+    container-amd64-buster \
+    container-amd64-bullseye \
+    container-amd64-bookworm \
+    qemumipsel-buster \
+    qemumipsel-bullseye \
+    qemumipsel-bookworm \
+    qemuriscv64-sid-ports \
+    bananapi-buster \
+    bananapi-bullseye \
+    de0-nano-soc-buster \
+    de0-nano-soc-bullseye \
+    hikey-bullseye \
+    hikey-bookworm \
+    imx6-sabrelite-buster \
+    imx6-sabrelite-bullseye \
+    phyboard-mira-bullseye \
+    nanopi-neo-buster \
+    nanopi-neo-bullseye \
+    stm32mp15x-buster \
+    stm32mp15x-bullseye \
+    virtualbox-bullseye \
+    rpi-arm-bullseye \
+    rpi-arm-v7-bullseye \
+    rpi-arm-v7l-bullseye \
+    rpi-arm64-v8-bullseye \
+    sifive-fu540-sid-ports \
+    starfive-visionfive2-sid-ports \
+    qemuarm64-focal \
+    qemuarm64-jammy \
+    qemuamd64-focal \
+    qemuamd64-jammy \
+"
+
+# Disable interactive patch resolution
+PATCHRESOLVE = "noop"
+
+# Disk Space Monitoring settings
+BB_DISKMON_DIRS = "\
+    STOPTASKS,${TMPDIR},1G,100K \
+    STOPTASKS,${DL_DIR},1G,100K \
+    STOPTASKS,${SSTATE_DIR},1G,100K \
+    STOPTASKS,/tmp,100M,100K \
+    HALT,${TMPDIR},100M,1K \
+    HALT,${DL_DIR},100M,1K \
+    HALT,${SSTATE_DIR},100M,1K \
+    HALT,/tmp,10M,1K"
+
+# Isar and external MIRRORS in case of service unavailable
+MIRRORS ?= "git?://salsa\.debian\.org/debian/.* git://github.com/ilbers/BASENAME"
+MIRRORS += "https?://cdn\.kernel\.org/.* https://mirrors.edge.kernel.org/PATH"
+
+# The default list of extra packages
+IMAGE_INSTALL = "hello-isar example-raw example-module-${KERNEL_NAME} enable-fsck isar-exclude-docs samefile hello isar-disable-apt-cache cowsay example-prebuilt"
+
+# Users and groups
+USERS += "root"
+USER_root[password] ??= "$6$rounds=10000$RXeWrnFmkY$DtuS/OmsAS2cCEDo0BF5qQsizIrq6jPgXnwv3PHqREJeKd1sXdHX/ayQtuQWVDHe0KIO0/sVH8dvQm1KthF0d/"
+
+GROUPS += "isar"
+GROUP_isar[flags] = "system"
+
+USERS += "isar"
+USER_isar[gid] = "isar"
+USER_isar[home] = "/var/lib/isar"
+USER_isar[comment] = "My isar user"
+USER_isar[flags] = "system create-home"
+USER_isar[password] = "isar"
+USER_isar[flags] += "clear-text-password"
