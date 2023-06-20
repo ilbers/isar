@@ -16,6 +16,13 @@ IMAGE_INSTALL += "isar-ci-ssh-setup"
 # qemuamd64-bookworm
 WKS_FILE:qemuamd64:debian-bookworm ?= "multipart-efi.wks"
 
+# qemuamd64-bullseye
+IMAGE_FSTYPES:append:qemuamd64:debian-bullseye ?= " cpio.gz tar.gz"
+WKS_FILE:qemuamd64:debian-bullseye ?= "sdimage-efi-btrfs"
+IMAGER_INSTALL:remove:qemuamd64:debian-bullseye ?= "${GRUB_BOOTLOADER_INSTALL}"
+IMAGER_INSTALL:append:qemuamd64:debian-bullseye ?= " ${SYSTEMD_BOOTLOADER_INSTALL} btrfs-progs"
+IMAGE_PREINSTALL:append:qemuamd64:debian-bullseye ?= " btrfs-progs"
+
 # qemuamd64-focal
 WKS_FILE:qemuamd64:ubuntu-focal ?= "sdimage-efi-sd"
 IMAGER_INSTALL:remove:qemuamd64:ubuntu-focal ?= "${GRUB_BOOTLOADER_INSTALL}"

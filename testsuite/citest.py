@@ -26,7 +26,7 @@ class DevTest(CIBaseTest):
     """
     def test_dev(self):
         targets = [
-            'mc:qemuamd64-bullseye:isar-image-base',
+            'mc:qemuamd64-bullseye:isar-image-ci',
             'mc:qemuarm-bullseye:isar-image-base',
             'mc:qemuarm-bullseye:isar-image-base:do_populate_sdk',
             'mc:qemuarm64-bullseye:isar-image-base'
@@ -37,7 +37,7 @@ class DevTest(CIBaseTest):
 
     def test_dev_apps(self):
         targets = [
-            'mc:qemuamd64-bullseye:isar-image-base',
+            'mc:qemuamd64-bullseye:isar-image-ci',
             'mc:qemuarm64-bullseye:isar-image-base'
                   ]
 
@@ -55,13 +55,14 @@ class DevTest(CIBaseTest):
             file.write('do_fetch:append() {\n\n}')
 
         try:
-            self.perform_build_test('mc:qemuamd64-bullseye:isar-image-base')
+            self.perform_build_test('mc:qemuamd64-bullseye:isar-image-ci')
         finally:
             self.restorefile(dpkgbase_file)
 
     def test_dev_run_amd64_bullseye(self):
         self.init()
-        self.vm_start('amd64', 'bullseye')
+        self.vm_start('amd64', 'bullseye', \
+            image='isar-image-ci')
 
     def test_dev_run_arm64_bullseye(self):
         self.init()
