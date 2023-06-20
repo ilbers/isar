@@ -158,7 +158,7 @@ class CrossTest(CIBaseTest):
     def test_cross_bookworm(self):
         targets = [
             'mc:qemuarm-bookworm:isar-image-ci',
-            'mc:qemuarm64-bookworm:isar-image-base'
+            'mc:qemuarm64-bookworm:isar-image-ci'
                   ]
 
         self.init()
@@ -175,7 +175,7 @@ class WicTest(CIBaseTest):
     :avocado: tags=wic,full
     """
     def test_wic_nodeploy_partitions(self):
-        targets = ['mc:qemuarm64-bookworm:isar-image-base']
+        targets = ['mc:qemuarm64-bookworm:isar-image-ci']
 
         self.init()
         self.delete_from_build_dir('tmp')
@@ -183,7 +183,7 @@ class WicTest(CIBaseTest):
             wic_deploy_parts=False, debsrc_cache=True, compat_arch=False)
 
     def test_wic_deploy_partitions(self):
-        targets = ['mc:qemuarm64-bookworm:isar-image-base']
+        targets = ['mc:qemuarm64-bookworm:isar-image-ci']
 
         self.init()
         # reuse artifacts

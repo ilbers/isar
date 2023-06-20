@@ -43,3 +43,7 @@ IMAGE_FSTYPES:append:qemuarm:debian-bookworm ?= " wic"
 WKS_FILE:qemuarm:debian-bookworm ?= "sdimage-efi-sd"
 IMAGE_INSTALL:append:qemuarm:debian-bookworm = " expand-on-first-boot"
 IMAGER_INSTALL:append:qemuarm:debian-bookworm ?= " ${SYSTEMD_BOOTLOADER_INSTALL}"
+
+# qemuarm64-bookworm
+IMAGE_FSTYPES:append:qemuarm64:debian-bookworm ?= " wic.xz"
+IMAGER_INSTALL:append:qemuarm64:debian-bookworm ?= " ${GRUB_BOOTLOADER_INSTALL}"
