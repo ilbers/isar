@@ -49,6 +49,7 @@ show_help() {
     echo "    -b, --base BASE_DIR      set path to base directory. If not set,"
     echo "                             the tests will be started in current path."
     echo "    -d, --debug              enable debug bitbake output."
+    echo "    -m, --muxfile            input file for yaml-to-mux plugin."
     echo "    -T, --tags               specify basic avocado tags."
     echo "    --help                   display this message and exit."
     echo
@@ -93,6 +94,10 @@ do
     -n|--norun)
         NORUN="1"
         echo "warning: deprecated parameter '$key', consider using '-T <TAG>,-startvm' instead"
+        ;;
+    -m|--muxfile)
+        MUXFILE="-m $2"
+        shift
         ;;
     -t|--timeout)
         TIMEOUT="-p time_to_wait=$2"
@@ -150,4 +155,4 @@ set -x
 
 avocado ${VERBOSE} --config "${BASE_DIR}/avocado.conf" run "${TESTFILE}" \
     -t "${TAGS}" --max-parallel-tasks=1 --disable-sysinfo \
-    ${SSTATE} ${TIMEOUT}
+    ${SSTATE} ${MUXFILE} ${TIMEOUT}

@@ -231,6 +231,15 @@ class CIBuilder(Test):
         except FileNotFoundError:
             self.log.warn(path + backup_prefix + ' not exist')
 
+    def get_test_images(self):
+        return ['isar-image-base', 'isar-image-ci']
+
+    def get_targets(self):
+        d = bb.data.init()
+        d.setVar('BBPATH', os.path.join(isar_root, 'meta-isar'))
+        d = bb.cookerdata.parse_config_file('conf/mc.conf', d, False)
+        return d.getVar('BBMULTICONFIG').split()
+
     def getVars(self, *vars, target=None):
         self.check_init()
         def fixStream(stream):
@@ -262,6 +271,18 @@ class CIBuilder(Test):
                 for var in vars:
                     values = values + (tinfoil.config_data.getVar(var, True) or 'None',)
             return values if len(values) > 1 else values[0]
+
+    def gen_targets_yaml(self, fn='targets.yml'):
+        targetsfile = os.path.join(os.path.dirname(__file__), 'data', fn)
+        with open(targetsfile, 'w') as f:
+            f.write('a: !mux\n')
+            for target in self.get_targets():
+                f.write(f'  {target}:\n    name: {target}\n')
+            f.write('b: !mux\n')
+            prefix = 'isar-image-'
+            for image in self.get_test_images():
+                nodename = image[image.startswith(prefix) and len(prefix):]
+                f.write(f'  {nodename}:\n    image: {image}\n')
 
     def create_tmp_layer(self):
         tmp_layer_dir = os.path.join(isar_root, 'meta-tmp')
