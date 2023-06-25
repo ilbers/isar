@@ -1406,3 +1406,29 @@ To enable it, add the below line to your local.conf file.
 ```
 BASE_REPO_FEATURES = "cache-deb-src"
 ```
+
+## Use a custom sbuild chroot to speedup build
+
+### Motivation
+
+There are use-cases, where many packages need to be compiled but all of them
+need a similar base of build dependencies. In case the baseline is quite big,
+this adds a significant overhead as the build dependencies are installed individually
+for each and every package.
+
+### Solution
+
+By creating a dedicated sbuild chroot for this use-case, the baseline can be installed
+first and then all package builds of this type can use it. For that, create a
+new recipe with the name `sbuild-chroot-<host|target>-<flavor>`. In that recipe,
+define the following:
+
+```
+require recipes-devtools/sbuild-chroot/sbuild-chroot-<host|target>.bb
+
+SBUILD_FLAVOR = "<your flavor, e.g. clang>"
+SBUILD_CHROOT_PREINSTALL_EXTRA += "<base packages>"
+```
+
+Then, in the dpkg recipe of your package, simply set `SBUILD_FLAVOR = "<your flavor>"`.
+To install additional packages into the sbuild chroot, add them to `SBUILD_CHROOT_PREINSTALL_EXTRA`.

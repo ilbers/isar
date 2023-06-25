@@ -11,6 +11,12 @@ PV = "1.0"
 inherit rootfs
 inherit compat
 
+# set the flavor to create derived sbuild chroots
+# this maps to a schroot created by a recipe named sbuild-chroot-<host|target>-<flavor>
+SBUILD_FLAVOR ??= ""
+SBUILD_SCHROOT_SUFFIX = "${@ ('-' + d.getVar('SBUILD_FLAVOR')) if d.getVar('SBUILD_FLAVOR') else ''}"
+SBUILD_CHROOT_PREINSTALL_EXTRA ??= ""
+
 python() {
     distro_gcc = d.getVar('DISTRO_GCC')
     distro_arch = d.getVar('DISTRO_ARCH')
@@ -36,6 +42,7 @@ python() {
 
 SBUILD_CHROOT_PREINSTALL_COMMON = " \
     ${SBUILD_CHROOT_COMPAT_PREINSTALL} \
+    ${SBUILD_CHROOT_PREINSTALL_EXTRA} \
     libc6-dev:${DISTRO_ARCH} \
     fakeroot \
     build-essential \
@@ -52,7 +59,7 @@ ROOTFS_PACKAGES = "${SBUILD_CHROOT_PREINSTALL}"
 # We don't need /etc/apt/sources.list.d/isar-apt.list' while it's handled by sbuild
 ROOTFS_CONFIGURE_COMMAND:remove = "rootfs_configure_isar_apt"
 
-DEPLOY_SCHROOT = "${@d.getVar('SCHROOT_' + d.getVar('SBUILD_VARIANT').upper() + '_DIR')}"
+DEPLOY_SCHROOT = "${@d.getVar('SCHROOT_' + d.getVar('SBUILD_VARIANT').upper() + '_DIR')}${SBUILD_SCHROOT_SUFFIX}"
 
 do_sbuildchroot_deploy[dirs] = "${DEPLOY_DIR}/schroot-${SBUILD_VARIANT}"
 do_sbuildchroot_deploy() {
