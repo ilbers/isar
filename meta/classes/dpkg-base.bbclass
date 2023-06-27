@@ -339,3 +339,4 @@ python do_devshell_nodeps() {
 addtask devshell_nodeps after do_prepare_build
 do_devshell_nodeps[dirs] = "${DEVSHELL_STARTDIR}"
 do_devshell_nodeps[nostamp] = "1"
+do_devshell_nodeps[network] = "${TASK_USE_SUDO}"
