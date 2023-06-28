@@ -14,3 +14,6 @@ SRC_URI = "git://github.com/ilbers/libhello.git;protocol=https;branch=master;des
 SRCREV = "98f2e41e7d05ab8d19b0c5d160b104b725c8fd93"
 
 inherit dpkg
+
+# Example of using alternative sbuild chroot
+SBUILD_FLAVOR="db2m"

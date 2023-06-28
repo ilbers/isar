@@ -21,3 +21,6 @@ SRC_URI = " \
 SRCREV = "a18c14cc11ce6b003f3469e89223cffb4016861d"
 
 inherit dpkg
+
+# Example of using alternative sbuild chroot
+SBUILD_FLAVOR="db2m"
