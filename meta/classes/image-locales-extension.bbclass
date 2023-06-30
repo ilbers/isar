@@ -90,7 +90,9 @@ __EOF__
                 --show systemd || echo "0" )
 
             if dpkg --compare-versions "$SYSTEMD_VERSION" "ge" "251"; then
-                ln -s /etc/default/locale /etc/locale.conf
+                if dpkg --compare-versions "$SYSTEMD_VERSION" "lt" "253"; then
+                    ln -s /etc/default/locale /etc/locale.conf
+                fi
             fi
 
             echo 'reconfigure locales'
