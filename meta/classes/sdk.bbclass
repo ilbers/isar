@@ -98,9 +98,10 @@ sdkchroot_finalize() {
     for link in $(find ${ROOTFSDIR}/ -type l); do
         target=$(readlink $link)
 
+        # Enter into if condition if target has a leading /
         if [ "${target#/}" != "${target}" ]; then
             basedir=$(dirname $link)
-            new_target=$(realpath --no-symlinks -m --relative-to=$basedir ${ROOTFSDIR}/${target})
+            new_target=$(realpath --no-symlinks -m --relative-to=$basedir ${ROOTFSDIR}${target})
 
             # remove first to allow rewriting directory links
             sudo rm $link
