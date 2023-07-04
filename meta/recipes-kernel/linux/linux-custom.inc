@@ -21,6 +21,7 @@ KBUILD_DEPENDS ?= "build-essential:native, \
                    bc, \
                    bison, \
                    cpio, \
+                   dwarves, \
                    flex, \
                    git, \
                    kmod, \
