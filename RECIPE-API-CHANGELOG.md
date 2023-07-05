@@ -192,7 +192,7 @@ files and patches using bbappend a lot easier.
 
 For example:
 ```
-FILESEXTRAPATHS_prepend := "$THISDIR/files:"
+FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 ```
 
 ### multiconfig build targets were renamed
