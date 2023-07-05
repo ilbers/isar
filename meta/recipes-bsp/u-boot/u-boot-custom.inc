@@ -5,7 +5,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-FILESEXTRAPATHS:prepend := "${FILE_DIRNAME}/files:"
+FILESPATH:append := ":${FILE_DIRNAME}/files"
 
 DESCRIPTION ?= "Custom U-Boot"
 

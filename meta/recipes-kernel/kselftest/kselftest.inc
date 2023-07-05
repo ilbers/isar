@@ -7,7 +7,7 @@
 
 inherit dpkg
 
-FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
+FILESPATH:append := ":${THISDIR}/files"
 
 # Some test-cases like memfd compilation failed in cross-compilation.
 # Force native compilation for now to have consistent output across

@@ -48,7 +48,7 @@ LINUX_VERSION_EXTENSION ?= ""
 KERNEL_DEFCONFIG ??= ""
 
 # Add our template meta-data to the sources
-FILESEXTRAPATHS:prepend := "${FILE_DIRNAME}/files:"
+FILESPATH:append := ":${FILE_DIRNAME}/files"
 SRC_URI += "file://debian"
 
 # Variables and files that make our templates

@@ -9,7 +9,7 @@
 
 inherit dpkg
 
-FILESEXTRAPATHS:prepend := "${FILE_DIRNAME}/files:"
+FILESPATH:append := ":${FILE_DIRNAME}/files"
 
 DESCRIPTION = "OPTee Client"
 

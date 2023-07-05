@@ -7,7 +7,7 @@
 
 inherit dpkg
 
-FILESEXTRAPATHS:prepend := "${FILE_DIRNAME}/files:"
+FILESPATH:append := ":${FILE_DIRNAME}/files"
 
 SRC_URI += "file://debian/"
 

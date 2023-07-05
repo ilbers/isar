@@ -11,7 +11,7 @@ SUMMARY = "OPTEE fTPM Microsoft TA"
 DESCRIPTION = "TCG reference implementation of the TPM 2.0 Specification."
 HOMEPAGE = "https://github.com/microsoft/ms-tpm-20-ref/"
 
-FILESEXTRAPATHS:prepend := "${FILE_DIRNAME}/files:"
+FILESPATH:append := ":${FILE_DIRNAME}/files"
 
 SRC_URI += "file://debian"
 
