@@ -1,0 +1,33 @@
+#!/bin/sh
+# Copyright (c) Siemens AG, 2023
+#
+# Authors:
+#  Su Bao Cheng <baocheng.su@siemens.com>
+#
+# SPDX-License-Identifier: MIT
+#
+PREREQ=""
+prereqs()
+{
+    echo "$PREREQ"
+}
+case $1 in
+prereqs)
+    prereqs
+    exit 0
+    ;;
+esac
+
+. /usr/share/initramfs-tools/hook-functions
+
+hook_error() {
+    echo "(ERROR): $2" >&2
+    exit 1
+}
+
+# For stock debian bookworm arm64 kernel, these two .ko exist, but not built-in.
+manual_add_modules tee
+manual_add_modules optee
+
+copy_exec /usr/sbin/tee-supplicant || hook_error "/usr/sbin/tee-supplicant not found"
+copy_exec /usr/bin/pgrep || hook_error "/usr/bin/pgrep not found"

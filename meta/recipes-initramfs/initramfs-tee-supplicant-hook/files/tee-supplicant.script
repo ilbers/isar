@@ -1,0 +1,33 @@
+#!/bin/sh
+# Copyright (c) Siemens AG, 2023
+#
+# Authors:
+#  Su Bao Cheng <baocheng.su@siemens.com>
+#
+# SPDX-License-Identifier: MIT
+#
+PREREQ=""
+prereqs()
+{
+	echo "$PREREQ"
+}
+case $1 in
+prereqs)
+	prereqs
+	exit 0
+	;;
+esac
+
+. /scripts/functions
+
+/usr/sbin/tee-supplicant -d
+
+# The tee-supplicant would take some time to be discovered, 10 seconds should be
+# enough
+wait_sec=10
+until test $wait_sec -eq 0 || test -c "${FTPM_DEV}" ; do
+	wait_sec=$((wait_sec-1))
+	sleep 1
+done
+
+/usr/bin/pgrep tee-supplicant > /dev/null || panic "Can't start the tee-supplicant daemon!"
