@@ -11,4 +11,5 @@ inherit initramfs
 
 INITRAMFS_INSTALL += " \
     initramfs-tee-supplicant-hook \
+    initramfs-tee-ftpm-hook \
     "

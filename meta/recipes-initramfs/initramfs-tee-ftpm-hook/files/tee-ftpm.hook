@@ -1,0 +1,25 @@
+#!/bin/sh
+# Copyright (c) Siemens AG, 2023
+#
+# Authors:
+#  Su Bao Cheng <baocheng.su@siemens.com>
+#
+# SPDX-License-Identifier: MIT
+#
+PREREQ="tee-supplicant"
+prereqs()
+{
+    echo "$PREREQ"
+}
+case $1 in
+prereqs)
+    prereqs
+    exit 0
+    ;;
+esac
+
+. /usr/share/initramfs-tools/hook-functions
+
+# The tpm_ftpm_tee.ko does not exist in any stock debian kernels, it could be
+# provided by customized kernel.
+manual_add_modules tpm_ftpm_tee

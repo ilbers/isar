@@ -1,0 +1,26 @@
+#!/bin/sh
+# Copyright (c) Siemens AG, 2023
+#
+# Authors:
+#  Su Bao Cheng <baocheng.su@siemens.com>
+#
+# SPDX-License-Identifier: MIT
+#
+PREREQ="tee-supplicant"
+prereqs()
+{
+	echo "$PREREQ"
+}
+case $1 in
+prereqs)
+	prereqs
+	exit 0
+	;;
+esac
+
+. /scripts/functions
+
+FTPM_DEV=/dev/tpmrm0
+if ! test -c "${FTPM_DEV}"; then
+    panic "Can't discover the fTPM device ${FTPM_DEV}!"
+fi
