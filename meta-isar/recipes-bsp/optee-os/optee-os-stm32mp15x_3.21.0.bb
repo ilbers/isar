@@ -1,16 +1,16 @@
 #
-# Copyright (c) Siemens AG, 2020
+# Copyright (c) Siemens AG, 2020-2023
 #
 # SPDX-License-Identifier: MIT
 
 require recipes-bsp/optee-os/optee-os-custom.inc
 
 SRC_URI += "https://github.com/OP-TEE/optee_os/archive/${PV}.tar.gz"
-SRC_URI[sha256sum] = "3c34eda1052fbb9ed36fcfdfaecfd2685023b9290670c1a5982f8a0457bfd2cb"
+SRC_URI[sha256sum] = "92a16e841b0bdb4bfcb1c20b6a1bd3309092203d534ed167dfdb5a5f395bf60b"
 
 S = "${WORKDIR}/optee_os-${PV}"
 
-DEBIAN_BUILD_DEPENDS += ", device-tree-compiler"
+DEBIAN_BUILD_DEPENDS += ", device-tree-compiler, python3-cryptography:native"
 
 OPTEE_PLATFORM = "stm32mp1"
 OPTEE_EXTRA_BUILDARGS = " \
