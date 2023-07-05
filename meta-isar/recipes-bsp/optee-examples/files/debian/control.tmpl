@@ -1,0 +1,112 @@
+Source: ${PN}
+Section: admin
+Priority: optional
+Standards-Version: 3.9.6
+Build-Depends: ${DEBIAN_BUILD_DEPENDS}
+Maintainer: ISAR project <isar-users@googlegroups.com>
+
+Package: ${PN}-acipher-ta
+Architecture: ${DISTRO_ARCH}
+Description: OP-TEE Trusted Application example - acipher
+ Generates an RSA key pair of specified size and encrypts a supplied string with
+ it using the GlobalPlatform TEE Internal Core API.
+ .
+ UUID: a734eed9-d6a1-4244-aa50-7c99719e7b7b
+
+Package: ${PN}-acipher-host
+Architecture: ${DISTRO_ARCH}
+Depends: libteec1, tee-supplicant,
+         ${misc:Depends}
+Description: OP-TEE Trusted Application example - acipher (host application)
+ Generates an RSA key pair of specified size and encrypts a supplied string with
+ it using the GlobalPlatform TEE Internal Core API.
+ .
+ UUID: a734eed9-d6a1-4244-aa50-7c99719e7b7b
+
+Package: ${PN}-aes-ta
+Architecture: ${DISTRO_ARCH}
+Description: OP-TEE Trusted Application example - aes
+ Runs an AES encryption and decryption from a TA using the GlobalPlatform TEE
+ Internal Core API. Non secure test application provides the key, initial vector
+ and ciphered data.
+ .
+ UUID: 5dbac793-f574-4871-8ad3-04331ec17f24
+
+Package: ${PN}-aes-host
+Architecture: ${DISTRO_ARCH}
+Depends: libteec1, tee-supplicant,
+         ${misc:Depends}
+Description: OP-TEE Trusted Application example - aes (host application)
+ Runs an AES encryption and decryption from a TA using the GlobalPlatform TEE
+ Internal Core API. Non secure test application provides the key, initial vector
+ and ciphered data.
+ .
+ UUID: 5dbac793-f574-4871-8ad3-04331ec17f24
+
+Package: ${PN}-hello-world-ta
+Architecture: ${DISTRO_ARCH}
+Description: OP-TEE Trusted Application example - hello_world
+ This is a very simple Trusted Application to answer a hello command and
+ incrementing an integer value.
+ .
+ UUID: 8aaaf200-2450-11e4-abe2-0002a5d5c51b
+
+Package: ${PN}-hello-world-host
+Architecture: ${DISTRO_ARCH}
+Depends: libteec1, tee-supplicant,
+         ${misc:Depends}
+Description: OP-TEE Trusted Application example - hello_world (host application)
+ This is a very simple Trusted Application to answer a hello command and
+ incrementing an integer value.
+ .
+ UUID: 8aaaf200-2450-11e4-abe2-0002a5d5c51b
+
+Package: ${PN}-hotp-ta
+Architecture: ${DISTRO_ARCH}
+Description: OP-TEE Trusted Application example - hotp
+ HMAC based One Time Password in OP-TEE.
+ .
+ UUID: 484d4143-2d53-4841-3120-4a6f636b6542
+
+Package: ${PN}-hotp-host
+Architecture: ${DISTRO_ARCH}
+Depends: libteec1, tee-supplicant,
+         ${misc:Depends}
+Description: OP-TEE Trusted Application example - hotp (host application)
+ HMAC based One Time Password in OP-TEE.
+ .
+ UUID: 484d4143-2d53-4841-3120-4a6f636b6542
+
+Package: ${PN}-random-ta
+Architecture: ${DISTRO_ARCH}
+Description: OP-TEE Trusted Application example - random
+ Generates a random UUID using capabilities of TEE API (TEE_GenerateRandom()).
+ .
+ UUID: b6c53aba-9669-4668-a7f2-205629d00f86
+
+Package: ${PN}-random-host
+Architecture: ${DISTRO_ARCH}
+Depends: libteec1, tee-supplicant,
+         ${misc:Depends}
+Description: OP-TEE Trusted Application example - random (host application)
+ Generates a random UUID using capabilities of TEE API (TEE_GenerateRandom()).
+ .
+ UUID: b6c53aba-9669-4668-a7f2-205629d00f86
+
+Package: ${PN}-secure-storage-ta
+Architecture: ${DISTRO_ARCH}
+Description: OP-TEE Trusted Application example - secure_storage
+ A Trusted Application to read/write raw data into the OP-TEE secure storage
+ using the GlobalPlatform TEE Internal Core API.
+ .
+ UUID: f4e750bb-1437-4fbf-8785-8d3580c34994
+
+Package: ${PN}-secure-storage-host
+Architecture: ${DISTRO_ARCH}
+Depends: libteec1, tee-supplicant,
+         ${misc:Depends}
+Description: OP-TEE Trusted Application example - secure_storage (host application)
+ A Trusted Application to read/write raw data into the OP-TEE secure storage
+ using the GlobalPlatform TEE Internal Core API.
+ .
+ UUID: f4e750bb-1437-4fbf-8785-8d3580c34994

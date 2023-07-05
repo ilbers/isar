@@ -1,0 +1,21 @@
+#!/usr/bin/make -f
+#
+# Debian rules for custom OP-TEE Examples build
+#
+# This software is a part of ISAR.
+# Copyright (c) Siemens AG, 2023
+#
+# SPDX-License-Identifier: MIT
+
+ifneq ($(DEB_BUILD_GNU_TYPE),$(DEB_HOST_GNU_TYPE))
+export CROSS_COMPILE=$(DEB_HOST_GNU_TYPE)-
+endif
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	dh_auto_build -- HOST_CROSS_COMPILE=${CROSS_COMPILE} \
+    PLATFORM=${OPTEE_PLATFORM} \
+    TA_DEV_KIT_DIR=${TA_DEV_KIT_DIR} \
+    examples
