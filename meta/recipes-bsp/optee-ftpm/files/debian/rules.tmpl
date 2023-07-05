@@ -1,0 +1,25 @@
+#!/usr/bin/make -f
+# Debian rules for optee-ftpm
+#
+# Copyright (c) Siemens AG, 2023
+#
+# Authors:
+#  Su Bao Cheng <baocheng.su@siemens.com>
+#
+# SPDX-License-Identifier: MIT
+
+ifneq ($(DEB_BUILD_GNU_TYPE),$(DEB_HOST_GNU_TYPE))
+export CROSS_COMPILE=$(DEB_HOST_GNU_TYPE)-
+endif
+
+override_dh_auto_build:
+	cd Samples/ARM32-FirmwareTPM/optee_ta && \
+		TA_CROSS_COMPILE=${CROSS_COMPILE} \
+		TA_CPU=${TA_CPU} \
+		TA_DEV_KIT_DIR=${TA_DEV_KIT_DIR} \
+		CFG_TEE_TA_LOG_LEVEL=2 \
+		${OPTEE_FTPM_BUILD_ARGS_EXTRA} \
+		$(MAKE) $(PARALLEL_MAKE)
+
+%:
+	dh $@
