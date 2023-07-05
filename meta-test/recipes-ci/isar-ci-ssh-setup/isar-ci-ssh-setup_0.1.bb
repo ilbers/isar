@@ -5,6 +5,7 @@ MAINTAINER = "Uladzimir Bely <uladzimir.bely@ilbers.de>"
 
 SRC_URI = " \
     file://postinst \
+    file://99-disable-ssh-socket.preset \
 "
 
 DEPENDS += "sshd-regen-keys"
@@ -19,4 +20,7 @@ do_install() {
 
     # Manage all interfaces (including ethernet) by NetworkManager
     install -D -m 644 /dev/null ${D}/etc/NetworkManager/conf.d/10-globally-managed-devices.conf
+
+    # Disable socket activation for ssh server
+    install -D -m 644 ${WORKDIR}/99-disable-ssh-socket.preset ${D}/lib/systemd/system-preset/99-disable-ssh-socket.preset
 }
