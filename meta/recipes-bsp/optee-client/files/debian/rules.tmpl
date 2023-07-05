@@ -1,0 +1,27 @@
+#!/usr/bin/make -f
+#
+# Debian rules for custom OP-TEE Client build
+#
+# This software is a part of ISAR.
+# Copyright (c) Siemens AG, 2023
+#
+# SPDX-License-Identifier: MIT
+
+ifneq ($(DEB_BUILD_GNU_TYPE),$(DEB_HOST_GNU_TYPE))
+export CROSS_COMPILE=$(DEB_HOST_GNU_TYPE)-
+endif
+
+%:
+	dh $@ --exclude=.a
+
+override_dh_auto_build:
+	dh_auto_build -- LIBDIR=/usr/lib/$(DEB_HOST_MULTIARCH) \
+		CFG_TEE_FS_PARENT_PATH=${TEE_FS_PARENT_PATH} RPMB_EMU=${RPMB_EMU}
+
+override_dh_auto_install:
+	dh_auto_install -- LIBDIR=/usr/lib/$(DEB_HOST_MULTIARCH) \
+		CFG_TEE_FS_PARENT_PATH=${TEE_FS_PARENT_PATH} RPMB_EMU=${RPMB_EMU}
+
+override_dh_auto_clean:
+	dh_auto_clean
+	rm -rf $(CURDIR)/out

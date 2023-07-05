@@ -1,0 +1,51 @@
+Source: ${PN}
+Priority: optional
+Maintainer: Unknown maintainer <unknown@example.com>
+Build-Depends: pkg-config, uuid-dev
+Standards-Version: 4.1.3
+Section: libs
+Homepage: https://github.com/OP-TEE/optee_client
+Rules-Requires-Root: no
+
+Package: optee-client-dev
+Section: libdevel
+Architecture: ${DISTRO_ARCH}
+Multi-Arch: same
+Depends: libteec1 (= ${binary:Version}),
+         ${misc:Depends}
+Description: normal world user space client APIs for OP-TEE (development)
+ OP-TEE is a Trusted Execution Environment (TEE) designed as companion to a
+ non-secure Linux kernel running on Arm; Cortex-A cores using the TrustZone
+ technology. OP-TEE implements TEE Internal Core API v1.1.x which is the API
+ exposed to Trusted Applications and the TEE Client API v1.0, which is the
+ API describing how to communicate with a TEE. This package provides the TEE
+ Client API library.
+ .
+ This package contains the development files OpTEE Client API
+
+Package: libteec1
+Architecture: ${DISTRO_ARCH}
+Multi-Arch: same
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: normal world user space client APIs for OP-TEE
+ OP-TEE is a Trusted Execution Environment (TEE) designed as companion to a
+ non-secure Linux kernel running on Arm; Cortex-A cores using the TrustZone
+ technology. OP-TEE implements TEE Internal Core API v1.1.x which is the API
+ exposed to Trusted Applications and the TEE Client API v1.0, which is the
+ API describing how to communicate with a TEE. This package provides the TEE
+ Client API library.
+ .
+ This package contains libteec library.
+
+Package: tee-supplicant
+Architecture: ${DISTRO_ARCH}
+Depends: systemd ${misc:Depends}, ${shlibs:Depends}
+Description: normal world user space client APIs for OP-TEE
+ OP-TEE is a Trusted Execution Environment (TEE) designed as companion to a
+ non-secure Linux kernel running on Arm; Cortex-A cores using the TrustZone
+ technology. OP-TEE implements TEE Internal Core API v1.1.x which is the API
+ exposed to Trusted Applications and the TEE Client API v1.0, which is the
+ API describing how to communicate with a TEE. This package provides the TEE
+ Client API library.
+ .
+ This package contains tee-supplicant executable.

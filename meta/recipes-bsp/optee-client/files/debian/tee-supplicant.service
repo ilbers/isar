@@ -1,0 +1,21 @@
+# This software is a part of ISAR.
+# Copyright (c) Siemens AG, 2023
+#
+# SPDX-License-Identifier: MIT
+[Unit]
+Description=TEE Supplicant
+DefaultDependencies=no
+Before=systemd-remount-fs.service shutdown.target
+Conflicts=shutdown.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+# Start if not already started by the initramfs hook
+ExecStart=/bin/sh -c '/usr/bin/pgrep tee-supplicant >/dev/null || /usr/sbin/tee-supplicant -d'
+ExecStop=/bin/sh -c '/usr/bin/findmnt /sys/firmware/efi/efivars >/dev/null && /usr/bin/umount /sys/firmware/efi/efivars || true'
+ExecStop=/bin/sh -c '/usr/sbin/modinfo -n tpm_ftpm_tee | /usr/bin/grep -E "\.ko$" >/dev/null && /usr/sbin/modprobe -r tpm_ftpm_tee || true'
+ExecStop=/usr/bin/pkill tee-supplicant
+
+[Install]
+WantedBy=sysinit.target
