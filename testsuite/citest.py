@@ -127,7 +127,7 @@ class CrossTest(CIBaseTest):
             'mc:qemuarm-buster:isar-image-ci',
             'mc:qemuarm-bullseye:isar-image-ci',
             'mc:de0-nano-soc-bullseye:isar-image-base',
-            'mc:stm32mp15x-buster:isar-image-base'
+            'mc:stm32mp15x-bullseye:isar-image-base'
                   ]
 
         self.init()

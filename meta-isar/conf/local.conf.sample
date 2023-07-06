@@ -69,7 +69,6 @@ BBMULTICONFIG = " \
     phyboard-mira-bullseye \
     nanopi-neo-buster \
     nanopi-neo-bullseye \
-    stm32mp15x-buster \
     stm32mp15x-bullseye \
     virtualbox-bullseye \
     rpi-arm-bullseye \
