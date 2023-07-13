@@ -145,7 +145,7 @@ def image_create_users(d: "DataSmart") -> None:
             bb.process.run(command, "{}:{}".format(entry, password).encode())
 
         if "force-passwd-change" in flags:
-            bb.process.run([*chroot, "/usr/sbin/passwd", "--expire", entry])
+            bb.process.run([*chroot, "/usr/bin/passwd", "--expire", entry])
 
 
 ROOTFS_POSTPROCESS_COMMAND += "image_postprocess_accounts"
