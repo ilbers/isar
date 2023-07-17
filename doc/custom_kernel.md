@@ -80,5 +80,7 @@ The linux-custom recipe is currently used by the linux-mainline package and is
 used mainline recipe may be used for some basic testing. This recipe is being
 used by the following machines:
 
+ * sifive-fu540
+ * stm32mp15x
  * de0-nano-soc
- * qemumipsel
+ * hikey
