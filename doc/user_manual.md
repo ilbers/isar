@@ -66,12 +66,9 @@ apt install \
   binfmt-support \
   bzip2 \
   debootstrap \
-  dosfstools \
   dpkg-dev \
   gettext-base \
   git \
-  mtools \
-  parted \
   python3 \
   quilt \
   qemu-user-static \
