@@ -129,7 +129,8 @@ class CrossTest(CIBaseTest):
             'mc:de0-nano-soc-bullseye:isar-image-base',
             'mc:stm32mp15x-bullseye:isar-image-base',
             'mc:qemuarm-bookworm:isar-image-ci',
-            'mc:qemuarm64-bookworm:isar-image-ci'
+            'mc:qemuarm64-bookworm:isar-image-ci',
+            'mc:qemuarm64-focal:isar-image-base'
                   ]
 
         self.init()
@@ -143,17 +144,6 @@ class CrossTest(CIBaseTest):
         self.init()
         try:
             self.perform_build_test(targets, debsrc_cache=True)
-        except:
-            self.cancel('KFAIL')
-
-    def test_cross_ubuntu(self):
-        targets = [
-            'mc:qemuarm64-focal:isar-image-base'
-                  ]
-
-        self.init()
-        try:
-            self.perform_build_test(targets)
         except:
             self.cancel('KFAIL')
 
