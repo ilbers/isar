@@ -246,13 +246,25 @@ class CIBuilder(Test):
     def run_script(self, script, cmd_prefix):
         script_dir = self.params.get('test_script_dir',
                                      default=os.path.abspath(os.path.dirname(__file__))) + '/scripts/'
-        script_path = script_dir + script
+        script_path = script_dir + script.split()[0]
+        script_args = ' '.join(script.split()[1:])
+
+        self.log.debug("script_path: '%s'" % (script_path))
+        self.log.debug("script args: '%s'" % (script_args))
+
         if not os.path.exists(script_path):
             self.log.error('Script not found: ' + script_path)
             return 2
 
-        rc = subprocess.call('cat ' + script_path + ' | ' + str(cmd_prefix), shell=True,
+        # Copy the script to the target
+        rc = subprocess.call('cat %s | %s install -m 755 /dev/stdin ./ci.sh' % (script_path, cmd_prefix), shell=True,
                              stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        time.sleep(1)
+
+        # Run the script remotely with the arguments
+        if rc == 0:
+            rc = subprocess.call('%s ./ci.sh %s' % (cmd_prefix, script_args), shell=True,
+                                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         return rc
 
 
