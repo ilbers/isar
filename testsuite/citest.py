@@ -127,7 +127,9 @@ class CrossTest(CIBaseTest):
             'mc:qemuarm-buster:isar-image-ci',
             'mc:qemuarm-bullseye:isar-image-ci',
             'mc:de0-nano-soc-bullseye:isar-image-base',
-            'mc:stm32mp15x-bullseye:isar-image-base'
+            'mc:stm32mp15x-bullseye:isar-image-base',
+            'mc:qemuarm-bookworm:isar-image-ci',
+            'mc:qemuarm64-bookworm:isar-image-ci'
                   ]
 
         self.init()
@@ -147,18 +149,6 @@ class CrossTest(CIBaseTest):
     def test_cross_ubuntu(self):
         targets = [
             'mc:qemuarm64-focal:isar-image-base'
-                  ]
-
-        self.init()
-        try:
-            self.perform_build_test(targets)
-        except:
-            self.cancel('KFAIL')
-
-    def test_cross_bookworm(self):
-        targets = [
-            'mc:qemuarm-bookworm:isar-image-ci',
-            'mc:qemuarm64-bookworm:isar-image-ci'
                   ]
 
         self.init()
@@ -216,7 +206,12 @@ class NoCrossTest(CIBaseTest):
             'mc:nanopi-neo-bullseye:isar-image-base',
             'mc:stm32mp15x-bullseye:isar-image-base',
             'mc:stm32mp15x-bullseye:stm32mp15x-initramfs',
-            'mc:qemuamd64-focal:isar-image-ci'
+            'mc:qemuamd64-focal:isar-image-ci',
+            'mc:qemuamd64-bookworm:isar-image-ci',
+            'mc:qemuarm-bookworm:isar-image-ci',
+            'mc:qemui386-bookworm:isar-image-base',
+            'mc:qemumipsel-bookworm:isar-image-ci',
+            'mc:hikey-bookworm:isar-image-base'
                   ]
 
         self.init()
@@ -235,21 +230,6 @@ class NoCrossTest(CIBaseTest):
         self.init()
         try:
             self.perform_build_test(targets, cross=False, debsrc_cache=True)
-        except:
-            self.cancel('KFAIL')
-
-    def test_nocross_bookworm(self):
-        targets = [
-            'mc:qemuamd64-bookworm:isar-image-ci',
-            'mc:qemuarm-bookworm:isar-image-ci',
-            'mc:qemui386-bookworm:isar-image-base',
-            'mc:qemumipsel-bookworm:isar-image-ci',
-            'mc:hikey-bookworm:isar-image-base'
-                  ]
-
-        self.init()
-        try:
-            self.perform_build_test(targets, cross=False)
         except:
             self.cancel('KFAIL')
 
