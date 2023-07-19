@@ -29,7 +29,7 @@ class DevTest(CIBaseTest):
             'mc:qemuamd64-bullseye:isar-image-ci',
             'mc:qemuarm-bullseye:isar-image-base',
             'mc:qemuarm-bullseye:isar-image-base:do_populate_sdk',
-            'mc:qemuarm64-bullseye:isar-image-base'
+            'mc:qemuarm64-bullseye:isar-image-base',
                   ]
 
         self.init()
@@ -38,7 +38,7 @@ class DevTest(CIBaseTest):
     def test_dev_apps(self):
         targets = [
             'mc:qemuamd64-bullseye:isar-image-ci',
-            'mc:qemuarm64-bullseye:isar-image-base'
+            'mc:qemuarm64-bullseye:isar-image-base',
                   ]
 
         self.init()
@@ -82,7 +82,7 @@ class ReproTest(CIBaseTest):
     def test_repro_signed(self):
         targets = [
             'mc:rpi-arm-v7-bullseye:isar-image-base',
-            'mc:qemuarm64-bullseye:isar-image-base'
+            'mc:qemuarm64-bullseye:isar-image-base',
                   ]
 
         self.init()
@@ -94,7 +94,7 @@ class ReproTest(CIBaseTest):
     def test_repro_unsigned(self):
         targets = [
             'mc:qemuamd64-bullseye:isar-image-base',
-            'mc:qemuarm-bullseye:isar-image-base'
+            'mc:qemuarm-bullseye:isar-image-base',
                   ]
 
         self.init()
@@ -130,7 +130,7 @@ class CrossTest(CIBaseTest):
             'mc:stm32mp15x-bullseye:isar-image-base',
             'mc:qemuarm-bookworm:isar-image-ci',
             'mc:qemuarm64-bookworm:isar-image-ci',
-            'mc:qemuarm64-focal:isar-image-base'
+            'mc:qemuarm64-focal:isar-image-base',
                   ]
 
         self.init()
@@ -138,7 +138,7 @@ class CrossTest(CIBaseTest):
 
     def test_cross_rpi(self):
         targets = [
-            'mc:rpi-arm-v7-bullseye:isar-image-base'
+            'mc:rpi-arm-v7-bullseye:isar-image-base',
                   ]
 
         self.init()
@@ -201,7 +201,7 @@ class NoCrossTest(CIBaseTest):
             'mc:qemuarm-bookworm:isar-image-ci',
             'mc:qemui386-bookworm:isar-image-base',
             'mc:qemumipsel-bookworm:isar-image-ci',
-            'mc:hikey-bookworm:isar-image-base'
+            'mc:hikey-bookworm:isar-image-base',
                   ]
 
         self.init()
@@ -214,7 +214,7 @@ class NoCrossTest(CIBaseTest):
             'mc:rpi-arm-bullseye:isar-image-base',
             'mc:rpi-arm-v7-bullseye:isar-image-base',
             'mc:rpi-arm-v7l-bullseye:isar-image-base',
-            'mc:rpi-arm64-v8-bullseye:isar-image-base'
+            'mc:rpi-arm64-v8-bullseye:isar-image-base',
                   ]
 
         self.init()
@@ -226,7 +226,7 @@ class NoCrossTest(CIBaseTest):
     def test_nocross_sidports(self):
         targets = [
             'mc:qemuriscv64-sid-ports:isar-image-base',
-            'mc:sifive-fu540-sid-ports:isar-image-base'
+            'mc:sifive-fu540-sid-ports:isar-image-base',
                   ]
 
         self.init()
@@ -247,7 +247,7 @@ class ContainerImageTest(CIBaseTest):
         targets = [
             'mc:container-amd64-buster:isar-image-base',
             'mc:container-amd64-bullseye:isar-image-base',
-            'mc:container-amd64-bookworm:isar-image-base'
+            'mc:container-amd64-bookworm:isar-image-base',
                   ]
 
         self.init()
