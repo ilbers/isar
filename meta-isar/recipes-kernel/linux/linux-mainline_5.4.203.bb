@@ -12,6 +12,7 @@ ARCHIVE_VERSION = "${@ d.getVar('PV')[:-2] if d.getVar('PV').endswith('.0') else
 SRC_URI += " \
     https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-${ARCHIVE_VERSION}.tar.xz \
     file://x86_64_defconfig \
+    file://ftpm-module.cfg \
     file://no-ubifs-fs.cfg \
     file://no-root-nfs.cfg;apply=no"
 
