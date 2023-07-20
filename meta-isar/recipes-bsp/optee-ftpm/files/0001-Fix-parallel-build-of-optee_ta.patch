@@ -1,0 +1,59 @@
+From ee13738d203aca490c0fb3d1f79cee1d8f9e0c88 Mon Sep 17 00:00:00 2001
+From: Uladzimir Bely <ubely@ilbers.de>
+Date: Mon, 31 Jul 2023 14:42:52 +0300
+Subject: [PATCH] Fix parallel build of optee_ta
+
+TA devkit build system runs creating tpm and wolf symlinks in parallel
+with building ftpm. This sometimes causes build fail:
+
+make[2]: Entering directory '/<<PKGBUILDDIR>>/Samples/ARM32-FirmwareTPM/optee_ta'
+/usr/bin/make -C fTPM CROSS_COMPILE=
+make[3]: Entering directory '/<<PKGBUILDDIR>>/Samples/ARM32-FirmwareTPM/optee_ta/fTPM'
+Checking symlink to the TPM folder: /<<PKGBUILDDIR>>
+Checking symlink to the WolfSSL folder: /<<PKGBUILDDIR>>/external/wolfssl
+Establishing symlink.
+  CC      ../out/fTPM/platform/Cancel.o
+Establishing symlink.
+  CC      ../out/fTPM/platform/AdminPPI.o
+  CC      ../out/fTPM/platform/Entropy.o
+make[3]: *** No rule to make target 'lib/wolf/wolf_symlink/wolfcrypt/src/aes.c', needed by '../out/fTPM/./lib/wolf/wolf_symlink/wolfcrypt/src/aes.o'.  Stop.
+make[3]: *** Waiting for unfinished jobs....
+
+It's easy to reproduce by adding a small sleep to the makefile rules
+that create these symlinks just before 'ln -s' called.
+
+Signed-off-by: Uladzimir Bely <ubely@ilbers.de>
+---
+ Samples/ARM32-FirmwareTPM/optee_ta/Makefile      | 1 +
+ Samples/ARM32-FirmwareTPM/optee_ta/fTPM/Makefile | 6 ++++++
+ 2 files changed, 7 insertions(+)
+
+diff --git a/Samples/ARM32-FirmwareTPM/optee_ta/Makefile b/Samples/ARM32-FirmwareTPM/optee_ta/Makefile
+index ddf6784..2053c01 100644
+--- a/Samples/ARM32-FirmwareTPM/optee_ta/Makefile
++++ b/Samples/ARM32-FirmwareTPM/optee_ta/Makefile
+@@ -3,6 +3,7 @@ export V?=0
+ 
+ .PHONY: all
+ all:
++	$(MAKE) -C fTPM create_ftpm_lib_symlinks
+ 	$(MAKE) -C fTPM CROSS_COMPILE=$(TA_CROSS_COMPILE)
+ 
+ .PHONY: clean
+diff --git a/Samples/ARM32-FirmwareTPM/optee_ta/fTPM/Makefile b/Samples/ARM32-FirmwareTPM/optee_ta/fTPM/Makefile
+index c71eecd..2b4309c 100644
+--- a/Samples/ARM32-FirmwareTPM/optee_ta/fTPM/Makefile
++++ b/Samples/ARM32-FirmwareTPM/optee_ta/fTPM/Makefile
+@@ -11,3 +11,9 @@ clean: clean_stripped_file
+ clean_stripped_file:
+ 	rm -f $(BINARY).stripped.elf
+ 
++.PHONY: create_ftpm_lib_symlinks
++create_ftpm_lib_symlinks:
++	@echo Establishing tpm_symlink.
++	ln -fs ../../$(TPM_ROOT) ./lib/tpm/tpm_symlink
++	@echo Establishing wolf_symlink.
++	ln -fs ../../$(WOLF_ROOT) ./lib/wolf/wolf_symlink
+-- 
+2.41.0
+

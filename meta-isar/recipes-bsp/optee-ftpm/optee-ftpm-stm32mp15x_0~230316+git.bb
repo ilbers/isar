@@ -12,6 +12,7 @@ SRC_URI += " \
     https://github.com/Microsoft/ms-tpm-20-ref/archive/${SRCREV}.tar.gz \
     https://github.com/wolfSSL/wolfssl/archive/${SRCREV-wolfssl}.tar.gz;name=wolfssl \
     file://0001-add-enum-to-ta-flags.patch \
+    file://0001-Fix-parallel-build-of-optee_ta.patch \
     "
 
 SRCREV = "f74c0d9686625c02b0fdd5b2bbe792a22aa96cb6"
