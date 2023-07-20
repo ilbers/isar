@@ -22,9 +22,9 @@ esac
 
 FTPM_DEV=/dev/tpmrm0
 
-# The tee-supplicant would take some time to be discovered, 10 seconds should be
-# enough
-wait_sec=10
+# The tee-supplicant would take some time to be discovered, 30 seconds should
+# be enough
+wait_sec=30
 until test $wait_sec -eq 0 || test -c "${FTPM_DEV}" ; do
 	wait_sec=$((wait_sec-1))
 	sleep 1
