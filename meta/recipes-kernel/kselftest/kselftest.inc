@@ -20,7 +20,7 @@ DEBIAN_BUILD_DEPENDS ?= " \
     rsync, \
     flex,  \
     bison, \
-    fuse, \
+    ${@ 'fuse3' if d.getVar('BASE_DISTRO_CODENAME') == 'bookworm' else 'fuse'}, \
     libelf-dev:native, \
     libcap-ng-dev:native, \
     libpopt-dev:native, \
