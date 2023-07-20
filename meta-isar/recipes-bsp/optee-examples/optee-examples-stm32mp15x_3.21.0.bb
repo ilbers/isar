@@ -16,7 +16,7 @@ SRC_URI[sha256sum] = "9b965f829adc532b5228534d3b9b38ae1fc4f2ac55d73159a39d43e597
 
 S = "${WORKDIR}/optee_examples-${PV}"
 
-OPTEE_NAME = "${MACHINE}"
+OPTEE_NAME = "stm32mp15x"
 OPTEE_PLATFORM = "stm32mp1"
 TA_DEV_KIT_DIR = "/usr/lib/optee-os/${OPTEE_NAME}/export-ta_arm32"
 
