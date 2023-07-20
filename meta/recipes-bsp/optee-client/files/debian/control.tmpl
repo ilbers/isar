@@ -39,7 +39,7 @@ Description: normal world user space client APIs for OP-TEE
 
 Package: tee-supplicant
 Architecture: ${DISTRO_ARCH}
-Depends: systemd ${misc:Depends}, ${shlibs:Depends}
+Depends: systemd ${misc:Depends}, procps, ${shlibs:Depends}
 Description: normal world user space client APIs for OP-TEE
  OP-TEE is a Trusted Execution Environment (TEE) designed as companion to a
  non-secure Linux kernel running on Arm; Cortex-A cores using the TrustZone
