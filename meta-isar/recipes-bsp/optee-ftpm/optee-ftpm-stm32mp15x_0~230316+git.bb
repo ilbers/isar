@@ -15,11 +15,10 @@ SRC_URI += " \
     "
 
 SRCREV = "f74c0d9686625c02b0fdd5b2bbe792a22aa96cb6"
-# according to ms-tpm-20-ref submodules
-SRCREV-wolfssl = "9c87f979a7f1d3a6d786b260653d566c1d31a1c4"
+SRCREV-wolfssl = "3b3c175af0e993ffaae251871421e206cc41963f"
 
 SRC_URI[sha256sum] = "16fabc6ad6cc700d947dbc96efc30ff8ae97e577944466f08193bb37bc1eb64d"
-SRC_URI[wolfssl.sha256sum] = "a68c301fa0ee6197158912d808c4258605a2d001e458fd958257cafba17bfd14"
+SRC_URI[wolfssl.sha256sum] = "1157994b12295b74754dd9054124c857c59093b762e6f744d0a3a3565cb6314d"
 
 S = "${WORKDIR}/ms-tpm-20-ref-${SRCREV}"
 
