@@ -5,9 +5,8 @@
 #
 # SPDX-License-Identifier: MIT
 #
-require recipes-bsp/optee-ftpm/optee-ftpm.inc
 
-# CHANGELOG_V = "0.1+git+isar"
+require recipes-bsp/optee-ftpm/optee-ftpm.inc
 
 SRC_URI += " \
     https://github.com/Microsoft/ms-tpm-20-ref/archive/${SRCREV}.tar.gz \
@@ -24,10 +23,8 @@ SRC_URI[wolfssl.sha256sum] = "a68c301fa0ee6197158912d808c4258605a2d001e458fd9582
 
 S = "${WORKDIR}/ms-tpm-20-ref-${SRCREV}"
 
-OPTEE_NAME = "${MACHINE}"
 TA_CPU = "cortex-a7"
 TA_DEV_KIT_DIR = "/usr/lib/optee-os/${OPTEE_NAME}/export-ta_arm32"
-OPTEE_FTPM_BUILD_ARGS_EXTRA = "CFG_FTPM_USE_WOLF=y"
 
 do_prepare_build:append() {
     rm -rf ${S}/external/wolfssl
