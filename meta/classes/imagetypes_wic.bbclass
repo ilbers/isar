@@ -83,8 +83,6 @@ python () {
             bb.build.addtask('do_transform_template', 'do_image_wic', None, d)
 }
 
-inherit buildchroot
-
 IMAGER_INSTALL:wic += "${WIC_IMAGER_INSTALL}"
 # wic comes with reasonable defaults, and the proper interface is the wks file
 ROOTFS_EXTRA ?= "0"
@@ -95,7 +93,6 @@ STAGING_DIR ?= "${TMPDIR}"
 IMAGE_BASENAME ?= "${PN}-${DISTRO}"
 FAKEROOTCMD ?= "${SCRIPTSDIR}/wic_fakeroot"
 RECIPE_SYSROOT_NATIVE ?= "/"
-BUILDCHROOT_DIR = "${BUILDCHROOT_TARGET_DIR}"
 
 WIC_CREATE_EXTRA_ARGS ?= ""
 WIC_DEPLOY_PARTITIONS ?= "0"
@@ -145,26 +142,11 @@ check_for_wic_warnings() {
 
 do_image_wic[file-checksums] += "${WKS_FILE_CHECKSUM}"
 IMAGE_CMD:wic() {
-    wic_do_mounts
     generate_wic_image
     check_for_wic_warnings
 }
 
-wic_do_mounts[vardepsexclude] += "BITBAKEDIR"
-wic_do_mounts() {
-    buildchroot_do_mounts
-    sudo -s <<'EOSUDO'
-        ( flock 9
-        set -e
-        for dir in ${BBLAYERS} ${STAGING_DIR} ${SCRIPTSDIR} ${BITBAKEDIR}; do
-            mkdir -p ${BUILDCHROOT_DIR}/$dir
-            if ! mountpoint ${BUILDCHROOT_DIR}/$dir >/dev/null 2>&1; then
-                mount --bind --make-private $dir ${BUILDCHROOT_DIR}/$dir
-            fi
-        done
-        ) 9>${MOUNT_LOCKFILE}
-EOSUDO
-}
+SCHROOT_MOUNTS += "${BBLAYERS} ${STAGING_DIR} ${SCRIPTSDIR} ${BITBAKEDIR}"
 
 generate_wic_image[vardepsexclude] += "WKS_FULL_PATH BITBAKEDIR TOPDIR"
 generate_wic_image() {
@@ -177,50 +159,39 @@ generate_wic_image() {
     mkdir -p ${IMAGE_ROOTFS}/../pseudo
     touch ${IMAGE_ROOTFS}/../pseudo/files.db
 
-    # create the temp dir in the buildchroot to ensure uniqueness
-    WICTMP=$(cd ${BUILDCHROOT_DIR}; mktemp -d -p tmp)
+    imager_run -p -d ${PP_WORK} -u root <<'EOIMAGER'
+        set -e
 
-    sudo -E chroot ${BUILDCHROOT_DIR} \
-        sh -c ' \
-          BITBAKEDIR="$1"
-          SCRIPTSDIR="$2"
-          WKS_FULL_PATH="$3"
-          STAGING_DIR="$4"
-          MACHINE="$5"
-          WICTMP="$6"
-          IMAGE_FULLNAME="$7"
-          IMAGE_BASENAME="$8"
-          shift 8
-          # The python path is hard-coded as /usr/bin/python3-native/python3 in wic. Handle that.
-          mkdir -p /usr/bin/python3-native/
-          if [ $(head -1 $(which bmaptool) | grep python3) ];then
+        # The python path is hard-coded as /usr/bin/python3-native/python3 in wic. Handle that.
+        mkdir -p /usr/bin/python3-native/
+        if [ $(head -1 $(which bmaptool) | grep python3) ];then
             ln -fs /usr/bin/python3 /usr/bin/python3-native/python3
-          else
+        else
             ln -fs /usr/bin/python2 /usr/bin/python3-native/python3
-          fi
-          export PATH="$BITBAKEDIR/bin:$PATH"
-          "$SCRIPTSDIR"/wic create "$WKS_FULL_PATH" \
-            --vars "$STAGING_DIR/$MACHINE/imgdata/" \
-            -o "/$WICTMP/${IMAGE_FULLNAME}.wic/" \
+        fi
+
+        export PATH="${BITBAKEDIR}/bin:$PATH"
+
+        "${SCRIPTSDIR}"/wic create "${WKS_FULL_PATH}" \
+            --vars "${STAGING_DIR}/${MACHINE}/imgdata/" \
+            -o "/tmp/${IMAGE_FULLNAME}.wic/" \
             --bmap \
-            -e "$IMAGE_BASENAME" $@' \
-              my_script "${BITBAKEDIR}" "${SCRIPTSDIR}" "${WKS_FULL_PATH}" "${STAGING_DIR}" \
-              "${MACHINE}" "${WICTMP}" "${IMAGE_FULLNAME}" "${IMAGE_BASENAME}" \
-              ${WIC_CREATE_EXTRA_ARGS}
+            -e "${IMAGE_BASENAME}" ${WIC_CREATE_EXTRA_ARGS}
+
+        WIC_DIRECT=$(ls -t -1 /tmp/${IMAGE_FULLNAME}.wic/*.direct | head -1)
+        mv -f ${WIC_DIRECT} ${PP_DEPLOY}/${IMAGE_FULLNAME}.wic
+        mv -f ${WIC_DIRECT}.bmap ${PP_DEPLOY}/${IMAGE_FULLNAME}.wic.bmap
+        # deploy partition files if requested (ending with .p<x>)
+        if [ "${WIC_DEPLOY_PARTITIONS}" -eq "1" ]; then
+            # locate *.direct.p<x> partition files
+            find "/tmp/${IMAGE_FULLNAME}.wic/" -type f -regextype sed -regex ".*\.direct.*\.p[0-9]\{1,\}" | while read f; do
+                suffix=$(basename $f | sed 's/.*\.direct\(.*\)/\1/')
+                mv -f ${f} ${PP_DEPLOY}/${IMAGE_FULLNAME}.wic${suffix}
+            done
+        fi
+EOIMAGER
 
     sudo chown -R $(stat -c "%U" ${LAYERDIR_core}) ${LAYERDIR_core} ${LAYERDIR_isar} ${SCRIPTSDIR} || true
-    WIC_DIRECT=$(ls -t -1 ${BUILDCHROOT_DIR}/$WICTMP/${IMAGE_FULLNAME}.wic/*.direct | head -1)
-    sudo chown -R $(id -u):$(id -g) ${BUILDCHROOT_DIR}/${WICTMP}
-    mv -f ${WIC_DIRECT} ${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.wic
-    mv -f ${WIC_DIRECT}.bmap ${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.wic.bmap
-    # deploy partition files if requested (ending with .p<x>)
-    if [ "${WIC_DEPLOY_PARTITIONS}" -eq "1" ]; then
-        # locate *.direct.p<x> partition files
-        find ${BUILDCHROOT_DIR}/${WICTMP} -type f -regextype sed -regex ".*\.direct.*\.p[0-9]\{1,\}" | while read f; do
-            suffix=$(basename $f | sed 's/.*\.direct\(.*\)/\1/')
-            mv -f ${f} ${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.wic${suffix}
-        done
-    fi
-    rm -rf ${BUILDCHROOT_DIR}/${WICTMP}
+    sudo chown -R $(id -u):$(id -g) "${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.wic"*
     rm -rf ${IMAGE_ROOTFS}/../pseudo
 }

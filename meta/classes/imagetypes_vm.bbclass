@@ -4,8 +4,6 @@
 # This class allows to generate images for VMware and VirtualBox
 #
 
-inherit buildchroot
-
 FILESEXTRAPATHS:prepend = "${LAYERDIR_core}/recipes-core/images:"
 OVF_TEMPLATE_FILE ?= "vm-img-virtualbox.ovf.tmpl"
 IMAGE_SRC_URI:ova = "file://${OVF_TEMPLATE_FILE}"
@@ -36,9 +34,8 @@ CONVERSION_OPTIONS = "${@set_convert_options(d)}"
 
 convert_wic() {
     rm -f '${DEPLOY_DIR_IMAGE}/${VIRTUAL_MACHINE_IMAGE_FILE}'
-    image_do_mounts
     bbnote "Creating ${VIRTUAL_MACHINE_IMAGE_FILE} from ${SOURCE_IMAGE_FILE}"
-    sudo -E  chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} \
+    imager_run -p -d ${PP_WORK} -- \
     /usr/bin/qemu-img convert -f raw -O ${VIRTUAL_MACHINE_IMAGE_TYPE} ${CONVERSION_OPTIONS} \
         '${PP_DEPLOY}/${SOURCE_IMAGE_FILE}' '${VIRTUAL_MACHINE_DISK}'
 }
@@ -81,7 +78,7 @@ IMAGE_CMD:ova() {
     export LAST_CHANGE=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
     export OVA_FIRMWARE_UPPERCASE=$(echo ${OVA_FIRMWARE} | tr '[a-z]' '[A-Z]')
     export OVF_TEMPLATE_STAGE2=$(echo ${OVF_TEMPLATE_FILE} | sed 's/.tmpl$//' )
-    sudo -Es chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} <<'EOSUDO'
+    imager_run -p -d ${PP_WORK} <<'EOIMAGER'
         set -e
         export DISK_SIZE_BYTES=$(qemu-img info -f vmdk "${VIRTUAL_MACHINE_DISK}" \
                                  | gawk 'match($0, /^virtual size:.*\(([0-9]+) bytes\)/, a) {print a[1]}')
@@ -98,6 +95,6 @@ IMAGE_CMD:ova() {
             tar -uvf ${PP_DEPLOY}/${OVA_NAME}.ova -C ${PP_DEPLOY} ${OVA_NAME}.mf
         fi
         tar -uvf ${PP_DEPLOY}/${OVA_NAME}.ova -C ${PP_DEPLOY} ${VIRTUAL_MACHINE_IMAGE_FILE}
-EOSUDO
+EOIMAGER
 }
 IMAGE_CMD:ova[depends] = "${PN}:do_transform_template"
