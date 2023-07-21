@@ -17,9 +17,7 @@ is_not_part_of_current_build() {
             "${SCHROOT_HOST_DIR}"/var/log/dpkg.log \
             "${SCHROOT_TARGET_DIR}"/var/log/dpkg.log \
             "${SCHROOT_HOST_DIR}"/tmp/dpkg_common.log \
-            "${SCHROOT_TARGET_DIR}"/tmp/dpkg_common.log \
-            "${BUILDCHROOT_HOST_DIR}"/var/log/dpkg.log \
-            "${BUILDCHROOT_TARGET_DIR}"/var/log/dpkg.log | head -1 )"
+            "${SCHROOT_TARGET_DIR}"/tmp/dpkg_common.log | head -1 )"
 
     [ -z "${output}" ]
 }

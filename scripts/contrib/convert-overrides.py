@@ -65,7 +65,7 @@ skips = skips + ["self._removePatch", "self._removePatchFile", "self._appendPatc
 
 imagevars = ["IMAGE_CMD", "EXTRA_IMAGECMD", "IMAGE_TYPEDEP", "CONVERSION_CMD", "COMPRESS_CMD"]
 imagevars = imagevars + ["TOOLCHAIN", "BOOTSTRAP_SRC", "IMAGE_FSTYPES", "IMAGE_SRC_URI", "IMAGE_TEMPLATE_FILES", "IMAGE_TEMPLATE_VARS", "IMAGE_CMD_REQUIRED_ARGS"]
-imagevars = imagevars + ["IMAGE_FULLNAME", "CONVERSION_DEPS", "BUILDCHROOT_PREINSTALL", "IMAGER_BUILD_DEPS", "IMAGER_INSTALL"]
+imagevars = imagevars + ["IMAGE_FULLNAME", "CONVERSION_DEPS", "IMAGER_BUILD_DEPS", "IMAGER_INSTALL"]
 packagevars = packagevars + imagevars
 
 vars_re = {}

@@ -35,11 +35,6 @@ PP_DEPLOY = "${PP}/deploy"
 PP_ROOTFS = "${PP}/rootfs"
 PP_WORK = "${PP}/work"
 
-BUILDROOT = "${BUILDCHROOT_DIR}${PP}"
-BUILDROOT_DEPLOY = "${BUILDCHROOT_DIR}${PP_DEPLOY}"
-BUILDROOT_ROOTFS = "${BUILDCHROOT_DIR}${PP_ROOTFS}"
-BUILDROOT_WORK = "${BUILDCHROOT_DIR}${PP_WORK}"
-
 python(){
     if (d.getVar('IMAGE_TRANSIENT_PACKAGES')):
         bb.warn("IMAGE_TRANSIENT_PACKAGES is set and no longer supported")
@@ -71,16 +66,6 @@ DEPENDS += "${IMAGE_INSTALL}"
 
 ISAR_RELEASE_CMD_DEFAULT = "git -C ${LAYERDIR_core} describe --tags --dirty --match 'v[0-9].[0-9]*'"
 ISAR_RELEASE_CMD ?= "${ISAR_RELEASE_CMD_DEFAULT}"
-
-image_do_mounts() {
-    sudo flock ${MOUNT_LOCKFILE} -c ' \
-        mkdir -p "${BUILDROOT_DEPLOY}" "${BUILDROOT_ROOTFS}" "${BUILDROOT_WORK}"
-        mount --bind "${DEPLOY_DIR_IMAGE}" "${BUILDROOT_DEPLOY}"
-        mount --bind "${IMAGE_ROOTFS}" "${BUILDROOT_ROOTFS}"
-        mount --bind "${WORKDIR}" "${BUILDROOT_WORK}"
-    '
-    buildchroot_do_mounts
-}
 
 inherit multiarch
 inherit essential

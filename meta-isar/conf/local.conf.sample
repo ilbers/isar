@@ -24,7 +24,7 @@ MACHINE ??= "qemuarm"
 # Isar Configuration Selection
 #
 # You need to select a specific distribution configuration which will used for both:
-# generation of buildchroot environment and target root filesystem.
+# generation of schroot environment and target root filesystem.
 #
 # This sets the default distribution configuration:
 DISTRO ??= "debian-bullseye"
