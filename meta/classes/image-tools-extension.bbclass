@@ -15,6 +15,8 @@ SCHROOT_MOUNTS = "${WORKDIR}:${PP_WORK} ${IMAGE_ROOTFS}:${PP_ROOTFS} ${DEPLOY_DI
 SCHROOT_MOUNTS += "${REPO_ISAR_DIR}/${DISTRO}:/isar-apt"
 
 imager_run() {
+    local_install="${@(d.getVar("INSTALL_%s" % d.getVar("BB_CURRENTTASK")) or '').strip()}"
+
     schroot_create_configs
     insert_mounts
 
@@ -34,8 +36,8 @@ imager_run() {
     trap 'exit 1' INT HUP QUIT TERM ALRM USR1
     trap 'imager_cleanup' EXIT
 
-    if [ -n "${@d.getVar("IMAGER_INSTALL").strip()}" ]; then
-        echo "Installing deps: ${IMAGER_INSTALL}"
+    if [ -n "${local_install}" ]; then
+        echo "Installing imager deps: ${local_install}"
 
         distro="${BASE_DISTRO}-${BASE_DISTRO_CODENAME}"
         if [ ${ISAR_CROSS_COMPILE} -eq 1 ]; then
@@ -64,13 +66,13 @@ EOF"
                 -o APT::Get::List-Cleanup='0'
             apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y \
                 --allow-unauthenticated --allow-downgrades --download-only install \
-                ${IMAGER_INSTALL}"
+                ${local_install}"
 
         deb_dl_dir_export ${schroot_dir} ${distro}
         schroot -r -c ${session_id} -d / -u root -- sh -c " \
             apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y \
                 --allow-unauthenticated --allow-downgrades install \
-                ${IMAGER_INSTALL}"
+                ${local_install}"
     fi
 
     schroot -r -c ${session_id} "$@"

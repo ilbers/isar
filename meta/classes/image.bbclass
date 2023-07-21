@@ -208,6 +208,8 @@ python() {
     imager_build_deps = set()
     conversion_install = set()
     for bt in basetypes:
+        local_imager_install = set()
+        local_conversion_install = set()
         vardeps = set()
         cmds = []
         bt_clean = bt.replace('-', '_').replace('.', '_')
@@ -231,6 +233,7 @@ python() {
         # imager install
         for dep in (d.getVar('IMAGER_INSTALL:' + bt_clean) or '').split():
             imager_install.add(dep)
+            local_imager_install.add(dep)
         for dep in (d.getVar('IMAGER_BUILD_DEPS:' + bt_clean) or '').split():
             imager_build_deps.add(dep)
 
@@ -273,6 +276,7 @@ python() {
                     vardeps.add('CONVERSION_CMD:' + c)
                     for dep in (localdata.getVar('CONVERSION_DEPS:' + c) or '').split():
                         conversion_install.add(dep)
+                        local_conversion_install.add(dep)
                     # remove temporary image files
                     if t not in image_types:
                         rm_images.add(localdata.expand('${IMAGE_FILE_HOST}'))
@@ -304,6 +308,10 @@ python() {
         if task_deps:
             d.appendVarFlag(task, 'depends', task_deps)
         bb.build.addtask(task, 'do_image', after, d)
+
+        # set per type imager dependencies
+        d.setVar('INSTALL_image_%s' % bt_clean, d.getVar('IMAGER_INSTALL'))
+        d.appendVar('INSTALL_image_%s' % bt_clean, ' ' + ' '.join(sorted(local_imager_install | local_conversion_install)))
 
     d.appendVar('IMAGER_INSTALL', ' ' + ' '.join(sorted(imager_install | conversion_install)))
     d.appendVar('IMAGER_BUILD_DEPS', ' ' + ' '.join(sorted(imager_build_deps)))
