@@ -450,11 +450,6 @@ do_rootfs_finalize() {
         mountpoint -q '${ROOTFSDIR}/sys' && \
             umount -l ${ROOTFSDIR}/sys
 
-        rm -f "${ROOTFSDIR}/etc/apt/sources.list.d/isar-apt.list"
-        rm -f "${ROOTFSDIR}/etc/apt/preferences.d/isar-apt"
-        rm -f "${ROOTFSDIR}/etc/apt/sources.list.d/base-apt.list"
-        rm -f "${ROOTFSDIR}/etc/apt/apt.conf.d/50isar"
-
         if [ -e "${ROOTFSDIR}/etc/apt/sources-list" ]; then
             mv "${ROOTFSDIR}/etc/apt/sources-list" \
                 "${ROOTFSDIR}/etc/apt/sources.list.d/bootstrap.list"

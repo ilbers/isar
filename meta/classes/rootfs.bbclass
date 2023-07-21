@@ -293,6 +293,18 @@ rootfs_export_dpkg_status() {
        '${ROOTFS_DPKGSTATUS_DEPLOY_DIR}'/'${ROOTFS_PACKAGE_SUFFIX}'.dpkg_status
 }
 
+ROOTFS_POSTPROCESS_COMMAND += "rootfs_cleanup_isar_apt"
+rootfs_cleanup_isar_apt[weight] = "2"
+rootfs_cleanup_isar_apt() {
+    sudo -s <<'EOSUDO'
+        set -e
+        rm -f "${ROOTFSDIR}/etc/apt/sources.list.d/isar-apt.list"
+        rm -f "${ROOTFSDIR}/etc/apt/preferences.d/isar-apt"
+        rm -f "${ROOTFSDIR}/etc/apt/sources.list.d/base-apt.list"
+        rm -f "${ROOTFSDIR}/etc/apt/apt.conf.d/50isar"
+EOSUDO
+}
+
 do_rootfs_postprocess[vardeps] = "${ROOTFS_POSTPROCESS_COMMAND}"
 do_rootfs_postprocess[network] = "${TASK_USE_SUDO}"
 python do_rootfs_postprocess() {
