@@ -34,7 +34,9 @@ Isar provides:
 
  - Fast target image generation: About 10 minutes to get base system image for one machine.
  - Use any apt package provider, including open-source communities like `Debian`, `Raspbian`, etc. and proprietary ones created manually.
- - Native compilation: Packages are compiled in a `chroot` environment using the same toolchain and libraries that will be installed to the target filesystem.
+ - Native compilation: Packages are compiled in a `schroot` environment using
+   the same toolchain and libraries that will be installed to the target
+   filesystem.
  - Cross compilation: Could be enabled, when native compilation from the sources takes a lot of time f.e. for Linux kernel.
  - Product templates that can be quickly re-used for real projects.
 
@@ -108,7 +110,7 @@ unstable/bullseye included in `/etc/apt/sources.list[.d]`).
 
 Notes:
 
-* BitBake requires Python 3.5+.
+* BitBake requires Python 3.6+.
 * The python3 package is required for the correct `alternatives` setting.
 * If you'd like to run bitbake in a container (chroot, docker, etc.), install
   the above in the container, and also perform `sudo apt-get install
@@ -319,6 +321,11 @@ docker run --rm -ti --volume "$(pwd):/build" isar-image-base-debian-buster-armhf
 
 `chroot`(8) runs a command within a specified root directory. Please refer to GNU coreutils online help: <http://www.gnu.org/software/coreutils/> for more information.
 
+### Schroot
+
+Schroot allows the user to run a command in a chroot environment specified by
+root directory or previously opened session.
+
 ### QEMU
 
 QEMU is a generic and open source machine emulator and virtualizer. Please refer to <http://wiki.qemu.org/Main_Page> for more information.
@@ -341,7 +348,7 @@ BitBake is a generic task execution engine for efficient execution of shell and 
 
 Isar workflow consists of stages described below.
  
-### Generation of  Buildchroot Filesystem
+### Generation of Schroot Filesystem
 
 This filesystem is used as a build environment to compile custom packages. It is generated using `apt` binaries repository, selected by the user in configuration file. Please refer to distro configuration chapter for more information.
 
@@ -351,7 +358,9 @@ During this stage Isar processes custom packages selected by the user and genera
 
 ### Generation of Basic Target Filesystem
 
-This filesystem is generated similarly to the `buildchroot` one using the `apt` binaries repository. Please refer to distro configuration chapter for more information.
+This filesystem is generated similarly to the `schroot` one using the `apt`
+binaries repository. Please refer to distro configuration chapter for more
+information.
 
 ### Install Custom Packages
 
@@ -423,7 +432,9 @@ Some other variables include:
 
 ## Isar Distro Configuration
 
-In Isar, each machine can use its specific Linux distro to generate `buildchroot` and target filesystem. By default, Isar provides configuration files for the following distros:
+In Isar, each machine can use its specific Linux distro to generate `schroot`
+and target filesystem. By default, Isar provides configuration files for the
+following distros:
 
  - debian-buster
  - debian-bullseye
@@ -601,12 +612,12 @@ The IMAGE_CMD is a shell function, and the environment has some pre-set
 variables:
 
  - `IMAGE_FILE_HOST` and `IMAGE_FILE_CHROOT` are the paths of the output image
-   (including extension) in the host or buildchroot.
+   (including extension) in the host or schroot rootfs.
  - `SUDO_CHROOT` is a prefix you can use to have a command run inside the
-   buildchroot.
+   imager schroot rootfs.
 
 If the code you provide in `IMAGE_CMD` requires the building and/or installation
-of additional packages in the buildchroot, you can specify this:
+of additional packages in the imager schroot rootfs, you can specify this:
 ```
 IMAGER_BULID_DEPS:my_image = "my_command"
 IMAGER_INSTALL:my_image = "my_command"
@@ -970,7 +981,7 @@ concept.
 Isar can build 32-bit packages as part of a 64-bit image build and also enable
 the image with the necessary packages. To activate compat support,
 set `ISAR_ENABLE_COMPAT_ARCH = "1"` in `local.conf`. This will install necessary
-build dependencies in the buildchroot.
+build dependencies in the schroot rootfs.
 
 For all dpkg package recipes, Isar automatically provides a `<package>-compat`
 target that builds the package for the `COMPAT_DISTRO_ARCH`. This can be
@@ -1040,7 +1051,7 @@ Now the image should be up again and `modprobe example-module` should work.
 ### Cross Support for Imagers
 
 If `ISAR_CROSS_COMPILE = "1"`, the imager and optional compression tasks
-run in the host buildchroot instead of the target buildchroot.
+run in the host schroot rootfs instead of the target one.
 This gives a significant speedup when compressing the generated image,
 as the compression is not emulated.
 
@@ -1048,10 +1059,10 @@ In case your setup does not support cross-imaging, you can disable this
 just for the particular image by adding `ISAR_CROSS_COMPILE = "0"` to your
 image recipe.
 
-## Examining and debugging package generation inside their buildchroot
+## Examining and debugging package generation inside their schroot rootfs
 
 Just like OpenEmbedded, Isar supports a devshell target for all dpkg package
-recipes. This target opens a terminal inside the buildchroot that runs the
+recipes. This target opens a terminal inside the schroot rootfs that runs the
 package build. To invoke it, just call
 `bitbake mc:${MACHINE}-${DISTRO}:<package_name> -c devshell`.
 
@@ -1084,12 +1095,12 @@ feature known from OpenEmbedded. Isar caches
 
   * the Debian bootstrap (`isar-bootstrap` recipe)
   * Debian packages (built with the `dpkg` or `dpkg-raw` classes)
-  * root file systems (buildchroot and image rootfs)
+  * root file systems (schroot and image rootfs)
 
 The location of the sstate-cache is controlled by the variable `SSTATE_DIR`
 and defaults to `${TMPDIR}/sstate-cache`.
 
-Note that cached rootfs artifacts (bootstrap and buildchroot) have a limited
+Note that cached rootfs artifacts (bootstrap and schroot rootfs) have a limited
 "lifetime": Isar updates their package lists for the upstream package sources
 only once, when they are initially created. So as packages on the upstream
 mirrors change, those lists will be out-of-date and the rootfs becomes useless.
@@ -1389,14 +1400,14 @@ to have Debian source packages as well.
 
  - Trigger download of Debian source packages as part of rootfs postprocess.
 
-With the current base-apt implementation, we already cache all the binary packages that
-we download and install onto the target rootfs and buildchroot. This is then used to
-generate a local-apt for offline build.
+With the current base-apt implementation, we already cache all the binary
+packages that we download and install onto the target rootfs and schroot
+rootfs. This is then used to generate a local-apt for offline build.
 
-Use rootfs postprocessing to parse through the list of deb files in ${DEBDIR} and
-download the corresponding Debian source file using "apt-get source" command.
-This caches the sources of all the Debian packages that are downloaded and installed onto
-the target rootfs and buildchroots.
+Use rootfs postprocessing to parse through the list of deb files in ${DEBDIR}
+and download the corresponding Debian source file using "apt-get source"
+command. This caches the sources of all the Debian packages that are downloaded
+and installed onto the target rootfs and schroot rootfs.
 
 By default, the Debian source caching is not enabled.
 To enable it, add the below line to your local.conf file.

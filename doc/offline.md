@@ -70,7 +70,7 @@ Repeat for `/etc/apache2/sites-available/default-ssl.conf`.
 
 == Set Up BIND
 
-A DNS server is necessary to resolve `localhost` from `buildchroot-target`.
+A DNS server is necessary to resolve `localhost` from `sbuild-chroot-target`.
 
 ```
 sudo apt-get install bind9
