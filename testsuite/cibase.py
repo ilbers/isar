@@ -151,7 +151,7 @@ class CIBaseTest(CIBuilder):
         if not all([
                 check_executed_tasks('isar-bootstrap-target',
                     ['do_bootstrap_setscene', '!do_bootstrap']),
-                check_executed_tasks('buildchroot-target',
+                check_executed_tasks('sbuild-chroot-target',
                     ['do_rootfs_install_setscene', '!do_rootfs_install']),
                 check_executed_tasks('isar-image-base-*',
                     ['do_rootfs_install_setscene', '!do_rootfs_install'])
@@ -175,8 +175,8 @@ class CIBaseTest(CIBuilder):
         if not all([
                 check_executed_tasks('isar-bootstrap-target',
                     ['do_bootstrap_setscene']),
-                check_executed_tasks('buildchroot-target',
-                    ['!do_buildchroot_deploy']),
+                check_executed_tasks('sbuild-chroot-target',
+                    ['!do_sbuildchroot_deploy']),
                 check_executed_tasks('hello',
                     ['do_dpkg_build_setscene', 'do_deploy_deb', '!do_dpkg_build'])
             ]):
@@ -189,7 +189,7 @@ class CIBaseTest(CIBuilder):
         if not all([
                 check_executed_tasks('isar-bootstrap-target',
                     ['do_bootstrap_setscene', '!do_bootstrap']),
-                check_executed_tasks('buildchroot-target',
+                check_executed_tasks('sbuild-chroot-target',
                     ['do_rootfs_install_setscene', '!do_rootfs_install']),
                 check_executed_tasks('hello',
                     ['do_fetch', 'do_dpkg_build']),
