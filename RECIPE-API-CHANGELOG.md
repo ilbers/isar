@@ -505,3 +505,23 @@ IMAGE_PREINSTALL entries that doesn't refers to machine configuration, such as
 `expand-on-first-boot` or `sshd-regen-keys`.
 The configs are cleaned up now and this fact may force downstreams to modify
 their configuration if they relied on these packages.
+
+### Imager is now executed inside schroot
+
+Buildchroot is completely removed and can't be used any more.
+To execute imager code new `imager_run` API was created.
+
+So older style call:
+```
+sudo chroot --userspec=$( id -u ):$( id -g ) ${BUILDCHROOT_DIR} cmd_to_execute
+```
+Can now be performed by:
+```
+imager_run -p -d ${PP_WORK} cmd_to_execute
+```
+If privileged execution is required `-u root` option can be added.
+
+`image_do_mounts` is removed, additional mountpoints can be added like:
+```
+SCHROOT_MOUNTS += "${OUT_PATH1}:${IN_PATH1} ${OUT_PATH2}"
+```
