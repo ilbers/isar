@@ -59,8 +59,8 @@ python () {
         filename = os.path.relpath(fetcher.localpath(key), topdir)
         d.appendVar("THIRD_PARTY_APT_KEYFILES", " ${TOPDIR}/%s" % filename)
 
-    distro_apt_sources = d.getVar(d.getVar("DISTRO_VARS_PREFIX") + "DISTRO_APT_SOURCES") or ""
-    for file in distro_apt_sources.split():
+    distro_apt_sources = get_aptsources_list(d)
+    for file in distro_apt_sources:
         d.appendVar("SRC_URI", " file://%s" % file)
 
     distro_apt_preferences = d.getVar(d.getVar("DISTRO_VARS_PREFIX") + "DISTRO_APT_PREFERENCES") or ""
@@ -149,10 +149,11 @@ def aggregate_aptsources_list(d, file_list, file_out):
 
 def get_aptsources_list(d):
     import errno
+    from collections import OrderedDict
     apt_sources_var = d.getVar("DISTRO_VARS_PREFIX") + "DISTRO_APT_SOURCES"
-    list = (d.getVar(apt_sources_var) or "").split()
+    apt_sources_list = list(OrderedDict.fromkeys((d.getVar(apt_sources_var) or "").split()))
     ret = []
-    for p in list:
+    for p in apt_sources_list:
         try:
             f = bb.parse.resolve_file(p, d)
             ret.append(f)
@@ -251,9 +252,7 @@ python do_apt_config_prepare() {
 
     apt_sources_out = d.getVar("APTSRCS")
     apt_sources_init_out = d.getVar("APTSRCS_INIT")
-    apt_sources_list = (
-        d.getVar(d.getVar("DISTRO_VARS_PREFIX") + "DISTRO_APT_SOURCES") or ""
-    ).split()
+    apt_sources_list = get_aptsources_list(d)
 
     aggregate_files(d, apt_sources_list, apt_sources_init_out)
     aggregate_aptsources_list(d, apt_sources_list, apt_sources_out)
