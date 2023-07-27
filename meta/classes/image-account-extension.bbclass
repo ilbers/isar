@@ -98,10 +98,10 @@ def image_create_users(d: "DataSmart") -> None:
         add_user_option("--comment", "comment")
         add_user_option("--shell", "shell")
 
-        groups = d.getVarFlag(user_entry, "groups") or ""
+        groups = (d.getVarFlag(user_entry, "groups") or "").split()
         if groups:
             args.append("--groups")
-            args.append(groups.replace(' ', ','))
+            args.append(','.join(groups))
 
         flags = (d.getVarFlag(user_entry, "flags") or "").split()
 
