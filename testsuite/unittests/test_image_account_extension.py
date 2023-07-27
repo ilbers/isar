@@ -39,12 +39,15 @@ class TestImageAccountExtensionImageCreateUsers(TestImageAccountExtensionCommon)
     def test_new_user(self):
         test_user = "new"
         d, rootfs = self.setup(test_user)
+        # make the list a bit clumsy to simulate appends and removals to that var
+        d.setVarFlag('USER_{}'.format(test_user), 'groups', 'dialout render  foo ')
 
         with patch.object(bb.process, "run") as run_mock:
             image_create_users(d)
 
         run_mock.assert_called_once_with(
-            ["sudo", "-E", "chroot", rootfs.path(), "/usr/sbin/useradd", test_user])
+            ["sudo", "-E", "chroot", rootfs.path(), "/usr/sbin/useradd",
+             '--groups', 'dialout,render,foo', test_user])
 
     def test_existing_user_no_change(self):
         test_user = "test"
