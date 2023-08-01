@@ -50,7 +50,8 @@ yes|1)
 	echo "load \${devtype} \${devnum}:\${distro_bootpart}" \
 	     "\${ramdisk_addr_r} /boot/initrd.img-${KERNEL_VERSION}" \
 	     >> ${BOOT_CMD}
-	INITRD_ADDR="\${ramdisk_addr_r}:\${filesize}"
+	echo "setenv ramdisk_size \${filesize}" >> ${BOOT_CMD}
+	INITRD_ADDR="\${ramdisk_addr_r}:\${ramdisk_size}"
 esac
 
 if [ -n "${OVERLAYS}" ]; then
