@@ -63,13 +63,11 @@ if [ -n "${OVERLAYS}" ]; then
 		if ! echo $OVERLAY | grep -q "^/"; then
 			OVERLAY_PATH=/usr/lib/linux-image-${KERNEL_VERSION}/
 		fi
-		echo "for entry in ${OVERLAY}; do" >> ${BOOT_CMD}
-		echo "echo Loading ${OVERLAY_PATH}\${entry}..." >> ${BOOT_CMD}
+		echo "echo Loading ${OVERLAY_PATH}${OVERLAY} ..." >> ${BOOT_CMD}
 		echo "load \${devtype} \${devnum}:${ROOT_PARTITION}" \
-		     "\${overlay_addr_r} ${OVERLAY_PATH}\${entry}" \
+		     "\${overlay_addr_r} ${OVERLAY_PATH}${OVERLAY}" \
 		     >> ${BOOT_CMD}
 		echo "fdt apply \${overlay_addr_r}" >> ${BOOT_CMD}
-		echo "done" >> ${BOOT_CMD}
 	done
 fi
 
