@@ -346,6 +346,104 @@ class CIBuilder(Test):
         self.fail('No command to run specified')
 
 
+    def vm_turn_on(self, arch='amd64', distro='buster', image='isar-image-base',
+                   enforce_pcbios=False):
+        logdir = '%s/vm_start' % self.build_dir
+        if not os.path.exists(logdir):
+            os.mkdir(logdir)
+        prefix = '%s-vm_start_%s_%s_' % (time.strftime('%Y%m%d-%H%M%S'),
+                                         distro, arch)
+        fd, boot_log = tempfile.mkstemp(suffix='_log.txt', prefix=prefix,
+                                           dir=logdir, text=True)
+        os.chmod(boot_log, 0o644)
+        latest_link = '%s/vm_start_%s_%s_latest.txt' % (logdir, distro, arch)
+        if os.path.exists(latest_link):
+            os.unlink(latest_link)
+        os.symlink(os.path.basename(boot_log), latest_link)
+
+        cmdline = start_vm.format_qemu_cmdline(arch, self.build_dir, distro, image,
+                                               boot_log, None, enforce_pcbios)
+        cmdline.insert(1, '-nographic')
+
+        self.log.info('QEMU boot line:\n' + ' '.join(cmdline))
+        self.log.info('QEMU boot log:\n' + boot_log)
+
+        p1 = subprocess.Popen('exec ' + ' '.join(cmdline), shell=True,
+                              stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                              universal_newlines=True)
+        self.log.debug("Started VM with pid %s" % (p1.pid))
+
+        return p1, cmdline, boot_log
+
+
+    def vm_wait_boot(self, p1, timeout):
+        login_prompt = b' login:'
+
+        poller = select.poll()
+        poller.register(p1.stdout, select.POLLIN)
+        poller.register(p1.stderr, select.POLLIN)
+
+        while time.time() < timeout and p1.poll() is None:
+            events = poller.poll(1000 * (timeout - time.time()))
+            for fd, event in events:
+                if event != select.POLLIN:
+                    continue
+                if fd == p1.stdout.fileno():
+                    # Wait for the complete string if it is read in chunks
+                    # like "i", "sar", " login:"
+                    time.sleep(0.01)
+                    data = os.read(fd, 1024)
+                    if login_prompt in data:
+                        self.log.debug('Got login prompt')
+                        return 0
+                if fd == p1.stderr.fileno():
+                    app_log.error(p1.stderr.readline().rstrip())
+
+        self.log.error("Didn't get login prompt")
+        return 1
+
+
+    def vm_parse_output(self, boot_log, bb_output, skip_modulecheck):
+        # the printk of recipes-kernel/example-module
+        module_output = b'Just an example'
+        resize_output = None
+        image_fstypes = start_vm.get_bitbake_var(bb_output, 'IMAGE_FSTYPES')
+        wks_file = start_vm.get_bitbake_var(bb_output, 'WKS_FILE')
+
+        # only the first type will be tested in start_vm.py
+        if image_fstypes.split()[0] == 'wic':
+            if wks_file:
+                bbdistro = start_vm.get_bitbake_var(bb_output, 'DISTRO')
+                # ubuntu is less verbose so we do not see the message
+                # /etc/sysctl.d/10-console-messages.conf
+                if bbdistro and "ubuntu" not in bbdistro:
+                    if "sdimage-efi-sd" in wks_file:
+                        # output we see when expand-on-first-boot runs on ext4
+                        resize_output = b'resized filesystem to'
+                    if "sdimage-efi-btrfs" in wks_file:
+                        resize_output = b': resize device '
+        rc = 0
+        if os.path.exists(boot_log) and os.path.getsize(boot_log) > 0:
+            with open(boot_log, "rb") as f1:
+                data = f1.read()
+                if (module_output in data or skip_modulecheck):
+                    if resize_output and not resize_output in data:
+                        rc = 1
+                        self.log.error("No resize output while expected")
+                else:
+                    rc = 2
+                    self.log.error("No example module output while expected")
+        return rc
+
+
+    def vm_turn_off(self, p1):
+        if p1.poll() is None:
+            p1.kill()
+        p1.wait()
+
+        self.log.debug("Stopped VM with pid %s" % (p1.pid))
+
+
     def vm_start(self, arch='amd64', distro='buster',
                  enforce_pcbios=False, skip_modulecheck=False,
                  image='isar-image-base', cmd=None, script=None):
@@ -360,111 +458,33 @@ class CIBuilder(Test):
 
         self.check_init()
 
-        logdir = '%s/vm_start' % self.build_dir
-        if not os.path.exists(logdir):
-            os.mkdir(logdir)
-        prefix = '%s-vm_start_%s_%s_' % (time.strftime('%Y%m%d-%H%M%S'),
-                                         distro, arch)
-        fd, output_file = tempfile.mkstemp(suffix='_log.txt', prefix=prefix,
-                                           dir=logdir, text=True)
-        os.chmod(output_file, 0o644)
-        latest_link = '%s/vm_start_%s_%s_latest.txt' % (logdir, distro, arch)
-        if os.path.exists(latest_link):
-            os.unlink(latest_link)
-        os.symlink(os.path.basename(output_file), latest_link)
-
-        cmdline = start_vm.format_qemu_cmdline(arch, self.build_dir, distro, image,
-                                               output_file, None, enforce_pcbios)
-        cmdline.insert(1, '-nographic')
-
-        self.log.info('QEMU boot line:\n' + ' '.join(cmdline))
-
-        login_prompt = b'isar login:'
-        # the printk of recipes-kernel/example-module
-        module_output = b'Just an example'
-        resize_output = None
-
-        bb_output = start_vm.get_bitbake_env(arch, distro, image).decode()
-        image_fstypes = start_vm.get_bitbake_var(bb_output, 'IMAGE_FSTYPES')
-        wks_file = start_vm.get_bitbake_var(bb_output, 'WKS_FILE')
-        # only the first type will be tested in start_vm.py
-        if image_fstypes.split()[0] == 'wic':
-            if wks_file:
-                bbdistro = start_vm.get_bitbake_var(bb_output, 'DISTRO')
-                # ubuntu is less verbose so we do not see the message
-                # /etc/sysctl.d/10-console-messages.conf
-                if bbdistro and "ubuntu" not in bbdistro:
-                    if "sdimage-efi-sd" in wks_file:
-                        # output we see when expand-on-first-boot runs on ext4
-                        resize_output = b'resized filesystem to'
-                    if "sdimage-efi-btrfs" in wks_file:
-                        resize_output = b': resize device '
-
         timeout = time.time() + int(time_to_wait)
 
-        p1 = subprocess.Popen('exec ' + ' '.join(cmdline), shell=True,
-                              stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                              universal_newlines=True)
+        p1, cmdline, boot_log = self.vm_turn_on(arch, distro, image, enforce_pcbios)
+
+        rc = self.vm_wait_boot(p1, timeout)
+        if rc != 0:
+            self.vm_turn_off(p1)
+            self.fail('Failed to boot qemu machine')
 
         if cmd is not None or script is not None:
-            try:
-                user='ci'
-                host='localhost'
-                port = 22
-                for arg in cmdline:
-                    match = re.match(r".*hostfwd=tcp::(\d*).*", arg)
-                    if match:
-                        port = match.group(1)
-                        break
-
-                rc = self.remote_run(user, host, port, cmd, script, p1, timeout)
-
-            finally:
-                if p1.poll() is None:
-                    self.log.debug('Killing qemu...')
-                    p1.kill()
-                p1.wait()
-
+            user='ci'
+            host='localhost'
+            port = 22
+            for arg in cmdline:
+                match = re.match(r".*hostfwd=tcp::(\d*).*", arg)
+                if match:
+                    port = match.group(1)
+                    break
+            rc = self.remote_run(user, host, port, cmd, script, p1, timeout)
             if rc != 0:
-                self.fail('Log ' + output_file)
+                self.vm_turn_off(p1)
+                self.fail('Failed to run test over ssh')
+        else:
+            bb_output = start_vm.get_bitbake_env(arch, distro, image).decode()
+            rc = self.vm_parse_output(boot_log, bb_output, skip_modulecheck)
+            if rc != 0:
+                self.vm_turn_off(p1)
+                self.fail('Failed to parse output')
 
-            return
-
-        try:
-            poller = select.poll()
-            poller.register(p1.stdout, select.POLLIN)
-            poller.register(p1.stderr, select.POLLIN)
-            while time.time() < timeout and p1.poll() is None:
-                events = poller.poll(1000 * (timeout - time.time()))
-                for fd, event in events:
-                    if event != select.POLLIN:
-                        continue
-                    if fd == p1.stdout.fileno():
-                        # Wait for the complete string if it is read in chunks
-                        # like "i", "sar", " login:"
-                        time.sleep(0.01)
-                        data = os.read(fd, 1024)
-                        if login_prompt in data:
-                            raise CanBeFinished
-                    if fd == p1.stderr.fileno():
-                        app_log.error(p1.stderr.readline().rstrip())
-        except CanBeFinished:
-            self.log.debug('Got login prompt')
-        finally:
-            if p1.poll() is None:
-                p1.kill()
-            p1.wait()
-
-        if os.path.exists(output_file) and os.path.getsize(output_file) > 0:
-            with open(output_file, "rb") as f1:
-                data = f1.read()
-                if (module_output in data or skip_modulecheck) \
-                   and login_prompt in data:
-                    if resize_output:
-                        if resize_output in data:
-                            return
-                    else:
-                        return
-                app_log.error(data.decode(errors='replace'))
-
-        self.fail('Log ' + output_file)
+        self.vm_turn_off(p1)
