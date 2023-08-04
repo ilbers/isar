@@ -2,9 +2,11 @@
 
 import logging
 import os
+import pickle
 import re
 import select
 import shutil
+import signal
 import subprocess
 import time
 import tempfile
@@ -51,6 +53,15 @@ class CIBuilder(Test):
         env = dict(((x.split('=', 1) + [''])[:2] \
                     for x in output.splitlines() if x != ''))
         os.environ.update(env)
+
+        self.vm_dict = {}
+        self.vm_dict_file = '%s/vm_dict_file' % self.build_dir
+
+        if os.path.isfile(self.vm_dict_file):
+            with open(self.vm_dict_file, "rb") as f:
+                data = f.read()
+                if data:
+                    self.vm_dict = pickle.loads(data)
 
     def check_init(self):
         if not hasattr(self, 'build_dir'):
@@ -432,17 +443,26 @@ class CIBuilder(Test):
         return rc
 
 
-    def vm_turn_off(self, p1):
-        if p1.poll() is None:
-            p1.kill()
-        p1.wait()
+    def vm_dump_dict(self, vm):
+        f = open(self.vm_dict_file, "wb")
+        pickle.dump(self.vm_dict, f)
+        f.close()
 
-        self.log.debug("Stopped VM with pid %s" % (p1.pid))
+
+    def vm_turn_off(self, vm):
+        pid = self.vm_dict[vm][0]
+        os.kill(pid, signal.SIGKILL)
+
+        del(self.vm_dict[vm])
+        self.vm_dump_dict(vm)
+
+        self.log.debug("Stopped VM with pid %s" % (pid))
 
 
     def vm_start(self, arch='amd64', distro='buster',
                  enforce_pcbios=False, skip_modulecheck=False,
-                 image='isar-image-base', cmd=None, script=None):
+                 image='isar-image-base', cmd=None, script=None,
+                 stop_vm=False):
         time_to_wait = self.params.get('time_to_wait', default=DEF_VM_TO_SEC)
 
         self.log.info('===================================================')
@@ -456,12 +476,36 @@ class CIBuilder(Test):
 
         timeout = time.time() + int(time_to_wait)
 
-        p1, cmdline, boot_log = self.vm_turn_on(arch, distro, image, enforce_pcbios)
+        vm = "%s_%s_%s_%d" % (arch, distro, image, enforce_pcbios)
 
-        rc = self.vm_wait_boot(p1, timeout)
-        if rc != 0:
-            self.vm_turn_off(p1)
-            self.fail('Failed to boot qemu machine')
+        p1 = None
+        pid = None
+        cmdline = ""
+        boot_log = ""
+
+        run_qemu = True
+
+        if vm in self.vm_dict:
+            pid, cmdline, boot_log = self.vm_dict[vm]
+
+            # Check that corresponding process exists
+            proc = subprocess.run("ps -o cmd= %d" % (pid), shell=True, text=True,
+                                  stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            if cmdline[0] in proc.stdout:
+                self.log.debug("Found '%s' process with pid '%d', use it" % (cmdline[0], pid))
+                run_qemu = False
+
+        if run_qemu:
+            self.log.debug("No qemu-system process for `%s` found, run new VM" % (vm))
+
+            p1, cmdline, boot_log = self.vm_turn_on(arch, distro, image, enforce_pcbios)
+            self.vm_dict[vm] = p1.pid, cmdline, boot_log
+            self.vm_dump_dict(vm)
+
+            rc = self.vm_wait_boot(p1, timeout)
+            if rc != 0:
+                self.vm_turn_off(vm)
+                self.fail('Failed to boot qemu machine')
 
         if cmd is not None or script is not None:
             user='ci'
@@ -474,13 +518,16 @@ class CIBuilder(Test):
                     break
             rc = self.remote_run(user, host, port, cmd, script, timeout)
             if rc != 0:
-                self.vm_turn_off(p1)
+                if stop_vm:
+                    self.vm_turn_off(vm)
                 self.fail('Failed to run test over ssh')
         else:
             bb_output = start_vm.get_bitbake_env(arch, distro, image).decode()
             rc = self.vm_parse_output(boot_log, bb_output, skip_modulecheck)
             if rc != 0:
-                self.vm_turn_off(p1)
+                if stop_vm:
+                    self.vm_turn_off(vm)
                 self.fail('Failed to parse output')
 
-        self.vm_turn_off(p1)
+        if stop_vm:
+            self.vm_turn_off(vm)
