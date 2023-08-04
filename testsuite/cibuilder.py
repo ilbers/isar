@@ -268,10 +268,7 @@ class CIBuilder(Test):
         return rc
 
 
-    def wait_connection(self, proc, cmd_prefix, timeout):
-        if proc is None:
-            return 0
-
+    def wait_connection(self, cmd_prefix, timeout):
         self.log.debug('Waiting for SSH server ready...')
 
         rc = None
@@ -279,9 +276,6 @@ class CIBuilder(Test):
         # Use 3 good SSH ping attempts to consider SSH connection is stable
         while time.time() < timeout and goodcnt < 3:
             goodcnt += 1
-            if proc.poll() is not None:
-                self.log.error('Machine is not running')
-                return rc
 
             rc = self.exec_cmd('/bin/true', cmd_prefix)
             time.sleep(1)
@@ -305,11 +299,13 @@ class CIBuilder(Test):
         return priv_key
 
 
-    def remote_run(self, user, host, port, cmd, script, proc=None, timeout=0):
+    def remote_run(self, user, host, port, cmd, script, timeout=0):
         priv_key = self.prepare_priv_key()
         cmd_prefix = self.get_ssh_cmd_prefix(user, host, port, priv_key)
 
-        rc = self.wait_connection(proc, cmd_prefix, timeout)
+        rc = 0
+        if timeout:
+            rc = self.wait_connection(cmd_prefix, timeout)
 
         if rc == 0:
             if cmd is not None:
@@ -476,7 +472,7 @@ class CIBuilder(Test):
                 if match:
                     port = match.group(1)
                     break
-            rc = self.remote_run(user, host, port, cmd, script, p1, timeout)
+            rc = self.remote_run(user, host, port, cmd, script, timeout)
             if rc != 0:
                 self.vm_turn_off(p1)
                 self.fail('Failed to run test over ssh')
