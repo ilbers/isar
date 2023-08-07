@@ -243,16 +243,25 @@ class CIBuilder(Test):
                      '-p %s -o IdentityFile=%s %s@%s ' \
                      % (port, priv_key, user, host)
 
-        self.log.debug('Connect command:\n' + cmd_prefix)
-
         return cmd_prefix
 
 
     def exec_cmd(self, cmd, cmd_prefix):
-        rc = subprocess.call('exec ' + str(cmd_prefix) + ' "' + str(cmd) + '"', shell=True,
-                             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        return rc
+        proc = subprocess.run('exec ' + str(cmd_prefix) + ' "' + str(cmd) + '"', shell=True,
+                              stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
+        return proc.returncode, proc.stdout, proc.stderr
+
+
+    def remote_send_file(self, src, dest, mode):
+        priv_key = self.prepare_priv_key()
+        cmd_prefix = self.get_ssh_cmd_prefix(self.ssh_user, self.ssh_host, self.ssh_port, priv_key)
+
+        proc = subprocess.run('cat %s | %s install -m %s /dev/stdin %s' %
+                              (src, cmd_prefix, mode, dest), shell=True,
+                              stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        return proc.returncode, proc.stdout, proc.stderr
 
     def run_script(self, script, cmd_prefix):
         script_dir = self.params.get('test_script_dir',
@@ -260,44 +269,45 @@ class CIBuilder(Test):
         script_path = script_dir + script.split()[0]
         script_args = ' '.join(script.split()[1:])
 
-        self.log.debug("script_path: '%s'" % (script_path))
-        self.log.debug("script args: '%s'" % (script_args))
-
         if not os.path.exists(script_path):
             self.log.error('Script not found: ' + script_path)
-            return 2
+            return (2, '', 'Script not found: ' + script_path)
 
-        # Copy the script to the target
-        rc = subprocess.call('cat %s | %s install -m 755 /dev/stdin ./ci.sh' % (script_path, cmd_prefix), shell=True,
-                             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        rc, stdout, stderr = self.remote_send_file(script_path, "./ci.sh", "755")
+
+        if rc != 0:
+            self.log.error('Failed to deploy the script on target')
+            return (rc, stdout, stderr)
+
         time.sleep(1)
 
-        # Run the script remotely with the arguments
-        if rc == 0:
-            rc = subprocess.call('%s ./ci.sh %s' % (cmd_prefix, script_args), shell=True,
-                                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        return rc
+        proc = subprocess.run('%s ./ci.sh %s' % (cmd_prefix, script_args), shell=True,
+                              stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
+        return (proc.returncode, proc.stdout, proc.stderr)
 
     def wait_connection(self, cmd_prefix, timeout):
-        self.log.debug('Waiting for SSH server ready...')
+        self.log.info('Waiting for SSH server ready...')
 
         rc = None
+        stdout = ""
+        stderr = ""
+
         goodcnt = 0
         # Use 3 good SSH ping attempts to consider SSH connection is stable
         while time.time() < timeout and goodcnt < 3:
             goodcnt += 1
 
-            rc = self.exec_cmd('/bin/true', cmd_prefix)
+            rc, stdout, stderr = self.exec_cmd('/bin/true', cmd_prefix)
             time.sleep(1)
 
             if rc != 0:
                 goodcnt = 0
 
             time_left = timeout - time.time()
-            self.log.debug('SSH ping result: %d, left: %.fs' % (rc, time_left))
+            self.log.info('SSH ping result: %d, left: %.fs' % (rc, time_left))
 
-        return rc
+        return rc, stdout, stderr
 
 
     def prepare_priv_key(self):
@@ -310,45 +320,57 @@ class CIBuilder(Test):
         return priv_key
 
 
-    def remote_run(self, user, host, port, cmd, script, timeout=0):
+    def remote_run(self, cmd=None, script=None, timeout=0):
+        if cmd:
+            self.log.info('Remote command is `%s`' % (cmd))
+        if script:
+            self.log.info('Remote script is `%s`' % (script))
+
         priv_key = self.prepare_priv_key()
-        cmd_prefix = self.get_ssh_cmd_prefix(user, host, port, priv_key)
+        cmd_prefix = self.get_ssh_cmd_prefix(self.ssh_user, self.ssh_host, self.ssh_port, priv_key)
 
-        rc = 0
-        if timeout:
-            rc = self.wait_connection(cmd_prefix, timeout)
+        rc = None
+        stdout = ""
+        stderr = ""
 
-        if rc == 0:
+        if timeout != 0:
+            rc, stdout, stderr = self.wait_connection(cmd_prefix, timeout)
+
+        if rc == 0 or timeout == 0:
             if cmd is not None:
-                rc = self.exec_cmd(cmd, cmd_prefix)
-                self.log.debug('`' + cmd + '` returned ' + str(rc))
+                rc, stdout, stderr = self.exec_cmd(cmd, cmd_prefix)
+                self.log.info('`' + cmd + '` returned ' + str(rc))
             elif script is not None:
-                rc = self.run_script(script, cmd_prefix)
-                self.log.debug('`' + script + '` returned ' + str(rc))
-            else:
-                return None
+                rc, stdout, stderr = self.run_script(script, cmd_prefix)
+                self.log.info('`' + script + '` returned ' + str(rc))
 
-        return rc
+        return rc, stdout, stderr
 
 
     def ssh_start(self, user='ci', host='localhost', port=22,
                   cmd=None, script=None):
         self.log.info('===================================================')
         self.log.info('Running Isar SSH test for `%s@%s:%s`' % (user, host, port))
-        self.log.info('Remote command is `%s`' % (cmd))
-        self.log.info('Remote script is `%s`' % (script))
         self.log.info('Isar build folder is: ' + self.build_dir)
         self.log.info('===================================================')
 
         self.check_init()
 
+        self.ssh_user = user
+        self.ssh_host = host
+        self.ssh_port = port
+
+        priv_key = self.prepare_priv_key()
+        cmd_prefix = self.get_ssh_cmd_prefix(self.ssh_user, self.ssh_host, self.ssh_port, priv_key)
+        self.log.info('Connect command:\n' + cmd_prefix)
+
         if cmd is not None or script is not None:
-            rc = self.remote_run(user, host, port, cmd, script)
+            rc, stdout, stderr = self.remote_run(cmd, script)
 
             if rc != 0:
                 self.fail('Failed with rc=%s' % rc)
 
-            return
+            return stdout, stderr
 
         self.fail('No command to run specified')
 
@@ -378,7 +400,7 @@ class CIBuilder(Test):
         p1 = subprocess.Popen('exec ' + ' '.join(cmdline), shell=True,
                               stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                               universal_newlines=True)
-        self.log.debug("Started VM with pid %s" % (p1.pid))
+        self.log.info("Started VM with pid %s" % (p1.pid))
 
         return p1, cmdline, boot_log
 
@@ -401,7 +423,7 @@ class CIBuilder(Test):
                     time.sleep(0.01)
                     data = os.read(fd, 1024)
                     if login_prompt in data:
-                        self.log.debug('Got login prompt')
+                        self.log.info('Got login prompt')
                         return 0
                 if fd == p1.stderr.fileno():
                     app_log.error(p1.stderr.readline().rstrip())
@@ -456,7 +478,7 @@ class CIBuilder(Test):
         del(self.vm_dict[vm])
         self.vm_dump_dict(vm)
 
-        self.log.debug("Stopped VM with pid %s" % (pid))
+        self.log.info("Stopped VM with pid %s" % (pid))
 
 
     def vm_start(self, arch='amd64', distro='buster',
@@ -485,6 +507,9 @@ class CIBuilder(Test):
 
         run_qemu = True
 
+        stdout = ""
+        stderr = ""
+
         if vm in self.vm_dict:
             pid, cmdline, boot_log = self.vm_dict[vm]
 
@@ -492,11 +517,11 @@ class CIBuilder(Test):
             proc = subprocess.run("ps -o cmd= %d" % (pid), shell=True, text=True,
                                   stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             if cmdline[0] in proc.stdout:
-                self.log.debug("Found '%s' process with pid '%d', use it" % (cmdline[0], pid))
+                self.log.info("Found '%s' process with pid '%d', use it" % (cmdline[0], pid))
                 run_qemu = False
 
         if run_qemu:
-            self.log.debug("No qemu-system process for `%s` found, run new VM" % (vm))
+            self.log.info("No qemu-system process for `%s` found, run new VM" % (vm))
 
             p1, cmdline, boot_log = self.vm_turn_on(arch, distro, image, enforce_pcbios)
             self.vm_dict[vm] = p1.pid, cmdline, boot_log
@@ -508,15 +533,20 @@ class CIBuilder(Test):
                 self.fail('Failed to boot qemu machine')
 
         if cmd is not None or script is not None:
-            user='ci'
-            host='localhost'
-            port = 22
+            self.ssh_user='ci'
+            self.ssh_host='localhost'
+            self.ssh_port = 22
             for arg in cmdline:
                 match = re.match(r".*hostfwd=tcp::(\d*).*", arg)
                 if match:
-                    port = match.group(1)
+                    self.ssh_port = match.group(1)
                     break
-            rc = self.remote_run(user, host, port, cmd, script, timeout)
+
+            priv_key = self.prepare_priv_key()
+            cmd_prefix = self.get_ssh_cmd_prefix(self.ssh_user, self.ssh_host, self.ssh_port, priv_key)
+            self.log.info('Connect command:\n' + cmd_prefix)
+
+            rc, stdout, stderr = self.remote_run(cmd, script, timeout)
             if rc != 0:
                 if stop_vm:
                     self.vm_turn_off(vm)
@@ -531,3 +561,5 @@ class CIBuilder(Test):
 
         if stop_vm:
             self.vm_turn_off(vm)
+
+        return stdout, stderr
