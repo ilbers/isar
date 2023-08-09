@@ -459,6 +459,9 @@ do_rootfs_finalize() {
             mv "${ROOTFSDIR}/etc/apt/sources-list" \
                 "${ROOTFSDIR}/etc/apt/sources.list.d/bootstrap.list"
         fi
+
+        rm -f "${ROOTFSDIR}/run/blkid/blkid.tab"
+        rm -f "${ROOTFSDIR}/run/blkid/blkid.tab.old"
 EOSUDO
 
     # Sometimes qemu-user-static generates coredumps in chroot, move them
