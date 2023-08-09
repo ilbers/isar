@@ -461,6 +461,13 @@ do_rootfs_finalize() {
         fi
 EOSUDO
 
+    # Sometimes qemu-user-static generates coredumps in chroot, move them
+    # to work temporary directory and inform user about it.
+    for f in $(sudo find ${ROOTFSDIR} -name *.core); do
+        sudo mv "${f}" "${WORKDIR}/temp/"
+        bbwarn "found core dump in rootfs, check it in ${WORKDIR}/temp/${f##*/}"
+    done
+
     # Set same time-stamps to the newly generated file/folders in the
     # rootfs image for the purpose of reproducible builds.
     if [ -n "${SOURCE_DATE_EPOCH}" ]; then
