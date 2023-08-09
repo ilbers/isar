@@ -15,6 +15,3 @@ NO_INITRD=""
 
 # U-boot commands to prepend to boot script
 SCRIPT_PREPEND=""
-
-# use u-boot builtin device tree
-BUILTIN_DT="no"

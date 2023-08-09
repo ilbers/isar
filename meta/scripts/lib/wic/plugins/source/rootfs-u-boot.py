@@ -10,7 +10,6 @@
 # Recognized sourceparams:
 #  - no_initrd=yes          (disables initrd loading)
 #  - overlays=file.dtbo ... (overlay files)
-#  - builtin_dt=no          (use DT from uboot instead of kernel)
 #  - script_prepend=cmd;... (prepends U-Boot command)
 
 import glob
@@ -83,8 +82,6 @@ class RootfsUBootPlugin(RootfsPlugin):
             cfg.write('NO_INITRD="%s"\n' % no_initrd)
             overlays = source_params.get('overlays') or ''
             cfg.write('OVERLAYS="%s"\n' % overlays)
-            builtin_dt = source_params.get('builtin_dt') or ''
-            cfg.write('BUILTIN_DT="%s"\n' % builtin_dt)
             script_prepend = source_params.get('script_prepend') or ''
             # remove escapes from $\{var\} that are needed to avoid expansion by wic
             script_prepend = re.sub(r'\$\\{([^\\]+)\\}', r'${\1}', script_prepend)

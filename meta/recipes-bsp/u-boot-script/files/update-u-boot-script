@@ -33,18 +33,10 @@ echo "${SCRIPT_PREPEND}" >> ${BOOT_CMD}
 
 echo "setenv bootargs ${KERNEL_ARGS}" >> ${BOOT_CMD}
 
-if [ "${BUILTIN_DT}" = "yes" ]; then
-	echo "echo Loading builtin device tree..." \
-	     >> ${BOOT_CMD}
-	echo "fdt addr \${fdtcontroladdr}" >> ${BOOT_CMD}
-	echo "fdt move \${fdtcontroladdr} \${fdt_addr_r}" >> ${BOOT_CMD}
-else
-	echo "echo Loading /usr/lib/linux-image-${KERNEL_VERSION}/\${fdtfile}..." \
-	     >> ${BOOT_CMD}
-	echo "load \${devtype} \${devnum}:${ROOT_PARTITION} \${fdt_addr_r}" \
-	     "/usr/lib/linux-image-${KERNEL_VERSION}/\${fdtfile}" >> ${BOOT_CMD}
-fi
-
+echo "echo Loading /usr/lib/linux-image-${KERNEL_VERSION}/\${fdtfile}..." \
+     >> ${BOOT_CMD}
+echo "load \${devtype} \${devnum}:${ROOT_PARTITION} \${fdt_addr_r}" \
+     "/usr/lib/linux-image-${KERNEL_VERSION}/\${fdtfile}" >> ${BOOT_CMD}
 echo "echo Loading /boot/${KERNEL_FILE}-${KERNEL_VERSION}..." >> ${BOOT_CMD}
 echo "load \${devtype} \${devnum}:\${distro_bootpart} \${kernel_addr_r}" \
      "/boot/${KERNEL_FILE}-${KERNEL_VERSION}" >> ${BOOT_CMD}
