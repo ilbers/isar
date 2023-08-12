@@ -1,11 +1,17 @@
-From ee13738d203aca490c0fb3d1f79cee1d8f9e0c88 Mon Sep 17 00:00:00 2001
-From: Uladzimir Bely <ubely@ilbers.de>
-Date: Mon, 31 Jul 2023 14:42:52 +0300
+From f89333a5ee935c87a8c3ff7c72e100f59b03afbe Mon Sep 17 00:00:00 2001
+From: Jan Kiszka <jan.kiszka@siemens.com>
+Date: Thu, 20 Jul 2023 16:32:26 +0200
 Subject: [PATCH] Fix parallel build of optee_ta
 
-TA devkit build system runs creating tpm and wolf symlinks in parallel
-with building ftpm. This sometimes causes build fail:
+The symlink must be established prio to building any of the source files
+of the lib and WolfSSL, or things will fail:
 
+	TA_CROSS_COMPILE= \
+	TA_CPU=cortex-a7 \
+	TA_DEV_KIT_DIR=/usr/lib/optee-os/stm32mp15x/export-ta_arm32 \
+	CFG_TEE_TA_LOG_LEVEL=2 \
+	CFG_FTPM_USE_WOLF=y \
+	/usr/bin/make -j 24
 make[2]: Entering directory '/<<PKGBUILDDIR>>/Samples/ARM32-FirmwareTPM/optee_ta'
 /usr/bin/make -C fTPM CROSS_COMPILE=
 make[3]: Entering directory '/<<PKGBUILDDIR>>/Samples/ARM32-FirmwareTPM/optee_ta/fTPM'
@@ -19,41 +25,51 @@ Establishing symlink.
 make[3]: *** No rule to make target 'lib/wolf/wolf_symlink/wolfcrypt/src/aes.c', needed by '../out/fTPM/./lib/wolf/wolf_symlink/wolfcrypt/src/aes.o'.  Stop.
 make[3]: *** Waiting for unfinished jobs....
 
-It's easy to reproduce by adding a small sleep to the makefile rules
-that create these symlinks just before 'ln -s' called.
-
-Signed-off-by: Uladzimir Bely <ubely@ilbers.de>
+Signed-off-by: Jan Kiszka <jan.kiszka@siemens.com>
 ---
- Samples/ARM32-FirmwareTPM/optee_ta/Makefile      | 1 +
- Samples/ARM32-FirmwareTPM/optee_ta/fTPM/Makefile | 6 ++++++
- 2 files changed, 7 insertions(+)
+ Samples/ARM32-FirmwareTPM/optee_ta/Makefile    | 9 ++++++++-
+ Samples/ARM32-FirmwareTPM/optee_ta/fTPM/sub.mk | 6 ------
+ 2 files changed, 8 insertions(+), 7 deletions(-)
 
 diff --git a/Samples/ARM32-FirmwareTPM/optee_ta/Makefile b/Samples/ARM32-FirmwareTPM/optee_ta/Makefile
-index ddf6784..2053c01 100644
+index ddf6784..cef0c6f 100644
 --- a/Samples/ARM32-FirmwareTPM/optee_ta/Makefile
 +++ b/Samples/ARM32-FirmwareTPM/optee_ta/Makefile
-@@ -3,6 +3,7 @@ export V?=0
+@@ -3,8 +3,15 @@ export V?=0
  
  .PHONY: all
  all:
-+	$(MAKE) -C fTPM create_ftpm_lib_symlinks
++	#
++	# Link the required external code into the libraries folder. OP-TEE
++	# build does not work well when accessing anything below the root
++	# directory. Use symlinks to trick it.
++	#
++	$(MAKE) -C fTPM CROSS_COMPILE=$(TA_CROSS_COMPILE) create_lib_symlinks
++	# Run the actual build
  	$(MAKE) -C fTPM CROSS_COMPILE=$(TA_CROSS_COMPILE)
  
  .PHONY: clean
-diff --git a/Samples/ARM32-FirmwareTPM/optee_ta/fTPM/Makefile b/Samples/ARM32-FirmwareTPM/optee_ta/fTPM/Makefile
-index c71eecd..2b4309c 100644
---- a/Samples/ARM32-FirmwareTPM/optee_ta/fTPM/Makefile
-+++ b/Samples/ARM32-FirmwareTPM/optee_ta/fTPM/Makefile
-@@ -11,3 +11,9 @@ clean: clean_stripped_file
- clean_stripped_file:
- 	rm -f $(BINARY).stripped.elf
+ clean:
+-	$(MAKE) -C fTPM clean
+\ No newline at end of file
++	$(MAKE) -C fTPM clean
+diff --git a/Samples/ARM32-FirmwareTPM/optee_ta/fTPM/sub.mk b/Samples/ARM32-FirmwareTPM/optee_ta/fTPM/sub.mk
+index 2d9ba24..4eaf286 100644
+--- a/Samples/ARM32-FirmwareTPM/optee_ta/fTPM/sub.mk
++++ b/Samples/ARM32-FirmwareTPM/optee_ta/fTPM/sub.mk
+@@ -36,12 +36,6 @@ cflags-y += -Os
+ cflags-y += -DNDEBUG
+ endif
  
-+.PHONY: create_ftpm_lib_symlinks
-+create_ftpm_lib_symlinks:
-+	@echo Establishing tpm_symlink.
-+	ln -fs ../../$(TPM_ROOT) ./lib/tpm/tpm_symlink
-+	@echo Establishing wolf_symlink.
-+	ln -fs ../../$(WOLF_ROOT) ./lib/wolf/wolf_symlink
+-#
+-# Link the required external code into the libraries folder. OP-TEE build
+-# does not work well when accessing anything below the root directory. Use
+-# symlinks to trick it.
+-#
+-all: create_lib_symlinks
+ clean: clean_lib_symlinks
+ 
+ subdirs-y += lib
 -- 
-2.41.0
+2.35.3
 
