@@ -326,7 +326,7 @@ class VmBootTestFast(CIBaseTest):
     def test_arm_bullseye_getty_target(self):
         self.init()
         self.vm_start('arm','bullseye', image='isar-image-ci',
-                      script='test_getty_target.sh',
+                      script='test_systemd_unit.sh getty.target 10',
                       stop_vm=True)
 
 
@@ -342,7 +342,7 @@ class VmBootTestFast(CIBaseTest):
     def test_arm_buster_example_module(self):
         self.init()
         self.vm_start('arm','buster', image='isar-image-ci',
-                      script='test_example_module.sh',
+                      script='test_kernel_module.sh example_module',
                       stop_vm=True)
 
 
@@ -358,7 +358,7 @@ class VmBootTestFast(CIBaseTest):
     def test_arm_bookworm_getty_target(self):
         self.init()
         self.vm_start('arm','bookworm', image='isar-image-ci',
-                      script='test_getty_target.sh',
+                      script='test_systemd_unit.sh getty.target 10',
                       stop_vm=True)
 
 
@@ -388,7 +388,7 @@ class VmBootTestFull(CIBaseTest):
     def test_arm_buster_getty_target(self):
         self.init()
         self.vm_start('arm','buster', image='isar-image-ci',
-                      script='test_getty_target.sh',
+                      script='test_systemd_unit.sh getty.target 10',
                       stop_vm=True)
 
 
@@ -404,7 +404,7 @@ class VmBootTestFull(CIBaseTest):
     def test_arm64_bullseye_example_module(self):
         self.init()
         self.vm_start('arm64','bullseye', image='isar-image-ci',
-                      script='test_example_module.sh',
+                      script='test_kernel_module.sh example_module',
                       stop_vm=True)
 
 
@@ -436,7 +436,7 @@ class VmBootTestFull(CIBaseTest):
     def test_amd64_focal_getty_target(self):
         self.init()
         self.vm_start('amd64','focal', image='isar-image-ci',
-                      script='test_getty_target.sh',
+                      script='test_systemd_unit.sh getty.target 10',
                       stop_vm=True)
 
 
@@ -470,5 +470,5 @@ class VmBootTestFull(CIBaseTest):
     def test_mipsel_bookworm_example_module(self):
         self.init()
         self.vm_start('mipsel','bookworm', image='isar-image-ci',
-                      script='test_example_module.sh',
+                      script='test_kernel_module.sh example_module',
                       stop_vm=True)

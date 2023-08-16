@@ -87,7 +87,7 @@ can be executed instead of command:
         self.init()
         self.vm_start('amd64','bookworm', \
             image='isar-image-ci',
-            script='test_getty_target.sh')
+            script='test_systemd_unit.sh getty.target 10')
 ```
 
 The default location of custom scripts is `isar/testsuite/`. It can be changed
