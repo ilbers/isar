@@ -165,6 +165,15 @@ python() {
                 d.prependVar(
                     e, cleandir_code.format(ws=ws, dirlist=" ".join(dirs))
                 )
+
+    need_machine = d.getVar('COMPATIBLE_MACHINE')
+    if need_machine and not d.getVar('PARSE_ALL_RECIPES', False):
+        compat_machines = (d.getVar('MACHINEOVERRIDES') or "").split(":")
+        for m in compat_machines:
+            if re.match(need_machine, m):
+                break
+        else:
+            raise bb.parse.SkipRecipe("incompatible with machine %s (not in COMPATIBLE_MACHINE)" % d.getVar('MACHINE'))
 }
 
 def isar_export_proxies(d):
