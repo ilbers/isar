@@ -15,3 +15,5 @@ S = "${WORKDIR}/linux-visionfive-${PV}"
 KERNEL_DEFCONFIG = "starfive_visionfive2_defconfig"
 
 LINUX_VERSION_EXTENSION = "-isar"
+
+COMPATIBLE_MACHINE = "starfive-visionfive2"

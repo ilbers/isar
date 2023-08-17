@@ -34,3 +34,5 @@ do_deploy() {
 
 addtask deploy after do_dpkg_build before do_build
 do_deploy[dirs] = "${DEPLOY_DIR_IMAGE}"
+
+COMPATIBLE_MACHINE = "starfive-visionfive2"

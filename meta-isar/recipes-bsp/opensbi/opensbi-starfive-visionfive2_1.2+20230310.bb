@@ -29,3 +29,5 @@ do_prepare_build() {
 
     echo "build/platform/generic/firmware/fw_payload.bin /usr/lib/opensbi/starfive-visionfive2/" > ${S}/debian/install
 }
+
+COMPATIBLE_MACHINE = "starfive-visionfive2"

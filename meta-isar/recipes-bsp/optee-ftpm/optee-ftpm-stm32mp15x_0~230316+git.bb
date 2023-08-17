@@ -30,3 +30,5 @@ do_prepare_build:append() {
     rm -rf ${S}/external/wolfssl
     cp -a ${S}/../wolfssl-${SRCREV-wolfssl} ${S}/external/wolfssl
 }
+
+COMPATIBLE_MACHINE = "stm32mp15x"

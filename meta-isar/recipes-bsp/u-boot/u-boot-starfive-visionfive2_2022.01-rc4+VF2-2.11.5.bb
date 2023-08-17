@@ -29,3 +29,5 @@ do_prepare_build:append() {
     echo "arch/riscv/dts/*.dtb usr/share/u-boot/${MACHINE}/" \
         >> ${S}/debian/u-boot-${MACHINE}-dev.install
 }
+
+COMPATIBLE_MACHINE = "starfive-visionfive2"

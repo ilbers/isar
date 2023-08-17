@@ -98,3 +98,5 @@ do_prepare_build() {
     echo "secure_storage/host/optee_example_secure_storage /usr/lib/optee-os/${OPTEE_NAME}/ca" > \
         ${S}/debian/${PN}-secure-storage-host.install
 }
+
+COMPATIBLE_MACHINE = "stm32mp15x"

@@ -21,3 +21,5 @@ do_prepare_build() {
 
     echo "build/platform/generic/firmware/fw_payload.bin /usr/lib/opensbi/sifive-fu540/" > ${S}/debian/install
 }
+
+COMPATIBLE_MACHINE = "sifive-fu540"

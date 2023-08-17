@@ -16,3 +16,5 @@ OPTEE_EXTRA_BUILDARGS = " \
     ARCH=arm CFG_EMBED_DTB_SOURCE_FILE=stm32mp157c-ev1.dts \
     CFG_TEE_CORE_LOG_LEVEL=2"
 OPTEE_BINARIES = "tee-header_v2.stm32 tee-pageable_v2.stm32 tee-pager_v2.stm32"
+
+COMPATIBLE_MACHINE = "stm32mp15x"

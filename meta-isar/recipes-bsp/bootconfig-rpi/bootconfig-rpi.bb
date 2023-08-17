@@ -26,3 +26,5 @@ do_install() {
         install -v -m 644 ${WORKDIR}/cmdline.txt ${D}/boot/
     fi
 }
+
+COMPATIBLE_MACHINE = "rpi"

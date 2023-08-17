@@ -16,3 +16,5 @@ S = "${WORKDIR}/optee_client-${PV}"
 
 # Use RPMB emulation
 RPMB_EMU = "1"
+
+COMPATIBLE_MACHINE = "stm32mp15x"

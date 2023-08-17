@@ -21,3 +21,5 @@ do_prepare_build(){
     deb_debianize
     echo "spl_tool usr/lib/jh7110-uboot-spl-tool" > ${S}/debian/${PN}.install
 }
+
+COMPATIBLE_MACHINE = "starfive-visionfive2"
