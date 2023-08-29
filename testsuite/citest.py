@@ -84,6 +84,7 @@ class ReproTest(CIBaseTest):
     def test_repro_signed(self):
         targets = [
             'mc:rpi-arm-v7-bullseye:isar-image-base',
+            'mc:rpi-arm64-v8-bullseye:isar-image-base',
             'mc:qemuarm64-bullseye:isar-image-base',
                   ]
 
