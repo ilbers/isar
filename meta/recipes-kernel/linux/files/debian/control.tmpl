@@ -29,6 +29,17 @@ Description: Linux support headers for userspace development
  This package provides userspaces headers from the Linux kernel.  These headers
  are used by the installed headers for GNU glibc and other system libraries.
 
+Package: linux-libc-dev-${DISTRO_ARCH}-cross
+Build-Profiles: <!nolibcdev cross>
+Section: devel
+Provides: linux-kernel-headers-${DISTRO_ARCH}-cross
+Architecture: all
+Description: Linux Kernel Headers for development (for cross-compiling)
+ This package provides headers from the Linux kernel.  These headers
+ are used by the installed headers for GNU glibc and other system
+ libraries. They are NOT meant to be used to build third-party modules for
+ your kernel. Use linux-headers-* packages for that.
+
 Package: linux-image-${KERNEL_NAME_PROVIDED}-dbg
 Section: debug
 Architecture: any

@@ -152,6 +152,9 @@ libc_headers() {
     host_arch=$(dpkg-architecture -a${DISTRO_ARCH} -qDEB_HOST_MULTIARCH)
     mkdir ${deb_libc_hdr_dir}/usr/include/${host_arch}
     mv ${deb_libc_hdr_dir}/usr/include/asm ${deb_libc_hdr_dir}/usr/include/${host_arch}/
+
+    mkdir -p ${deb_libc_hdr_cross_dir}
+    ${MAKE} O=${O} headers_install INSTALL_HDR_PATH=${deb_libc_hdr_cross_dir}/usr/${host_arch}
 }
 
 kernel_tools() {
