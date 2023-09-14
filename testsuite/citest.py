@@ -276,6 +276,12 @@ class SstateTest(CIBaseTest):
 
     :avocado: tags=sstate,full
     """
+
+    def test_sstate_populate(self):
+        image_target = 'mc:qemuamd64-bullseye:isar-image-base'
+
+        self.perform_sstate_populate(image_target)
+
     def test_sstate(self):
         image_target = 'mc:qemuamd64-bullseye:isar-image-base'
         package_target = 'mc:qemuamd64-bullseye:hello'
