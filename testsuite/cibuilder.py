@@ -39,13 +39,13 @@ class CIBuilder(Test):
         self._file_handler.setFormatter(formatter)
         app_log.addHandler(self._file_handler)
 
-    def init(self, build_dir='build'):
+    def init(self, build_dir='build', isar_dir=isar_root):
         # initialize build_dir and setup environment
         # needs to run once (per test case)
         if hasattr(self, 'build_dir'):
             self.error("Broken test implementation: init() called multiple times.")
-        self.build_dir = os.path.join(isar_root, build_dir)
-        os.chdir(isar_root)
+        self.build_dir = os.path.join(isar_dir, build_dir)
+        os.chdir(isar_dir)
         os.environ["TEMPLATECONF"] = "meta-test/conf"
         path.usable_rw_dir(self.build_dir)
         output = process.getoutput('/bin/bash -c "source isar-init-build-env \
