@@ -152,19 +152,17 @@ def get_aptsources_list(d):
     from collections import OrderedDict
     apt_sources_var = d.getVar("DISTRO_VARS_PREFIX") + "DISTRO_APT_SOURCES"
     apt_sources_list = list(OrderedDict.fromkeys((d.getVar(apt_sources_var) or "").split()))
-    ret = []
     for p in apt_sources_list:
         try:
-            f = bb.parse.resolve_file(p, d)
-            ret.append(f)
+            bb.parse.resolve_file(p, d)
         except FileNotFoundError as e:
             bb.fatal(os.strerror(errno.ENOENT) + ' "' + p + '"')
-    return ret
+    return apt_sources_list
 
 def generate_distro_sources(d):
     apt_sources_list = get_aptsources_list(d)
     for entry in apt_sources_list:
-        with open(entry, "r") as in_fd:
+        with open(bb.parse.resolve_file(entry, d), "r") as in_fd:
             for line in in_fd:
                 parsed = parse_aptsources_list_line(line)
                 if parsed:
