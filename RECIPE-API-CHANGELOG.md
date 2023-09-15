@@ -525,3 +525,17 @@ If privileged execution is required `-u root` option can be added.
 ```
 SCHROOT_MOUNTS += "${OUT_PATH1}:${IN_PATH1} ${OUT_PATH2}"
 ```
+
+### Building source package tasks were separated
+
+Two new tasks are introduced: do_dpkg_source and do_deploy_source. The first
+one builds source package, second one adds this package to isar_apt.
+They are placed between do_prepare_build and do_dpkg_build.
+Now all source modifications should be done inside do_prepare_build task, in
+some cases dpkg_runbuild:prepend should be replaced by do_dpkg_source:prepend.
+
+### Local copy of isar-apt creation task was separated
+
+We need local copy of isar-apt to have build dependencies reachable. Now is
+prepared in separate task: do_local_isarapt.
+This task depends of do_deploy_deb of all build dependency recipes.
