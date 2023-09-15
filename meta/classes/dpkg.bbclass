@@ -2,6 +2,7 @@
 # Copyright (C) 2015-2018 ilbers GmbH
 
 inherit dpkg-base
+inherit dpkg-source
 
 PACKAGE_ARCH ?= "${DISTRO_ARCH}"
 
@@ -96,10 +97,7 @@ dpkg_runbuild() {
 
     echo '$apt_keep_downloaded_packages = 1;' >> ${SBUILD_CONFIG}
 
-    # Create a .dsc file from source directory to use it with sbuild
     DEB_SOURCE_NAME=$(dpkg-parsechangelog --show-field Source --file ${WORKDIR}/${PPS}/debian/changelog)
-    find ${WORKDIR} -name "${DEB_SOURCE_NAME}*.dsc" -maxdepth 1 -delete
-    sh -c "cd ${WORKDIR}; dpkg-source -q -b ${PPS}"
     DSC_FILE=$(find ${WORKDIR} -name "${DEB_SOURCE_NAME}*.dsc" -maxdepth 1 -print)
 
     sbuild -A -n -c ${SBUILD_CHROOT} --extra-repository="${ISAR_APT_REPO}" \

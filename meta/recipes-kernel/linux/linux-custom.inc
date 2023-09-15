@@ -212,6 +212,6 @@ EOF
 	fi
 }
 
-dpkg_runbuild:prepend() {
+do_dpkg_source:prepend() {
 	dpkg_configure_kernel
 }

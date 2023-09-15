@@ -90,6 +90,8 @@ rootfs_configure_isar_apt() {
     mkdir -p '${ROOTFSDIR}/etc/apt/sources.list.d'
     echo 'deb [trusted=yes] file:///isar-apt ${DEBDISTRONAME} main' > \
         '${ROOTFSDIR}/etc/apt/sources.list.d/isar-apt.list'
+    echo 'deb-src [trusted=yes] file:///isar-apt ${DEBDISTRONAME} main' >> \
+        '${ROOTFSDIR}/etc/apt/sources.list.d/isar-apt.list'
 
     mkdir -p '${ROOTFSDIR}/etc/apt/preferences.d'
     cat << EOF > '${ROOTFSDIR}/etc/apt/preferences.d/isar-apt'

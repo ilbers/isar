@@ -11,7 +11,7 @@ PATCHTOOL ?= "git"
 
 GBP_EXTRA_OPTIONS ?= "--git-pristine-tar"
 
-dpkg_runbuild:prepend() {
+do_dpkg_source:prepend() {
     sh -c "
         cd ${WORKDIR}/${PPS}
         gbp buildpackage --git-ignore-new --git-builder=/bin/true ${GBP_EXTRA_OPTIONS}
