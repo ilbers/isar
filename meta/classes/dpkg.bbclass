@@ -98,9 +98,9 @@ dpkg_runbuild() {
 
     # Create a .dsc file from source directory to use it with sbuild
     DEB_SOURCE_NAME=$(dpkg-parsechangelog --show-field Source --file ${WORKDIR}/${PPS}/debian/changelog)
-    find ${WORKDIR} -name "${DEB_SOURCE_NAME}*.dsc" -delete
+    find ${WORKDIR} -name "${DEB_SOURCE_NAME}*.dsc" -maxdepth 1 -delete
     sh -c "cd ${WORKDIR}; dpkg-source -q -b ${PPS}"
-    DSC_FILE=$(find ${WORKDIR} -name "${DEB_SOURCE_NAME}*.dsc" -print)
+    DSC_FILE=$(find ${WORKDIR} -name "${DEB_SOURCE_NAME}*.dsc" -maxdepth 1 -print)
 
     sbuild -A -n -c ${SBUILD_CHROOT} --extra-repository="${ISAR_APT_REPO}" \
         --host=${PACKAGE_ARCH} --build=${BUILD_HOST_ARCH} ${profiles} \
