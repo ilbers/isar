@@ -61,6 +61,20 @@ repo_add_packages() {
         "$@"
 }
 
+repo_del_srcpackage() {
+    local dir="$1"
+    local dbdir="$2"
+    local codename="$3"
+    local packagename="$4"
+
+    if [ -n "${GNUPGHOME}" ]; then
+        export GNUPGHOME="${GNUPGHOME}"
+    fi
+    reprepro -b "${dir}" --dbdir "${dbdir}" \
+        removesrc "${codename}" \
+        "${packagename}"
+}
+
 repo_del_package() {
     local dir="$1"
     local dbdir="$2"
