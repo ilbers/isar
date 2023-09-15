@@ -186,10 +186,10 @@ do_prepare_build() {
 addtask prepare_build after do_patch do_transform_template before do_dpkg_build
 # If Isar recipes depend on each other, they typically need the package
 # deployed to isar-apt
-do_prepare_build[deptask] = "do_deploy_deb"
-do_prepare_build[depends] = "${SCHROOT_DEP}"
-
-do_prepare_build:append() {
+do_local_isarapt[depends] += "isar-apt:do_cache_config"
+do_local_isarapt[deptask] = "do_deploy_deb"
+do_local_isarapt[lockfiles] += "${REPO_ISAR_DIR}/isar.lock"
+do_local_isarapt() {
     # Make a local copy of isar-apt repo that is not affected by other parallel builds
     rm -rf "${WORKDIR}/isar-apt/${DISTRO}-${DISTRO_ARCH}/*"
     mkdir -p "${WORKDIR}/isar-apt/${DISTRO}-${DISTRO_ARCH}/apt/${DISTRO}"
@@ -198,8 +198,7 @@ do_prepare_build:append() {
         cp -Rlf "${REPO_ISAR_DIR}/${DISTRO}/pool" "${WORKDIR}/isar-apt/${DISTRO}-${DISTRO_ARCH}/apt/${DISTRO}/"
     fi
 }
-
-do_prepare_build[lockfiles] += "${REPO_ISAR_DIR}/isar.lock"
+addtask local_isarapt before do_dpkg_build
 
 # Placeholder for actual dpkg_runbuild() implementation
 dpkg_runbuild() {
@@ -324,7 +323,7 @@ python do_devshell() {
     bb.build.exec_func('schroot_delete_configs', d)
 }
 
-addtask devshell after do_prepare_build
+addtask devshell after do_local_isarapt
 DEVSHELL_STARTDIR ?= "${S}"
 do_devshell[dirs] = "${DEVSHELL_STARTDIR}"
 do_devshell[nostamp] = "1"
@@ -336,7 +335,7 @@ python do_devshell_nodeps() {
 
 # devshell may be placed after do_instell_builddeps in downstream classes.
 # devshell_nodeps will always stay right after do_prepare_build.
-addtask devshell_nodeps after do_prepare_build
+addtask devshell_nodeps after do_local_isarapt
 do_devshell_nodeps[dirs] = "${DEVSHELL_STARTDIR}"
 do_devshell_nodeps[nostamp] = "1"
 do_devshell_nodeps[network] = "${TASK_USE_SUDO}"
