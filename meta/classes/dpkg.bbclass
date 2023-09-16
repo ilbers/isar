@@ -61,6 +61,7 @@ dpkg_runbuild() {
         [ "${var}" = "FTP_PROXY" ] && continue
         [ "${var}" = "no_proxy" ] && continue
         [ "${var}" = "NO_PROXY" ] && continue
+        [ "${var}" = "GIT_PROXY_COMMAND" ] && continue
 
         bbwarn "Export of '${line}' detected, please migrate to templates"
     done
