@@ -81,7 +81,11 @@ class CIBuilder(Test):
 
         # set those to "" to not set dir value but use system default
         if dl_dir is None:
+            dl_dir = os.getenv('DL_DIR')
+        if dl_dir is None:
             dl_dir = os.path.join(isar_root, 'downloads')
+        if sstate_dir is None:
+            sstate_dir = os.getenv('SSTATE_DIR')
         if sstate_dir is None:
             sstate_dir = os.path.join(isar_root, 'sstate-cache')
         if ccache_dir is None:
