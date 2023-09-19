@@ -79,6 +79,9 @@ class CIBuilder(Test):
         # get parameters from avocado cmdline
         quiet = bool(int(self.params.get('quiet', default=1)))
 
+        if not sstate:
+            sstate = bool(int(self.params.get('sstate', default=0)))
+
         # set those to "" to not set dir value but use system default
         if dl_dir is None:
             dl_dir = os.getenv('DL_DIR')

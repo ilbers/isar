@@ -78,6 +78,10 @@ do
         TAGS="$2"
         shift
         ;;
+    -S|--sstate)
+        SSTATE="-p sstate=$2"
+        shift
+        ;;
     -f|--fast)
         # Start build for the reduced set of configurations
         FAST="1"
@@ -143,4 +147,4 @@ set -x
 
 avocado ${VERBOSE} run "${TESTSUITE_DIR}/citest.py" \
     -t "${TAGS}" --max-parallel-tasks=1 --disable-sysinfo \
-    ${TIMEOUT}
+    ${SSTATE} ${TIMEOUT}
