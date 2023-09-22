@@ -7,51 +7,7 @@ DISTRO ??= "debian-bullseye"
 DISTRO_ARCH ??= "armhf"
 
 # The list of known multiple configurations
-BBMULTICONFIG = " \
-    qemuarm-buster \
-    qemuarm-bullseye \
-    qemuarm-bookworm \
-    qemuarm64-buster \
-    qemuarm64-bullseye \
-    qemuarm64-bookworm \
-    qemui386-buster \
-    qemui386-bullseye \
-    qemui386-bookworm \
-    qemuamd64-buster \
-    qemuamd64-bullseye \
-    qemuamd64-sb-bullseye \
-    qemuamd64-bookworm \
-    container-amd64-buster \
-    container-amd64-bullseye \
-    container-amd64-bookworm \
-    qemumipsel-buster \
-    qemumipsel-bullseye \
-    qemumipsel-bookworm \
-    qemuriscv64-sid-ports \
-    bananapi-buster \
-    bananapi-bullseye \
-    de0-nano-soc-buster \
-    de0-nano-soc-bullseye \
-    hikey-bullseye \
-    hikey-bookworm \
-    imx6-sabrelite-buster \
-    imx6-sabrelite-bullseye \
-    phyboard-mira-bullseye \
-    nanopi-neo-buster \
-    nanopi-neo-bullseye \
-    stm32mp15x-bullseye \
-    virtualbox-bullseye \
-    rpi-arm-bullseye \
-    rpi-arm-v7-bullseye \
-    rpi-arm-v7l-bullseye \
-    rpi-arm64-v8-bullseye \
-    sifive-fu540-sid-ports \
-    starfive-visionfive2-sid-ports \
-    qemuarm64-focal \
-    qemuarm64-jammy \
-    qemuamd64-focal \
-    qemuamd64-jammy \
-"
+include ${LAYERDIR_isar}/conf/mc.conf
 
 # Disable interactive patch resolution
 PATCHRESOLVE = "noop"
