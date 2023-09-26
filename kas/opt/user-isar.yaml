@@ -1,0 +1,19 @@
+# This software is a part of ISAR.
+# Copyright (C) 2023 ilbers GmbH
+
+header:
+  version: 14
+
+local_conf_header:
+  user-isar: |
+    GROUPS += "isar"
+    GROUP_isar[flags] = "system"
+
+    USERS += "isar"
+    USER_isar[gid] = "isar"
+    USER_isar[home] = "/var/lib/isar"
+    USER_isar[comment] = "My isar user"
+    USER_isar[flags] = "system create-home"
+
+    USER_isar[password] = "${KAS_USER_ISAR_PASSWORD}"
+    USER_isar[flags] += "clear-text-password"

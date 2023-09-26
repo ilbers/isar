@@ -1,0 +1,11 @@
+# This software is a part of ISAR.
+# Copyright (C) 2023 ilbers GmbH
+
+header:
+  version: 14
+
+local_conf_header:
+  user-root: |
+    USERS += "root"
+    USER_root[password] ??= "${KAS_USER_ROOT_PASSWORD}"
+    USER_root[flags] += "clear-text-password"

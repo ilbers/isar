@@ -43,6 +43,46 @@ config KAS_INCLUDE_MIRROR_UBUNTU
 endmenu
 
 
+menu "User management"
+
+config USER_ROOT
+	bool "Activate 'root' user"
+	help
+	  Enables root user.
+
+config KAS_USER_ROOT_PASSWORD
+	string "Password for 'root' user"
+	default "root"
+	depends on USER_ROOT
+	help
+	  Set password for 'root' user.
+
+config KAS_INCLUDE_USER_ROOT
+	string
+	default "kas/opt/user-root.yaml"
+	depends on USER_ROOT
+
+
+config USER_ISAR
+	bool "Activate 'isar' user"
+	default y
+	help
+	  Enables `isar` user.
+
+config KAS_USER_ISAR_PASSWORD
+	string "Password for 'isar' user"
+	default "isar"
+	depends on USER_ISAR
+	help
+	  Set password for 'isar' user.
+
+config KAS_INCLUDE_USER_ISAR
+	string
+	default "kas/opt/user-isar.yaml"
+	depends on USER_ISAR
+
+endmenu
+
 config KAS_IMAGE_FSTYPES
 	string "Additional image fstypes"
 	default ""
