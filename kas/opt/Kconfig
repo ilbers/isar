@@ -50,3 +50,13 @@ config KAS_INCLUDE_COMPAT_ARCH
 	string
 	default "kas/opt/compat-arch.yaml"
 	depends on COMPAT_ARCH
+
+
+config ISAR_CROSS_COMPILE
+	bool "Enable cross compilation mode"
+	default y
+
+config KAS_INCLUDE_ISAR_CROSS_COMPILE
+	string
+	default "kas/opt/crosscompile.yaml"
+	depends on ISAR_CROSS_COMPILE
