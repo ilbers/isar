@@ -43,6 +43,30 @@ config KAS_INCLUDE_MIRROR_UBUNTU
 endmenu
 
 
+config KAS_IMAGE_FSTYPES
+	string "Additional image fstypes"
+	default ""
+	help
+	  Space-separated list of additional image fstypes to generate. Default
+	  machine configurations set up IMAGE_FSTYPES variable, but it's possible
+	  to select additonal ones to generate.
+	  The following IMAGE_FSTYPES are supported:
+	    cpio
+	    fit
+	    docker-archive
+	    ext4
+	    ova
+	    tar
+	    ubi
+	    ubifs
+	    wic
+	  They can be followed by suffixes like ".gz" for compressing the image
+
+config KAS_INCLUDE_IMAGE_FSTYPES
+	string
+	default "kas/opt/image-fstypes.yaml"
+
+
 config COMPAT_ARCH
 	bool "Enable compat arch support"
 
