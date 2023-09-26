@@ -94,3 +94,15 @@ config KAS_INCLUDE_USE_CCACHE
 	string
 	default "kas/opt/ccache.yaml"
 	depends on USE_CCACHE
+
+
+config CACHE_DEB_SRC
+	bool "Cache all source packages"
+	help
+	  This feature allows to download srcpackages for any binary package that
+	  took part in the build (including ones downloaded from distro mirrors).
+
+config KAS_INCLUDE_CACHE_DEB_SRC
+	string
+	default "kas/opt/cache-deb-src.yaml"
+	depends on CACHE_DEB_SRC
