@@ -1,3 +1,5 @@
 *~
 /*.patch
 __pycache__
+.config.yaml*
+build/

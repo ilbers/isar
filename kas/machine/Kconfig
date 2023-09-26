@@ -1,0 +1,138 @@
+# This software is a part of ISAR.
+# Copyright (C) 2023 ilbers GmbH
+#
+# Authors:
+#  Uladzimir Bely <ubely@ilbers.de>
+
+menu "Machine selection"
+
+choice
+	prompt "Machine selection"
+	default MACHINE_QEMU_AMD64
+
+config MACHINE_BANANAPI
+	bool "bananapi"
+	depends on DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM
+
+config MACHINE_CONTAINER_AMD64
+	bool "container-amd64"
+	depends on DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM
+
+config MACHINE_DE0_NANO_SOC
+	bool "de0-nano-soc"
+	depends on DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM
+
+config MACHINE_HIKEY
+	bool "hikey"
+	depends on DEBIAN_BULLSEYE || DEBIAN_BOOKWORM
+
+config MACHINE_IMX6_SABRELITE
+	bool "imx6-sabrelite"
+	depends on DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM
+
+config MACHINE_NANOPI_NEO
+	bool "nanopi-neo"
+	depends on DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM
+
+config MACHINE_NANOPI_NEO_EFI
+	bool "nanopi-neo-efi"
+	depends on DEBIAN_BOOKWORM
+
+config MACHINE_PHIBOARD_MIRA
+	bool "phyboard-mira"
+	depends on DEBIAN_BULLSEYE || DEBIAN_BOOKWORM
+
+config MACHINE_QEMU_AMD64_SB
+	bool "qemuamd64-sb"
+	depends on DEBIAN_BULLSEYE
+
+config MACHINE_QEMU_AMD64
+	bool "qemuamd64"
+	depends on DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM || UBUNTU_FOCAL || UBUNTU_JAMMY
+
+config MACHINE_QEMU_ARM
+	bool "qemuarm"
+	depends on DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM
+
+config MACHINE_QEMU_ARM64
+	bool "qemuarm64"
+	depends on DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM || UBUNTU_FOCAL || UBUNTU_JAMMY
+
+config MACHINE_QEMU_I386
+	bool "qemui386"
+	depends on DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM
+
+config MACHINE_QEMU_MIPSEL
+	bool "qemumipsel"
+	depends on DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM
+
+config MACHINE_QEMU_RISCV64
+	bool "qemuriscv64"
+	depends on DEBIAN_SID_PORTS
+
+config MACHINE_RPI_ARM_V7
+	bool "rpi-arm-v7"
+	depends on RASPIOS_BULLSEYE
+
+config MACHINE_RPI_ARM_V7L
+	bool "rpi-arm-v7l"
+	depends on RASPIOS_BULLSEYE
+
+config MACHINE_RPI_ARM
+	bool "rpi-arm"
+	depends on RASPIOS_BULLSEYE
+
+config MACHINE_RPI_ARM64_V8
+	bool "rpi-arm64-v8"
+	depends on RASPIOS_BULLSEYE
+
+config MACHINE_SIFIVE_FU540
+	bool "sifive-fu540"
+	depends on DEBIAN_SID_PORTS
+
+config MACHINE_STARFIVE_VISIONFIVE2
+	bool "starfive-visionfive2"
+	depends on DEBIAN_SID_PORTS
+
+config MACHINE_STM32MP15X
+	bool "stm32mp15x"
+	depends on DEBIAN_BULLSEYE || DEBIAN_BOOKWORM
+
+config MACHINE_VIRTUALBOX
+	bool "virtualbox"
+	depends on DEBIAN_BULLSEYE
+
+config MACHINE_VMWARE
+	bool "vmware"
+	depends on DEBIAN_BULLSEYE
+
+endchoice
+
+config KAS_INCLUDE_MACHINE
+	string
+	default "kas/machine/bananapi.yaml" if MACHINE_BANANAPI
+	default "kas/machine/container-amd64.yaml" if MACHINE_CONTAINER_AMD64
+	default "kas/machine/de0-nano-soc.yaml" if MACHINE_DE0_NANO_SOC
+	default "kas/machine/hikey.yaml" if MACHINE_HIKEY
+	default "kas/machine/imx6-sabrelite" if MACHINE_IMX6_SABRELITE
+	default "kas/machine/nanopi-neo" if MACHINE_NANOPI_NEO
+	default "kas/machine/nanopi-neo-efi" if MACHINE_NANOPI_NEO_EFI
+	default "kas/machine/phyboard-mira" if MACHINE_PHIBOARD_MIRA
+	default "kas/machine/qemuamd64-sb.yaml" if MACHINE_QEMU_AMD64_SB
+	default "kas/machine/qemuamd64.yaml" if MACHINE_QEMU_AMD64
+	default "kas/machine/qemuarm.yaml" if MACHINE_QEMU_ARM
+	default "kas/machine/qemuarm64.yaml" if MACHINE_QEMU_ARM64
+	default "kas/machine/qemui386.yaml" if MACHINE_QEMU_I386
+	default "kas/machine/qemumipsel.yaml" if MACHINE_QEMU_MIPSEL
+	default "kas/machine/qemuriscv64.yaml" if MACHINE_QEMU_RISCV64
+	default "kas/machine/rpi-arm-v7.yaml" if MACHINE_RPI_ARM_V7
+	default "kas/machine/rpi-arm-v7l.yaml" if MACHINE_RPI_ARM_V7L
+	default "kas/machine/rpi-arm.yaml" if MACHINE_RPI_ARM
+	default "kas/machine/rpi-arm64-v8.yaml" if MACHINE_RPI_ARM64_V8
+	default "kas/machine/sifive-fu540.yaml" if MACHINE_SIFIVE_FU540
+	default "kas/machine/starfive-visionfive2.yaml" if MACHINE_STARFIVE_VISIONFIVE2
+	default "kas/machine/stm32mp15x.yaml" if MACHINE_STM32MP15X
+	default "kas/machine/virtualbox.yaml" if MACHINE_VIRTUALBOX
+	default "kas/machine/vmware.yaml" if MACHINE_VMWARE
+
+endmenu

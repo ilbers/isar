@@ -1,0 +1,46 @@
+# This software is a part of ISAR.
+# Copyright (C) 2023 ilbers GmbH
+#
+# Authors:
+#  Uladzimir Bely <ubely@ilbers.de>
+
+menu "Distro selection"
+
+choice
+	prompt "Distro selection"
+	default DEBIAN_BOOKWORM
+
+config DEBIAN_BUSTER
+	bool "Debian Buster (10)"
+
+config DEBIAN_BULLSEYE
+	bool "Debian Bullseye (11)"
+
+config DEBIAN_BOOKWORM
+	bool "Debian Bookworm (12)"
+
+config DEBIAN_SID_PORTS
+	bool "Debian Sid (unstable) with unofficial ports"
+
+config RASPIOS_BULLSEYE
+  bool "Raspi OS Bullseye (11)"
+
+config UBUNTU_FOCAL
+	bool "Ubuntu Focal (20.04)"
+
+config UBUNTU_JAMMY
+	bool "Ubuntu Jammy (22.04)"
+
+endchoice
+
+config KAS_INCLUDE_DISTRO
+	string
+	default "kas/distro/debian-buster.yaml" if DEBIAN_BUSTER
+	default "kas/distro/debian-bullseye.yaml" if DEBIAN_BULLSEYE
+	default "kas/distro/debian-bookworm.yaml" if DEBIAN_BOOKWORM
+	default "kas/distro/debian-sid-ports.yaml" if DEBIAN_SID_PORTS
+	default "kas/distro/raspios-bullseye.yaml" if RASPIOS_BULLSEYE
+	default "kas/distro/ubuntu-focal.yaml" if UBUNTU_FOCAL
+	default "kas/distro/ubuntu-jammy.yaml" if UBUNTU_JAMMY
+
+endmenu
