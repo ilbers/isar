@@ -16,3 +16,4 @@ config KAS_BUILD_SYSTEM
 
 source "kas/distro/Kconfig"
 source "kas/machine/Kconfig"
+source "kas/opt/Kconfig"

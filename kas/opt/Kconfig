@@ -1,0 +1,43 @@
+# This software is a part of ISAR.
+# Copyright (C) 2023 ilbers GmbH
+#
+# Authors:
+#  Uladzimir Bely <ubely@ilbers.de>
+
+menu "Mirror selection"
+	depends on DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM || UBUNTU_FOCAL || UBUNTU_JAMMY
+
+config MIRROR_DEBIAN
+	bool "Use specific Debian mirror"
+	depends on DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM
+	help
+	  Select better local Debian mirror instead of deb.debian.org
+
+config MIRROR_DEBIAN_URL
+	string "URL of Debian mirror"
+	default "http://deb.debian.org"
+	depends on MIRROR_DEBIAN
+
+config KAS_INCLUDE_MIRROR_DEBIAN
+	string
+	default "kas/opt/mirror-debian.yaml"
+	depends on MIRROR_DEBIAN
+
+
+config MIRROR_UBUNTU
+	bool "Use specific Ubuntu mirror"
+	depends on UBUNTU_FOCAL || UBUNTU_JAMMY
+	help
+	  Select better local Ubuntu mirror instead of archive.ubuntu.com
+
+config MIRROR_UBUNTU_URL
+	string "URL of Ubuntu mirror"
+	default "http://archive.ubuntu.com"
+	depends on MIRROR_UBUNTU
+
+config KAS_INCLUDE_MIRROR_UBUNTU
+	string
+	default "kas/opt/mirror-ubuntu.yaml"
+	depends on MIRROR_UBUNTU
+
+endmenu

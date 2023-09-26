@@ -1,0 +1,10 @@
+# This software is a part of ISAR.
+# Copyright (C) 2023 ilbers GmbH
+
+header:
+  version: 14
+
+local_conf_header:
+  mirror-ubuntu: |
+    DISTRO_APT_PREMIRRORS += "\
+      http://archive\.ubuntu\.com ${MIRROR_UBUNTU_URL}\n"
