@@ -41,3 +41,12 @@ config KAS_INCLUDE_MIRROR_UBUNTU
 	depends on MIRROR_UBUNTU
 
 endmenu
+
+
+config COMPAT_ARCH
+	bool "Enable compat arch support"
+
+config KAS_INCLUDE_COMPAT_ARCH
+	string
+	default "kas/opt/compat-arch.yaml"
+	depends on COMPAT_ARCH
