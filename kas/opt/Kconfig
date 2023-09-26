@@ -60,3 +60,13 @@ config KAS_INCLUDE_ISAR_CROSS_COMPILE
 	string
 	default "kas/opt/crosscompile.yaml"
 	depends on ISAR_CROSS_COMPILE
+
+
+config USE_CCACHE
+	bool "Use ccache during build"
+	default y
+
+config KAS_INCLUDE_USE_CCACHE
+	string
+	default "kas/opt/ccache.yaml"
+	depends on USE_CCACHE
