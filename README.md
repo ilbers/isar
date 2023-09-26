@@ -11,6 +11,9 @@ https://github.com/ilbers/isar/
 
 Instruction on how to build can be found in the [User Manual](doc/user_manual.md).
 
+For beginners, it could be easier to use kas-based approach that allows to
+simply configure and run build using menu. Look at [kas/README](kas/README.md)
+for the instructions.
 
 # Try
 
