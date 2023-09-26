@@ -1,0 +1,9 @@
+# This software is a part of ISAR.
+# Copyright (C) 2023 ilbers GmbH
+
+header:
+  version: 14
+
+local_conf_header:
+  package-sshd-regen-keys: |
+    IMAGE_INSTALL:append = " sshd-regen-keys"

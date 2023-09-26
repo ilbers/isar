@@ -1,0 +1,154 @@
+# This software is a part of ISAR.
+# Copyright (C) 2023 ilbers GmbH
+#
+# Authors:
+#  Uladzimir Bely <ubely@ilbers.de>
+
+menu "Packages selection"
+
+menu "Isar packages"
+
+config PACKAGE_COWSAY
+        bool "cowsay"
+        default y
+
+config KAS_INCLUDE_PACKAGE_COWSAY
+        string
+        default "kas/package/pkg_cowsay.yaml"
+        depends on PACKAGE_COWSAY
+
+
+config PACKAGE_ENABLE_FSCK
+        bool "enable-fsck"
+        default y
+
+config KAS_INCLUDE_PACKAGE_ENABLE_FSCK
+        string
+        default "kas/package/pkg_enable-fsck.yaml"
+        depends on PACKAGE_ENABLE_FSCK
+
+
+config PACKAGE_EXAMPLE_RAW
+        bool "example-raw"
+        default y
+
+config KAS_INCLUDE_PACKAGE_EXAMPLE_RAW
+        string
+        default "kas/package/pkg_example-raw.yaml"
+        depends on PACKAGE_EXAMPLE_RAW
+
+
+config PACKAGE_EXAMPLE_MODULE
+        bool "example-module"
+        default y
+
+config KAS_INCLUDE_PACKAGE_EXAMPLE_MODULE
+        string
+        default "kas/package/pkg_example-module.yaml"
+        depends on PACKAGE_EXAMPLE_MODULE
+
+
+config PACKAGE_EXAMPLE_PREBUILT
+        bool "example-prebuilt"
+        default y
+
+config KAS_INCLUDE_PACKAGE_EXAMPLE_PREBUILT
+        string
+        default "kas/package/pkg_example-prebuilt.yaml"
+        depends on PACKAGE_EXAMPLE_PREBUILT
+
+
+config PACKAGE_EXPAND_ON_FIRST_BOOT
+        bool "expand-on-first-boot"
+        default y
+
+config KAS_INCLUDE_PACKAGE_EXPAND_ON_FIRST_BOOT
+        string
+        default "kas/package/pkg_expand-on-first-boot.yaml"
+        depends on PACKAGE_EXPAND_ON_FIRST_BOOT
+
+
+config PACKAGE_HELLO
+        bool "hello"
+        default y
+
+config KAS_INCLUDE_PACKAGE_HELLO
+        string
+        default "kas/package/pkg_hello.yaml"
+        depends on PACKAGE_HELLO
+
+
+config PACKAGE_HELLO_ISAR
+        bool "hello-isar"
+        default y
+
+config KAS_INCLUDE_PACKAGE_HELLO_ISAR
+        string
+        default "kas/package/pkg_hello-isar.yaml"
+        depends on PACKAGE_HELLO_ISAR
+
+
+config PACKAGE_ISAR_EXCLUDE_DOCS
+        bool "isar-exclude-docs"
+        default y
+
+config KAS_INCLUDE_PACKAGE_ISAR_EXCLUDE_DOCS
+        string
+        default "kas/package/pkg_isar-exclude-docs.yaml"
+        depends on PACKAGE_ISAR_EXCLUDE_DOCS
+
+
+config PACKAGE_ISAR_DISABLE_APT_CACHE
+        bool "isar-disable-apt-cache"
+        default y
+
+config KAS_INCLUDE_PACKAGE_ISAR_DISABLE_APT_CACHE
+        string
+        default "kas/package/pkg_isar-disable-apt-cache.yaml"
+        depends on PACKAGE_ISAR_DISABLE_APT_CACHE
+
+
+config PACKAGE_KSELFTEST
+        bool "kselftest"
+        default n
+
+config KAS_INCLUDE_PACKAGE_KSELFTEST
+        string
+        default "kas/package/pkg_kselftest.yaml"
+        depends on PACKAGE_KSELFTEST
+
+
+config PACKAGE_SAMEFILE
+        bool "samefile"
+        default y
+
+config KAS_INCLUDE_PACKAGE_SAMEFILE
+        string
+        default "kas/package/pkg_samefile.yaml"
+        depends on PACKAGE_SAMEFILE
+
+
+config PACKAGE_SSHD_REGEN_KEYS
+        bool "sshd-regen-keys"
+        default y
+
+config KAS_INCLUDE_PACKAGE_SSHD_REGEN_KEYS
+        string
+        default "kas/package/pkg_sshd-regen-keys.yaml"
+        depends on PACKAGE_SSHD_REGEN_KEYS
+
+endmenu
+
+config KAS_IMAGE_PREINSTALL
+	string "Distro packages"
+	default "fdisk iproute2 iputils-ping ics-dhcp-client"
+	help
+	  Space-separated list of packages that are provided by the selected distro.
+	  These packages are downloaded from distro mirrors and just unpacked
+	  and configured by Isar.
+
+config KAS_INCLUDE_PACKAGES_DISTRO
+	string
+	default "kas/package/packages-distro.yaml"
+
+endmenu

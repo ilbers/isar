@@ -1,0 +1,9 @@
+# This software is a part of ISAR.
+# Copyright (C) 2023 ilbers GmbH
+
+header:
+  version: 14
+
+local_conf_header:
+  package-isar-disable-apt-cache: |
+    IMAGE_INSTALL:append = " isar-disable-apt-cache"
