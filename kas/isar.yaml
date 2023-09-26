@@ -6,9 +6,6 @@ header:
 
 build_system: isar
 
-target:
-- isar-image-base
-
 repos:
   isar:
     layers:

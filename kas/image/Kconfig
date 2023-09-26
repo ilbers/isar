@@ -1,0 +1,32 @@
+# This software is a part of ISAR.
+# Copyright (C) 2023 ilbers GmbH
+#
+# Authors:
+#  Uladzimir Bely <ubely@ilbers.de>
+
+menu "Image type selection"
+
+choice
+	prompt "Image type selection"
+	default IMAGE_BASE
+
+config IMAGE_BASE
+	bool "Base image"
+	help
+	  This is the basic Isar image with bare minimum of preinstalled packages.
+	  It's technically close do the debootstrapped system with packages
+	  required to boot up the system.
+
+config IMAGE_DEBUG
+	bool "Debug image"
+	help
+	  This image includes some tools preinstalled useful for debug.
+
+endchoice
+
+config KAS_INCLUDE_IMAGE
+	string
+	default "kas/image/isar-image-base.yaml" if IMAGE_BASE
+	default "kas/image/isar-image-debug.yaml" if IMAGE_DEBUG
+
+endmenu
