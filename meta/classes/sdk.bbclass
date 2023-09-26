@@ -53,7 +53,7 @@ ROOTFS_MANIFEST_DEPLOY_DIR:class-sdk = "${DEPLOY_DIR_SDKCHROOT}"
 ROOTFS_DPKGSTATUS_DEPLOY_DIR:class-sdk = "${DEPLOY_DIR_SDKCHROOT}"
 
 IMAGE_FSTYPES:class-sdk = "${SDK_FORMATS}"
-TAR_OPTIONS:append:class-sdk = " --transform="s|rootfs|${IMAGE_FULLNAME}|""
+TAR_TRANSFORM:class-sdk = " --transform='s|rootfs|${IMAGE_FULLNAME}|'"
 
 # bitbake dependencies
 SDKDEPENDS += "sdk-files ${SDK_INSTALL}"

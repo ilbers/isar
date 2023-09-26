@@ -5,8 +5,8 @@
 
 #image type: tar
 IMAGER_INSTALL:tar = "tar"
-TAR_OPTIONS ?= ""
-
+TAR_TRANSFORM = "--transform='s|rootfs|.|'"
+TAR_OPTIONS:append = " ${TAR_TRANSFORM}"
 IMAGE_CMD:tar() {
     ${SUDO_CHROOT} tar ${TAR_OPTIONS} -cvSf \
                  ${IMAGE_FILE_CHROOT} --one-file-system -C ${PP} rootfs
