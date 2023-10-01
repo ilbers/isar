@@ -114,10 +114,10 @@ config KAS_INCLUDE_MACHINE
 	default "kas/machine/container-amd64.yaml" if MACHINE_CONTAINER_AMD64
 	default "kas/machine/de0-nano-soc.yaml" if MACHINE_DE0_NANO_SOC
 	default "kas/machine/hikey.yaml" if MACHINE_HIKEY
-	default "kas/machine/imx6-sabrelite" if MACHINE_IMX6_SABRELITE
-	default "kas/machine/nanopi-neo" if MACHINE_NANOPI_NEO
-	default "kas/machine/nanopi-neo-efi" if MACHINE_NANOPI_NEO_EFI
-	default "kas/machine/phyboard-mira" if MACHINE_PHIBOARD_MIRA
+	default "kas/machine/imx6-sabrelite.yaml" if MACHINE_IMX6_SABRELITE
+	default "kas/machine/nanopi-neo.yaml" if MACHINE_NANOPI_NEO
+	default "kas/machine/nanopi-neo-efi.yaml" if MACHINE_NANOPI_NEO_EFI
+	default "kas/machine/phyboard-mira.yaml" if MACHINE_PHIBOARD_MIRA
 	default "kas/machine/qemuamd64-sb.yaml" if MACHINE_QEMU_AMD64_SB
 	default "kas/machine/qemuamd64.yaml" if MACHINE_QEMU_AMD64
 	default "kas/machine/qemuarm.yaml" if MACHINE_QEMU_ARM
