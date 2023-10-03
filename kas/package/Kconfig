@@ -141,7 +141,7 @@ endmenu
 
 config KAS_IMAGE_PREINSTALL
 	string "Distro packages"
-	default "fdisk iproute2 iputils-ping ics-dhcp-client"
+	default "fdisk iproute2 iputils-ping isc-dhcp-client"
 	help
 	  Space-separated list of packages that are provided by the selected distro.
 	  These packages are downloaded from distro mirrors and just unpacked
