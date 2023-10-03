@@ -7,9 +7,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-ifneq ($(DEB_BUILD_GNU_TYPE),$(DEB_HOST_GNU_TYPE))
 export CROSS_COMPILE=$(DEB_HOST_GNU_TYPE)-
-endif
 
 %:
 	dh $@ --exclude=.a
