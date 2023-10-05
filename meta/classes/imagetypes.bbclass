@@ -65,10 +65,8 @@ UBIFS_IMG ?= "${PP_DEPLOY}/${IMAGE_FULLNAME}.ubifs"
 
 # glibc bug 23960 https://sourceware.org/bugzilla/show_bug.cgi?id=23960
 # should not use QEMU on armhf target with mkfs.ubifs < v2.1.3
-python() {
-    if d.getVar('DISTRO_ARCH') == 'armhf' and bb.utils.contains('IMAGE_BASETYPES', 'ubifs', True, False, d):
-        d.setVar('ISAR_CROSS_COMPILE', '1')
-}
+THIS_ISAR_CROSS_COMPILE := "${ISAR_CROSS_COMPILE}"
+ISAR_CROSS_COMPILE:armhf = "${@bb.utils.contains('IMAGE_BASETYPES', 'ubifs', '1', '${THIS_ISAR_CROSS_COMPILE}', d)}"
 
 IMAGE_CMD:ubifs() {
     ${SUDO_CHROOT} /usr/sbin/mkfs.ubifs ${MKUBIFS_ARGS} \

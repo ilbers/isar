@@ -49,15 +49,13 @@ def oe_import(d):
 # We need the oe module name space early (before INHERITs get added)
 OE_IMPORTED := "${@oe_import(d)}"
 
-def get_deb_host_arch(d):
+def get_deb_host_arch():
     import subprocess
-    if d.getVar("ISAR_CROSS_COMPILE") != "1":
-        return d.getVar("DISTRO_ARCH")
     host_arch = subprocess.check_output(
         ["dpkg", "--print-architecture"]
     ).decode('utf-8').strip()
     return host_arch
-HOST_ARCH ??= "${@get_deb_host_arch(d)}"
+HOST_ARCH ??= "${@get_deb_host_arch()}"
 HOST_DISTRO ??= "${DISTRO}"
 
 die() {
