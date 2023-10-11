@@ -6,5 +6,5 @@ header:
 
 local_conf_header:
   compat-arch: |
-    ISAR_ENABLE_COMPAT_ARCH_amd64 = "1"
-    ISAR_ENABLE_COMPAT_ARCH_arm64 = "1"
+    ISAR_ENABLE_COMPAT_ARCH:amd64 = "1"
+    ISAR_ENABLE_COMPAT_ARCH:arm64 = "1"
