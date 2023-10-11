@@ -13,8 +13,7 @@ Type=oneshot
 RemainAfterExit=yes
 # Start if not already started by the initramfs hook
 ExecStart=/bin/sh -c '/usr/bin/pgrep tee-supplicant >/dev/null || /usr/sbin/tee-supplicant -d'
-ExecStop=/bin/sh -c '/usr/bin/findmnt /sys/firmware/efi/efivars >/dev/null && /usr/bin/umount /sys/firmware/efi/efivars || true'
-ExecStop=/bin/sh -c 'echo -n optee-ta-bc50d971-d4c9-42c4-82cb-343fb7f37896 > /sys/bus/tee/drivers/optee-ftpm/unbind || true'
+ExecStop=/bin/sh -c 'for dev in /sys/bus/tee/devices/*; do case "$dev" in *optee-ta-*) basename "$dev" > "$dev"/driver/unbind;; esac done'
 ExecStop=/usr/bin/pkill tee-supplicant
 
 [Install]
