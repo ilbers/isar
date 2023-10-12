@@ -539,3 +539,18 @@ some cases dpkg_runbuild:prepend should be replaced by do_dpkg_source:prepend.
 We need local copy of isar-apt to have build dependencies reachable. Now is
 prepared in separate task: do_local_isarapt.
 This task depends of do_deploy_deb of all build dependency recipes.
+
+### Skipping source package cleanup
+
+By default Isar filter out control files and directories of the most common
+revision control systems, backup and swap files and Libtool build output
+directories from the source package.
+Now this can be overriden by setting DPKG_SOURCE_EXTRA_ARGS value in recipe.
+
+Default value is '-I' which sets filter to:
+
+*.a -I*.la -I*.o -I*.so -I.*.sw? -I*/*~ -I,,* -I.[#~]* -I.arch-ids
+-I.arch-inventory -I.be -I.bzr -I.bzr.backup -I.bzr.tags -I.bzrignore
+-I.cvsignore -I.deps -I.git -I.gitattributes -I.gitignore -I.gitmodules
+-I.gitreview -I.hg -I.hgignore -I.hgsigs -I.hgtags -I.mailmap -I.mtn-ignore
+-I.shelf -I.svn -ICVS -IDEADJOE -IRCS -I_MTN -I_darcs -I{arch}
