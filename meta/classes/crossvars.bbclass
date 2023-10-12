@@ -16,16 +16,22 @@ python __anonymous() {
     flavor_suffix = ('-' + flavor) if flavor else ''
 
     distro_arch = d.getVar('DISTRO_ARCH')
-    if mode == "0" or d.getVar('HOST_ARCH') == distro_arch or distro_arch == None:
+    compat_arch = d.getVar('COMPAT_DISTRO_ARCH')
+    host_arch = d.getVar('HOST_ARCH')
+    package_arch = d.getVar('PACKAGE_ARCH')
+
+    if distro_arch != host_arch and \
+        (package_arch == host_arch or \
+         (package_arch in [distro_arch, compat_arch] and mode == "1")):
+        d.setVar('BUILD_ARCH', host_arch)
+        schroot_dir = d.getVar('SCHROOT_HOST_DIR', False)
+        sbuild_dep = "sbuild-chroot-host" + flavor_suffix + ":do_build"
+        sdk_toolchain = "crossbuild-essential-" + distro_arch
+    else:
         d.setVar('BUILD_ARCH', distro_arch)
         schroot_dir = d.getVar('SCHROOT_TARGET_DIR', False)
         sbuild_dep = "sbuild-chroot-target" + flavor_suffix + ":do_build"
         sdk_toolchain = "build-essential"
-    else:
-        d.setVar('BUILD_ARCH', d.getVar('HOST_ARCH'))
-        schroot_dir = d.getVar('SCHROOT_HOST_DIR', False)
-        sbuild_dep = "sbuild-chroot-host" + flavor_suffix + ":do_build"
-        sdk_toolchain = "crossbuild-essential-" + distro_arch
     d.setVar('SCHROOT_DIR', schroot_dir + flavor_suffix)
     d.setVar('SCHROOT_DEP', sbuild_dep)
     if isar_can_build_compat(d):
