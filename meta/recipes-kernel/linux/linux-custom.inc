@@ -70,7 +70,6 @@ TEMPLATE_FILES += "                  \
 "
 
 TEMPLATE_VARS += "                \
-    HOST_ARCH                     \
     KBUILD_DEPENDS                \
     KERNEL_ARCH                   \
     KERNEL_DEBIAN_DEPENDS         \
