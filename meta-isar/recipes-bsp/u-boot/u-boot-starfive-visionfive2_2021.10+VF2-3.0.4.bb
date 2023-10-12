@@ -8,9 +8,7 @@ require recipes-bsp/u-boot/u-boot-custom.inc
 SRC_URI += "git://github.com/starfive-tech/u-boot.git;nobranch=1;protocol=https;destsuffix=u-boot-${PV}"
 SRCREV = "b6e2b0e85c774a18ae668223a6e5f7d335895243"
 
-DEBIAN_BUILD_DEPENDS .= ", libssl-dev:${DISTRO_ARCH}"
-# when cross compiling, we need the library on the host as well, as the signature computation is done locally
-DEBIAN_BUILD_DEPENDS .= "${@ ', libssl-dev:${HOST_ARCH}' if d.getVar('ISAR_CROSS_COMPILE') == '1' else '' }"
+DEBIAN_BUILD_DEPENDS .= ", libssl-dev, libssl-dev:native"
 
 U_BOOT_CONFIG = "starfive_visionfive2_defconfig"
 U_BOOT_BIN = "u-boot.bin"
