@@ -8,8 +8,8 @@ inherit dpkg
 SRC_URI = "file://rules file://install"
 
 DESCRIPTION = "StarFive VisionFive 2 u-boot SPL"
-DEPENDS = "jh7110-u-boot-spl-tool u-boot-starfive-visionfive2"
-DEBIAN_BUILD_DEPENDS = "jh7110-u-boot-spl-tool, u-boot-starfive-visionfive2:${DISTRO_ARCH}"
+DEPENDS = "jh7110-u-boot-spl-tool-native u-boot-starfive-visionfive2"
+DEBIAN_BUILD_DEPENDS = "jh7110-u-boot-spl-tool:native, u-boot-starfive-visionfive2:${DISTRO_ARCH}"
 
 # this is a host tool
 PACKAGE_ARCH = "${HOST_ARCH}"

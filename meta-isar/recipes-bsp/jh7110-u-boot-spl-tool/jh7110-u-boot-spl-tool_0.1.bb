@@ -13,9 +13,6 @@ SRCREV = "8c5acc4e5eb7e4ad012463b05a5e3dbbfed1c38d"
 
 S = "${WORKDIR}/tools/spl_tool"
 
-# This is a host tool
-PACKAGE_ARCH = "${HOST_ARCH}"
-
 do_prepare_build[cleandirs] += "${S}/debian"
 do_prepare_build(){
     deb_debianize
