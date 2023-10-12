@@ -4,8 +4,6 @@
 inherit dpkg-base
 inherit dpkg-source
 
-PACKAGE_ARCH ?= "${DISTRO_ARCH}"
-
 DPKG_PREBUILD_ENV_FILE="${WORKDIR}/dpkg_prebuild.env"
 
 # bitbake variables that should be passed into sbuild env
