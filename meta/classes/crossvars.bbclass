@@ -17,12 +17,12 @@ python __anonymous() {
 
     distro_arch = d.getVar('DISTRO_ARCH')
     if mode == "0" or d.getVar('HOST_ARCH') == distro_arch or distro_arch == None:
-        d.setVar('BUILD_HOST_ARCH', distro_arch)
+        d.setVar('BUILD_ARCH', distro_arch)
         schroot_dir = d.getVar('SCHROOT_TARGET_DIR', False)
         sbuild_dep = "sbuild-chroot-target" + flavor_suffix + ":do_build"
         sdk_toolchain = "build-essential"
     else:
-        d.setVar('BUILD_HOST_ARCH', d.getVar('HOST_ARCH'))
+        d.setVar('BUILD_ARCH', d.getVar('HOST_ARCH'))
         schroot_dir = d.getVar('SCHROOT_HOST_DIR', False)
         sbuild_dep = "sbuild-chroot-host" + flavor_suffix + ":do_build"
         sdk_toolchain = "crossbuild-essential-" + distro_arch

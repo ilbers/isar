@@ -1080,8 +1080,8 @@ to `local.conf`. If some package requires ccache to be always disabled,
 By default, ccache directory is created inside `TMPDIR`, but it can be
 adjusted by `CCACHE_TOP_DIR` variable in `local.conf`. Ccache directory
 `CCACHE_DIR` default value is
-`"${CCACHE_TOP_DIR}/${DISTRO}-${DISTRO_ARCH}-${BUILD_HOST_ARCH}"`,
-that means caches for different distros and architectures are not overlapped.
+`"${CCACHE_TOP_DIR}/${DISTRO}-${DISTRO_ARCH}-${BUILD_ARCH}"`, that means
+caches for different distros and architectures are not overlapped.
 
 The ccache debug mode can be enabled by setting `CCACHE_DEBUG = "1"`
 in the `local.conf`.
