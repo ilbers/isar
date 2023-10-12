@@ -227,10 +227,10 @@ class NoCrossTest(CIBaseTest):
         except:
             self.cancel('KFAIL')
 
-    def test_nocross_sidports(self):
+    def test_nocross_sid(self):
         targets = [
-            'mc:qemuriscv64-sid-ports:isar-image-base',
-            'mc:sifive-fu540-sid-ports:isar-image-base',
+            'mc:qemuriscv64-sid:isar-image-base',
+            'mc:sifive-fu540-sid:isar-image-base',
                   ]
 
         self.init()

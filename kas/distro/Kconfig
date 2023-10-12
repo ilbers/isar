@@ -19,8 +19,8 @@ config DEBIAN_BULLSEYE
 config DEBIAN_BOOKWORM
 	bool "Debian Bookworm (12)"
 
-config DEBIAN_SID_PORTS
-	bool "Debian Sid (unstable) with unofficial ports"
+config DEBIAN_SID
+	bool "Debian Sid (unstable)"
 
 config RASPIOS_BULLSEYE
   bool "Raspi OS Bullseye (11)"
@@ -38,7 +38,7 @@ config KAS_INCLUDE_DISTRO
 	default "kas/distro/debian-buster.yaml" if DEBIAN_BUSTER
 	default "kas/distro/debian-bullseye.yaml" if DEBIAN_BULLSEYE
 	default "kas/distro/debian-bookworm.yaml" if DEBIAN_BOOKWORM
-	default "kas/distro/debian-sid-ports.yaml" if DEBIAN_SID_PORTS
+	default "kas/distro/debian-sid.yaml" if DEBIAN_SID
 	default "kas/distro/raspios-bullseye.yaml" if RASPIOS_BULLSEYE
 	default "kas/distro/ubuntu-focal.yaml" if UBUNTU_FOCAL
 	default "kas/distro/ubuntu-jammy.yaml" if UBUNTU_JAMMY

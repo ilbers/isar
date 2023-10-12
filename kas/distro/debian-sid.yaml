@@ -4,4 +4,4 @@
 header:
   version: 14
 
-distro: debian-sid-ports
+distro: debian-sid

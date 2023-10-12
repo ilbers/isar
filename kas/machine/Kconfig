@@ -68,7 +68,7 @@ config MACHINE_QEMU_MIPSEL
 
 config MACHINE_QEMU_RISCV64
 	bool "qemuriscv64"
-	depends on DEBIAN_SID_PORTS
+	depends on DEBIAN_SID
 
 config MACHINE_RPI_ARM_V7
 	bool "rpi-arm-v7"
@@ -88,11 +88,11 @@ config MACHINE_RPI_ARM64_V8
 
 config MACHINE_SIFIVE_FU540
 	bool "sifive-fu540"
-	depends on DEBIAN_SID_PORTS
+	depends on DEBIAN_SID
 
 config MACHINE_STARFIVE_VISIONFIVE2
 	bool "starfive-visionfive2"
-	depends on DEBIAN_SID_PORTS
+	depends on DEBIAN_SID
 
 config MACHINE_STM32MP15X
 	bool "stm32mp15x"
