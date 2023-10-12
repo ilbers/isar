@@ -12,7 +12,7 @@ DEPENDS = "jh7110-u-boot-spl-tool-native u-boot-starfive-visionfive2"
 DEBIAN_BUILD_DEPENDS = "jh7110-u-boot-spl-tool:native, u-boot-starfive-visionfive2:${DISTRO_ARCH}"
 
 # this is a host tool
-PACKAGE_ARCH = "${HOST_ARCH}"
+PACKAGE_ARCH = "${BUILD_ARCH}"
 
 do_prepare_build[cleandirs] += "${S}/debian"
 do_prepare_build(){
