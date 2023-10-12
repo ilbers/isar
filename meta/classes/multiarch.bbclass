@@ -21,6 +21,18 @@ python() {
             d.appendVar('PROVIDES', f' {pn}-native')
     else:
         d.appendVar('BBCLASSEXTEND', ' native')
+
+    # drop own -native build dependencies at recipe level if building natively
+    # and not for the builder architecture
+    depends = d.getVar('DEPENDS')
+    if depends is not None and d.getVar('HOST_ARCH') != d.getVar('DISTRO_ARCH') \
+       and d.getVar('ISAR_CROSS_COMPILE') != '1':
+        new_deps = []
+        for dep in depends.split():
+            if dep.endswith('-native'):
+                dep = dep[:-7]
+            new_deps.append(dep)
+        d.setVar('DEPENDS', ' '.join(new_deps))
 }
 
 python multiarch_virtclass_handler() {
