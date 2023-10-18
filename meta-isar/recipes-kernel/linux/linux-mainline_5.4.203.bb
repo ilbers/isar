@@ -13,7 +13,7 @@ SRC_URI += " \
     https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-${ARCHIVE_VERSION}.tar.xz \
     file://x86_64_defconfig \
     file://ftpm-module.cfg \
-    file://no-ubifs-fs.cfg \
+    file://subdir/no-ubifs-fs.cfg \
     file://no-root-nfs.cfg;apply=no"
 
 SRC_URI[sha256sum] = "fc933f5b13066cfa54aacb5e86747a167bad1d8d23972e4a03ab5ee36c29798a"

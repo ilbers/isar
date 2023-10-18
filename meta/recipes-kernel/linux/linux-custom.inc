@@ -210,10 +210,11 @@ EOF
 	# copy config fragments over to the kernel tree
 	src_frags="${@ " ".join(config_fragments(d)) }"
 	rm -rf ${S}/debian/fragments
-	if [ -n "${src_frags}" ]; then
-		mkdir -p ${S}/debian/fragments
-		(cd ${WORKDIR} && cp ${src_frags} ${S}/debian/fragments/)
-	fi
+	for frag in ${src_frags}; do
+		basedir=$(dirname ${frag})
+		mkdir -p ${S}/debian/fragments/${basedir}
+		cp ${WORKDIR}/${frag} ${S}/debian/fragments/${basedir}/
+	done
 }
 
 do_dpkg_source:prepend() {
