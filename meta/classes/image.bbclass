@@ -496,8 +496,11 @@ do_rootfs_quality_check() {
 	        args="${args} ! -path ${ROOTFSDIR}/etc/machine-id";;
 	    image_postprocess_accounts)
 	        args="${args} ! -path ${ROOTFSDIR}/etc/passwd \
+                          ! -path ${ROOTFSDIR}/etc/passwd- \
                           ! -path ${ROOTFSDIR}/etc/subgid \
+                          ! -path ${ROOTFSDIR}/etc/subgid- \
                           ! -path ${ROOTFSDIR}/etc/subuid \
+                          ! -path ${ROOTFSDIR}/etc/subuid- \
                           ! -path ${ROOTFSDIR}/etc/gshadow \
                           ! -path ${ROOTFSDIR}/etc/gshadow- \
                           ! -path ${ROOTFSDIR}/etc/shadow \
