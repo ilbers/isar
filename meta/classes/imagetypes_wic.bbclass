@@ -147,6 +147,7 @@ IMAGE_CMD:wic() {
 }
 
 SCHROOT_MOUNTS += "${BBLAYERS} ${STAGING_DIR} ${SCRIPTSDIR} ${BITBAKEDIR}"
+SCHROOT_MOUNTS[vardepsexclude] += "BITBAKEDIR"
 
 generate_wic_image[vardepsexclude] += "WKS_FULL_PATH BITBAKEDIR TOPDIR"
 generate_wic_image() {
