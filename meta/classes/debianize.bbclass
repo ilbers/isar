@@ -9,6 +9,7 @@ DPKG_ARCH ??= "any"
 DEBIAN_BUILD_DEPENDS ??= ""
 DEBIAN_DEPENDS ??= ""
 DEBIAN_CONFLICTS ??= ""
+DEBIAN_MULTI_ARCH ??= "no"
 DESCRIPTION ??= "must not be empty"
 MAINTAINER ??= "Unknown maintainer <unknown@example.com>"
 
@@ -77,6 +78,7 @@ Package: ${BPN}
 Architecture: ${DPKG_ARCH}
 Depends: ${DEBIAN_DEPENDS}
 Conflicts: ${DEBIAN_CONFLICTS}
+Multi-Arch: ${DEBIAN_MULTI_ARCH}
 Description: ${DESCRIPTION}
 EOF
 }
