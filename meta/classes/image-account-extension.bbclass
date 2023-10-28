@@ -72,7 +72,6 @@ def image_create_users(d: "DataSmart") -> None:
         None
     """
     import hashlib
-    import crypt
 
     entries = (d.getVar("USERS") or "").split()
     rootfsdir = d.getVar("ROOTFSDIR")
@@ -137,7 +136,7 @@ def image_create_users(d: "DataSmart") -> None:
                 if source_date_epoch:
                     command.append("-e")
                     salt = hashlib.sha256("{}\n".format(source_date_epoch).encode()).hexdigest()[0:15]
-                    password = crypt.crypt(password, "$6${}".format(salt))
+                    password = bb.process.run('openssl passwd -6 --salt {} {}'.format(salt, password))[0].strip()
 
             else:
                 command.append("-e")
