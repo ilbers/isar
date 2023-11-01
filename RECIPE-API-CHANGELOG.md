@@ -629,3 +629,16 @@ into kernel kbuild package.
     Only the "host" specific package is built automatically at cross builds.
 
   * Support emulated module build with cross-compiled kernel for linux-module
+
+### Default boostrap recipe changed to mmdebstrap
+
+New virtual packages bootstrap-host and bootstrap-target are introduced.
+There are two providers of bootstrap-host/-target currently:
+  * isar-mmdebstrap: deafult one using mmdebstrap to prepare rootfs
+  * isar-bootstrap: previous bootstrap implementation left for compatibility
+
+So default bootstrap procedure is now performing with mmdebstrap.
+Previous implementation still can be selected by setting in local.conf:
+
+PREFERRED_PROVIDER_bootstrap-host ?= "isar-bootstrap-host"
+PREFERRED_PROVIDER_bootstrap-target ?= "isar-bootstrap-target"
