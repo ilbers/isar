@@ -314,6 +314,21 @@ class SingleTest(CIBaseTest):
         self.vm_start(machine.removeprefix('qemu'), distro,
                       stop_vm=True)
 
+class SourceTest(CIBaseTest):
+
+    """
+    Source contents test
+
+    :avocado: tags=source
+    """
+    def test_source(self):
+        targets = [
+            'mc:qemuamd64-bookworm:libhello',
+            'mc:qemuarm64-bookworm:libhello',
+                  ]
+
+        self.init()
+        self.perform_source_test(targets)
 
 class VmBootTestFast(CIBaseTest):
 

@@ -212,3 +212,57 @@ class CIBaseTest(CIBuilder):
                     ['do_rootfs_install_setscene', '!do_rootfs_install'])
             ]):
             self.fail("Failed rebuild package and image")
+
+    def perform_source_test(self, targets, **kwargs):
+        def get_source_content(targets):
+            sfiles = dict()
+            for target in targets:
+                sfiles[target] = dict()
+                package = target.rsplit(':', 1)[-1]
+                isar_apt = self.getVars('REPO_ISAR_DB_DIR', target=target)
+                fpath = f'{package}/{package}*.tar.gz'
+                targz = set(glob.glob(f'{isar_apt}/../apt/*/pool/*/*/{fpath}'))
+                if len(targz) < 1:
+                    self.fail('No source packages found')
+                for filename in targz:
+                    sfiles[target][filename] = self.get_tar_content(filename)
+            return sfiles
+
+        self.configure(**kwargs)
+
+        tmp_layer_dir = self.create_tmp_layer()
+        try:
+            self.bitbake(targets, bitbake_cmd='do_deploy_source', **kwargs)
+
+            sfiles_before = get_source_content(targets)
+            for tdir in sfiles_before:
+                for filename in sfiles_before[tdir]:
+                    for file in sfiles_before[tdir][filename]:
+                        if os.path.basename(file).startswith('.git'):
+                            self.fail('Found .git files')
+
+            package = targets[0].rsplit(':', 1)[-1]
+            tmp_layer_nested_dirs = os.path.join(tmp_layer_dir,
+                                                 'recipes-app', package)
+            os.makedirs(tmp_layer_nested_dirs, exist_ok=True)
+            bbappend_file = os.path.join(tmp_layer_nested_dirs,
+                                         package + '.bbappend')
+            with open(bbappend_file, 'w') as file:
+                file.write('DPKG_SOURCE_EXTRA_ARGS = ""')
+
+            self.bitbake(targets, bitbake_cmd='do_deploy_source', **kwargs)
+
+            sfiles_after = get_source_content(targets)
+
+            for tdir in sfiles_after:
+                for filename in sfiles_after[tdir]:
+                    if not sfiles_before[tdir][filename]:
+                        self.fail('Source filenames are different')
+                    diff = []
+                    for file in sfiles_after[tdir][filename]:
+                        if file not in sfiles_before[tdir][filename]:
+                            diff.append(file)
+                    if len(diff) < 1:
+                        self.fail('Source packages are equal')
+        finally:
+            self.cleanup_tmp_layer(tmp_layer_dir)
