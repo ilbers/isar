@@ -83,7 +83,7 @@ python () {
             bb.build.addtask('do_transform_template', 'do_image_wic', None, d)
 }
 
-IMAGER_INSTALL:wic += "${WIC_IMAGER_INSTALL}"
+IMAGER_INSTALL:wic += "${@d.getVar('WIC_IMAGER_INSTALL') or ''}"
 # wic comes with reasonable defaults, and the proper interface is the wks file
 ROOTFS_EXTRA ?= "0"
 
