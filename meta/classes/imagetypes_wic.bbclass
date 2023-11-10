@@ -19,6 +19,9 @@ python () {
     if not d.getVar('USING_WIC') == '1':
         return
 
+    if d.getVar('WIC_IMAGER_INSTALL'):
+        bb.warn("WIC_IMAGER_INSTALL is deprecated, use IMAGER_INSTALL:wic instead")
+
     import itertools
     import re
 

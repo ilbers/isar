@@ -554,3 +554,9 @@ Default value is '-I' which sets filter to:
 -I.cvsignore -I.deps -I.git -I.gitattributes -I.gitignore -I.gitmodules
 -I.gitreview -I.hg -I.hgignore -I.hgsigs -I.hgtags -I.mailmap -I.mtn-ignore
 -I.shelf -I.svn -ICVS -IDEADJOE -IRCS -I_MTN -I_darcs -I{arch}
+
+### WIC_IMAGER_INSTALL is deprecated
+
+Use `IMAGER_INSTALL:wic` instead of `WIC_IMAGER_INSTALL`. The latter is still
+supported, but a warning is issued when it is used. Future versions will drop
+`WIC_IMAGER_INSTALL` completely.
