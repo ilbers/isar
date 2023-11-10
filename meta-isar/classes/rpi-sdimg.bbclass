@@ -7,12 +7,12 @@ IMAGE_TYPEDEP:rpi_sdimg = "wic"
 
 WKS_FILE ?= "rpi-sdimg"
 
-WIC_IMAGER_INSTALL = "parted \
-                      dosfstools \
-                      mtools \
-                      e2fsprogs \
-                      python3-distutils \
-                      bmap-tools"
+IMAGER_INSTALL:wic += "parted \
+                       dosfstools \
+                       mtools \
+                       e2fsprogs \
+                       python3-distutils \
+                       bmap-tools"
 
 IMAGE_BOOT_FILES ?= "${IMAGE_ROOTFS}/boot/*.*;./ \
                      ${IMAGE_ROOTFS}/boot/overlays/*;overlays/"

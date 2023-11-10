@@ -31,4 +31,4 @@ DISTRO_KERNELS ?= " \
 IMAGE_PREINSTALL += "init"
 IMAGE_PREINSTALL += "initramfs-tools"
 
-WIC_IMAGER_INSTALL += "python3-distutils"
+IMAGER_INSTALL:wic += "python3-distutils"
