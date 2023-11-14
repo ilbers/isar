@@ -7,7 +7,7 @@
 DESCRIPTION = "Recipe to add fsck hook to the initramfs"
 
 inherit dpkg-raw
-SRC_URI = "file://postinst \
+SRC_URI = "file://initramfs-fsck-hook-ext4.triggers \
            file://initramfs.fsck.ext4.hook \
           "
 

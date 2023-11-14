@@ -14,13 +14,9 @@ DEBIAN_DEPENDS = "systemd, sed, grep, coreutils, mount, e2fsprogs, fdisk (>=2.29
 
 SRC_URI = " \
     file://expand-on-first-boot.service \
-    file://expand-last-partition.sh \
-    file://postinst"
+    file://expand-last-partition.sh"
 
 do_install() {
-    install -d -m 755 ${D}/lib/systemd/system
-    install -m 644 ${WORKDIR}/expand-on-first-boot.service ${D}/lib/systemd/system/
-
     install -d -m 755 ${D}/usr/share/expand-on-first-boot
     install -m 755 ${WORKDIR}/expand-last-partition.sh ${D}/usr/share/expand-on-first-boot/
 }

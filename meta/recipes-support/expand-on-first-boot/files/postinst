@@ -1,3 +1,0 @@
-#!/bin/sh
-
-systemctl enable expand-on-first-boot.service

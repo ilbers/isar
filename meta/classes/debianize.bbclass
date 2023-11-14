@@ -139,4 +139,12 @@ deb_debianize() {
 			fi
 		done
 	done
+
+	# handle PN.service and PN.triggers files for use with debhelper
+	for f in service triggers
+	do
+		if [ -f ${WORKDIR}/${PN}.${f} ]; then
+			install -v -m 644 ${WORKDIR}/${PN}.${f} ${S}/debian/
+		fi
+	done
 }
