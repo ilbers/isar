@@ -1,5 +1,41 @@
 Release next
 
+ * Move riscv64 from sid-ports to regular sid
+ * Fixes for HOST_ARCH and -native build
+ * Add kas menu/build support
+ * Add bookworm targets for some machines
+ * Update bitbake version to 2.0.12 release
+ * Remove buildchroot
+ * Imager migrate from buildchroot to schroot
+ * Support passing custom arguments to CI scripts
+ * Clenup and update CI (less KFAIL cases)
+ * Add recipes for optee ftpm, examples, client and TA devkit
+ * Add support of derived sbuild chroots
+ * Rework multiconfigs and cleanup them from CI-related hacks
+ * Introduce meta-test layer for CI purposes
+ * Support starfive-vision2 riscv64 board
+ * Update kas container version to use with Gitlab
+ * Enable SRCPV support for AUTOREV
+ * Add support for rebuilding essential packages
+ * Add multiarch support, remove obsolete compat-arch override
+ * Support script over SSH on qemu VMs or remote hardware in testsuite
+ * ZSTD support for image conversions
+ * Add developers test
+ * Update bitbake version to 2.0.5 release
+ * Add efi signed boot support and machine config example for it
+ * Drop Debian Stretch support
+ * Support resizing a btrfs with expand-on-first-boot
+ * Multiple changes to make builds closer to reproducible
+ * Individual wic partitions are no longer automatically deployed
+ * Add option to control deploy of raw wic partitions
+ * Populate base-apt from both DISTRO and HOST_DISTRO
+ * Multiple improvements in wic plugins
+ * Improve sstate maintenance script
+ * Update Avocado framework and switch to the new runner
+ * Rework ccache support and update ccache testcase
+ * Support build of packages with epoch version
+ * Buildchroot no longer used for package building, use sbuild instead
+
 Release v0.9
 
  * Add linux-phy kernel recipe
