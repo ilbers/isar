@@ -4,6 +4,12 @@
 inherit dpkg-base
 inherit dpkg-source
 
+# maximum time (in minutes for the build), override for packages requiring
+# much more time (e.g. when cross-compiling isn't an option / supported and
+# the package large)
+DPKG_BUILD_TIMEOUT ?= "150"
+dpkg_runbuild[vardepsexclude] += "${DPKG_BUILD_TIMEOUT}"
+
 DPKG_PREBUILD_ENV_FILE="${WORKDIR}/dpkg_prebuild.env"
 
 # bitbake variables that should be passed into sbuild env
@@ -94,6 +100,7 @@ dpkg_runbuild() {
     ${@ expand_sbuild_pt_additions(d)}
 
     echo '$apt_keep_downloaded_packages = 1;' >> ${SBUILD_CONFIG}
+    echo '$stalled_pkg_timeout = ${DPKG_BUILD_TIMEOUT};' >> ${SBUILD_CONFIG}
 
     DEB_SOURCE_NAME=$(dpkg-parsechangelog --show-field Source --file ${WORKDIR}/${PPS}/debian/changelog)
     DSC_FILE=$(find ${WORKDIR} -name "${DEB_SOURCE_NAME}*.dsc" -maxdepth 1 -print)
