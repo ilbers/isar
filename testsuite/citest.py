@@ -220,6 +220,10 @@ class NoCrossTest(CIBaseTest):
             'mc:rpi-arm-v7-bullseye:isar-image-base',
             'mc:rpi-arm-v7l-bullseye:isar-image-base',
             'mc:rpi-arm64-v8-bullseye:isar-image-base',
+            'mc:rpi-arm-bookworm:isar-image-base',
+            'mc:rpi-arm-v7-bookworm:isar-image-base',
+            'mc:rpi-arm-v7l-bookworm:isar-image-base',
+            'mc:rpi-arm64-v8-bookworm:isar-image-base',
                   ]
 
         self.init()
