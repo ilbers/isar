@@ -134,6 +134,9 @@ rootfs_install_resolvconf[weight] = "1"
 rootfs_install_resolvconf() {
     if [ "${@repr(bb.utils.to_boolean(d.getVar('BB_NO_NETWORK')))}" != "True" ]
     then
+        if [ -L "${ROOTFSDIR}/etc/resolv.conf" ]; then
+            sudo unlink "${ROOTFSDIR}/etc/resolv.conf"
+        fi
         sudo cp -rL /etc/resolv.conf '${ROOTFSDIR}/etc'
     fi
 }
