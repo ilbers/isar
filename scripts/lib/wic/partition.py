@@ -280,6 +280,17 @@ class Partition():
 
         extraopts = self.mkfs_extraopts or "-F -i 8192"
 
+        if os.getenv('SOURCE_DATE_EPOCH'):
+            sde_time = int(os.getenv('SOURCE_DATE_EPOCH'))
+            pseudo = "export E2FSPROGS_FAKE_TIME=%s;%s" % (sde_time, pseudo)
+
+            # Set hash_seed to generate deterministic directory indexes
+            namespace = uuid.UUID("e7429877-e7b3-4a68-a5c9-2f2fdf33d460")
+            if self.fsuuid:
+                namespace = uuid.UUID(self.fsuuid)
+            hash_seed = str(uuid.uuid5(namespace, str(sde_time)))
+            extraopts += " -E hash_seed=%s" % hash_seed
+
         label_str = ""
         if self.label:
             label_str = "-L %s" % self.label
