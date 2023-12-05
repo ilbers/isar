@@ -68,6 +68,8 @@ SDKROOTFSVARDEPS = ""
 SDKROOTFSVARDEPS:class-sdk = "SDK_INCLUDE_ISAR_APT"
 do_rootfs_install[vardeps] += "${SDKROOTFSVARDEPS}"
 
+ROOTFS_POSTPROCESS_COMMAND:remove = "${@'rootfs_cleanup_isar_apt' if d.getVar('SDK_INCLUDE_ISAR_APT') == '1' else ''}"
+
 # additional SDK steps
 ROOTFS_CONFIGURE_COMMAND:append:class-sdk = " ${@'rootfs_configure_isar_apt_dir' if d.getVar('SDK_INCLUDE_ISAR_APT') == '1' else ''}"
 rootfs_configure_isar_apt_dir() {
