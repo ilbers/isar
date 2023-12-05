@@ -82,11 +82,6 @@ sdkchroot_configscript () {
 
 ROOTFS_POSTPROCESS_COMMAND:append:class-sdk = " sdkchroot_finalize"
 sdkchroot_finalize() {
-    if [ "${SDK_INCLUDE_ISAR_APT}" = "0" ]; then
-        # Remove isar-apt repo entry
-        sudo rm -f ${ROOTFSDIR}/etc/apt/sources.list.d/isar-apt.list
-    fi
-
     sudo umount -R ${ROOTFSDIR}/dev || true
     sudo umount ${ROOTFSDIR}/proc || true
     sudo umount -R ${ROOTFSDIR}/sys || true
