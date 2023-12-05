@@ -60,6 +60,9 @@ ROOTFS_PACKAGES = "${SBUILD_CHROOT_PREINSTALL}"
 ROOTFS_CONFIGURE_COMMAND:remove = "rootfs_configure_isar_apt"
 ROOTFS_POSTPROCESS_COMMAND:remove = "rootfs_cleanup_isar_apt"
 
+# Do not cleanup base-apt
+ROOTFS_POSTPROCESS_COMMAND:remove = "rootfs_cleanup_base_apt"
+
 DEPLOY_SCHROOT = "${@d.getVar('SCHROOT_' + d.getVar('SBUILD_VARIANT').upper() + '_DIR')}${SBUILD_SCHROOT_SUFFIX}"
 
 do_sbuildchroot_deploy[dirs] = "${DEPLOY_DIR}/schroot-${SBUILD_VARIANT}"
