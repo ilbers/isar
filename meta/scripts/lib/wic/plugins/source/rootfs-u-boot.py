@@ -106,6 +106,15 @@ class RootfsUBootPlugin(RootfsPlugin):
             rm_cmd = "rm -f %s/usr/bin/%s" % (real_rootfs_dir, qemu_static)
             exec_cmd(rm_cmd)
 
+        # For reproducibility set the time stamp of newly updated files
+        if os.getenv('SOURCE_DATE_EPOCH'):
+            sde_time = int(os.getenv('SOURCE_DATE_EPOCH'))
+            os.utime(u_boot_script, (sde_time, sde_time))
+            os.utime(os.path.join(real_rootfs_dir, "boot/boot.scr"),
+                     (sde_time, sde_time))
+            os.utime(os.path.join(real_rootfs_dir, "tmp"),
+                     (sde_time, sde_time))
+
         RootfsPlugin.do_prepare_partition(part, source_params, cr, cr_workdir,
                                           oe_builddir, bootimg_dir, kernel_dir,
                                           krootfs_dir, native_sysroot)
