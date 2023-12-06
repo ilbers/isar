@@ -10,6 +10,8 @@ FILESPATH:append := ":${FILE_DIRNAME}/files"
 DESCRIPTION ?= "Custom kernel module ${PN}"
 
 KERNEL_NAME ?= ""
+# directory with KBuild file (M=${MODULE_DIR})
+MODULE_DIR ?= "$(PWD)"
 
 PN .= "-${KERNEL_NAME}"
 
@@ -36,6 +38,7 @@ TEMPLATE_VARS += " \
     KERNEL_TYPE \
     KERNEL_IMAGE_PKG \
     KERNEL_HEADERS_PKG \
+    MODULE_DIR \
     DEBIAN_BUILD_DEPENDS \
     SIGNATURE_KEYFILE \
     SIGNATURE_CERTFILE \

@@ -560,3 +560,9 @@ Default value is '-I' which sets filter to:
 Use `IMAGER_INSTALL:wic` instead of `WIC_IMAGER_INSTALL`. The latter is still
 supported, but a warning is issued when it is used. Future versions will drop
 `WIC_IMAGER_INSTALL` completely.
+
+### Add MODULE_DIR to decouple sources dir from modules dir in custom-module
+
+When building a custom kernel module, the `KBuild` file might be located in
+a subdirectory. To support this use-case, set `MODULE_DIR=$(PWD)/subdir` in
+the module build recipe.
