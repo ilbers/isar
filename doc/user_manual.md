@@ -1138,16 +1138,28 @@ One may chroot into the SDK and install required target packages with the help o
 
 ### Example
 
+ - Enable isar-apt include in `conf/local.conf`:
+
+```
+SDK_INCLUDE_ISAR_APT = "1"
+```
+
  - Trigger creation of SDK root filesystem
 
 ```
 bitbake -c do_populate_sdk mc:qemuarm-bullseye:isar-image-base
 ```
 
+ - Unpack generated SDK:
+
+```
+sudo tar xf tmp/deploy/images/qemuarm/isar-image-base-sdk-debian-bullseye-qemuarm.tar.xz -C tmp/deploy/images/qemuarm
+```
+
  - Mount the following directories in chroot by passing resulting rootfs as an argument to the script `mount_chroot.sh`:
 
 ```
-cat scripts/mount_chroot.sh
+cat ../scripts/mount_chroot.sh
 #!/bin/sh
 
 set -e
@@ -1159,14 +1171,14 @@ mount devtmpfs $1/dev     -t devtmpfs -o mode=0755,nosuid
 mount devpts   $1/dev/pts -t devpts   -o gid=5,mode=620
 mount tmpfs    $1/dev/shm -t tmpfs    -o rw,seclabel,nosuid,nodev
 
-$ sudo scripts/mount_chroot.sh ../build/tmp/deploy/images/qemuarm/isar-image-base-sdk-debian-bullseye-qemuarm
+sudo ../scripts/mount_chroot.sh tmp/deploy/images/qemuarm/isar-image-base-sdk-debian-bullseye-qemuarm
 
 ```
 
  - chroot to isar SDK rootfs:
 
 ```
-$ sudo chroot build/tmp/deploy/images/qemuarm/isar-image-base-sdk-debian-bullseye-qemuarm
+sudo chroot tmp/deploy/images/qemuarm/isar-image-base-sdk-debian-bullseye-qemuarm
 ```
  - Check that cross toolchains are installed
 
@@ -1180,6 +1192,13 @@ ii  crossbuild-essential-armhf           12.3                   all          Inf
 ```
 :~# apt-get update
 :~# apt-get install libhello-dev:armhf
+```
+
+Note that you may need to copy `/etc/resolv.conf` from the host or use any
+public nameserver like:
+
+```
+:~# echo "nameserver 8.8.8.8" > /etc/resolv.conf
 ```
 
  - Check the contents of the installed target package
@@ -1200,6 +1219,12 @@ ii  crossbuild-essential-armhf           12.3                   all          Inf
 /usr/share/doc/libhello-dev/changelog.gz
 /usr/share/doc/libhello-dev/copyright
 ~#
+```
+
+ - Unmount rootfs paths:
+
+```
+sudo ../scripts/umount_chroot.sh tmp/deploy/images/qemuarm/isar-image-base-sdk-debian-bullseye-qemuarm
 ```
 
 ## Create a containerized Isar SDK root filesystem
