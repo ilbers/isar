@@ -28,6 +28,11 @@ do_prepare_build:append() {
     env > ${DPKG_PREBUILD_ENV_FILE}
 }
 
+# cp -n results in nonzero exit code starting from coreutils 9.2
+# and starting from 9.3 we can use --update=none for the same behaviour
+CP_FLAGS ?= "-Ln --no-preserve=owner"
+CP_FLAGS:sid ?= "-L --update=none --no-preserve=owner"
+
 # Build package from sources using build script
 dpkg_runbuild[vardepsexclude] += "${SBUILD_PASSTHROUGH_ADDITIONS}"
 dpkg_runbuild() {
@@ -116,7 +121,7 @@ dpkg_runbuild() {
         --chroot-setup-commands="mkdir -p ${deb_dir}" \
         --chroot-setup-commands="ln -sf ${ext_deb_dir}/*.deb -t ${deb_dir}/" \
         --finished-build-commands="rm -f ${deb_dir}/sbuild-build-depends-main-dummy_*.deb" \
-        --finished-build-commands="[ -z "$(find ${deb_dir} -maxdepth 1 -name '*.deb' -print -quit)" ] || cp -Ln --no-preserve=owner ${deb_dir}/*.deb -t ${ext_deb_dir}/" \
+        --finished-build-commands="[ -z "$(find ${deb_dir} -maxdepth 1 -name '*.deb' -print -quit)" ] || cp ${CP_FLAGS} ${deb_dir}/*.deb -t ${ext_deb_dir}/" \
         --finished-build-commands="cp /var/log/dpkg.log ${ext_root}/dpkg_partial.log" \
         --debbuildopts="--source-option=-I" \
         --build-dir=${WORKDIR} --dist="isar" ${DSC_FILE}
