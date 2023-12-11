@@ -30,7 +30,7 @@ def format_qemu_cmdline(arch, build, distro, image, out, pid, enforce_pcbios=Fal
 
     image_type = get_bitbake_var(bb_output, 'IMAGE_FSTYPES').split()[0]
     deploy_dir_image = get_bitbake_var(bb_output, 'DEPLOY_DIR_IMAGE')
-    base = 'ubuntu' if distro in ['focal', 'bionic'] else 'debian'
+    base = 'ubuntu' if distro in ['jammy', 'focal'] else 'debian'
 
     rootfs_image = image + '-' + base + '-' + distro + '-qemu' + arch + '.' + image_type
 
@@ -102,7 +102,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-a', '--arch', choices=['arm', 'arm64', 'amd64', 'i386', 'mipsel'], help='set isar machine architecture.', default='arm')
     parser.add_argument('-b', '--build', help='set path to build directory.', default=os.getcwd())
-    parser.add_argument('-d', '--distro', choices=['buster', 'bullseye', 'bookworm'], help='set isar Debian distribution.', default='bookworm')
+    parser.add_argument('-d', '--distro', choices=['buster', 'bullseye', 'bookworm', 'trixie', 'focal', 'jammy'], help='set isar Debian distribution.', default='bookworm')
     parser.add_argument('-i', '--image', help='set image name.', default='isar-image-base')
     parser.add_argument('-o', '--out', help='Route QEMU console output to specified file.')
     parser.add_argument('-p', '--pid', help='Store QEMU pid to specified file.')
