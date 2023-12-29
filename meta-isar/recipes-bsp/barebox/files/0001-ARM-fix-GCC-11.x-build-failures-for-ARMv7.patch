@@ -1,0 +1,59 @@
+From 6e200850e2cb49ec2a5898c27375bdc2309bddc7 Mon Sep 17 00:00:00 2001
+From: Ian Abbott <abbotti@mev.co.uk>
+Date: Fri, 8 Apr 2022 18:01:54 +0100
+Subject: [PATCH] ARM: fix GCC 11.x build failures for ARMv7
+
+Building barebox for ARMv7 with GCC 11.x results in errors similar to
+the following:
+
+  CC      common/state/state_variables.o
+{standard input}: Assembler messages:
+{standard input}:1535: Error: selected processor does not support `rev r3,r3' in Thumb mode
+{standard input}:1576: Error: selected processor does not support `rev r3,r3' in Thumb mode
+
+Or:
+
+  CC      common/state/state_variables.o
+{standard input}: Assembler messages:
+{standard input}:1405: Error: selected processor does not support `rev r3,r3' in ARM mode
+{standard input}:1453: Error: selected processor does not support `rev r3,r3' in ARM mode
+
+The problem is that the compiler option `-march=armv7-a` is not being
+chosen by "arch/arm/Makefile", but rather the fallback options
+`-march=armv5t -Wa,-march=armv7-a` are being chosen.
+
+Appending `-msoft-float` to `KBUILD_CPPFLAGS` earlier in
+"arch/arm/Makefile" before the tests for supported `-march` options
+seems to fix the problem.
+
+Signed-off-by: Ian Abbott <abbotti@mev.co.uk>
+Link: https://lore.barebox.org/20220408170154.114526-1-abbotti@mev.co.uk
+Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+---
+ arch/arm/Makefile | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/Makefile b/arch/arm/Makefile
+index 610ded8a12..124a3fc40c 100644
+--- a/arch/arm/Makefile
++++ b/arch/arm/Makefile
+@@ -8,6 +8,7 @@ ifeq ($(CONFIG_CPU_V8),y)
+ KBUILD_CPPFLAGS	+=$(call cc-option,-maarch64,)
+ else
+ KBUILD_CPPFLAGS	+=$(call cc-option,-marm,)
++KBUILD_CPPFLAGS	+= -msoft-float
+ endif
+ 
+ ifeq ($(CONFIG_CPU_BIG_ENDIAN),y)
+@@ -78,7 +79,7 @@ KBUILD_CPPFLAGS += $(CFLAGS_ABI) $(arch-y) $(tune-y)
+ KBUILD_AFLAGS   += -include asm/unified.h
+ export S64 = _64
+ else
+-KBUILD_CPPFLAGS += $(CFLAGS_ABI) $(arch-y) $(tune-y) -msoft-float $(CFLAGS_THUMB2)
++KBUILD_CPPFLAGS += $(CFLAGS_ABI) $(arch-y) $(tune-y) $(CFLAGS_THUMB2)
+ KBUILD_AFLAGS   += -include asm/unified.h -msoft-float $(AFLAGS_THUMB2)
+ endif
+ 
+-- 
+2.39.2
+
