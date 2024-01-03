@@ -411,6 +411,8 @@ class BootimgEFIPlugin(SourcePlugin):
                     grub_target = 'x86_64-efi'
                     grub_image = "bootx64.efi"
                     grub_modules = "multiboot efi_uga iorw ata "
+                    if get_bitbake_var("DISTRO").startswith("ubuntu"):
+                        grub_modules += "linuxefi "
                 elif distro_arch == "i386":
                     grub_target = 'i386-efi'
                     grub_image = "bootia32.efi"
