@@ -228,6 +228,7 @@ class NoCrossTest(CIBaseTest):
         targets = [
             'mc:qemuriscv64-sid:isar-image-base',
             'mc:sifive-fu540-sid:isar-image-base',
+            'mc:starfive-visionfive2-sid:isar-image-base',
                   ]
 
         self.init()
