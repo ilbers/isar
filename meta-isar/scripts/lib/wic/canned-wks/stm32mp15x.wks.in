@@ -11,6 +11,6 @@ part teeh --part-name teeh --source rawcopy --sourceparams "file=/usr/lib/optee-
 part teed --part-name teed --source rawcopy --sourceparams "file=/usr/lib/optee-os/${MACHINE}/tee-pageable_v2.stm32" --fstype=ext4 --fsoptions "noauto" --part-type 0x8301 --fixed-size 1024K
 part teex --part-name teex --source rawcopy --sourceparams "file=/usr/lib/optee-os/${MACHINE}/tee-pager_v2.stm32" --fstype=ext4 --fsoptions "noauto" --part-type 0x8301 --fixed-size 256K
 
-part / --source rootfs-u-boot --fstype ext4 --mkfs-extraopts "-T default" --label root --align 1024 --active --use-uuid
+part / --source rootfs-u-boot --fstype ext4 --mkfs-extraopts "-T default" --label root --align 1024 --active --use-uuid --fsuuid 1f55d66a-40d8-11ee-be56-0242ac120002
 
 bootloader --ptable gpt --append="rootwait rw console=ttySTM0,115200"

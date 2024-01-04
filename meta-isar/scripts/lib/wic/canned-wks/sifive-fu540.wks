@@ -5,6 +5,6 @@
 
 part --source rawcopy --sourceparams "file=/usr/lib/opensbi/sifive-fu540/fw_payload.bin" --ondisk mmcblk0 --fixed-size 8M --align 1 --part-type 2e54b353-1271-4842-806f-e436d6af6985
 
-part / --source rootfs-u-boot --ondisk mmcblk0 --fstype ext4 --mkfs-extraopts "-T default" --label platform --active --align 1024 --sourceparams "no_initrd=yes,script_prepend=setenv fdtfile sifive/hifive-unleashed-a00.dtb"
+part / --source rootfs-u-boot --ondisk mmcblk0 --fstype ext4 --mkfs-extraopts "-T default" --label platform --active --align 1024 --sourceparams "no_initrd=yes,script_prepend=setenv fdtfile sifive/hifive-unleashed-a00.dtb" --fsuuid 1f55d66a-40d8-11ee-be56-0242ac120002
 
 bootloader --ptable gpt --append "rootwait"

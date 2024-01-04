@@ -1,5 +1,5 @@
 part /boot --source bootimg-partition --ondisk mmcblk0 --fstype=vfat --label boot --active --align 4096 --size 10
 
-part / --source rootfs --ondisk mmcblk0 --fstype=ext4 --mkfs-extraopts "-T default" --label root --align 4096 --exclude-path=boot
+part / --source rootfs --ondisk mmcblk0 --fstype=ext4 --mkfs-extraopts "-T default" --label root --align 4096 --exclude-path=boot --fsuuid 1f55d66a-40d8-11ee-be56-0242ac120002
 
 bootloader

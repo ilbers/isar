@@ -5,6 +5,6 @@
 
 part /boot --source bootimg-efi-isar --sourceparams "loader=grub-efi" --ondisk mmcblk1 --label efi --part-type EF00 --align 1024
 
-part / --source rootfs --ondisk mmcblk1 --fstype ext4 --mkfs-extraopts "-T default" --label platform --align 1024 --use-uuid --exclude-path boot/
+part / --source rootfs --ondisk mmcblk1 --fstype ext4 --mkfs-extraopts "-T default" --label platform --align 1024 --use-uuid --exclude-path boot/ --fsuuid 1f55d66a-40d8-11ee-be56-0242ac120002
 
 bootloader --ptable gpt --timeout=3

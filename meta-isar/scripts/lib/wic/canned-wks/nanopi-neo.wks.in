@@ -5,6 +5,6 @@
 
 part u-boot --source rawcopy --sourceparams "file=/usr/lib/u-boot/nanopi_neo/u-boot-sunxi-with-spl.bin" --no-table --align 8
 
-part / --source rootfs-u-boot --use-uuid --fstype ext4 --mkfs-extraopts "-T default" --sourceparams "builtin_dt=yes" --label platform --align 1024 --active
+part / --source rootfs-u-boot --use-uuid --fstype ext4 --mkfs-extraopts "-T default" --sourceparams "builtin_dt=yes" --label platform --align 1024 --active --fsuuid 1f55d66a-40d8-11ee-be56-0242ac120002
 
 bootloader --append "rw rootwait"

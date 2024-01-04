@@ -18,6 +18,6 @@ part --source rawcopy --sourceparams "file=/usr/share/visionfive2-u-boot-firmwar
 # EFI
 part /boot --source bootimg-efi-isar --sourceparams "loader=systemd-boot" --use-uuid --label efi --part-type EF00 --align 1024
 # rootfs
-part / --source rootfs --use-uuid --fstype ext4 --mkfs-extraopts "-T default" --label image --active --align 1024 --exclude-path=boot/
+part / --source rootfs --use-uuid --fstype ext4 --mkfs-extraopts "-T default" --label image --active --align 1024 --exclude-path=boot/ --fsuuid 1f55d66a-40d8-11ee-be56-0242ac120002
 
 bootloader --ptable gpt --timeout=0 --append "console=tty0 console=ttyS0,115200 earlycon rootwait"
