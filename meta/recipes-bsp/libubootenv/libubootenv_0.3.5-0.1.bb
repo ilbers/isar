@@ -12,11 +12,18 @@ LIC_FILES_CHKSUM = "file://${LAYERDIR_isar}/licenses/COPYING.GPLv2;md5=751419260
 
 PROVIDES = "libubootenv-tool libubootenv-dev libubootenv-doc libubootenv0.1"
 
-inherit dpkg-gbp
+inherit dpkg
 
-SRC_URI = "git://salsa.debian.org/debian/libubootenv.git;protocol=https;branch=master"
-SRCREV = "a1a3504e5cda1883928a8747a0bedc56afff6910"
-
-S = "${WORKDIR}/git"
+SRC_URI = "git://salsa.debian.org/debian/libubootenv.git;protocol=https;branch=master;destsuffix=${P}"
+SRCREV = "32dcabeea9ed5342a2d1bb254bb4839e2e68ee5e"
 
 DEB_BUILD_OPTIONS += "nocheck"
+
+
+CHANGELOG_V ?= "${PV}+isar-${SRCREV}"
+
+do_prepare_build() {
+    deb_add_changelog
+    cd ${WORKDIR}
+    tar cJf ${PN}_${PV}+isar.orig.tar.xz --exclude=.git --exclude=debian ${P}
+}
