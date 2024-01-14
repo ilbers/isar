@@ -26,6 +26,8 @@ python() {
 
 DEBIAN_BUILD_DEPENDS ?= "bc, bison, flex, device-tree-compiler, git"
 
+U_BOOT_BIN_INSTALL ?= "${U_BOOT_BIN}"
+
 TEMPLATE_FILES = "debian/control.tmpl debian/rules.tmpl"
 TEMPLATE_VARS += "MACHINE DEBIAN_BUILD_DEPENDS U_BOOT_CONFIG U_BOOT_BIN \
     BL31 TEE"
@@ -38,8 +40,11 @@ do_prepare_build() {
 
     deb_add_changelog
 
-    echo "${U_BOOT_BIN} /usr/lib/u-boot/${MACHINE}" > \
-        ${S}/debian/u-boot-${MACHINE}.install
+    rm -f ${S}/debian/u-boot-${MACHINE}.install
+    for bin in ${U_BOOT_BIN_INSTALL}; do
+        echo "$bin /usr/lib/u-boot/${MACHINE}" >> \
+            ${S}/debian/u-boot-${MACHINE}.install
+    done
 
     echo "tools/env/libubootenv.a usr/lib" > \
         ${S}/debian/u-boot-${MACHINE}-dev.install
