@@ -16,7 +16,7 @@ DESCRIPTION ?= "Custom OP-TEE OS"
 OPTEE_NAME ?= "${MACHINE}"
 OPTEE_PLATFORM ?= "unknown"
 OPTEE_EXTRA_BUILDARGS ?= ""
-OPTEE_BINARIES ?= "tee-pager_v2.bin"
+OPTEE_BINARIES ?= "tee-raw.bin"
 
 DEBIAN_PACKAGE_NAME ?= "optee-os-${OPTEE_NAME}"
 

@@ -572,3 +572,8 @@ the module build recipe.
 Remove all uses of the function deb_compat. The functionality was replaced with
 a dependency to the package debhelper-compat.
 
+### Change OPTEE_BINARIES default ###0
+
+Since OP-TEE 3.21, tee-raw.bin is produced for all platforms and is considered
+the better default option. `OPTEE_BINARIES` now uses this as default as well.
+
