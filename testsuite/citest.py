@@ -206,6 +206,7 @@ class NoCrossTest(CIBaseTest):
             'mc:qemumipsel-bookworm:isar-image-ci',
             'mc:hikey-bookworm:isar-image-base',
             'mc:de0-nano-soc-bookworm:isar-image-base',
+            'mc:beagleplay-bookworm:isar-image-base',
                   ]
 
         self.init()
