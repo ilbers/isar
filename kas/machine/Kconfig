@@ -14,6 +14,10 @@ config MACHINE_BANANAPI
 	bool "bananapi"
 	depends on DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM
 
+config MACHINE_BEAGLEPLAY
+	bool "beagleplay"
+	depends on DEBIAN_BOOKWORM
+
 config MACHINE_CONTAINER_AMD64
 	bool "container-amd64"
 	depends on DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM
@@ -111,6 +115,7 @@ endchoice
 config KAS_INCLUDE_MACHINE
 	string
 	default "kas/machine/bananapi.yaml" if MACHINE_BANANAPI
+	default "kas/machine/beagleplay.yaml" if MACHINE_BEAGLEPLAY
 	default "kas/machine/container-amd64.yaml" if MACHINE_CONTAINER_AMD64
 	default "kas/machine/de0-nano-soc.yaml" if MACHINE_DE0_NANO_SOC
 	default "kas/machine/hikey.yaml" if MACHINE_HIKEY
