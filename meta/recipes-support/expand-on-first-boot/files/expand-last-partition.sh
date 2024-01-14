@@ -38,6 +38,11 @@ if [ "$DISK_SIZE" -lt "$MINIMAL_SIZE" ]; then
 	exit 0
 fi
 
+IS_GPT="$(sfdisk -d "${BOOT_DEV}" 2>/dev/null | grep -q "label: gpt" && echo 1)"
+if [ "$IS_GPT" = "1" ]; then
+	dd if="${BOOT_DEV}" of=/dev/shm/__mbr__.bak count=1
+fi
+
 LAST_PART="$(sfdisk -d "${BOOT_DEV}" 2>/dev/null | tail -1 | cut -d ' ' -f 1)"
 
 # Transform the partition table as follows:
@@ -53,6 +58,11 @@ sfdisk -d "${BOOT_DEV}" 2>/dev/null | \
 	sed 's|^\(.*, \)size=[^,]*, \(type=[f5]\)$|\1\2|' | \
 	sed 's|^\('"${LAST_PART}"' .*, \)size=[^,]*, |\1|' | \
 	sfdisk --force "${BOOT_DEV}"
+
+if [ "$IS_GPT" = "1" ]; then
+	dd if=/dev/shm/__mbr__.bak of="${BOOT_DEV}"
+	rm /dev/shm/__mbr__.bak
+fi
 
 # Inform the kernel about the partitioning change
 partx -u "${LAST_PART}"
