@@ -162,7 +162,7 @@ class WicTest(CIBaseTest):
         targets = ['mc:qemuarm64-bookworm:isar-image-ci']
 
         self.init()
-        self.delete_from_build_dir('tmp')
+        self.move_in_build_dir('tmp', 'tmp_before_wic')
         self.perform_wic_partition_test(targets,
             wic_deploy_parts=False, debsrc_cache=True, compat_arch=False)
 
@@ -210,7 +210,7 @@ class NoCrossTest(CIBaseTest):
 
         self.init()
         # Cleanup after cross build
-        self.delete_from_build_dir('tmp')
+        self.move_in_build_dir('tmp', 'tmp_before_nocross')
         self.perform_build_test(targets, cross=False, debsrc_cache=True)
 
     def test_nocross_rpi(self):

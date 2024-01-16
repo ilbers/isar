@@ -45,7 +45,7 @@ class CIBaseTest(CIBuilder):
         try:
             self.bitbake(targets, **kwargs)
 
-            self.delete_from_build_dir('tmp')
+            self.move_in_build_dir('tmp', 'tmp_middle_repro_%s' % ('signed' if signed else 'unsigned'))
             self.configure(gpg_pub_key=gpg_pub_key if signed else None, offline=True, sstate_dir="", **kwargs)
 
             self.bitbake(targets, **kwargs)
@@ -80,7 +80,7 @@ class CIBaseTest(CIBuilder):
         # Field that stores direct ccache hits
         direct_cache_hit = 22
 
-        self.delete_from_build_dir('tmp')
+        self.move_in_build_dir('tmp', 'tmp_before_ccache')
         self.delete_from_build_dir('sstate-cache')
         self.delete_from_build_dir('ccache')
 
@@ -89,7 +89,7 @@ class CIBaseTest(CIBuilder):
         hit1 = ccache_stats(self.build_dir + '/ccache', direct_cache_hit)
         self.log.info('Ccache hits 1: ' + str(hit1))
 
-        self.delete_from_build_dir('tmp')
+        self.move_in_build_dir('tmp', 'tmp_middle_ccache')
         self.delete_from_build_dir('sstate-cache')
 
         self.log.info('Starting build and using ccache dir...')
@@ -101,7 +101,7 @@ class CIBaseTest(CIBuilder):
             self.fail('Ccache was not used on second build')
 
         # Cleanup
-        self.delete_from_build_dir('tmp')
+        self.move_in_build_dir('tmp', 'tmp_after_ccache')
         self.delete_from_build_dir('sstate-cache')
         self.delete_from_build_dir('ccache')
         self.unconfigure()
@@ -117,7 +117,7 @@ class CIBaseTest(CIBuilder):
 
         # Cleanup sstate and tmp before test
         self.delete_from_build_dir('sstate-cache')
-        self.delete_from_build_dir('tmp')
+        self.move_in_build_dir('tmp', 'tmp_before_sstate_populate')
 
         # Populate cache
         self.bitbake(image_target, **kwargs)
@@ -158,7 +158,7 @@ class CIBaseTest(CIBuilder):
         expected_files = set(glob.glob(f'{self.build_dir}/tmp/deploy/images/*/*'))
 
         # Rebuild image
-        self.delete_from_build_dir('tmp')
+        self.move_in_build_dir('tmp', 'tmp_before_sstate')
         self.bitbake(image_target, **kwargs)
         if not all([
                 check_executed_tasks('isar-bootstrap-target',
@@ -182,7 +182,7 @@ class CIBaseTest(CIBuilder):
             self.fail("Failed rebuild image")
 
         # Rebuild single package
-        self.delete_from_build_dir('tmp')
+        self.move_in_build_dir('tmp', 'tmp_middle_sstate')
         self.bitbake(package_target, **kwargs)
         if not all([
                 check_executed_tasks('isar-bootstrap-target',
@@ -195,7 +195,7 @@ class CIBaseTest(CIBuilder):
             self.fail("Failed rebuild single package")
 
         # Rebuild package and image
-        self.delete_from_build_dir('tmp')
+        self.move_in_build_dir('tmp', 'tmp_middle2_sstate')
         process.run(f'find {self.build_dir}/sstate-cache/ -name sstate:hello:* -delete')
         self.bitbake(image_target, **kwargs)
         if not all([
