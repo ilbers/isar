@@ -75,6 +75,7 @@ convert_container() {
             rm -f "${image_archive}"
             bbdebug 2 "Converting OCI image to ${container_type}"
             skopeo --insecure-policy copy \
+                --tmpdir "${WORKDIR}" \
                 "oci:${oci_img_dir}:${tag}" "${target}"
             ;;
         "oci")
@@ -86,6 +87,7 @@ convert_container() {
                 die "Adding the container image to a container runtime (${container_type}) not supported if running from a container (e.g. 'kas-container')"
             fi
             skopeo --insecure-policy copy \
+                --tmpdir "${WORKDIR}" \
                 "oci:${oci_img_dir}:${tag}" \
                 "${container_type}:${image_name}:${tag}"
             ;;
