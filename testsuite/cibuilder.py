@@ -181,11 +181,12 @@ class CIBuilder(Test):
 
     def delete_from_build_dir(self, path):
         self.check_init()
-        process.run('rm -rf ' + self.build_dir + '/' + path, sudo=True)
+        shutil.rmtree(self.build_dir + '/' + path, True)
 
     def move_in_build_dir(self, src, dst):
         self.check_init()
-        process.run('mv ' + self.build_dir + '/' + src + ' ' + self.build_dir + '/' + dst, sudo=True)
+        if os.path.exists(self.build_dir + '/' + src):
+            shutil.move(self.build_dir + '/' + src, self.build_dir + '/' + dst)
 
     def bitbake(self, target, bitbake_cmd=None, **kwargs):
         self.check_init()
