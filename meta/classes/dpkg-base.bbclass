@@ -323,7 +323,7 @@ python do_devshell() {
     bb.build.exec_func('schroot_delete_configs', d)
 }
 
-addtask devshell after do_local_isarapt
+addtask devshell after do_local_isarapt do_prepare_build
 DEVSHELL_STARTDIR ?= "${S}"
 do_devshell[dirs] = "${DEVSHELL_STARTDIR}"
 do_devshell[nostamp] = "1"
@@ -335,7 +335,7 @@ python do_devshell_nodeps() {
 
 # devshell may be placed after do_instell_builddeps in downstream classes.
 # devshell_nodeps will always stay right after do_prepare_build.
-addtask devshell_nodeps after do_local_isarapt
+addtask devshell_nodeps after do_local_isarapt do_prepare_build
 do_devshell_nodeps[dirs] = "${DEVSHELL_STARTDIR}"
 do_devshell_nodeps[nostamp] = "1"
 do_devshell_nodeps[network] = "${TASK_USE_SUDO}"
