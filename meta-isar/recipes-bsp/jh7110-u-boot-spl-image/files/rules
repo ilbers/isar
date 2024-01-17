@@ -4,7 +4,7 @@ U_BOOT_SPL_BIN := /usr/lib/u-boot/starfive-visionfive2/u-boot-spl.bin
 
 override_dh_auto_build:
 	cp $(U_BOOT_SPL_BIN) u-boot-spl.bin
-	/usr/lib/jh7110-uboot-spl-tool/spl_tool -c -f u-boot-spl.bin
+	spl_tool -c -f u-boot-spl.bin
 
 %:
 	dh \$@
