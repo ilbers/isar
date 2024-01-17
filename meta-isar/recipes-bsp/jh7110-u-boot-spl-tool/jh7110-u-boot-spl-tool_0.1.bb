@@ -16,7 +16,7 @@ S = "${WORKDIR}/tools/spl_tool"
 do_prepare_build[cleandirs] += "${S}/debian"
 do_prepare_build(){
     deb_debianize
-    echo "spl_tool usr/lib/jh7110-uboot-spl-tool" > ${S}/debian/${PN}.install
+    echo "spl_tool usr/lib/jh7110-uboot-spl-tool" > ${S}/debian/${BPN}.install
 }
 
 COMPATIBLE_MACHINE = "starfive-visionfive2"
