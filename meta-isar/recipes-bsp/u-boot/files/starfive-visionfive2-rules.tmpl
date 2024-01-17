@@ -1,0 +1,35 @@
+#!/usr/bin/make -f
+
+# Debian rules for custom U-Boot build
+#
+# This software is a part of ISAR.
+# Copyright (c) Siemens AG, 2018-2021
+#
+# SPDX-License-Identifier: MIT
+
+ifneq ($(DEB_BUILD_GNU_TYPE),$(DEB_HOST_GNU_TYPE))
+export CROSS_COMPILE=$(DEB_HOST_GNU_TYPE)-
+SET_CROSS_BUILD_TOOLS=CROSS_BUILD_TOOLS=y
+endif
+
+override_dh_auto_build:
+	$(MAKE) $(PARALLEL_MAKE) ${U_BOOT_CONFIG}
+	$(MAKE) $(PARALLEL_MAKE) flash.bin OPENSBI=/usr/lib/opensbi/starfive-visionfive2/fw_dynamic.bin
+	spl_tool -c -f spl/u-boot-spl.bin
+	$(MAKE) -n u-boot-initial-env >/dev/null 2>&1; if [ $$? -ne 2 ]; then \
+		$(MAKE) $(PARALLEL_MAKE) u-boot-initial-env; \
+	else \
+		./scripts/get_default_envs.sh >u-boot-initial-env; \
+	fi
+	$(MAKE) $(PARALLEL_MAKE) $(SET_CROSS_BUILD_TOOLS) NO_SDL=1 tools-only envtools
+
+override_dh_auto_install:
+	mv tools/env/lib.a tools/env/libubootenv.a
+
+override_dh_auto_test:
+
+override_dh_strip:
+	dh_strip -X libubootenv.a
+
+%:
+	dh $@ --parallel
