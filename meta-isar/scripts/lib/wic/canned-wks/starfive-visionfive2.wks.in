@@ -16,7 +16,7 @@ part --source rawcopy --sourceparams "file=/usr/share/jh7110-uboot-spl-image/u-b
 # U-Boot FIT
 part --source rawcopy --sourceparams "file=/usr/share/visionfive2-u-boot-firmware/visionfive2_fw_payload.img" --ondisk mmcblk1 --fixed-size  4M --offset 4M --part-type 5B193300-FC78-40CD-8002-E86C45580B47
 # EFI
-part /boot --source bootimg-efi-isar --sourceparams "loader=systemd-boot" --use-uuid --label efi --part-type EF00 --align 1024
+part /boot --source bootimg-efi-isar --sourceparams "loader=systemd-boot,dtb=${DTB_VISIONFIVE2}" --use-uuid --label efi --part-type EF00 --align 1024
 # rootfs
 part / --source rootfs --use-uuid --fstype ext4 --mkfs-extraopts "-T default" --label image --active --align 1024 --exclude-path=boot/
 
