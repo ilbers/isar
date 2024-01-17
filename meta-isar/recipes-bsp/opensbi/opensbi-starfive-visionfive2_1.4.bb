@@ -8,10 +8,9 @@ inherit dpkg
 DESCRIPTION = "OpenSBI firmware for StarFive VisionFive 2"
 
 SRC_URI = " \
-    git://github.com/riscv-software-src/opensbi.git;destsuffix=opensbi-${PV};protocol=https;branch=master \
+    https://github.com/riscv-software-src/opensbi/archive/refs/tags/v${PV}.tar.gz;downloadfilename=opensbi-${PV}.tar.gz \
     file://starfive-visionfive2-rules"
-# required patches are not yet part of a release, but will be in 1.3
-SRCREV = "2868f26131308ff345382084681ea89c5b0159f1"
+SRC_URI[sha256sum] = "319b62a4186fbce9b81a0c5f0ec9f003a10c808397a72138bc9745d9b87b1eb1"
 
 S = "${WORKDIR}/opensbi-${PV}"
 
