@@ -22,7 +22,7 @@ python __anonymous() {
 
     if distro_arch != host_arch and \
         (package_arch == host_arch or \
-         (package_arch in [distro_arch, compat_arch] and mode == "1")):
+         (package_arch in [distro_arch, compat_arch, '${BUILD_ARCH}'] and mode == "1")):
         d.setVar('BUILD_ARCH', host_arch)
         schroot_dir = d.getVar('SCHROOT_HOST_DIR', False)
         sbuild_dep = "sbuild-chroot-host" + flavor_suffix + ":do_build"
