@@ -28,6 +28,16 @@ SRC_URI += "file://debian/"
 
 AUTOLOAD ?= ""
 
+# Cross-compilation is not supported for the default Debian kernels.
+# For example, package with kernel headers for ARM:
+#   linux-headers-armmp
+# has hard dependencies from linux-compiler-gcc-4.8-arm, what
+# conflicts with the host binaries.
+python() {
+    if d.getVar('KERNEL_NAME') in d.getVar('DISTRO_KERNELS').split():
+        d.setVar('ISAR_CROSS_COMPILE', '0')
+}
+
 inherit dpkg
 
 TEMPLATE_FILES = "debian/control.tmpl \

@@ -577,3 +577,9 @@ a dependency to the package debhelper-compat.
 Since OP-TEE 3.21, tee-raw.bin is produced for all platforms and is considered
 the better default option. `OPTEE_BINARIES` now uses this as default as well.
 
+### Automatically disable cross for kmod builds against distro kernels
+
+Cross compiling kernel modules for distro kernels is not supported in debian.
+To simplify downstream kernel module builds, we automatically turn of cross
+compilation for a user-provided module when building it for a distro kernel.
+
