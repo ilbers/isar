@@ -34,6 +34,7 @@ CP_FLAGS ?= "-Ln --no-preserve=owner"
 CP_FLAGS:sid ?= "-L --update=none --no-preserve=owner"
 
 # Build package from sources using build script
+dpkg_runbuild[cleandirs] += "${WORKDIR}/rootfs"
 dpkg_runbuild[vardepsexclude] += "${SBUILD_PASSTHROUGH_ADDITIONS}"
 dpkg_runbuild() {
     E="${@ isar_export_proxies(d)}"
