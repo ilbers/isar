@@ -507,17 +507,20 @@ BBPATH .= ":${LAYERDIR}"\
         return 1
 
 
-    def vm_parse_output(self, boot_log, bb_output, skip_modulecheck):
+    def vm_parse_output(self, boot_log, multiconfig, skip_modulecheck):
         # the printk of recipes-kernel/example-module
         module_output = b'Just an example'
         resize_output = None
-        image_fstypes = start_vm.get_bitbake_var(bb_output, 'IMAGE_FSTYPES')
-        wks_file = start_vm.get_bitbake_var(bb_output, 'WKS_FILE')
+        image_fstypes, \
+        wks_file, \
+        bbdistro = self.getVars('IMAGE_FSTYPES', \
+                                'WKS_FILE', \
+                                'DISTRO', \
+                                target=multiconfig)
 
         # only the first type will be tested in start_vm.py
         if image_fstypes.split()[0] == 'wic':
             if wks_file:
-                bbdistro = start_vm.get_bitbake_var(bb_output, 'DISTRO')
                 # ubuntu is less verbose so we do not see the message
                 # /etc/sysctl.d/10-console-messages.conf
                 if bbdistro and "ubuntu" not in bbdistro:
@@ -627,8 +630,8 @@ BBPATH .= ":${LAYERDIR}"\
                     self.vm_turn_off(vm)
                 self.fail('Failed to run test over ssh')
         else:
-            bb_output = start_vm.get_bitbake_env(arch, distro, image).decode()
-            rc = self.vm_parse_output(boot_log, bb_output, skip_modulecheck)
+            multiconfig = 'mc:qemu' + arch + '-' + distro + ':' + image
+            rc = self.vm_parse_output(boot_log, multiconfig, skip_modulecheck)
             if rc != 0:
                 if stop_vm:
                     self.vm_turn_off(vm)
