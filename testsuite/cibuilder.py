@@ -254,6 +254,7 @@ class CIBuilder(Test):
         return env['LAYERDIR_' + layer].strip('"')
 
     def getVars(self, *vars, target=None):
+        self.check_init()
         def fixStream(stream):
             # fix stream objects to emulate _io.TextIOWrapper
             stream.isatty = lambda: False
@@ -264,7 +265,8 @@ class CIBuilder(Test):
         fixStream(sys.stdout)
         fixStream(sys.stderr)
 
-        lockfile = os.path.join(self.build_dir, 'bitbake.lock2')
+        # wait until previous bitbake will be finished
+        lockfile = os.path.join(self.build_dir, 'bitbake.lock')
         checks = 0
         while os.path.exists(lockfile) and checks < 5:
             time.sleep(1)
@@ -276,11 +278,11 @@ class CIBuilder(Test):
                 tinfoil.prepare(quiet=2)
                 d = tinfoil.parse_recipe(target)
                 for var in vars:
-                    values = values + (d.getVar(var),)
+                    values = values + (d.getVar(var, True) or 'None',)
             else:
                 tinfoil.prepare(config_only=True, quiet=2)
                 for var in vars:
-                    values = values + (tinfoil.config_data.getVar(var),)
+                    values = values + (tinfoil.config_data.getVar(var, True) or 'None',)
             return values if len(values) > 1 else values[0]
 
     def create_tmp_layer(self):
