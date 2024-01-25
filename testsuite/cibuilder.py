@@ -245,14 +245,6 @@ class CIBuilder(Test):
         except FileNotFoundError:
             self.log.warn(path + backup_prefix + ' not exist')
 
-    def getlayerdir(self, layer):
-        self.check_init()
-        output = process.getoutput('bitbake -e | grep "^LAYERDIR_.*="')
-        env = dict(((x.split('=', 1) + [''])[:2] \
-                    for x in output.splitlines() if x != ''))
-
-        return env['LAYERDIR_' + layer].strip('"')
-
     def getVars(self, *vars, target=None):
         self.check_init()
         def fixStream(stream):

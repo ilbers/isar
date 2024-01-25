@@ -46,7 +46,7 @@ class DevTest(CIBaseTest):
 
     def test_dev_rebuild(self):
         self.init()
-        layerdir_core = self.getlayerdir('core')
+        layerdir_core = self.getVars('LAYERDIR_core')
 
         dpkgbase_file = layerdir_core + '/classes/dpkg-base.bbclass'
 
