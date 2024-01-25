@@ -562,7 +562,7 @@ BBPATH .= ":${LAYERDIR}"\
     def vm_start(self, arch='amd64', distro='buster',
                  enforce_pcbios=False, skip_modulecheck=False,
                  image='isar-image-base', cmd=None, script=None,
-                 stop_vm=False):
+                 keep=False):
         time_to_wait = self.params.get('time_to_wait', default=DEF_VM_TO_SEC)
 
         self.log.info('===================================================')
@@ -626,18 +626,18 @@ BBPATH .= ":${LAYERDIR}"\
 
             rc, stdout, stderr = self.remote_run(cmd, script, timeout)
             if rc != 0:
-                if stop_vm:
+                if not keep:
                     self.vm_turn_off(vm)
                 self.fail('Failed to run test over ssh')
         else:
             multiconfig = 'mc:qemu' + arch + '-' + distro + ':' + image
             rc = self.vm_parse_output(boot_log, multiconfig, skip_modulecheck)
             if rc != 0:
-                if stop_vm:
+                if not keep:
                     self.vm_turn_off(vm)
                 self.fail('Failed to parse output')
 
-        if stop_vm:
+        if not keep:
             self.vm_turn_off(vm)
 
         return stdout, stderr

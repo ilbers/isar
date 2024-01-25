@@ -61,18 +61,15 @@ class DevTest(CIBaseTest):
 
     def test_dev_run_amd64_bullseye(self):
         self.init()
-        self.vm_start('amd64', 'bullseye', image='isar-image-ci',
-                      stop_vm=True)
+        self.vm_start('amd64', 'bullseye', image='isar-image-ci')
 
     def test_dev_run_arm64_bullseye(self):
         self.init()
-        self.vm_start('arm64', 'bullseye',
-                      stop_vm=True)
+        self.vm_start('arm64', 'bullseye')
 
     def test_dev_run_arm_bullseye(self):
         self.init()
-        self.vm_start('arm', 'bullseye', skip_modulecheck=True,
-                      stop_vm=True)
+        self.vm_start('arm', 'bullseye', skip_modulecheck=True)
 
 class ReproTest(CIBaseTest):
 
@@ -311,8 +308,7 @@ class SingleTest(CIBaseTest):
         machine = self.params.get('machine', default='qemuamd64')
         distro = self.params.get('distro', default='bullseye')
 
-        self.vm_start(machine.removeprefix('qemu'), distro,
-                      stop_vm=True)
+        self.vm_start(machine.removeprefix('qemu'), distro)
 
 class SourceTest(CIBaseTest):
 
@@ -340,50 +336,47 @@ class VmBootTestFast(CIBaseTest):
 
     def test_arm_bullseye(self):
         self.init()
-        self.vm_start('arm','bullseye', image='isar-image-ci')
+        self.vm_start('arm','bullseye', image='isar-image-ci', keep=True)
 
     def test_arm_bullseye_example_module(self):
         self.init()
         self.vm_start('arm','bullseye', image='isar-image-ci',
-                      cmd='lsmod | grep example_module')
+                      cmd='lsmod | grep example_module', keep=True)
 
     def test_arm_bullseye_getty_target(self):
         self.init()
         self.vm_start('arm','bullseye', image='isar-image-ci',
-                      script='test_systemd_unit.sh getty.target 10',
-                      stop_vm=True)
+                      script='test_systemd_unit.sh getty.target 10')
 
 
     def test_arm_buster(self):
         self.init()
-        self.vm_start('arm','buster', image='isar-image-ci')
+        self.vm_start('arm','buster', image='isar-image-ci', keep=True)
 
     def test_arm_buster_getty_target(self):
         self.init()
         self.vm_start('arm','buster', image='isar-image-ci',
-                      cmd='systemctl is-active getty.target')
+                      cmd='systemctl is-active getty.target', keep=True)
 
     def test_arm_buster_example_module(self):
         self.init()
         self.vm_start('arm','buster', image='isar-image-ci',
-                      script='test_kernel_module.sh example_module',
-                      stop_vm=True)
+                      script='test_kernel_module.sh example_module')
 
 
     def test_arm_bookworm(self):
         self.init()
-        self.vm_start('arm','bookworm', image='isar-image-ci')
+        self.vm_start('arm','bookworm', image='isar-image-ci', keep=True)
 
     def test_arm_bookworm_example_module(self):
         self.init()
         self.vm_start('arm','bookworm', image='isar-image-ci',
-                      cmd='lsmod | grep example_module')
+                      cmd='lsmod | grep example_module', keep=True)
 
     def test_arm_bookworm_getty_target(self):
         self.init()
         self.vm_start('arm','bookworm', image='isar-image-ci',
-                      script='test_systemd_unit.sh getty.target 10',
-                      stop_vm=True)
+                      script='test_systemd_unit.sh getty.target 10')
 
 
 class VmBootTestFull(CIBaseTest):
@@ -396,103 +389,92 @@ class VmBootTestFull(CIBaseTest):
 
     def test_arm_bullseye(self):
         self.init()
-        self.vm_start('arm','bullseye',
-                      stop_vm=True)
+        self.vm_start('arm','bullseye')
 
 
     def test_arm_buster(self):
         self.init()
-        self.vm_start('arm','buster', image='isar-image-ci')
+        self.vm_start('arm','buster', image='isar-image-ci', keep=True)
 
     def test_arm_buster_example_module(self):
         self.init()
         self.vm_start('arm','buster', image='isar-image-ci',
-                      cmd='lsmod | grep example_module')
+                      cmd='lsmod | grep example_module', keep=True)
 
     def test_arm_buster_getty_target(self):
         self.init()
         self.vm_start('arm','buster', image='isar-image-ci',
-                      script='test_systemd_unit.sh getty.target 10',
-                      stop_vm=True)
+                      script='test_systemd_unit.sh getty.target 10')
 
 
     def test_arm64_bullseye(self):
         self.init()
-        self.vm_start('arm64','bullseye', image='isar-image-ci')
+        self.vm_start('arm64','bullseye', image='isar-image-ci', keep=True)
 
     def test_arm64_bullseye_getty_target(self):
         self.init()
         self.vm_start('arm64','bullseye', image='isar-image-ci',
-                      cmd='systemctl is-active getty.target')
+                      cmd='systemctl is-active getty.target', keep=True)
 
     def test_arm64_bullseye_example_module(self):
         self.init()
         self.vm_start('arm64','bullseye', image='isar-image-ci',
-                      script='test_kernel_module.sh example_module',
-                      stop_vm=True)
+                      script='test_kernel_module.sh example_module')
 
 
     def test_i386_buster(self):
         self.init()
-        self.vm_start('i386','buster',
-                      stop_vm=True)
+        self.vm_start('i386','buster')
 
 
     def test_amd64_buster(self):
         self.init()
         # test efi boot
-        self.vm_start('amd64','buster', image='isar-image-ci',
-                      stop_vm=True)
+        self.vm_start('amd64','buster', image='isar-image-ci')
         # test pcbios boot
-        self.vm_start('amd64', 'buster', True, image='isar-image-ci',
-                      stop_vm=True)
+        self.vm_start('amd64', 'buster', True, image='isar-image-ci')
 
 
     def test_amd64_focal(self):
         self.init()
-        self.vm_start('amd64','focal', image='isar-image-ci')
+        self.vm_start('amd64','focal', image='isar-image-ci', keep=True)
 
     def test_amd64_focal_example_module(self):
         self.init()
         self.vm_start('amd64','focal', image='isar-image-ci',
-                      cmd='lsmod | grep example_module')
+                      cmd='lsmod | grep example_module', keep=True)
 
     def test_amd64_focal_getty_target(self):
         self.init()
         self.vm_start('amd64','focal', image='isar-image-ci',
-                      script='test_systemd_unit.sh getty.target 10',
-                      stop_vm=True)
+                      script='test_systemd_unit.sh getty.target 10')
 
 
     def test_amd64_bookworm(self):
         self.init()
-        self.vm_start('amd64', 'bookworm', image='isar-image-ci',
-                      stop_vm=True)
+        self.vm_start('amd64', 'bookworm', image='isar-image-ci')
 
 
     def test_arm_bookworm(self):
         self.init()
-        self.vm_start('arm','bookworm', image='isar-image-ci',
-                      stop_vm=True)
+        self.vm_start('arm','bookworm', image='isar-image-ci')
 
 
     def test_i386_bookworm(self):
         self.init()
-        self.vm_start('i386','bookworm',
-                      stop_vm=True)
+        self.vm_start('i386','bookworm')
 
 
     def test_mipsel_bookworm(self):
         self.init()
-        self.vm_start('mipsel','bookworm', image='isar-image-ci')
+        self.vm_start('mipsel','bookworm', image='isar-image-ci', keep=True)
 
     def test_mipsel_bookworm_getty_target(self):
         self.init()
         self.vm_start('mipsel','bookworm', image='isar-image-ci',
-                      cmd='systemctl is-active getty.target')
+                      cmd='systemctl is-active getty.target', keep=True)
 
     def test_mipsel_bookworm_example_module(self):
         self.init()
         self.vm_start('mipsel','bookworm', image='isar-image-ci',
-                      script='test_kernel_module.sh example_module',
-                      stop_vm=True)
+                      script='test_kernel_module.sh example_module')
