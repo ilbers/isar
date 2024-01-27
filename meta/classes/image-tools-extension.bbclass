@@ -44,19 +44,6 @@ imager_run() {
             distro="${HOST_BASE_DISTRO}-${BASE_DISTRO_CODENAME}"
         fi
 
-        # prepare isar-apt
-        schroot -r -c ${session_id} -d / -u root -- sh -c " \
-            mkdir -p '/etc/apt/sources.list.d'
-            echo 'deb [trusted=yes] file:///isar-apt ${DEBDISTRONAME} main' > \
-                '/etc/apt/sources.list.d/isar-apt.list'
-
-            mkdir -p '/etc/apt/preferences.d'
-            cat << EOF > '/etc/apt/preferences.d/isar-apt'
-Package: *
-Pin: release n=${DEBDISTRONAME}
-Pin-Priority: 1000
-EOF"
-
         E="${@ isar_export_proxies(d)}"
         deb_dl_dir_import ${schroot_dir} ${distro}
         schroot -r -c ${session_id} -d / -u root -- sh -c " \

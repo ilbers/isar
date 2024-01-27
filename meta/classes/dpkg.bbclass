@@ -110,16 +110,17 @@ dpkg_runbuild() {
     DEB_SOURCE_NAME=$(dpkg-parsechangelog --show-field Source --file ${WORKDIR}/${PPS}/debian/changelog)
     DSC_FILE=$(find ${WORKDIR} -name "${DEB_SOURCE_NAME}*.dsc" -maxdepth 1 -print)
 
-    sbuild -A -n -c ${SBUILD_CHROOT} --extra-repository="${ISAR_APT_REPO}" \
+    sbuild -A -n -c ${SBUILD_CHROOT} \
         --host=${PACKAGE_ARCH} --build=${BUILD_ARCH} ${profiles} \
         --no-run-lintian --no-run-piuparts --no-run-autopkgtest --resolve-alternatives \
         --bd-uninstallable-explainer=apt \
-        --no-apt-update \
+        --no-apt-update --apt-distupgrade \
         --chroot-setup-commands="echo \"Package: *\nPin: release n=${DEBDISTRONAME}\nPin-Priority: 1000\" > /etc/apt/preferences.d/isar-apt" \
         --chroot-setup-commands="echo \"APT::Get::allow-downgrades 1;\" > /etc/apt/apt.conf.d/50isar-apt" \
         --chroot-setup-commands="rm -f /var/log/dpkg.log" \
         --chroot-setup-commands="mkdir -p ${deb_dir}" \
         --chroot-setup-commands="ln -sf ${ext_deb_dir}/*.deb -t ${deb_dir}/" \
+        --chroot-setup-commands="apt-get update -o Dir::Etc::SourceList=\"sources.list.d/isar-apt.list\" -o Dir::Etc::SourceParts=\"-\" -o APT::Get::List-Cleanup=\"0\"" \
         --finished-build-commands="rm -f ${deb_dir}/sbuild-build-depends-main-dummy_*.deb" \
         --finished-build-commands="[ -z \"\$(find ${deb_dir} -maxdepth 1 -name '*.deb' -print -quit)\" ] || cp ${CP_FLAGS} ${deb_dir}/*.deb -t ${ext_deb_dir}/" \
         --finished-build-commands="cp /var/log/dpkg.log ${ext_root}/dpkg_partial.log" \

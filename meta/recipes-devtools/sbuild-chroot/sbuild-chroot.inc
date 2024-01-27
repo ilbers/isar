@@ -56,8 +56,6 @@ SBUILD_CHROOT_DIR = "${WORKDIR}/rootfs"
 ROOTFSDIR = "${SBUILD_CHROOT_DIR}"
 ROOTFS_PACKAGES = "${SBUILD_CHROOT_PREINSTALL}"
 
-# We don't need /etc/apt/sources.list.d/isar-apt.list' while it's handled by sbuild
-ROOTFS_CONFIGURE_COMMAND:remove = "rootfs_configure_isar_apt"
 ROOTFS_POSTPROCESS_COMMAND:remove = "rootfs_cleanup_isar_apt"
 
 # Do not cleanup base-apt

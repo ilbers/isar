@@ -19,8 +19,6 @@ DEPENDS:append:riscv64 = "${@' crossbuild-essential-riscv64' if d.getVar('ISAR_C
 DEB_BUILD_PROFILES ?= ""
 DEB_BUILD_OPTIONS ?= ""
 
-ISAR_APT_REPO ?= "deb [trusted=yes] file:///home/builder/${PN}/isar-apt/${DISTRO}-${DISTRO_ARCH}/apt/${DISTRO} ${DEBDISTRONAME} main"
-
 python do_adjust_git() {
     import subprocess
 
@@ -109,16 +107,24 @@ do_apt_fetch() {
     E="${@ isar_export_proxies(d)}"
     schroot_create_configs
 
+    session_id=$(schroot -q -b -c ${SBUILD_CHROOT})
+    echo "Started session: ${session_id}"
+
     schroot_cleanup() {
+        schroot -q -f -e -c ${session_id} > /dev/null 2>&1
         schroot_delete_configs
     }
     trap 'exit 1' INT HUP QUIT TERM ALRM USR1
     trap 'schroot_cleanup' EXIT
 
+    schroot -r -c ${session_id} -d / -u root -- \
+        rm /etc/apt/sources.list.d/isar-apt.list /etc/apt/preferences.d/isar-apt
     for uri in "${SRC_APT}"; do
-        schroot -d / -c ${SBUILD_CHROOT} -- \
+        schroot -r -c ${session_id} -d / -- \
             sh -c 'mkdir -p /downloads/deb-src/"$1"/"$2" && cd /downloads/deb-src/"$1"/"$2" && apt-get -y --download-only --only-source source "$2"' my_script "${BASE_DISTRO}-${BASE_DISTRO_CODENAME}" "${uri}"
     done
+
+    schroot -e -c ${session_id}
     schroot_delete_configs
 }
 
@@ -221,8 +227,17 @@ def isar_export_build_settings(d):
     os.environ['DEB_BUILD_OPTIONS']  = isar_deb_build_options(d)
     os.environ['DEB_BUILD_PROFILES'] = isar_deb_build_profiles(d)
 
+dpkg_schroot_create_configs() {
+    schroot_create_configs
+    sudo -s <<'EOSUDO'
+        sbuild_fstab="${SBUILD_CONF_DIR}/fstab"
+        fstab_isarapt="${WORKDIR}/isar-apt/${DISTRO}-${DISTRO_ARCH}/apt/${DISTRO} /isar-apt none rw,bind 0 0"
+        grep -qxF "${fstab_isarapt}" ${sbuild_fstab} || echo "${fstab_isarapt}" >> ${sbuild_fstab}
+EOSUDO
+}
+
 python do_dpkg_build() {
-    bb.build.exec_func('schroot_create_configs', d)
+    bb.build.exec_func('dpkg_schroot_create_configs', d)
     try:
         bb.build.exec_func("dpkg_runbuild", d)
     finally:
@@ -288,7 +303,7 @@ do_deploy_deb[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
 do_deploy_deb[dirs] = "${S}"
 
 python do_devshell() {
-    bb.build.exec_func('schroot_create_configs', d)
+    bb.build.exec_func('dpkg_schroot_create_configs', d)
 
     isar_export_proxies(d)
     isar_export_ccache(d)
@@ -297,11 +312,9 @@ python do_devshell() {
         bb.build.exec_func('schroot_configure_ccache', d)
 
     schroot = d.getVar('SBUILD_CHROOT')
-    isar_apt = d.getVar('ISAR_APT_REPO')
     pkg_arch = d.getVar('PACKAGE_ARCH')
     build_arch = d.getVar('BUILD_ARCH')
     pp_pps = os.path.join(d.getVar('PP'), d.getVar('PPS'))
-    debdistroname = d.getVar('DEBDISTRONAME')
 
     install_deps = ":" if d.getVar('BB_CURRENTTASK') == "devshell_nodeps" else f"mk-build-deps -i \
         --host-arch {pkg_arch} --build-arch {build_arch}  \
@@ -310,15 +323,13 @@ python do_devshell() {
 
     termcmd = "schroot -d / -c {0} -u root -- sh -c ' \
         cd {1}; \
-        echo {2} > /etc/apt/sources.list.d/isar_apt.list; \
-        echo \"Package: *\nPin: release n={3}\nPin-Priority: 1000\" > /etc/apt/preferences.d/isar-apt; \
-        echo \"APT::Get::allow-downgrades 1;\" > /etc/apt/apt.conf.d/50isar-apt; \
-        apt-get -y -q update; \
-        {4}; \
+        apt-get -y -q update -o Dir::Etc::SourceList=\"sources.list.d/isar-apt.list\" -o Dir::Etc::SourceParts=\"-\" -o APT::Get::List-Cleanup=\"0\"; \
+        apt-get -y upgrade; \
+        {2}; \
         export PATH=$PATH_PREPEND:$PATH; \
         $SHELL -i \
     '"
-    oe_terminal(termcmd.format(schroot, pp_pps, isar_apt, debdistroname, install_deps), "Isar devshell", d)
+    oe_terminal(termcmd.format(schroot, pp_pps, install_deps), "Isar devshell", d)
 
     bb.build.exec_func('schroot_delete_configs', d)
 }
