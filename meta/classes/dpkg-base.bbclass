@@ -119,10 +119,15 @@ do_apt_fetch() {
 
     schroot -r -c ${session_id} -d / -u root -- \
         rm /etc/apt/sources.list.d/isar-apt.list /etc/apt/preferences.d/isar-apt
-    for uri in "${SRC_APT}"; do
-        schroot -r -c ${session_id} -d / -- \
-            sh -c 'mkdir -p /downloads/deb-src/"$1"/"$2" && cd /downloads/deb-src/"$1"/"$2" && apt-get -y --download-only --only-source source "$2"' my_script "${BASE_DISTRO}-${BASE_DISTRO_CODENAME}" "${uri}"
-    done
+    schroot -r -c ${session_id} -d / -- \
+        sh -c '
+            set -e
+            for uri in $2; do
+                mkdir -p /downloads/deb-src/"$1"/${uri}
+                cd /downloads/deb-src/"$1"/${uri}
+                apt-get -y --download-only --only-source source ${uri}
+            done' \
+                my_script "${BASE_DISTRO}-${BASE_DISTRO_CODENAME}" "${SRC_APT}"
 
     schroot -e -c ${session_id}
     schroot_delete_configs
@@ -145,16 +150,16 @@ do_apt_unpack() {
     trap 'exit 1' INT HUP QUIT TERM ALRM USR1
     trap 'schroot_cleanup' EXIT
 
-    for uri in "${SRC_APT}"; do
-        schroot -d / -c ${SBUILD_CHROOT} -- \
-            sh -c ' \
-                set -e
-                dscfile="$(apt-get -y -qq --print-uris --only-source source "${2}" | cut -d " " -f2 | grep -E "*.dsc")"
+    schroot -d / -c ${SBUILD_CHROOT} -- \
+        sh -c '
+            set -e
+            for uri in $2; do
+                dscfile="$(apt-get -y -qq --print-uris --only-source source $uri | cut -d " " -f2 | grep -E "*.dsc")"
                 cd ${PP}
-                cp /downloads/deb-src/"${1}"/"${2}"/* ${PP}
-                dpkg-source -x "${dscfile}" "${PPS}"' \
-                    my_script "${BASE_DISTRO}-${BASE_DISTRO_CODENAME}" "${uri}"
-    done
+                cp /downloads/deb-src/"${1}"/${uri}/* ${PP}
+                dpkg-source -x "${dscfile}" "${PPS}"
+            done' \
+                my_script "${BASE_DISTRO}-${BASE_DISTRO_CODENAME}" "${SRC_APT}"
     schroot_delete_configs
 }
 do_apt_unpack[network] = "${TASK_USE_SUDO}"
