@@ -6,25 +6,7 @@
 # This class extends the image.bbclass for creating user accounts and groups.
 
 USERS ??= ""
-
-#USERS += "root"
-#USER_root[password] = "" # Encrypted password, or clear-text when [flags] = "clear-text-password"
-#USER_root[expire] = ""
-#USER_root[inactive] = ""
-#USER_root[uid] = ""
-#USER_root[gid] = "" # If first character is a number: gid, otherwise groupname
-#USER_root[comment] = "The ultimate root user"
-#USER_root[home] = "/home/root"
-#USER_root[shell] = "/bin/sh"
-#USER_root[groups] = "audio video"
-#USER_root[flags] = "no-create-home create-home system allow-empty-password clear-text-password force-passwd-change"
-
 GROUPS ??= ""
-
-#GROUPS += "root"
-#GROUP_root[gid] = ""
-#GROUP_root[flags] = "system"
-
 
 def image_create_groups(d: "DataSmart") -> None:
     """Creates the groups defined in the ``GROUPS`` bitbake variable.

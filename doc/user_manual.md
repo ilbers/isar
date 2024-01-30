@@ -700,6 +700,28 @@ The `USERS` and `USER:<username>` variable works similar to the `GROUPS` and `GR
    - `clear-text-password` - The `password` flag of the given user contains a clear-text password and not an encrypted version of it.
    - `force-passwd-change` - Force the user to change to password on first login.
 
+#### Example
+
+```
+GROUPS += "root"
+GROUP_root[gid] = "0"
+GROUP_root[flags] = "system"
+
+USERS += "root"
+USER_root[password] = "$6$rounds=10000$RXeWrnFmkY$DtuS/OmsAS2cCEDo0BF5qQsizIrq6jPgXnwv3PHqREJeKd1sXdHX/ayQtuQWVDHe0KIO0/sVH8dvQm1KthF0d/"
+USER_root[expire] = "180"
+USER_root[inactive] = "30"
+USER_root[uid] = "0"
+USER_root[gid] = "0"
+USER_root[comment] = "The ultimate root user"
+USER_root[home] = "/home/root"
+USER_root[shell] = "/bin/sh"
+USER_root[groups] = "audio video"
+USER_root[flags] = "create-home system force-passwd-change"
+```
+
+Some examples can be also found in `meta-isar/conf/local.conf.sample`.
+
 #### Home directory contents prefilling
 
 To cover all users simply use `/etc/skel`. Files in there will be available in every home directory under correct permissions.
