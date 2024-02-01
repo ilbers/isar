@@ -10,6 +10,7 @@ DEBIAN_BUILD_DEPENDS ??= ""
 DEBIAN_DEPENDS ??= ""
 DEBIAN_CONFLICTS ??= ""
 DEBIAN_MULTI_ARCH ??= "no"
+DEBIAN_COMPAT ??= "10"
 DESCRIPTION ??= "must not be empty"
 MAINTAINER ??= "Unknown maintainer <unknown@example.com>"
 
@@ -60,19 +61,15 @@ EOF
 	fi
 }
 
-deb_create_compat() {
-	echo 10 > ${S}/debian/compat
-}
 
 deb_create_control() {
-	compat=$( cat ${S}/debian/compat )
 	cat << EOF > ${S}/debian/control
 Source: ${BPN}
 Section: misc
 Priority: optional
 Standards-Version: 3.9.6
 Maintainer: ${MAINTAINER}
-Build-Depends: debhelper (>= ${compat}), ${DEBIAN_BUILD_DEPENDS}
+Build-Depends: debhelper-compat (= ${DEBIAN_COMPAT}), ${DEBIAN_BUILD_DEPENDS}
 
 Package: ${BPN}
 Architecture: ${DPKG_ARCH}
@@ -103,12 +100,6 @@ EOF
 deb_debianize() {
 	install -m 755 -d ${S}/debian
 
-	# create the compat-file if there is no file with that name in WORKDIR
-	if [ -f ${WORKDIR}/compat ]; then
-		install -v -m 644 ${WORKDIR}/compat ${S}/debian/compat
-	else
-		deb_create_compat
-	fi
 	# create the control-file if there is no control-file in WORKDIR
 	if [ -f ${WORKDIR}/control ]; then
 		install -v -m 644 ${WORKDIR}/control ${S}/debian/control
