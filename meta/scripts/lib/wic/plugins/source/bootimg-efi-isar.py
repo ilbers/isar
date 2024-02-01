@@ -185,7 +185,10 @@ class BootimgEFIPlugin(SourcePlugin):
 
             title = source_params.get('title')
 
+            temp_initrd = initrd
             kernel, initrd = isar_get_filenames(get_bitbake_var("IMAGE_ROOTFS"))
+            if temp_initrd:
+                initrd = temp_initrd
 
             boot_conf = ""
             boot_conf += "title %s\n" % (title if title else "boot")
