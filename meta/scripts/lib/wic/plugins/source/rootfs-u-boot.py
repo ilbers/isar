@@ -71,7 +71,7 @@ class RootfsUBootPlugin(RootfsPlugin):
         u_boot_script = os.path.join(real_rootfs_dir,
                                      "etc/default/u-boot-script")
         if not os.path.exists(u_boot_script):
-            raise WicError("u-boot-scripts package not installed")
+            raise WicError("u-boot-script package not installed")
 
         # Write new /etc/default/u-boot-script
         with open(u_boot_script, 'w') as cfg:
