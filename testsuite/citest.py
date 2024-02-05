@@ -190,6 +190,7 @@ class NoCrossTest(CIBaseTest):
             'mc:qemumipsel-buster:isar-image-base',
             'mc:qemumipsel-bullseye:isar-image-base',
             'mc:imx6-sabrelite-bullseye:isar-image-base',
+            'mc:imx6-sabrelite-bookworm:isar-image-base',
             'mc:phyboard-mira-bullseye:isar-image-base',
             'mc:hikey-bullseye:isar-image-base',
             'mc:virtualbox-bullseye:isar-image-base',
