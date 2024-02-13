@@ -193,6 +193,7 @@ class NoCrossTest(CIBaseTest):
             'mc:phyboard-mira-bullseye:isar-image-base',
             'mc:hikey-bullseye:isar-image-base',
             'mc:virtualbox-bullseye:isar-image-base',
+            'mc:virtualbox-bookworm:isar-image-base',
             'mc:bananapi-bullseye:isar-image-base',
             'mc:bananapi-bookworm:isar-image-base',
             'mc:nanopi-neo-bullseye:isar-image-base',
