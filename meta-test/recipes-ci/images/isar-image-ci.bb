@@ -24,6 +24,8 @@ IMAGE_INSTALL:append:qemuamd64:debian-bullseye = " expand-on-first-boot"
 IMAGER_INSTALL:remove:qemuamd64:debian-bullseye ?= "${GRUB_BOOTLOADER_INSTALL}"
 IMAGER_INSTALL:append:qemuamd64:debian-bullseye ?= " ${SYSTEMD_BOOTLOADER_INSTALL} btrfs-progs"
 IMAGE_PREINSTALL:append:qemuamd64:debian-bullseye ?= " btrfs-progs"
+# Explicitly remove from wic since it is set in qemuamd64.conf:
+IMAGER_INSTALL:wic:remove:qemuamd64:debian-bullseye ?= "${GRUB_BOOTLOADER_INSTALL}"
 
 # qemuamd64-buster
 IMAGE_FSTYPES:qemuamd64:debian-buster ?= "wic ext4"
