@@ -86,27 +86,70 @@ TEMPLATE_VARS += "                \
 
 inherit dpkg
 inherit template
+inherit kbuildtarget
 
 # Add custom cflags to the kernel build
 KCFLAGS ?= "-fdebug-prefix-map=${CURDIR}=."
 KAFLAGS ?= "-fdebug-prefix-map=${CURDIR}=."
 
 # Derive name of the kernel packages from the name of this recipe
-KERNEL_NAME_PROVIDED ?= "${@ d.getVar('PN').partition('linux-')[2]}"
+KERNEL_NAME_PROVIDED ?= "${@ d.getVar('BPN').partition('linux-')[2]}"
+
+# Determine cross-profile override
+python() {
+    if d.getVar("DISTRO_ARCH") != d.getVar("HOST_ARCH") and d.getVar("ISAR_CROSS_COMPILE", True) == "1" and "class-native" not in d.getVar("OVERRIDES", True).split(":"):
+        d.appendVar("OVERRIDES", ":cross-profile")
+}
+
+# Default profiles and provides
+BUILD_PROFILES = "kernel kbuild"
+
+# We only offer the -kbuildtarget variant when actually cross compiling
+BBCLASSEXTEND:append:cross-profile = " kbuildtarget"
+
+# When cross-profile is active:
+# build only kernel with the default variant of the recipe
+BUILD_PROFILES:cross-profile = "kernel"
+
+# Select correct kbuild package for isar cross-build
+HEADERS_DEPENDS:cross-profile = ", linux-kbuild-${KERNEL_NAME_PROVIDED}:${HOST_ARCH} | linux-kbuild-${KERNEL_NAME_PROVIDED}"
+
+# -native: kbuild package for host
+BUILD_PROFILES:class-native = "kbuild"
+RECIPE_PROVIDES:class-native = "linux-kbuild-${KERNEL_NAME_PROVIDED}-native"
+
+# -kbuildtarget: kbuild package for target, enforcing non-cross-build
+BUILD_PROFILES:class-kbuildtarget = "kbuild"
+RECIPE_PROVIDES:class-kbuildtarget = "linux-kbuild-${KERNEL_NAME_PROVIDED}"
+ISAR_CROSS_COMPILE:class-kbuildtarget = "0"
 
 # Make bitbake know we will be producing linux-image and linux-headers packages
 # Also make it know about other packages from control
-PROVIDES += " \
+RECIPE_PROVIDES = " \
     linux-image-${KERNEL_NAME_PROVIDED} \
     linux-headers-${KERNEL_NAME_PROVIDED} \
     linux-libc-dev \
     linux-libc-dev-${DISTRO_ARCH}-cross \
     linux-image-${KERNEL_NAME_PROVIDED}-dbg \
+    linux-kbuild-${KERNEL_NAME_PROVIDED} \
 "
+# When cross-profile is active:
+# kbuild package is provided by -native or -kbuildtarget variant
+# Otherwise it's provided by the default variant
+RECIPE_PROVIDES:remove:cross-profile = "linux-kbuild-${KERNEL_NAME_PROVIDED}"
 
 # Append headers depends
 HEADERS_DEPENDS = ", linux-kbuild-${KERNEL_NAME_PROVIDED}"
 KERNEL_HEADERS_DEBIAN_DEPENDS:append = "${HEADERS_DEPENDS}"
+
+# Append provides
+PROVIDES += "${RECIPE_PROVIDES}"
+
+# Append build profiles
+DEB_BUILD_PROFILES += "${BUILD_PROFILES}"
+
+# Add dependency to build -kbuildtarget and -native automatically
+RDEPENDS:append:cross-profile = " ${BPN}-native"
 
 def get_kernel_arch(d):
     distro_arch = d.getVar("DISTRO_ARCH")

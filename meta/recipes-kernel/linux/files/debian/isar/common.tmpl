@@ -12,6 +12,15 @@ KERNEL_PKG_LIBC_HEADERS=linux-libc-dev
 KERNEL_PKG_LIBC_HEADERS_CROSS=linux-libc-dev-${DISTRO_ARCH}-cross
 KERNEL_PKG_KERN_KBUILD=linux-kbuild-${KERNEL_NAME_PROVIDED}
 
+# Force creating debian package with valid host arch for -native build
+# Use a cross build to comply with arch specific kernel defconfigs
+# The scripts and tools are always created for host arch
+if echo "${DEB_BUILD_PROFILES}" | grep -q -e "cross" -e "kbuild"
+then
+    eval $(dpkg-architecture -f -A ${DISTRO_ARCH})
+    CROSS_COMPILE=${DEB_TARGET_GNU_TYPE}-
+fi
+
 # Constants
 KCONF=.config
 

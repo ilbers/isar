@@ -33,20 +33,28 @@ do_install() {
     # Trace what we do here
     set -x
 
-    # Run the install steps
-    install_image
-    if [ "${ARCH}" != "um" ]; then
-        install_config
-        install_map
+    if echo "${DEB_BUILD_PROFILES}" | grep -q "kbuild"; then
+        # Install kernel scripts and tools
+        install_kbuild ${deb_kern_kbuild_dir}
     fi
-    install_hooks
-    install_dtbs
-    install_kmods
-    install_headers
 
-    # Cleanup and install kernel scripts and tools
-    rm -rf ${deb_kern_kbuild_dir}
-    install_kbuild ${deb_kern_kbuild_dir}
+    if echo "${DEB_BUILD_PROFILES}" | grep -q "kernel"; then
+        if echo "${DEB_BUILD_PROFILES}" | grep -q "cross"; then
+            # Install cross kernel scripts and tools
+            install_kbuild ${deb_kern_kbuild_dir}-${HOST_ARCH}-cross
+        fi
+
+        # Run the install steps
+        install_image
+        if [ "${ARCH}" != "um" ]; then
+            install_config
+            install_map
+        fi
+        install_hooks
+        install_dtbs
+        install_kmods
+        install_headers
+    fi
 
     # Stop tracing
     set +x

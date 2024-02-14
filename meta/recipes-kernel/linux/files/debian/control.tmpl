@@ -6,6 +6,7 @@ Build-Depends: bc, kmod, cpio, ${KBUILD_DEPENDS}
 Homepage: http://www.kernel.org/
 
 Package: linux-image-${KERNEL_NAME_PROVIDED}
+Build-Profiles: <kernel>
 Architecture: any
 Depends: ${KERNEL_DEBIAN_DEPENDS}
 Description: ${KERNEL_NAME_PROVIDED} Linux kernel, version @KR@
@@ -13,6 +14,7 @@ Description: ${KERNEL_NAME_PROVIDED} Linux kernel, version @KR@
  files, version: @KR@.
 
 Package: linux-headers-${KERNEL_NAME_PROVIDED}
+Build-Profiles: <kernel>
 Architecture: any
 Depends: ${KERNEL_HEADERS_DEBIAN_DEPENDS}, ${perl:Depends}, ${shlib:Depends}
 Description: ${KERNEL_NAME_PROVIDED} Linux kernel headers for @KR@
@@ -21,7 +23,7 @@ Description: ${KERNEL_NAME_PROVIDED} Linux kernel headers for @KR@
  This is useful for people who need to build external modules
 
 Package: linux-libc-dev
-Build-Profiles: <!nolibcdev>
+Build-Profiles: <!nolibcdev kernel>
 Section: devel
 Provides: linux-kernel-headers
 Architecture: any
@@ -41,6 +43,7 @@ Description: Linux Kernel Headers for development (for cross-compiling)
  your kernel. Use linux-headers-* packages for that.
 
 Package: linux-image-${KERNEL_NAME_PROVIDED}-dbg
+Build-Profiles: <kernel>
 Section: debug
 Architecture: any
 Description: Linux kernel debugging symbols for @KR@
@@ -48,6 +51,7 @@ Description: Linux kernel debugging symbols for @KR@
  all the necessary debug symbols for the kernel and its modules.
 
 Package: linux-kbuild-${KERNEL_NAME_PROVIDED}
+Build-Profiles: <kbuild>
 Architecture: any
 Depends: ${perl:Depends}, ${shlib:Depends}
 Description: ${KERNEL_NAME_PROVIDED} Linux kbuild scripts and tools for @KR@
