@@ -595,3 +595,34 @@ pre-defined in the distro config.
 The `SOURCE_DATE_EPOCH` (SDE) should not be set globally, but on a per-recipe basis
 and to meaningful values. As a global fallback, set the `SOURCE_DATE_EPOCH_FALLBACK`
 bitbake variable to the desired unix timestamp.
+
+### Split up binaries from kernel headers to kbuild package for linux-custom
+
+Swap out the binaries from the kernel headers
+into kernel kbuild package.
+
+  * Split up binaries from kernel headers to kbuild package:
+    Introduce specific kernel kbuild packages that
+    ship the "scripts" and "tools" binaries.
+    The kernel headers fulfill this using symlinks to point
+    to the "scripts" and "tools" of the kernel kbuild package.
+
+  * Provide target and host specific kernel kbuild packages:
+    Introduce target and host specific kernel kbuild packages that
+    ship the "scripts" and "tools" binaries.
+
+    The "-kbuildtarget" and "-native" multiarch bitbake targets are useable to
+    run additional target or host specific builds for kbuild scripts and tools.
+
+    Using the "-kbuildtarget" bitbake target enables the build of
+    a target specific kbuild package at cross builds.
+    So using "linux-kbuild" provides the package for the target platform.
+
+    Using the "-native" bitbake target enables the build of
+    a host specific kbuild package at cross builds.
+    When cross building using "linux-kbuild-native"
+    provides the package for the host platform.
+
+    Only the "host" specific package is built automatically at cross builds.
+
+  * Support emulated module build with cross-compiled kernel for linux-module

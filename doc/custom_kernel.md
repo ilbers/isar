@@ -38,12 +38,18 @@ The linux-custom recipe provides support for:
  7. Allow the name of the kernel image to be changed via `KERNEL_FILE` (defaults
     to `vmlinuz`)
 
- 8. Produce a `linux-headers` package which includes kernel headers and kbuild
-    scripts/tools
+ 8. Produce a `linux-headers` package which includes kernel headers
 
- 9. The `linux-headers` package shall support native and cross compiles of
-    out-of-tree kernel modules. However, when built in cross-compilation mode,
-    it cannot be used on the target so far.
+ 9. Produce a `linux-kbuild` package for both `target` and `host` arch
+    which includes kbuild scripts and tools.
+    Using `linux-kbuild` provides the package for the target and when
+    cross building `linux-kbuild-native` provides the package for the host.
+
+    So the `linux-headers` package supports native and cross compiles of
+    out-of-tree kernel modules. Even, when built in cross-compilation mode,
+    it can be used on the target using the `linux-kbuild` package.
+
+    Only the `host` specific package is built automatically at cross builds.
 
  10. Produce a `linux-libc-dev` package to support user-land builds
 
@@ -71,8 +77,6 @@ In the future, the recipe may be extended to:
  2. Support inclusion/build of dts files listed in `SRC_URI`
 
  3. Be compatible with Ubuntu
-
- 4. When cross-building, generate kernel-headers for both host and target
 
 ## Examples
 
