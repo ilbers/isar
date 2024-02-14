@@ -96,15 +96,13 @@ KERNEL_NAME_PROVIDED ?= "${@ d.getVar('PN').partition('linux-')[2]}"
 
 # Make bitbake know we will be producing linux-image and linux-headers packages
 # Also make it know about other packages from control
-python() {
-    kernel_name = d.getVar("KERNEL_NAME_PROVIDED")
-    distro_arch = d.getVar("DISTRO_ARCH")
-    d.appendVar('PROVIDES', ' linux-image-' + kernel_name)
-    d.appendVar('PROVIDES', ' linux-headers-' + kernel_name)
-    d.appendVar('PROVIDES', ' linux-libc-dev')
-    d.appendVar('PROVIDES', ' linux-libc-dev-' + distro_arch + '-cross')
-    d.appendVar('PROVIDES', ' linux-image-' + kernel_name + '-dbg')
-}
+PROVIDES += " \
+    linux-image-${KERNEL_NAME_PROVIDED} \
+    linux-headers-${KERNEL_NAME_PROVIDED} \
+    linux-libc-dev \
+    linux-libc-dev-${DISTRO_ARCH}-cross \
+    linux-image-${KERNEL_NAME_PROVIDED}-dbg \
+"
 
 def get_kernel_arch(d):
     distro_arch = d.getVar("DISTRO_ARCH")
