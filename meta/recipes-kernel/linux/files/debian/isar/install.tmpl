@@ -33,6 +33,7 @@ do_install() {
     # Trace what we do here
     set -x
 
+    # Run the install steps
     install_image
     if [ "${ARCH}" != "um" ]; then
         install_config
@@ -42,6 +43,10 @@ do_install() {
     install_dtbs
     install_kmods
     install_headers
+
+    # Cleanup and install kernel scripts and tools
+    rm -rf ${deb_kern_kbuild_dir}
+    install_kbuild ${deb_kern_kbuild_dir}
 
     # Stop tracing
     set +x
@@ -171,21 +176,15 @@ kernel_headers() {
     mkdir -p ${destdir}
     mkdir -p ${deb_kern_hdr_dir}/lib/modules/${krel}
 
-    (cd ${S}; find . -name 'Makefile*' -o -name 'Kconfig*' -o -name '*.pl') >>${src_hdr_files}
-    (cd ${S}; find arch/*/include include scripts -type f -o -type l) >>${src_hdr_files}
+    (cd ${S}; find . -not -path './scripts/*' -a -not -path './tools/*' -a \( -name 'Makefile*' -o -name 'Kconfig*' -o -name '*.pl' \)) >>${src_hdr_files}
+    (cd ${S}; find arch/*/include include -type f -o -type l) >>${src_hdr_files}
     (cd ${S}; find arch/${ARCH} -name module.lds -o -name Kbuild.platforms -o -name Platform) >>${src_hdr_files}
     (cd ${S}; find $(find arch/${ARCH} -name include -o -name scripts -type d) -type f) >>${src_hdr_files}
 
     if [ -n "${CONFIG_MODULES}" ]; then
         echo Module.symvers >> ${obj_hdr_files}
     fi
-    (cd ${O}; find arch/${ARCH}/include include scripts -type f) >>${obj_hdr_files}
-    if [ -n "${CONFIG_STACK_VALIDATION}" -o -n "${CONFIG_HAVE_OBJTOOL}" ]; then
-        (cd ${O}; find tools/objtool -type f -executable) >>${obj_hdr_files}
-    fi
-    if [ -n "${CONFIG_GCC_PLUGINS}" ]; then
-        (cd ${O}; find scripts/gcc-plugins -name *.so -o -name gcc-common.h) >>${obj_hdr_files}
-    fi
+    (cd ${O}; find arch/${ARCH}/include include -type f) >>${obj_hdr_files}
 
     # deploy files that were matched above
     tar -C ${S} -cf - -T - <${src_hdr_files} | tar -C ${destdir} -xf -
@@ -194,8 +193,11 @@ kernel_headers() {
     # add the kernel config
     cp ${O}/${KCONF} ${destdir}/.config
 
-    # handle kernel development tools
-    kernel_tools
+    # add symlink to scripts and tools directories
+    ln -sf ../../lib/linux-kbuild-${krel}/scripts ${destdir}/scripts
+    if [ -n "${CONFIG_STACK_VALIDATION}" -o -n "${CONFIG_HAVE_OBJTOOL}" ]; then
+        ln -sf ../../lib/linux-kbuild-${krel}/tools ${destdir}/tools
+    fi
 
     # create symlinks
     ln -sf /${kernel_headers_dir} ${deb_kern_hdr_dir}/lib/modules/${krel}/build
@@ -207,6 +209,33 @@ install_headers() {
     fi
     [ -z ${kern_pkgs["linux-libc-dev"]} ] || libc_headers
     kernel_headers
+}
+
+install_kbuild() {
+    kernel_kbuild_dir=usr/lib/linux-kbuild-${krel}
+    destdir=${1}/${kernel_kbuild_dir}
+    src_kbuild_files=$(mktemp)
+    obj_kbuild_files=$(mktemp)
+
+    mkdir -p ${destdir}
+
+    (cd ${S}; find . -path './scripts/*' -a -path './tools/*' -a \( -name 'Makefile*' -o -name 'Kconfig*' -o -name '*.pl' \)) >>${src_kbuild_files}
+    (cd ${S}; find scripts -type f -o -type l) >>${src_kbuild_files}
+
+    (cd ${O}; find scripts -type f) >>${obj_kbuild_files}
+    if [ -n "${CONFIG_STACK_VALIDATION}" -o -n "${CONFIG_HAVE_OBJTOOL}" ]; then
+        (cd ${O}; find tools/objtool -type f -executable) >>${obj_kbuild_files}
+    fi
+    if [ -n "${CONFIG_GCC_PLUGINS}" ]; then
+        (cd ${O}; find scripts/gcc-plugins -name *.so -o -name gcc-common.h) >>${obj_kbuild_files}
+    fi
+
+    # deploy files that were matched above
+    tar -C ${S} -cf - -T - <${src_kbuild_files} | tar -C ${destdir} -xf -
+    tar -C ${O} -cf - -T - <${obj_kbuild_files} | tar -C ${destdir} -xf -
+
+    # handle kernel development tools
+    kernel_tools
 }
 
 main install ${*}

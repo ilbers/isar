@@ -26,7 +26,7 @@ Section: devel
 Provides: linux-kernel-headers
 Architecture: any
 Description: Linux support headers for userspace development
- This package provides userspaces headers from the Linux kernel.  These headers
+ This package provides userspaces headers from the Linux kernel. These headers
  are used by the installed headers for GNU glibc and other system libraries.
 
 Package: linux-libc-dev-${DISTRO_ARCH}-cross
@@ -46,3 +46,10 @@ Architecture: any
 Description: Linux kernel debugging symbols for @KR@
  This package will come in handy if you need to debug the kernel. It provides
  all the necessary debug symbols for the kernel and its modules.
+
+Package: linux-kbuild-${KERNEL_NAME_PROVIDED}
+Architecture: any
+Depends: ${perl:Depends}, ${shlib:Depends}
+Description: ${KERNEL_NAME_PROVIDED} Linux kbuild scripts and tools for @KR@
+ This package provides kernel kbuild scripts and tools for @KR@
+ This is useful for people who need to build external modules

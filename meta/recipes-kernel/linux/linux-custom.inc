@@ -104,6 +104,10 @@ PROVIDES += " \
     linux-image-${KERNEL_NAME_PROVIDED}-dbg \
 "
 
+# Append headers depends
+HEADERS_DEPENDS = ", linux-kbuild-${KERNEL_NAME_PROVIDED}"
+KERNEL_HEADERS_DEBIAN_DEPENDS:append = "${HEADERS_DEPENDS}"
+
 def get_kernel_arch(d):
     distro_arch = d.getVar("DISTRO_ARCH")
     if distro_arch in ["amd64", "i386"]:

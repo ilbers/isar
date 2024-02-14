@@ -10,6 +10,7 @@ KERNEL_PKG_IMAGE=linux-image-${KERNEL_NAME_PROVIDED}
 KERNEL_PKG_KERN_HEADERS=linux-headers-${KERNEL_NAME_PROVIDED}
 KERNEL_PKG_LIBC_HEADERS=linux-libc-dev
 KERNEL_PKG_LIBC_HEADERS_CROSS=linux-libc-dev-${DISTRO_ARCH}-cross
+KERNEL_PKG_KERN_KBUILD=linux-kbuild-${KERNEL_NAME_PROVIDED}
 
 # Constants
 KCONF=.config
@@ -21,6 +22,7 @@ deb_dbg_dir=${deb_img_dir}-dbg
 deb_kern_hdr_dir=${deb_top_dir}/${KERNEL_PKG_KERN_HEADERS}
 deb_libc_hdr_dir=${deb_top_dir}/${KERNEL_PKG_LIBC_HEADERS}
 deb_libc_hdr_cross_dir=${deb_top_dir}/${KERNEL_PKG_LIBC_HEADERS_CROSS}
+deb_kern_kbuild_dir=${deb_top_dir}/${KERNEL_PKG_KERN_KBUILD}
 
 # Array of packages to be generated
 declare -A kern_pkgs
