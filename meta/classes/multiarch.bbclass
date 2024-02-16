@@ -49,8 +49,9 @@ python multiarch_virtclass_handler() {
         vars = 'SRC_URI FILESPATH'.split()
         for var in vars:
             v = d.getVar(var, expand=False)
-            if v is not None:
-                d.setVar(var, v.replace('${PN}', '${BPN}'))
+            if v is not None and '${PN}' in v:
+                d.setVar(var + ':remove', v)
+                d.appendVar(var, v.replace('${PN}', '${BPN}'))
 
     # When building compat/native, the corresponding suffix needs to be
     # propagated to all bitbake dependency definitions.
