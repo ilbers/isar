@@ -87,15 +87,12 @@ python() {
     src_uri = (d.getVar('SRC_URI', False) or "").split()
 
     prefix = "apt://"
-    new_src_uri = []
     src_apt = []
     for u in src_uri:
         if u.startswith(prefix):
             src_apt.append(u[len(prefix) :])
-        else:
-            new_src_uri.append(u)
+            d.setVar('SRC_URI:remove', u)
 
-    d.setVar('SRC_URI', ' '.join(new_src_uri))
     d.prependVar('SRC_APT', ' '.join(src_apt))
 
     if len(d.getVar('SRC_APT').strip()) > 0:
