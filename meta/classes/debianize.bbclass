@@ -80,6 +80,10 @@ Description: ${DESCRIPTION}
 EOF
 }
 
+deb_compat() {
+	bbwarn "Function deb_compat is deprecated and the content was\nreplaced with a dependency to debhelper-compat!"
+}
+
 DH_FIXPERM_EXCLUSIONS = \
     "${@' '.join(['-X ' + x for x in \
                   (d.getVar('PRESERVE_PERMS', False) or '').split()])}"
