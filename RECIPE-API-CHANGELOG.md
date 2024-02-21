@@ -566,3 +566,9 @@ supported, but a warning is issued when it is used. Future versions will drop
 When building a custom kernel module, the `KBuild` file might be located in
 a subdirectory. To support this use-case, set `MODULE_DIR=$(PWD)/subdir` in
 the module build recipe.
+
+### function debianize:deb_compat is removed
+
+Remove all uses of the function deb_compat. The functionality was replaced with
+a dependency to the package debhelper-compat.
+
