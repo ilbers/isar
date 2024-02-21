@@ -27,7 +27,7 @@ python() {
         d.appendVar('SBUILD_CHROOT_PREINSTALL_COMMON',
                     ' libstdc++-{}-dev:{}'.format(distro_gcc, distro_arch))
 
-    if d.getVar('ISAR_ENABLE_COMPAT_ARCH') == '1':
+    if bb.utils.to_boolean(d.getVar('ISAR_ENABLE_COMPAT_ARCH')):
         compat_arch = d.getVar('COMPAT_DISTRO_ARCH')
         d.appendVar('SBUILD_CHROOT_COMPAT_PREINSTALL',
                     ' libc6-dev:{}'.format(compat_arch))
@@ -47,7 +47,7 @@ SBUILD_CHROOT_PREINSTALL_COMMON = " \
     fakeroot \
     build-essential \
     debhelper \
-    ${@ 'ccache' if d.getVar('USE_CCACHE') == '1' else ''} \
+    ${@ 'ccache' if bb.utils.to_boolean(d.getVar('USE_CCACHE')) else ''} \
     devscripts \
     equivs \
 "

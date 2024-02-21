@@ -13,7 +13,7 @@ CONTAINER_IMAGE_NAME ?= "${PN}-${DISTRO}-${DISTRO_ARCH}"
 CONTAINER_IMAGE_TAG ?= "${PV}-${PR}"
 
 python() {
-    if not d.getVar('USING_CONTAINER') == '1':
+    if not bb.utils.to_boolean(d.getVar('USING_CONTAINER')):
         return
     for t in d.getVar('CONTAINER_TYPES').split():
         t_clean = t.replace('-', '_').replace('.', '_')

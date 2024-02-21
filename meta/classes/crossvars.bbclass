@@ -9,7 +9,7 @@ python __anonymous() {
     import pwd
     d.setVar('SCHROOT_USER', pwd.getpwuid(os.geteuid()).pw_name)
 
-    mode = d.getVar('ISAR_CROSS_COMPILE')
+    mode = bb.utils.to_boolean(d.getVar('ISAR_CROSS_COMPILE'))
 
     # support derived schroots
     flavor = d.getVar('SBUILD_FLAVOR')
@@ -22,7 +22,7 @@ python __anonymous() {
 
     if distro_arch != host_arch and \
         (package_arch == host_arch or \
-         (package_arch in [distro_arch, compat_arch, '${BUILD_ARCH}'] and mode == "1")):
+         (package_arch in [distro_arch, compat_arch, '${BUILD_ARCH}'] and mode)):
         d.setVar('BUILD_ARCH', host_arch)
         schroot_dir = d.getVar('SCHROOT_HOST_DIR', False)
         sbuild_dep = "sbuild-chroot-host" + flavor_suffix + ":do_build"

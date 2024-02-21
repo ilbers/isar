@@ -10,9 +10,9 @@ FILESPATH:append := ":${FILE_DIRNAME}/files"
 DESCRIPTION ?= "Custom U-Boot"
 
 PROVIDES += "u-boot-${MACHINE} u-boot-${MACHINE}-dev"
-PROVIDES += "${@'u-boot-tools' if d.getVar('U_BOOT_TOOLS_PACKAGE') == '1' else ''}"
+PROVIDES += "${@'u-boot-tools' if bb.utils.to_boolean(d.getVar('U_BOOT_TOOLS_PACKAGE')) else ''}"
 PROVIDES += "${@('u-boot-config u-boot-' + d.getVar('MACHINE') + '-config') \
-    if d.getVar('U_BOOT_CONFIG_PACKAGE') == '1' else ''}"
+    if bb.utils.to_boolean(d.getVar('U_BOOT_CONFIG_PACKAGE')) else ''}"
 
 inherit dpkg
 

@@ -181,7 +181,7 @@ def isar_export_proxies(d):
     variables = ['http_proxy', 'HTTP_PROXY', 'https_proxy', 'HTTPS_PROXY',
                     'ftp_proxy', 'FTP_PROXY' ]
 
-    if d.getVar('BB_NO_NETWORK') == "1":
+    if bb.utils.to_boolean(d.getVar('BB_NO_NETWORK')):
         for v in variables:
             d.setVar(v, deadend_proxy)
         for v in [ 'no_proxy', 'NO_PROXY' ]:
@@ -190,10 +190,10 @@ def isar_export_proxies(d):
     return bb.utils.export_proxies(d)
 
 def isar_export_ccache(d):
-    if d.getVar('USE_CCACHE') == '1':
+    if bb.utils.to_boolean(d.getVar('USE_CCACHE')):
         os.environ['CCACHE_DIR'] = '/ccache'
         os.environ['PATH_PREPEND'] = '/usr/lib/ccache'
-        if d.getVar('CCACHE_DEBUG') == '1':
+        if bb.utils.to_boolean(d.getVar('CCACHE_DEBUG')):
             os.environ['CCACHE_DEBUG'] = '1'
             os.environ['CCACHE_DEBUGDIR'] = '/ccache/debug'
     else:

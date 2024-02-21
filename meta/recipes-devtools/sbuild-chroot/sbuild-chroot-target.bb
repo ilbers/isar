@@ -11,5 +11,5 @@ require sbuild-chroot.inc
 
 SBUILD_CHROOT_PREINSTALL ?= " \
     ${SBUILD_CHROOT_PREINSTALL_COMMON} \
-    ${@' apt-utils' if d.getVar('ISAR_ENABLE_COMPAT_ARCH') == '1' else ''} \
+    ${@' apt-utils' if bb.utils.to_boolean(d.getVar('ISAR_ENABLE_COMPAT_ARCH')) else ''} \
     "

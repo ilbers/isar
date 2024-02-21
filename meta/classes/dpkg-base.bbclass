@@ -15,7 +15,7 @@ inherit essential
 DEPENDS ?= ""
 RPROVIDES ?= "${PROVIDES}"
 
-DEPENDS:append:riscv64 = "${@' crossbuild-essential-riscv64' if d.getVar('ISAR_CROSS_COMPILE') == '1' and d.getVar('PN') != 'crossbuild-essential-riscv64' else ''}"
+DEPENDS:append:riscv64 = "${@' crossbuild-essential-riscv64' if bb.utils.to_boolean(d.getVar('ISAR_CROSS_COMPILE')) and d.getVar('PN') != 'crossbuild-essential-riscv64' else ''}"
 DEB_BUILD_PROFILES ?= ""
 DEB_BUILD_OPTIONS ?= ""
 
@@ -215,7 +215,7 @@ dpkg_runbuild() {
 
 def isar_deb_build_profiles(d):
     deb_build_profiles = d.getVar('DEB_BUILD_PROFILES')
-    if d.getVar('ISAR_CROSS_COMPILE') == "1":
+    if bb.utils.to_boolean(d.getVar('ISAR_CROSS_COMPILE')):
         deb_build_profiles += ' cross'
     return deb_build_profiles.strip()
 
@@ -310,7 +310,7 @@ python do_devshell() {
     isar_export_proxies(d)
     isar_export_ccache(d)
     isar_export_build_settings(d)
-    if d.getVar('USE_CCACHE') == '1':
+    if bb.utils.to_boolean(d.getVar('USE_CCACHE')):
         bb.build.exec_func('schroot_configure_ccache', d)
 
     schroot = d.getVar('SBUILD_CHROOT')

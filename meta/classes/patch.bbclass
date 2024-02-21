@@ -16,7 +16,7 @@ PATCH_GIT_USER_EMAIL ?= "isar.patch@isar"
 inherit terminal
 
 python () {
-    if d.getVar('PATCHTOOL') == 'git' and d.getVar('PATCH_COMMIT_FUNCTIONS') == '1':
+    if d.getVar('PATCHTOOL') == 'git' and bb.utils.to_boolean(d.getVar('PATCH_COMMIT_FUNCTIONS')):
         extratasks = bb.build.tasksbetween('do_unpack', 'do_patch', d)
         try:
             extratasks.remove('do_unpack')
@@ -65,7 +65,7 @@ python patch_task_postfunc() {
 
     if os.path.exists(srcsubdir):
         if func == 'do_patch':
-            haspatches = (d.getVar('PATCH_HAS_PATCHES_DIR') == '1')
+            haspatches = bb.utils.to_boolean(d.getVar('PATCH_HAS_PATCHES_DIR'))
             patchdir = os.path.join(srcsubdir, 'patches')
             if os.path.exists(patchdir):
                 shutil.rmtree(patchdir)

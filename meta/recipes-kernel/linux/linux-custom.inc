@@ -139,7 +139,7 @@ def config_fragments(d):
 
 def get_additional_build_profiles(d):
     profiles = d.getVar('BASE_DISTRO')
-    if d.getVar('KERNEL_LIBC_DEV_DEPLOY') != '1':
+    if not bb.utils.to_boolean(d.getVar('KERNEL_LIBC_DEV_DEPLOY')):
         profiles += ' nolibcdev'
     return profiles
 

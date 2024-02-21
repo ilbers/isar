@@ -15,7 +15,7 @@ SRC_URI = "apt://${PN}"
 MAINTAINER = "isar-users <isar-users@googlegroups.com>"
 CHANGELOG_V = "<orig-version>+isar"
 
-DEB_BUILD_OPTIONS += "${@ 'nocheck' if d.getVar('ISAR_CROSS_COMPILE') == '1' else '' }"
+DEB_BUILD_OPTIONS += "${@ 'nocheck' if bb.utils.to_boolean(d.getVar('ISAR_CROSS_COMPILE')) else '' }"
 
 do_prepare_build() {
 	deb_add_changelog

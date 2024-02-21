@@ -5,7 +5,7 @@
 #
 
 USING_WIC = "${@bb.utils.contains('IMAGE_BASETYPES', 'wic', '1', '0', d)}"
-WKS_FILE_CHECKSUM = "${@'${WKS_FULL_PATH}:%s' % os.path.exists('${WKS_FULL_PATH}') if d.getVar('USING_WIC') == '1' else ''}"
+WKS_FILE_CHECKSUM = "${@'${WKS_FULL_PATH}:%s' % os.path.exists('${WKS_FULL_PATH}') if bb.utils.to_boolean(d.getVar('USING_WIC')) else ''}"
 
 WKS_FILE ??= "sdimage-efi"
 
@@ -16,7 +16,7 @@ do_copy_wks_template () {
 }
 
 python () {
-    if not d.getVar('USING_WIC') == '1':
+    if not bb.utils.to_boolean(d.getVar('USING_WIC')):
         return
 
     if d.getVar('WIC_IMAGER_INSTALL'):

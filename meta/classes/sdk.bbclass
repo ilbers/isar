@@ -57,7 +57,7 @@ TAR_TRANSFORM:class-sdk = " --transform='s|rootfs|${IMAGE_FULLNAME}|'"
 
 # bitbake dependencies
 SDKDEPENDS += "sdk-files ${SDK_INSTALL}"
-SDKDEPENDS:append:riscv64 = "${@' crossbuild-essential-riscv64' if d.getVar('ISAR_CROSS_COMPILE') == '1' and d.getVar('PN') != 'crossbuild-essential-riscv64' else ''}"
+SDKDEPENDS:append:riscv64 = "${@' crossbuild-essential-riscv64' if bb.utils.to_boolean(d.getVar('ISAR_CROSS_COMPILE')) and d.getVar('PN') != 'crossbuild-essential-riscv64' else ''}"
 DEPENDS:class-sdk = "${SDKDEPENDS}"
 
 SDKROOTFSDEPENDS = ""
@@ -68,10 +68,10 @@ SDKROOTFSVARDEPS = ""
 SDKROOTFSVARDEPS:class-sdk = "SDK_INCLUDE_ISAR_APT"
 do_rootfs_install[vardeps] += "${SDKROOTFSVARDEPS}"
 
-ROOTFS_POSTPROCESS_COMMAND:remove = "${@'rootfs_cleanup_isar_apt' if d.getVar('SDK_INCLUDE_ISAR_APT') == '1' else ''}"
+ROOTFS_POSTPROCESS_COMMAND:remove = "${@'rootfs_cleanup_isar_apt' if bb.utils.to_boolean(d.getVar('SDK_INCLUDE_ISAR_APT')) else ''}"
 
 # additional SDK steps
-ROOTFS_CONFIGURE_COMMAND:append:class-sdk = " ${@'rootfs_configure_isar_apt_dir' if d.getVar('SDK_INCLUDE_ISAR_APT') == '1' else ''}"
+ROOTFS_CONFIGURE_COMMAND:append:class-sdk = " ${@'rootfs_configure_isar_apt_dir' if bb.utils.to_boolean(d.getVar('SDK_INCLUDE_ISAR_APT')) else ''}"
 rootfs_configure_isar_apt_dir() {
     # Copy isar-apt instead of mounting:
     sudo cp -Trpfx --reflink=auto ${REPO_ISAR_DIR}/${DISTRO} ${ROOTFSDIR}/isar-apt

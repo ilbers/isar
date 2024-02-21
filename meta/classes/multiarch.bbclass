@@ -26,7 +26,7 @@ python() {
     # and not for the builder architecture
     depends = d.getVar('DEPENDS')
     if depends is not None and d.getVar('HOST_ARCH') != d.getVar('DISTRO_ARCH') \
-       and d.getVar('ISAR_CROSS_COMPILE') != '1':
+       and not bb.utils.to_boolean(d.getVar('ISAR_CROSS_COMPILE')):
         new_deps = []
         for dep in depends.split():
             if dep.endswith('-native'):

@@ -31,7 +31,7 @@ python() {
 
 def isar_can_build_compat(d):
     return (d.getVar('COMPAT_DISTRO_ARCH') is not None and
-        d.getVar('ISAR_ENABLE_COMPAT_ARCH') == '1')
+        bb.utils.to_boolean(d.getVar('ISAR_ENABLE_COMPAT_ARCH')))
 
 ################################################################################
 # package recipe modifications when building *-compat:
