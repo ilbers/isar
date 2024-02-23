@@ -1,40 +1,50 @@
 Release next
 
- * Move riscv64 from sid-ports to regular sid
- * Fixes for HOST_ARCH and -native build
- * Add kas menu/build support
- * Add bookworm targets for some machines
- * Update bitbake version to 2.0.12 release
+ * Add Debian Bookworm targets for some machines
+ * Move RISC-V from Sid-Ports to regular Sid
+ * Allow cross-building of Debian Sid targets
+ * Update Debian Ports signing keys
+ * Drop Debian Stretch support
+ * Support Starfive-Vision2 RISC-V board
+ * Update BitBake version to 2.0.12 release
+ * Update libubootenv to 0.3.5
+ * Add recipes for optee ftpm, examples, client and TA devkit
+ * Buildchroot no longer used for package building, use sbuild instead
  * Remove buildchroot
+ * Add support of derived sbuild chroots
  * Imager migrate from buildchroot to schroot
+ * Update kas container version to use with Gitlab
+ * Add kas menu/build support
  * Support passing custom arguments to CI scripts
  * Clenup and update CI (less KFAIL cases)
- * Add recipes for optee ftpm, examples, client and TA devkit
- * Add support of derived sbuild chroots
  * Rework multiconfigs and cleanup them from CI-related hacks
  * Introduce meta-test layer for CI purposes
- * Support starfive-vision2 riscv64 board
- * Update kas container version to use with Gitlab
+ * Support script over SSH on qemu VMs or remote hardware in testsuite
+ * Add developers test
+ * Update Avocado framework and switch to the new runner
+ * Update distro list in startvm script
+ * Introduce getVars API for testsuite
+ * Fixes for HOST_ARCH and -native build
  * Enable SRCPV support for AUTOREV
  * Add support for rebuilding essential packages
  * Add multiarch support, remove obsolete compat-arch override
- * Support script over SSH on qemu VMs or remote hardware in testsuite
  * ZSTD support for image conversions
- * Add developers test
- * Update bitbake version to 2.0.5 release
  * Add efi signed boot support and machine config example for it
- * Drop Debian Stretch support
  * Support resizing a btrfs with expand-on-first-boot
  * Multiple changes to make builds closer to reproducible
- * Individual wic partitions are no longer automatically deployed
- * Add option to control deploy of raw wic partitions
+ * Individual WIC partitions are no longer automatically deployed
+ * Add option to control deploy of raw WIC partitions
  * Populate base-apt from both DISTRO and HOST_DISTRO
- * Multiple improvements in wic plugins
+ * Multiple improvements in WIC plugins
  * Improve sstate maintenance script
- * Update Avocado framework and switch to the new runner
  * Rework ccache support and update ccache testcase
  * Support build of packages with epoch version
- * Buildchroot no longer used for package building, use sbuild instead
+ * Move from deprecated WIC_IMAGER_INSTALL to IMAGER_INSTALL:wic
+ * Improve debianization script
+ * Add support for non-default modules dir in linux-module
+ * Split isar-apt and base-apt cleanup
+ * Fix and improve handling of multiple apt sources per package
+ * Update libhello and hello-isar recipes
 
 Release v0.9
 
