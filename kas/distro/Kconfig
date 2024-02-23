@@ -1,5 +1,5 @@
-# This software is a part of ISAR.
-# Copyright (C) 2023 ilbers GmbH
+# This software is a part of Isar.
+# Copyright (C) 2023-2024 ilbers GmbH
 #
 # Authors:
 #  Uladzimir Bely <ubely@ilbers.de>
@@ -11,25 +11,28 @@ choice
 	default DEBIAN_BOOKWORM
 
 config DEBIAN_BUSTER
-	bool "Debian Buster (10)"
+	bool "Debian 10 (buster)"
 
 config DEBIAN_BULLSEYE
-	bool "Debian Bullseye (11)"
+	bool "Debian 11 (bullseye)"
 
 config DEBIAN_BOOKWORM
-	bool "Debian Bookworm (12)"
+	bool "Debian 12 (bookworm)"
 
 config DEBIAN_SID
 	bool "Debian Sid (unstable)"
 
 config RASPIOS_BULLSEYE
-  bool "Raspi OS Bullseye (11)"
+	bool "Raspberry Pi OS Debian 11 (bullseye)"
+
+config RASPIOS_BOOKWORM
+	bool "Raspberry Pi OS Debian 12 (bookworm)"
 
 config UBUNTU_FOCAL
-	bool "Ubuntu Focal (20.04)"
+	bool "Ubuntu 20.04 (Focal)"
 
 config UBUNTU_JAMMY
-	bool "Ubuntu Jammy (22.04)"
+	bool "Ubuntu 22.04 (Jammy)"
 
 endchoice
 
@@ -40,6 +43,7 @@ config KAS_INCLUDE_DISTRO
 	default "kas/distro/debian-bookworm.yaml" if DEBIAN_BOOKWORM
 	default "kas/distro/debian-sid.yaml" if DEBIAN_SID
 	default "kas/distro/raspios-bullseye.yaml" if RASPIOS_BULLSEYE
+	default "kas/distro/raspios-bookworm.yaml" if RASPIOS_BOOKWORM
 	default "kas/distro/ubuntu-focal.yaml" if UBUNTU_FOCAL
 	default "kas/distro/ubuntu-jammy.yaml" if UBUNTU_JAMMY
 

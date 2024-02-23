@@ -1,5 +1,5 @@
-# This software is a part of ISAR.
-# Copyright (C) 2023 ilbers GmbH
+# This software is a part of Isar.
+# Copyright (C) 2023-2024 ilbers GmbH
 #
 # Authors:
 #  Uladzimir Bely <ubely@ilbers.de>
@@ -28,7 +28,7 @@ config MACHINE_HIKEY
 
 config MACHINE_IMX6_SABRELITE
 	bool "imx6-sabrelite"
-	depends on DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM
+	depends on DEBIAN_BUSTER || DEBIAN_BULLSEYE
 
 config MACHINE_NANOPI_NEO
 	bool "nanopi-neo"
@@ -38,9 +38,9 @@ config MACHINE_NANOPI_NEO_EFI
 	bool "nanopi-neo-efi"
 	depends on DEBIAN_BOOKWORM
 
-config MACHINE_PHIBOARD_MIRA
+config MACHINE_PHYBOARD_MIRA
 	bool "phyboard-mira"
-	depends on DEBIAN_BULLSEYE || DEBIAN_BOOKWORM
+	depends on DEBIAN_BULLSEYE
 
 config MACHINE_QEMU_AMD64_SB
 	bool "qemuamd64-sb"
@@ -72,19 +72,19 @@ config MACHINE_QEMU_RISCV64
 
 config MACHINE_RPI_ARM_V7
 	bool "rpi-arm-v7"
-	depends on RASPIOS_BULLSEYE
+	depends on RASPIOS_BULLSEYE || RASPIOS_BOOKWORM
 
 config MACHINE_RPI_ARM_V7L
 	bool "rpi-arm-v7l"
-	depends on RASPIOS_BULLSEYE
+	depends on RASPIOS_BULLSEYE || RASPIOS_BOOKWORM
 
 config MACHINE_RPI_ARM
 	bool "rpi-arm"
-	depends on RASPIOS_BULLSEYE
+	depends on RASPIOS_BULLSEYE || RASPIOS_BOOKWORM
 
 config MACHINE_RPI_ARM64_V8
 	bool "rpi-arm64-v8"
-	depends on RASPIOS_BULLSEYE
+	depends on RASPIOS_BULLSEYE || RASPIOS_BOOKWORM
 
 config MACHINE_SIFIVE_FU540
 	bool "sifive-fu540"
@@ -96,11 +96,11 @@ config MACHINE_STARFIVE_VISIONFIVE2
 
 config MACHINE_STM32MP15X
 	bool "stm32mp15x"
-	depends on DEBIAN_BULLSEYE || DEBIAN_BOOKWORM
+	depends on DEBIAN_BULLSEYE
 
 config MACHINE_VIRTUALBOX
 	bool "virtualbox"
-	depends on DEBIAN_BULLSEYE
+	depends on DEBIAN_BULLSEYE || DEBIAN_BOOKWORM
 
 config MACHINE_VMWARE
 	bool "vmware"
