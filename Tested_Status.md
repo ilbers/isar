@@ -4,6 +4,96 @@ Tested Status
 Release next
 ------------
 
+Release v0.10
+-------------
+
+### Host System: debian-stretch-amd64
+
+NOT SUPPORTED
+
+### Host System: debian-buster-amd64
+
+NOT TESTED
+
+### Host System: debian-bullseye-amd64
+
+NOT TESTED
+
+### Host System: debian-bookworm-amd64
+
+| Target System            | Native Build  | Cross Build   |Login prompt ("smoke" test)|SDK Support|Cached repo| Version |
+|:------------------------:|:-------------:|:-------------:|:-------------------------:|:---------:|:---------:|:-------:|
+| qemuarm-buster           | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | d7caff0 |
+| qemuarm-bullseye         | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | PASSED    | d7caff0 |
+| qemuarm-bookworm         | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | d7caff0 |
+| qemuarm64-buster         | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | d7caff0 |
+| qemuarm64-bullseye       | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | PASSED    | d7caff0 |
+| qemuarm64-bookworm       | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | d7caff0 |
+| qemui386-buster          | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | d7caff0 |
+| qemui386-bullseye        | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | d7caff0 |
+| qemui386-bookworm        | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | d7caff0 |
+| qemuamd64-buster         | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | d7caff0 |
+| qemuamd64-bullseye       | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | PASSED    | d7caff0 |
+| qemuamd64-sb-bullseye    | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | d7caff0 |
+| qemuamd64-bookworm       | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | d7caff0 |
+| qemumipsel-buster        | PASSED        | PASSED #9     | PASSED (QEMU)             | PASSED    | UNTESTED  | d7caff0 |
+| qemumipsel-bullseye      | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | d7caff0 |
+| qemumipsel-bookworm      | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | d7caff0 |
+| qemuriscv64-sid          | PASSED        | PASSED #8     | PASSED (QEMU)             | PASSED    | UNTESTED  | d7caff0 |
+| qemuarm64-focal          | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | d7caff0 |
+| qemuamd64-focal          | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | d7caff0 |
+| qemuarm64-jammy          | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | d7caff0 |
+| qemuamd64-jammy          | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | d7caff0 |
+| container-amd64-buster   | PASSED        | PASSED        | PASSED (Docker)           | UNTESTED  | UNTESTED  | d7caff0 |
+| container-amd64-bullseye | PASSED        | PASSED        | PASSED (Docker)           | UNTESTED  | UNTESTED  | d7caff0 |
+| container-amd64-bookworm | PASSED        | PASSED        | PASSED (Docker)           | UNTESTED  | UNTESTED  | d7caff0 |
+| virtualbox-bullseye      | PASSED        | PASSED        | PASSED (Virtualbox)       | UNTESTED  | UNTESTED  | d7caff0 |
+| virtualbox-bookworm      | PASSED        | PASSED        | PASSED (Virtualbox)       | UNTESTED  | UNTESTED  | d7caff0 |
+| bananapi-buster          | PASSED        | PASSED        | PASSED #3                 | UNTESTED  | UNTESTED  | d7caff0 |
+| bananapi-bullseye        | PASSED        | PASSED        | PASSED #3                 | UNTESTED  | UNTESTED  | d7caff0 |
+| bananapi-bookworm        | PASSED        | PASSED        | PASSED #3                 | UNTESTED  | UNTESTED  | d7caff0 |
+| de0-nano-soc-buster      | FAILED        | FAILED        | UNTESTED                  | UNTESTED  | UNTESTED  | d7caff0 |
+| de0-nano-soc-bullseye    | PASSED        | PASSED        | PASSED #4                 | UNTESTED  | UNTESTED  | d7caff0 |
+| de0-nano-soc-bookworm    | PASSED        | PASSED        | PASSED #4                 | UNTESTED  | UNTESTED  | d7caff0 |
+| hikey-bullseye           | PASSED        | PASSED        | PASSED #5                 | UNTESTED  | UNTESTED  | d7caff0 |
+| hikey-bookworm           | PASSED        | PASSED        | PASSED #5                 | UNTESTED  | UNTESTED  | d7caff0 |
+| imx6-sabrelite-buster    | PASSED        | PASSED        | UNTESTED                  | UNTESTED  | UNTESTED  | d7caff0 |
+| imx6-sabrelite-bullseye  | PASSED        | PASSED        | UNTESTED                  | UNTESTED  | UNTESTED  | d7caff0 |
+| phyboard-mira-bullseye   | PASSED        | PASSED        | PASSED #7                 | UNTESTED  | UNTESTED  | d7caff0 |
+| nanopi-neo-buster        | PASSED        | PASSED        | PASSED #6                 | UNTESTED  | UNTESTED  | d7caff0 |
+| nanopi-neo-bullseye      | PASSED        | PASSED        | PASSED #6                 | UNTESTED  | UNTESTED  | d7caff0 |
+| nanopi-neo-bookworm      | PASSED        | PASSED        | PASSED #6                 | UNTESTED  | UNTESTED  | d7caff0 |
+| nanopi-neo-efi-bookworm  | PASSED        | PASSED        | PASSED #6                 | UNTESTED  | UNTESTED  | d7caff0 |
+| stm32mp15x-bullseye      | PASSED        | PASSED        | UNTESTED                  | UNTESTED  | UNTESTED  | d7caff0 |
+| rpi-arm-bullseye         | PASSED        | PASSED        | PASSED #1                 | UNTESTED  | UNTESTED  | d7caff0 |
+| rpi-arm-bookworm         | PASSED        | PASSED        | PASSED #1                 | UNTESTED  | UNTESTED  | d7caff0 |
+| rpi-arm-v7-bullseye      | PASSED        | PASSED        | PASSED #1                 | UNTESTED  | PASSED    | d7caff0 |
+| rpi-arm-v7-bookworm      | PASSED        | PASSED        | PASSED #1                 | UNTESTED  | UNTESTED  | d7caff0 |
+| rpi-arm-v7l-bullseye     | PASSED        | PASSED        | PASSED #1                 | UNTESTED  | UNTESTED  | d7caff0 |
+| rpi-arm-v7l-bookworm     | PASSED        | PASSED        | PASSED #1                 | UNTESTED  | UNTESTED  | d7caff0 |
+| rpi-arm64-v8-bullseye    | PASSED        | PASSED        | PASSED #2                 | UNTESTED  | PASSED    | d7caff0 |
+| rpi-arm64-v8-bookworm    | PASSED        | PASSED        | PASSED #2                 | UNTESTED  | UNTESTED  | d7caff0 |
+| sifive-fu540-sid         | PASSED        | PASSED        | UNTESTED                  | UNTESTED  | UNTESTED  | d7caff0 |
+| starfive-visionfive2-sid | PASSED        | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | d7caff0 |
+
+#1: Tested on RPI3B+
+#2: Tested on RPI4B
+#3: Tested on BPI-M1
+#4: Tested on Terasic Atlas-SoC
+#5: Tested on LeMaker HiKey 2 GB
+#6: Tested on NanoPi Neo LTS 512 MB
+#7: Tested on i.MX6 Quad
+#8: Built with snapshot.debian.org/archive/debian/20240226T213049Z/
+#9: Built with disabled debian-security
+
+### Host System: debian-stretch-i386
+
+NOT SUPPORTED
+
+### Host System: debian-buster-i386
+
+NOT TESTED
+
 Release v0.9
 ------------
 

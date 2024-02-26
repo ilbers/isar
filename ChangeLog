@@ -1,5 +1,7 @@
 Release next
 
+Release v0.10
+
  * Add Debian Bookworm targets for some machines
  * Move RISC-V from Sid-Ports to regular Sid
  * Allow cross-building of Debian Sid targets
