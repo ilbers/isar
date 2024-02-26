@@ -70,8 +70,8 @@ repo_del_srcpackage() {
     if [ -n "${GNUPGHOME}" ]; then
         export GNUPGHOME="${GNUPGHOME}"
     fi
-    reprepro -b "${dir}" --dbdir "${dbdir}" \
-        removesrc "${codename}" \
+    reprepro -b "${dir}" --dbdir "${dbdir}" -A source \
+        remove "${codename}" \
         "${packagename}"
 }
 
