@@ -936,6 +936,10 @@ For the variables please have a look at the previous example, the following new 
 Have a look at the `example-raw` recipe to get an idea how the `dpkg-raw` class can be used to customize your image.
 Note that the package will be build using the whole debian package workflow, so your package will be checked by many debhelper scripts. If those helpers point out quality issues it might be a good idea to fix them. But `example-raw` also shows how rules can still be violated.
 
+Other (optional) customization variables include:
+ - `DEBIAN_PROVIDES` - declare a virtual package to satisfy dependencies
+ - `DEBIAN_REPLACES` - to replace a package with another
+
 ### Prebuilt .deb packages from somewhere
 
 In some cases you might find yourself having a `.deb` that someone else built,

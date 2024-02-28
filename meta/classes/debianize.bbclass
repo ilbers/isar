@@ -8,6 +8,8 @@ CHANGELOG_V ??= "${PV}"
 DPKG_ARCH ??= "any"
 DEBIAN_BUILD_DEPENDS ??= ""
 DEBIAN_DEPENDS ??= ""
+DEBIAN_PROVIDES ??= ""
+DEBIAN_REPLACES ??= ""
 DEBIAN_CONFLICTS ??= ""
 DEBIAN_MULTI_ARCH ??= "no"
 DEBIAN_COMPAT ??= "10"
@@ -74,6 +76,8 @@ Build-Depends: debhelper-compat (= ${DEBIAN_COMPAT}), ${DEBIAN_BUILD_DEPENDS}
 Package: ${BPN}
 Architecture: ${DPKG_ARCH}
 Depends: ${DEBIAN_DEPENDS}
+Provides: ${DEBIAN_PROVIDES}
+Replaces: ${DEBIAN_REPLACES}
 Conflicts: ${DEBIAN_CONFLICTS}
 Multi-Arch: ${DEBIAN_MULTI_ARCH}
 Description: ${DESCRIPTION}
