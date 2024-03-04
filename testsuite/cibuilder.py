@@ -487,17 +487,20 @@ BBPATH .= ":${LAYERDIR}"\
         poller.register(p1.stdout, select.POLLIN)
         poller.register(p1.stderr, select.POLLIN)
 
+        # Databuf of size enough to keep two data chunks + checked string
+        databuf = bytearray(b'')
+        databuf_size = 1024 * 2 + len(login_prompt)
+
         while time.time() < timeout and p1.poll() is None:
             events = poller.poll(1000 * (timeout - time.time()))
             for fd, event in events:
                 if event != select.POLLIN:
                     continue
                 if fd == p1.stdout.fileno():
-                    # Wait for the complete string if it is read in chunks
-                    # like "i", "sar", " login:"
-                    time.sleep(0.01)
                     data = os.read(fd, 1024)
-                    if login_prompt in data:
+                    shift = max(0, len(data) + len(databuf) - databuf_size)
+                    databuf = databuf[shift:] + bytearray(data)
+                    if login_prompt in databuf:
                         self.log.info('Got login prompt')
                         return 0
                 if fd == p1.stderr.fileno():
