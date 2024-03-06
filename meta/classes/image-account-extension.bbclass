@@ -131,6 +131,10 @@ def image_create_users(d: "DataSmart") -> None:
 
 ROOTFS_POSTPROCESS_COMMAND += "image_postprocess_accounts"
 python image_postprocess_accounts() {
+    import os
+    if d.getVar("SOURCE_DATE_EPOCH") != None:
+        os.environ["SOURCE_DATE_EPOCH"] = d.getVar("SOURCE_DATE_EPOCH")
+ 
     image_create_groups(d)
     image_create_users(d)
 }
