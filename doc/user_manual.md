@@ -54,7 +54,7 @@ For demonstration purposes, Isar provides support for the following
 configurations:
 
  - QEMU ARM with Debian Buster
- - QEMU ARM64 with Debian Buster (for host >= buster)
+ - QEMU ARM64 with Debian Buster
  - QEMU i386 with Debian Buster
  - QEMU amd64 with Debian Buster
  - Raspberry Pi various models with Raspberry OS Bullseye
@@ -66,7 +66,7 @@ The steps below describe how to build the images provided by default.
 
 ### Install Host Tools
 
-The supported host system is >= buster.
+The minimal supported host system is Debian Bullseye.
 
 Building `debian-trixie` requires host system >= bookworm.
 
@@ -82,6 +82,7 @@ apt install \
   gettext-base \
   git \
   python3 \
+  python3-distutils \
   quilt \
   qemu-user-static \
   reprepro \
@@ -95,28 +96,19 @@ apt install \
   zstd
 ```
 
-If your host is >= buster, also install the following package.
-```
-apt install python3-distutils
-```
-
-**NOTE:** sbuild version (<=0.78.1) packaged in Debian Buster doesn't support
-`$apt_keep_downloaded_packages` option which is required in Isar for
-populating `${DL_DIR}/deb`. So, host `sbuild` in this case should be manually
-upgraded to >=0.81.2 version from Debian Bullseye.
-
 Next, the user who should run Isar needs to be added to `sbuild` group.
 ```
 sudo gpasswd -a <username> sbuild
 ```
 
 If you want to generate containerized SDKs, also install the following 
-packages: `umoci` and `skopeo`.
-Umoci is provided by Debian Buster and can be installed with 
-`apt install umoci`, Skopeo is provided by Debian Bullseye/Unstable and has to 
-be installed either manually downloading the DEB and installing it (no other 
-packages required) or with `apt install -t bullseye skopeo` (if 
-unstable/bullseye included in `/etc/apt/sources.list[.d]`).
+packages:
+
+```
+apt install \
+  umoci \
+  skopeo
+```
 
 Notes:
 
@@ -241,9 +233,6 @@ Variables may be used in `.wks.in` files; Isar will expand them and generate a r
 
 In order to run the EFI images with `qemu`, an EFI firmware is required and available at the following address:
 https://github.com/tianocore/edk2/tree/3858b4a1ff09d3243fea8d07bd135478237cb8f7
-
-Note that the `ovmf` package in Debian Buster contains a pre-compiled firmware, but doesn't seem to be recent
-enough to allow images to be testable under `qemu`.
 
 ```
 # AMD64 image, EFI
@@ -1008,8 +997,8 @@ put into Isar apt.
 Debian cross-compilation works out of the box. Currently the following build configurations are supported in Isar:
 
  - buster armhf
- - buster arm64 (for host >= buster)
- - buster mipsel (for host >= buster)
+ - buster arm64
+ - buster mipsel
  - bullseye armhf
  - bullseye arm64
  - bullseye mipsel
