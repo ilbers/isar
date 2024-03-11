@@ -22,7 +22,7 @@ if ! command -v avocado > /dev/null; then
     virtualenv --python python3 /tmp/avocado_venv
     # shellcheck source=/dev/null
     source /tmp/avocado_venv/bin/activate
-    pip install avocado-framework==100.1
+    pip install avocado-framework==103.0
 fi
 
 # Get Avocado build tests path
