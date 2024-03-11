@@ -37,6 +37,17 @@ FILESEXTRAPATHS:append = ":${BBPATH}"
 
 inherit deb-dl-dir
 
+# Fix for /var/lib/apt/available while maybe-jessie-or-older hook do not work
+MM_HOOK_JESSIE = "/usr/share/mmdebstrap/hooks/jessie-or-older"
+DPKG_HOOKS ?= "${@'--hook-dir='+d.getVar('MM_HOOK_JESSIE') \
+              if os.path.isdir(d.getVar('MM_HOOK_JESSIE')) \
+              else '--customize-hook=\'touch /var/lib/dpkg/available\''}"
+MMHOOKS:ubuntu-focal ?= "${DPKG_HOOKS}"
+MMHOOKS:debian-buster ?= "${DPKG_HOOKS}"
+
+def get_distro_suite(d):
+    return get_distro_primary_source_entry(d)[1]
+
 python () {
     distro_bootstrap_keys = (d.getVar("DISTRO_BOOTSTRAP_KEYS") or "").split()
     third_party_apt_keys = (d.getVar("THIRD_PARTY_APT_KEYS") or "").split()
@@ -303,6 +314,7 @@ do_bootstrap() {
     sudo TMPDIR="${BOOTSTRAP_TMPDIR}" mmdebstrap $bootstrap_args \
                    $arch_param \
                    --mode=unshare \
+                   ${MMHOOKS} \
                    ${@get_distro_components_argument(d)} \
                    "${@get_distro_suite(d)}" \
                    "${WORKDIR}/rootfs.tar.zst" \
