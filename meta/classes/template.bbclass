@@ -21,7 +21,7 @@ python do_transform_template() {
         return
 
     cmd = "envsubst"
-    args = " ".join("\${{{}}}".format(i) for i in template_vars)
+    args = " ".join(r"\${{{}}}".format(i) for i in template_vars)
 
     # Copy current process environment and add template variables
     # from bitbake data store:
