@@ -22,11 +22,28 @@ config IMAGE_DEBUG
 	help
 	  This image includes some tools preinstalled useful for debug.
 
+menuconfig IMAGE_INSTALLER
+	bool "Installer image"
+	help
+	  This image contains a target image and scripts to install the target image on a device.
+
+config INSTALLER_TARGET_IMAGE
+	string "Install Base or Debug image"
+	default "isar-image-base"
+	help
+	  This selects the target image of the installer:
+	  - isar-image-base
+	  - isar-image-debug
+	  If left empty it will generate a installer image without payload.
+	  The user of that image needs then to copy a image to the partition
+	  labeled INSTALLDATA.
+	depends on IMAGE_INSTALLER
 endchoice
 
 config KAS_INCLUDE_IMAGE
 	string
 	default "kas/image/isar-image-base.yaml" if IMAGE_BASE
 	default "kas/image/isar-image-debug.yaml" if IMAGE_DEBUG
+	default "kas/image/isar-image-installer.yaml" if IMAGE_INSTALLER
 
 endmenu

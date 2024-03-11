@@ -1,0 +1,13 @@
+# This software is a part of ISAR.
+# Copyright (C) Siemens AG, 2024
+#
+# SPDX-License-Identifier: MIT
+
+header:
+  version: 14
+
+target: mc:isar-installer:isar-image-installer
+
+local_conf_header:
+  installer_multiconfig: |
+    BBMULTICONFIG += "isar-installer installer-target"

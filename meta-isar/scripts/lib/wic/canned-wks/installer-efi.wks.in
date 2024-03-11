@@ -1,0 +1,9 @@
+# This software is a part of ISAR.
+# Copyright (C) Siemens AG, 2024
+#
+# SPDX-License-Identifier: MIT
+
+bootloader --ptable gpt --timeout 3 --append "rootwait console=ttyS0,115200 console=tty0 earlyprintk"
+part /boot --source bootimg-efi-isar --sourceparams "loader=systemd-boot" --label efi --part-type EF00 --align 1024 --use-uuid
+part / --source rootfs --fstype ext4 --exclude-path=install --label installroot --align 1024 --use-uuid
+part /install --source rootfs --change-directory=install --label INSTALLDATA --size 4G --fstype=vfat --use-uuid --align 1024
