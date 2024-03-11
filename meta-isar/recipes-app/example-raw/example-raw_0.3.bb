@@ -9,7 +9,8 @@ DEBIAN_DEPENDS = "adduser, apt (>= 0.4.2)"
 
 SRC_URI = "file://README \
 	   file://postinst \
-	   file://rules"
+	   file://rules \
+	   file://default-copyright"
 
 inherit dpkg-raw
 

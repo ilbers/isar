@@ -120,6 +120,10 @@ deb_debianize() {
 	else
 		deb_create_rules
 	fi
+	# Add the copyright if unpacked sources does not contain copyright file
+	if [ ! -f ${S}/debian/copyright ] && [ -f ${WORKDIR}/default-copyright ]; then
+		install -v -m 644 ${WORKDIR}/default-copyright ${S}/debian/copyright
+	fi
 	# prepend a changelog-entry unless an existing changelog file already
 	# contains an entry with CHANGELOG_V
 	deb_add_changelog
