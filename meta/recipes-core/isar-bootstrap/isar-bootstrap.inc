@@ -15,7 +15,6 @@ PV = "1.0"
 
 BOOTSTRAP_FOR_HOST ?= "0"
 
-DEBOOTSTRAP ?= "qemu-debootstrap"
 ROOTFSDIR = "${WORKDIR}/rootfs"
 APTPREFS = "${WORKDIR}/apt-preferences"
 APTSRCS = "${WORKDIR}/apt-sources"
@@ -23,7 +22,7 @@ APTSRCS_INIT = "${WORKDIR}/apt-sources-init"
 DISTRO_BOOTSTRAP_KEYFILES = ""
 THIRD_PARTY_APT_KEYFILES = ""
 DEPLOY_ISAR_BOOTSTRAP ?= ""
-DISTRO_BOOTSTRAP_BASE_PACKAGES = "locales"
+DISTRO_BOOTSTRAP_BASE_PACKAGES = "locales,usrmerge"
 DISTRO_BOOTSTRAP_BASE_PACKAGES:append:gnupg = ",gnupg"
 DISTRO_BOOTSTRAP_BASE_PACKAGES:append:https-support = ",ca-certificates"
 DISTRO_BOOTSTRAP_BASE_PACKAGES:append:ubuntu = ",apt"
@@ -32,6 +31,8 @@ DISTRO_BOOTSTRAP_BASE_PACKAGES:append:raspios64 = ",apt"
 DISTRO_VARS_PREFIX ?= "${@'HOST_' if bb.utils.to_boolean(d.getVar('BOOTSTRAP_FOR_HOST')) else ''}"
 BOOTSTRAP_DISTRO = "${@d.getVar('HOST_DISTRO' if bb.utils.to_boolean(d.getVar('BOOTSTRAP_FOR_HOST')) else 'DISTRO')}"
 BOOTSTRAP_BASE_DISTRO = "${@d.getVar('HOST_BASE_DISTRO' if bb.utils.to_boolean(d.getVar('BOOTSTRAP_FOR_HOST')) else 'BASE_DISTRO')}"
+BOOTSTRAP_DISTRO_ARCH = "${@d.getVar('HOST_ARCH' if d.getVar('BOOTSTRAP_FOR_HOST') == '1' else 'DISTRO_ARCH')}"
+BOOTSTRAP_TMPDIR = "${WORKDIR}/tempdir"
 FILESEXTRAPATHS:append = ":${BBPATH}"
 
 inherit deb-dl-dir
@@ -42,7 +43,7 @@ python () {
     topdir = d.getVar("TOPDIR")
 
     # The cached repo key can be both for bootstrapping and apt package
-    # installation afterwards. However, debootstrap will include the key into
+    # installation afterwards. However, bootstrap will include the key into
     # the rootfs automatically thus the right place is distro_bootstrap_keys.
 
     if bb.utils.to_boolean(d.getVar('ISAR_USE_CACHED_BASE_REPO')):
@@ -270,7 +271,7 @@ do_bootstrap[vardeps] += " \
     ISAR_ENABLE_COMPAT_ARCH \
     ${DISTRO_VARS_PREFIX}DISTRO_APT_SOURCES \
     "
-do_bootstrap[dirs] = "${DEPLOY_DIR_BOOTSTRAP}"
+do_bootstrap[dirs] = "${DEPLOY_DIR_BOOTSTRAP} ${BOOTSTRAP_TMPDIR}"
 do_bootstrap[depends] = "base-apt:do_cache isar-apt:do_cache_config"
 do_bootstrap[network] = "${TASK_USE_NETWORK_AND_SUDO}"
 
@@ -282,18 +283,30 @@ do_bootstrap() {
             bbfatal "${DISTRO_ARCH} does not have a compat arch"
         fi
     fi
-    debootstrap_args="--verbose --variant=minbase --include=${DISTRO_BOOTSTRAP_BASE_PACKAGES}"
+    bootstrap_args="--verbose --variant=minbase --include=${DISTRO_BOOTSTRAP_BASE_PACKAGES}"
     if [ -f "${DISTRO_BOOTSTRAP_KEYRING}" ]; then
-        debootstrap_args="$debootstrap_args --keyring=${DISTRO_BOOTSTRAP_KEYRING}"
-    fi
-    if [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" -a -z "${BASE_REPO_KEY}" ]; then
-        debootstrap_args="$debootstrap_args --no-check-gpg"
+        bootstrap_args="$bootstrap_args --keyring=${DISTRO_BOOTSTRAP_KEYRING}"
     fi
     E="${@ isar_export_proxies(d)}"
-    export BOOTSTRAP_FOR_HOST debootstrap_args E
+    export BOOTSTRAP_FOR_HOST
 
-    sudo rm -rf --one-file-system "${ROOTFSDIR}"
     deb_dl_dir_import "${ROOTFSDIR}" "${BOOTSTRAP_BASE_DISTRO}-${BASE_DISTRO_CODENAME}"
+    sudo rm -rf --one-file-system "${ROOTFSDIR}"
+    mkdir -p "${ROOTFSDIR}"
+
+    if [ ! -z "${SOURCE_DATE_EPOCH}" ]; then
+        export SOURCE_DATE_EPOCH="${SOURCE_DATE_EPOCH}"
+    fi
+
+    arch_param="--arch=${BOOTSTRAP_DISTRO_ARCH},${DISTRO_ARCH}"
+
+    sudo TMPDIR="${BOOTSTRAP_TMPDIR}" mmdebstrap $bootstrap_args \
+                   $arch_param \
+                   --mode=unshare \
+                   ${@get_distro_components_argument(d)} \
+                   "${@get_distro_suite(d)}" \
+                   "${WORKDIR}/rootfs.tar.zst" \
+                   "${@get_distro_source(d)}"
 
     if [ -n "${SOURCE_DATE_EPOCH}" ]; then
         export SOURCE_DATE_EPOCH="${SOURCE_DATE_EPOCH}"
@@ -301,16 +314,8 @@ do_bootstrap() {
 
     sudo -E -s <<'EOSUDO'
         set -e
-        if [ "${BOOTSTRAP_FOR_HOST}" = "0" ]; then
-            arch_param="--arch=${DISTRO_ARCH}"
-        fi
-        ${DEBOOTSTRAP} $debootstrap_args \
-                       $arch_param \
-                       ${@get_distro_components_argument(d)} \
-                       "${@get_distro_suite(d)}" \
-                       "${ROOTFSDIR}" \
-                       "${@get_distro_source(d)}" \
-                       ${DISTRO_DEBOOTSTRAP_SCRIPT}
+
+        tar -xf "${WORKDIR}/rootfs.tar.zst" -C "${ROOTFSDIR}" --exclude="./dev/console"
 
         # Install apt config
         mkdir -p "${ROOTFSDIR}/etc/apt/preferences.d"
@@ -396,7 +401,7 @@ do_bootstrap() {
         umount -l "${ROOTFSDIR}/sys"
         umount -l "${ROOTFSDIR}/base-apt" || true
 
-        # Finalize debootstrap by setting the link in deploy
+        # Finalize bootstrap by setting the link in deploy
         ln -Tfsr "${ROOTFSDIR}" "${DEPLOY_ISAR_BOOTSTRAP}"
 EOSUDO
     deb_dl_dir_export "${ROOTFSDIR}" "${BOOTSTRAP_BASE_DISTRO}-${BASE_DISTRO_CODENAME}"
@@ -413,19 +418,16 @@ SSTATEPOSTINSTFUNCS += "bootstrap_sstate_finalize"
 
 bootstrap_sstate_prepare() {
     # this runs in SSTATE_BUILDDIR, which will be deleted automatically
-    lopts="--one-file-system --exclude=var/cache/apt/archives"
-    sudo tar -C $(dirname "${ROOTFSDIR}") -cpSf bootstrap.tar $lopts $(basename "${ROOTFSDIR}")
-    sudo chown $(id -u):$(id -g) bootstrap.tar
+    sudo cp -a "$(dirname "${ROOTFSDIR}")/rootfs.tar.zst" ./bootstrap.tar.zst
+    sudo chown $(id -u):$(id -g) bootstrap.tar.zst
 }
 
 bootstrap_sstate_finalize() {
     # this runs in SSTATE_INSTDIR
-    # - after building the bootstrap, the tar won't be there, but we also don't need to unpack
-    # - after restoring from cache, there will be a tar which we unpack and then delete
-    if [ -f bootstrap.tar ]; then
-        sudo tar -C $(dirname "${ROOTFSDIR}") -xpf bootstrap.tar
-        sudo ln -Tfsr "${ROOTFSDIR}" "${DEPLOY_ISAR_BOOTSTRAP}"
-        rm bootstrap.tar
+    if [ -f bootstrap.tar.zst ]; then
+        mv bootstrap.tar.zst "$(dirname "${ROOTFSDIR}")/rootfs.tar.zst"
+        sudo ln -Tfsr "$(dirname "${ROOTFSDIR}")/rootfs.tar.zst" \
+                      "${DEPLOY_ISAR_BOOTSTRAP}.tar.zst"
     fi
 }
 
