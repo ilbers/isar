@@ -22,8 +22,6 @@ DISTRO_BOOTSTRAP_KEYFILES = ""
 THIRD_PARTY_APT_KEYFILES = ""
 DEPLOY_ISAR_BOOTSTRAP ?= ""
 DISTRO_BOOTSTRAP_BASE_PACKAGES = "locales,usrmerge"
-DISTRO_BOOTSTRAP_BASE_PACKAGES:append:gnupg = ",gnupg"
-DISTRO_BOOTSTRAP_BASE_PACKAGES:append:https-support = ",ca-certificates"
 DISTRO_BOOTSTRAP_BASE_PACKAGES:append:ubuntu = ",apt"
 DISTRO_BOOTSTRAP_BASE_PACKAGES:append:raspios = ",apt"
 DISTRO_BOOTSTRAP_BASE_PACKAGES:append:raspios64 = ",apt"
@@ -188,30 +186,6 @@ def get_distro_primary_source_entry(d):
         if source[0] == "deb":
             return source[2:]
     bb.fatal('Invalid apt sources list')
-
-def get_distro_have_https_source(d):
-    return any(source[2].startswith("https://") for source in generate_distro_sources(d))
-
-def get_distro_needs_https_support(d):
-    if get_distro_have_https_source(d):
-        return "https-support"
-    else:
-        return ""
-
-OVERRIDES:append = ":${@get_distro_needs_https_support(d)}"
-
-def get_distro_needs_gpg_support(d):
-    if d.getVar("DISTRO_BOOTSTRAP_KEYS") or \
-       d.getVar("THIRD_PARTY_APT_KEYS") or \
-       d.getVar("BASE_REPO_KEY"):
-        return "gnupg"
-    else:
-        return ""
-
-OVERRIDES:append = ":${@get_distro_needs_gpg_support(d)}"
-
-def get_distro_source(d):
-    return get_distro_primary_source_entry(d)[0]
 
 def get_distro_suite(d):
     return get_distro_primary_source_entry(d)[1]
