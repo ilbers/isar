@@ -132,13 +132,13 @@ if echo "$TAGS" | grep -Fqive "-startvm"; then
 fi
 
 # Provide working path
-mkdir -p .config/avocado
-cat <<EOF > .config/avocado/avocado.conf
+mkdir -p "${BASE_DIR}"
+cat <<EOF > "${BASE_DIR}/avocado.conf"
 [datadir.paths]
-base_dir = $(realpath "${BASE_DIR}")/
-test_dir = $(realpath "${BASE_DIR}")/tests
-data_dir = $(realpath "${BASE_DIR}")/data
-logs_dir = $(realpath "${BASE_DIR}")/job-results
+base_dir = $(realpath -s "${BASE_DIR}")/
+test_dir = $(realpath -s "${BASE_DIR}")/tests
+data_dir = $(realpath -s "${BASE_DIR}")/data
+logs_dir = $(realpath -s "${BASE_DIR}")/job-results
 EOF
 export VIRTUAL_ENV="./"
 
@@ -147,6 +147,6 @@ TESTFILE=$(realpath -s --relative-to=$(pwd) "${TESTSUITE_DIR}/citest.py")
 # the real stuff starts here, trace commands from now on
 set -x
 
-avocado ${VERBOSE} run "${TESTFILE}" \
+avocado ${VERBOSE} --config "${BASE_DIR}/avocado.conf" run "${TESTFILE}" \
     -t "${TAGS}" --max-parallel-tasks=1 --disable-sysinfo \
     ${SSTATE} ${TIMEOUT}
