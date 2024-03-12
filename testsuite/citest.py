@@ -22,7 +22,7 @@ class DevTest(CIBaseTest):
     """
     Developer's test
 
-    :avocado: tags=dev,fast,full
+    :avocado: tags=dev,fast,standard,full
     """
     def test_dev(self):
         targets = [
@@ -76,7 +76,7 @@ class ReproTest(CIBaseTest):
     """
     Test cached base repository
 
-    :avocado: tags=repro,full
+    :avocado: tags=repro,standard,full
     """
     def test_repro_signed(self):
         targets = [
@@ -108,7 +108,7 @@ class CcacheTest(CIBaseTest):
     """
     Test rebuild speed improve with ccache
 
-    :avocado: tags=ccache,full
+    :avocado: tags=ccache,standard,full
     """
     def test_ccache_rebuild(self):
         targets = ['mc:qemuamd64-bullseye:hello-isar']
@@ -120,7 +120,7 @@ class CrossTest(CIBaseTest):
     """
     Start cross build for the defined set of configurations
 
-    :avocado: tags=cross,fast,full
+    :avocado: tags=cross,fast,standard,full
     """
     def test_cross(self):
         targets = [
@@ -153,7 +153,7 @@ class WicTest(CIBaseTest):
     """
     Test creation of wic images
 
-    :avocado: tags=wic,full
+    :avocado: tags=wic,standard,full
     """
     def test_wic_nodeploy_partitions(self):
         targets = ['mc:qemuarm64-bookworm:isar-image-ci']
@@ -170,6 +170,97 @@ class WicTest(CIBaseTest):
         # reuse artifacts
         self.perform_wic_partition_test(targets,
             wic_deploy_parts=True, debsrc_cache=True, compat_arch=False)
+
+class StandardTest(CIBaseTest):
+
+    """
+    Start standard build for the defined set of configurations
+
+    :avocado: tags=standardbase,standard
+    """
+    def test_standard_cross(self):
+        targets = [
+            'mc:qemuarm-buster:isar-image-ci',
+            'mc:qemuarm-bullseye:isar-image-base',
+            'mc:qemuarm64-bullseye:isar-image-ci',
+            'mc:qemui386-buster:isar-image-base',
+            'mc:qemui386-bullseye:isar-image-base',
+            'mc:qemuamd64-buster:isar-image-ci',
+            'mc:qemuamd64-bullseye:isar-initramfs',
+            'mc:qemumipsel-bullseye:isar-image-base',
+            'mc:imx6-sabrelite-bullseye:isar-image-base',
+            'mc:phyboard-mira-bullseye:isar-image-base',
+            'mc:hikey-bullseye:isar-image-base',
+            'mc:virtualbox-bullseye:isar-image-base',
+            'mc:virtualbox-bookworm:isar-image-base',
+            'mc:bananapi-bullseye:isar-image-base',
+            'mc:bananapi-bookworm:isar-image-base',
+            'mc:nanopi-neo-bullseye:isar-image-base',
+            'mc:nanopi-neo-bookworm:isar-image-base',
+            'mc:stm32mp15x-bullseye:isar-image-base',
+            'mc:qemuamd64-focal:isar-image-ci',
+            'mc:qemuamd64-bookworm:isar-image-ci',
+            'mc:qemui386-bookworm:isar-image-base',
+            'mc:qemumipsel-bookworm:isar-image-ci',
+            'mc:hikey-bookworm:isar-image-base',
+            'mc:de0-nano-soc-bookworm:isar-image-base',
+                  ]
+
+        self.init()
+        self.perform_build_test(targets, debsrc_cache=True)
+
+    def test_standard_nocross(self):
+        targets = [
+            'mc:qemumipsel-buster:isar-image-base',
+            'mc:qemuarm-bookworm:isar-image-ci',
+                  ]
+
+        self.init()
+        self.perform_build_test(targets, cross=False)
+
+    def test_standard_rpi(self):
+        targets = [
+            'mc:rpi-arm-bullseye:isar-image-base',
+            'mc:rpi-arm-v7-bullseye:isar-image-base',
+            'mc:rpi-arm-v7l-bullseye:isar-image-base',
+            'mc:rpi-arm64-v8-bullseye:isar-image-base',
+            'mc:rpi-arm-bookworm:isar-image-base',
+            'mc:rpi-arm-v7-bookworm:isar-image-base',
+            'mc:rpi-arm-v7l-bookworm:isar-image-base',
+            'mc:rpi-arm64-v8-bookworm:isar-image-base',
+                  ]
+
+        self.init()
+        try:
+            self.perform_build_test(targets, debsrc_cache=True)
+        except:
+            self.cancel('KFAIL')
+
+    def test_standard_trixie(self):
+        targets = [
+            'mc:qemuamd64-trixie:isar-image-base',
+            'mc:qemuarm64-trixie:isar-image-base',
+            'mc:qemuarm-trixie:isar-image-base',
+                  ]
+
+        self.init()
+        try:
+            self.perform_build_test(targets)
+        except:
+            self.cancel('KFAIL')
+
+    def test_standard_sid(self):
+        targets = [
+            'mc:qemuriscv64-sid:isar-image-base',
+            'mc:sifive-fu540-sid:isar-image-base',
+            'mc:starfive-visionfive2-sid:isar-image-base',
+                  ]
+
+        self.init()
+        try:
+            self.perform_build_test(targets)
+        except:
+            self.cancel('KFAIL')
 
 class NoCrossTest(CIBaseTest):
 
@@ -263,7 +354,7 @@ class ContainerImageTest(CIBaseTest):
     """
     Test containerized images creation
 
-    :avocado: tags=containerbuild,fast,full,container
+    :avocado: tags=containerbuild,fast,standard,full,container
     """
     @skipUnless(UMOCI_AVAILABLE and SKOPEO_AVAILABLE, 'umoci/skopeo not found')
     def test_container_image(self):
@@ -281,7 +372,7 @@ class ContainerSdkTest(CIBaseTest):
     """
     Test SDK container image creation
 
-    :avocado: tags=containersdk,fast,full,container
+    :avocado: tags=containersdk,fast,standard,full,container
     """
     @skipUnless(UMOCI_AVAILABLE and SKOPEO_AVAILABLE, 'umoci/skopeo not found')
     def test_container_sdk(self):
@@ -295,7 +386,7 @@ class SstateTest(CIBaseTest):
     """
     Test builds with artifacts taken from sstate cache
 
-    :avocado: tags=sstate,full
+    :avocado: tags=sstate,standard,full
     """
 
     def test_sstate_populate(self):
@@ -406,7 +497,7 @@ class VmBootTestFull(CIBaseTest):
     """
     Test QEMU image start (full)
 
-    :avocado: tags=startvm,full
+    :avocado: tags=startvm,standard,full
     """
 
     def test_arm_bullseye(self):
