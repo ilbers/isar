@@ -139,6 +139,7 @@ base_dir = $(realpath -s "${BASE_DIR}")/
 test_dir = $(realpath -s "${BASE_DIR}")/tests
 data_dir = $(realpath -s "${BASE_DIR}")/data
 logs_dir = $(realpath -s "${BASE_DIR}")/job-results
+cache_dirs = ["$(realpath -s "${BASE_DIR}")/data/cache"]
 EOF
 export VIRTUAL_ENV="./"
 
