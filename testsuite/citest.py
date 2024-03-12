@@ -115,14 +115,14 @@ class CcacheTest(CIBaseTest):
         self.init()
         self.perform_ccache_test(targets)
 
-class CrossTest(CIBaseTest):
+class FastTest(CIBaseTest):
 
     """
-    Start cross build for the defined set of configurations
+    Start fast build for the defined set of configurations
 
-    :avocado: tags=cross,fast,standard,full
+    :avocado: tags=fastbase,fast,standard,full
     """
-    def test_cross(self):
+    def test_fast(self):
         targets = [
             'mc:qemuarm-buster:isar-image-ci',
             'mc:qemuarm-bullseye:isar-image-ci',
@@ -137,7 +137,7 @@ class CrossTest(CIBaseTest):
         self.init()
         self.perform_build_test(targets, debsrc_cache=True)
 
-    def test_cross_rpi(self):
+    def test_fast_rpi(self):
         targets = [
             'mc:rpi-arm-v7-bullseye:isar-image-base',
                   ]
