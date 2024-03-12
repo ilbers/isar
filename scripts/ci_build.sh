@@ -142,9 +142,11 @@ logs_dir = $(realpath "${BASE_DIR}")/job-results
 EOF
 export VIRTUAL_ENV="./"
 
+TESTFILE=$(realpath -s --relative-to=$(pwd) "${TESTSUITE_DIR}/citest.py")
+
 # the real stuff starts here, trace commands from now on
 set -x
 
-avocado ${VERBOSE} run "${TESTSUITE_DIR}/citest.py" \
+avocado ${VERBOSE} run "${TESTFILE}" \
     -t "${TAGS}" --max-parallel-tasks=1 --disable-sysinfo \
     ${SSTATE} ${TIMEOUT}
