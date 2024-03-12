@@ -17,7 +17,7 @@ try:
 except path.CmdNotFoundError:
     SKOPEO_AVAILABLE = False
 
-class DevTest(CIBaseTest):
+class Dev(CIBaseTest):
 
     """
     Developer's test
@@ -71,7 +71,7 @@ class DevTest(CIBaseTest):
         self.init()
         self.vm_start('arm', 'bullseye', skip_modulecheck=True)
 
-class ReproTest(CIBaseTest):
+class Repro(CIBaseTest):
 
     """
     Test cached base repository
@@ -103,7 +103,7 @@ class ReproTest(CIBaseTest):
         finally:
             self.move_in_build_dir('tmp', 'tmp_repro_unsigned')
 
-class CcacheTest(CIBaseTest):
+class Ccache(CIBaseTest):
 
     """
     Test rebuild speed improve with ccache
@@ -115,7 +115,7 @@ class CcacheTest(CIBaseTest):
         self.init()
         self.perform_ccache_test(targets)
 
-class FastTest(CIBaseTest):
+class Fast(CIBaseTest):
 
     """
     Start fast build for the defined set of configurations
@@ -148,7 +148,7 @@ class FastTest(CIBaseTest):
         except:
             self.cancel('KFAIL')
 
-class WicTest(CIBaseTest):
+class Wic(CIBaseTest):
 
     """
     Test creation of wic images
@@ -171,7 +171,7 @@ class WicTest(CIBaseTest):
         self.perform_wic_partition_test(targets,
             wic_deploy_parts=True, debsrc_cache=True, compat_arch=False)
 
-class StandardTest(CIBaseTest):
+class Standard(CIBaseTest):
 
     """
     Start standard build for the defined set of configurations
@@ -262,7 +262,7 @@ class StandardTest(CIBaseTest):
         except:
             self.cancel('KFAIL')
 
-class FullTest(CIBaseTest):
+class Full(CIBaseTest):
 
     """
     Start full build for the defined set of configurations
@@ -349,7 +349,7 @@ class FullTest(CIBaseTest):
         except:
             self.cancel('KFAIL')
 
-class ContainerImageTest(CIBaseTest):
+class ContainerImage(CIBaseTest):
 
     """
     Test containerized images creation
@@ -367,7 +367,7 @@ class ContainerImageTest(CIBaseTest):
         self.init()
         self.perform_build_test(targets, container=True)
 
-class ContainerSdkTest(CIBaseTest):
+class ContainerSdk(CIBaseTest):
 
     """
     Test SDK container image creation
@@ -381,7 +381,7 @@ class ContainerSdkTest(CIBaseTest):
         self.init()
         self.perform_build_test(targets, bitbake_cmd='do_populate_sdk', container=True)
 
-class SstateTest(CIBaseTest):
+class Sstate(CIBaseTest):
 
     """
     Test builds with artifacts taken from sstate cache
@@ -401,7 +401,7 @@ class SstateTest(CIBaseTest):
         self.init('build-sstate')
         self.perform_sstate_test(image_target, package_target)
 
-class SingleTest(CIBaseTest):
+class Single(CIBaseTest):
 
     """
     Single test for selected target
@@ -423,7 +423,7 @@ class SingleTest(CIBaseTest):
 
         self.vm_start(machine.removeprefix('qemu'), distro)
 
-class SourceTest(CIBaseTest):
+class Source(CIBaseTest):
 
     """
     Source contents test
@@ -439,7 +439,7 @@ class SourceTest(CIBaseTest):
         self.init()
         self.perform_source_test(targets)
 
-class VmBootTestFast(CIBaseTest):
+class VmBootFast(CIBaseTest):
 
     """
     Test QEMU image start (fast)
@@ -492,7 +492,7 @@ class VmBootTestFast(CIBaseTest):
                       script='test_systemd_unit.sh getty.target 10')
 
 
-class VmBootTestFull(CIBaseTest):
+class VmBootFull(CIBaseTest):
 
     """
     Test QEMU image start (full)
