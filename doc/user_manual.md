@@ -907,6 +907,14 @@ The shell function `deb_debianize` creates a `debian` folder. But it will not ov
 
 Have a look at meta-isar/recipes-app/samefile/samefile_2.14.bb and meta/classes/debianize.bbclass for an example and the implementation.
 
+Here ISAR's debianize class generates/adds the following files under debian directory:
+
+ - Create control file if sources does not contain a control file
+ - Create rules file if sources does not contain a rules file
+ - Add the copyright if unpacked sources does not contain copyright file, as well as the recipe should supply the copyright file
+ - Add the changelog and hooks( pre/post/inst/rm ) into the debian directories if WORKDIR contains the files
+
+
 ### Packages without source
 
 If your customization is not about compiling from source there is a second way of creating `deb` packages. That way can be used for cases like:
