@@ -24,7 +24,7 @@ class Dev(CIBaseTest):
 
     :avocado: tags=dev,fast,standard,full
     """
-    def test_dev(self):
+    def test_dev_min(self):
         targets = [
             'mc:qemuamd64-bullseye:isar-image-ci',
             'mc:qemuarm-bullseye:isar-image-base',
@@ -122,7 +122,7 @@ class Fast(CIBaseTest):
 
     :avocado: tags=fastbase,fast,standard,full
     """
-    def test_fast(self):
+    def test_fast_min(self):
         targets = [
             'mc:qemuarm-buster:isar-image-ci',
             'mc:qemuarm-bullseye:isar-image-ci',
@@ -394,7 +394,7 @@ class Sstate(CIBaseTest):
 
         self.perform_sstate_populate(image_target)
 
-    def test_sstate(self):
+    def test_sstate_reuse(self):
         image_target = 'mc:qemuamd64-bullseye:isar-image-base'
         package_target = 'mc:qemuamd64-bullseye:hello'
 
@@ -447,7 +447,7 @@ class VmBootFast(CIBaseTest):
     :avocado: tags=startvm,fast
     """
 
-    def test_arm_bullseye(self):
+    def test_arm_bullseye_base(self):
         self.init()
         self.vm_start('arm','bullseye', image='isar-image-ci', keep=True)
 
@@ -462,7 +462,7 @@ class VmBootFast(CIBaseTest):
                       script='test_systemd_unit.sh getty.target 10')
 
 
-    def test_arm_buster(self):
+    def test_arm_buster_base(self):
         self.init()
         self.vm_start('arm','buster', image='isar-image-ci', keep=True)
 
@@ -477,7 +477,7 @@ class VmBootFast(CIBaseTest):
                       script='test_kernel_module.sh example_module')
 
 
-    def test_arm_bookworm(self):
+    def test_arm_bookworm_base(self):
         self.init()
         self.vm_start('arm','bookworm', image='isar-image-ci', keep=True)
 
@@ -505,7 +505,7 @@ class VmBootFull(CIBaseTest):
         self.vm_start('arm','bullseye')
 
 
-    def test_arm_buster(self):
+    def test_arm_buster_base(self):
         self.init()
         self.vm_start('arm','buster', image='isar-image-ci', keep=True)
 
@@ -520,7 +520,7 @@ class VmBootFull(CIBaseTest):
                       script='test_systemd_unit.sh getty.target 10')
 
 
-    def test_arm64_bullseye(self):
+    def test_arm64_bullseye_base(self):
         self.init()
         self.vm_start('arm64','bullseye', image='isar-image-ci', keep=True)
 
@@ -548,7 +548,7 @@ class VmBootFull(CIBaseTest):
         self.vm_start('amd64', 'buster', True, image='isar-image-ci')
 
 
-    def test_amd64_focal(self):
+    def test_amd64_focal_base(self):
         self.init()
         self.vm_start('amd64','focal', image='isar-image-ci', keep=True)
 
@@ -578,7 +578,7 @@ class VmBootFull(CIBaseTest):
         self.vm_start('i386','bookworm')
 
 
-    def test_mipsel_bookworm(self):
+    def test_mipsel_bookworm_base(self):
         self.init()
         self.vm_start('mipsel','bookworm', image='isar-image-ci', keep=True)
 
