@@ -91,6 +91,7 @@ deb_dl_dir_import() {
     export rootfs="${1}"
     sudo mkdir -p "${rootfs}"/var/cache/apt/archives/
     [ ! -d "${pc}" ] && return 0
+    [ "${ISAR_PREFETCH_BASE_APT}" = "1" ] && return 0
     flock -s "${pc}".lock sudo -Es << 'EOSUDO'
         set -e
         printenv | grep -q BB_VERBOSE_LOGS && set -x
@@ -108,6 +109,7 @@ deb_dl_dir_export() {
     export rootfs="${1}"
     export owner=$(id -u):$(id -g)
     mkdir -p "${pc}"
+    [ "${ISAR_PREFETCH_BASE_APT}" = "1" ] && return 0
     flock "${pc}".lock sudo -Es << 'EOSUDO'
         set -e
         printenv | grep -q BB_VERBOSE_LOGS && set -x
