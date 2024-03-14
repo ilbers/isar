@@ -49,7 +49,8 @@ python () {
     # installation afterwards. However, debootstrap will include the key into
     # the rootfs automatically thus the right place is distro_bootstrap_keys.
 
-    if bb.utils.to_boolean(d.getVar('ISAR_USE_CACHED_BASE_REPO')):
+    if bb.utils.to_boolean(d.getVar('ISAR_PREFETCH_BASE_APT')) or \
+       bb.utils.to_boolean(d.getVar('ISAR_USE_CACHED_BASE_REPO')) :
         own_pub_key = d.getVar("BASE_REPO_KEY")
         if own_pub_key:
             distro_bootstrap_keys += own_pub_key.split()
@@ -123,7 +124,8 @@ def get_apt_source_mirror(d, aptsources_entry_list):
     # this is executed during parsing. No error checking possible
     use_snapshot = bb.utils.to_boolean(d.getVar('ISAR_USE_APT_SNAPSHOT'))
     snapshot_mirror = d.getVar('DISTRO_APT_SNAPSHOT_PREMIRROR')
-    if bb.utils.to_boolean(d.getVar('ISAR_USE_CACHED_BASE_REPO')):
+    if bb.utils.to_boolean(d.getVar('ISAR_PREFETCH_BASE_APT')) or \
+       bb.utils.to_boolean(d.getVar('ISAR_USE_CACHED_BASE_REPO')) :
         premirrors = "\S* file://${REPO_BASE_DIR}/${BOOTSTRAP_BASE_DISTRO}\n"
     elif use_snapshot and snapshot_mirror:
         premirrors = snapshot_mirror
@@ -301,7 +303,8 @@ do_bootstrap() {
     if [ -f "${DISTRO_BOOTSTRAP_KEYRING}" ]; then
         debootstrap_args="$debootstrap_args --keyring=${DISTRO_BOOTSTRAP_KEYRING}"
     fi
-    if [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" -a -z "${BASE_REPO_KEY}" ]; then
+    if [ "${ISAR_PREFETCH_BASE_APT}" = "1" -a -z "${BASE_REPO_KEY}" ] || \
+       [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" -a -z "${BASE_REPO_KEY}" ]; then
         debootstrap_args="$debootstrap_args --no-check-gpg"
     fi
     E="${@ isar_export_proxies(d)}"
@@ -328,7 +331,8 @@ do_bootstrap() {
         install -v -m644 "${APTPREFS}" \
                          "${ROOTFSDIR}/etc/apt/preferences.d/bootstrap"
         mkdir -p "${ROOTFSDIR}/etc/apt/sources.list.d"
-        if [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" ]; then
+        if [ "${ISAR_PREFETCH_BASE_APT}" = "1" ] || \
+           [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" ]; then
             line="file:///base-apt/${BOOTSTRAP_BASE_DISTRO} ${BASE_DISTRO_CODENAME} main"
             if [ -z "${BASE_REPO_KEY}" ]; then
                 line="[trusted=yes] ${line}"
