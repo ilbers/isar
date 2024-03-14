@@ -262,14 +262,14 @@ class StandardTest(CIBaseTest):
         except:
             self.cancel('KFAIL')
 
-class NoCrossTest(CIBaseTest):
+class FullTest(CIBaseTest):
 
     """
-    Start non-cross build for the defined set of configurations
+    Start full build for the defined set of configurations
 
-    :avocado: tags=nocross,full
+    :avocado: tags=fullbase,full
     """
-    def test_nocross(self):
+    def test_full_nocross(self):
         targets = [
             'mc:qemuarm-buster:isar-image-ci',
             'mc:qemuarm-bullseye:isar-image-base',
@@ -302,10 +302,10 @@ class NoCrossTest(CIBaseTest):
 
         self.init()
         # Cleanup after cross build
-        self.move_in_build_dir('tmp', 'tmp_before_nocross')
+        self.move_in_build_dir('tmp', 'tmp_before_full_nocross')
         self.perform_build_test(targets, cross=False, debsrc_cache=True)
 
-    def test_nocross_rpi(self):
+    def test_full_rpi(self):
         targets = [
             'mc:rpi-arm-bullseye:isar-image-base',
             'mc:rpi-arm-v7-bullseye:isar-image-base',
@@ -323,7 +323,7 @@ class NoCrossTest(CIBaseTest):
         except:
             self.cancel('KFAIL')
 
-    def test_nocross_trixie(self):
+    def test_full_trixie(self):
         targets = [
             'mc:qemuamd64-trixie:isar-image-base',
             'mc:qemuarm64-trixie:isar-image-base',
@@ -336,7 +336,7 @@ class NoCrossTest(CIBaseTest):
         except:
             self.cancel('KFAIL')
 
-    def test_nocross_sid(self):
+    def test_full_sid(self):
         targets = [
             'mc:qemuriscv64-sid:isar-image-base',
             'mc:sifive-fu540-sid:isar-image-base',
