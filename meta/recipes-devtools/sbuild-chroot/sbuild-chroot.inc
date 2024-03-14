@@ -8,6 +8,17 @@ LIC_FILES_CHKSUM = "file://${LAYERDIR_core}/licenses/COPYING.GPLv2;md5=751419260
 
 PV = "1.0"
 
+python __anonymous() {
+    distro_arch = d.getVar('DISTRO_ARCH')
+    host_arch = d.getVar('HOST_ARCH')
+    variant = d.getVar('SBUILD_VARIANT', True)
+
+    if variant == "target" or host_arch ==  distro_arch:
+        d.setVar('DEBREPO_WORKDIR', d.getVar('DEBREPO_TARGET_DIR', True))
+    else:
+        d.setVar('DEBREPO_WORKDIR', d.getVar('DEBREPO_HOST_DIR', True))
+}
+
 inherit rootfs
 inherit compat
 
