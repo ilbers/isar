@@ -11,6 +11,7 @@ inherit terminal
 inherit repository
 inherit deb-dl-dir
 inherit essential
+inherit debrepo
 
 python __anonymous() {
     distro_arch = d.getVar('DISTRO_ARCH')
@@ -125,6 +126,14 @@ do_apt_fetch() {
     trap 'exit 1' INT HUP QUIT TERM ALRM USR1
     trap 'schroot_cleanup' EXIT
 
+    debrepo_add_packages --srcmode "${DEBREPO_TARGET_DIR}" "${SRC_APT}"
+    if [ "${ISAR_PREFETCH_BASE_APT}" = "1" ]; then
+        flock -x "${REPO_BASE_DIR}/repo.lock" -c "
+        schroot -r -c ${session_id} -d / -u root -- \
+            sh -c 'apt-get -y update -o Dir::Etc::SourceList=\"sources.list.d/base-apt.list\" -o Dir::Etc::SourceParts=\"-\" '
+        "
+    fi
+
     schroot -r -c ${session_id} -d / -u root -- \
         rm /etc/apt/sources.list.d/isar-apt.list /etc/apt/preferences.d/isar-apt
     schroot -r -c ${session_id} -d / -- \
@@ -147,18 +156,31 @@ do_apt_fetch[network] = "${TASK_USE_NETWORK_AND_SUDO}"
 
 # Add dependency from the correct schroot: host or target
 do_apt_fetch[depends] += "${SCHROOT_DEP}"
+# Debrepo context is created by target bootstrap, need this dependency too
+do_apt_fetch[depends] += "isar-bootstrap-target:do_bootstrap"
 
 do_apt_unpack() {
     rm -rf ${S}
     schroot_create_configs
 
+    session_id=$(schroot -b -c ${SBUILD_CHROOT})
+    echo "Started session: ${session_id}"
+
     schroot_cleanup() {
+        schroot -q -f -e -c ${session_id} > /dev/null 2>&1
         schroot_delete_configs
     }
     trap 'exit 1' INT HUP QUIT TERM ALRM USR1
     trap 'schroot_cleanup' EXIT
 
-    schroot -d / -c ${SBUILD_CHROOT} -- \
+    if [ "${ISAR_PREFETCH_BASE_APT}" = "1" ]; then
+        flock -x "${REPO_BASE_DIR}/repo.lock" -c "
+        schroot -r -c ${session_id} -d / -u root -- \
+            sh -c 'apt-get -y update -o Dir::Etc::SourceList=\"sources.list.d/base-apt.list\" -o Dir::Etc::SourceParts=\"-\" '
+        "
+    fi
+
+    schroot -r -c ${session_id} -d / -- \
         sh -c '
             set -e
             for uri in $2; do
@@ -168,6 +190,9 @@ do_apt_unpack() {
                 dpkg-source -x "${dscfile}" "${PPS}"
             done' \
                 my_script "${BASE_DISTRO}-${BASE_DISTRO_CODENAME}" "${SRC_APT}"
+
+    # End chroot session
+    schroot -e -c ${session_id}
     schroot_delete_configs
 }
 do_apt_unpack[network] = "${TASK_USE_SUDO}"

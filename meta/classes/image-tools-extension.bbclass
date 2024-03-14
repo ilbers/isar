@@ -6,6 +6,7 @@
 # This file extends the image.bbclass to supply tools for futher imager functions
 
 inherit sbuild
+inherit debrepo
 
 IMAGER_INSTALL ??= ""
 IMAGER_BUILD_DEPS ??= ""
@@ -40,12 +41,20 @@ imager_run() {
         echo "Installing imager deps: ${local_install}"
 
         distro="${BASE_DISTRO}-${BASE_DISTRO_CODENAME}"
+        debrepo_workdir=${DEBREPO_TARGET_DIR}
         if [ ${ISAR_CROSS_COMPILE} -eq 1 ]; then
             distro="${HOST_BASE_DISTRO}-${BASE_DISTRO_CODENAME}"
+            if [ ${HOST_ARCH} != ${DISTRO_ARCH} ]; then
+                debrepo_workdir=${DEBREPO_HOST_DIR}
+            fi
         fi
 
         E="${@ isar_export_proxies(d)}"
         deb_dl_dir_import ${schroot_dir} ${distro}
+
+        debrepo_add_packages --isarapt "${debrepo_workdir}" "${IMAGER_INSTALL}"
+        debrepo_update_apt_source_list "${schroot_dir}" "base-apt"
+
         schroot -r -c ${session_id} -d / -u root -- sh -c " \
             apt-get update \
                 -o Dir::Etc::SourceList='sources.list.d/isar-apt.list' \

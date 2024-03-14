@@ -6,6 +6,8 @@
 # This class extends the image.bbclass for setting locales and purging unneeded
 # ones.
 
+inherit debrepo
+
 LOCALE_GEN ?= "en_US.UTF-8 UTF-8\n\
                en_US ISO-8859-1\n"
 LOCALE_DEFAULT ?= "en_US.UTF-8"
@@ -29,6 +31,9 @@ ROOTFS_INSTALL_COMMAND_BEFORE_EXPORT += "image_install_localepurge_download"
 image_install_localepurge_download[weight] = "40"
 image_install_localepurge_download[network] = "${TASK_USE_NETWORK_AND_SUDO}"
 image_install_localepurge_download() {
+    debrepo_add_packages "${DEBREPO_WORKDIR}" "localepurge"
+    debrepo_update_apt_source_list "${ROOTFSDIR}" "base-apt"
+
     sudo -E chroot '${ROOTFSDIR}' \
         /usr/bin/apt-get ${ROOTFS_APT_ARGS} --download-only localepurge
 }
