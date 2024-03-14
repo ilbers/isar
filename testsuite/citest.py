@@ -487,6 +487,11 @@ class VmBootFast(CIBaseTest):
                       script='test_systemd_unit.sh getty.target 10')
 
 
+    def test_arm64_focal(self):
+        self.init()
+        self.vm_start('arm64', 'focal', image='isar-image-base')
+
+
 class VmBootFull(CIBaseTest):
 
     """
@@ -515,12 +520,27 @@ class VmBootFull(CIBaseTest):
         self.vm_start('i386','buster')
 
 
+    def test_i386_bullseye(self):
+        self.init()
+        self.vm_start('i386', 'bullseye')
+
+
     def test_amd64_buster(self):
         self.init()
         # test efi boot
         self.vm_start('amd64','buster', image='isar-image-ci')
         # test pcbios boot
         self.vm_start('amd64', 'buster', True, image='isar-image-ci')
+
+
+    def test_mipsel_bullseye(self):
+        self.init()
+        self.vm_start('mipsel', 'bullseye')
+
+
+    def test_mipsel_buster(self):
+        self.init()
+        self.vm_start('mipsel', 'buster')
 
 
     def test_amd64_focal_base(self):
