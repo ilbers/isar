@@ -57,9 +57,12 @@ repo() {
         "${BASE_DISTRO_CODENAME}" \
         "${WORKDIR}/distributions.in" \
         "${KEYFILES}"
-    populate_base_apt "${BASE_DISTRO}"
-    repo_sanity_test "${REPO_BASE_DIR}"/"${BASE_DISTRO}" \
-        "${REPO_BASE_DB_DIR}"/"${BASE_DISTRO}"
+    if [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" ] && \
+       [ "${ISAR_PREFETCH_BASE_APT}" != "1" ]; then
+        populate_base_apt "${BASE_DISTRO}"
+        repo_sanity_test "${REPO_BASE_DIR}"/"${BASE_DISTRO}" \
+            "${REPO_BASE_DB_DIR}"/"${BASE_DISTRO}"
+    fi
 
     if [ '${BASE_DISTRO}' != '${HOST_BASE_DISTRO}' ]; then
         repo_create "${REPO_BASE_DIR}"/"${HOST_BASE_DISTRO}" \
@@ -67,14 +70,18 @@ repo() {
             "${BASE_DISTRO_CODENAME}" \
             "${WORKDIR}/distributions.in" \
             "${KEYFILES}"
-        populate_base_apt "${HOST_BASE_DISTRO}"
-        repo_sanity_test "${REPO_BASE_DIR}"/"${HOST_BASE_DISTRO}" \
-            "${REPO_BASE_DB_DIR}"/"${HOST_BASE_DISTRO}"
+        if [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" ] && \
+           [ "${ISAR_PREFETCH_BASE_APT}" != "1" ]; then
+            populate_base_apt "${HOST_BASE_DISTRO}"
+            repo_sanity_test "${REPO_BASE_DIR}"/"${HOST_BASE_DISTRO}" \
+                "${REPO_BASE_DB_DIR}"/"${HOST_BASE_DISTRO}"
+        fi
     fi
 }
 
 python do_cache() {
-    if not bb.utils.to_boolean(d.getVar('ISAR_USE_CACHED_BASE_REPO')):
+    if not bb.utils.to_boolean(d.getVar('ISAR_PREFETCH_BASE_APT')) and \
+       not bb.utils.to_boolean(d.getVar('ISAR_USE_CACHED_BASE_REPO')):
         return 0
 
     for key in d.getVar('BASE_REPO_KEY').split():
