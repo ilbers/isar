@@ -33,6 +33,13 @@ DISTRO_BOOTSTRAP_BASE_PACKAGES:append:https-support = ",ca-certificates"
 DISTRO_VARS_PREFIX ?= "${@'HOST_' if bb.utils.to_boolean(d.getVar('BOOTSTRAP_FOR_HOST')) else ''}"
 BOOTSTRAP_DISTRO = "${@d.getVar('HOST_DISTRO' if bb.utils.to_boolean(d.getVar('BOOTSTRAP_FOR_HOST')) else 'DISTRO')}"
 BOOTSTRAP_BASE_DISTRO = "${@d.getVar('HOST_BASE_DISTRO' if bb.utils.to_boolean(d.getVar('BOOTSTRAP_FOR_HOST')) else 'BASE_DISTRO')}"
+BOOTSTRAP_DISTRO_ARCH = "${@d.getVar('HOST_ARCH' if d.getVar('BOOTSTRAP_FOR_HOST') == '1' else 'DISTRO_ARCH')}"
+
+# For newer distros "usr-is-merged" indirectly required by debootstrap
+DISTRO_BOOTSTRAP_BASE_PACKAGES:append:bookworm = ",usr-is-merged"
+DISTRO_BOOTSTRAP_BASE_PACKAGES:append:sid = ",usr-is-merged"
+DISTRO_BOOTSTRAP_BASE_PACKAGES:append:sid-ports = ",usr-is-merged"
+
 FILESEXTRAPATHS:append = ":${BBPATH}"
 # reproducible builds, only enabled if ISAR_USE_APT_SNAPSHOT
 ISAR_APT_SNAPSHOT_MIRROR ??= ""
@@ -293,12 +300,63 @@ do_bootstrap[network] = "${TASK_USE_NETWORK_AND_SUDO}"
 
 inherit compat
 
+inherit debrepo
+
+debrepo_bootstrap_prepare() {
+    [ "${ISAR_PREFETCH_BASE_APT}" != "1" ] && return
+    [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" ] && return
+
+    debrepo_args=""
+    if [ "${BASE_DISTRO}" != "debian" ]; then
+        if [ "${BASE_DISTRO}" != "raspbian" ] && [ "${BASE_DISTRO}" != "raspios" ] || [ "${BOOTSTRAP_FOR_HOST}" = "0" ]; then
+            debrepo_args="$debrepo_args --keydir=${WORKDIR}"
+        fi
+    else
+        if [ "${BASE_DISTRO_CODENAME}" = "sid" ]; then
+            debrepo_args="$debrepo_args --keydir=${WORKDIR}"
+        fi
+    fi
+    if [ "${ISAR_ENABLE_COMPAT_ARCH}" = "1" ]; then
+        debrepo_args="$debrepo_args --compatarch=${COMPAT_DISTRO_ARCH}"
+    fi
+
+    debrepo_workdir=${DEBREPO_TARGET_DIR}
+    if [ "${BOOTSTRAP_FOR_HOST}" = "1" ]; then
+        debrepo_args="$debrepo_args --crossarch=${DISTRO_ARCH}"
+        if [ ${HOST_ARCH} != ${DISTRO_ARCH} ]; then
+            debrepo_workdir=${DEBREPO_HOST_DIR}
+        fi
+    fi
+    mkdir -p "${debrepo_workdir}"
+
+    if [ -n "${GNUPGHOME}" ]; then
+        export GNUPGHOME="${GNUPGHOME}"
+    fi
+
+    flock -x "${debrepo_workdir}/repo.lock" -c "
+        ${SCRIPTSDIR}/debrepo --init \
+            --workdir=\"${debrepo_workdir}\" \
+            --aptsrcsfile=\"${APTSRCS_INIT}\" \
+            --repodir=\"${REPO_BASE_DIR}\" \
+            --repodbdir=\"${REPO_BASE_DB_DIR}\" \
+            --mirror=\"${@get_distro_source(d)}\" \
+            --arch=\"${BOOTSTRAP_DISTRO_ARCH}\" \
+            --distro=\"${BOOTSTRAP_BASE_DISTRO}\" \
+            --codename=\"${BASE_DISTRO_CODENAME}\" \
+            ${debrepo_args} \
+            ${DISTRO_BOOTSTRAP_BASE_PACKAGES}
+    "
+}
+
 do_bootstrap() {
     if [ "${ISAR_ENABLE_COMPAT_ARCH}" = "1" ]; then
         if [ -z "${COMPAT_DISTRO_ARCH}" ]; then
             bbfatal "${DISTRO_ARCH} does not have a compat arch"
         fi
     fi
+
+    debrepo_bootstrap_prepare
+
     debootstrap_args="--verbose --variant=minbase --include=${DISTRO_BOOTSTRAP_BASE_PACKAGES}"
     if [ -f "${DISTRO_BOOTSTRAP_KEYRING}" ]; then
         debootstrap_args="$debootstrap_args --keyring=${DISTRO_BOOTSTRAP_KEYRING}"
@@ -320,8 +378,19 @@ do_bootstrap() {
     sudo -E -s <<'EOSUDO'
         set -e
         if [ "${BOOTSTRAP_FOR_HOST}" = "0" ]; then
-            arch_param="--arch=${DISTRO_ARCH}"
+            arch_param="--arch=${BOOTSTRAP_DISTRO_ARCH}"
         fi
+        if [ "${ISAR_PREFETCH_BASE_APT}" = "1" ]; then
+            flock -x "${REPO_BASE_DIR}/repo.lock" -c "
+                ${DEBOOTSTRAP} $debootstrap_args \
+                            $arch_param \
+                            ${@get_distro_components_argument(d)} \
+                            ${@get_distro_suite(d)} \
+                            ${ROOTFSDIR} \
+                            file://${REPO_BASE_DIR}/${BOOTSTRAP_BASE_DISTRO} \
+                            ${DISTRO_DEBOOTSTRAP_SCRIPT}
+            "
+        else
         ${DEBOOTSTRAP} $debootstrap_args \
                        $arch_param \
                        ${@get_distro_components_argument(d)} \
@@ -329,7 +398,7 @@ do_bootstrap() {
                        "${ROOTFSDIR}" \
                        "${@get_distro_source(d)}" \
                        ${DISTRO_DEBOOTSTRAP_SCRIPT}
-
+        fi
         # Install apt config
         mkdir -p "${ROOTFSDIR}/etc/apt/preferences.d"
         install -v -m644 "${APTPREFS}" \
@@ -401,12 +470,21 @@ do_bootstrap() {
         if [ "${ISAR_ENABLE_COMPAT_ARCH}" = "1" ]; then
             chroot "${ROOTFSDIR}" /usr/bin/dpkg --add-architecture ${COMPAT_DISTRO_ARCH}
         fi
-
-        chroot "${ROOTFSDIR}" /usr/bin/apt-get update -y \
-                                -o APT::Update::Error-Mode=any
-        chroot "${ROOTFSDIR}" /usr/bin/apt-get install -y -f
-        chroot "${ROOTFSDIR}" /usr/bin/apt-get dist-upgrade -y \
-                                -o Debug::pkgProblemResolver=yes
+        if [ "${ISAR_PREFETCH_BASE_APT}" = "1" ]; then
+            flock -x "${REPO_BASE_DIR}/repo.lock" -c "
+                chroot ${ROOTFSDIR} /usr/bin/apt-get update -y \
+                                        -o APT::Update::Error-Mode=any
+                chroot ${ROOTFSDIR} /usr/bin/apt-get install -y -f
+                chroot ${ROOTFSDIR} /usr/bin/apt-get dist-upgrade -y \
+                                        -o Debug::pkgProblemResolver=yes
+            "
+        else
+            chroot ${ROOTFSDIR} /usr/bin/apt-get update -y \
+                                    -o APT::Update::Error-Mode=any
+            chroot ${ROOTFSDIR} /usr/bin/apt-get install -y -f
+            chroot ${ROOTFSDIR} /usr/bin/apt-get dist-upgrade -y \
+                                    -o Debug::pkgProblemResolver=yes
+        fi
 
         umount -l "${ROOTFSDIR}/dev/shm"
         umount -l "${ROOTFSDIR}/dev/pts"
