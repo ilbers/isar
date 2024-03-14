@@ -12,6 +12,17 @@ inherit repository
 inherit deb-dl-dir
 inherit essential
 
+python __anonymous() {
+    distro_arch = d.getVar('DISTRO_ARCH')
+    host_arch = d.getVar('HOST_ARCH')
+    cross = d.getVar('ISAR_CROSS_COMPILE', True)
+
+    if cross == "0" or host_arch == distro_arch:
+        d.setVar('DEBREPO_WORKDIR', d.getVar('DEBREPO_TARGET_DIR', True))
+    else:
+        d.setVar('DEBREPO_WORKDIR', d.getVar('DEBREPO_HOST_DIR', True))
+}
+
 DEPENDS ?= ""
 RPROVIDES ?= "${PROVIDES}"
 
