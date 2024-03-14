@@ -18,12 +18,6 @@ inherit dpkg
 
 SRC_URI += "file://debian/"
 
-python() {
-    if d.getVar('BUILD_DEPENDS'):
-        bb.warn("u-boot-custom: Deprecated use of BUILD_DEPENDS, please switch to DEBIAN_BUILD_DEPENDS")
-        d.setVar('DEBIAN_BUILD_DEPENDS', d.getVar('BUILD_DEPENDS'))
-}
-
 DEBIAN_BUILD_DEPENDS ?= "bc, bison, flex, device-tree-compiler, git"
 
 U_BOOT_BIN_INSTALL ?= "${U_BOOT_BIN}"
