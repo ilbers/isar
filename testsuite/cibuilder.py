@@ -105,6 +105,9 @@ class CIBuilder(Test):
         # get parameters from environment
         distro_apt_premir = os.getenv('DISTRO_APT_PREMIRRORS')
 
+        # get prefetch base apt mode from environment
+        prefetch_base_apt = os.getenv('ISAR_PREFETCH_BASE_APT')
+
         self.log.info(f'===================================================\n'
                       f'Configuring build_dir {self.build_dir}\n'
                       f'  compat_arch = {compat_arch}\n'
@@ -122,6 +125,7 @@ class CIBuilder(Test):
                       f'  sstate_dir = {sstate_dir}\n'
                       f'  ccache_dir = {ccache_dir}\n'
                       f'  image_install = {image_install}\n'
+                      f'  prefetch_base_apt = {prefetch_base_apt}\n'
                       f'===================================================')
 
         # determine bitbake_args
@@ -169,7 +173,9 @@ class CIBuilder(Test):
             if sstate_dir:
                 f.write('SSTATE_DIR = "%s"\n' % sstate_dir)
             if image_install is not None:
-                f.write('IMAGE_INSTALL = "%s"' % image_install)
+                f.write('IMAGE_INSTALL = "%s"\n' % image_install)
+            if prefetch_base_apt == "0":
+                f.write('ISAR_PREFETCH_BASE_APT = "0"\n')
 
         # include ci_build.conf in local.conf
         with open(self.build_dir + '/conf/local.conf', 'r+') as f:

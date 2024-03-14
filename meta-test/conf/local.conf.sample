@@ -34,6 +34,9 @@ IMAGE_INSTALL = "hello-isar example-raw example-module-${KERNEL_NAME} enable-fsc
 IMAGE_INSTALL:remove:qemuamd64-sb = "example-module-${KERNEL_NAME}"
 IMAGE_INSTALL:append:qemuamd64-sb = " example-module-signed-${KERNEL_NAME}"
 
+# Use new base-apt behaviour
+ISAR_PREFETCH_BASE_APT ?= "1"
+
 # Users and groups
 USERS += "root"
 USER_root[password] ??= "$6$rounds=10000$RXeWrnFmkY$DtuS/OmsAS2cCEDo0BF5qQsizIrq6jPgXnwv3PHqREJeKd1sXdHX/ayQtuQWVDHe0KIO0/sVH8dvQm1KthF0d/"
