@@ -22,7 +22,7 @@ class Dev(CIBaseTest):
     """
     Developer's test
 
-    :avocado: tags=dev,fast,standard,full
+    :avocado: tags=dev
     """
     def test_dev_min(self):
         targets = [
@@ -115,7 +115,7 @@ class Fast(CIBaseTest):
     """
     Start fast build for the defined set of configurations
 
-    :avocado: tags=fastbase,fast,standard,full
+    :avocado: tags=fastbase,fast
     """
     def test_fast_min(self):
         targets = [
@@ -370,7 +370,7 @@ class ContainerImage(CIBaseTest):
     """
     Test containerized images creation
 
-    :avocado: tags=containerbuild,fast,standard,full,container
+    :avocado: tags=containerbuild,fast,container
     """
     @skipUnless(UMOCI_AVAILABLE and SKOPEO_AVAILABLE, 'umoci/skopeo not found')
     def test_container_image(self):
@@ -388,7 +388,7 @@ class ContainerSdk(CIBaseTest):
     """
     Test SDK container image creation
 
-    :avocado: tags=containersdk,fast,standard,full,container
+    :avocado: tags=containersdk,fast,container
     """
     @skipUnless(UMOCI_AVAILABLE and SKOPEO_AVAILABLE, 'umoci/skopeo not found')
     def test_container_sdk(self):
