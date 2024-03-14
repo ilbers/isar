@@ -157,3 +157,16 @@ config KAS_INCLUDE_CACHE_DEB_SRC
 	string
 	default "kas/opt/cache-deb-src.yaml"
 	depends on CACHE_DEB_SRC
+
+
+config PREFETCH_BASE_APT
+	bool "Prefetch base-apt repo"
+	default y
+	help
+	  This makse Isar always take packages from base-apt repository where they
+	  are prefetched by debrepo script before requested.
+
+config KAS_INCLUDE_PREFETCH_BASE_APT
+	string
+	default "kas/opt/prefetch-base-apt.yaml"
+	depends on PREFETCH_BASE_APT
