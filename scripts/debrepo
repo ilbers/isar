@@ -1,0 +1,571 @@
+#!/usr/bin/env python3
+
+"""
+# This software is a part of Isar.
+# Copyright (C) 2024 ilbers GmbH
+
+# debrepo: build Debian-like repo using "python3-apt" library.
+
+When building the image, Isar downloads required Debian packages from external
+mirrors. After build completed, it can pick all downloaded packages from DL_DIR
+and build local 'base-apt' Debian-like repo from them.
+
+This tool allows to download packages and create local repo in advance. So,
+Isar just uses this local repository and does not interact with external
+mirrors. Such approach makes deb-dl import/export functionality redundant.
+
+Script `debrepo` works in so-called "context" directory. It means some
+rootfs-like directory with bare minimum of directories/files required for
+python3-apt to work.
+
+Context directory path is passed with "--workdir <dir>" command-line option.
+On context creating, all passed parameters are stored in the context directory
+and picked every time the context is used again.
+
+1. Repo for building Debian system
+```
+debrepo --workdir=d12 --init locales gnupg
+```
+Initialize the context in "d12" directory and create a repository in
+"d12/repo/apt" directory sufficient to debootstrap default system
+(e.g., debian-bookworm-amd64). Additionally, packages "locales" and "gnupg"
+with all their dependencies will be available in this repo.
+
+```
+debrepo --workdir=d12 docbook-to-man
+```
+Adds "docbook-to-man" packages with its dependencies to earlier created repo.
+
+```
+debrepo --workdir=d12 --srcmode docbook-to-man
+```
+Downloads source package for "docbook-to-man" and adds it to the repo
+
+2. Repo for building Ubuntu system
+```
+debrepo --init --workdir=uf \
+--distro=ubuntu --codename=focal --arch=arm64 \
+--aptsrcsfile=/work/isar/meta-isar/conf/distro/ubuntu-focal-ports.list \
+--repodir=repo/apt --repodbdir=repo/db \
+--mirror=http://ports.ubuntu.com/ubuntu-ports \
+locales gnupg
+```
+Initialize the context in "uf" directory and create a repository in "repo/apt"
+directory sufficient deboostraup ubuntu-focal arm64 system. Mirror to use and
+source list are specified by corresponding arguments. Packages "locales" and
+" gnupg" with the dependencies will be also placed to the repo.
+
+```
+debrepo --workdir=uf gnupg,locales
+```
+Add "gnupg" and "locales" packages with their dependencies to earlier created
+ubuntu repo. Other parameters (distro, codename, arch) are ommited since they
+are picked from the context.
+
+3. Repo for cross-building Debian system
+```
+debrepo  --init --workdir=d11 --codename=bullseye--arch=amd64 --crossarch=armhf
+```
+Initialize the context in "d11" directory sufficient to deboostrap Debian
+Bullseye (amd64) with foreign "armhf" architecture support
+
+```
+debrepo --workdir=d11 gcc
+```
+Add "gcc" package (amd64 version) to earlier created repo.
+
+```
+debrepo --workdir=d11 --crossbuild gcc
+```
+Add "gcc" package (armhf version) to earlier created repo.
+"""
+
+import os
+import sys
+import fcntl
+
+import argparse
+import shutil
+import subprocess
+import pickle
+import urllib.parse
+
+import apt_pkg
+import apt.progress.base
+
+
+class DebRepo(object):
+    class DebRepoCtx(object):
+        def __init__(self, workdir):
+            self.distro = "debian"
+            self.codename = "bullseye"
+            self.arch = "amd64"
+            self.mirror = "http://deb.debian.org/debian"
+
+            self.repodir = f"{workdir}/repo/apt"
+            self.repodbdir = f"{workdir}/repo/db"
+
+            self.crossarch = self.arch
+            self.compatarch = None
+            self.keydir = "/etc/apt/trusted.gpg.d"
+
+    def __init__(self, args):
+        self.workdir = os.path.abspath(args.workdir)
+        os.makedirs(self.workdir, exist_ok=True)
+        self.ctx = self.DebRepoCtx(self.workdir)
+
+        self.cache = None
+        self.depcache = None
+        self.sr = None
+        self.extrarepo = None
+
+        self.ctx_load()
+        self.ctx_update(args)
+        self.ctx_save()
+
+        print(
+            f"ctx workdir:   {self.workdir}\n"
+            f"  distro:      {self.ctx.distro}\n"
+            f"  codename:    {self.ctx.codename}\n"
+            f"  arch:        {self.ctx.arch}\n"
+            f"  mirror:      {self.ctx.mirror}\n"
+            f"  repodir:     {self.ctx.repodir}\n"
+            f"  repodbdir:   {self.ctx.repodbdir}\n"
+            f"  crossarch:   {self.ctx.crossarch}\n"
+            f"  compatarch:  {self.ctx.compatarch}\n"
+            f"  keydir:      {self.ctx.keydir}"
+            )
+
+        if args.extrarepo:
+            self.extrarepo = os.path.abspath(args.extrarepo)
+
+    def ctx_load(self):
+        ctxfile = f"{self.workdir}/debrepo.ctx"
+
+        if os.path.isfile(ctxfile):
+            with open(ctxfile, 'rb') as f:
+                self.ctx = pickle.load(f)
+
+    def ctx_save(self):
+        ctxfile = f"{self.workdir}/debrepo.ctx"
+
+        with open(ctxfile, 'wb') as f:
+            pickle.dump(self.ctx, f)
+
+    def ctx_update(self, args):
+        if args.distro:
+            self.ctx.distro = args.distro
+        if args.codename:
+            self.ctx.codename = args.codename
+        if args.arch:
+            self.ctx.arch = args.arch
+        if args.mirror:
+            self.ctx.mirror = args.mirror
+
+        if args.repodir:
+            self.ctx.repodir = os.path.abspath(args.repodir)
+        if args.repodbdir:
+            self.ctx.repodbdir = os.path.abspath(args.repodbdir)
+
+        if args.crossarch:
+            self.ctx.crossarch = args.crossarch
+        if args.compatarch:
+            self.ctx.compatarch = args.compatarch
+        if args.keydir:
+            self.ctx.keydir = args.keydir
+
+    def create_rootfs(self, aptsrcsfile):
+        os.makedirs(f"{self.workdir}/var/lib/dpkg", exist_ok=True)
+        with open(f"{self.workdir}/var/lib/dpkg/status", "w"):
+            pass
+
+        os.makedirs(f"{self.workdir}/etc/apt/sources.list.d", exist_ok=True)
+
+        srcfile = f"{self.workdir}/etc/apt/sources.list.d/bootstrap.list"
+        if aptsrcsfile and os.path.exists(aptsrcsfile):
+            shutil.copy(aptsrcsfile, srcfile)
+        else:
+            with open(srcfile, "w") as f:
+                repo = f"{self.ctx.mirror} {self.ctx.codename} main"
+                f.write(f"deb {repo}\n")
+                f.write(f"deb-src {repo}\n")
+
+        dir_cache = f"../apt_cache/{self.ctx.distro}-{self.ctx.codename}"
+        os.makedirs(f"{self.workdir}/{dir_cache}/archives/partial",
+                    exist_ok=True)
+
+        os.makedirs(f"{self.workdir}/tmp", exist_ok=True)
+
+    def create_repo_dist(self):
+        conf_dir = f"{self.ctx.repodir}/{self.ctx.distro}/conf"
+        os.makedirs(conf_dir, exist_ok=True)
+        if not os.path.exists(f"{conf_dir}/distributions"):
+            with open(f"{conf_dir}/distributions", "w") as f:
+                f.write(f"Codename: {self.ctx.codename}\n")
+                f.write(
+                    "Architectures: "
+                    "i386 armhf arm64 amd64 mipsel riscv64 source\n")
+                f.write("Components: main\n")
+
+    def apt_config(self, init, crossbuild):
+        # Configure apt to work with empty directory
+        if not init and self.ctx.arch != self.ctx.crossarch:
+            apt_pkg.config["APT::Architectures::"] = self.ctx.crossarch
+            apt_pkg.config["APT::Architectures::"] = self.ctx.arch
+
+        if not init and self.ctx.compatarch:
+            apt_pkg.config["APT::Architectures::"] = self.ctx.compatarch
+
+        apt_pkg.config.set("APT::Architecture", self.ctx.arch)
+
+        apt_pkg.config.set("Dir", self.workdir)
+
+        dir_cache = f"../apt_cache/{self.ctx.distro}-{self.ctx.codename}"
+        apt_pkg.config.set("Dir::Cache", f"{self.workdir}/{dir_cache}")
+        apt_pkg.config.set("Dir::State::status",
+                           f"{self.workdir}/var/lib/dpkg/status")
+
+        apt_pkg.config.set("APT::Install-Recommends", "0")
+        apt_pkg.config.set("APT::Install-Suggests", "0")
+
+        # Use host keys for authentification
+        apt_pkg.config.set("Dir::Etc::TrustedParts", self.ctx.keydir)
+
+        # Allow using repositories without keys
+        apt_pkg.config.set("Acquire::AllowInsecureRepositories", "1")
+
+    def mark_essential(self):
+        for pkg in self.cache.packages:
+            if pkg.architecture == self.ctx.arch:
+                if pkg.essential:
+                    self.depcache.mark_install(pkg)
+
+    def mark_by_prio(self, priority):
+        for pkg in self.cache.packages:
+            if pkg.architecture == self.ctx.arch:
+                ver = self.depcache.get_candidate_ver(pkg)
+                if ver and ver.priority <= priority:
+                    self.depcache.mark_install(pkg)
+
+    def mark_pkg(self, name, crossbuild):
+        pkgname = name
+
+        if pkgname and (pkgname not in self.cache):
+            # Try for cross arch
+            if (pkgname, self.ctx.crossarch) in self.cache:
+                pkgname += f":{self.ctx.crossarch}"
+
+        if pkgname not in self.cache:
+            print(f"Error: package '{name}' not found")
+            return False
+
+        pkg = self.cache[pkgname]
+
+        if (not crossbuild) or (':' in pkgname) or (not pkg.has_versions):
+            if (pkg.has_provides) and (not pkg.has_versions):
+                print("pkgname is virtual package, selecting best provide")
+                # Select first provide
+                pkg_provide = pkg.provides_list[0][2]
+                # Find better provide with higher version
+                for provide in pkg.provides_list:
+                    if apt_pkg.version_compare(provide[2].ver_str,
+                                               pkg_provide.ver_str) > 0:
+                        pkg_provide = provide[2]
+                self.depcache.mark_install(pkg_provide.parent_pkg)
+            else:
+                self.depcache.mark_install(pkg)
+        else:
+            version = pkg.version_list[0]
+            if version.arch == "all":
+                self.depcache.mark_install(pkg)
+            else:
+                if version.multi_arch == version.MULTI_ARCH_FOREIGN:
+                    if (pkgname, self.ctx.arch) in self.cache:
+                        nativepkg = self.cache[pkgname, self.ctx.arch]
+                        self.depcache.mark_install(nativepkg)
+                    else:
+                        return False
+                else:
+                    if (pkgname, self.ctx.crossarch) in self.cache:
+                        crosspkg = self.cache[pkgname, self.ctx.crossarch]
+                        self.depcache.mark_install(crosspkg)
+                    else:
+                        return False
+
+        return True
+
+    def mark_list(self, pkglist, crossbuild):
+        ret = True
+        if pkglist:
+            for pkgname in pkglist:
+                ret = ret and self.mark_pkg(pkgname, crossbuild)
+
+        return ret
+
+    def handle_deb(self, item):
+        fd = open(f"{self.ctx.repodir}/repo.lock", 'w')
+        fcntl.flock(fd, fcntl.LOCK_EX)
+        subprocess.run([
+            "reprepro",
+            "--dbdir", f"{self.ctx.repodbdir}/{self.ctx.distro}",
+            "--outdir", f"{self.ctx.repodir}/{self.ctx.distro}",
+            "--confdir", f"{self.ctx.repodir}/{self.ctx.distro}/conf",
+            "-C", "main",
+            "includedeb",
+            self.ctx.codename,
+            item.destfile
+            ],
+            stdout=subprocess.PIPE)
+        fd.close()
+
+    def handle_repo(self, fetcher):
+        dir_cache = f"../apt_cache/{self.ctx.distro}-{self.ctx.codename}"
+        fd = open(f"{self.workdir}/{dir_cache}.lock", "w")
+        fcntl.flock(fd, fcntl.LOCK_EX)
+        fetcher.run()
+        fd.close()
+        for item in fetcher.items:
+            if item.status == item.STAT_ERROR:
+                print("Some error ocured: '%s'" % item.error_text)
+                pass
+            else:
+                self.handle_deb(item)
+
+    def get_filename(self, uri):
+        path = urllib.parse.urlparse(uri).path
+        unquoted_path = urllib.parse.unquote(path)
+        basename = os.path.basename(unquoted_path)
+        return basename
+
+    def fetch_file(self, uri):
+        filename = self.get_filename(uri)
+        subprocess.run([
+            "wget",
+            "-H",
+            "--timeout=30",
+            "--tries=3",
+            "-q",
+            uri,
+            "-O",
+            f"{self.workdir}/tmp/{filename}"
+            ],
+            stdout=subprocess.PIPE)
+
+    def handle_dsc(self, uri):
+        filename = self.get_filename(uri)
+        fd = open(f"{self.ctx.repodir}/repo.lock", 'w')
+        fcntl.flock(fd, fcntl.LOCK_EX)
+        subprocess.run([
+            "reprepro",
+            "--dbdir", f"{self.ctx.repodbdir}/{self.ctx.distro}",
+            "--outdir", f"{self.ctx.repodir}/{self.ctx.distro}",
+            "--confdir", f"{self.ctx.repodir}/{self.ctx.distro}/conf",
+            "-C", "main",
+            "-S", "-", "-P" "source",
+            "--delete",
+            "includedsc",
+            self.ctx.codename,
+            os.path.realpath(f"{self.workdir}/tmp/{filename}")
+            ],
+            stdout=subprocess.PIPE)
+        fd.close()
+
+    def handle_src_list(self, pkgs):
+        if pkgs:
+            for pkg in pkgs:
+                pkgname = pkg
+                pkgver = ""
+                if '=' in pkg:
+                    pkgname = pkg.split("=")[0]
+                    pkgver = pkg.split("=")[1]
+
+                self.sr.restart()
+                while self.sr.lookup(pkgname):
+                    if pkgver and pkgver != self.sr.version:
+                        continue
+
+                    for sr_file in self.sr.files:
+                        print(self.sr.index.archive_uri(sr_file[2]))
+                        self.fetch_file(self.sr.index.archive_uri(sr_file[2]))
+
+                    dsc_uri = self.sr.index.archive_uri(self.sr.files[0][2])
+                    self.handle_dsc(dsc_uri)
+                    break
+
+    def apt_run(self, init, srcmode, pkgs, controlfile, crossbuild):
+        apt_pkg.init()
+
+        if self.extrarepo:
+            srcfile = f"{self.workdir}/etc/apt/sources.list.d/extrarepo.list"
+            with open(srcfile, "w") as f:
+                distdir=os.path.join(self.extrarepo, "dists")
+                if os.path.isdir(distdir):
+                    for dist in os.listdir(distdir):
+                        repodir = os.path.join(distdir,dist)
+                        if os.path.isdir(repodir):
+                            for repo in os.listdir(repodir):
+                                if os.path.isdir(os.path.join(repodir, repo)):
+                                    f.write(f"deb file://{self.extrarepo} "
+                                            f"{dist} {repo}\n")
+
+        sources = apt_pkg.SourceList()
+        sources.read_main_list()
+
+        progress = apt.progress.text.AcquireProgress()
+
+        self.cache = apt_pkg.Cache()
+        self.cache.update(progress, sources)
+        self.cache = apt_pkg.Cache()
+
+        if self.extrarepo:
+            os.remove(f"{self.workdir}/etc/apt/sources.list.d/extrarepo.list")
+
+        self.depcache = apt_pkg.DepCache(self.cache)
+        self.sr = apt_pkg.SourceRecords()
+
+        ret = True
+
+        if init:
+            self.mark_essential()
+            # 1(required), 2(important), 3(standard), 4(optional), 5(extra)
+            self.mark_by_prio(1)
+
+        pkgs = list(filter(None, ','.join(pkgs).split(',')))
+        if srcmode:
+            self.handle_src_list(pkgs)
+        else:
+            ret = self.mark_list(pkgs, crossbuild)
+
+        if controlfile:
+            fobj = open(controlfile, "r")
+
+            try:
+                tagfile = apt_pkg.TagFile(fobj)
+                while tagfile.step() == 1:
+                    deps = tagfile.section.get("Build-Depends", "")
+                    # Remove extra commas and spaces - apt_pkg.parse_depends
+                    # doesnt like lines like ", device-tree-compiler"
+                    deps = ', '.join(
+                        [s.strip() for s in deps.split(',') if s.strip()]
+                        )
+                    print(f"parsed deps: {deps}")
+                    for item in apt_pkg.parse_depends(deps, False):
+                        pkgname = item[0][0]
+                        self.mark_pkg(pkgname, crossbuild)
+
+            finally:
+                fobj.close()
+
+        if not ret:
+            sys.exit("Some of requested packages not found")
+
+        if init or not srcmode:
+            fetcher = apt_pkg.Acquire(progress)
+            pm = apt_pkg.PackageManager(self.depcache)
+
+            recs = apt_pkg.PackageRecords(self.cache)
+            pm.get_archives(fetcher, sources, recs)
+
+            self.handle_repo(fetcher)
+
+
+def parse_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--init",
+        default=False, action="store_true",
+        help="initialize context in WORKDIR")
+    parser.add_argument(
+        "--workdir",
+        type=str, required=True,
+        help="work directory storing debrepo context")
+    parser.add_argument(
+        "--aptsrcsfile",
+        type=str, metavar="PATH",
+        help="sources.list file to use when init")
+    parser.add_argument(
+        "--srcmode",
+        default=False, action="store_true",
+        help="add source packages instead of debs")
+    parser.add_argument(
+        "--repodir",
+        type=str, metavar="REPO",
+        help="repository directory")
+    parser.add_argument(
+        "--repodbdir",
+        type=str, metavar="REPODB",
+        help="repository database directory")
+    parser.add_argument(
+        "--extrarepo",
+        type=str, metavar="REPO",
+        help="extra repository to consider")
+    parser.add_argument(
+        "--mirror",
+        type=str,
+        help="use custom distro mirror")
+    parser.add_argument(
+        "--distro",
+        type=str,
+        help="select distro to use")
+    parser.add_argument(
+        "--codename",
+        type=str,
+        help="distro codename")
+    parser.add_argument(
+        "--arch",
+        type=str,
+        help="distro arch")
+    parser.add_argument(
+        "--compatarch",
+        type=str, metavar="ARCH",
+        help="compat arch to use")
+    parser.add_argument(
+        "--crossarch",
+        type=str, metavar="ARCH",
+        help="cross-build arch")
+    parser.add_argument(
+        "--keydir",
+        type=str,
+        help="directory with distro keys")
+    parser.add_argument(
+        "--no-check-gpg",
+        default=False, action="store_true",
+        help="allow insecure repositories")
+    parser.add_argument(
+        "--controlfile",
+        type=str, metavar="PATH",
+        help="debian control file to parse")
+    parser.add_argument(
+        "--crossbuild",
+        default=False, action="store_true",
+        help="add packages with cross arch")
+
+    parser.add_argument(
+        "packages",
+        nargs='*', type=str,
+        help="space- or comma-separated list of packages to add")
+
+    args = parser.parse_args()
+
+    return args
+
+
+def main():
+    args = parse_arguments()
+
+    if not (args.init or args.packages or args.controlfile):
+        sys.exit("Nothing to do")
+
+    debrepo = DebRepo(args)
+
+    if args.init:
+        debrepo.create_rootfs(args.aptsrcsfile)
+        debrepo.create_repo_dist()
+
+    debrepo.apt_config(args.init, args.crossbuild)
+    debrepo.apt_run(args.init, args.srcmode, args.packages,
+                    args.controlfile, args.crossbuild)
+
+
+if __name__ == "__main__":
+    main()
