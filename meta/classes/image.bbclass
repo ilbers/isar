@@ -12,7 +12,7 @@ SSTATE_MANIFESTS = "${TMPDIR}/sstate-control/${MACHINE}-${DISTRO}-${DISTRO_ARCH}
 SSTATETASKS += "do_copy_boot_files"
 
 IMAGE_INSTALL ?= ""
-IMAGE_FSTYPES ?= "${@ d.getVar("IMAGE_TYPE") if d.getVar("IMAGE_TYPE") else "ext4"}"
+IMAGE_FSTYPES ?= "ext4"
 IMAGE_ROOTFS ?= "${WORKDIR}/rootfs"
 
 KERNEL_IMAGE_PKG ??= "${@ ("linux-image-" + d.getVar("KERNEL_NAME")) if d.getVar("KERNEL_NAME") else ""}"
@@ -36,9 +36,6 @@ PP_ROOTFS = "${PP}/rootfs"
 PP_WORK = "${PP}/work"
 
 python(){
-    if (d.getVar('IMAGE_TYPE')):
-        bb.warn("IMAGE_TYPE is deprecated, please switch to IMAGE_FSTYPES")
-
     # Debian Sid-Ports stores deb and deb-src in separate repos, which fails
     # sometimes on fetching sources if repos are not in sync during packages
     # version update. It makes Isar to fail on cache-deb-src, so disable it.
@@ -121,10 +118,6 @@ def get_base_type(t, d):
 def get_image_basetypes(d):
     def recurse(t):
         bt = get_base_type(t, d)
-        if bt.endswith('-img'):
-            # be backwards-compatible
-            bt = bt[:-len('-img')]
-            bb.warn("IMAGE_TYPE '{0}-img' is deprecated. Please use '{0}' instead.".format(bt))
         deps = (d.getVar('IMAGE_TYPEDEP:' + bt.replace('-', '_').replace('.', '_')) or '').split()
         ret = set([bt])
         for dep in deps:
@@ -159,10 +152,6 @@ python() {
 
     def collect_image_type(t):
         bt = get_base_type(t, d)
-        if bt.endswith('-img'):
-            # be backwards-compatible
-            bt = bt[:-len('-img')]
-            bb.warn("IMAGE_TYPE '{0}-img' is deprecated. Please use '{0}' instead.".format(bt))
 
         if bt not in basetypes:
             basetypes[bt] = []
@@ -211,7 +200,7 @@ python() {
         # check if required args are set
         required_args = (localdata.getVar('IMAGE_CMD_REQUIRED_ARGS') or '').split()
         if any([d.getVar(arg) is None for arg in required_args]):
-            bb.fatal("IMAGE_TYPE '%s' requires these arguments: %s" % (image_type, ', '.join(required_args)))
+            bb.fatal("IMAGE_FSTYPE '%s' requires these arguments: %s" % (image_type, ', '.join(required_args)))
 
         # imager install
         for dep in (d.getVar('IMAGER_INSTALL:' + bt_clean) or '').split():
