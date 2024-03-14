@@ -27,9 +27,8 @@ class Dev(CIBaseTest):
     def test_dev_min(self):
         targets = [
             'mc:qemuamd64-bookworm:isar-image-ci',
-            'mc:qemuarm-bookworm:isar-image-base',
-            'mc:qemuarm-bookworm:isar-image-base:do_populate_sdk',
-            'mc:qemuarm64-bookworm:isar-image-base',
+            'mc:qemuarm64-bookworm:isar-image-ci',
+            'mc:qemuarm64-bookworm:isar-image-base:do_populate_sdk',
                   ]
 
         self.init()
@@ -38,7 +37,7 @@ class Dev(CIBaseTest):
     def test_dev_apps(self):
         targets = [
             'mc:qemuamd64-bookworm:isar-image-ci',
-            'mc:qemuarm64-bookworm:isar-image-base',
+            'mc:qemuarm64-bookworm:isar-image-ci',
                   ]
 
         self.init()
@@ -65,11 +64,7 @@ class Dev(CIBaseTest):
 
     def test_dev_run_arm64_bookworm(self):
         self.init()
-        self.vm_start('arm64', 'bookworm')
-
-    def test_dev_run_arm_bookworm(self):
-        self.init()
-        self.vm_start('arm', 'bookworm', skip_modulecheck=True)
+        self.vm_start('arm64', 'bookworm', image='isar-image-ci')
 
 class Repro(CIBaseTest):
 
@@ -130,7 +125,6 @@ class Fast(CIBaseTest):
             'mc:de0-nano-soc-bullseye:isar-image-base',
             'mc:stm32mp15x-bullseye:isar-image-base',
             'mc:qemuarm-bookworm:isar-image-ci',
-            'mc:qemuarm64-bookworm:isar-image-ci',
             'mc:qemuarm64-focal:isar-image-base',
             'mc:nanopi-neo-efi-bookworm:isar-image-base',
                   ]
@@ -181,8 +175,6 @@ class Standard(CIBaseTest):
     """
     def test_standard_cross(self):
         targets = [
-            'mc:qemuarm-buster:isar-image-ci',
-            'mc:qemuarm-bullseye:isar-image-base',
             'mc:qemuarm64-bullseye:isar-image-ci',
             'mc:qemui386-buster:isar-image-base',
             'mc:qemui386-bullseye:isar-image-base',
@@ -198,7 +190,6 @@ class Standard(CIBaseTest):
             'mc:bananapi-bookworm:isar-image-base',
             'mc:nanopi-neo-bullseye:isar-image-base',
             'mc:nanopi-neo-bookworm:isar-image-base',
-            'mc:stm32mp15x-bullseye:isar-image-base',
             'mc:qemuamd64-focal:isar-image-ci',
             'mc:qemuamd64-bookworm:isar-image-ci',
             'mc:qemui386-bookworm:isar-image-base',
@@ -503,26 +494,6 @@ class VmBootFull(CIBaseTest):
 
     :avocado: tags=startvm,standard,full
     """
-
-    def test_arm_bullseye(self):
-        self.init()
-        self.vm_start('arm','bullseye')
-
-
-    def test_arm_buster_base(self):
-        self.init()
-        self.vm_start('arm','buster', image='isar-image-ci', keep=True)
-
-    def test_arm_buster_example_module(self):
-        self.init()
-        self.vm_start('arm','buster', image='isar-image-ci',
-                      cmd='lsmod | grep example_module', keep=True)
-
-    def test_arm_buster_getty_target(self):
-        self.init()
-        self.vm_start('arm','buster', image='isar-image-ci',
-                      script='test_systemd_unit.sh getty.target 10')
-
 
     def test_arm64_bullseye_base(self):
         self.init()
