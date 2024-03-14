@@ -44,6 +44,7 @@ dpkg_runbuild() {
     export PARALLEL_MAKE="${PARALLEL_MAKE}"
 
     rm -f ${SBUILD_CONFIG}
+    debrepo_handle_controlfile "${WORKDIR}/${PPS}/debian/control"
 
     env | while read -r line; do
         # Filter the same lines
@@ -112,6 +113,11 @@ dpkg_runbuild() {
 
     DSC_FILE=$(find ${WORKDIR} -maxdepth 1 -name "${DEBIAN_SOURCE}_*.dsc" -print)
 
+    locked_update_cmd=":"
+    if [ "${ISAR_PREFETCH_BASE_APT}" = "1" ]; then
+        locked_update_cmd="flock -x /base-apt/repo.lock -c 'apt-get -y update'"
+    fi
+
     sbuild -A -n -c ${SBUILD_CHROOT} \
         --host=${PACKAGE_ARCH} --build=${BUILD_ARCH} ${profiles} \
         --no-run-lintian --no-run-piuparts --no-run-autopkgtest --resolve-alternatives \
@@ -122,9 +128,11 @@ dpkg_runbuild() {
         --chroot-setup-commands="rm -f /var/log/dpkg.log" \
         --chroot-setup-commands="mkdir -p ${deb_dir}" \
         --chroot-setup-commands="find ${ext_deb_dir} -maxdepth 1 -name '*.deb' -exec ln -t ${deb_dir}/ -sf {} +" \
+        --chroot-setup-commands="${locked_update_cmd}" \
         --chroot-setup-commands="apt-get update -o Dir::Etc::SourceList=\"sources.list.d/isar-apt.list\" -o Dir::Etc::SourceParts=\"-\" -o APT::Get::List-Cleanup=\"0\"" \
         --finished-build-commands="rm -f ${deb_dir}/sbuild-build-depends-main-dummy_*.deb" \
         --finished-build-commands="find ${deb_dir} -maxdepth 1 -type f -name '*.deb' -print -exec cp ${CP_FLAGS} -t ${ext_deb_dir}/ {} +" \
+        --finished-build-commands="mkdir -p ${ext_root}" \
         --finished-build-commands="cp /var/log/dpkg.log ${ext_root}/dpkg_partial.log" \
         --debbuildopts="--source-option=-I" \
         --build-dir=${WORKDIR} --dist="isar" ${DSC_FILE}
