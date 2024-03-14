@@ -26,10 +26,10 @@ class Dev(CIBaseTest):
     """
     def test_dev_min(self):
         targets = [
-            'mc:qemuamd64-bullseye:isar-image-ci',
-            'mc:qemuarm-bullseye:isar-image-base',
-            'mc:qemuarm-bullseye:isar-image-base:do_populate_sdk',
-            'mc:qemuarm64-bullseye:isar-image-base',
+            'mc:qemuamd64-bookworm:isar-image-ci',
+            'mc:qemuarm-bookworm:isar-image-base',
+            'mc:qemuarm-bookworm:isar-image-base:do_populate_sdk',
+            'mc:qemuarm64-bookworm:isar-image-base',
                   ]
 
         self.init()
@@ -37,8 +37,8 @@ class Dev(CIBaseTest):
 
     def test_dev_apps(self):
         targets = [
-            'mc:qemuamd64-bullseye:isar-image-ci',
-            'mc:qemuarm64-bullseye:isar-image-base',
+            'mc:qemuamd64-bookworm:isar-image-ci',
+            'mc:qemuarm64-bookworm:isar-image-base',
                   ]
 
         self.init()
@@ -55,21 +55,21 @@ class Dev(CIBaseTest):
             file.write('do_fetch:append() {\n\n}')
 
         try:
-            self.perform_build_test('mc:qemuamd64-bullseye:isar-image-ci')
+            self.perform_build_test('mc:qemuamd64-bookworm:isar-image-ci')
         finally:
             self.restorefile(dpkgbase_file)
 
-    def test_dev_run_amd64_bullseye(self):
+    def test_dev_run_amd64_bookworm(self):
         self.init()
-        self.vm_start('amd64', 'bullseye', image='isar-image-ci')
+        self.vm_start('amd64', 'bookworm', image='isar-image-ci')
 
-    def test_dev_run_arm64_bullseye(self):
+    def test_dev_run_arm64_bookworm(self):
         self.init()
-        self.vm_start('arm64', 'bullseye')
+        self.vm_start('arm64', 'bookworm')
 
-    def test_dev_run_arm_bullseye(self):
+    def test_dev_run_arm_bookworm(self):
         self.init()
-        self.vm_start('arm', 'bullseye', skip_modulecheck=True)
+        self.vm_start('arm', 'bookworm', skip_modulecheck=True)
 
 class Repro(CIBaseTest):
 
@@ -82,7 +82,7 @@ class Repro(CIBaseTest):
         targets = [
             'mc:rpi-arm-v7-bullseye:isar-image-base',
             'mc:rpi-arm64-v8-bullseye:isar-image-base',
-            'mc:qemuarm64-bullseye:isar-image-base',
+            'mc:qemuarm64-bookworm:isar-image-base',
                   ]
 
         self.init()
@@ -93,8 +93,8 @@ class Repro(CIBaseTest):
 
     def test_repro_unsigned(self):
         targets = [
-            'mc:qemuamd64-bullseye:isar-image-base',
-            'mc:qemuarm-bullseye:isar-image-base',
+            'mc:qemuamd64-bookworm:isar-image-base',
+            'mc:qemuarm-bookworm:isar-image-base',
                   ]
 
         self.init()
@@ -111,7 +111,7 @@ class Ccache(CIBaseTest):
     :avocado: tags=ccache,standard,full
     """
     def test_ccache_rebuild(self):
-        targets = ['mc:qemuamd64-bullseye:hello-isar']
+        targets = ['mc:qemuamd64-bookworm:hello-isar']
         self.init()
         self.perform_ccache_test(targets)
 
@@ -124,6 +124,7 @@ class Fast(CIBaseTest):
     """
     def test_fast_min(self):
         targets = [
+            'mc:qemuamd64-bullseye:isar-image-ci',
             'mc:qemuarm-buster:isar-image-ci',
             'mc:qemuarm-bullseye:isar-image-ci',
             'mc:de0-nano-soc-bullseye:isar-image-base',
@@ -374,7 +375,7 @@ class ContainerSdk(CIBaseTest):
     """
     @skipUnless(UMOCI_AVAILABLE and SKOPEO_AVAILABLE, 'umoci/skopeo not found')
     def test_container_sdk(self):
-        targets = ['mc:container-amd64-bullseye:isar-image-base']
+        targets = ['mc:container-amd64-bookworm:isar-image-base']
 
         self.init()
         self.perform_build_test(targets, bitbake_cmd='do_populate_sdk', container=True)
@@ -388,13 +389,13 @@ class Sstate(CIBaseTest):
     """
 
     def test_sstate_populate(self):
-        image_target = 'mc:qemuamd64-bullseye:isar-image-base'
+        image_target = 'mc:qemuamd64-bookworm:isar-image-base'
 
         self.perform_sstate_populate(image_target)
 
     def test_sstate_reuse(self):
-        image_target = 'mc:qemuamd64-bullseye:isar-image-base'
-        package_target = 'mc:qemuamd64-bullseye:hello'
+        image_target = 'mc:qemuamd64-bookworm:isar-image-base'
+        package_target = 'mc:qemuamd64-bookworm:hello'
 
         self.init('build-sstate')
         self.perform_sstate_test(image_target, package_target)
@@ -409,7 +410,7 @@ class Single(CIBaseTest):
     def test_single_build(self):
         self.init()
         machine = self.params.get('machine', default='qemuamd64')
-        distro = self.params.get('distro', default='bullseye')
+        distro = self.params.get('distro', default='bookworm')
         image = self.params.get('image', default='isar-image-base')
 
         self.perform_build_test('mc:%s-%s:%s' % (machine, distro, image))
@@ -417,7 +418,7 @@ class Single(CIBaseTest):
     def test_single_run(self):
         self.init()
         machine = self.params.get('machine', default='qemuamd64')
-        distro = self.params.get('distro', default='bullseye')
+        distro = self.params.get('distro', default='bookworm')
 
         self.vm_start(machine.removeprefix('qemu'), distro)
 
@@ -444,6 +445,11 @@ class VmBootFast(CIBaseTest):
 
     :avocado: tags=startvm,fast
     """
+
+    def test_amd64_bullseye(self):
+        self.init()
+        self.vm_start('amd64', 'bullseye', image='isar-image-ci')
+
 
     def test_arm_bullseye_base(self):
         self.init()
