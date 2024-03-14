@@ -36,8 +36,6 @@ PP_ROOTFS = "${PP}/rootfs"
 PP_WORK = "${PP}/work"
 
 python(){
-    if (d.getVar('IMAGE_TRANSIENT_PACKAGES')):
-        bb.warn("IMAGE_TRANSIENT_PACKAGES is set and no longer supported")
     if (d.getVar('IMAGE_TYPE')):
         bb.warn("IMAGE_TYPE is deprecated, please switch to IMAGE_FSTYPES")
 
