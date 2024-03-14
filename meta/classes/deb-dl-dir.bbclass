@@ -41,6 +41,23 @@ debsrc_undo_mounts() {
 EOSUDO
 }
 
+debsrc_fill_base_apt() {
+    export rootfs="$1"
+
+    local srcpkgs=""
+    for package in $(find "${REPO_BASE_DIR}" -maxdepth 6 -type f -iname '*\.deb'); do
+        is_not_part_of_current_build "${package}" && continue
+        local src="$( dpkg-deb --show --showformat '${source:Package}' "${package}" )"
+        local version="$( dpkg-deb --show --showformat '${source:Version}' "${package}" )"
+        local dscname="$(echo ${src}_${version} | sed -e 's/_[0-9]\+:/_/')"
+        local dscfile=$(find "${DEBSRCDIR}"/"${rootfs_distro}" -name "${dscname}.dsc")
+        [ -n "$dscfile" ] && continue
+
+        srcpkgs="${srcpkgs} ${src}=${version}"
+    done
+    debrepo_add_packages --srcmode "${DEBREPO_TARGET_DIR}" "${srcpkgs}"
+}
+
 debsrc_download() {
     export rootfs="$1"
     export rootfs_distro="$2"
