@@ -2,6 +2,7 @@
 # Copyright (c) Siemens AG, 2020
 
 inherit deb-dl-dir
+inherit debrepo
 
 ROOTFS_ARCH ?= "${DISTRO_ARCH}"
 ROOTFS_DISTRO ?= "${DISTRO}"
@@ -153,6 +154,9 @@ rootfs_install_pkgs_download[weight] = "600"
 rootfs_install_pkgs_download[isar-apt-lock] = "release-after"
 rootfs_install_pkgs_download[network] = "${TASK_USE_NETWORK_AND_SUDO}"
 rootfs_install_pkgs_download() {
+    debrepo_add_packages --isarapt "${DEBREPO_WORKDIR}" "${ROOTFS_PACKAGES}"
+    debrepo_update_apt_source_list "${ROOTFSDIR}" "base-apt"
+
     sudo -E chroot '${ROOTFSDIR}' \
         /usr/bin/apt-get ${ROOTFS_APT_ARGS} --download-only ${ROOTFS_PACKAGES}
 }
