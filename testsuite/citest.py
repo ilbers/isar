@@ -145,6 +145,74 @@ class Fast(CIBaseTest):
         self.init()
         self.perform_build_test(targets)
 
+
+    """
+    BEGIN: Run tests for test_fast_min
+    """
+    def test_run_amd64_bullseye(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('amd64', 'bullseye', image='isar-image-ci')
+
+
+    def test_run_arm_buster_base(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('arm', 'buster', image='isar-image-ci', keep=True)
+
+    def test_run_arm_buster_getty_target(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('arm', 'buster', image='isar-image-ci',
+                      cmd='systemctl is-active getty.target', keep=True)
+
+    def test_run_arm_buster_example_module(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('arm', 'buster', image='isar-image-ci',
+                      script='test_kernel_module.sh example_module')
+
+
+    def test_run_arm_bullseye_base(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('arm', 'bullseye', image='isar-image-ci', keep=True)
+
+    def test_run_arm_bullseye_example_module(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('arm', 'bullseye', image='isar-image-ci',
+                      cmd='lsmod | grep example_module', keep=True)
+
+    def test_run_arm_bullseye_getty_target(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('arm', 'bullseye', image='isar-image-ci',
+                      script='test_systemd_unit.sh getty.target 10')
+
+
+    def test_run_arm64_focal(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('arm64', 'focal', image='isar-image-base')
+
+
     def test_fast_debsrc(self):
         targets = [
             'mc:qemuarm-bookworm:isar-image-ci',
@@ -153,6 +221,34 @@ class Fast(CIBaseTest):
 
         self.init()
         self.perform_build_test(targets, debsrc_cache=True)
+
+
+    def test_run_arm_bookworm_base(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('arm', 'bookworm', image='isar-image-ci', keep=True)
+
+    def test_run_arm_bookworm_example_module(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('arm', 'bookworm', image='isar-image-ci',
+                      cmd='lsmod | grep example_module', keep=True)
+
+    def test_run_arm_bookworm_getty_target(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('arm', 'bookworm', image='isar-image-ci',
+                      script='test_systemd_unit.sh getty.target 10')
+    """
+    END: Run tests for test_fast_min
+    """
+
 
     def test_fast_kselftest(self):
         targets = [
@@ -233,6 +329,109 @@ class Standard(CIBaseTest):
         self.init()
         self.perform_build_test(targets)
 
+
+    """
+    BEGIN: Run tests for test_standard_cross
+    """
+    def test_run_i386_buster(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('i386', 'buster')
+
+
+    def test_run_i386_bullseye(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('i386', 'bullseye')
+
+
+    def test_run_amd64_buster(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        # test efi boot
+        self.vm_start('amd64', 'buster', image='isar-image-ci')
+        # test pcbios boot
+        self.vm_start('amd64', 'buster', True, image='isar-image-ci')
+
+
+    def test_run_mipsel_bullseye(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('mipsel', 'bullseye')
+
+
+    def test_run_amd64_focal_base(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('amd64', 'focal', image='isar-image-ci', keep=True)
+
+    def test_run_amd64_focal_example_module(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('amd64', 'focal', image='isar-image-ci',
+                      cmd='lsmod | grep example_module', keep=True)
+
+    def test_run_amd64_focal_getty_target(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('amd64', 'focal', image='isar-image-ci',
+                      script='test_systemd_unit.sh getty.target 10')
+
+
+    def test_run_amd64_bookworm(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('amd64', 'bookworm', image='isar-image-ci')
+
+
+    def test_run_i386_bookworm(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('i386', 'bookworm')
+
+
+    def test_run_mipsel_bookworm_base(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('mipsel', 'bookworm', image='isar-image-ci', keep=True)
+
+    def test_run_mipsel_bookworm_getty_target(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('mipsel', 'bookworm', image='isar-image-ci',
+                      cmd='systemctl is-active getty.target', keep=True)
+
+    def test_run_mipsel_bookworm_example_module(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('mipsel', 'bookworm', image='isar-image-ci',
+                      script='test_kernel_module.sh example_module')
+
+
     def test_standard_debsrc(self):
         targets = [
             'mc:qemuarm64-bullseye:isar-image-ci',
@@ -242,6 +441,31 @@ class Standard(CIBaseTest):
         self.init()
         self.perform_build_test(targets, debsrc_cache=True)
 
+
+    def test_run_arm64_bullseye_base(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('arm64', 'bullseye', image='isar-image-ci', keep=True)
+
+    def test_run_arm64_bullseye_getty_target(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('arm64', 'bullseye', image='isar-image-ci',
+                      cmd='systemctl is-active getty.target', keep=True)
+
+    def test_run_arm64_bullseye_example_module(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('arm64', 'bullseye', image='isar-image-ci',
+                      script='test_kernel_module.sh example_module')
+
+
     def test_standard_nocross(self):
         targets = [
             'mc:qemumipsel-buster:isar-image-base',
@@ -250,6 +474,26 @@ class Standard(CIBaseTest):
 
         self.init()
         self.perform_build_test(targets, cross=False)
+
+
+    def test_run_mipsel_buster(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('mipsel', 'buster')
+
+
+    def test_run_arm_bookworm(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('arm', 'bookworm', image='isar-image-ci')
+    """
+    END: Run tests for test_standard_cross
+    """
+
 
     def test_standard_rpi(self):
         targets = [
@@ -470,75 +714,12 @@ class Source(CIBaseTest):
         self.init()
         self.perform_source_test(targets)
 
-class VmBootFast(CIBaseTest):
-
-    """
-    Test QEMU image start (fast)
-
-    :avocado: tags=startvm,fast
-    """
-
-    def test_amd64_bullseye(self):
-        self.init()
-        self.vm_start('amd64', 'bullseye', image='isar-image-ci')
-
-
-    def test_arm_bullseye_base(self):
-        self.init()
-        self.vm_start('arm','bullseye', image='isar-image-ci', keep=True)
-
-    def test_arm_bullseye_example_module(self):
-        self.init()
-        self.vm_start('arm','bullseye', image='isar-image-ci',
-                      cmd='lsmod | grep example_module', keep=True)
-
-    def test_arm_bullseye_getty_target(self):
-        self.init()
-        self.vm_start('arm','bullseye', image='isar-image-ci',
-                      script='test_systemd_unit.sh getty.target 10')
-
-
-    def test_arm_buster_base(self):
-        self.init()
-        self.vm_start('arm','buster', image='isar-image-ci', keep=True)
-
-    def test_arm_buster_getty_target(self):
-        self.init()
-        self.vm_start('arm','buster', image='isar-image-ci',
-                      cmd='systemctl is-active getty.target', keep=True)
-
-    def test_arm_buster_example_module(self):
-        self.init()
-        self.vm_start('arm','buster', image='isar-image-ci',
-                      script='test_kernel_module.sh example_module')
-
-
-    def test_arm_bookworm_base(self):
-        self.init()
-        self.vm_start('arm','bookworm', image='isar-image-ci', keep=True)
-
-    def test_arm_bookworm_example_module(self):
-        self.init()
-        self.vm_start('arm','bookworm', image='isar-image-ci',
-                      cmd='lsmod | grep example_module', keep=True)
-
-    def test_arm_bookworm_getty_target(self):
-        self.init()
-        self.vm_start('arm','bookworm', image='isar-image-ci',
-                      script='test_systemd_unit.sh getty.target 10')
-
-
-    def test_arm64_focal(self):
-        self.init()
-        self.vm_start('arm64', 'focal', image='isar-image-base')
-
-
 class VmBootFull(CIBaseTest):
 
     """
     Test QEMU image start (full)
 
-    :avocado: tags=startvm,standard,full
+    :avocado: tags=startvm,full
     """
 
     def test_arm64_bullseye_base(self):
