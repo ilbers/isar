@@ -44,6 +44,9 @@ class Dev(CIBaseTest):
         self.perform_build_test(targets)
 
     def test_dev_rebuild(self):
+        """
+        :avocado: tags=rebuild
+        """
         self.init()
         layerdir_core = self.getVars('LAYERDIR_core')
 
@@ -58,13 +61,25 @@ class Dev(CIBaseTest):
         finally:
             self.restorefile(dpkgbase_file)
 
+    """
+    BEGIN: Run tests for test_dev_apps
+    """
     def test_dev_run_amd64_bookworm(self):
+        """
+        :avocado: tags=startvm
+        """
         self.init()
         self.vm_start('amd64', 'bookworm', image='isar-image-ci')
 
     def test_dev_run_arm64_bookworm(self):
+        """
+        :avocado: tags=startvm
+        """
         self.init()
         self.vm_start('arm64', 'bookworm', image='isar-image-ci')
+    """
+    END: Run tests for test_dev_apps
+    """
 
 class Repro(CIBaseTest):
 
