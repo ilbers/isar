@@ -197,7 +197,7 @@ class CIBuilder(Test):
             poller = select.poll()
             poller.register(p1.stdout, select.POLLIN)
             poller.register(p1.stderr, select.POLLIN)
-            while p1.poll() is None:
+            while True:
                 events = poller.poll(1000)
                 for fd, event in events:
                     if event != select.POLLIN:
@@ -206,6 +206,8 @@ class CIBuilder(Test):
                         self.log.info(p1.stdout.readline().rstrip())
                     if fd == p1.stderr.fileno():
                         self.log.error(p1.stderr.readline().rstrip())
+                if p1.poll() is not None:
+                    break
             p1.wait()
             if p1.returncode:
                 self.fail('Bitbake failed')
@@ -477,7 +479,7 @@ BBPATH .= ":${LAYERDIR}"\
         databuf = bytearray(b'')
         databuf_size = 1024 * 2 + len(login_prompt)
 
-        while time.time() < timeout and p1.poll() is None:
+        while time.time() < timeout:
             events = poller.poll(1000 * (timeout - time.time()))
             for fd, event in events:
                 if event != select.POLLIN:
@@ -491,6 +493,8 @@ BBPATH .= ":${LAYERDIR}"\
                         return 0
                 if fd == p1.stderr.fileno():
                     self.log.error(p1.stderr.readline().rstrip())
+            if p1.poll() is not None:
+                break
 
         rc = 1
         if time.time() > timeout:
