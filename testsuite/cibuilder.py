@@ -149,7 +149,7 @@ class CIBuilder(Test):
             if sstate_dir:
                 f.write('SSTATE_DIR = "%s"\n' % sstate_dir)
             if image_install is not None:
-                f.write('IMAGE_INSTALL = "%s"' % image_install)
+                f.write('IMAGE_INSTALL = "%s"\n' % image_install)
 
         # include ci_build.conf in local.conf
         with open(self.build_dir + '/conf/local.conf', 'r+') as f:
