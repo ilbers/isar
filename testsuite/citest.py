@@ -124,8 +124,15 @@ class Fast(CIBaseTest):
             'mc:qemuarm-bullseye:isar-image-ci',
             'mc:de0-nano-soc-bullseye:isar-image-base',
             'mc:stm32mp15x-bullseye:isar-image-base',
-            'mc:qemuarm-bookworm:isar-image-ci',
             'mc:qemuarm64-focal:isar-image-base',
+                  ]
+
+        self.init()
+        self.perform_build_test(targets)
+
+    def test_fast_debsrc(self):
+        targets = [
+            'mc:qemuarm-bookworm:isar-image-ci',
             'mc:nanopi-neo-efi-bookworm:isar-image-base',
                   ]
 
@@ -139,7 +146,7 @@ class Fast(CIBaseTest):
 
         self.init()
         try:
-            self.perform_build_test(targets, debsrc_cache=True)
+            self.perform_build_test(targets)
         except:
             self.cancel('KFAIL')
 
@@ -156,7 +163,7 @@ class Wic(CIBaseTest):
         self.init()
         self.move_in_build_dir('tmp', 'tmp_before_wic')
         self.perform_wic_partition_test(targets,
-            wic_deploy_parts=False, debsrc_cache=True, compat_arch=False)
+            wic_deploy_parts=False, compat_arch=False)
 
     def test_wic_deploy_partitions(self):
         targets = ['mc:qemuarm64-bookworm:isar-image-ci']
@@ -175,7 +182,6 @@ class Standard(CIBaseTest):
     """
     def test_standard_cross(self):
         targets = [
-            'mc:qemuarm64-bullseye:isar-image-ci',
             'mc:qemui386-buster:isar-image-base',
             'mc:qemui386-bullseye:isar-image-base',
             'mc:qemuamd64-buster:isar-image-ci',
@@ -183,7 +189,6 @@ class Standard(CIBaseTest):
             'mc:qemumipsel-bullseye:isar-image-base',
             'mc:imx6-sabrelite-bullseye:isar-image-base',
             'mc:phyboard-mira-bullseye:isar-image-base',
-            'mc:hikey-bullseye:isar-image-base',
             'mc:virtualbox-bullseye:isar-image-base',
             'mc:virtualbox-bookworm:isar-image-base',
             'mc:bananapi-bullseye:isar-image-base',
@@ -196,6 +201,15 @@ class Standard(CIBaseTest):
             'mc:qemumipsel-bookworm:isar-image-ci',
             'mc:hikey-bookworm:isar-image-base',
             'mc:de0-nano-soc-bookworm:isar-image-base',
+                  ]
+
+        self.init()
+        self.perform_build_test(targets)
+
+    def test_standard_debsrc(self):
+        targets = [
+            'mc:qemuarm64-bullseye:isar-image-ci',
+            'mc:hikey-bullseye:isar-image-base',
                   ]
 
         self.init()
@@ -224,7 +238,7 @@ class Standard(CIBaseTest):
 
         self.init()
         try:
-            self.perform_build_test(targets, debsrc_cache=True)
+            self.perform_build_test(targets)
         except:
             self.cancel('KFAIL')
 
