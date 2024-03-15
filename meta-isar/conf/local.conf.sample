@@ -157,6 +157,10 @@ IMAGE_INSTALL:remove:qemuamd64-sb = "example-module-${KERNEL_NAME}"
 IMAGE_INSTALL:append:qemuamd64-sb = " example-module-signed-${KERNEL_NAME}"
 
 #
+# Remove not-needed packages for containerized images.
+IMAGE_INSTALL:remove:container-amd64 = "example-module-${KERNEL_NAME} enable-fsck"
+
+#
 # Enable cross-compilation support
 ISAR_CROSS_COMPILE ?= "0"
 
