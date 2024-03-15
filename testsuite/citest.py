@@ -139,6 +139,18 @@ class Fast(CIBaseTest):
         self.init()
         self.perform_build_test(targets, debsrc_cache=True)
 
+    def test_fast_kselftest(self):
+        targets = [
+            'mc:qemuamd64-bullseye:isar-image-ci',
+            'mc:qemuarm-buster:isar-image-ci',
+            'mc:qemuarm-bookworm:isar-image-ci',
+            'mc:nanopi-neo-efi-bookworm:isar-image-base',
+            'mc:qemuarm64-focal:isar-image-base',
+                  ]
+
+        self.init()
+        self.perform_build_test(targets, image_install="kselftest")
+
     def test_fast_rpi(self):
         targets = [
             'mc:rpi-arm-v7-bullseye:isar-image-base',
