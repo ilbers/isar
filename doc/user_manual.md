@@ -68,6 +68,8 @@ The steps below describe how to build the images provided by default.
 
 The supported host system is >= buster.
 
+Building `debian-trixie` requires host system >= bookworm.
+
 Install the following packages:
 ```
 apt install \
@@ -445,6 +447,7 @@ following distros:
  - debian-buster
  - debian-bullseye
  - debian-bookworm
+ - debian-trixie (host >= bookworm)
  - ubuntu-focal
  - ubuntu-jammy (requires host dpkg >= 1.21)
  - raspios-bullseye
@@ -1011,6 +1014,8 @@ Debian cross-compilation works out of the box. Currently the following build con
  - bookworm armhf
  - bookworm arm64
  - bookworm mipsel
+ - trixie armhf
+ - trixie arm64
 
 Experimental support for riscv64 is available as well.
 

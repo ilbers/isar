@@ -232,6 +232,19 @@ class NoCrossTest(CIBaseTest):
         except:
             self.cancel('KFAIL')
 
+    def test_nocross_trixie(self):
+        targets = [
+            'mc:qemuamd64-trixie:isar-image-base',
+            'mc:qemuarm64-trixie:isar-image-base',
+            'mc:qemuarm-trixie:isar-image-base',
+                  ]
+
+        self.init()
+        try:
+            self.perform_build_test(targets, cross=False)
+        except:
+            self.cancel('KFAIL')
+
     def test_nocross_sid(self):
         targets = [
             'mc:qemuriscv64-sid:isar-image-base',

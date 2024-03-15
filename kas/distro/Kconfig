@@ -19,6 +19,9 @@ config DEBIAN_BULLSEYE
 config DEBIAN_BOOKWORM
 	bool "Debian 12 (bookworm)"
 
+config DEBIAN_TRIXIE
+	bool "Debian 13 (trixie)"
+
 config DEBIAN_SID
 	bool "Debian Sid (unstable)"
 
@@ -41,6 +44,7 @@ config KAS_INCLUDE_DISTRO
 	default "kas/distro/debian-buster.yaml" if DEBIAN_BUSTER
 	default "kas/distro/debian-bullseye.yaml" if DEBIAN_BULLSEYE
 	default "kas/distro/debian-bookworm.yaml" if DEBIAN_BOOKWORM
+	default "kas/distro/debian-trixie.yaml" if DEBIAN_TRIXIE
 	default "kas/distro/debian-sid.yaml" if DEBIAN_SID
 	default "kas/distro/raspios-bullseye.yaml" if RASPIOS_BULLSEYE
 	default "kas/distro/raspios-bookworm.yaml" if RASPIOS_BOOKWORM

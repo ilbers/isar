@@ -22,7 +22,7 @@ To test the QEMU image, run the following command:
         $ start_vm -a <arch of your build> -d <distro of your build>
 
 Ex: Architecture of your build could be arm,arm64,i386,amd64,etc.
-    Distribution of your build could be buster,bullseye,bookworm,etc.
+    Distribution of your build could be buster, bullseye, bookworm, trixie, etc.
 
 The default root password is 'root'.
 
