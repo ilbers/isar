@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import logging
 import os
 import pickle
 import re
@@ -29,23 +28,10 @@ DEF_VM_TO_SEC = 600
 isar_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 backup_prefix = '.ci-backup'
 
-app_log = logging.getLogger("avocado.app")
-
 class CanBeFinished(Exception):
     pass
 
 class CIBuilder(Test):
-    def setUp(self):
-        super(CIBuilder, self).setUp()
-        job_log = os.path.join(os.path.dirname(self.logdir), '..', 'job.log')
-        self._file_handler = logging.FileHandler(filename=job_log)
-        self._file_handler.setLevel(logging.ERROR)
-        fmt = ('%(asctime)s %(module)-16.16s L%(lineno)-.4d %('
-               'levelname)-5.5s| %(message)s')
-        formatter = logging.Formatter(fmt=fmt)
-        self._file_handler.setFormatter(formatter)
-        app_log.addHandler(self._file_handler)
-
     def init(self, build_dir='build', isar_dir=isar_root):
         # initialize build_dir and setup environment
         # needs to run once (per test case)
@@ -219,7 +205,7 @@ class CIBuilder(Test):
                     if fd == p1.stdout.fileno():
                         self.log.info(p1.stdout.readline().rstrip())
                     if fd == p1.stderr.fileno():
-                        app_log.error(p1.stderr.readline().rstrip())
+                        self.log.error(p1.stderr.readline().rstrip())
             p1.wait()
             if p1.returncode:
                 self.fail('Bitbake failed')
@@ -504,7 +490,7 @@ BBPATH .= ":${LAYERDIR}"\
                         self.log.info('Got login prompt')
                         return 0
                 if fd == p1.stderr.fileno():
-                    app_log.error(p1.stderr.readline().rstrip())
+                    self.log.error(p1.stderr.readline().rstrip())
 
         rc = 1
         if time.time() > timeout:
