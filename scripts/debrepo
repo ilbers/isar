@@ -314,8 +314,7 @@ class DebRepo(object):
             "includedeb",
             self.ctx.codename,
             item.destfile
-            ],
-            stdout=subprocess.PIPE)
+            ])
         fd.close()
 
     def handle_repo(self, fetcher):
@@ -344,7 +343,7 @@ class DebRepo(object):
             "-H",
             "--timeout=30",
             "--tries=3",
-            "-q",
+            "-nv",
             uri,
             "-O",
             f"{self.workdir}/tmp/{filename}"
@@ -366,12 +365,12 @@ class DebRepo(object):
             "includedsc",
             self.ctx.codename,
             os.path.realpath(f"{self.workdir}/tmp/{filename}")
-            ],
-            stdout=subprocess.PIPE)
+            ])
         fd.close()
 
     def handle_src_list(self, pkgs):
         if pkgs:
+            fetched_files = []
             for pkg in pkgs:
                 pkgname = pkg
                 pkgver = ""
@@ -386,7 +385,10 @@ class DebRepo(object):
 
                     for sr_file in self.sr.files:
                         print(self.sr.index.archive_uri(sr_file[2]))
-                        self.fetch_file(self.sr.index.archive_uri(sr_file[2]))
+                        filename = os.path.basename(sr_file.path)
+                        if filename not in fetched_files:
+                            self.fetch_file(self.sr.index.archive_uri(sr_file[2]))
+                            fetched_files.append(filename)
 
                     dsc_uri = self.sr.index.archive_uri(self.sr.files[0][2])
                     self.handle_dsc(dsc_uri)
@@ -432,7 +434,7 @@ class DebRepo(object):
 
         pkgs = list(filter(None, ','.join(pkgs).split(',')))
         if srcmode:
-            self.handle_src_list(pkgs)
+            self.handle_src_list(set(pkgs))
         else:
             ret = self.mark_list(pkgs, crossbuild)
 
