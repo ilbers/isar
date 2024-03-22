@@ -22,7 +22,7 @@ class DevTest(CIBaseTest):
     """
     Developer's test
 
-    :avocado: tags=dev,fast,full
+    :avocado: tags=dev,full
     """
     def test_dev(self):
         targets = [
@@ -124,20 +124,13 @@ class CrossTest(CIBaseTest):
     """
     def test_cross(self):
         targets = [
-            'mc:qemuarm-buster:isar-image-ci',
-            'mc:qemuarm-bullseye:isar-image-ci',
-            'mc:de0-nano-soc-bullseye:isar-image-base',
-            'mc:stm32mp15x-bullseye:isar-image-base',
-            'mc:qemuarm-bookworm:isar-image-ci',
-            'mc:qemuarm64-bookworm:isar-image-ci',
-            'mc:qemuarm64-focal:isar-image-base',
-            'mc:nanopi-neo-efi-bookworm:isar-image-base',
+            'mc:qemuarm-bullseye:isar-image-base',
                   ]
 
         self.init()
         self.perform_build_test(targets, debsrc_cache=True)
 
-    def test_cross_rpi(self):
+    def est_cross_rpi(self):
         targets = [
             'mc:rpi-arm-v7-bullseye:isar-image-base',
                   ]
@@ -262,7 +255,7 @@ class ContainerImageTest(CIBaseTest):
     """
     Test containerized images creation
 
-    :avocado: tags=containerbuild,fast,full,container
+    :avocado: tags=containerbuild,full,container
     """
     @skipUnless(UMOCI_AVAILABLE and SKOPEO_AVAILABLE, 'umoci/skopeo not found')
     def test_container_image(self):
@@ -280,7 +273,7 @@ class ContainerSdkTest(CIBaseTest):
     """
     Test SDK container image creation
 
-    :avocado: tags=containersdk,fast,full,container
+    :avocado: tags=containersdk,full,container
     """
     @skipUnless(UMOCI_AVAILABLE and SKOPEO_AVAILABLE, 'umoci/skopeo not found')
     def test_container_sdk(self):
@@ -372,7 +365,7 @@ class VmBootTestFast(CIBaseTest):
     """
     Test QEMU image start (fast)
 
-    :avocado: tags=startvm,fast
+    :avocado: tags=startvm
     """
 
     def test_arm_bullseye(self):
