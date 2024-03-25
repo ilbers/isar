@@ -77,7 +77,8 @@ fi
 if [ "$(echo "$target_device_list" | wc -w)" -gt 1 ]; then
     array=()
     for target in $target_device_list; do
-        array+=("$target" "/dev/$target")
+        target_size=$(lsblk --nodeps --noheadings -o SIZE /dev/"$target")
+        array+=("$target" "/dev/$target $target_size")
     done
     TARGET_DEVICE=$(dialog --clear \
                 --no-tags --menu "Select device to install $DISK_IMAGE" 10 60 3 \
@@ -86,8 +87,8 @@ if [ "$(echo "$target_device_list" | wc -w)" -gt 1 ]; then
 else
     TARGET_DEVICE=$(echo "$target_device_list" | tr -d " ")
 fi
-
-dialog --msgbox "Start installing '$DISK_IMAGE' to '$TARGET_DEVICE'." 7 60
+TARGET_DEVICE_SIZE=$(lsblk --nodeps --noheadings -o SIZE /dev/"$TARGET_DEVICE")
+dialog --msgbox "Start installing '$DISK_IMAGE' to '$TARGET_DEVICE'(Size: '$TARGET_DEVICE_SIZE' )." 7 60
 
 set -e
 bmap_options=""
