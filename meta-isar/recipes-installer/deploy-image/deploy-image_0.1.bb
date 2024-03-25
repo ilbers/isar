@@ -11,8 +11,7 @@ inherit dpkg-raw
 SRC_URI = "file://deploy-image-wic.sh \
            file://install.override.conf \
           "
-DEPENDS = "store-target-image"
-DEBIAN_DEPENDS = "store-target-image, bmap-tools, pv, dialog, util-linux, parted, fdisk, gdisk, pigz, xz-utils, pbzip2, zstd"
+DEBIAN_DEPENDS = "bmap-tools, pv, dialog, util-linux, parted, fdisk, gdisk, pigz, xz-utils, pbzip2, zstd"
 do_install[cleandirs] = "${D}/usr/bin/ \
                          ${D}/usr/lib/systemd/system/getty@tty1.service.d/ \
                          ${D}/usr/lib/systemd/system/serial-getty@ttyS0.service.d/"
