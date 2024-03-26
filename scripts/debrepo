@@ -355,7 +355,7 @@ class DebRepo(object):
         filename = self.get_filename(uri)
         fd = open(f"{self.ctx.repodir}/repo.lock", 'w')
         fcntl.flock(fd, fcntl.LOCK_EX)
-        subprocess.run([
+        result = subprocess.run([
             "reprepro",
             "--dbdir", f"{self.ctx.repodbdir}/{self.ctx.distro}",
             "--outdir", f"{self.ctx.repodir}/{self.ctx.distro}",
@@ -367,7 +367,9 @@ class DebRepo(object):
             "includedsc",
             self.ctx.codename,
             os.path.realpath(f"{self.workdir}/tmp/{filename}")
-            ])
+            ], capture_output=True, timeout=600, text=True)
+        print(result.stdout)
+        print(result.stderr)
         fd.close()
 
     def handle_src_list(self, pkgs):
