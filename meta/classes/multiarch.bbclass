@@ -46,12 +46,16 @@ python multiarch_virtclass_handler() {
     # parse time, and parsing always happens for all build variants. So in those
     # few variables, we automatically replace ${PN} with ${BPN}.
     def fixup_pn_in_vars(d):
-        vars = 'SRC_URI FILESPATH'.split()
-        for var in vars:
-            v = d.getVar(var, expand=False)
-            if v is not None and '${PN}' in v:
-                d.setVar(var + ':remove', v)
-                d.appendVar(var, ' ' + v.replace('${PN}', '${BPN}'))
+        v = d.getVar('SRC_URI', expand=False) or ''
+        for uri in v.split():
+            if '${PN}' in uri:
+                d.setVar('SRC_URI' + ':remove', uri)
+                d.appendVar('SRC_URI', ' ' + uri.replace('${PN}', '${BPN}'))
+
+        v = d.getVar('FILESPATH', expand=False) or ''
+        for path in v.split(':'):
+            if '${PN}' in path:
+                d.appendVar('FILESPATH', ':' + path.replace('${PN}', '${BPN}'))
 
     # When building compat/native, the corresponding suffix needs to be
     # propagated to all bitbake dependency definitions.
