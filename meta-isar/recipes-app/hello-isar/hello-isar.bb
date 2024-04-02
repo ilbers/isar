@@ -17,7 +17,7 @@ DEPENDS += "libhello"
 SRC_URI = " \
     git://github.com/ilbers/hello.git;protocol=https;branch=master;destsuffix=${P} \
     file://subdir/0001-Add-some-help.patch \
-    file://yet-another-change.txt;apply=yes;striplevel=0"
+"
 SRCREV = "b48d15629667377f544e71c7310b80a71d00d9dd"
 
 inherit dpkg
