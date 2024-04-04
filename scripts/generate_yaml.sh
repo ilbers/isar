@@ -78,7 +78,7 @@ done
 # Scan for image recipes, except:
 # - "isar-image-installer" having more complex structure
 
-IMAGES=$(find {meta,meta-isar}/recipes-core/images -iname *.bb -printf "%f\n" \
+IMAGES=$(find {meta,meta-isar,meta-test}/recipes-core/images -iname *.bb -printf "%f\n" \
   | sed -e 's/.bb$//' | grep -v "isar-image-installer"| sort)
 
 for image in ${IMAGES}

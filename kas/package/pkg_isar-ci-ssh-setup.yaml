@@ -1,0 +1,9 @@
+# This software is a part of Isar.
+# Copyright (C) 2024 ilbers GmbH
+
+header:
+  version: 14
+
+local_conf_header:
+  package-isar-ci-ssh-setup: |
+    IMAGE_INSTALL:append = " isar-ci-ssh-setup"

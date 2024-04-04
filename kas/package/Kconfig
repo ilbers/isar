@@ -1,5 +1,5 @@
-# This software is a part of ISAR.
-# Copyright (C) 2023 ilbers GmbH
+# This software is a part of Isar.
+# Copyright (C) 2023-2024 ilbers GmbH
 #
 # Authors:
 #  Uladzimir Bely <ubely@ilbers.de>
@@ -136,6 +136,15 @@ config KAS_INCLUDE_PACKAGE_SSHD_REGEN_KEYS
         string
         default "kas/package/pkg_sshd-regen-keys.yaml"
         depends on PACKAGE_SSHD_REGEN_KEYS
+
+config PACKAGE_ISAR_CI_SSH_SETUP
+        bool "isar-ci-ssh-setup"
+        default n
+
+config KAS_INCLUDE_PACKAGE_ISAR_CI_SSH_SETUP
+        string
+        default "kas/package/pkg_sshd-regen-keys.yaml"
+        depends on PACKAGE_ISAR_CI_SSH_SETUP
 
 endmenu
 

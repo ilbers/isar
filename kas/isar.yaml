@@ -1,5 +1,5 @@
-# This software is a part of ISAR.
-# Copyright (C) 2023 ilbers GmbH
+# This software is a part of Isar.
+# Copyright (C) 2023-2024 ilbers GmbH
 
 header:
   version: 14
@@ -11,6 +11,7 @@ repos:
     layers:
       meta:
       meta-isar:
+      meta-test:
 
 bblayers_conf_header:
   standard: |

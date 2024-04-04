@@ -22,6 +22,14 @@ config IMAGE_DEBUG
 	help
 	  This image includes some tools preinstalled useful for debug.
 
+config IMAGE_CI
+	bool "CI image"
+	select PACKAGE_SSHD_REGEN_KEYS
+	select PACKAGE_ISAR_CI_SSH_SETUP
+	help
+	  This image includes is for running CI. Via isar-ci-ssh-setup recipe.
+	  It creates ci user with non-interactive ssh access to the board.
+
 menuconfig IMAGE_INSTALLER
 	bool "Installer image"
 	help
@@ -44,6 +52,7 @@ config KAS_INCLUDE_IMAGE
 	string
 	default "kas/image/isar-image-base.yaml" if IMAGE_BASE
 	default "kas/image/isar-image-debug.yaml" if IMAGE_DEBUG
+	default "kas/image/isar-image-ci.yaml" if IMAGE_CI
 	default "kas/image/isar-image-installer.yaml" if IMAGE_INSTALLER
 
 endmenu
