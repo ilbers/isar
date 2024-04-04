@@ -5,10 +5,10 @@
 
 require recipes-bsp/trusted-firmware-a/trusted-firmware-a-custom.inc
 
-SRC_URI += "https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git/snapshot/trusted-firmware-a-${PV}.tar.gz"
-SRC_URI[sha256sum] = "88215a62291b9ba87da8e50b077741103cdc08fb6c9e1ebd34dfaace746d3201"
+SRC_URI += "git://git.trustedfirmware.org/TF-A/trusted-firmware-a.git;protocol=https;branch=master"
+SRCREV = "b6c0948400594e3cc4dbb5a4ef04b815d2675808"
 
-S = "${WORKDIR}/trusted-firmware-a-${PV}"
+S = "${WORKDIR}/git"
 
 TF_A_PLATFORM = "k3"
 TF_A_EXTRA_BUILDARGS = "CFG_ARM64=y TARGET_BOARD=lite SPD=opteed"
