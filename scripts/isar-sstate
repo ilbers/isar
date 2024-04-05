@@ -868,10 +868,11 @@ def sstate_lint(target, verbose, sources_dir, build_dir, exit_code, pedantic, li
                sigdata['taskhash_ignore_tasks'] and name in sigdata['taskhash_ignore_tasks'] or \
                name in ADDITIONAL_IGNORED_VARNAMES:
                 continue
-            if not val:
-                continue
             # remove leading whitespaces possibly added by appending
             val = val.lstrip()
+            if not val:
+                continue
+
             if name == 'SRC_URI':
                 src_uri = val.split()
                 for entry in src_uri:
