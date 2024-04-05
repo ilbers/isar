@@ -66,8 +66,16 @@ format as `bitbake-diffsigs`.
 
 The `lint` command searches for common flaws that reduce the cachability
 of a layer, e.g., signatures containing absolute paths from the host
-environment. Issues found this way usually indicate errors in recipes
-or in Isar itself.
+environment. Issues found this way usually indicate errors in recipes or
+in Isar itself.
+
+The `lint` command may be used to check a shared state cache folder, or,
+with the use of the --lint-stamps argument, will check the tmp/stamps
+folder and expects this as an argument. The signature data files must be
+populated in the stamps folder, which requires either a completed build
+or a `bitbake --dump-signatures=`. The value for this argument may be
+`none`, `printdiff`, or others defined in the handler, but `none` is the
+simplest to just generate signature data.
 
 ## Backends
 
@@ -154,10 +162,19 @@ SstateCacheEntry = namedtuple(
 #                    "${PV}:${PR}:${SSTATE_PKGARCH}:${SSTATE_VERSION}:"
 
 # This regex extracts relevant fields:
-SstateRegex = re.compile(r'sstate:(?P<pn>[^:]*):[^:]*:[^:]*:[^:]*:'
+SstateRegex = re.compile(r'(.*/)?sstate:(?P<pn>[^:]*):[^:]*:[^:]*:[^:]*:'
                          r'(?P<arch>[^:]*):[^:]*:(?P<hash>[0-9a-f]*)_'
                          r'(?P<task>[^\.]*)\.(?P<suffix>.*)')
 
+# The filename of stamps and associated signature data is defined in
+# Isar (ith an added suffix of `.<task>.sigdata.<hash>` by BitBake):
+#   STAMPS_DIR ?= "${TMPDIR}/stamps"
+#   STAMP = "${STAMPS_DIR}/${DISTRO}-${DISTRO_ARCH}/${PN}/${PV}-${PR}"
+
+# This regex extracts relevant fields:
+StampsRegex = re.compile(
+    r"(.*/)?(?P<arch>[^/]+)/(?P<pn>[^/]+)/([^/]+)\.do_(?P<task>[^/]+)\.(?P<suffix>sigdata)\.(?P<hash>[0-9a-f]{64})"
+)
 
 class SstateTargetBase(object):
     def __init__(self, path, cached=False):
@@ -288,12 +305,13 @@ class SstateTargetBase(object):
 
 
 class SstateFileTarget(SstateTargetBase):
-    def __init__(self, path, **kwargs):
+    def __init__(self, path, regex=SstateRegex, **kwargs):
         super().__init__(path, **kwargs)
         if path.startswith('file://'):
             path = path[len('file://'):]
         self.path = path
         self.basepath = os.path.abspath(path)
+        self.regex = regex
 
     def __repr__(self):
         return f"file://{self.path}"
@@ -334,12 +352,13 @@ class SstateFileTarget(SstateTargetBase):
         for subdir, dirs, files in os.walk(self.basepath):
             reldir = subdir[(len(self.basepath)+1):]
             for f in files:
-                m = SstateRegex.match(f)
+                relative = os.path.join(reldir, f)
+                m = self.regex.match(relative)
                 if m is not None:
                     islink = os.path.islink(os.path.join(subdir, f))
                     age = int(now - os.path.getmtime(os.path.join(subdir, f)))
                     all_files.append(SstateCacheEntry(
-                        path=os.path.join(reldir, f),
+                        path=relative,
                         size=os.path.getsize(os.path.join(subdir, f)),
                         islink=islink,
                         age=age,
@@ -592,6 +611,9 @@ def arguments():
     parser.add_argument(
         '--exit-code', type=int, default=None,
         help="lint: return this instead of number of found issues")
+    parser.add_argument(
+        '--lint-stamps', default=False, action='store_true',
+        help="lint: assume target is a stamps directory (target must be a local path)")
 
     args = parser.parse_args()
     if args.command in 'upload analyze'.split() and args.source is None:
@@ -798,7 +820,7 @@ def sstate_analyze(source, target, **kwargs):
             print('\n'.join(out))
 
 
-def sstate_lint(target, verbose, sources_dir, build_dir, exit_code, pedantic, **kwargs):
+def sstate_lint(target, verbose, sources_dir, build_dir, exit_code, pedantic, lint_stamps, **kwargs):
     ADDITIONAL_IGNORED_VARNAMES = 'PP'.split()
     # only list non-cacheable tasks here
     # note that these still can break caching of other tasks that depend on these.
@@ -809,7 +831,10 @@ def sstate_lint(target, verbose, sources_dir, build_dir, exit_code, pedantic, **
         print(f"WARNING: target {target} does not exist. Nothing to analyze.")
         return 0
 
-    cache_sigs = {s.hash: s for s in target.list_all() if s.suffix.endswith('.siginfo')}
+    if lint_stamps:
+        cache_sigs = {s.hash: s for s in target.list_all()}
+    else:
+        cache_sigs = {s.hash: s for s in target.list_all() if s.suffix.endswith('.siginfo')}
 
     hits_srcdir = 0
     hits_builddir = 0
@@ -891,10 +916,12 @@ def main():
         target = SstateDavTarget(args.target)
     elif args.target.startswith('s3://'):
         target = SstateS3Target(args.target)
-    elif args.target.startswith('file://'):
-        target = SstateFileTarget(args.target)
-    else:  # no protocol given, assume file://
-        target = SstateFileTarget(args.target)
+    else:  # Either file://, or no protocol given, assume file://
+        target = SstateFileTarget(args.target, StampsRegex if args.lint_stamps else SstateRegex)
+
+    if args.lint_stamps and not isinstance(target, SstateFileTarget):
+        print("ERROR: --lint-stamps only works with local file targets")
+        return 1
 
     args.target = target
     return globals()[f'sstate_{args.command}'](**vars(args))
