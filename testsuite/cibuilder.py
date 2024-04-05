@@ -188,7 +188,7 @@ class CIBuilder(Test):
         if os.path.exists(self.build_dir + '/' + src):
             shutil.move(self.build_dir + '/' + src, self.build_dir + '/' + dst)
 
-    def bitbake(self, target, bitbake_cmd=None, **kwargs):
+    def bitbake(self, target, bitbake_cmd=None, sig_handler=None, **kwargs):
         self.check_init()
         self.log.info('===================================================')
         self.log.info('Building ' + str(target))
@@ -200,6 +200,9 @@ class CIBuilder(Test):
         if bitbake_cmd:
             cmdline.append('-c')
             cmdline.append(bitbake_cmd)
+        if sig_handler:
+            cmdline.append('-S')
+            cmdline.append(sig_handler)
         if isinstance(target, list):
             cmdline.extend(target)
         else:
