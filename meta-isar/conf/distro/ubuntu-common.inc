@@ -32,3 +32,6 @@ IMAGE_PREINSTALL += "init"
 IMAGE_PREINSTALL += "initramfs-tools"
 
 IMAGER_INSTALL:wic += "python3-distutils"
+
+SYSTEMD_BOOTLOADER_INSTALL:focal = "systemd:${DISTRO_ARCH}"
+SYSTEMD_BOOTLOADER_INSTALL:jammy = "systemd:${DISTRO_ARCH}"
