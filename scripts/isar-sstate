@@ -839,6 +839,23 @@ def sstate_lint(target, verbose, sources_dir, build_dir, exit_code, pedantic, **
                 continue
             # remove leading whitespaces possibly added by appending
             val = val.lstrip()
+            if name == 'SRC_URI':
+                src_uri = val.split()
+                for entry in src_uri:
+                    if entry.startswith('file:///'):
+                        entry_path = entry[7:]
+                        if entry_path.startswith(build_dir):
+                            pn_issues.append(f'\033[0;31m-> path in build-dir:   SRC_URI entry "{entry}"\033[0m')
+                            hits_builddir += 1
+                        elif entry_path.startswith(sources_dir):
+                            pn_issues.append(f'\033[0;31m-> path in sources-dir: SRC_URI entry "{entry}"\033[0m')
+                            hits_srcdir += 1
+                        else:
+                            hits_other += 1
+                            if verbose:
+                                pn_issues.append(f'\033[0;34m-> other absolute path: SRC_URI entry "{entry}"\033[0m')
+                continue
+
             if not val[0] == '/':
                 continue
             if val.startswith(build_dir):
