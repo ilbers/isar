@@ -13,6 +13,9 @@ DEBIAN_DEPENDS = "adduser, apt (>= 0.4.2), network-manager, sshd-regen-keys"
 
 inherit dpkg-raw
 
+# Avoid absolute paths in signatures which prevent shared state reuse
+TESTSUITEDIR[vardepvalue] = "${@os.path.relpath('${TESTSUITEDIR}', '${TOPDIR}')}"
+
 do_install() {
     # Install authorized SSH keys
     install -v -d ${D}/var/lib/isar-ci/.ssh/
