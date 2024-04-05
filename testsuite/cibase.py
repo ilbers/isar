@@ -125,6 +125,25 @@ class CIBaseTest(CIBuilder):
         # Remove isar configuration so the the following test creates a new one
         self.delete_from_build_dir('conf')
 
+    def perform_signature_lint(self, targets, verbose=False, sources_dir=isar_root,
+                               excluded_tasks=None, **kwargs):
+        """Generate signature data for target(s) and check for cachability issues."""
+        self.configure(**kwargs)
+        self.move_in_build_dir("tmp", "tmp_before_sstate")
+        self.bitbake(targets, sig_handler="none")
+
+        verbose_arg = "--verbose" if verbose else ""
+        excluded_arg = f"--excluded-tasks {','.join(excluded_tasks)}" if excluded_tasks else ""
+        cmd = f"{isar_root}/scripts/isar-sstate lint --lint-stamps {self.build_dir}/tmp/stamps " \
+              f"--build-dir {self.build_dir} --sources-dir {sources_dir} {verbose_arg} {excluded_arg}"
+        self.log.info(f"Running: {cmd}")
+        exit_status, output = process.getstatusoutput(cmd, ignore_status=True)
+        if exit_status > 0:
+            ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+            for line in output.splitlines():
+                self.log.error(ansi_escape.sub('', line))
+            self.fail("Detected cachability issues")
+
     def perform_sstate_test(self, image_target, package_target, **kwargs):
         def check_executed_tasks(target, expected):
             taskorder_file = glob.glob(f'{self.build_dir}/tmp/work/*/{target}/*/temp/log.task_order')
