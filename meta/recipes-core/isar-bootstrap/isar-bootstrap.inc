@@ -10,7 +10,9 @@ LIC_FILES_CHKSUM = "file://${LAYERDIR_core}/licenses/COPYING.GPLv2;md5=751419260
 FILESPATH:prepend := "${THISDIR}/files:"
 SRC_URI = " \
     file://locale \
-    file://chroot-setup.sh"
+    file://chroot-setup.sh \
+    ${DISTRO_BOOTSTRAP_KEYS} \
+    ${THIRD_PARTY_APT_KEYS}"
 PV = "1.0"
 
 BOOTSTRAP_FOR_HOST ?= "0"
@@ -22,6 +24,8 @@ APTSRCS = "${WORKDIR}/apt-sources"
 APTSRCS_INIT = "${WORKDIR}/apt-sources-init"
 DISTRO_BOOTSTRAP_KEYFILES = ""
 THIRD_PARTY_APT_KEYFILES = ""
+DISTRO_BOOTSTRAP_KEYS ?= ""
+THIRD_PARTY_APT_KEYS ?= ""
 DEPLOY_ISAR_BOOTSTRAP ?= ""
 DISTRO_BOOTSTRAP_BASE_PACKAGES = "locales"
 DISTRO_BOOTSTRAP_BASE_PACKAGES:append:gnupg = ",gnupg"
@@ -48,13 +52,11 @@ python () {
             distro_bootstrap_keys += own_pub_key.split()
 
     for key in distro_bootstrap_keys:
-        d.appendVar("SRC_URI", " %s" % key)
         fetcher = bb.fetch2.Fetch([key], d)
         filename = os.path.relpath(fetcher.localpath(key), topdir)
         d.appendVar("DISTRO_BOOTSTRAP_KEYFILES", " ${TOPDIR}/%s" % filename)
 
     for key in third_party_apt_keys:
-        d.appendVar("SRC_URI", " %s" % key)
         fetcher = bb.fetch2.Fetch([key], d)
         filename = os.path.relpath(fetcher.localpath(key), topdir)
         d.appendVar("THIRD_PARTY_APT_KEYFILES", " ${TOPDIR}/%s" % filename)
