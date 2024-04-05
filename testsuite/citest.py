@@ -290,8 +290,28 @@ class ContainerSdkTest(CIBaseTest):
         self.init()
         self.perform_build_test(targets, bitbake_cmd='do_populate_sdk', container=True)
 
-class SstateTest(CIBaseTest):
+class SignatureTest(CIBaseTest):
+    """
+    Test for signature cachability issues which prevent shared state reuse.
 
+    SstateTest also checks for these, but this test is faster and will check more cases.
+
+    :avocado: tags=signatures,sstate
+    """
+    def test_signature_lint(self):
+        verbose = bool(int(self.params.get("verbose", default=0)))
+        targets = [
+            'mc:qemuamd64-bullseye:isar-image-ci',
+            'mc:qemuarm-bullseye:isar-image-base',
+            'mc:qemuarm-bullseye:isar-image-base:do_populate_sdk',
+            'mc:qemuarm64-bullseye:isar-image-base',
+            'mc:qemuamd64-focal:isar-image-base'
+                  ]
+
+        self.init()
+        self.perform_signature_lint(targets, verbose=verbose)
+
+class SstateTest(CIBaseTest):
     """
     Test builds with artifacts taken from sstate cache
 
