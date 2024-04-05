@@ -128,6 +128,7 @@ apt-get install python3-botocore
 import argparse
 from collections import namedtuple
 import datetime
+from fnmatch import fnmatchcase
 import os
 import re
 import shutil
@@ -153,6 +154,8 @@ try:
     import botocore.session
 except ModuleNotFoundError:
     s3_supported = False
+
+DEFAULT_IGNORED_TASKS = "rootfs_wicenv,image_wic"
 
 SstateCacheEntry = namedtuple(
         'SstateCacheEntry', 'hash path arch pn task suffix islink age size'.split())
@@ -614,6 +617,9 @@ def arguments():
     parser.add_argument(
         '--lint-stamps', default=False, action='store_true',
         help="lint: assume target is a stamps directory (target must be a local path)")
+    parser.add_argument(
+        '--excluded-tasks', type=str, default=DEFAULT_IGNORED_TASKS,
+        help="lint: comma-separated list of tasks to ignore (default: %(default)s)")
 
     args = parser.parse_args()
     if args.command in 'upload analyze'.split() and args.source is None:
@@ -622,6 +628,7 @@ def arguments():
     elif args.command in 'info clean'.split() and args.source is not None:
         print(f"ERROR: '{args.command}' must not have a source (only a target)")
         sys.exit(1)
+    args.excluded_tasks = args.excluded_tasks.split(',')
     return args
 
 
@@ -820,13 +827,14 @@ def sstate_analyze(source, target, **kwargs):
             print('\n'.join(out))
 
 
-def sstate_lint(target, verbose, sources_dir, build_dir, exit_code, pedantic, lint_stamps, **kwargs):
+def sstate_lint(target, verbose, sources_dir, build_dir, exit_code, pedantic, lint_stamps,
+                excluded_tasks, **kwargs):
     ADDITIONAL_IGNORED_VARNAMES = 'PP'.split()
     # only list non-cacheable tasks here
     # note that these still can break caching of other tasks that depend on these.
     # Run in pedantic mode to also look for these issues (e.g. in image-in-image builds)
     # To make a build fully cacheable, avoid absolute paths in BBLAYERS
-    ADDITIONAL_IGNORED_TASKS = list() if pedantic else 'rootfs_wicenv image_wic'.split()
+    ADDITIONAL_IGNORED_TASKS = list() if pedantic else excluded_tasks
     if not target.exists():
         print(f"WARNING: target {target} does not exist. Nothing to analyze.")
         return 0
@@ -840,7 +848,7 @@ def sstate_lint(target, verbose, sources_dir, build_dir, exit_code, pedantic, li
     hits_builddir = 0
     hits_other = 0
     for sig in cache_sigs.values():
-        if sig.task in ADDITIONAL_IGNORED_TASKS:
+        if any(fnmatchcase(sig.task, pattern) for pattern in ADDITIONAL_IGNORED_TASKS):
             continue
 
         sig_file = target.download(sig.path)
