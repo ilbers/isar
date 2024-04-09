@@ -159,7 +159,7 @@ class CIBuilder(Test):
                 f.write('USE_CCACHE = "1"\n')
                 f.write('CCACHE_TOP_DIR = "%s"\n' % ccache_dir)
             if source_date_epoch:
-                f.write('SOURCE_DATE_EPOCH = "%s"\n' % source_date_epoch)
+                f.write('SOURCE_DATE_EPOCH_FALLBACK = "%s"\n' % source_date_epoch)
             if dl_dir:
                 f.write('DL_DIR = "%s"\n' % dl_dir)
             if sstate_dir:

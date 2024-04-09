@@ -589,3 +589,9 @@ compilation for a user-provided module when building it for a distro kernel.
 To build against a distributions snapshot mirror, set `ISAR_USE_APT_SNAPSHOT="1"`.
 The mirror to use is specified in `DISTRO_APT_SNAPSHOT_PREMIRROR` and usually
 pre-defined in the distro config.
+
+### Use OE interface to set timestamp for reproducible builds
+
+The `SOURCE_DATE_EPOCH` (SDE) should not be set globally, but on a per-recipe basis
+and to meaningful values. As a global fallback, set the `SOURCE_DATE_EPOCH_FALLBACK`
+bitbake variable to the desired unix timestamp.
