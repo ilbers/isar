@@ -21,7 +21,7 @@
 THISDIR = "${@os.path.dirname(d.getVar('FILE'))}"
 FILESPATH = "${@base_set_filespath(["${FILE_DIRNAME}/${PF}", "${FILE_DIRNAME}/${P}", "${FILE_DIRNAME}/${PN}", "${FILE_DIRNAME}/files", "${FILE_DIRNAME}"], d)}"
 
-OE_IMPORTS += "os sys time oe.path oe.patch oe.sstatesig oe.utils"
+OE_IMPORTS += "os sys time oe.path oe.patch oe.reproducible oe.sstatesig oe.utils"
 OE_IMPORTS[type] = "list"
 
 def oe_import(d):
@@ -318,3 +318,18 @@ def calculate_build_uuid(d):
 # Unique ID for this build, used to avoid name clashes on external mountpoints
 # When running parallel builds in different PID namespaces
 ISAR_BUILD_UUID = "${@ calculate_build_uuid(d)}"
+
+do_deploy_source_date_epoch[dirs] = "${SDE_DEPLOYDIR}"
+do_deploy_source_date_epoch[sstate-plaindirs] = "${SDE_DEPLOYDIR}"
+addtask do_deploy_source_date_epoch_setscene
+addtask do_deploy_source_date_epoch before do_configure after do_patch
+
+python create_source_date_epoch_stamp() {
+    # Version: 1
+    source_date_epoch = oe.reproducible.get_source_date_epoch(d, d.getVar('S'))
+    oe.reproducible.epochfile_write(source_date_epoch, d.getVar('SDE_FILE'), d)
+}
+do_unpack[postfuncs] += "create_source_date_epoch_stamp"
+
+def get_source_date_epoch_value(d):
+    return oe.reproducible.epochfile_read(d.getVar('SDE_FILE'), d)
