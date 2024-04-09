@@ -78,7 +78,8 @@ class CIBuilder(Test):
                   container=False, ccache=False, sstate=False, offline=False,
                   gpg_pub_key=None, wic_deploy_parts=False, dl_dir=None,
                   sstate_dir=None, ccache_dir=None,
-                  source_date_epoch=None, image_install=None, **kwargs):
+                  source_date_epoch=None, use_apt_snapshot=False,
+                  image_install=None, **kwargs):
         # write configuration file and set bitbake_args
         # can run multiple times per test case
         self.check_init()
@@ -116,6 +117,7 @@ class CIBuilder(Test):
                       f'  gpg_pub_key = {gpg_pub_key}\n'
                       f'  wic_deploy_parts = {wic_deploy_parts}\n'
                       f'  source_date_epoch = {source_date_epoch} \n'
+                      f'  use_apt_snapshot = {use_apt_snapshot} \n'
                       f'  dl_dir = {dl_dir}\n'
                       f'  sstate_dir = {sstate_dir}\n'
                       f'  ccache_dir = {ccache_dir}\n'
@@ -160,6 +162,8 @@ class CIBuilder(Test):
                 f.write('CCACHE_TOP_DIR = "%s"\n' % ccache_dir)
             if source_date_epoch:
                 f.write('SOURCE_DATE_EPOCH_FALLBACK = "%s"\n' % source_date_epoch)
+            if use_apt_snapshot:
+                f.write('ISAR_USE_APT_SNAPSHOT = "1"\n')
             if dl_dir:
                 f.write('DL_DIR = "%s"\n' % dl_dir)
             if sstate_dir:
