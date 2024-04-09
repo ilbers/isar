@@ -431,6 +431,9 @@ Some other variables include:
  - `HOST_DISTRO_APT_PREFERENCES` - List of apt preference files for SDK root filesystem. This variable is optional.
  - `HOST_DISTRO_BOOTSTRAP_KEYS` - Analogously to DISTRO_BOOTSTRAP_KEYS: List of gpg key URIs used to verify apt bootstrap repo for the host.
  - `DISTRO_APT_PREMIRRORS` - The preferred mirror (append it to the default URI in the format `ftp.debian.org my.preferred.mirror`. This variable is optional. PREMIRRORS will be used only for the build. The final images will have the sources list as mentioned in DISTRO_APT_SOURCES.
+ - `ISAR_USE_APT_SNAPSHOT` - Use a frozen apt snapshot instead of the live mirror. Optional.
+ - `DISTRO_APT_SNAPSHOT_PREMIRROR` - Similar to `DISTRO_APT_PREMIRRORS` but for a snapshot, pre-defined for supported distros.
+ - `ISAR_APT_SNAPSHOT_TIMESTAMP` - Timestamp of the apt snapshot. Automatically derived from `SOURCE_DATE_EPOCH` if not overwritten.
  - `THIRD_PARTY_APT_KEYS` - List of gpg key URIs used to verify apt repos for apt installation after bootstrapping.
  - `FILESEXTRAPATHS` - The default directories BitBake uses when it processes recipes are initially defined by the FILESPATH variable. You can extend FILESPATH variable by using FILESEXTRAPATHS.
  - `FILESOVERRIDES` - A subset of OVERRIDES used by the build system for creating FILESPATH. The FILESOVERRIDES variable uses overrides to automatically extend the FILESPATH variable.

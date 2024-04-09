@@ -34,6 +34,9 @@ DISTRO_VARS_PREFIX ?= "${@'HOST_' if bb.utils.to_boolean(d.getVar('BOOTSTRAP_FOR
 BOOTSTRAP_DISTRO = "${@d.getVar('HOST_DISTRO' if bb.utils.to_boolean(d.getVar('BOOTSTRAP_FOR_HOST')) else 'DISTRO')}"
 BOOTSTRAP_BASE_DISTRO = "${@d.getVar('HOST_BASE_DISTRO' if bb.utils.to_boolean(d.getVar('BOOTSTRAP_FOR_HOST')) else 'BASE_DISTRO')}"
 FILESEXTRAPATHS:append = ":${BBPATH}"
+# reproducible builds, only enabled if ISAR_USE_APT_SNAPSHOT
+ISAR_APT_SNAPSHOT_MIRROR ??= ""
+APT_SNAPSHOT_DATE = "${@ get_apt_snapshot_date(d)}"
 
 inherit deb-dl-dir
 
@@ -109,11 +112,21 @@ def parse_aptsources_list_line(source_list_line):
 
     return [type, options, source, suite, components]
 
+def get_apt_snapshot_date(d):
+    import time
+    source_date_epoch = d.getVar('ISAR_APT_SNAPSHOT_TIMESTAMP')
+    return time.strftime('%Y%m%dT%H%M%SZ', time.gmtime(int(source_date_epoch)))
+
 def get_apt_source_mirror(d, aptsources_entry_list):
     import re
 
+    # this is executed during parsing. No error checking possible
+    use_snapshot = bb.utils.to_boolean(d.getVar('ISAR_USE_APT_SNAPSHOT'))
+    snapshot_mirror = d.getVar('DISTRO_APT_SNAPSHOT_PREMIRROR')
     if bb.utils.to_boolean(d.getVar('ISAR_USE_CACHED_BASE_REPO')):
         premirrors = "\S* file://${REPO_BASE_DIR}/${BOOTSTRAP_BASE_DISTRO}\n"
+    elif use_snapshot and snapshot_mirror:
+        premirrors = snapshot_mirror
     else:
         premirrors = d.getVar('DISTRO_APT_PREMIRRORS') or ""
     mirror_list = [entry.split()
@@ -128,6 +141,8 @@ def get_apt_source_mirror(d, aptsources_entry_list):
             new_aptsources_entry_list[2] = re.sub(regex, replace,
                                                   aptsources_entry_list[2],
                                                   count = 1)
+            if use_snapshot:
+                new_aptsources_entry_list[1] = "[check-valid-until=no]"
             return new_aptsources_entry_list
 
     return aptsources_entry_list
@@ -242,6 +257,7 @@ do_apt_config_prepare[vardeps] += " \
     APTSRCS \
     ${DISTRO_VARS_PREFIX}DISTRO_APT_SOURCES \
     DEPLOY_ISAR_BOOTSTRAP \
+    ${@'DISTRO_APT_SNAPSHOT_PREMIRROR' if bb.utils.to_boolean(d.getVar('ISAR_USE_APT_SNAPSHOT')) else ''} \
     "
 python do_apt_config_prepare() {
     apt_preferences_out = d.getVar("APTPREFS")

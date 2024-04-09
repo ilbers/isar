@@ -583,3 +583,9 @@ Cross compiling kernel modules for distro kernels is not supported in debian.
 To simplify downstream kernel module builds, we automatically turn of cross
 compilation for a user-provided module when building it for a distro kernel.
 
+
+### Build against debian snapshot mirror
+
+To build against a distributions snapshot mirror, set `ISAR_USE_APT_SNAPSHOT="1"`.
+The mirror to use is specified in `DISTRO_APT_SNAPSHOT_PREMIRROR` and usually
+pre-defined in the distro config.
