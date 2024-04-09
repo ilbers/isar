@@ -40,6 +40,17 @@ config KAS_INCLUDE_MIRROR_UBUNTU
 	default "kas/opt/mirror-ubuntu.yaml"
 	depends on MIRROR_UBUNTU
 
+config USE_APT_SNAPSHOT
+	bool "Use the distros snapshot mirror"
+	depends on !MIRROR_DEBIAN && (DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM || DEBIAN_TRIXIE || UBUNTU_FOCAL || UBUNTU_JAMMY)
+	help
+		Use a snapshot mirror for the selected distribution. The date is defined by ISAR_APT_SNAPSHOT_TIMESTAMP.
+
+config KAS_INCLUDE_APT_SNAPSHOT
+	string
+	default "kas/opt/mirror-snapshot.yaml"
+	depends on USE_APT_SNAPSHOT
+
 endmenu
 
 

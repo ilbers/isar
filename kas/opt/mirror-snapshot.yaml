@@ -1,0 +1,9 @@
+# This software is a part of ISAR.
+# Copyright (C) 2024 Siemens AG
+
+header:
+  version: 14
+
+local_conf_header:
+  mirror-debian: |
+    ISAR_USE_APT_SNAPSHOT = "1"
