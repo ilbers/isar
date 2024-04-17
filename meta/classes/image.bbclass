@@ -432,7 +432,7 @@ EOSUDO
 
     # Sometimes qemu-user-static generates coredumps in chroot, move them
     # to work temporary directory and inform user about it.
-    for f in $(sudo find ${ROOTFSDIR} -type f -name *.core); do
+    for f in $(sudo find ${ROOTFSDIR} -type f -exec file --mime-type {} \; | grep 'application/x-coredump' | cut -d: -f1); do
         sudo mv "${f}" "${WORKDIR}/temp/"
         bbwarn "found core dump in rootfs, check it in ${WORKDIR}/temp/${f##*/}"
     done
