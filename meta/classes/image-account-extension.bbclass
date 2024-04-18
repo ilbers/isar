@@ -8,6 +8,16 @@
 USERS ??= ""
 GROUPS ??= ""
 
+python() {
+    for entry in (d.getVar("GROUPS") or "").split():
+        group_entry = "GROUP_{}".format(entry)
+        d.appendVarFlag("image_postprocess_accounts", "vardeps", " {}".format(group_entry))
+
+    for entry in (d.getVar("USERS") or "").split():
+        user_entry = "USER_{}".format(entry)
+        d.appendVarFlag("image_postprocess_accounts", "vardeps", " {}".format(user_entry))
+}
+
 def image_create_groups(d: "DataSmart") -> None:
     """Creates the groups defined in the ``GROUPS`` bitbake variable.
 
@@ -130,11 +140,12 @@ def image_create_users(d: "DataSmart") -> None:
 
 
 ROOTFS_POSTPROCESS_COMMAND += "image_postprocess_accounts"
+image_postprocess_accounts[vardeps] += "USERS GROUPS SOURCE_DATE_EPOCH"
 python image_postprocess_accounts() {
     import os
     if d.getVar("SOURCE_DATE_EPOCH") != None:
         os.environ["SOURCE_DATE_EPOCH"] = d.getVar("SOURCE_DATE_EPOCH")
- 
+
     image_create_groups(d)
     image_create_users(d)
 }
