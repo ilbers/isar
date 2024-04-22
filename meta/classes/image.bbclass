@@ -439,14 +439,8 @@ EOSUDO
 
     # Set same time-stamps to the newly generated file/folders in the
     # rootfs image for the purpose of reproducible builds.
-    fn="${DEPLOY_DIR_IMAGE}/files.modified_timestamps"
-    if sudo find ${ROOTFSDIR} -newermt "$(date -d@${SOURCE_DATE_EPOCH} '+%Y-%m-%d %H:%M:%S')" \
-        -printf "%y %p\n" -exec touch '{}' -h -d@${SOURCE_DATE_EPOCH} ';' | egrep ^f >"$fn"; then
-        if [ -e "$fn" ]; then
-            bbwarn "modified timestamp (${SOURCE_DATE_EPOCH}) of $(cat "$fn" | wc -l) files for image reproducibly." \
-                    "List of files modified can be found in: .${DEPLOY_DIR_IMAGE}/files.modified_timestamps"
-        fi
-    fi
+    sudo find ${ROOTFSDIR} -newermt "$(date -d@${SOURCE_DATE_EPOCH} '+%Y-%m-%d %H:%M:%S')" \
+        -exec touch '{}' -h -d@${SOURCE_DATE_EPOCH} ';'
 }
 do_rootfs_finalize[network] = "${TASK_USE_SUDO}"
 addtask rootfs_finalize before do_rootfs after do_rootfs_postprocess
