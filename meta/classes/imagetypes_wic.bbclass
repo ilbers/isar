@@ -157,9 +157,6 @@ generate_wic_image() {
     export FAKEROOTCMD=${FAKEROOTCMD}
     export BUILDDIR=${TOPDIR}
     export MTOOLS_SKIP_CHECK=1
-    if [ ! -z "${SOURCE_DATE_EPOCH}" ]; then
-        export SOURCE_DATE_EPOCH="${SOURCE_DATE_EPOCH}"
-    fi
     mkdir -p ${IMAGE_ROOTFS}/../pseudo
     touch ${IMAGE_ROOTFS}/../pseudo/files.db
 

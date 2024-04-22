@@ -38,11 +38,6 @@ do_generate_initramfs() {
     rootfs_do_mounts
     rootfs_do_qemu
 
-    # generate reproducible initrd if requested
-    if [ ! -z "${SOURCE_DATE_EPOCH}" ]; then
-        export SOURCE_DATE_EPOCH="${SOURCE_DATE_EPOCH}"
-    fi
-
     sudo -E chroot "${INITRAMFS_ROOTFS}" sh -c '\
         export kernel_version=$(basename /boot/vmlinu[xz]* | cut -d'-' -f2-); \
         if [ -n "$kernel_version" ]; then \

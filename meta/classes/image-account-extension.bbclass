@@ -124,11 +124,10 @@ def image_create_users(d: "DataSmart") -> None:
                 # chpasswd adds a random salt when running against a clear-text password.
                 # For reproducible images, we manually generate the password and use the
                 # SOURCE_DATE_EPOCH to generate the salt in a deterministic way.
-                source_date_epoch = d.getVar("SOURCE_DATE_EPOCH") or ""
-                if source_date_epoch:
-                    command.append("-e")
-                    salt = hashlib.sha256("{}\n".format(source_date_epoch).encode()).hexdigest()[0:15]
-                    password = bb.process.run('openssl passwd -6 --salt {} {}'.format(salt, password))[0].strip()
+                source_date_epoch = d.getVar("SOURCE_DATE_EPOCH")
+                command.append("-e")
+                salt = hashlib.sha256("{}\n".format(source_date_epoch).encode()).hexdigest()[0:15]
+                password = bb.process.run('openssl passwd -6 --salt {} {}'.format(salt, password))[0].strip()
 
             else:
                 command.append("-e")
@@ -140,12 +139,8 @@ def image_create_users(d: "DataSmart") -> None:
 
 
 ROOTFS_POSTPROCESS_COMMAND += "image_postprocess_accounts"
-image_postprocess_accounts[vardeps] += "USERS GROUPS SOURCE_DATE_EPOCH"
+image_postprocess_accounts[vardeps] += "USERS GROUPS"
 python image_postprocess_accounts() {
-    import os
-    if d.getVar("SOURCE_DATE_EPOCH") != None:
-        os.environ["SOURCE_DATE_EPOCH"] = d.getVar("SOURCE_DATE_EPOCH")
-
     image_create_groups(d)
     image_create_users(d)
 }

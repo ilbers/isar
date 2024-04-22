@@ -310,10 +310,6 @@ do_bootstrap() {
     sudo rm -rf --one-file-system "${ROOTFSDIR}"
     deb_dl_dir_import "${ROOTFSDIR}" "${BOOTSTRAP_BASE_DISTRO}-${BASE_DISTRO_CODENAME}"
 
-    if [ -n "${SOURCE_DATE_EPOCH}" ]; then
-        export SOURCE_DATE_EPOCH="${SOURCE_DATE_EPOCH}"
-    fi
-
     sudo -E -s <<'EOSUDO'
         set -e
         if [ "${BOOTSTRAP_FOR_HOST}" = "0" ]; then

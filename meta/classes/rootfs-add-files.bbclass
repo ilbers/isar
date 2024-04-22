@@ -16,10 +16,6 @@ ROOTFS_ADDITIONAL_FILES ??= ""
 
 
 python rootfs_add_files() {
-    import os
-    if d.getVar("SOURCE_DATE_EPOCH") != None:
-        os.environ["SOURCE_DATE_EPOCH"] = d.getVar("SOURCE_DATE_EPOCH")
-
     postprocess_additional_files = d.getVar('ROOTFS_ADDITIONAL_FILES').split()
     rootfsdir = d.getVar("ROOTFSDIR")
 

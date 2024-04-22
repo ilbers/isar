@@ -289,18 +289,6 @@ python() {
     d.appendVar('IMAGER_BUILD_DEPS', ' ' + ' '.join(sorted(imager_build_deps)))
 }
 
-
-# make generation of initramfs reproducible
-# note: this function is shared across multiple rootfs, but we only want to make the
-#       image rootfs reproducible. Otherwise changes of SOURCE_DATE_EPOCH would
-#       invalidate the SSTATE entries for most packages, even if they don't use the
-#       global SOURCE_DATE_EPOCH variable.
-rootfs_install_pkgs_install:prepend() {
-    if [ ! -z "${SOURCE_DATE_EPOCH}" ]; then
-        export SOURCE_DATE_EPOCH="${SOURCE_DATE_EPOCH}"
-    fi
-}
-
 # here we call a command that should describe your whole build system,
 # this could be "git describe" or something similar.
 # set ISAR_RELEASE_CMD to customize, or override do_mark_rootfs to do something
@@ -451,17 +439,14 @@ EOSUDO
 
     # Set same time-stamps to the newly generated file/folders in the
     # rootfs image for the purpose of reproducible builds.
-    if [ -n "${SOURCE_DATE_EPOCH}" ]; then
-        fn="${DEPLOY_DIR_IMAGE}/files.modified_timestamps"
-        if sudo find ${ROOTFSDIR} -newermt "$(date -d@${SOURCE_DATE_EPOCH} '+%Y-%m-%d %H:%M:%S')" \
-            -printf "%y %p\n" -exec touch '{}' -h -d@${SOURCE_DATE_EPOCH} ';' | egrep ^f >"$fn"; then
-            if [ -e "$fn" ]; then
-                bbwarn "modified timestamp (${SOURCE_DATE_EPOCH}) of $(cat "$fn" | wc -l) files for image reproducibly." \
-                       "List of files modified can be found in: .${DEPLOY_DIR_IMAGE}/files.modified_timestamps"
-            fi
+    fn="${DEPLOY_DIR_IMAGE}/files.modified_timestamps"
+    if sudo find ${ROOTFSDIR} -newermt "$(date -d@${SOURCE_DATE_EPOCH} '+%Y-%m-%d %H:%M:%S')" \
+        -printf "%y %p\n" -exec touch '{}' -h -d@${SOURCE_DATE_EPOCH} ';' | egrep ^f >"$fn"; then
+        if [ -e "$fn" ]; then
+            bbwarn "modified timestamp (${SOURCE_DATE_EPOCH}) of $(cat "$fn" | wc -l) files for image reproducibly." \
+                    "List of files modified can be found in: .${DEPLOY_DIR_IMAGE}/files.modified_timestamps"
         fi
     fi
-
 }
 do_rootfs_finalize[network] = "${TASK_USE_SUDO}"
 addtask rootfs_finalize before do_rootfs after do_rootfs_postprocess

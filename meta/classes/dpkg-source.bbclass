@@ -11,9 +11,6 @@ do_dpkg_source() {
     # Create a .dsc file from source directory to use it with sbuild
     DEB_SOURCE_NAME=$(dpkg-parsechangelog --show-field Source --file ${WORKDIR}/${PPS}/debian/changelog)
     find ${WORKDIR} -name "${DEB_SOURCE_NAME}*.dsc" -maxdepth 1 -delete
-    if [ ! -z "${SOURCE_DATE_EPOCH}" ]; then
-        export SOURCE_DATE_EPOCH="${SOURCE_DATE_EPOCH}"
-    fi
     sh -c "cd ${WORKDIR}; dpkg-source ${DPKG_SOURCE_EXTRA_ARGS} -b ${PPS}"
 }
 addtask dpkg_source after do_prepare_build before do_dpkg_build
