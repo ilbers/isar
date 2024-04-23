@@ -68,7 +68,7 @@ config MACHINE_QEMU_I386
 
 config MACHINE_QEMU_MIPSEL
 	bool "qemumipsel"
-	depends on DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM
+	depends on DEBIAN_BULLSEYE || DEBIAN_BOOKWORM
 
 config MACHINE_QEMU_RISCV64
 	bool "qemuriscv64"
