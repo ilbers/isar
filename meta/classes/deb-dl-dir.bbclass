@@ -53,7 +53,9 @@ debsrc_fill_base_apt() {
         local dscfile=$(find "${DEBSRCDIR}"/"${rootfs_distro}" -name "${dscname}.dsc")
         [ -n "$dscfile" ] && continue
 
-        srcpkgs="${srcpkgs} ${src}=${version}"
+        if [ `echo ${srcpkgs} | grep -c "${src}=${version}"` -le 0 ]; then
+            srcpkgs="${srcpkgs} ${src}=${version}"
+        fi
     done
     debrepo_add_packages --srcmode "${DEBREPO_TARGET_DIR}" "${srcpkgs}"
 }
