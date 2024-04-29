@@ -94,6 +94,9 @@ import apt_pkg
 import apt.progress.base
 
 
+REPREPRO_TIMEOUT = 1200
+
+
 class DebRepo(object):
     class DebRepoCtx(object):
         def __init__(self, workdir):
@@ -314,7 +317,7 @@ class DebRepo(object):
             "includedeb",
             self.ctx.codename,
             item.destfile
-            ])
+            ], timeout=REPREPRO_TIMEOUT)
         fd.close()
 
     def handle_repo(self, fetcher):
@@ -365,7 +368,7 @@ class DebRepo(object):
             "includedsc",
             self.ctx.codename,
             os.path.realpath(f"{self.workdir}/tmp/{filename}")
-            ])
+            ], timeout=REPREPRO_TIMEOUT)
         fd.close()
 
     def handle_src_list(self, pkgs):
