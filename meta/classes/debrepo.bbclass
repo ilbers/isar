@@ -39,8 +39,6 @@ debrepo_add_packages() {
 
     if [ -n "${GNUPGHOME}" ]; then
         export GNUPGHOME="${GNUPGHOME}"
-    else
-        export GNUPGHOME="${WORKDIR}/gpghome"
     fi
 
     flock -x "${workdir}/repo.lock" -c "
