@@ -404,8 +404,8 @@ The user and groups defined by the variables `USERS` and `GROUPS`
 was moved from image configuration to image post processing. The users and
 groups are now created after all packages are installed.
 
-Changes in next
----------------
+Changes in v0.10
+----------------
 
 ### Buildchroot no longer used for package building
 
@@ -567,10 +567,13 @@ When building a custom kernel module, the `KBuild` file might be located in
 a subdirectory. To support this use-case, set `MODULE_DIR=$(PWD)/subdir` in
 the module build recipe.
 
-### function debianize:deb_compat is removed
+### Function debianize:deb_compat is removed
 
 Remove all uses of the function deb_compat. The functionality was replaced with
 a dependency to the package debhelper-compat.
+
+Changes in next
+---------------
 
 ### Change OPTEE_BINARIES default ###0
 
