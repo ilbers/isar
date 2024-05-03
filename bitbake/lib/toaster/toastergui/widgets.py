@@ -7,6 +7,7 @@
 #
 
 from django.views.generic import View, TemplateView
+from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_control
 from django.shortcuts import HttpResponse
 from django.core.cache import cache
@@ -31,6 +32,7 @@ import re
 import os
 
 from toastergui.tablefilter import TableFilterMap
+from toastermain.logs import log_view_mixin
 
 try:
     from urllib import unquote_plus
@@ -63,8 +65,8 @@ class ToasterTable(TemplateView):
         self.default_orderby = ""
 
     # prevent HTTP caching of table data
-    @cache_control(must_revalidate=True,
-                   max_age=0, no_store=True, no_cache=True)
+    @method_decorator(cache_control(must_revalidate=True,
+                   max_age=0, no_store=True, no_cache=True))
     def dispatch(self, *args, **kwargs):
         return super(ToasterTable, self).dispatch(*args, **kwargs)
 
@@ -83,6 +85,7 @@ class ToasterTable(TemplateView):
 
         return context
 
+    @log_view_mixin
     def get(self, request, *args, **kwargs):
         if request.GET.get('format', None) == 'json':
 
@@ -304,6 +307,7 @@ class ToasterTable(TemplateView):
 
         self.setup_columns(**kwargs)
 
+        self.apply_orderby('pk')
         if search:
             self.apply_search(search)
         if filters:
@@ -413,6 +417,7 @@ class ToasterTypeAhead(View):
     def __init__(self, *args, **kwargs):
         super(ToasterTypeAhead, self).__init__()
 
+    @log_view_mixin
     def get(self, request, *args, **kwargs):
         def response(data):
             return HttpResponse(json.dumps(data,
@@ -468,6 +473,7 @@ class MostRecentBuildsView(View):
 
         return False
 
+    @log_view_mixin
     def get(self, request, *args, **kwargs):
         """
         Returns a list of builds in JSON format.

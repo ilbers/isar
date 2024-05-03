@@ -41,8 +41,9 @@ def foreach_dependencies(shrinkwrap, callback=None, dev=False):
         with:
             name = the package name (string)
             params = the package parameters (dictionary)
-            deptree = the package dependency tree (array of strings)
+            destdir = the destination of the package (string)
     """
+    # For handling old style dependencies entries in shinkwrap files
     def _walk_deps(deps, deptree):
         for name in deps:
             subtree = [*deptree, name]
@@ -52,9 +53,22 @@ def foreach_dependencies(shrinkwrap, callback=None, dev=False):
                     continue
                 elif deps[name].get("bundled", False):
                     continue
-                callback(name, deps[name], subtree)
+                destsubdirs = [os.path.join("node_modules", dep) for dep in subtree]
+                destsuffix = os.path.join(*destsubdirs)
+                callback(name, deps[name], destsuffix)
 
-    _walk_deps(shrinkwrap.get("dependencies", {}), [])
+    # packages entry means new style shrinkwrap file, else use dependencies
+    packages = shrinkwrap.get("packages", None)
+    if packages is not None:
+        for package in packages:
+            if package != "":
+                name = package.split('node_modules/')[-1]
+                package_infos = packages.get(package, {})
+                if dev == False and package_infos.get("dev", False):
+                    continue
+                callback(name, package_infos, package)
+    else:
+        _walk_deps(shrinkwrap.get("dependencies", {}), [])
 
 class NpmShrinkWrap(FetchMethod):
     """Class to fetch all package from a shrinkwrap file"""
@@ -75,12 +89,10 @@ class NpmShrinkWrap(FetchMethod):
         # Resolve the dependencies
         ud.deps = []
 
-        def _resolve_dependency(name, params, deptree):
+        def _resolve_dependency(name, params, destsuffix):
             url = None
             localpath = None
             extrapaths = []
-            destsubdirs = [os.path.join("node_modules", dep) for dep in deptree]
-            destsuffix = os.path.join(*destsubdirs)
             unpack = True
 
             integrity = params.get("integrity", None)
@@ -129,10 +141,28 @@ class NpmShrinkWrap(FetchMethod):
 
                 localpath = os.path.join(d.getVar("DL_DIR"), localfile)
 
+            # Handle local tarball and link sources
+            elif version.startswith("file"):
+                localpath = version[5:]
+                if not version.endswith(".tgz"):
+                    unpack = False
+
             # Handle git sources
-            elif version.startswith("git"):
+            elif version.startswith(("git", "bitbucket","gist")) or (
+                not version.endswith((".tgz", ".tar", ".tar.gz"))
+                and not version.startswith((".", "@", "/"))
+                and "/" in version
+            ):
                 if version.startswith("github:"):
                     version = "git+https://github.com/" + version[len("github:"):]
+                elif version.startswith("gist:"):
+                    version = "git+https://gist.github.com/" + version[len("gist:"):]
+                elif version.startswith("bitbucket:"):
+                    version = "git+https://bitbucket.org/" + version[len("bitbucket:"):]
+                elif version.startswith("gitlab:"):
+                    version = "git+https://gitlab.com/" + version[len("gitlab:"):]
+                elif not version.startswith(("git+","git:")):
+                    version = "git+https://github.com/" + version
                 regex = re.compile(r"""
                     ^
                     git\+
@@ -158,16 +188,12 @@ class NpmShrinkWrap(FetchMethod):
 
                 url = str(uri)
 
-            # Handle local tarball and link sources
-            elif version.startswith("file"):
-                localpath = version[5:]
-                if not version.endswith(".tgz"):
-                    unpack = False
-
             else:
                 raise ParameterError("Unsupported dependency: %s" % name, ud.url)
 
+            # name is needed by unpack tracer for module mapping
             ud.deps.append({
+                "name": name,
                 "url": url,
                 "localpath": localpath,
                 "extrapaths": extrapaths,
@@ -193,19 +219,23 @@ class NpmShrinkWrap(FetchMethod):
         # This fetcher resolves multiple URIs from a shrinkwrap file and then
         # forwards it to a proxy fetcher. The management of the donestamp file,
         # the lockfile and the checksums are forwarded to the proxy fetcher.
-        ud.proxy = Fetch([dep["url"] for dep in ud.deps if dep["url"]], data)
+        shrinkwrap_urls = [dep["url"] for dep in ud.deps if dep["url"]]
+        if shrinkwrap_urls:
+            ud.proxy = Fetch(shrinkwrap_urls, data)
         ud.needdonestamp = False
 
     @staticmethod
     def _foreach_proxy_method(ud, handle):
         returns = []
-        for proxy_url in ud.proxy.urls:
-            proxy_ud = ud.proxy.ud[proxy_url]
-            proxy_d = ud.proxy.d
-            proxy_ud.setup_localpath(proxy_d)
-            lf = lockfile(proxy_ud.lockfile)
-            returns.append(handle(proxy_ud.method, proxy_ud, proxy_d))
-            unlockfile(lf)
+        #Check if there are dependencies before try to fetch them
+        if len(ud.deps) > 0:
+            for proxy_url in ud.proxy.urls:
+                proxy_ud = ud.proxy.ud[proxy_url]
+                proxy_d = ud.proxy.d
+                proxy_ud.setup_localpath(proxy_d)
+                lf = lockfile(proxy_ud.lockfile)
+                returns.append(handle(proxy_ud.method, proxy_ud, proxy_d))
+                unlockfile(lf)
         return returns
 
     def verify_donestamp(self, ud, d):
@@ -242,6 +272,7 @@ class NpmShrinkWrap(FetchMethod):
         destsuffix = ud.parm.get("destsuffix")
         if destsuffix:
             destdir = os.path.join(rootdir, destsuffix)
+        ud.unpack_tracer.unpack("npm-shrinkwrap", destdir)
 
         bb.utils.mkdirhier(destdir)
         bb.utils.copyfile(ud.shrinkwrap_file,

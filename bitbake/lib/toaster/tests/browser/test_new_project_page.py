@@ -6,11 +6,11 @@
 #
 # SPDX-License-Identifier: GPL-2.0-only
 #
-
 from django.urls import reverse
 from tests.browser.selenium_helpers import SeleniumTestCase
 from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import InvalidElementStateException
+from selenium.webdriver.common.by import By
 
 from orm.models import Project, Release, BitbakeVersion
 
@@ -47,7 +47,7 @@ class TestNewProjectPage(SeleniumTestCase):
 
         url = reverse('newproject')
         self.get(url)
-
+        self.wait_until_visible('#new-project-name', poll=3)
         self.enter_text('#new-project-name', project_name)
 
         select = Select(self.find('#projectversion'))
@@ -57,7 +57,8 @@ class TestNewProjectPage(SeleniumTestCase):
 
         # We should get redirected to the new project's page with the
         # notification at the top
-        element = self.wait_until_visible('#project-created-notification')
+        element = self.wait_until_visible(
+            '#project-created-notification', poll=3)
 
         self.assertTrue(project_name in element.text,
                         "New project name not in new project notification")
@@ -78,13 +79,20 @@ class TestNewProjectPage(SeleniumTestCase):
 
         url = reverse('newproject')
         self.get(url)
+        self.wait_until_visible('#new-project-name', poll=3)
 
         self.enter_text('#new-project-name', project_name)
 
         select = Select(self.find('#projectversion'))
         select.select_by_value(str(self.release.pk))
 
-        element = self.wait_until_visible('#hint-error-project-name')
+        radio = self.driver.find_element(By.ID, 'type-new')
+        radio.click()
+
+        self.click("#create-project-button")
+
+        self.wait_until_present('#hint-error-project-name', poll=3)
+        element = self.find('#hint-error-project-name')
 
         self.assertTrue(("Project names must be unique" in element.text),
                         "Did not find unique project name error message")

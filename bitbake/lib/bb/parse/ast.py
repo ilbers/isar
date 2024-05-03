@@ -9,6 +9,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 #
 
+import sys
 import bb
 from bb import methodpool
 from bb.parse import logger
@@ -210,10 +211,12 @@ class ExportFuncsNode(AstNode):
 
     def eval(self, data):
 
+        sentinel = "    # Export function set\n"
         for func in self.n:
             calledfunc = self.classname + "_" + func
 
-            if data.getVar(func, False) and not data.getVarFlag(func, 'export_func', False):
+            basevar = data.getVar(func, False)
+            if basevar and sentinel not in basevar:
                 continue
 
             if data.getVar(func, False):
@@ -230,12 +233,11 @@ class ExportFuncsNode(AstNode):
             data.setVarFlag(func, "lineno", 1)
 
             if data.getVarFlag(calledfunc, "python", False):
-                data.setVar(func, "    bb.build.exec_func('" + calledfunc + "', d)\n", parsing=True)
+                data.setVar(func, sentinel + "    bb.build.exec_func('" + calledfunc + "', d)\n", parsing=True)
             else:
                 if "-" in self.classname:
                    bb.fatal("The classname %s contains a dash character and is calling an sh function %s using EXPORT_FUNCTIONS. Since a dash is illegal in sh function names, this cannot work, please rename the class or don't use EXPORT_FUNCTIONS." % (self.classname, calledfunc))
-                data.setVar(func, "    " + calledfunc + "\n", parsing=True)
-            data.setVarFlag(func, 'export_func', '1')
+                data.setVar(func, sentinel + "    " + calledfunc + "\n", parsing=True)
 
 class AddTaskNode(AstNode):
     def __init__(self, filename, lineno, func, before, after):
@@ -269,6 +271,41 @@ class BBHandlerNode(AstNode):
             data.setVarFlag(h, "handler", 1)
         data.setVar('__BBHANDLERS', bbhands)
 
+class PyLibNode(AstNode):
+    def __init__(self, filename, lineno, libdir, namespace):
+        AstNode.__init__(self, filename, lineno)
+        self.libdir = libdir
+        self.namespace = namespace
+
+    def eval(self, data):
+        global_mods = (data.getVar("BB_GLOBAL_PYMODULES") or "").split()
+        for m in global_mods:
+            if m not in bb.utils._context:
+                bb.utils._context[m] = __import__(m)
+
+        libdir = data.expand(self.libdir)
+        if libdir not in sys.path:
+            sys.path.append(libdir)
+        try:
+            bb.utils._context[self.namespace] = __import__(self.namespace)
+            toimport = getattr(bb.utils._context[self.namespace], "BBIMPORTS", [])
+            for i in toimport:
+                bb.utils._context[self.namespace] = __import__(self.namespace + "." + i)
+                mod = getattr(bb.utils._context[self.namespace], i)
+                fn = getattr(mod, "__file__")
+                funcs = {}
+                for f in dir(mod):
+                    if f.startswith("_"):
+                        continue
+                    fcall = getattr(mod, f)
+                    if not callable(fcall):
+                        continue
+                    funcs[f] = fcall
+                bb.codeparser.add_module_functions(fn, funcs, "%s.%s" % (self.namespace, i))
+
+        except AttributeError as e:
+            bb.error("Error importing OE modules: %s" % str(e))
+
 class InheritNode(AstNode):
     def __init__(self, filename, lineno, classes):
         AstNode.__init__(self, filename, lineno)
@@ -276,6 +313,16 @@ class InheritNode(AstNode):
 
     def eval(self, data):
         bb.parse.BBHandler.inherit(self.classes, self.filename, self.lineno, data)
+
+class InheritDeferredNode(AstNode):
+    def __init__(self, filename, lineno, classes):
+        AstNode.__init__(self, filename, lineno)
+        self.inherit = (classes, filename, lineno)
+
+    def eval(self, data):
+        inherits = data.getVar('__BBDEFINHERITS', False) or []
+        inherits.append(self.inherit)
+        data.setVar('__BBDEFINHERITS', inherits)
 
 def handleInclude(statements, filename, lineno, m, force):
     statements.append(IncludeNode(filename, lineno, m.group(1), force))
@@ -320,9 +367,16 @@ def handleDelTask(statements, filename, lineno, m):
 def handleBBHandlers(statements, filename, lineno, m):
     statements.append(BBHandlerNode(filename, lineno, m.group(1)))
 
+def handlePyLib(statements, filename, lineno, m):
+    statements.append(PyLibNode(filename, lineno, m.group(1), m.group(2)))
+
 def handleInherit(statements, filename, lineno, m):
     classes = m.group(1)
     statements.append(InheritNode(filename, lineno, classes))
+
+def handleInheritDeferred(statements, filename, lineno, m):
+    classes = m.group(1)
+    statements.append(InheritDeferredNode(filename, lineno, classes))
 
 def runAnonFuncs(d):
     code = []
@@ -361,6 +415,9 @@ def finalize(fn, d, variant = None):
 
         d.setVar('BBINCLUDED', bb.parse.get_file_depends(d))
 
+        if d.getVar('__BBAUTOREV_SEEN') and d.getVar('__BBSRCREV_SEEN') and not d.getVar("__BBAUTOREV_ACTED_UPON"):
+            bb.fatal("AUTOREV/SRCPV set too late for the fetcher to work properly, please set the variables earlier in parsing. Erroring instead of later obtuse build failures.")
+
         bb.event.fire(bb.event.RecipeParsed(fn), d)
     finally:
         bb.event.set_handlers(saved_handlers)
@@ -386,6 +443,14 @@ def multi_finalize(fn, d):
     for append in appends:
         logger.debug("Appending .bbappend file %s to %s", append, fn)
         bb.parse.BBHandler.handle(append, d, True)
+
+    while True:
+        inherits = d.getVar('__BBDEFINHERITS', False) or []
+        if not inherits:
+            break
+        inherit, filename, lineno = inherits.pop(0)
+        d.setVar('__BBDEFINHERITS', inherits)
+        bb.parse.BBHandler.inherit(inherit, filename, lineno, d, deferred=True)
 
     onlyfinalise = d.getVar("__ONLYFINALISE", False)
 

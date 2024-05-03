@@ -16,7 +16,10 @@ BitBake build tools.
 #
 # Based on functions from the base bb module, Copyright 2003 Holger Schurig
 
-import copy, re, sys, traceback
+import builtins
+import copy
+import re
+import sys
 from collections.abc import MutableMapping
 import logging
 import hashlib
@@ -29,7 +32,7 @@ logger = logging.getLogger("BitBake.Data")
 __setvar_keyword__ = [":append", ":prepend", ":remove"]
 __setvar_regexp__ = re.compile(r'(?P<base>.*?)(?P<keyword>:append|:prepend|:remove)(:(?P<add>[^A-Z]*))?$')
 __expand_var_regexp__ = re.compile(r"\${[a-zA-Z0-9\-_+./~:]+?}")
-__expand_python_regexp__ = re.compile(r"\${@.+?}")
+__expand_python_regexp__ = re.compile(r"\${@(?:{.*?}|.)+?}")
 __whitespace_split__ = re.compile(r'(\s)')
 __override_regexp__ = re.compile(r'[a-z0-9]+')
 
@@ -92,10 +95,11 @@ def infer_caller_details(loginfo, parent = False, varval = True):
             loginfo['func'] = func
 
 class VariableParse:
-    def __init__(self, varname, d, val = None):
+    def __init__(self, varname, d, unexpanded_value = None, val = None):
         self.varname = varname
         self.d = d
         self.value = val
+        self.unexpanded_value = unexpanded_value
 
         self.references = set()
         self.execs = set()
@@ -118,6 +122,11 @@ class VariableParse:
                 code = match
             else:
                 code = match.group()[3:-1]
+
+            # Do not run code that contains one or more unexpanded variables
+            # instead return the code with the characters we removed put back
+            if __expand_var_regexp__.findall(code):
+                return "${@" + code + "}"
 
             if self.varname:
                 varname = 'Var <%s>' % self.varname
@@ -144,19 +153,21 @@ class VariableParse:
             value = utils.better_eval(codeobj, DataContext(self.d), {'d' : self.d})
             return str(value)
 
-
 class DataContext(dict):
+    excluded = set([i for i in dir(builtins) if not i.startswith('_')] + ['oe'])
+
     def __init__(self, metadata, **kwargs):
         self.metadata = metadata
         dict.__init__(self, **kwargs)
         self['d'] = metadata
+        self.context = set(bb.utils.get_context())
 
     def __missing__(self, key):
-        # Skip commonly accessed invalid variables
-        if key in ['bb', 'oe', 'int', 'bool', 'time', 'str', 'os']:
+        if key in self.excluded or key in self.context:
             raise KeyError(key)
+
         value = self.metadata.getVar(key)
-        if value is None or self.metadata.getVarFlag(key, 'func', False):
+        if value is None:
             raise KeyError(key)
         else:
             return value
@@ -442,9 +453,9 @@ class DataSmart(MutableMapping):
     def expandWithRefs(self, s, varname):
 
         if not isinstance(s, str): # sanity check
-            return VariableParse(varname, self, s)
+            return VariableParse(varname, self, s, s)
 
-        varparse = VariableParse(varname, self)
+        varparse = VariableParse(varname, self, s)
 
         while s.find('${') != -1:
             olds = s
@@ -476,24 +487,19 @@ class DataSmart(MutableMapping):
     def expand(self, s, varname = None):
         return self.expandWithRefs(s, varname).value
 
-    def finalize(self, parent = False):
-        return
-
-    def internal_finalize(self, parent = False):
-        """Performs final steps upon the datastore, including application of overrides"""
-        self.overrides = None
-
     def need_overrides(self):
         if self.overrides is not None:
             return
         if self.inoverride:
             return
+        overrride_stack = []
         for count in range(5):
             self.inoverride = True
             # Can end up here recursively so setup dummy values
             self.overrides = []
             self.overridesset = set()
             self.overrides = (self.getVar("OVERRIDES") or "").split(":") or []
+            overrride_stack.append(self.overrides)
             self.overridesset = set(self.overrides)
             self.inoverride = False
             self.expand_cache = {}
@@ -503,7 +509,7 @@ class DataSmart(MutableMapping):
             self.overrides = newoverrides
             self.overridesset = set(self.overrides)
         else:
-            bb.fatal("Overrides could not be expanded into a stable state after 5 iterations, overrides must be being referenced by other overridden variables in some recursive fashion. Please provide your configuration to bitbake-devel so we can laugh, er, I mean try and understand how to make it work.")
+            bb.fatal("Overrides could not be expanded into a stable state after 5 iterations, overrides must be being referenced by other overridden variables in some recursive fashion. Please provide your configuration to bitbake-devel so we can laugh, er, I mean try and understand how to make it work. The list of failing override expansions: %s" % "\n".join(str(s) for s in overrride_stack))
 
     def initVar(self, var):
         self.expand_cache = {}
@@ -514,18 +520,18 @@ class DataSmart(MutableMapping):
         dest = self.dict
         while dest:
             if var in dest:
-                return dest[var], self.overridedata.get(var, None)
+                return dest[var]
 
             if "_data" not in dest:
                 break
             dest = dest["_data"]
-        return None, self.overridedata.get(var, None)
+        return None
 
     def _makeShadowCopy(self, var):
         if var in self.dict:
             return
 
-        local_var, _ = self._findVar(var)
+        local_var = self._findVar(var)
 
         if local_var:
             self.dict[var] = copy.copy(local_var)
@@ -633,7 +639,7 @@ class DataSmart(MutableMapping):
                 nextnew.update(vardata.references)
                 nextnew.update(vardata.contains.keys())
             new = nextnew
-        self.internal_finalize(True)
+        self.overrides = None
 
     def _setvar_update_overrides(self, var, **loginfo):
         # aka pay the cookie monster
@@ -720,7 +726,7 @@ class DataSmart(MutableMapping):
         if ':' in var:
             override = var[var.rfind(':')+1:]
             shortvar = var[:var.rfind(':')]
-            while override and override.islower():
+            while override and __override_regexp__.match(override):
                 try:
                     if shortvar in self.overridedata:
                         # Force CoW by recreating the list first
@@ -775,13 +781,18 @@ class DataSmart(MutableMapping):
                 return None
             cachename = var + "[" + flag + "]"
 
+        if not expand and retparser and cachename in self.expand_cache:
+            return self.expand_cache[cachename].unexpanded_value, self.expand_cache[cachename]
+
         if expand and cachename in self.expand_cache:
             return self.expand_cache[cachename].value
 
-        local_var, overridedata = self._findVar(var)
+        local_var = self._findVar(var)
         value = None
         removes = set()
-        if flag == "_content" and overridedata is not None and not parsing:
+        if flag == "_content" and not parsing:
+            overridedata = self.overridedata.get(var, None)
+        if flag == "_content" and not parsing and overridedata is not None:
             match = False
             active = {}
             self.need_overrides()
@@ -896,7 +907,7 @@ class DataSmart(MutableMapping):
     def delVarFlag(self, var, flag, **loginfo):
         self.expand_cache = {}
 
-        local_var, _ = self._findVar(var)
+        local_var = self._findVar(var)
         if not local_var:
             return
         if not var in self.dict:
@@ -939,7 +950,7 @@ class DataSmart(MutableMapping):
             self.dict[var][i] = flags[i]
 
     def getVarFlags(self, var, expand = False, internalflags=False):
-        local_var, _ = self._findVar(var)
+        local_var = self._findVar(var)
         flags = {}
 
         if local_var:

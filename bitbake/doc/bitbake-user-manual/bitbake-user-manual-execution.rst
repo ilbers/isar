@@ -552,8 +552,8 @@ through dependency chains are more complex and are generally
 accomplished with a Python function. The code in
 ``meta/lib/oe/sstatesig.py`` shows two examples of this and also
 illustrates how you can insert your own policy into the system if so
-desired. This file defines the two basic signature generators
-OpenEmbedded-Core uses: "OEBasic" and "OEBasicHash". By default, there
+desired. This file defines the basic signature generator
+OpenEmbedded-Core uses: "OEBasicHash". By default, there
 is a dummy "noop" signature handler enabled in BitBake. This means that
 behavior is unchanged from previous versions. ``OE-Core`` uses the
 "OEBasicHash" signature handler by default through this setting in the
@@ -561,14 +561,13 @@ behavior is unchanged from previous versions. ``OE-Core`` uses the
 
   BB_SIGNATURE_HANDLER ?= "OEBasicHash"
 
-The "OEBasicHash" :term:`BB_SIGNATURE_HANDLER` is the same as the "OEBasic"
-version but adds the task hash to the stamp files. This results in any
-metadata change that changes the task hash, automatically causing the
-task to be run again. This removes the need to bump
-:term:`PR` values, and changes to metadata automatically
-ripple across the build.
+The main feature of the "OEBasicHash" :term:`BB_SIGNATURE_HANDLER` is that
+it adds the task hash to the stamp files. Thanks to this, any metadata
+change will change the task hash, automatically causing the task to be run
+again. This removes the need to bump :term:`PR` values, and changes to
+metadata automatically ripple across the build.
 
-It is also worth noting that the end result of these signature
+It is also worth noting that the end result of signature
 generators is to make some dependency and hash information available to
 the build. This information includes:
 
@@ -587,10 +586,11 @@ or possibly those defined in the metadata/signature handler itself. The
 simplest parameter to pass is "none", which causes a set of signature
 information to be written out into ``STAMPS_DIR`` corresponding to the
 targets specified. The other currently available parameter is
-"printdiff", which causes BitBake to try to establish the closest
+"printdiff", which causes BitBake to try to establish the most recent
 signature match it can (e.g. in the sstate cache) and then run
-``bitbake-diffsigs`` over the matches to determine the stamps and delta
-where these two stamp trees diverge.
+compare the matched signatures to determine the stamps and delta
+where these two stamp trees diverge. This can be used to determine why
+tasks need to be re-run in situations where that is not expected.
 
 .. note::
 
@@ -657,7 +657,7 @@ builds are when execute, bitbake also supports user defined
 configuration of the `Python
 logging <https://docs.python.org/3/library/logging.html>`__ facilities
 through the :term:`BB_LOGCONFIG` variable. This
-variable defines a json or yaml `logging
+variable defines a JSON or YAML `logging
 configuration <https://docs.python.org/3/library/logging.config.html>`__
 that will be intelligently merged into the default configuration. The
 logging configuration is merged using the following rules:
@@ -691,9 +691,9 @@ logging configuration is merged using the following rules:
    adds a filter called ``BitBake.defaultFilter``, both filters will be
    applied to the logger
 
-As an example, consider the following user logging configuration file
-which logs all Hash Equivalence related messages of VERBOSE or higher to
-a file called ``hashequiv.log`` ::
+As a first example, you can create a ``hashequiv.json`` user logging
+configuration file to log all Hash Equivalence related messages of ``VERBOSE``
+or higher priority to a file called ``hashequiv.log``::
 
    {
        "version": 1,
@@ -722,3 +722,40 @@ a file called ``hashequiv.log`` ::
            }
        }
    }
+
+Then set the :term:`BB_LOGCONFIG` variable in ``conf/local.conf``::
+
+   BB_LOGCONFIG = "hashequiv.json"
+
+Another example is this ``warn.json`` file to log all ``WARNING`` and
+higher priority messages to a ``warn.log`` file::
+
+  {
+      "version": 1,
+      "formatters": {
+          "warnlogFormatter": {
+              "()": "bb.msg.BBLogFormatter",
+              "format": "%(levelname)s: %(message)s"
+          }
+      },
+
+      "handlers": {
+          "warnlog": {
+              "class": "logging.FileHandler",
+              "formatter": "warnlogFormatter",
+              "level": "WARNING",
+              "filename": "warn.log"
+          }
+      },
+
+      "loggers": {
+          "BitBake": {
+              "handlers": ["warnlog"]
+          }
+      },
+
+      "@disable_existing_loggers": false
+  }
+
+Note that BitBake's helper classes for structured logging are implemented in
+``lib/bb/msg.py``.

@@ -26,7 +26,6 @@ from   bb.fetch2 import FetchMethod
 from   bb.fetch2 import FetchError
 from   bb.fetch2 import logger
 from   bb.fetch2 import runfetchcmd
-from   bb.utils import export_proxies
 from   bs4 import BeautifulSoup
 from   bs4 import SoupStrainer
 
@@ -88,7 +87,10 @@ class Wget(FetchMethod):
         if not ud.localfile:
             ud.localfile = d.expand(urllib.parse.unquote(ud.host + ud.path).replace("/", "."))
 
-        self.basecmd = d.getVar("FETCHCMD_wget") or "/usr/bin/env wget -t 2 -T 30 --passive-ftp"
+        self.basecmd = d.getVar("FETCHCMD_wget") or "/usr/bin/env wget -t 2 -T 30"
+
+        if ud.type == 'ftp' or ud.type == 'ftps':
+            self.basecmd += " --passive-ftp"
 
         if not self.check_certs(d):
             self.basecmd += " --no-check-certificate"
@@ -106,10 +108,9 @@ class Wget(FetchMethod):
 
         fetchcmd = self.basecmd
 
-        if 'downloadfilename' in ud.parm:
-            localpath = os.path.join(d.getVar("DL_DIR"), ud.localfile)
-            bb.utils.mkdirhier(os.path.dirname(localpath))
-            fetchcmd += " -O %s" % shlex.quote(localpath)
+        localpath = os.path.join(d.getVar("DL_DIR"), ud.localfile) + ".tmp"
+        bb.utils.mkdirhier(os.path.dirname(localpath))
+        fetchcmd += " -O %s" % shlex.quote(localpath)
 
         if ud.user and ud.pswd:
             fetchcmd += " --auth-no-challenge"
@@ -132,6 +133,15 @@ class Wget(FetchMethod):
             fetchcmd += d.expand(" -P ${DL_DIR} '%s'" % uri)
 
         self._runwget(ud, d, fetchcmd, False)
+
+        # Try and verify any checksum now, meaning if it isn't correct, we don't remove the
+        # original file, which might be a race (imagine two recipes referencing the same
+        # source, one with an incorrect checksum)
+        bb.fetch2.verify_checksum(ud, d, localpath=localpath, fatal_nochecksum=False)
+
+        # Remove the ".tmp" and move the file into position atomically
+        # Our lock prevents multiple writers but mirroring code may grab incomplete files
+        os.rename(localpath, localpath[:-4])
 
         # Sanity check since wget can pretend it succeed when it didn't
         # Also, this used to happen if sourceforge sent us to the mirror page
@@ -333,7 +343,8 @@ class Wget(FetchMethod):
             opener = urllib.request.build_opener(*handlers)
 
             try:
-                uri = ud.url.split(";")[0]
+                uri_base = ud.url.split(";")[0]
+                uri = "{}://{}{}".format(urllib.parse.urlparse(uri_base).scheme, ud.host, ud.path)
                 r = urllib.request.Request(uri)
                 r.get_method = lambda: "HEAD"
                 # Some servers (FusionForge, as used on Alioth) require that the
@@ -352,29 +363,22 @@ class Wget(FetchMethod):
 
                 try:
                     import netrc
-                    n = netrc.netrc()
-                    login, unused, password = n.authenticators(urllib.parse.urlparse(uri).hostname)
-                    add_basic_auth("%s:%s" % (login, password), r)
-                except (TypeError, ImportError, IOError, netrc.NetrcParseError):
+                    auth_data = netrc.netrc().authenticators(urllib.parse.urlparse(uri).hostname)
+                    if auth_data:
+                        login, _, password = auth_data
+                        add_basic_auth("%s:%s" % (login, password), r)
+                except (FileNotFoundError, netrc.NetrcParseError):
                     pass
 
                 with opener.open(r, timeout=30) as response:
                     pass
-            except urllib.error.URLError as e:
+            except (urllib.error.URLError, ConnectionResetError, TimeoutError) as e:
                 if try_again:
                     logger.debug2("checkstatus: trying again")
                     return self.checkstatus(fetch, ud, d, False)
                 else:
                     # debug for now to avoid spamming the logs in e.g. remote sstate searches
-                    logger.debug2("checkstatus() urlopen failed: %s" % e)
-                    return False
-            except ConnectionResetError as e:
-                if try_again:
-                    logger.debug2("checkstatus: trying again")
-                    return self.checkstatus(fetch, ud, d, False)
-                else:
-                    # debug for now to avoid spamming the logs in e.g. remote sstate searches
-                    logger.debug2("checkstatus() urlopen failed: %s" % e)
+                    logger.debug2("checkstatus() urlopen failed for %s: %s" % (uri,e))
                     return False
 
         return True
@@ -636,10 +640,10 @@ class Wget(FetchMethod):
             # search for version matches on folders inside the path, like:
             # "5.7" in http://download.gnome.org/sources/${PN}/5.7/${PN}-${PV}.tar.gz
             dirver_regex = re.compile(r"(?P<dirver>[^/]*(\d+\.)*\d+([-_]r\d+)*)/")
-            m = dirver_regex.search(path)
+            m = dirver_regex.findall(path)
             if m:
                 pn = d.getVar('PN')
-                dirver = m.group('dirver')
+                dirver = m[-1][0]
 
                 dirver_pn_regex = re.compile(r"%s\d?" % (re.escape(pn)))
                 if not dirver_pn_regex.search(dirver):

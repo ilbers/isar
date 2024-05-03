@@ -19,12 +19,14 @@ import time
 import subprocess
 import signal
 
+import logging
+
 
 class KillRunbuilds(threading.Thread):
     """ Kill the runbuilds process after an amount of time """
     def __init__(self, *args, **kwargs):
         super(KillRunbuilds, self).__init__(*args, **kwargs)
-        self.setDaemon(True)
+        self.daemon = True
 
     def run(self):
         time.sleep(5)
@@ -34,9 +36,12 @@ class KillRunbuilds(threading.Thread):
         pidfile_path = os.path.join(os.environ.get("BUILDDIR", "."),
                                     ".runbuilds.pid")
 
-        with open(pidfile_path) as pidfile:
-            pid = pidfile.read()
-            os.kill(int(pid), signal.SIGTERM)
+        try:
+            with open(pidfile_path) as pidfile:
+                pid = pidfile.read()
+                os.kill(int(pid), signal.SIGTERM)
+        except ProcessLookupError:
+            logging.warning("Runbuilds not running or already killed")
 
 
 class TestCommands(TestCase):

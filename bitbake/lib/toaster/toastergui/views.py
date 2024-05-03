@@ -6,24 +6,36 @@
 # SPDX-License-Identifier: GPL-2.0-only
 #
 
+import ast
 import re
+import subprocess
+import sys
+
+import bb.cooker
+from bb.ui import toasterui
+from bb.ui import eventreplay
 
 from django.db.models import F, Q, Sum
 from django.db import IntegrityError
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404, HttpResponseRedirect
 from django.utils.http import urlencode
 from orm.models import Build, Target, Task, Layer, Layer_Version, Recipe
 from orm.models import LogMessage, Variable, Package_Dependency, Package
 from orm.models import Task_Dependency, Package_File
 from orm.models import Target_Installed_Package, Target_File
 from orm.models import TargetKernelFile, TargetSDKFile, Target_Image_File
-from orm.models import BitbakeVersion, CustomImageRecipe
+from orm.models import BitbakeVersion, CustomImageRecipe, EventLogsImports
 
 from django.urls import reverse, resolve
+from django.contrib import messages
+
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.files.storage import FileSystemStorage
+from django.core.files.uploadedfile import InMemoryUploadedFile, TemporaryUploadedFile
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import HttpResponseNotFound, JsonResponse
 from django.utils import timezone
+from django.views.generic import TemplateView
 from datetime import timedelta, datetime
 from toastergui.templatetags.projecttags import json as jsonfilter
 from decimal import Decimal
@@ -32,13 +44,20 @@ import os
 from os.path import dirname
 import mimetypes
 
+from toastergui.forms import LoadFileForm
+
+from collections import namedtuple
+
 import logging
+
+from toastermain.logs import log_view_mixin
 
 logger = logging.getLogger("toaster")
 
 # Project creation and managed build enable
 project_enable = ('1' == os.environ.get('TOASTER_BUILDSERVER'))
 is_project_specific = ('1' == os.environ.get('TOASTER_PROJECTSPECIFIC'))
+import_page = False
 
 class MimeTypeFinder(object):
     # setting this to False enables additional non-standard mimetypes
@@ -56,6 +75,7 @@ class MimeTypeFinder(object):
         return guessed_type
 
 # single point to add global values into the context before rendering
+@log_view_mixin
 def toaster_render(request, page, context):
     context['project_enable'] = project_enable
     context['project_specific'] = is_project_specific
@@ -665,16 +685,17 @@ def recipe_packages(request, build_id, recipe_id):
     return response
 
 from django.http import HttpResponse
+@log_view_mixin
 def xhr_dirinfo(request, build_id, target_id):
     top = request.GET.get('start', '/')
     return HttpResponse(_get_dir_entries(build_id, target_id, top), content_type = "application/json")
 
 from django.utils.functional import Promise
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 class LazyEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, Promise):
-            return force_text(obj)
+            return force_str(obj)
         return super(LazyEncoder, self).default(obj)
 
 from toastergui.templatetags.projecttags import filtered_filesizeformat
@@ -1404,7 +1425,7 @@ if True:
                     if not os.path.isdir('%s/conf' % request.POST['importdir']):
                         raise BadParameterException("Bad path or missing 'conf' directory (%s)" % request.POST['importdir'])
                     from django.core import management
-                    management.call_command('buildimport', '--command=import', '--name=%s' % request.POST['projectname'], '--path=%s' % request.POST['importdir'], interactive=False)
+                    management.call_command('buildimport', '--command=import', '--name=%s' % request.POST['projectname'], '--path=%s' % request.POST['importdir'])
                     prj = Project.objects.get(name = request.POST['projectname'])
                     prj.merged_attr = True
                     prj.save()
@@ -1606,12 +1627,13 @@ if True:
         # make sure we have a machine set for this project
         ProjectVariable.objects.get_or_create(project=new_project,
                                               name="MACHINE",
-                                              value="qemux86")
+                                              value="qemux86-64")
         context = {'project': new_project}
         return toaster_render(request, "js-unit-tests.html", context)
 
     from django.views.decorators.csrf import csrf_exempt
     @csrf_exempt
+    @log_view_mixin
     def xhr_testreleasechange(request, pid):
         def response(data):
             return HttpResponse(jsonfilter(data),
@@ -1648,6 +1670,7 @@ if True:
         except Exception as e:
             return response({"error": str(e) })
 
+    @log_view_mixin
     def xhr_configvaredit(request, pid):
         try:
             prj = Project.objects.get(id = pid)
@@ -1726,6 +1749,7 @@ if True:
             return HttpResponse(json.dumps({"error":str(e) + "\n" + traceback.format_exc()}), content_type = "application/json")
 
 
+    @log_view_mixin
     def customrecipe_download(request, pid, recipe_id):
         recipe = get_object_or_404(CustomImageRecipe, pk=recipe_id)
 
@@ -1933,3 +1957,163 @@ if True:
         except (ObjectDoesNotExist, IOError):
             return toaster_render(request, "unavailable_artifact.html")
 
+
+class CommandLineBuilds(TemplateView):
+    model = EventLogsImports
+    template_name = 'command_line_builds.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(CommandLineBuilds, self).get_context_data(**kwargs)
+        #get value from BB_DEFAULT_EVENTLOG defined in bitbake.conf
+        eventlog = subprocess.check_output(['bitbake-getvar', 'BB_DEFAULT_EVENTLOG', '--value'])
+        if eventlog:
+            logs_dir = os.path.dirname(eventlog.decode().strip('\n'))
+            files = os.listdir(logs_dir)
+            imported_files = EventLogsImports.objects.all()
+            files_list = []
+
+            # Filter files that end with ".json"
+            event_files = []
+            for file in files:
+                if file.endswith(".json"):
+                    # because BB_DEFAULT_EVENTLOG is a directory, we need to check if the file is a valid eventlog
+                    with open("{}/{}".format(logs_dir, file)) as efile:
+                        content = efile.read()
+                        if 'allvariables' in content:
+                            event_files.append(file)
+
+            #build dict for template using db data
+            for event_file in event_files:
+                if imported_files.filter(name=event_file):
+                    files_list.append({
+                        'name': event_file,
+                        'imported': True,
+                        'build_id': imported_files.filter(name=event_file)[0].build_id,
+                        'size': os.path.getsize("{}/{}".format(logs_dir, event_file))
+                    })
+                else:
+                    files_list.append({
+                        'name': event_file,
+                        'imported': False,
+                        'build_id': None,
+                        'size': os.path.getsize("{}/{}".format(logs_dir, event_file))
+                    })
+                    context['import_all'] = True
+
+            context['files'] = files_list
+            context['dir'] = logs_dir
+        else:
+            context['files'] = []
+            context['dir'] = ''
+
+        # enable session variable
+        if not self.request.session.get('file'):
+            self.request.session['file'] = ""
+
+        context['form'] = LoadFileForm()
+        context['project_enable'] = project_enable
+        return context
+
+    def post(self, request, **kwargs):
+        logs_dir = request.POST.get('dir')
+        all_files =  request.POST.get('all')
+
+        # check if a build is already in progress
+        if Build.objects.filter(outcome=Build.IN_PROGRESS):
+            messages.add_message(
+                self.request,
+                messages.ERROR,
+                "A build is already in progress. Please wait for it to complete before starting a new build."
+            )
+            return JsonResponse({'response': 'building'})
+        imported_files = EventLogsImports.objects.all()
+        try:
+            if all_files == 'true':
+                # use of session variable to deactivate icon for builds in progress
+                request.session['all_builds'] = True
+                request.session.modified = True
+                request.session.save()
+
+                files = ast.literal_eval(request.POST.get('file'))
+                for file in files:
+                    if imported_files.filter(name=file.get('name')).exists():
+                        imported_files.filter(name=file.get('name'))[0].imported = True
+                    else:
+                        with open("{}/{}".format(logs_dir, file.get('name'))) as eventfile:
+                            # load variables from the first line
+                            variables = None
+                            while line := eventfile.readline().strip():
+                                try:
+                                    variables = json.loads(line)['allvariables']
+                                    break
+                                except (KeyError, json.JSONDecodeError):
+                                    continue
+                            if not variables:
+                                raise Exception("File content missing  build variables")
+                            eventfile.seek(0)
+                            params = namedtuple('ConfigParams', ['observe_only'])(True)
+                            player = eventreplay.EventPlayer(eventfile, variables)
+
+                            toasterui.main(player, player, params)
+                        event_log_import = EventLogsImports.objects.create(name=file.get('name'), imported=True)
+                        event_log_import.build_id = Build.objects.last().id
+                        event_log_import.save()
+            else:
+                if self.request.FILES.get('eventlog_file'):
+                    file = self.request.FILES['eventlog_file']
+                else:
+                    file = request.POST.get('file')
+                    # use of session variable to deactivate icon for build in progress
+                    request.session['file'] = file
+                    request.session['all_builds'] = False
+                    request.session.modified = True
+                    request.session.save()
+
+                if imported_files.filter(name=file).exists():
+                    imported_files.filter(name=file)[0].imported = True
+                else:
+                    if isinstance(file, InMemoryUploadedFile) or isinstance(file, TemporaryUploadedFile):
+                        variables = None
+                        while line := file.readline().strip():
+                            try:
+                                variables = json.loads(line)['allvariables']
+                                break
+                            except (KeyError, json.JSONDecodeError):
+                                continue
+                        if not variables:
+                            raise Exception("File content missing  build variables")
+                        file.seek(0)
+                        params = namedtuple('ConfigParams', ['observe_only'])(True)
+                        player = eventreplay.EventPlayer(file, variables)
+                        if not os.path.exists('{}/{}'.format(logs_dir, file.name)):
+                            fs = FileSystemStorage(location=logs_dir)
+                            fs.save(file.name, file)
+                        toasterui.main(player, player, params)
+                    else:
+                        with open("{}/{}".format(logs_dir, file)) as eventfile:
+                            # load variables from the first line
+                            variables = None
+                            while line := eventfile.readline().strip():
+                                try:
+                                    variables = json.loads(line)['allvariables']
+                                    break
+                                except (KeyError, json.JSONDecodeError):
+                                    continue
+                            if not variables:
+                                raise Exception("File content missing  build variables")
+                            eventfile.seek(0)
+                            params = namedtuple('ConfigParams', ['observe_only'])(True)
+                            player = eventreplay.EventPlayer(eventfile, variables)
+                            toasterui.main(player, player, params)
+                    event_log_import = EventLogsImports.objects.create(name=file, imported=True)
+                    event_log_import.build_id = Build.objects.last().id
+                    event_log_import.save()
+                    request.session['file'] = ""
+        except Exception:
+            messages.add_message(
+                self.request,
+                messages.ERROR,
+                "The file content is not in the correct format. Update file content or upload a different file."
+            )
+            return HttpResponseRedirect("/toastergui/cmdline/")
+        return HttpResponseRedirect('/toastergui/builds/')

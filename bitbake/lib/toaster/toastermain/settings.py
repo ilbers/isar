@@ -9,6 +9,8 @@
 # Django settings for Toaster project.
 
 import os
+from pathlib import Path
+from toastermain.logs import LOGGING_SETTINGS
 
 DEBUG = True
 
@@ -87,14 +89,17 @@ else:
                 from pytz.exceptions import UnknownTimeZoneError
                 try:
                     if pytz.timezone(zonename) is not None:
-                        zonefilelist[hashlib.md5(open(filepath, 'rb').read()).hexdigest()] = zonename
+                        with open(filepath, 'rb') as f:
+                            zonefilelist[hashlib.md5(f.read()).hexdigest()] = zonename
                 except UnknownTimeZoneError as ValueError:
                     # we expect timezone failures here, just move over
                     pass
             except ImportError:
-                zonefilelist[hashlib.md5(open(filepath, 'rb').read()).hexdigest()] = zonename
+                with open(filepath, 'rb') as f:
+                    zonefilelist[hashlib.md5(f.read()).hexdigest()] = zonename
 
-    TIME_ZONE = zonefilelist[hashlib.md5(open('/etc/localtime', 'rb').read()).hexdigest()]
+    with open('/etc/localtime', 'rb') as f:
+        TIME_ZONE = zonefilelist[hashlib.md5(f.read()).hexdigest()]
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
@@ -105,10 +110,6 @@ SITE_ID = 1
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.
 USE_I18N = True
-
-# If you set this to False, Django will not format dates, numbers and
-# calendars according to the current locale.
-USE_L10N = True
 
 # If you set this to False, Django will not use timezone-aware datetimes.
 USE_TZ = True
@@ -150,6 +151,8 @@ STATICFILES_FINDERS = (
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'NOT_SUITABLE_FOR_HOSTED_DEPLOYMENT'
 
+TMPDIR = os.environ.get('TOASTER_DJANGO_TMPDIR', '/tmp')
+
 class InvalidString(str):
     def __mod__(self, other):
         from django.template.base import TemplateSyntaxError
@@ -186,7 +189,13 @@ TEMPLATES = [
                 'django.template.loaders.app_directories.Loader',
                 #'django.template.loaders.eggs.Loader',
             ],
-            'string_if_invalid': InvalidString("%s"),
+            # https://docs.djangoproject.com/en/4.2/ref/templates/api/#how-invalid-variables-are-handled
+            # Generally, string_if_invalid should only be enabled in order to debug
+            # a specific template problem, then cleared once debugging is complete.
+            # If you assign a value other than '' to string_if_invalid,
+            # you will experience rendering problems with these templates and sites.
+            #  'string_if_invalid': InvalidString("%s"),
+            'string_if_invalid': "",
             'debug': DEBUG,
         },
     },
@@ -210,7 +219,7 @@ CACHES = {
     #        },
            'default': {
                'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-               'LOCATION': '/tmp/toaster_cache_%d' % os.getuid(),
+               'LOCATION': '%s/toaster_cache_%d' % (TMPDIR, os.getuid()),
                'TIMEOUT': 1,
             }
           }
@@ -242,6 +251,9 @@ INSTALLED_APPS = (
     'django.contrib.humanize',
     'bldcollector',
     'toastermain',
+
+    # 3rd-lib
+    "log_viewer",
 )
 
 
@@ -302,43 +314,21 @@ for t in os.walk(os.path.dirname(currentdir)):
 # the site admins on every HTTP 500 error when DEBUG=False.
 # See http://docs.djangoproject.com/en/dev/topics/logging for
 # more details on how to customize your logging configuration.
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'filters': {
-        'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse'
-        }
-    },
-    'formatters': {
-        'datetime': {
-            'format': '%(asctime)s %(levelname)s %(message)s'
-        }
-    },
-    'handlers': {
-        'mail_admins': {
-            'level': 'ERROR',
-            'filters': ['require_debug_false'],
-            'class': 'django.utils.log.AdminEmailHandler'
-        },
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'datetime',
-        }
-    },
-    'loggers': {
-        'toaster' : {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-        },
-        'django.request': {
-            'handlers': ['console'],
-            'level': 'WARN',
-            'propagate': True,
-        },
-    }
-}
+LOGGING = LOGGING_SETTINGS
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BUILDDIR = os.environ.get("BUILDDIR", TMPDIR)
+
+# LOG VIEWER
+# https://pypi.org/project/django-log-viewer/
+LOG_VIEWER_FILES_PATTERN = '*.log*'
+LOG_VIEWER_FILES_DIR = os.path.join(BUILDDIR, "toaster_logs/")
+LOG_VIEWER_PAGE_LENGTH = 25      # total log lines per-page
+LOG_VIEWER_MAX_READ_LINES = 100000  # total log lines will be read
+LOG_VIEWER_PATTERNS = ['INFO', 'DEBUG', 'WARNING', 'ERROR', 'CRITICAL']
+
+# Optionally you can set the next variables in order to customize the admin:
+LOG_VIEWER_FILE_LIST_TITLE = "Logs list"
 
 if DEBUG and SQL_DEBUG:
     LOGGING['loggers']['django.db.backends'] = {

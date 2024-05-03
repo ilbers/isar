@@ -30,6 +30,8 @@ import collections
 import copy
 import ctypes
 import random
+import socket
+import struct
 import tempfile
 from subprocess import getstatusoutput
 from contextlib import contextmanager
@@ -48,7 +50,7 @@ def clean_context():
 
 def get_context():
     return _context
-    
+
 
 def set_context(ctx):
     _context = ctx
@@ -210,8 +212,8 @@ def explode_dep_versions2(s, *, sort=True):
             inversion = True
             # This list is based on behavior and supported comparisons from deb, opkg and rpm.
             #
-            # Even though =<, <<, ==, !=, =>, and >> may not be supported, 
-            # we list each possibly valid item. 
+            # Even though =<, <<, ==, !=, =>, and >> may not be supported,
+            # we list each possibly valid item.
             # The build system is responsible for validation of what it supports.
             if i.startswith(('<=', '=<', '<<', '==', '!=', '>=', '=>', '>>')):
                 lastcmp = i[0:2]
@@ -345,7 +347,7 @@ def _print_exception(t, value, tb, realfile, text, context):
         exception = traceback.format_exception_only(t, value)
         error.append('Error executing a python function in %s:\n' % realfile)
 
-        # Strip 'us' from the stack (better_exec call) unless that was where the 
+        # Strip 'us' from the stack (better_exec call) unless that was where the
         # error came from
         if tb.tb_next is not None:
             tb = tb.tb_next
@@ -602,7 +604,6 @@ def preserved_envvars():
     v = [
         'BBPATH',
         'BB_PRESERVE_ENV',
-        'BB_ENV_PASSTHROUGH',
         'BB_ENV_PASSTHROUGH_ADDITIONS',
     ]
     return v + preserved_envvars_exported()
@@ -744,9 +745,9 @@ def prunedir(topdir, ionice=False):
 # but thats possibly insane and suffixes is probably going to be small
 #
 def prune_suffix(var, suffixes, d):
-    """ 
+    """
     See if var ends with any of the suffixes listed and
-    remove it if found 
+    remove it if found
     """
     for suffix in suffixes:
         if suffix and var.endswith(suffix):
@@ -757,7 +758,8 @@ def mkdirhier(directory):
     """Create a directory like 'mkdir -p', but does not complain if
     directory already exists like os.makedirs
     """
-
+    if '${' in str(directory):
+        bb.fatal("Directory name {} contains unexpanded bitbake variable. This may cause build failures and WORKDIR polution.".format(directory))
     try:
         os.makedirs(directory)
     except OSError as e:
@@ -999,9 +1001,9 @@ def umask(new_mask):
         os.umask(current_mask)
 
 def to_boolean(string, default=None):
-    """ 
+    """
     Check input string and return boolean value True/False/None
-    depending upon the checks 
+    depending upon the checks
     """
     if not string:
         return default
@@ -1140,7 +1142,10 @@ def get_referenced_vars(start_expr, d):
 
 
 def cpu_count():
-    return multiprocessing.cpu_count()
+    try:
+        return len(os.sched_getaffinity(0))
+    except OSError:
+        return multiprocessing.cpu_count()
 
 def nonblockingfd(fd):
     fcntl.fcntl(fd, fcntl.F_SETFL, fcntl.fcntl(fd, fcntl.F_GETFL) | os.O_NONBLOCK)
@@ -1627,6 +1632,44 @@ def set_process_name(name):
     except:
         pass
 
+def enable_loopback_networking():
+    # From bits/ioctls.h
+    SIOCGIFFLAGS = 0x8913
+    SIOCSIFFLAGS = 0x8914
+    SIOCSIFADDR = 0x8916
+    SIOCSIFNETMASK = 0x891C
+
+    # if.h
+    IFF_UP = 0x1
+    IFF_RUNNING = 0x40
+
+    # bits/socket.h
+    AF_INET = 2
+
+    # char ifr_name[IFNAMSIZ=16]
+    ifr_name = struct.pack("@16s", b"lo")
+    def netdev_req(fd, req, data = b""):
+        # Pad and add interface name
+        data = ifr_name + data + (b'\x00' * (16 - len(data)))
+        # Return all data after interface name
+        return fcntl.ioctl(fd, req, data)[16:]
+
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_IP) as sock:
+        fd = sock.fileno()
+
+        # struct sockaddr_in ifr_addr { unsigned short family; uint16_t sin_port ; uint32_t in_addr; }
+        req = struct.pack("@H", AF_INET) + struct.pack("=H4B", 0, 127, 0, 0, 1)
+        netdev_req(fd, SIOCSIFADDR, req)
+
+        # short ifr_flags
+        flags = struct.unpack_from('@h', netdev_req(fd, SIOCGIFFLAGS))[0]
+        flags |= IFF_UP | IFF_RUNNING
+        netdev_req(fd, SIOCSIFFLAGS, struct.pack('@h', flags))
+
+        # struct sockaddr_in ifr_netmask
+        req = struct.pack("@H", AF_INET) + struct.pack("=H4B", 0, 255, 0, 0, 0)
+        netdev_req(fd, SIOCSIFNETMASK, req)
+
 def disable_network(uid=None, gid=None):
     """
     Disable networking in the current process if the kernel supports it, else
@@ -1648,7 +1691,7 @@ def disable_network(uid=None, gid=None):
 
     ret = libc.unshare(CLONE_NEWNET | CLONE_NEWUSER)
     if ret != 0:
-        logger.debug("System doesn't suport disabling network without admin privs")
+        logger.debug("System doesn't support disabling network without admin privs")
         return
     with open("/proc/self/uid_map", "w") as f:
         f.write("%s %s 1" % (uid, uid))
@@ -1658,22 +1701,11 @@ def disable_network(uid=None, gid=None):
         f.write("%s %s 1" % (gid, gid))
 
 def export_proxies(d):
+    from bb.fetch2 import get_fetcher_environment
     """ export common proxies variables from datastore to environment """
-
-    variables = ['http_proxy', 'HTTP_PROXY', 'https_proxy', 'HTTPS_PROXY',
-                    'ftp_proxy', 'FTP_PROXY', 'no_proxy', 'NO_PROXY',
-                    'GIT_PROXY_COMMAND', 'SSL_CERT_FILE', 'SSL_CERT_DIR']
-
-    origenv = d.getVar("BB_ORIGENV")
-
-    for name in variables:
-        value = d.getVar(name)
-        if not value and origenv:
-            value = origenv.getVar(name)
-        if value:
-            os.environ[name] = value
-
-
+    newenv = get_fetcher_environment(d)
+    for v in newenv:
+        os.environ[v] = newenv[v]
 
 def load_plugins(logger, plugins, pluginpath):
     def load_plugin(name):
@@ -1798,3 +1830,39 @@ def mkstemp(suffix=None, prefix=None, dir=None, text=False):
     else:
         prefix = tempfile.gettempprefix() + entropy
     return tempfile.mkstemp(suffix=suffix, prefix=prefix, dir=dir, text=text)
+
+def path_is_descendant(descendant, ancestor):
+    """
+    Returns True if the path `descendant` is a descendant of `ancestor`
+    (including being equivalent to `ancestor` itself). Otherwise returns False.
+    Correctly accounts for symlinks, bind mounts, etc. by using
+    os.path.samestat() to compare paths
+
+    May raise any exception that os.stat() raises
+    """
+
+    ancestor_stat = os.stat(ancestor)
+
+    # Recurse up each directory component of the descendant to see if it is
+    # equivalent to the ancestor
+    check_dir = os.path.abspath(descendant).rstrip("/")
+    while check_dir:
+        check_stat = os.stat(check_dir)
+        if os.path.samestat(check_stat, ancestor_stat):
+            return True
+        check_dir = os.path.dirname(check_dir).rstrip("/")
+
+    return False
+
+# If we don't have a timeout of some kind and a process/thread exits badly (for example
+# OOM killed) and held a lock, we'd just hang in the lock futex forever. It is better
+# we exit at some point than hang. 5 minutes with no progress means we're probably deadlocked.
+@contextmanager
+def lock_timeout(lock):
+    held = lock.acquire(timeout=5*60)
+    try:
+        if not held:
+            os._exit(1)
+        yield held
+    finally:
+        lock.release()

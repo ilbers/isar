@@ -11,6 +11,7 @@ import shutil
 import sys
 import tempfile
 
+from bb.cookerdata import findTopdir
 import bb.utils
 
 from bblayers.common import LayerPlugin
@@ -37,7 +38,7 @@ class ActionPlugin(LayerPlugin):
                 sys.stderr.write("Specified layer directory %s doesn't contain a conf/layer.conf file\n" % layerdir)
                 return 1
 
-        bblayers_conf = os.path.join('conf', 'bblayers.conf')
+        bblayers_conf = os.path.join(findTopdir(),'conf', 'bblayers.conf')
         if not os.path.exists(bblayers_conf):
             sys.stderr.write("Unable to find bblayers.conf\n")
             return 1
@@ -49,12 +50,14 @@ class ActionPlugin(LayerPlugin):
 
         try:
             notadded, _ = bb.utils.edit_bblayers_conf(bblayers_conf, layerdirs, None)
+            self.tinfoil.modified_files()
             if not (args.force or notadded):
                 try:
                     self.tinfoil.run_command('parseConfiguration')
                 except (bb.tinfoil.TinfoilUIException, bb.BBHandledException):
                     # Restore the back up copy of bblayers.conf
                     shutil.copy2(backup, bblayers_conf)
+                    self.tinfoil.modified_files()
                     bb.fatal("Parse failure with the specified layer added, exiting.")
                 else:
                     for item in notadded:
@@ -65,7 +68,7 @@ class ActionPlugin(LayerPlugin):
 
     def do_remove_layer(self, args):
         """Remove one or more layers from bblayers.conf."""
-        bblayers_conf = os.path.join('conf', 'bblayers.conf')
+        bblayers_conf = os.path.join(findTopdir() ,'conf', 'bblayers.conf')
         if not os.path.exists(bblayers_conf):
             sys.stderr.write("Unable to find bblayers.conf\n")
             return 1
@@ -80,6 +83,7 @@ class ActionPlugin(LayerPlugin):
                 layerdir = os.path.abspath(item)
             layerdirs.append(layerdir)
         (_, notremoved) = bb.utils.edit_bblayers_conf(bblayers_conf, None, layerdirs)
+        self.tinfoil.modified_files()
         if notremoved:
             for item in notremoved:
                 sys.stderr.write("No layers matching %s found in BBLAYERS\n" % item)
@@ -238,6 +242,9 @@ build results (as the layer priority order has effectively changed).
                                     break
                             if not entry_found:
                                 logger.warning("File %s does not match the flattened layer's BBFILES setting, you may need to edit conf/layer.conf or move the file elsewhere" % f1full)
+
+        self.tinfoil.modified_files()
+
 
     def get_file_layer(self, filename):
         layerdir = self.get_file_layerdir(filename)

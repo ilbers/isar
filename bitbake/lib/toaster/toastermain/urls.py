@@ -6,7 +6,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 #
 
-from django.conf.urls import include, url
+from django.urls import re_path as url, include
 from django.views.generic import RedirectView, TemplateView
 from django.views.decorators.cache import never_cache
 import bldcollector.views
@@ -27,6 +27,8 @@ urlpatterns = [
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
+
+    url(r'^logs/', include('log_viewer.urls')),
 
     # This is here to maintain backward compatibility and will be deprecated
     # in the future.

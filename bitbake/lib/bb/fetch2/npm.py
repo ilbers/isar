@@ -44,9 +44,12 @@ def npm_package(package):
     """Convert the npm package name to remove unsupported character"""
     # Scoped package names (with the @) use the same naming convention
     # as the 'npm pack' command.
-    if package.startswith("@"):
-        return re.sub("/", "-", package[1:])
-    return package
+    name = re.sub("/", "-", package)
+    name = name.lower()
+    name = re.sub(r"[^\-a-z0-9]", "", name)
+    name = name.strip("-")
+    return name
+
 
 def npm_filename(package, version):
     """Get the filename of a npm package"""
@@ -103,6 +106,7 @@ class NpmEnvironment(object):
         """Run npm command in a controlled environment"""
         with tempfile.TemporaryDirectory() as tmpdir:
             d = bb.data.createCopy(self.d)
+            d.setVar("PATH", d.getVar("PATH"))  # PATH might contain $HOME - evaluate it before patching
             d.setVar("HOME", tmpdir)
 
             if not workdir:
@@ -294,6 +298,7 @@ class Npm(FetchMethod):
         destsuffix = ud.parm.get("destsuffix", "npm")
         destdir = os.path.join(rootdir, destsuffix)
         npm_unpack(ud.localpath, destdir, d)
+        ud.unpack_tracer.unpack("npm", destdir)
 
     def clean(self, ud, d):
         """Clean any existing full or partial download"""

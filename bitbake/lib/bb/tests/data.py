@@ -60,6 +60,15 @@ class DataExpansions(unittest.TestCase):
         val = self.d.expand("${@5*12}")
         self.assertEqual(str(val), "60")
 
+    def test_python_snippet_w_dict(self):
+        val = self.d.expand("${@{ 'green': 1, 'blue': 2 }['green']}")
+        self.assertEqual(str(val), "1")
+
+    def test_python_unexpanded_multi(self):
+        self.d.setVar("bar", "${unsetvar}")
+        val = self.d.expand("${@2*2},${foo},${@d.getVar('foo') + ' ${bar}'},${foo}")
+        self.assertEqual(str(val), "4,value_of_foo,${@d.getVar('foo') + ' ${unsetvar}'},value_of_foo")
+
     def test_expand_in_python_snippet(self):
         val = self.d.expand("${@'boo ' + '${foo}'}")
         self.assertEqual(str(val), "boo value_of_foo")
@@ -67,6 +76,18 @@ class DataExpansions(unittest.TestCase):
     def test_python_snippet_getvar(self):
         val = self.d.expand("${@d.getVar('foo') + ' ${bar}'}")
         self.assertEqual(str(val), "value_of_foo value_of_bar")
+
+    def test_python_snippet_function_reference(self):
+        self.d.setVar("TESTVAL", "testvalue")
+        self.d.setVar("testfunc", 'd.getVar("TESTVAL")')
+        context = bb.utils.get_context()
+        context["testfunc"] = lambda d: d.getVar("TESTVAL")
+        val = self.d.expand("${@testfunc(d)}")
+        self.assertEqual(str(val), "testvalue")
+
+    def test_python_snippet_builtin_metadata(self):
+        self.d.setVar("eval", "INVALID")
+        self.d.expand("${@eval('3')}")
 
     def test_python_unexpanded(self):
         self.d.setVar("bar", "${unsetvar}")
@@ -374,6 +395,16 @@ class TestOverrides(unittest.TestCase):
         self.d.setVar("OVERRIDES", "foo:bar:some_val")
         self.assertEqual(self.d.getVar("TEST"), "testvalue3")
 
+    # Test an override with _<numeric> in it based on a real world OE issue
+    def test_underscore_override_2(self):
+        self.d.setVar("TARGET_ARCH", "x86_64")
+        self.d.setVar("PN", "test-${TARGET_ARCH}")
+        self.d.setVar("VERSION", "1")
+        self.d.setVar("VERSION:pn-test-${TARGET_ARCH}", "2")
+        self.d.setVar("OVERRIDES", "pn-${PN}")
+        bb.data.expandKeys(self.d)
+        self.assertEqual(self.d.getVar("VERSION"), "2")
+
     def test_remove_with_override(self):
         self.d.setVar("TEST:bar", "testvalue2")
         self.d.setVar("TEST:some_val", "testvalue3 testvalue5")
@@ -394,16 +425,6 @@ class TestOverrides(unittest.TestCase):
     def test_append_and_override_3(self):
         self.d.setVar("TEST:bar:append", "testvalue2")
         self.assertEqual(self.d.getVar("TEST"), "testvalue2")
-
-    # Test an override with _<numeric> in it based on a real world OE issue
-    def test_underscore_override(self):
-        self.d.setVar("TARGET_ARCH", "x86_64")
-        self.d.setVar("PN", "test-${TARGET_ARCH}")
-        self.d.setVar("VERSION", "1")
-        self.d.setVar("VERSION:pn-test-${TARGET_ARCH}", "2")
-        self.d.setVar("OVERRIDES", "pn-${PN}")
-        bb.data.expandKeys(self.d)
-        self.assertEqual(self.d.getVar("VERSION"), "2")
 
     def test_append_and_unused_override(self):
         # Had a bug where an unused override append could return "" instead of None

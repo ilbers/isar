@@ -6,6 +6,7 @@
 #
 # SPDX-License-Identifier: GPL-2.0-only
 #
+from bldcontrol.models import BuildEnvironment
 
 from django.urls import reverse
 from tests.browser.selenium_helpers import SeleniumTestCase
@@ -18,6 +19,9 @@ class TestNewCustomImagePage(SeleniumTestCase):
     CUSTOM_IMAGE_NAME = 'roopa-doopa'
 
     def setUp(self):
+        BuildEnvironment.objects.get_or_create(
+            betype=BuildEnvironment.TYPE_LOCAL,
+        )
         release = Release.objects.create(
             name='baz',
             bitbake_version=BitbakeVersion.objects.create(name='v1')
@@ -41,11 +45,16 @@ class TestNewCustomImagePage(SeleniumTestCase):
         )
 
         # add a fake image recipe to the layer that can be customised
+        builldir = os.environ.get('BUILDDIR', './')
         self.recipe = Recipe.objects.create(
             name='core-image-minimal',
             layer_version=layer_version,
+            file_path=f'{builldir}/core-image-minimal.bb',
             is_image=True
         )
+        # create a tmp file for the recipe
+        with open(self.recipe.file_path, 'w') as f:
+            f.write('foo')
 
         # another project with a custom image already in it
         project2 = Project.objects.create(name='whoop', release=release)
@@ -81,6 +90,7 @@ class TestNewCustomImagePage(SeleniumTestCase):
         """
         url = reverse('newcustomimage', args=(self.project.id,))
         self.get(url)
+        self.wait_until_visible('#global-nav', poll=3)
 
         self.click('button[data-recipe="%s"]' % self.recipe.id)
 
@@ -128,7 +138,7 @@ class TestNewCustomImagePage(SeleniumTestCase):
         """
         self._create_custom_image(self.recipe.name)
         element = self.wait_until_visible('#invalid-name-help')
-        self.assertRegexpMatches(element.text.strip(),
+        self.assertRegex(element.text.strip(),
                                  'image with this name already exists')
 
     def test_new_duplicates_project_image(self):
@@ -146,4 +156,4 @@ class TestNewCustomImagePage(SeleniumTestCase):
         self._create_custom_image(custom_image_name)
         element = self.wait_until_visible('#invalid-name-help')
         expected = 'An image with this name already exists in this project'
-        self.assertRegexpMatches(element.text.strip(), expected)
+        self.assertRegex(element.text.strip(), expected)

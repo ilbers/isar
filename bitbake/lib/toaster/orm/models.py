@@ -107,7 +107,7 @@ class ToasterSetting(models.Model):
 
 
 class ProjectManager(models.Manager):
-    def create_project(self, name, release, existing_project=None):
+    def create_project(self, name, release, existing_project=None, imported=False):
         if existing_project and (release is not None):
             prj = existing_project
             prj.bitbake_version = release.bitbake_version
@@ -134,19 +134,19 @@ class ProjectManager(models.Manager):
 
         if release is None:
             return prj
+        if not imported:
+            for rdl in release.releasedefaultlayer_set.all():
+                lv = Layer_Version.objects.filter(
+                    layer__name=rdl.layer_name,
+                    release=release).first()
 
-        for rdl in release.releasedefaultlayer_set.all():
-            lv = Layer_Version.objects.filter(
-                layer__name=rdl.layer_name,
-                release=release).first()
-
-            if lv:
-                ProjectLayer.objects.create(project=prj,
-                                            layercommit=lv,
-                                            optional=False)
-            else:
-                logger.warning("Default project layer %s not found" %
-                               rdl.layer_name)
+                if lv:
+                    ProjectLayer.objects.create(project=prj,
+                                                layercommit=lv,
+                                                optional=False)
+                else:
+                    logger.warning("Default project layer %s not found" %
+                                rdl.layer_name)
 
         return prj
 
@@ -1389,9 +1389,6 @@ class Machine(models.Model):
         return "Machine " + self.name + "(" + self.description + ")"
 
 
-
-
-
 class BitbakeVersion(models.Model):
 
     name = models.CharField(max_length=32, unique = True)
@@ -1733,7 +1730,7 @@ class CustomImageRecipe(Recipe):
         packages_conf += "\""
 
         base_recipe_path = self.get_base_recipe_file()
-        if base_recipe_path:
+        if base_recipe_path and os.path.isfile(base_recipe_path):
             base_recipe = open(base_recipe_path, 'r').read()
         else:
             # Pass back None to trigger error message to user
@@ -1853,6 +1850,8 @@ def signal_runbuilds():
             os.kill(int(pidf.read()), SIGUSR1)
     except FileNotFoundError:
         logger.info("Stopping existing runbuilds: no current process found")
+    except ProcessLookupError:
+        logger.warning("Stopping existing runbuilds: process lookup not found")
 
 class Distro(models.Model):
     search_allowed_fields = ["name", "description", "layer_version__layer__name"]
@@ -1868,6 +1867,15 @@ class Distro(models.Model):
 
     def __unicode__(self):
         return "Distro " + self.name + "(" + self.description + ")"
+
+class EventLogsImports(models.Model):
+    name = models.CharField(max_length=255)
+    imported = models.BooleanField(default=False)
+    build_id = models.IntegerField(blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
 
 django.db.models.signals.post_save.connect(invalidate_cache)
 django.db.models.signals.post_delete.connect(invalidate_cache)

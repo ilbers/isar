@@ -21,6 +21,7 @@ from .ConfHandler import include, init
 
 __func_start_regexp__    = re.compile(r"(((?P<py>python(?=(\s|\()))|(?P<fr>fakeroot(?=\s)))\s*)*(?P<func>[\w\.\-\+\{\}\$:]+)?\s*\(\s*\)\s*{$" )
 __inherit_regexp__       = re.compile(r"inherit\s+(.+)" )
+__inherit_def_regexp__   = re.compile(r"inherit_defer\s+(.+)" )
 __export_func_regexp__   = re.compile(r"EXPORT_FUNCTIONS\s+(.+)" )
 __addtask_regexp__       = re.compile(r"addtask\s+(?P<func>\w+)\s*((before\s*(?P<before>((.*(?=after))|(.*))))|(after\s*(?P<after>((.*(?=before))|(.*)))))*")
 __deltask_regexp__       = re.compile(r"deltask\s+(.+)")
@@ -33,6 +34,7 @@ __infunc__ = []
 __inpython__ = False
 __body__   = []
 __classname__ = ""
+__residue__ = []
 
 cached_statements = {}
 
@@ -40,31 +42,46 @@ def supports(fn, d):
     """Return True if fn has a supported extension"""
     return os.path.splitext(fn)[-1] in [".bb", ".bbclass", ".inc"]
 
-def inherit(files, fn, lineno, d):
+def inherit(files, fn, lineno, d, deferred=False):
     __inherit_cache = d.getVar('__inherit_cache', False) or []
+    #if "${" in files and not deferred:
+    #    bb.warn("%s:%s has non deferred conditional inherit" % (fn, lineno))
     files = d.expand(files).split()
     for file in files:
-        if not os.path.isabs(file) and not file.endswith(".bbclass"):
-            file = os.path.join('classes', '%s.bbclass' % file)
+        classtype = d.getVar("__bbclasstype", False)
+        origfile = file
+        for t in ["classes-" + classtype, "classes"]:
+            file = origfile
+            if not os.path.isabs(file) and not file.endswith(".bbclass"):
+                file = os.path.join(t, '%s.bbclass' % file)
 
-        if not os.path.isabs(file):
-            bbpath = d.getVar("BBPATH")
-            abs_fn, attempts = bb.utils.which(bbpath, file, history=True)
-            for af in attempts:
-                if af != abs_fn:
-                    bb.parse.mark_dependency(d, af)
-            if abs_fn:
-                file = abs_fn
+            if not os.path.isabs(file):
+                bbpath = d.getVar("BBPATH")
+                abs_fn, attempts = bb.utils.which(bbpath, file, history=True)
+                for af in attempts:
+                    if af != abs_fn:
+                        bb.parse.mark_dependency(d, af)
+                if abs_fn:
+                    file = abs_fn
+
+            if os.path.exists(file):
+                break
+
+        if not os.path.exists(file):
+            raise ParseError("Could not inherit file %s" % (file), fn, lineno)
 
         if not file in __inherit_cache:
             logger.debug("Inheriting %s (from %s:%d)" % (file, fn, lineno))
             __inherit_cache.append( file )
             d.setVar('__inherit_cache', __inherit_cache)
-            include(fn, file, lineno, d, "inherit")
+            try:
+                bb.parse.handle(file, d, True)
+            except (IOError, OSError) as exc:
+                raise ParseError("Could not inherit file %s: %s" % (fn, exc.strerror), fn, lineno)
             __inherit_cache = d.getVar('__inherit_cache', False) or []
 
 def get_statements(filename, absolute_filename, base_name):
-    global cached_statements
+    global cached_statements, __residue__, __body__
 
     try:
         return cached_statements[absolute_filename]
@@ -84,12 +101,17 @@ def get_statements(filename, absolute_filename, base_name):
             # add a blank line to close out any python definition
             feeder(lineno, "", filename, base_name, statements, eof=True)
 
+        if __residue__:
+            raise ParseError("Unparsed lines %s: %s" % (filename, str(__residue__)), filename, lineno)
+        if __body__:
+            raise ParseError("Unparsed lines from unclosed function %s: %s" % (filename, str(__body__)), filename, lineno)
+
         if filename.endswith(".bbclass") or filename.endswith(".inc"):
             cached_statements[absolute_filename] = statements
         return statements
 
-def handle(fn, d, include):
-    global __func_start_regexp__, __inherit_regexp__, __export_func_regexp__, __addtask_regexp__, __addhandler_regexp__, __infunc__, __body__, __residue__, __classname__
+def handle(fn, d, include, baseconfig=False):
+    global __infunc__, __body__, __residue__, __classname__
     __body__ = []
     __infunc__ = []
     __classname__ = ""
@@ -141,7 +163,7 @@ def handle(fn, d, include):
     return d
 
 def feeder(lineno, s, fn, root, statements, eof=False):
-    global __func_start_regexp__, __inherit_regexp__, __export_func_regexp__, __addtask_regexp__, __addhandler_regexp__, __def_regexp__, __python_func_regexp__, __inpython__, __infunc__, __body__, bb, __residue__, __classname__
+    global __inpython__, __infunc__, __body__, __residue__, __classname__
 
     # Check tabs in python functions:
     # - def py_funcname(): covered by __inpython__
@@ -252,7 +274,12 @@ def feeder(lineno, s, fn, root, statements, eof=False):
         ast.handleInherit(statements, fn, lineno, m)
         return
 
-    return ConfHandler.feeder(lineno, s, fn, statements)
+    m = __inherit_def_regexp__.match(s)
+    if m:
+        ast.handleInheritDeferred(statements, fn, lineno, m)
+        return
+
+    return ConfHandler.feeder(lineno, s, fn, statements, conffile=False)
 
 # Add us to the handlers list
 from .. import handlers

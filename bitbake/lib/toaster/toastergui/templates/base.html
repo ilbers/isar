@@ -14,11 +14,11 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
-    <script src="{% static 'js/jquery-2.0.3.min.js' %}">
+    <script src="{% static 'js/jquery-3.7.1.min.js' %}">
     </script>
     <script src="{% static 'js/jquery.cookie.js' %}">
     </script>
-    <script src="{% static 'js/bootstrap.min.js' %}">
+    <script src="{% static 'js/bootstrap-3.4.1.min.js' %}">
     </script>
     <script src="{% static 'js/typeahead.jquery.js' %}">
     </script>
@@ -94,7 +94,7 @@
             </a>
             <a class="brand" href="/">Toaster</a>
             {% if DEBUG %}
-            <span class="glyphicon glyphicon-info-sign" title="<strong>Toaster version information</strong>" data-content="<dl><dt>Git branch</dt><dd>{{TOASTER_BRANCH}}</dd><dt>Git revision</dt><dd>{{TOASTER_REVISION}}</dd></dl>"></i>
+            <span id="toaster-version-info-sign" class="glyphicon glyphicon-info-sign" title="<strong>Toaster version information</strong>" data-content="<dl><dt>Git branch</dt><dd>{{TOASTER_BRANCH}}</dd><dt>Git revision</dt><dd>{{TOASTER_REVISION}}</dd></dl>"></i>
             {% endif %}
           </div>
         </div>
@@ -132,7 +132,8 @@
             {% if project_enable %}
             <a class="btn btn-default navbar-btn navbar-right" id="new-project-button" href="{% url 'newproject' %}">New project</a>
             {% endif %}
-          </div>
+            <a class="btn btn-default navbar-btn navbar-right" id="import_page" style="margin-right: 5px !important" id="import-cmdline-button" href="{% url 'cmdlines' %}">Import command line builds</a>
+            </div>
       </div>
     </nav>
 
