@@ -850,8 +850,6 @@ FETCH_EXPORT_VARS = ['HOME', 'PATH',
                      'AWS_PROFILE',
                      'AWS_ACCESS_KEY_ID',
                      'AWS_SECRET_ACCESS_KEY',
-                     'AWS_ROLE_ARN',
-                     'AWS_WEB_IDENTITY_TOKEN_FILE',
                      'AWS_DEFAULT_REGION']
 
 def get_fetcher_environment(d):
