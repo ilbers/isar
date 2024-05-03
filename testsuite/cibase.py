@@ -149,7 +149,7 @@ class CIBaseTest(CIBuilder):
             taskorder_file = glob.glob(f'{self.build_dir}/tmp/work/*/{target}/*/temp/log.task_order')
             try:
                 with open(taskorder_file[0], 'r') as f:
-                    tasks = [l.split()[0] for l in f.readlines()]
+                    tasks = [l.split()[1] for l in f.readlines()]
             except (FileNotFoundError, IndexError):
                 tasks = []
             if expected is None:
