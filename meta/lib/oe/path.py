@@ -125,7 +125,8 @@ def copyhardlinktree(src, dst):
         if os.path.isdir(src):
             if len(glob.glob('%s/.??*' % src)) > 0:
                 source = './.??* '
-            source += './*'
+            if len(glob.glob('%s/**' % src)) > 0:
+                source += './*'
             s_dir = src
         else:
             source = src
@@ -170,6 +171,9 @@ def symlink(source, destination, force=False):
     except OSError as e:
         if e.errno != errno.EEXIST or os.readlink(destination) != source:
             raise
+
+def relsymlink(target, name, force=False):
+    symlink(os.path.relpath(target, os.path.dirname(name)), name, force=force)
 
 def find(dir, **walkoptions):
     """ Given a directory, recurses into that directory,

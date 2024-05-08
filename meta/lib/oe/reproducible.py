@@ -1,5 +1,5 @@
 #
-# Copyright OpenEmbedded Contributors
+# Imported from openembedded-core
 #
 # SPDX-License-Identifier: GPL-2.0-only
 #
