@@ -117,7 +117,7 @@ class DirectPlugin(ImagerPlugin):
         updated = False
         for part in self.parts:
             if not part.realnum or not part.mountpoint \
-               or part.mountpoint == "/" or not part.mountpoint.startswith('/'):
+               or part.mountpoint == "/" or not (part.mountpoint.startswith('/') or part.mountpoint == "swap"):
                 continue
 
             if part.use_uuid:
@@ -149,6 +149,9 @@ class DirectPlugin(ImagerPlugin):
             self.updated_fstab_path = os.path.join(self.workdir, "fstab")
             with open(self.updated_fstab_path, "w") as f:
                 f.writelines(fstab_lines)
+            if os.getenv('SOURCE_DATE_EPOCH'):
+                fstab_time = int(os.getenv('SOURCE_DATE_EPOCH'))
+                os.utime(self.updated_fstab_path, (fstab_time, fstab_time))
 
     def _full_path(self, path, name, extention):
         """ Construct full file path to a file we generate. """
@@ -310,7 +313,10 @@ class PartitionedImage():
                           # all partitions (in bytes)
         self.ptable_format = ptable_format  # Partition table format
         # Disk system identifier
-        self.identifier = random.SystemRandom().randint(1, 0xffffffff)
+        if os.getenv('SOURCE_DATE_EPOCH'):
+            self.identifier = random.Random(int(os.getenv('SOURCE_DATE_EPOCH'))).randint(1, 0xffffffff)
+        else:
+            self.identifier = random.SystemRandom().randint(1, 0xffffffff)
 
         self.partitions = partitions
         self.partimages = []
@@ -336,7 +342,7 @@ class PartitionedImage():
         # generate parition and filesystem UUIDs
         for part in self.partitions:
             if not part.uuid and part.use_uuid:
-                if self.ptable_format == 'gpt':
+                if self.ptable_format in ('gpt', 'gpt-hybrid'):
                     part.uuid = str(uuid.uuid4())
                 else: # msdos partition table
                     part.uuid = '%08x-%02d' % (self.identifier, part.realnum)
@@ -392,6 +398,10 @@ class PartitionedImage():
                 raise WicError("setting custom partition type is not " \
                                "implemented for msdos partitions")
 
+            if part.mbr and self.ptable_format != 'gpt-hybrid':
+                raise WicError("Partition may only be included in MBR with " \
+                               "a gpt-hybrid partition table")
+
             # Get the disk where the partition is located
             self.numpart += 1
             if not part.no_table:
@@ -400,7 +410,7 @@ class PartitionedImage():
             if self.numpart == 1:
                 if self.ptable_format == "msdos":
                     overhead = MBR_OVERHEAD
-                elif self.ptable_format == "gpt":
+                elif self.ptable_format in ("gpt", "gpt-hybrid"):
                     overhead = GPT_OVERHEAD
 
                 # Skip one sector required for the partitioning scheme overhead
@@ -484,7 +494,7 @@ class PartitionedImage():
         # Once all the partitions have been layed out, we can calculate the
         # minumim disk size
         self.min_size = self.offset
-        if self.ptable_format == "gpt":
+        if self.ptable_format in ("gpt", "gpt-hybrid"):
             self.min_size += GPT_OVERHEAD
 
         self.min_size *= self.sector_size
@@ -505,21 +515,48 @@ class PartitionedImage():
 
         return exec_native_cmd(cmd, self.native_sysroot)
 
-    def create(self):
-        logger.debug("Creating sparse file %s", self.path)
-        with open(self.path, 'w') as sparse:
-            os.ftruncate(sparse.fileno(), self.min_size)
-
-        logger.debug("Initializing partition table for %s", self.path)
-        exec_native_cmd("parted -s %s mklabel %s" %
-                        (self.path, self.ptable_format), self.native_sysroot)
-
-        logger.debug("Set disk identifier %x", self.identifier)
-        with open(self.path, 'r+b') as img:
+    def _write_identifier(self, device, identifier):
+        logger.debug("Set disk identifier %x", identifier)
+        with open(device, 'r+b') as img:
             img.seek(0x1B8)
-            img.write(self.identifier.to_bytes(4, 'little'))
+            img.write(identifier.to_bytes(4, 'little'))
+
+    def _make_disk(self, device, ptable_format, min_size):
+        logger.debug("Creating sparse file %s", device)
+        with open(device, 'w') as sparse:
+            os.ftruncate(sparse.fileno(), min_size)
+
+        logger.debug("Initializing partition table for %s", device)
+        exec_native_cmd("parted -s %s mklabel %s" % (device, ptable_format),
+                        self.native_sysroot)
+
+    def _write_disk_guid(self):
+        if self.ptable_format in ('gpt', 'gpt-hybrid'):
+            if os.getenv('SOURCE_DATE_EPOCH'):
+                self.disk_guid = uuid.UUID(int=int(os.getenv('SOURCE_DATE_EPOCH')))
+            else:
+                self.disk_guid = uuid.uuid4()
+
+            logger.debug("Set disk guid %s", self.disk_guid)
+            sfdisk_cmd = "sfdisk --disk-id %s %s" % (self.path, self.disk_guid)
+            exec_native_cmd(sfdisk_cmd, self.native_sysroot)
+
+    def create(self):
+        self._make_disk(self.path,
+                        "gpt" if self.ptable_format == "gpt-hybrid" else self.ptable_format,
+                        self.min_size)
+
+        self._write_identifier(self.path, self.identifier)
+        self._write_disk_guid()
+
+        if self.ptable_format == "gpt-hybrid":
+            mbr_path = self.path + ".mbr"
+            self._make_disk(mbr_path, "msdos", self.min_size)
+            self._write_identifier(mbr_path, self.identifier)
 
         logger.debug("Creating partitions")
+
+        hybrid_mbr_part_num = 0
 
         for part in self.partitions:
             if part.num == 0:
@@ -565,11 +602,19 @@ class PartitionedImage():
             self._create_partition(self.path, part.type,
                                    parted_fs_type, part.start, part.size_sec)
 
-            if part.part_name:
+            if self.ptable_format == "gpt-hybrid" and part.mbr:
+                hybrid_mbr_part_num += 1
+                if hybrid_mbr_part_num > 4:
+                    raise WicError("Extended MBR partitions are not supported in hybrid MBR")
+                self._create_partition(mbr_path, "primary",
+                                       parted_fs_type, part.start, part.size_sec)
+
+            if self.ptable_format in ("gpt", "gpt-hybrid") and (part.part_name or part.label):
+                partition_label = part.part_name if part.part_name else part.label
                 logger.debug("partition %d: set name to %s",
-                             part.num, part.part_name)
+                             part.num, partition_label)
                 exec_native_cmd("sgdisk --change-name=%d:%s %s" % \
-                                         (part.num, part.part_name,
+                                         (part.num, partition_label,
                                           self.path), self.native_sysroot)
 
             if part.part_type:
@@ -579,31 +624,54 @@ class PartitionedImage():
                                          (part.num, part.part_type,
                                           self.path), self.native_sysroot)
 
-            if part.uuid and self.ptable_format == "gpt":
+            if part.uuid and self.ptable_format in ("gpt", "gpt-hybrid"):
                 logger.debug("partition %d: set UUID to %s",
                              part.num, part.uuid)
                 exec_native_cmd("sgdisk --partition-guid=%d:%s %s" % \
                                 (part.num, part.uuid, self.path),
                                 self.native_sysroot)
 
-            if part.label and self.ptable_format == "gpt":
-                logger.debug("partition %d: set name to %s",
-                             part.num, part.label)
-                exec_native_cmd("parted -s %s name %d %s" % \
-                                (self.path, part.num, part.label),
-                                self.native_sysroot)
-
             if part.active:
-                flag_name = "legacy_boot" if self.ptable_format == 'gpt' else "boot"
+                flag_name = "legacy_boot" if self.ptable_format in ('gpt', 'gpt-hybrid') else "boot"
                 logger.debug("Set '%s' flag for partition '%s' on disk '%s'",
                              flag_name, part.num, self.path)
                 exec_native_cmd("parted -s %s set %d %s on" % \
                                 (self.path, part.num, flag_name),
                                 self.native_sysroot)
+                if self.ptable_format == 'gpt-hybrid' and part.mbr:
+                    exec_native_cmd("parted -s %s set %d %s on" % \
+                                    (mbr_path, hybrid_mbr_part_num, "boot"),
+                                    self.native_sysroot)
             if part.system_id:
                 exec_native_cmd("sfdisk --part-type %s %s %s" % \
                                 (self.path, part.num, part.system_id),
                                 self.native_sysroot)
+
+            if part.hidden and self.ptable_format == "gpt":
+                logger.debug("Set hidden attribute for partition '%s' on disk '%s'",
+                             part.num, self.path)
+                exec_native_cmd("sfdisk --part-attrs %s %s RequiredPartition" % \
+                                (self.path, part.num),
+                                self.native_sysroot)
+
+        if self.ptable_format == "gpt-hybrid":
+            # Write a protective GPT partition
+            hybrid_mbr_part_num += 1
+            if hybrid_mbr_part_num > 4:
+                raise WicError("Extended MBR partitions are not supported in hybrid MBR")
+
+            # parted cannot directly create a protective GPT partition, so
+            # create with an arbitrary type, then change it to the correct type
+            # with sfdisk
+            self._create_partition(mbr_path, "primary", "fat32", 1, GPT_OVERHEAD)
+            exec_native_cmd("sfdisk --part-type %s %d 0xee" % (mbr_path, hybrid_mbr_part_num),
+                            self.native_sysroot)
+
+            # Copy hybrid MBR
+            with open(mbr_path, "rb") as mbr_file:
+                with open(self.path, "r+b") as image_file:
+                    mbr = mbr_file.read(512)
+                    image_file.write(mbr)
 
     def cleanup(self):
         pass

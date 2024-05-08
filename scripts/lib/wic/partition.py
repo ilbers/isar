@@ -59,6 +59,8 @@ class Partition():
         self.updated_fstab_path = None
         self.has_fstab = False
         self.update_fstab_in_rootfs = False
+        self.hidden = args.hidden
+        self.mbr = args.mbr
 
         self.lineno = lineno
         self.source_file = ""
@@ -133,6 +135,8 @@ class Partition():
             self.update_fstab_in_rootfs = True
 
         if not self.source:
+            if self.fstype == "none" or self.no_table:
+                return
             if not self.size and not self.fixed_size:
                 raise WicError("The %s partition has a size of zero. Please "
                                "specify a non-zero --size/--fixed-size for that "
@@ -280,6 +284,20 @@ class Partition():
 
         extraopts = self.mkfs_extraopts or "-F -i 8192"
 
+        if os.getenv('SOURCE_DATE_EPOCH'):
+            sde_time = int(os.getenv('SOURCE_DATE_EPOCH'))
+            if pseudo:
+                pseudo = "export E2FSPROGS_FAKE_TIME=%s;%s " % (sde_time, pseudo)
+            else:
+                pseudo = "export E2FSPROGS_FAKE_TIME=%s; " % sde_time
+
+            # Set hash_seed to generate deterministic directory indexes
+            namespace = uuid.UUID("e7429877-e7b3-4a68-a5c9-2f2fdf33d460")
+            if self.fsuuid:
+                namespace = uuid.UUID(self.fsuuid)
+            hash_seed = str(uuid.uuid5(namespace, str(sde_time)))
+            extraopts += " -E hash_seed=%s" % hash_seed
+
         label_str = ""
         if self.label:
             label_str = "-L %s" % self.label
@@ -299,6 +317,30 @@ class Partition():
 
         mkfs_cmd = "fsck.%s -pvfD %s" % (self.fstype, rootfs)
         exec_native_cmd(mkfs_cmd, native_sysroot, pseudo=pseudo)
+
+        if os.getenv('SOURCE_DATE_EPOCH'):
+            sde_time = hex(int(os.getenv('SOURCE_DATE_EPOCH')))
+            debugfs_script_path = os.path.join(cr_workdir, "debugfs_script")
+            files = []
+            for root, dirs, others in os.walk(rootfs_dir):
+                base = root.replace(rootfs_dir, "").rstrip(os.sep)
+                files += [ "/" if base == "" else base ]
+                files += [ base + "/" + n for n in dirs + others ]
+            with open(debugfs_script_path, "w") as f:
+                f.write("set_current_time %s\n" % (sde_time))
+                if self.updated_fstab_path and self.has_fstab and not self.no_fstab_update:
+                    f.write("set_inode_field /etc/fstab mtime %s\n" % (sde_time))
+                    f.write("set_inode_field /etc/fstab mtime_extra 0\n")
+                for file in set(files):
+                    for time in ["atime", "ctime", "crtime"]:
+                        f.write("set_inode_field \"%s\" %s %s\n" % (file, time, sde_time))
+                        f.write("set_inode_field \"%s\" %s_extra 0\n" % (file, time))
+                for time in ["wtime", "mkfs_time", "lastcheck"]:
+                    f.write("set_super_value %s %s\n" % (time, sde_time))
+                for time in ["mtime", "first_error_time", "last_error_time"]:
+                    f.write("set_super_value %s 0\n" % (time))
+            debugfs_cmd = "debugfs -w -f %s %s" % (debugfs_script_path, rootfs)
+            exec_native_cmd(debugfs_cmd, native_sysroot)
 
         self.check_for_Y2038_problem(rootfs, native_sysroot)
 
@@ -353,7 +395,7 @@ class Partition():
         exec_native_cmd(mcopy_cmd, native_sysroot)
 
         if self.updated_fstab_path and self.has_fstab and not self.no_fstab_update:
-            mcopy_cmd = "mcopy -i %s %s ::/etc/fstab" % (rootfs, self.updated_fstab_path)
+            mcopy_cmd = "mcopy -m -i %s %s ::/etc/fstab" % (rootfs, self.updated_fstab_path)
             exec_native_cmd(mcopy_cmd, native_sysroot)
 
         chmod_cmd = "chmod 644 %s" % rootfs
@@ -380,6 +422,9 @@ class Partition():
         erofs_cmd = "mkfs.erofs %s -U %s %s %s" % \
                        (extraopts, self.fsuuid, rootfs, rootfs_dir)
         exec_native_cmd(erofs_cmd, native_sysroot, pseudo=pseudo)
+
+    def prepare_empty_partition_none(self, rootfs, oe_builddir, native_sysroot):
+        pass
 
     def prepare_empty_partition_ext(self, rootfs, oe_builddir,
                                     native_sysroot):

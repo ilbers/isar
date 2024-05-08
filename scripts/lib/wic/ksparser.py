@@ -159,7 +159,7 @@ class KickStart():
         part.add_argument('--fstype', default='vfat',
                           choices=('ext2', 'ext3', 'ext4', 'btrfs',
                                    'squashfs', 'vfat', 'msdos', 'erofs',
-                                   'swap'))
+                                   'swap', 'none'))
         part.add_argument('--mkfs-extraopts', default='')
         part.add_argument('--label')
         part.add_argument('--use-label', action='store_true')
@@ -171,6 +171,7 @@ class KickStart():
         part.add_argument('--rootfs-dir')
         part.add_argument('--type', default='primary',
                 choices = ('primary', 'logical'))
+        part.add_argument('--hidden', action='store_true')
 
         # --size and --fixed-size cannot be specified together; options
         # ----extra-space and --overhead-factor should also raise a parser
@@ -187,11 +188,12 @@ class KickStart():
         part.add_argument('--uuid')
         part.add_argument('--fsuuid')
         part.add_argument('--no-fstab-update', action='store_true')
+        part.add_argument('--mbr', action='store_true')
 
         bootloader = subparsers.add_parser('bootloader')
         bootloader.add_argument('--append')
         bootloader.add_argument('--configfile')
-        bootloader.add_argument('--ptable', choices=('msdos', 'gpt'),
+        bootloader.add_argument('--ptable', choices=('msdos', 'gpt', 'gpt-hybrid'),
                                 default='msdos')
         bootloader.add_argument('--timeout', type=int)
         bootloader.add_argument('--source')
