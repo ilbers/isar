@@ -530,12 +530,24 @@ class PartitionedImage():
         exec_native_cmd("parted -s %s mklabel %s" % (device, ptable_format),
                         self.native_sysroot)
 
+    def _sfdisk_supports_disk_id(self):
+        ret, help_out = exec_native_cmd("sfdisk --help", self.native_sysroot)
+        if 'disk-id' not in help_out:
+            logger.warn("Current sfdisk version DOES NOT support changing disk ID")
+            return False
+        return True
+
     def _write_disk_guid(self):
         if self.ptable_format in ('gpt', 'gpt-hybrid'):
             if os.getenv('SOURCE_DATE_EPOCH'):
                 self.disk_guid = uuid.UUID(int=int(os.getenv('SOURCE_DATE_EPOCH')))
             else:
                 self.disk_guid = uuid.uuid4()
+
+            # Backport compatibility for Debian Buster and Ubuntu Focal
+            if not self._sfdisk_supports_disk_id():
+                logger.warn("Disk identifier can't be set, reproducibility is broken!")
+                return
 
             logger.debug("Set disk guid %s", self.disk_guid)
             sfdisk_cmd = "sfdisk --disk-id %s %s" % (self.path, self.disk_guid)
