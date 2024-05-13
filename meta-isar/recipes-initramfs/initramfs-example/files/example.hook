@@ -3,6 +3,8 @@
 #
 # See "HOOK SCRIPTS" in initramfs-tools(7) for details.
 
+set -e
+
 PREREQ=""
 prereqs()
 {

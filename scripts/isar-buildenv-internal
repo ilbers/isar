@@ -20,6 +20,9 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 # It is assumed ISARROOT is already defined when this is called
+
+set -e
+
 if [ -z "$ISARROOT" ]; then
     echo >&2 "Error: ISARROOT is not defined!"
     return 1

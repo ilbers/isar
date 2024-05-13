@@ -15,6 +15,8 @@
 #
 # SPDX-License-Identifier: GPL-2.0
 
+set -e
+
 usage() {
 	cat <<-EOF 1>&2
 		Script to setup and cleanup chroot environments.

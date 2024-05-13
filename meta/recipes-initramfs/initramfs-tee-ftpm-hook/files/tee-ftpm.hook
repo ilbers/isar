@@ -6,6 +6,9 @@
 #
 # SPDX-License-Identifier: MIT
 #
+
+set -e
+
 PREREQ="tee-supplicant"
 prereqs()
 {
