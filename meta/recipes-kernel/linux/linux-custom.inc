@@ -116,11 +116,19 @@ HEADERS_DEPENDS:cross-profile = ", linux-kbuild-${KERNEL_NAME_PROVIDED}:${HOST_A
 
 # -native: kbuild package for host
 BUILD_PROFILES:class-native = "kbuild"
-RECIPE_PROVIDES:class-native = "linux-kbuild-${KERNEL_NAME_PROVIDED}-native"
+RECIPE_PROVIDES:class-native = " \
+    linux-headers-${KERNEL_NAME_PROVIDED} \
+    linux-kbuild-${KERNEL_NAME_PROVIDED}"
+# Use pseudo target to pull in the base variant of the recipe.
+# Will be auto-extended with -native by multiarch.bbclass.
+RDEPENDS:class-native += "${BPN}-pseudo"
 
 # -kbuildtarget: kbuild package for target, enforcing non-cross-build
 BUILD_PROFILES:class-kbuildtarget = "kbuild"
-RECIPE_PROVIDES:class-kbuildtarget = "linux-kbuild-${KERNEL_NAME_PROVIDED}"
+RECIPE_PROVIDES:class-kbuildtarget = " \
+    linux-headers-${KERNEL_NAME_PROVIDED} \
+    linux-kbuild-${KERNEL_NAME_PROVIDED}"
+RDEPENDS:class-kbuildtarget = "${BPN}"
 ISAR_CROSS_COMPILE:class-kbuildtarget = "0"
 
 # Make bitbake know we will be producing linux-image and linux-headers packages
@@ -132,11 +140,15 @@ RECIPE_PROVIDES = " \
     linux-libc-dev-${DISTRO_ARCH}-cross \
     linux-image-${KERNEL_NAME_PROVIDED}-dbg \
     linux-kbuild-${KERNEL_NAME_PROVIDED} \
+    ${BPN}-pseudo-native \
 "
 # When cross-profile is active:
-# kbuild package is provided by -native or -kbuildtarget variant
-# Otherwise it's provided by the default variant
-RECIPE_PROVIDES:remove:cross-profile = "linux-kbuild-${KERNEL_NAME_PROVIDED}"
+# kbuild package is provided by -native or -kbuildtarget variant. Also headers
+# provisioning moves over to ensure those variants are pulled, although the
+# package itself is still built by the base recipe.
+RECIPE_PROVIDES:remove:cross-profile = " \
+    linux-headers-${KERNEL_NAME_PROVIDED} \
+    linux-kbuild-${KERNEL_NAME_PROVIDED}"
 
 # Append headers depends
 HEADERS_DEPENDS = ", linux-kbuild-${KERNEL_NAME_PROVIDED}"
@@ -147,9 +159,6 @@ PROVIDES += "${RECIPE_PROVIDES}"
 
 # Append build profiles
 DEB_BUILD_PROFILES += "${BUILD_PROFILES}"
-
-# Add dependency to build -kbuildtarget and -native automatically
-RDEPENDS:append:cross-profile = " ${BPN}-native"
 
 def get_kernel_arch(d):
     distro_arch = d.getVar("DISTRO_ARCH")

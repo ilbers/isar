@@ -10,8 +10,11 @@ python() {
     for kernel in distro_kernels.split():
         d.appendVar('PROVIDES', ' linux-image-' + kernel)
         d.appendVar('PROVIDES', ' linux-headers-' + kernel)
+        d.appendVar('PROVIDES', ' linux-kbuild-' + kernel)
     if d.getVar('KERNEL_IMAGE_PKG'):
         d.appendVar('PROVIDES', ' ' + d.getVar('KERNEL_IMAGE_PKG'))
     if d.getVar('KERNEL_HEADERS_PKG'):
         d.appendVar('PROVIDES', ' ' + d.getVar('KERNEL_HEADERS_PKG'))
 }
+
+inherit multiarch
