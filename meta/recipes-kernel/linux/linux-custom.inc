@@ -97,7 +97,7 @@ KERNEL_NAME_PROVIDED ?= "${@ d.getVar('BPN').partition('linux-')[2]}"
 
 # Determine cross-profile override
 python() {
-    if d.getVar("DISTRO_ARCH") != d.getVar("HOST_ARCH") and d.getVar("ISAR_CROSS_COMPILE", True) == "1" and "class-native" not in d.getVar("OVERRIDES", True).split(":"):
+    if d.getVar("DISTRO_ARCH") != d.getVar("HOST_ARCH") and bb.utils.to_boolean(d.getVar("ISAR_CROSS_COMPILE")) and "class-native" not in d.getVar("OVERRIDES", True).split(":"):
         d.appendVar("OVERRIDES", ":cross-profile")
 }
 
