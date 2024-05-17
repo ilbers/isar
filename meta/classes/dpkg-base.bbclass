@@ -215,7 +215,7 @@ dpkg_runbuild() {
 
 def isar_deb_build_profiles(d):
     deb_build_profiles = d.getVar('DEB_BUILD_PROFILES')
-    if bb.utils.to_boolean(d.getVar('ISAR_CROSS_COMPILE')):
+    if d.getVar('BUILD_ARCH') != d.getVar('DISTRO_ARCH'):
         deb_build_profiles += ' cross'
     return deb_build_profiles.strip()
 
