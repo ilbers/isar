@@ -24,9 +24,10 @@ def expand_sbuild_pt_additions(d):
             cmds += 'sbuild_export ' + var + ' "' + varval + '"\n'
     return cmds
 
-do_prepare_build:append() {
+do_get_reference_env() {
     env > ${DPKG_PREBUILD_ENV_FILE}
 }
+addtask get_reference_env before do_dpkg_build
 
 # cp -n results in nonzero exit code starting from coreutils 9.2
 # and starting from 9.3 we can use --update=none for the same behaviour

@@ -16,11 +16,8 @@ python do_unpack:prepend() {
     d.setVar('SRC_URI', ' '.join(src_uri))
 }
 
-# break dependencies on do_patch, etc... but still support sstate caching
-deltask dpkg_build
-addtask dpkg_build after do_unpack before do_deploy_deb
-# break inherited (from dpkg-base) dependency on sbuild_chroot
-do_dpkg_build[depends] = ""
+# also breaks inherited (from dpkg-base) dependency on sbuild_chroot
+do_dpkg_build[depends] = "${PN}:do_unpack"
 do_dpkg_build() {
     true
 }

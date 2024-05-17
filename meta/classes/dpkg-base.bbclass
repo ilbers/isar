@@ -78,7 +78,7 @@ addtask adjust_git after do_unpack before do_patch
 do_adjust_git[lockfiles] += "${DL_DIR}/git/isar.lock"
 
 inherit patch
-addtask patch after do_adjust_git before do_dpkg_build
+addtask patch after do_adjust_git
 
 SRC_APT ?= ""
 
@@ -191,7 +191,7 @@ do_prepare_build() {
     true
 }
 
-addtask prepare_build after do_patch do_transform_template before do_dpkg_build
+addtask prepare_build after do_patch do_transform_template
 # If Isar recipes depend on each other, they typically need the package
 # deployed to isar-apt
 do_local_isarapt[depends] += "isar-apt:do_cache_config"
