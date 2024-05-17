@@ -50,6 +50,7 @@ dpkg_runbuild() {
         # Filter some standard variables
         echo ${line} | grep -q "^HOME=" && continue
         echo ${line} | grep -q "^PWD=" && continue
+        echo ${line} | grep -q "^SOURCE_DATE_EPOCH=" && continue
 
         var=$(echo "${line}" | cut -d '=' -f1)
         value=$(echo "${line}" | cut -d '=' -f2-)
