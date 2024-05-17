@@ -35,7 +35,11 @@ do_install() {
 
     if echo "${DEB_BUILD_PROFILES}" | grep -q "kbuild"; then
         # Install kernel scripts and tools
-        install_kbuild ${deb_kern_kbuild_dir}
+        if echo "${DEB_BUILD_PROFILES}" | grep -q "cross"; then
+            install_kbuild ${deb_kern_kbuild_cross_dir}
+        else
+            install_kbuild ${deb_kern_kbuild_dir}
+        fi
     fi
 
     if echo "${DEB_BUILD_PROFILES}" | grep -q "kernel"; then

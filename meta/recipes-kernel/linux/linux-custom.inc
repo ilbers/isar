@@ -111,9 +111,6 @@ BBCLASSEXTEND:append:cross-profile = " kbuildtarget"
 # build only kernel with the default variant of the recipe
 BUILD_PROFILES:cross-profile = "kernel"
 
-# Select correct kbuild package for isar cross-build
-HEADERS_DEPENDS:cross-profile = ", linux-kbuild-${KERNEL_NAME_PROVIDED}:${HOST_ARCH} | linux-kbuild-${KERNEL_NAME_PROVIDED}"
-
 # -native: kbuild package for host
 BUILD_PROFILES:class-native = "kbuild"
 RECIPE_PROVIDES:class-native = " \
@@ -151,7 +148,7 @@ RECIPE_PROVIDES:remove:cross-profile = " \
     linux-kbuild-${KERNEL_NAME_PROVIDED}"
 
 # Append headers depends
-HEADERS_DEPENDS = ", linux-kbuild-${KERNEL_NAME_PROVIDED}"
+HEADERS_DEPENDS = ", linux-kbuild-${KERNEL_NAME_PROVIDED} | linux-kbuild-${KERNEL_NAME_PROVIDED}-${DISTRO_ARCH}-cross"
 KERNEL_HEADERS_DEBIAN_DEPENDS:append = "${HEADERS_DEPENDS}"
 
 # Append provides

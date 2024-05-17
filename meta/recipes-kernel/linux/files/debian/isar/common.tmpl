@@ -11,6 +11,7 @@ KERNEL_PKG_KERN_HEADERS=linux-headers-${KERNEL_NAME_PROVIDED}
 KERNEL_PKG_LIBC_HEADERS=linux-libc-dev
 KERNEL_PKG_LIBC_HEADERS_CROSS=linux-libc-dev-${DISTRO_ARCH}-cross
 KERNEL_PKG_KERN_KBUILD=linux-kbuild-${KERNEL_NAME_PROVIDED}
+KERNEL_PKG_KERN_KBUILD_CROSS=${KERNEL_PKG_KERN_KBUILD}-${DISTRO_ARCH}-cross
 
 # Force creating debian package with valid host arch for -native build
 # Use a cross build to comply with arch specific kernel defconfigs
@@ -32,6 +33,7 @@ deb_kern_hdr_dir=${deb_top_dir}/${KERNEL_PKG_KERN_HEADERS}
 deb_libc_hdr_dir=${deb_top_dir}/${KERNEL_PKG_LIBC_HEADERS}
 deb_libc_hdr_cross_dir=${deb_top_dir}/${KERNEL_PKG_LIBC_HEADERS_CROSS}
 deb_kern_kbuild_dir=${deb_top_dir}/${KERNEL_PKG_KERN_KBUILD}
+deb_kern_kbuild_cross_dir=${deb_top_dir}/${KERNEL_PKG_KERN_KBUILD_CROSS}
 
 # Array of packages to be generated
 declare -A kern_pkgs
