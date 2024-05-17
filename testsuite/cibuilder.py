@@ -143,6 +143,7 @@ class CIBuilder(Test):
                 f.write('IMAGE_INSTALL += "kselftest"\n')
             if cross:
                 f.write('ISAR_CROSS_COMPILE = "1"\n')
+                f.write('IMAGE_INSTALL:append:hikey = " linux-headers-${KERNEL_NAME}"\n')
             if debsrc_cache:
                 f.write('BASE_REPO_FEATURES = "cache-deb-src"\n')
             if offline:
