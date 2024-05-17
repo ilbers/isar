@@ -109,8 +109,7 @@ dpkg_runbuild() {
     echo '$apt_keep_downloaded_packages = 1;' >> ${SBUILD_CONFIG}
     echo '$stalled_pkg_timeout = ${DPKG_BUILD_TIMEOUT};' >> ${SBUILD_CONFIG}
 
-    DEB_SOURCE_NAME=$(dpkg-parsechangelog --show-field Source --file ${WORKDIR}/${PPS}/debian/changelog)
-    DSC_FILE=$(find ${WORKDIR} -name "${DEB_SOURCE_NAME}*.dsc" -maxdepth 1 -print)
+    DSC_FILE=$(find ${WORKDIR} -maxdepth 1 -name "${DEBIAN_SOURCE}_*.dsc" -print)
 
     sbuild -A -n -c ${SBUILD_CHROOT} \
         --host=${PACKAGE_ARCH} --build=${BUILD_ARCH} ${profiles} \
