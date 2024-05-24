@@ -35,9 +35,17 @@ def get_installer_destination(d, suffix):
     image_data = d.getVar('IMAGE_DATA_FILE')
     return f"/install/{image_data}.{suffix}"
 
+def get_mc_depends(d, task):
+    installer_target_image = d.getVar('INSTALLER_TARGET_IMAGE') or ""
+    if not installer_target_image:
+        return ""
+    installer_mc = d.getVar('INSTALLER_MC') or ""
+    installer_target_mc = d.getVar('INSTALLER_TARGET_MC') or ""
+    return f"mc:{installer_mc}:{installer_target_mc}:{installer_target_image}:{task}"
+
 ROOTFS_ADDITIONAL_FILE_installer-target[source] = "${@ get_installer_source(d, d.getVar('IMAGE_DATA_POSTFIX'))}"
 ROOTFS_ADDITIONAL_FILE_installer-target[destination] = "${@ get_installer_destination(d, d.getVar('IMAGE_DATA_POSTFIX'))}"
 ROOTFS_ADDITIONAL_FILE_installer-target-bmap[source] = "${@ get_installer_source(d, "wic.bmap")}"
 ROOTFS_ADDITIONAL_FILE_installer-target-bmap[destination] = "${@ get_installer_destination(d, "wic.bmap")}"
 
-do_rootfs_install[mcdepends] += "mc:${INSTALLER_MC}:${INSTALLER_TARGET_MC}:${INSTALLER_TARGET_IMAGE}:do_image_wic"
+do_rootfs_install[mcdepends] += "${@ get_mc_depends(d, "do_image_wic")}"
