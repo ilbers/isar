@@ -6,6 +6,9 @@
 # SPDX-License-Identifier: MIT
 
 python() {
+    if ("class-native" or "class-compat") in d.getVar("OVERRIDES").split(":"):
+        return
+
     distro_kernels = d.getVar('DISTRO_KERNELS') or ""
     for kernel in distro_kernels.split():
         d.appendVar('PROVIDES', ' linux-image-' + kernel)
