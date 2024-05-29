@@ -41,7 +41,7 @@ if [ "$DISK_SIZE" -lt "$MINIMAL_SIZE" ]; then
 	exit 0
 fi
 
-IS_GPT="$(sfdisk -d "${BOOT_DEV}" 2>/dev/null | grep -q "label: gpt" && echo 1)"
+IS_GPT="$(sfdisk -d "${BOOT_DEV}" 2>/dev/null | grep -q "label: gpt" && echo 1 || echo 0)"
 if [ "$IS_GPT" = "1" ]; then
 	dd if="${BOOT_DEV}" of=/dev/shm/__mbr__.bak count=1
 fi
