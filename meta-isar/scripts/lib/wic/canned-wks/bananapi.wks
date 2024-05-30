@@ -2,4 +2,4 @@ part u-boot --source rawcopy --sourceparams "file=/usr/lib/u-boot/Bananapi/u-boo
 
 part --source rootfs-u-boot --ondisk mmcblk0 --sourceparams="root=/dev/mmcblk0p1" --fstype ext4 --mkfs-extraopts "-T default" --label platform --align 1024
 
-bootloader --append "rootwait"
+bootloader --append "rootwait rw"
