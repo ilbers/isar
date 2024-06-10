@@ -21,8 +21,6 @@
 
 # It is assumed ISARROOT is already defined when this is called
 
-set -e
-
 if [ -z "$ISARROOT" ]; then
     echo >&2 "Error: ISARROOT is not defined!"
     return 1
