@@ -5,7 +5,7 @@
 
 require recipes-bsp/trusted-firmware-a/trusted-firmware-a-custom.inc
 
-SRC_URI += "git://git.trustedfirmware.org/TF-A/trusted-firmware-a.git;protocol=https;branch=master"
+SRC_URI += "git://github.com/ARM-software/arm-trusted-firmware.git;protocol=https;branch=master"
 SRCREV = "e2c509a39c6cc4dda8734e6509cdbe6e3603cdfc"
 
 S = "${WORKDIR}/git"
