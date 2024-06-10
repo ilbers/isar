@@ -25,6 +25,7 @@ KBUILD_DEPENDS ?= "build-essential:native, \
                    flex, \
                    git, \
                    kmod, \
+                   linux-image-${KERNEL_NAME_PROVIDED}:${DISTRO_ARCH} <kbuild !kernel>, \
                    rsync,"
 
 KERNEL_DEBIAN_DEPENDS ?= "initramfs-tools | linux-initramfs-tool, \
@@ -112,7 +113,7 @@ BUILD_PROFILES = "kernel kbuild"
 BBCLASSEXTEND:append:cross-profile = " kbuildtarget"
 
 # When cross-profile is active:
-# build only kernel with the default variant of the recipe
+# build only kernel (including config) with the default variant of the recipe
 BUILD_PROFILES:cross-profile = "kernel"
 
 # -native: kbuild package for host
@@ -122,14 +123,18 @@ RECIPE_PROVIDES:class-native = " \
     linux-kbuild-${KERNEL_NAME_PROVIDED}"
 # Use pseudo target to pull in the base variant of the recipe.
 # Will be auto-extended with -native by multiarch.bbclass.
-RDEPENDS:class-native += "${BPN}-pseudo"
+# Using DEPENDS instead of RDEPENDS to ensure creation of kernel including
+# pregenerated kernel config before host specific linux-kbuild package build
+DEPENDS:class-native += "${BPN}-pseudo"
 
 # -kbuildtarget: kbuild package for target, enforcing non-cross-build
 BUILD_PROFILES:class-kbuildtarget = "kbuild"
 RECIPE_PROVIDES:class-kbuildtarget = " \
     linux-headers-${KERNEL_NAME_PROVIDED} \
     linux-kbuild-${KERNEL_NAME_PROVIDED}"
-RDEPENDS:class-kbuildtarget = "${BPN}"
+# Using DEPENDS instead of RDEPENDS to ensure creation of kernel including
+# pregenerated kernel config before target specific linux-kbuild package build
+DEPENDS:class-kbuildtarget = "${BPN}"
 ISAR_CROSS_COMPILE:class-kbuildtarget = "0"
 
 # Make bitbake know we will be producing linux-image and linux-headers packages

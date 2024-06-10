@@ -10,10 +10,24 @@ do_configure() {
     # Trace what we do here
     set -x
 
-    # Process kernel config target and fragments
-    ${MAKE} O=${KERNEL_BUILD_DIR} ${KERNEL_CONFIG_TARGET}
-    ./scripts/kconfig/merge_config.sh -O ${KERNEL_BUILD_DIR}/ \
-        ${KERNEL_BUILD_DIR}/.config ${KERNEL_CONFIG_FRAGMENTS}
+    kernelconfig="$(find /boot -maxdepth 1 -name "config-${PV}*" -print -quit)"
+    if echo "${DEB_BUILD_PROFILES}" | grep -q "kbuild" && \
+       ! echo "${DEB_BUILD_PROFILES}" | grep -q "kernel" && \
+       [ -e "${kernelconfig}" ]; then
+        # Prefer existing kernel config
+        # So, very expensive QEMU-emulated merge_config.sh
+        # can be skipped for target specific linux-kbuild package
+        # The host specific linux-kbuild package
+        # uses the existing kernel config, too.
+        mkdir -p ${KERNEL_BUILD_DIR}
+        cp "${kernelconfig}" ${KERNEL_BUILD_DIR}/.config
+        ${MAKE} O=${KERNEL_BUILD_DIR} olddefconfig
+    else
+        # Process kernel config target and fragments
+        ${MAKE} O=${KERNEL_BUILD_DIR} ${KERNEL_CONFIG_TARGET}
+        ./scripts/kconfig/merge_config.sh -O ${KERNEL_BUILD_DIR}/ \
+            ${KERNEL_BUILD_DIR}/.config ${KERNEL_CONFIG_FRAGMENTS}
+    fi
 
     # Stop tracing
     set +x
