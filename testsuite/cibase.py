@@ -216,10 +216,13 @@ class CIBaseTest(CIBuilder):
         # Rebuild image
         self.move_in_build_dir('tmp', 'tmp_before_sstate')
         self.bitbake(image_target, **kwargs)
+        bootstrap_target_task = CIUtils.getVars(
+            'PREFERRED_PROVIDER_bootstrap-target', target=image_target
+        )
         if not all(
             [
                 check_executed_tasks(
-                    'isar-bootstrap-target',
+                    bootstrap_target_task,
                     ['do_bootstrap_setscene', '!do_bootstrap'],
                 ),
                 check_executed_tasks(
@@ -257,7 +260,7 @@ class CIBaseTest(CIBuilder):
         if not all(
             [
                 check_executed_tasks(
-                    'isar-bootstrap-target', ['do_bootstrap_setscene']
+                    bootstrap_target_task, ['do_bootstrap_setscene']
                 ),
                 check_executed_tasks(
                     'sbuild-chroot-target', ['!do_sbuildchroot_deploy']
@@ -282,7 +285,7 @@ class CIBaseTest(CIBuilder):
         if not all(
             [
                 check_executed_tasks(
-                    'isar-bootstrap-target',
+                    bootstrap_target_task,
                     ['do_bootstrap_setscene', '!do_bootstrap'],
                 ),
                 check_executed_tasks(
