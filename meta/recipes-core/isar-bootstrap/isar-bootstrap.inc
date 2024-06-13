@@ -34,8 +34,6 @@ DISTRO_VARS_PREFIX ?= "${@'HOST_' if bb.utils.to_boolean(d.getVar('BOOTSTRAP_FOR
 BOOTSTRAP_DISTRO = "${@d.getVar('HOST_DISTRO' if bb.utils.to_boolean(d.getVar('BOOTSTRAP_FOR_HOST')) else 'DISTRO')}"
 BOOTSTRAP_BASE_DISTRO = "${@d.getVar('HOST_BASE_DISTRO' if bb.utils.to_boolean(d.getVar('BOOTSTRAP_FOR_HOST')) else 'BASE_DISTRO')}"
 FILESEXTRAPATHS:append = ":${BBPATH}"
-# reproducible builds, only enabled if ISAR_USE_APT_SNAPSHOT
-ISAR_APT_SNAPSHOT_MIRROR ??= ""
 APT_SNAPSHOT_DATE = "${@ get_apt_snapshot_date(d)}"
 
 inherit deb-dl-dir
