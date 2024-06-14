@@ -223,5 +223,5 @@ USER_isar[flags] += "clear-text-password"
 #SOURCE_DATE_EPOCH =
 
 # Uncomment this to use old isar-bootstrap provider for rootfs prepare
-#PREFERRED_PROVIDER_bootstrap-host ?= "isar-bootstrap-host"
-#PREFERRED_PROVIDER_bootstrap-target ?= "isar-bootstrap-target"
+PREFERRED_PROVIDER_bootstrap-host ?= "isar-bootstrap-host"
+PREFERRED_PROVIDER_bootstrap-target ?= "isar-bootstrap-target"
