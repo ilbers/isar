@@ -48,3 +48,6 @@ USER_isar[comment] = "My isar user"
 USER_isar[flags] = "system create-home"
 USER_isar[password] = "isar"
 USER_isar[flags] += "clear-text-password"
+
+PREFERRED_PROVIDER_bootstrap-host ?= "isar-bootstrap-host"
+PREFERRED_PROVIDER_bootstrap-target ?= "isar-bootstrap-target"
