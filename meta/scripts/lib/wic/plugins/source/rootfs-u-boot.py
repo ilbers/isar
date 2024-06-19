@@ -20,7 +20,7 @@ import os
 
 from wic import WicError
 from wic.plugins.source.rootfs import RootfsPlugin
-from wic.misc import exec_cmd
+from wic.misc import get_bitbake_var, exec_cmd
 
 logger = logging.getLogger('wic')
 
