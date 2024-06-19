@@ -36,7 +36,7 @@ echo "NOTE: This package was built by Isar." >&2
 echo "" >&2
 EOF
 
-    # This step creates everything dpkg-buildpackage needs. For further details
+    # This step creates everything sbuild needs. For further details
     # you might want to look at its implementation.
     deb_debianize
 

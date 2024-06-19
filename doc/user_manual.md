@@ -841,7 +841,10 @@ Below are some of the packages with this scenario at the time of writing this.
 
 ### Compilation of debianized-sources
 
-The `deb` packages are built using `dpkg-buildpackage`, so the sources should contain the `debian` directory with necessary meta information. This way is the default way of adding software that needs to be compiled from source. The bbclass for this approach is called `dpkg`.
+The `deb` packages are built using `sbuild`, so the sources should contain the
+`debian` directory with necessary meta information. This way is the default
+way of adding software that needs to be compiled from source. The bbclass for
+this approach is called `dpkg`.
 
 For large applications that are not cross-compiled, it may be needed to extend the default build timeout of 150 minutes to a greater value: set `DPKG_BUILD_TIMEOUT` in your recipe to that effect.
 
