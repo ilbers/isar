@@ -29,7 +29,7 @@ $ sudo <sdk_rootfs>/mount_chroot.sh <sdk_rootfs>
 
 Bind-mount the project into the rootfs:
 
-$ sudo mount -o bind /path/to/project <sdk_rootfs>/mnt
+$ sudo mount -o bind,private /path/to/project <sdk_rootfs>/mnt
 
 If you have relocated the SDK previously for using option 1, you need to call
 this next:

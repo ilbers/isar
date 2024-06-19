@@ -27,7 +27,7 @@ debsrc_do_mounts() {
     set -e
     mkdir -p "${1}/deb-src"
     mountpoint -q "${1}/deb-src" || \
-    mount --bind "${DEBSRCDIR}" "${1}/deb-src"
+    mount -o bind,private "${DEBSRCDIR}" "${1}/deb-src"
 EOSUDO
 }
 
@@ -36,7 +36,7 @@ debsrc_undo_mounts() {
     set -e
     mkdir -p "${1}/deb-src"
     mountpoint -q "${1}/deb-src" && \
-    umount -l "${1}/deb-src"
+    umount "${1}/deb-src"
     rm -rf "${1}/deb-src"
 EOSUDO
 }

@@ -2,7 +2,7 @@
 
 set -e
 
-mount /tmp     "$1/tmp"                 -o bind
+mount /tmp     "$1/tmp"                 -o bind,private
 mount proc     "$1/proc"    -t proc     -o nosuid,noexec,nodev
 mount sysfs    "$1/sys"     -t sysfs    -o nosuid,noexec,nodev
 mount devtmpfs "$1/dev"     -t devtmpfs -o mode=0755,nosuid

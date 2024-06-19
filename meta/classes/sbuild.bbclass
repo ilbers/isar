@@ -40,14 +40,14 @@ EOF
         cp -rf "${SCHROOT_CONF}/sbuild" "${SBUILD_CONF_DIR}"
         sbuild_fstab="${SBUILD_CONF_DIR}/fstab"
 
-        fstab_baseapt="${REPO_BASE_DIR} /base-apt none rw,bind 0 0"
+        fstab_baseapt="${REPO_BASE_DIR} /base-apt none rw,bind,private 0 0"
         grep -qxF "${fstab_baseapt}" ${sbuild_fstab} || echo "${fstab_baseapt}" >> ${sbuild_fstab}
 
-        fstab_pkgdir="${WORKDIR} /home/builder/${PN} none rw,bind 0 0"
+        fstab_pkgdir="${WORKDIR} /home/builder/${PN} none rw,bind,private 0 0"
         grep -qxF "${fstab_pkgdir}" ${sbuild_fstab} || echo "${fstab_pkgdir}" >> ${sbuild_fstab}
 
         if [ -d ${DL_DIR} ]; then
-            fstab_downloads="${DL_DIR} /downloads none rw,bind 0 0"
+            fstab_downloads="${DL_DIR} /downloads none rw,bind,private 0 0"
             grep -qxF "${fstab_downloads}" ${sbuild_fstab} || echo "${fstab_downloads}" >> ${sbuild_fstab}
         fi
 EOSUDO
@@ -98,7 +98,7 @@ insert_mounts() {
     sudo -s <<'EOSUDO'
         set -e
         for mp in ${SCHROOT_MOUNTS}; do
-            FSTAB_LINE="${mp%%:*} ${mp#*:} none rw,bind 0 0"
+            FSTAB_LINE="${mp%%:*} ${mp#*:} none rw,bind,private 0 0"
             grep -qxF "${FSTAB_LINE}" ${SBUILD_CONF_DIR}/fstab || \
                 echo "${FSTAB_LINE}" >> ${SBUILD_CONF_DIR}/fstab
         done
@@ -109,7 +109,7 @@ remove_mounts() {
     sudo -s <<'EOSUDO'
         set -e
         for mp in ${SCHROOT_MOUNTS}; do
-            FSTAB_LINE="${mp%%:*} ${mp#*:} none rw,bind 0 0"
+            FSTAB_LINE="${mp%%:*} ${mp#*:} none rw,bind,private 0 0"
             sed -i "\|${FSTAB_LINE}|d" ${SBUILD_CONF_DIR}/fstab
         done
 EOSUDO
@@ -122,7 +122,7 @@ schroot_configure_ccache() {
 
         sbuild_fstab="${SBUILD_CONF_DIR}/fstab"
 
-        fstab_ccachedir="${CCACHE_DIR} /ccache none rw,bind 0 0"
+        fstab_ccachedir="${CCACHE_DIR} /ccache none rw,bind,private 0 0"
         grep -qxF "${fstab_ccachedir}" ${sbuild_fstab} || echo "${fstab_ccachedir}" >> ${sbuild_fstab}
 
         (flock 9

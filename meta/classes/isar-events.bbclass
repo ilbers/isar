@@ -55,7 +55,7 @@ python build_completed() {
             if basepath in line:
                 bb.debug(1, '%s left mounted, unmounting...' % line.split()[1])
                 subprocess.call(
-                    ["sudo", "umount", "-l", line.split()[1]],
+                    ["sudo", "umount", line.split()[1]],
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
                 )

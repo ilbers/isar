@@ -407,19 +407,23 @@ do_rootfs_finalize() {
         fi
 
         mountpoint -q '${ROOTFSDIR}/isar-apt' && \
-            umount -l ${ROOTFSDIR}/isar-apt && \
+            umount '${ROOTFSDIR}/isar-apt' && \
             rmdir --ignore-fail-on-non-empty ${ROOTFSDIR}/isar-apt
 
         mountpoint -q '${ROOTFSDIR}/base-apt' && \
-            umount -l ${ROOTFSDIR}/base-apt && \
+            umount '${ROOTFSDIR}/base-apt' && \
             rmdir --ignore-fail-on-non-empty ${ROOTFSDIR}/base-apt
 
+        mountpoint -q '${ROOTFSDIR}/dev/pts' && \
+            umount '${ROOTFSDIR}/dev/pts'
+        mountpoint -q '${ROOTFSDIR}/dev/shm' && \
+            umount '${ROOTFSDIR}/dev/shm'
         mountpoint -q '${ROOTFSDIR}/dev' && \
-            umount -l ${ROOTFSDIR}/dev
+            umount '${ROOTFSDIR}/dev'
         mountpoint -q '${ROOTFSDIR}/proc' && \
-            umount -l ${ROOTFSDIR}/proc
+            umount '${ROOTFSDIR}/proc'
         mountpoint -q '${ROOTFSDIR}/sys' && \
-            umount -l ${ROOTFSDIR}/sys
+            umount '${ROOTFSDIR}/sys'
 
         if [ -e "${ROOTFSDIR}/etc/apt/sources-list" ]; then
             mv "${ROOTFSDIR}/etc/apt/sources-list" \

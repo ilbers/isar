@@ -339,7 +339,7 @@ do_bootstrap() {
             echo "deb-src ${line}" >>  "${ROOTFSDIR}/etc/apt/sources.list.d/base-apt.list"
 
             mkdir -p ${ROOTFSDIR}/base-apt
-            mount --bind ${REPO_BASE_DIR} ${ROOTFSDIR}/base-apt
+            mount -o bind,private "${REPO_BASE_DIR}" "${ROOTFSDIR}/base-apt"
         else
             install -v -m644 "${APTSRCS}" \
                              "${ROOTFSDIR}/etc/apt/sources.list.d/bootstrap.list"
@@ -376,10 +376,10 @@ do_bootstrap() {
 
         # update APT
         mount -o bind,private /dev ${ROOTFSDIR}/dev
-        mount --bind /dev/pts ${ROOTFSDIR}/dev/pts
+        mount -o bind,private /dev/pts "${ROOTFSDIR}/dev/pts"
         mount -t tmpfs none "${ROOTFSDIR}/dev/shm"
         mount -t proc none ${ROOTFSDIR}/proc
-        mount --rbind /sys ${ROOTFSDIR}/sys
+        mount -o bind,private /sys "${ROOTFSDIR}/sys"
         mount --make-rslave ${ROOTFSDIR}/sys
 
         export DEBIAN_FRONTEND=noninteractive
@@ -398,12 +398,13 @@ do_bootstrap() {
         chroot "${ROOTFSDIR}" /usr/bin/apt-get dist-upgrade -y \
                                 -o Debug::pkgProblemResolver=yes
 
-        umount -l "${ROOTFSDIR}/dev/shm"
-        umount -l "${ROOTFSDIR}/dev/pts"
-        umount -l "${ROOTFSDIR}/dev"
-        umount -l "${ROOTFSDIR}/proc"
-        umount -l "${ROOTFSDIR}/sys"
-        umount -l "${ROOTFSDIR}/base-apt" || true
+        umount "${ROOTFSDIR}/dev/shm"
+        umount "${ROOTFSDIR}/dev/pts"
+        umount "${ROOTFSDIR}/dev"
+        umount "${ROOTFSDIR}/proc"
+        umount "${ROOTFSDIR}/sys"
+        mountpoint -q "${ROOTFSDIR}/base-apt" && \
+            umount "${ROOTFSDIR}/base-apt"
 
         # Finalize debootstrap by setting the link in deploy
         ln -Tfsr "${ROOTFSDIR}" "${DEPLOY_ISAR_BOOTSTRAP}"

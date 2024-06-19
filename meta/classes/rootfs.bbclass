@@ -37,11 +37,11 @@ rootfs_do_mounts() {
         mountpoint -q '${ROOTFSDIR}/dev' || \
             ( mount -o bind,private /dev '${ROOTFSDIR}/dev' &&
               mount -t tmpfs none '${ROOTFSDIR}/dev/shm' &&
-              mount --bind /dev/pts '${ROOTFSDIR}/dev/pts' )
+              mount -o bind,private /dev/pts '${ROOTFSDIR}/dev/pts' )
         mountpoint -q '${ROOTFSDIR}/proc' || \
             mount -t proc none '${ROOTFSDIR}/proc'
         mountpoint -q '${ROOTFSDIR}/sys' || \
-            mount --rbind /sys '${ROOTFSDIR}/sys'
+            mount -o bind,private /sys '${ROOTFSDIR}/sys'
         mount --make-rslave '${ROOTFSDIR}/sys'
 
         # Mount isar-apt if the directory does not exist or if it is empty
@@ -51,7 +51,7 @@ rootfs_do_mounts() {
         then
             mkdir -p '${ROOTFSDIR}/isar-apt'
             mountpoint -q '${ROOTFSDIR}/isar-apt' || \
-                mount --bind '${REPO_ISAR_DIR}/${DISTRO}' '${ROOTFSDIR}/isar-apt'
+                mount -o bind,private '${REPO_ISAR_DIR}/${DISTRO}' '${ROOTFSDIR}/isar-apt'
         fi
 
         # Mount base-apt if 'ISAR_USE_CACHED_BASE_REPO' is set
@@ -59,7 +59,7 @@ rootfs_do_mounts() {
         then
             mkdir -p '${ROOTFSDIR}/base-apt'
             mountpoint -q '${ROOTFSDIR}/base-apt' || \
-                mount --bind '${REPO_BASE_DIR}' '${ROOTFSDIR}/base-apt'
+                mount -o bind,private '${REPO_BASE_DIR}' '${ROOTFSDIR}/base-apt'
         fi
 
 EOSUDO
@@ -360,7 +360,7 @@ rootfs_install_sstate_prepare() {
     # tar --one-file-system will cross bind-mounts to the same filesystem,
     # so we use some mount magic to prevent that
     mkdir -p ${WORKDIR}/mnt/rootfs
-    sudo mount --bind ${WORKDIR}/rootfs ${WORKDIR}/mnt/rootfs -o ro
+    sudo mount -o bind,private '${WORKDIR}/rootfs' '${WORKDIR}/mnt/rootfs' -o ro
     lopts="--one-file-system --exclude=var/cache/apt/archives"
     sudo tar -C ${WORKDIR}/mnt -cpSf rootfs.tar $lopts ${SSTATE_TAR_ATTR_FLAGS} rootfs
     sudo umount ${WORKDIR}/mnt/rootfs
