@@ -12,6 +12,7 @@ INSTALLER_TARGET_IMAGE ??= "isar-image-base"
 INSTALLER_TARGET_MC ??= "installer-target"
 INSTALLER_TARGET_DISTRO ??= "${DISTRO}"
 INSTALLER_TARGET_MACHINE ??= "${MACHINE}"
+INSTALLER_TARGET_DEPLOY_DIR_IMAGE ??= "${DEPLOY_DIR}/images/${INSTALLER_TARGET_MACHINE}"
 
 IMAGE_DATA_FILE ??= "${INSTALLER_TARGET_IMAGE}-${INSTALLER_TARGET_DISTRO}-${INSTALLER_TARGET_MACHINE}"
 IMAGE_DATA_POSTFIX ??= "wic.zst"
@@ -24,9 +25,9 @@ def get_installer_source(d, suffix):
     installer_target_image = d.getVar('INSTALLER_TARGET_IMAGE') or ""
     if not installer_target_image:
         return ""
-    deploy_dir = d.getVar('DEPLOY_DIR_IMAGE')
+    target_deploy_dir = d.getVar('INSTALLER_TARGET_DEPLOY_DIR_IMAGE')
     image_data = d.getVar('IMAGE_DATA_FILE')
-    return f"{deploy_dir}/{image_data}.{suffix}"
+    return f"{target_deploy_dir}/{image_data}.{suffix}"
 
 def get_installer_destination(d, suffix):
     installer_target_image = d.getVar('INSTALLER_TARGET_IMAGE') or ""
