@@ -477,6 +477,8 @@ BBPATH .= ":${LAYERDIR}"\
                                                boot_log, None, enforce_pcbios)
         cmdline.insert(1, '-nographic')
 
+        need_sb_cleanup = start_vm.sb_copy_vars(cmdline)
+
         self.log.info('QEMU boot line:\n' + ' '.join(cmdline))
         self.log.info('QEMU boot log:\n' + boot_log)
 
@@ -485,7 +487,7 @@ BBPATH .= ":${LAYERDIR}"\
                               universal_newlines=True)
         self.log.info("Started VM with pid %s" % (p1.pid))
 
-        return p1, cmdline, boot_log
+        return p1, cmdline, boot_log, need_sb_cleanup
 
 
     def vm_wait_boot(self, p1, timeout):
@@ -564,6 +566,9 @@ BBPATH .= ":${LAYERDIR}"\
         pid = self.vm_dict[vm][0]
         os.kill(pid, signal.SIGKILL)
 
+        if self.vm_dict[vm][3]:
+            start_vm.sb_cleanup()
+
         del(self.vm_dict[vm])
         self.vm_dump_dict(vm)
 
@@ -600,7 +605,7 @@ BBPATH .= ":${LAYERDIR}"\
         stderr = ""
 
         if vm in self.vm_dict:
-            pid, cmdline, boot_log = self.vm_dict[vm]
+            pid, cmdline, boot_log, need_sb_cleanup = self.vm_dict[vm]
 
             # Check that corresponding process exists
             proc = subprocess.run("ps -o cmd= %d" % (pid), shell=True, text=True,
@@ -612,8 +617,10 @@ BBPATH .= ":${LAYERDIR}"\
         if run_qemu:
             self.log.info("No qemu-system process for `%s` found, run new VM" % (vm))
 
-            p1, cmdline, boot_log = self.vm_turn_on(arch, distro, image, enforce_pcbios)
-            self.vm_dict[vm] = p1.pid, cmdline, boot_log
+            p1, cmdline, boot_log, \
+                need_sb_cleanup = self.vm_turn_on(arch, distro, image,
+                                                  enforce_pcbios)
+            self.vm_dict[vm] = p1.pid, cmdline, boot_log, need_sb_cleanup
             self.vm_dump_dict(vm)
 
             rc = self.vm_wait_boot(p1, timeout)

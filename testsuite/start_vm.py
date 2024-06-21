@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 #
 # Helper script to start QEMU with Isar image
-# Copyright (c) 2019, ilbers GmbH
+# Copyright (c) 2019-2024, ilbers GmbH
 
 import argparse
 import os
 import socket
 import subprocess
 import sys
+import shutil
 import time
+
+OVMF_VARS_PATH = '/usr/share/OVMF/OVMF_VARS_4M.ms.fd'
 
 def get_bitbake_env(arch, distro, image):
     multiconfig = 'mc:qemu' + arch + '-' + distro + ':' + image
@@ -91,16 +94,48 @@ def format_qemu_cmdline(arch, build, distro, image, out, pid, enforce_pcbios=Fal
 
     return cmd
 
+
+def sb_copy_vars(cmdline):
+    ovmf_vars_filename = os.path.basename(OVMF_VARS_PATH)
+
+    for param in cmdline:
+        if ovmf_vars_filename in param:
+            if os.path.exists(ovmf_vars_filename):
+                break
+            if not os.path.exists(OVMF_VARS_PATH):
+                print(f'{OVMF_VARS_PATH} required but not found!',
+                      file=sys.stderr)
+                break
+            shutil.copy(OVMF_VARS_PATH, ovmf_vars_filename)
+            return True
+
+    return False
+
+
+def sb_cleanup():
+    os.remove(os.path.basename(OVMF_VARS_PATH))
+
+
 def start_qemu(arch, build, distro, image, out, pid, enforce_pcbios):
     cmdline = format_qemu_cmdline(arch, build, distro, image, out, pid, enforce_pcbios)
     cmdline.insert(1, '-nographic')
 
+    need_cleanup = sb_copy_vars(cmdline)
+
     print(cmdline)
-    p1 = subprocess.call('exec ' + ' '.join(cmdline), shell=True)
+
+    try:
+        subprocess.call('exec ' + ' '.join(cmdline), shell=True)
+    finally:
+        if need_cleanup:
+            sb_cleanup()
+
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-a', '--arch', choices=['arm', 'arm64', 'amd64', 'i386', 'mipsel'], help='set isar machine architecture.', default='arm')
+    arch_names = ['arm', 'arm64', 'amd64', 'amd64-sb', 'i386', 'mipsel']
+    parser.add_argument('-a', '--arch', choices=arch_names,
+                        help='set isar machine architecture.', default='arm')
     parser.add_argument('-b', '--build', help='set path to build directory.', default=os.getcwd())
     parser.add_argument('-d', '--distro', choices=['buster', 'bullseye', 'bookworm', 'trixie', 'focal', 'jammy'], help='set isar Debian distribution.', default='bookworm')
     parser.add_argument('-i', '--image', help='set image name.', default='isar-image-base')
