@@ -11,43 +11,50 @@ import sys
 import shutil
 import time
 
+from utils import CIUtils
+
 OVMF_VARS_PATH = '/usr/share/OVMF/OVMF_VARS_4M.ms.fd'
 
-def get_bitbake_env(arch, distro, image):
-    multiconfig = 'mc:qemu' + arch + '-' + distro + ':' + image
-    output = subprocess.check_output(['bitbake', '-e', str(multiconfig)])
-    return output
-
-def get_bitbake_var(output, var):
-    ret = ''
-    for line in output.splitlines():
-        if line.startswith(var + '='):
-            ret = line.split('"')[1]
-    return ret
-
 def format_qemu_cmdline(arch, build, distro, image, out, pid, enforce_pcbios=False):
-    bb_output = get_bitbake_env(arch, distro, image).decode()
+    multiconfig = f'mc:qemu{arch}-{distro}:{image}'
+
+    image_fstypes, \
+        deploy_dir_image, \
+        kernel_image, \
+        initrd_image, \
+        serial, \
+        root_dev, \
+        qemu_arch, \
+        qemu_machine, \
+        qemu_cpu, \
+        qemu_disk_args = CIUtils.getVars('IMAGE_FSTYPES',
+                                         'DEPLOY_DIR_IMAGE',
+                                         'KERNEL_IMAGE',
+                                         'INITRD_DEPLOY_FILE',
+                                         'MACHINE_SERIAL',
+                                         'QEMU_ROOTFS_DEV',
+                                         'QEMU_ARCH',
+                                         'QEMU_MACHINE',
+                                         'QEMU_CPU',
+                                         'QEMU_DISK_ARGS',
+                                         target=multiconfig)
 
     extra_args = ''
     cpu = ['']
 
-    image_type = get_bitbake_var(bb_output, 'IMAGE_FSTYPES').split()[0]
-    deploy_dir_image = get_bitbake_var(bb_output, 'DEPLOY_DIR_IMAGE')
+    image_type = image_fstypes.split()[0]
     base = 'ubuntu' if distro in ['jammy', 'focal'] else 'debian'
 
     rootfs_image = image + '-' + base + '-' + distro + '-qemu' + arch + '.' + image_type
 
     if image_type == 'ext4':
-        kernel_image = deploy_dir_image + '/' + get_bitbake_var(bb_output, 'KERNEL_IMAGE')
-        initrd_image = get_bitbake_var(bb_output, 'INITRD_DEPLOY_FILE')
+        kernel_image = deploy_dir_image + '/' + kernel_image
 
         if not initrd_image:
             initrd_image = '/dev/null'
         else:
             initrd_image = deploy_dir_image + '/' + initrd_image
 
-        serial = get_bitbake_var(bb_output, 'MACHINE_SERIAL')
-        root_dev = get_bitbake_var(bb_output, 'QEMU_ROOTFS_DEV')
         kargs = ['-append', '"console=' + serial + ' root=/dev/' + root_dev + ' rw"']
 
         extra_args = ['-kernel', kernel_image, '-initrd', initrd_image]
@@ -56,11 +63,6 @@ def format_qemu_cmdline(arch, build, distro, image, out, pid, enforce_pcbios=Fal
         extra_args = ['-snapshot']
     else:
         raise ValueError('Invalid image type: ' + str(image_type))
-
-    qemu_arch = get_bitbake_var(bb_output, 'QEMU_ARCH')
-    qemu_machine = get_bitbake_var(bb_output, 'QEMU_MACHINE')
-    qemu_cpu = get_bitbake_var(bb_output, 'QEMU_CPU')
-    qemu_disk_args = get_bitbake_var(bb_output, 'QEMU_DISK_ARGS')
 
     if out:
         extra_args.extend(['-chardev','stdio,id=ch0,logfile=' + out])
