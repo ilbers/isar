@@ -9,11 +9,11 @@ import shutil
 import signal
 import subprocess
 import sys
-import tarfile
 import time
 import tempfile
 
 import start_vm
+from utils import CIUtils
 
 from avocado import Test
 from avocado.utils import path
@@ -22,7 +22,6 @@ from avocado.utils import process
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)) + '/../bitbake/lib')
 
 import bb
-import bb.tinfoil
 
 DEF_VM_TO_SEC = 600
 
@@ -253,38 +252,6 @@ class CIBuilder(Test):
         except FileNotFoundError:
             self.log.warn(path + backup_prefix + ' not exist')
 
-    def getVars(self, *vars, target=None):
-        self.check_init()
-        def fixStream(stream):
-            # fix stream objects to emulate _io.TextIOWrapper
-            stream.isatty = lambda: False
-            stream.fileno = lambda: False
-            stream.encoding = sys.getdefaultencoding()
-
-        sl = target is not None
-        fixStream(sys.stdout)
-        fixStream(sys.stderr)
-
-        # wait until previous bitbake will be finished
-        lockfile = os.path.join(self.build_dir, 'bitbake.lock')
-        checks = 0
-        while os.path.exists(lockfile) and checks < 5:
-            time.sleep(1)
-            checks += 1
-
-        with bb.tinfoil.Tinfoil(setup_logging=sl) as tinfoil:
-            values = ()
-            if target:
-                tinfoil.prepare(quiet=2)
-                d = tinfoil.parse_recipe(target)
-                for var in vars:
-                    values = values + (d.getVar(var, True) or 'None',)
-            else:
-                tinfoil.prepare(config_only=True, quiet=2)
-                for var in vars:
-                    values = values + (tinfoil.config_data.getVar(var, True) or 'None',)
-            return values if len(values) > 1 else values[0]
-
     def create_tmp_layer(self):
         tmp_layer_dir = os.path.join(isar_root, 'meta-tmp')
 
@@ -313,13 +280,6 @@ BBPATH .= ":${LAYERDIR}"\
                                          'bblayers.conf')
         bb.utils.edit_bblayers_conf(bblayersconf_file, None, tmp_layer_dir)
         bb.utils.prunedir(tmp_layer_dir)
-
-    def get_tar_content(self, filename):
-        try:
-            tar = tarfile.open(filename)
-            return tar.getnames()
-        except Exception:
-            return []
 
     def get_ssh_cmd_prefix(self, user, host, port, priv_key):
         cmd_prefix = 'ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no '\
@@ -525,11 +485,11 @@ BBPATH .= ":${LAYERDIR}"\
         module_output = b'Just an example'
         resize_output = None
         image_fstypes, \
-        wks_file, \
-        bbdistro = self.getVars('IMAGE_FSTYPES', \
-                                'WKS_FILE', \
-                                'DISTRO', \
-                                target=multiconfig)
+            wks_file, \
+            bbdistro = CIUtils.getVars('IMAGE_FSTYPES',
+                                       'WKS_FILE',
+                                       'DISTRO',
+                                       target=multiconfig)
 
         # only the first type will be tested in start_vm
         if image_fstypes.split()[0] == 'wic':

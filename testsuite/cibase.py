@@ -8,6 +8,8 @@ import tempfile
 import time
 
 from cibuilder import CIBuilder, isar_root
+from utils import CIUtils
+
 from avocado.utils import process
 
 class CIBaseTest(CIBuilder):
@@ -238,13 +240,13 @@ class CIBaseTest(CIBuilder):
             for target in targets:
                 sfiles[target] = dict()
                 package = target.rsplit(':', 1)[-1]
-                isar_apt = self.getVars('REPO_ISAR_DB_DIR', target=target)
+                isar_apt = CIUtils.getVars('REPO_ISAR_DB_DIR', target=target)
                 fpath = f'{package}/{package}*.tar.gz'
                 targz = set(glob.glob(f'{isar_apt}/../apt/*/pool/*/*/{fpath}'))
                 if len(targz) < 1:
                     self.fail('No source packages found')
-                for filename in targz:
-                    sfiles[target][filename] = self.get_tar_content(filename)
+                for fname in targz:
+                    sfiles[target][fname] = CIUtils.get_tar_content(fname)
             return sfiles
 
         self.configure(**kwargs)

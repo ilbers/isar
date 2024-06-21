@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from cibuilder import CIBuilder
+from utils import CIUtils
 from avocado.utils import process
 
 
@@ -29,7 +30,8 @@ class ReproBuild(CIBuilder):
 
     def get_image_path(self, target_name):
         image_dir = "tmp/deploy/images"
-        machine, image_name = self.getVars("MACHINE", "IMAGE_FULLNAME", target=target_name)
+        machine, image_name = CIUtils.getVars('MACHINE', 'IMAGE_FULLNAME',
+                                              target=target_name)
         return f"{image_dir}/{machine}/{image_name}.tar.gz"
 
     def build_repro_image(

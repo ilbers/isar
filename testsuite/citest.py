@@ -5,6 +5,7 @@ import os
 from avocado import skipUnless
 from avocado.utils import path
 from cibase import CIBaseTest
+from utils import CIUtils
 
 UMOCI_AVAILABLE = True
 SKOPEO_AVAILABLE = True
@@ -16,6 +17,7 @@ try:
     path.find_command('skopeo')
 except path.CmdNotFoundError:
     SKOPEO_AVAILABLE = False
+
 
 class DevTest(CIBaseTest):
 
@@ -46,7 +48,7 @@ class DevTest(CIBaseTest):
 
     def test_dev_rebuild(self):
         self.init()
-        layerdir_core = self.getVars('LAYERDIR_core')
+        layerdir_core = CIUtils.getVars('LAYERDIR_core')
 
         dpkgbase_file = layerdir_core + '/classes/dpkg-base.bbclass'
 
