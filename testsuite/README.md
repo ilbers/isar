@@ -57,11 +57,11 @@ $ avocado run ../testsuite/citest.py -t startvm,full
 
 ## Manual running
 
-There is a tool `start_vm.py` which is the replacement for the bash script in
+There is a tool start_vm which is the replacement for the bash script in
 `isar/scripts` directory. It can be used to run image previously built:
 
 ```
-./start_vm.py -a amd64 -b /build -d bullseye -i isar-image-base
+start_vm -a amd64 -b /build -d bullseye -i isar-image-base
 ```
 
 # Tests for running commands under qemu images

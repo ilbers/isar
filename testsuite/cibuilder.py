@@ -529,7 +529,7 @@ BBPATH .= ":${LAYERDIR}"\
                                 'DISTRO', \
                                 target=multiconfig)
 
-        # only the first type will be tested in start_vm.py
+        # only the first type will be tested in start_vm
         if image_fstypes.split()[0] == 'wic':
             if wks_file:
                 # ubuntu is less verbose so we do not see the message

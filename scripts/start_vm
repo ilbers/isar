@@ -1,156 +1,17 @@
-#!/bin/sh
+#!/usr/bin/env python3
 #
-# This software is a part of ISAR.
-# Copyright (C) 2015-2017 ilbers GmbH
+# Helper script to start QEMU with Isar image
+# Copyright (c) 2024, ilbers GmbH
 
-set -e
+import os
+import sys
 
-ES_OK=0
-ES_BUG=3
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'testsuite'))
 
-# Convert bitbake assignments to shell ones
-# a = b         a=b
-# a ?= b        a=b
-# TODO: Use bitbake to parse vars correctly (overriding in local.conf, etc.)
-bb2sh() {
-    sed 's/[[:space:]]*?*=[[:space:]]*/=/'
-}
+from start_vm import parse_args, start_qemu
 
-start_qemu() {
-    root=`echo $QEMU_DISK_ARGS \
-        | sed 's,##ROOTFS_IMAGE##,'$IMAGE_DIR/$ROOTFS_IMAGE','`
-    [ -n "$KARGS$EXTRA_KARGS" ] && OPT_KERNEL_ARGS="-append $KARGS$EXTRA_KARGS"
-    local had_x
-    echo $- | grep -q x && had_x=1 || had_x=0
-    [ $had_x -eq 0 ] && set -x
-    qemu-system-$QEMU_ARCH \
-	-m 1024M \
-	-M $QEMU_MACHINE \
-	$QCPU \
-	-nographic \
-	$EXTRA_ARGS \
-    $OPT_KERNEL_ARGS \
-	$root
-    [ $had_x -eq 0 ] && set +x
-}
+if __name__ == "__main__":
+    args = parse_args()
 
-show_help() {
-    echo "This script runs ISAR image in QEMU emulator."
-    echo
-    echo "Usage:"
-    echo "    $0 [params] [BUILD_DIR]"
-    echo "BUILD_DIR is your ISAR build folder. If not set, current folder"
-    echo "is used."
-    echo
-    echo "Parameters:"
-    echo "    -a, --arch ARCH       set isar machine architecture."
-    echo "                          Supported: arm, i386, amd64, arm64, mipsel, riscv64."
-    echo "    -b, --build BUILD     set path to build directory."
-    echo "    -d, --distro DISTRO   set isar Debian distribution."
-    echo "                          Supported: buster, bullseye, bookworm"
-    echo "    -o, --out FILE        Route QEMU console output to"
-    echo "                          specified file."
-    echo "    -p, --pid FILE        Store QEMU pid to file."
-    echo "    -s, --secureboot      Enable secureboot with default MS keys."
-    echo "    --help                display this message and exit."
-    echo
-    echo "Exit status:"
-    echo " 0  if OK,"
-    echo " 3  if invalid parameters are passed."
-}
-
-# Set default values, that can be overwritten from command line
-ARCH=arm
-DISTRO=bookworm
-BUILD_DIR=$PWD
-
-# Parse command line to get user configuration
-while [ $# -gt 0 ]
-do
-    key="$1"
-
-    case $key in
-    -h|--help)
-        show_help
-        exit 0
-        ;;
-    -a|--arch)
-        ARCH=$2
-        shift
-        ;;
-    -b|--build)
-        BUILD_DIR=$2
-        shift
-        ;;
-    -d|--distro)
-        DISTRO=$2
-        shift
-        ;;
-    -o|--out)
-        EXTRA_ARGS="$EXTRA_ARGS -serial file:$2"
-        shift
-        ;;
-    -p|--pid)
-        EXTRA_ARGS="$EXTRA_ARGS -pidfile $2"
-        shift
-        ;;
-    -s|--secureboot)
-        OVMF_VARS_ORIG="/usr/share/OVMF/OVMF_VARS_4M.ms.fd"
-        OVMF_VARS="$(basename "${OVMF_VARS_ORIG}")"
-        cp "${OVMF_VARS_ORIG}" "${OVMF_VARS}"
-        EXTRA_ARGS="$EXTRA_ARGS -drive if=pflash,format=raw,unit=1,file=${OVMF_VARS}"
-        ;;
-    *)
-        echo "error: invalid parameter '$key', please try '--help' to get list of supported parameters"
-        exit $ES_BUG
-        ;;
-    esac
-
-    shift
-done
-
-eval $(bitbake -e mc:qemu$ARCH-$DISTRO:isar-image-base | grep "^DEPLOY_DIR_IMAGE=")
-readonly IMAGE_DIR=$DEPLOY_DIR_IMAGE
-
-readonly ISARROOT="$(dirname "$0")"/..
-
-readonly MACHINE_CONF=$ISARROOT/meta-isar/conf/machine/qemu$ARCH.conf
-eval "$(egrep 'MACHINE_SERIAL|QEMU_' $MACHINE_CONF |bb2sh)"
-
-eval $(bitbake -e mc:qemu$ARCH-$DISTRO:isar-image-base | grep "\(^IMAGE_FSTYPES=\|^IMAGE_FULLNAME=\)")
-# Take first image type for VM if there are several defined
-IMAGE_FSTYPES=$(echo "$IMAGE_FSTYPES" | awk '{print $1}')
-case "$IMAGE_FSTYPES" in
-    ext4)
-    readonly ROOTFS_IMAGE=$IMAGE_FULLNAME.ext4
-
-    eval $(bitbake -e mc:qemu$ARCH-$DISTRO:isar-image-base | grep "^KERNEL_IMAGE=")
-    eval $(bitbake -e mc:qemu$ARCH-$DISTRO:isar-image-base | grep "^INITRD_DEPLOY_FILE=")
-    QKERNEL=$IMAGE_DIR/${KERNEL_IMAGE}
-    QINITRD=/dev/null
-    [ -n "$INITRD_DEPLOY_FILE" ] && QINITRD=$IMAGE_DIR/${INITRD_DEPLOY_FILE}
-    if [ "$ARCH" = "riscv64" ]; then
-        EXTRA_ARGS="$EXTRA_ARGS -device loader,file=$QKERNEL,addr=0x80200000"
-        QKERNEL="/usr/lib/riscv64-linux-gnu/opensbi/qemu/virt/fw_jump.elf"
-    fi
-    EXTRA_ARGS="$EXTRA_ARGS \
-	-kernel $QKERNEL \
-	-initrd $QINITRD"
-    KARGS="console=$MACHINE_SERIAL root=/dev/$QEMU_ROOTFS_DEV rw $QEMU_KARGS"
-    ;;
-    wic)
-    readonly ROOTFS_IMAGE=$IMAGE_FULLNAME.wic
-    EXTRA_ARGS="$EXTRA_ARGS -snapshot"
-    ;;
-    *)
-    echo "IMAGE_FSTYPES \"$IMAGE_FSTYPES\" not supported"
-    exit 1
-    ;;
-esac
-
-QCPU=
-[ -n "$QEMU_CPU" ] && QCPU="-cpu $QEMU_CPU"
-
-start_qemu
-
-exit $ES_OK
+    start_qemu(args.arch, args.build, args.distro, args.image, args.out,
+               args.pid, args.pcbios)
