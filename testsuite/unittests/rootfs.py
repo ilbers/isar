@@ -12,7 +12,7 @@ temp_dirs = []
 
 
 class TemporaryRootfs:
-    """ A temporary rootfs folder that will be removed after the testrun. """
+    """A temporary rootfs folder that will be removed after the testrun."""
 
     def __init__(self):
         self._rootfs_path = tempfile.mkdtemp()
@@ -22,7 +22,7 @@ class TemporaryRootfs:
         return self._rootfs_path
 
     def create_file(self, path: str, content: str) -> None:
-        """ Create a file with the given content.
+        """Create a file with the given content.
 
         Args:
             path (str): The path to the file e.g. `/etc/hostname`.
@@ -31,8 +31,9 @@ class TemporaryRootfs:
         Returns:
             None
         """
-        pathlib.Path(self._rootfs_path +
-                     path).parent.mkdir(parents=True, exist_ok=True)
+        pathlib.Path(self._rootfs_path + path).parent.mkdir(
+            parents=True, exist_ok=True
+        )
         with open(self._rootfs_path + path, 'w') as file:
             file.write(content)
 
