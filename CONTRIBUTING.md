@@ -80,28 +80,34 @@ Plan merges to `master` so that both fit the two-week window; short extensions s
    * It's highly suggested to test your patchset before submitting it to the mailing
      by launching CI tests scripts. The procedure is described below:
 
-    First, run "fast" CI
-```
-     scripts/ci_build.sh -q -f
-     ...
-     source isar-init-build-env
-     scripts/vm_smoke_test -f
-```
-    Currently "fast" CI launches
-     * parallel cross build of QEMU arm/arm64/amd64 Debian stretch and Raspberry Pi 1 Raspbian stretch targets
-     * cross build of one of the supported boards which includes compilation of Linux kernel/U-Boot for it
-     * Launches login prompt check tests for built QEMU targets
+    git clone https://github.com/siemens/kas
+    cat > kas.yml <<EOF
+    header:
+      version: 12
+      build_system: isar
+    repos:
+      isar:
+        url: "http://github.com:/ilbers/isar"
+        refspec: master
+        layers:
+          meta:
+          meta-isar:
+    EOF
+    kas/kas-container shell kas.yml
 
-    Second, run standard CI
-```
-     scripts/ci_build.sh -q
-     ...
-     source isar-init-build-env
-     scripts/vm_smoke_test -q
-```
-    Currently standard CI launches
-     * parallel native build of QEMU arm/arm64/i386/amd64 Debian stretch/buster and Raspberry Pi 1 Raspbian stretch targets
-     * Launches login prompt check tests for built QEMU targets
+    In kas shell:
+
+    ```
+    wget -q http://deb.isar-build.org/debian-isar.key -O- |gpg --dearmor \
+        |sudo dd of=/etc/apt/trusted.gpg.d/debian-isar.gpg
+    echo "deb [signed-by=/etc/apt/trusted.gpg.d/debian-isar.gpg] \
+        http://deb.isar-build.org/debian-isar bookworm-isar main" \
+        |sudo /etc/apt/sources.list.d/10-isar_build.list
+    sudo apt-get update
+    sudo apt-get install avocado
+    cd /work/isar/testsuite
+    avocado run citest.py -t dev --max-parallel-tasks=1
+    ```
 
     Active developers may request from maintainers an account on isar-build.org
     to analyze CI logs or to launch their own CI builds there.
