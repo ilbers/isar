@@ -44,7 +44,7 @@ config MACHINE_NANOPI_NEO_EFI
 
 config MACHINE_PHYBOARD_MIRA
 	bool "phyboard-mira"
-	depends on DEBIAN_BULLSEYE
+	depends on DEBIAN_BULLSEYE || DEBIAN_BOOKWORM
 
 config MACHINE_QEMU_AMD64_SB
 	bool "qemuamd64-sb"
