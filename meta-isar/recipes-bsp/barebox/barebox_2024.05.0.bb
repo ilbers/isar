@@ -10,6 +10,6 @@ SRC_URI += "https://git.pengutronix.de/cgit/barebox/snapshot/barebox-${PV}.tar.g
 
 S = "${WORKDIR}/barebox-${PV}"
 
-SRC_URI[sha256sum] = "01fb3799840bde34014981557361dcae1db23764708bb7b151ec044eb022fbe8"
+SRC_URI[sha256sum] = "f57cba0be683a7e8aca8a0090e42d5913a4efb8bce762d2648f12fd666e2ebc9"
 
 BAREBOX_VERSION_EXTENSION = "-isar"

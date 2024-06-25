@@ -7,7 +7,7 @@ DESCRIPTION ?= "The barebox is a bootloader designed for embedded systems. It \
 CHANGELOG_V = "${PV}+${PR}"
 MAINTAINER ?= "isar-users <isar-users@googlegroups.com>"
 
-DEBIAN_BUILD_DEPENDS ?= "lzop, coreutils, bison, flex"
+DEBIAN_BUILD_DEPENDS ?= "lzop, coreutils, bison, flex, lz4"
 
 BAREBOX_CONFIG ?= ""
 BAREBOX_BUILD_DIR ?= "build"

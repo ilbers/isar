@@ -1,4 +1,4 @@
-From 4abae0d9cc23ef055c0054e41c515e92fa5267ce Mon Sep 17 00:00:00 2001
+From cd6b45d1921a8d4b5607ef2da6186ae5ac38c2d4 Mon Sep 17 00:00:00 2001
 From: Yunus Bas <y.bas@phytec.de>
 Date: Fri, 4 Jun 2021 19:03:04 +0200
 Subject: [PATCH] of_dump: Add a simple node check-up
@@ -16,29 +16,29 @@ Signed-off-by: Yunus Bas <y.bas@phytec.de>
  1 file changed, 8 insertions(+), 1 deletion(-)
 
 diff --git a/commands/of_dump.c b/commands/of_dump.c
-index 6792af3af..d4d9c46a5 100644
+index 2508d4ce11..da6b65231b 100644
 --- a/commands/of_dump.c
 +++ b/commands/of_dump.c
-@@ -32,14 +32,17 @@ static int do_of_dump(int argc, char *argv[])
+@@ -35,14 +35,17 @@ static int do_of_dump(int argc, char *argv[])
  	int opt;
  	int ret = 0;
  	int fix = 0;
 +	int exists = 0;
  	struct device_node *root = NULL, *node, *of_free = NULL;
  	char *dtbfile = NULL;
- 	size_t size;
  	const char *nodename;
+ 	unsigned maxpropsize = ~0;
  	int names_only = 0, properties_only = 0;
  
--	while ((opt = getopt(argc, argv, "Ff:np")) > 0) {
-+	while ((opt = getopt(argc, argv, "eFf:np")) > 0) {
+-	while ((opt = getopt(argc, argv, "Ff:npP:")) > 0) {
++	while ((opt = getopt(argc, argv, "eFf:npP:")) > 0) {
  		switch (opt) {
 +		case 'e':
 +			exists = 1;
  		case 'f':
  			dtbfile = optarg;
  			break;
-@@ -109,6 +112,9 @@ static int do_of_dump(int argc, char *argv[])
+@@ -92,6 +95,9 @@ static int do_of_dump(int argc, char *argv[])
  		printf("Cannot find nodepath %s\n", nodename);
  		ret = -ENOENT;
  		goto out;
@@ -47,8 +47,8 @@ index 6792af3af..d4d9c46a5 100644
 +		goto out;
  	}
  
- 	if (names_only)
-@@ -125,6 +131,7 @@ out:
+ 	if (names_only && !properties_only)
+@@ -109,6 +115,7 @@ static int do_of_dump(int argc, char *argv[])
  
  BAREBOX_CMD_HELP_START(of_dump)
  BAREBOX_CMD_HELP_TEXT("Options:")
@@ -57,5 +57,5 @@ index 6792af3af..d4d9c46a5 100644
  BAREBOX_CMD_HELP_OPT  ("-F",  "return fixed devicetree")
  BAREBOX_CMD_HELP_OPT  ("-n",  "Print node names only, no properties")
 -- 
-2.30.0
+2.30.2
 
