@@ -24,8 +24,7 @@ KERNEL_DEFCONFIG:qemuamd64 = "x86_64_defconfig"
 
 LINUX_VERSION_EXTENSION = "-isar"
 
-# For testing purposes only
-dpkg_configure_kernel:append() {
+check_fragments_applied() {
     grep -q "# CONFIG_MTD is not set" ${S}/debian/rules ||
         cat << EOF | sed -i '/^override_dh_auto_build/ r /dev/stdin' ${S}/debian/rules
 	if ! grep "# CONFIG_MTD is not set" \$(O)/.config && \\
@@ -36,4 +35,9 @@ dpkg_configure_kernel:append() {
 	grep "CONFIG_ROOT_NFS=y" \$(O)/.config || \\
 	    (echo "Self-check failed: CONFIG_ROOT_NFS not enabled" && exit 1)
 EOF
+}
+
+# For testing purposes only
+dpkg_configure_kernel:append() {
+    check_fragments_applied
 }
