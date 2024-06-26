@@ -5,10 +5,9 @@
 
 require recipes-bsp/trusted-firmware-a/trusted-firmware-a-custom.inc
 
-SRC_URI += "git://github.com/ARM-software/arm-trusted-firmware.git;protocol=https;branch=master"
-SRCREV = "b6c0948400594e3cc4dbb5a4ef04b815d2675808"
+SRC_URI += "https://github.com/ARM-software/arm-trusted-firmware/archive/v${PV}.tar.gz;downloadfilename=arm-trusted-firmware-${PV}.tar.gz"
 
-S = "${WORKDIR}/git"
+S = "${WORKDIR}/arm-trusted-firmware-${PV}"
 
 TF_A_PLATFORM = "k3"
 TF_A_EXTRA_BUILDARGS = "CFG_ARM64=y TARGET_BOARD=lite SPD=opteed"
