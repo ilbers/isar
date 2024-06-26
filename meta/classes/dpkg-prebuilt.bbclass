@@ -19,5 +19,8 @@ python do_unpack:prepend() {
 # also breaks inherited (from dpkg-base) dependency on sbuild_chroot
 do_dpkg_build[depends] = "${PN}:do_unpack"
 do_dpkg_build() {
-    true
+    # ensure all packages we got are valid debian packages
+    if [ -n "$(find ${WORKDIR} -maxdepth 1 -name '*.deb' -print -quit)" ]; then
+        find ${WORKDIR} -name '*.deb' | xargs -n1 dpkg -I
+    fi
 }
