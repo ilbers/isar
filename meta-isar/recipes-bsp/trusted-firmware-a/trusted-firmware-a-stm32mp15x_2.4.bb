@@ -5,10 +5,10 @@
 
 require recipes-bsp/trusted-firmware-a/trusted-firmware-a-custom.inc
 
-SRC_URI += "git://github.com/ARM-software/arm-trusted-firmware.git;protocol=https;branch=master"
-SRCREV = "e2c509a39c6cc4dda8734e6509cdbe6e3603cdfc"
+SRC_URI += "https://github.com/ARM-software/arm-trusted-firmware/archive/v${PV}.tar.gz;downloadfilename=arm-trusted-firmware-${PV}.tar.gz"
+SRC_URI[sha256sum] = "4bfda9fdbe5022f2e88ad3344165f7d38a8ae4a0e2d91d44d9a1603425cc642d"
 
-S = "${WORKDIR}/git"
+S = "${WORKDIR}/arm-trusted-firmware-${PV}"
 
 DEBIAN_BUILD_DEPENDS += ", device-tree-compiler"
 
