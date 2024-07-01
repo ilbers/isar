@@ -41,6 +41,7 @@ do_dpkg_build[depends] += "${BPN}:do_deploy_source"
 SCHROOT_MOUNTS = "${WORKDIR}:/work ${REPO_ISAR_DIR}/${DISTRO}:/isar-apt"
 
 do_fetch_common_source[depends] += "${SCHROOT_DEP} ${BPN}:do_deploy_source"
+do_fetch_common_source[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
 do_fetch_common_source[network] = "${TASK_USE_SUDO}"
 do_fetch_common_source() {
     schroot_create_configs
