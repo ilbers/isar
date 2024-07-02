@@ -3,8 +3,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-DESCRIPTION = "add target image to rootfs"
-
+DESCRIPTION = "Install image to device"
 
 inherit dpkg-raw
 
@@ -16,7 +15,7 @@ do_install[cleandirs] = "${D}/usr/bin/ \
                          ${D}/usr/lib/systemd/system/getty@tty1.service.d/ \
                          ${D}/usr/lib/systemd/system/serial-getty@ttyS0.service.d/"
 do_install() {
-  install -m 0755  ${WORKDIR}/deploy-image-wic.sh ${D}/usr/bin/deploy-image-wic.sh
-  install -m 0600 ${WORKDIR}/install.override.conf ${D}/usr/lib/systemd/system/getty@tty1.service.d/override.conf
-  install -m 0600 ${WORKDIR}/install.override.conf ${D}/usr/lib/systemd/system/serial-getty@ttyS0.service.d/override.conf
+    install -m 0755  ${WORKDIR}/deploy-image-wic.sh ${D}/usr/bin/deploy-image-wic.sh
+    install -m 0600 ${WORKDIR}/install.override.conf ${D}/usr/lib/systemd/system/getty@tty1.service.d/override.conf
+    install -m 0600 ${WORKDIR}/install.override.conf ${D}/usr/lib/systemd/system/serial-getty@ttyS0.service.d/override.conf
 }
