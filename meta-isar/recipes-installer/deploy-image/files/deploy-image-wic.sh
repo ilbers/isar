@@ -22,7 +22,7 @@ if [ -z "$DISK_IMAGE" ] || [ ! -f "$installdata/$DISK_IMAGE" ]; then
     fi
 fi
 if [ ! -f "$installdata/$DISK_IMAGE" ]; then
-    dialog --msgbox "Could not find an image to install. Installation aborted." 7 60
+    dialog --msgbox "Could not find an image to install. Installation aborted." 6 60
     exit 1
 fi
 DISK_BMAP=$(find "$installdata" -type f -iname "${DISK_IMAGE%.wic*}.wic.bmap")
@@ -97,9 +97,9 @@ if [ "$(echo "$target_device_list" | wc -w)" -gt 1 ]; then
 else
     TARGET_DEVICE=/dev/$(echo "$target_device_list" | tr -d " ")
 fi
-TARGET_DEVICE_SIZE=$(lsblk --nodeps --noheadings -o SIZE "$TARGET_DEVICE")
+TARGET_DEVICE_SIZE=$(lsblk --nodeps --noheadings -o SIZE "$TARGET_DEVICE" | tr -d " ")
 if ! dialog --yes-label Ok --no-label Cancel \
-            --yesno "Start installing '$DISK_IMAGE' to '$TARGET_DEVICE'(Size: '$TARGET_DEVICE_SIZE' )." 7 60; then
+            --yesno "Start installing\n'$DISK_IMAGE'\nto $TARGET_DEVICE (capacity: $TARGET_DEVICE_SIZE)" 7 60; then
     exit 0
 fi
 
@@ -118,5 +118,6 @@ if ! bmaptool copy ${bmap_options} "$installdata/$DISK_IMAGE" "${TARGET_DEVICE}"
     exit 1
 fi
 
-dialog --title "Reboot" --msgbox "Installation is successful. System will be rebooted. Please remove the USB stick." 7 60
+dialog --title "Reboot" \
+       --msgbox "Installation is successful. System will be rebooted. Please remove the USB stick." 6 60
 exit 0
