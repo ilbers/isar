@@ -25,7 +25,7 @@ DISK_BMAP=$(find "$installdata" -type f -iname "${DISK_IMAGE%.wic*}.wic.bmap")
 # inspired by poky/meta/recipes-core/initrdscripts/files/install-efi.sh
 
 target_device_list=""
-current_root_dev=$(grep "[[:blank:]]/[[:blank:]]" /proc/mounts | awk '{print $1}')
+current_root_dev=$(readlink -f "$(findmnt / -o source -n)")
 current_root_dev=${current_root_dev#\/dev/}
 case $current_root_dev in
     mmcblk*)
