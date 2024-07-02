@@ -241,7 +241,7 @@ class CIBaseTest(CIBuilder):
                 sfiles[target] = dict()
                 package = target.rsplit(':', 1)[-1]
                 isar_apt = CIUtils.getVars('REPO_ISAR_DB_DIR', target=target)
-                fpath = f'{package}/{package}*.tar.gz'
+                fpath = f"{package}/{package}*.tar.*"
                 targz = set(glob.glob(f'{isar_apt}/../apt/*/pool/*/*/{fpath}'))
                 if len(targz) < 1:
                     self.fail('No source packages found')
