@@ -30,23 +30,44 @@ config IMAGE_CI
 	  This image includes is for running CI. Via isar-ci-ssh-setup recipe.
 	  It creates ci user with non-interactive ssh access to the board.
 
-menuconfig IMAGE_INSTALLER
+config IMAGE_INSTALLER
 	bool "Installer image"
 	help
 	  This image contains a target image and scripts to install the target image on a device.
 
-config INSTALLER_TARGET_IMAGE
-	string "Install Base or Debug image"
-	default "isar-image-base"
-	help
-	  This selects the target image of the installer:
-	  - isar-image-base
-	  - isar-image-debug
-	  If left empty it will generate a installer image without payload.
-	  The user of that image needs then to copy a image to the partition
-	  labeled INSTALLDATA.
-	depends on IMAGE_INSTALLER
 endchoice
+
+if IMAGE_INSTALLER
+
+choice
+	prompt "Image to install"
+	default INSTALL_IMAGE_BASE
+
+config INSTALL_IMAGE_BASE
+	bool "Base image"
+	help
+	  Embed the basic Isar image into the installer image.
+
+config INSTALL_IMAGE_DEBUG
+	bool "Debug image"
+	help
+	  Embed the Isar debug image into the installer image.
+
+config INSTALL_EMPTY
+	bool "No installer payload"
+	help
+	  This will generate a installer image without payload. The user of
+	  that image needs then to copy a image to the partition labeled
+	  INSTALLDATA.
+
+endchoice
+
+config INSTALLER_TARGET_IMAGE
+	string
+	default "isar-image-base" if INSTALL_IMAGE_BASE
+	default "isar-image-base" if INSTALL_IMAGE_DEBUG
+
+endif
 
 config KAS_INCLUDE_IMAGE
 	string
