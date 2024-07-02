@@ -96,6 +96,12 @@ if ! dialog --yes-label Ok --no-label Cancel \
     exit 0
 fi
 
+if ! cmp /dev/zero "$TARGET_DEVICE" -n 1M && \
+   ! dialog --defaultno \
+            --yesno "WARNING: Target device is not empty! Continue anyway?" 5 60; then
+    exit 0
+fi
+
 bmap_options=""
 if [ -z "$DISK_BMAP" ]; then
     bmap_options="--nobmap"
