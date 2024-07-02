@@ -80,9 +80,14 @@ fi
 
 if [ "$(echo "$target_device_list" | wc -w)" -gt 1 ]; then
     array=()
-    for target in $target_device_list; do
-        target_size=$(lsblk --nodeps --noheadings -o SIZE /dev/"$target")
-        array+=("/dev/$target" "/dev/$target $target_size")
+    for target in $(echo "$target_device_list" | xargs -n1 | sort); do
+        target_size=$(lsblk --nodeps --noheadings -o SIZE /dev/"$target" | tr -d " ")
+        if cmp /dev/zero /dev/"$target" -n 1M; then
+            state="empty"
+        else
+            state="contains data"
+        fi
+        array+=("/dev/$target" "/dev/$target ($target_size, $state)")
     done
     if ! TARGET_DEVICE=$(dialog --no-tags \
                          --menu "Select device to install image to" 10 60 3 \
