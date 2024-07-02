@@ -7,8 +7,20 @@
 installdata=${INSTALL_DATA:-/install}
 
 AUTO_INSTALL=false
+OVERWRITE=
 
-if ! $AUTO_INSTALL; then
+if [ -f "$installdata/auto.install" ]; then
+    exec 3<"$installdata/auto.install"
+    read -r DISK_IMAGE <&3
+    read -r TARGET_DEVICE <&3
+    read -r OVERWRITE <&3
+    exec 3>&-
+    if [ ! -b ${TARGET_DEVICE} ]; then
+        dialog --msgbox "Target device is not a valid block device. Installation aborted." 6 60
+        exit 1
+    fi
+    AUTO_INSTALL=true
+else
     DISK_IMAGE=$(find "$installdata" -type f -iname "*.wic*" -a -not -iname "*.wic.bmap" -exec basename {} \;)
     if [ -z "$DISK_IMAGE" ] || [ ! -f "$installdata/$DISK_IMAGE" ]; then
         pushd "$installdata"
@@ -110,7 +122,7 @@ if ! $AUTO_INSTALL; then
     fi
 fi
 
-if ! cmp /dev/zero "$TARGET_DEVICE" -n 1M && \
+if [ "$OVERWRITE" != "OVERWRITE" ] && ! cmp /dev/zero "$TARGET_DEVICE" -n 1M && \
    ! dialog --defaultno \
             --yesno "WARNING: Target device is not empty! Continue anyway?" 5 60; then
     exit 0
