@@ -7,16 +7,18 @@
 installdata=${INSTALL_DATA:-/install}
 
 DISK_IMAGE=$(find "$installdata" -type f -iname "*.wic*" -a -not -iname "*.wic.bmap" -exec basename {} \;)
-if [ -z "$DISK_IMAGE" ]; then
+if [ -z "$DISK_IMAGE" ] || [ ! -f "$installdata/$DISK_IMAGE" ]; then
     pushd "$installdata"
-    shopt -s nullglob
-    array=(*)
-    shopt -u nullglob
+    for f in $(find . -type f); do
+        array+=("$f" "$f")
+    done
     popd
-    if ! DISK_IMAGE=$(dialog --no-tags \
-                      --menu "Select image to be installed" 10 60 3 \
-                      "${array[@]}" --output-fd 1)
-        exit 0
+    if [ ${#array[@]} -gt 0 ]; then
+        if ! DISK_IMAGE=$(dialog --no-tags \
+                          --menu "Select image to be installed" 10 60 3 \
+                          "${array[@]}" --output-fd 1); then
+            exit 0
+        fi
     fi
 fi
 if [ ! -f "$installdata/$DISK_IMAGE" ]; then
