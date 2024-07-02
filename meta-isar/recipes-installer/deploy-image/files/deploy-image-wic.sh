@@ -12,10 +12,12 @@ if [ -z "$DISK_IMAGE" ]; then
     shopt -s nullglob
     array=(*)
     shopt -u nullglob
-    DISK_IMAGE=$(dialog --no-tags \
-                 --menu "Select image to be installed" 10 60 3 \
-                 "${array[@]}" --output-fd 1)
     popd
+    if ! DISK_IMAGE=$(dialog --no-tags \
+                      --menu "Select image to be installed" 10 60 3 \
+                      "${array[@]}" --output-fd 1)
+        exit 0
+    fi
 fi
 if [ ! -f "$installdata/$DISK_IMAGE" ]; then
     dialog --msgbox "Could not find an image to install. Installation aborted." 7 60
@@ -80,15 +82,19 @@ if [ "$(echo "$target_device_list" | wc -w)" -gt 1 ]; then
         target_size=$(lsblk --nodeps --noheadings -o SIZE /dev/"$target")
         array+=("/dev/$target" "/dev/$target $target_size")
     done
-    TARGET_DEVICE=$(dialog --no-tags \
-                    --menu "Select device to install $DISK_IMAGE" 10 60 3 \
-                    "${array[@]}" --output-fd 1)
-
+    if ! TARGET_DEVICE=$(dialog --no-tags \
+                         --menu "Select device to install image to" 10 60 3 \
+                         "${array[@]}" --output-fd 1); then
+        exit 0
+    fi
 else
     TARGET_DEVICE=/dev/$(echo "$target_device_list" | tr -d " ")
 fi
 TARGET_DEVICE_SIZE=$(lsblk --nodeps --noheadings -o SIZE "$TARGET_DEVICE")
-dialog --msgbox "Start installing '$DISK_IMAGE' to '$TARGET_DEVICE'(Size: '$TARGET_DEVICE_SIZE' )." 7 60
+if ! dialog --yes-label Ok --no-label Cancel \
+            --yesno "Start installing '$DISK_IMAGE' to '$TARGET_DEVICE'(Size: '$TARGET_DEVICE_SIZE' )." 7 60; then
+    exit 0
+fi
 
 bmap_options=""
 if [ -z "$DISK_BMAP" ]; then
