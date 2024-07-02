@@ -105,4 +105,4 @@ fi
 umount "$installdata"
 sync
 dialog --title "Reboot" --msgbox "Installation is successful. System will be rebooted. Please remove the USB stick." 7 60
-reboot
+exit 0
