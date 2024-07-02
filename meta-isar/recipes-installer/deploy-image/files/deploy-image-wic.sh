@@ -33,12 +33,12 @@ current_root_dev=$(readlink -f "$(findmnt / -o source -n)")
 current_root_dev=${current_root_dev#\/dev/}
 case $current_root_dev in
     mmcblk*)
-    ;;
+        ;;
     nvme*)
-    ;;
+        ;;
     *)
         current_root_dev=${current_root_dev%%[0-9]*}
-    ;;
+        ;;
 esac
 
 echo "Searching for target device..."
