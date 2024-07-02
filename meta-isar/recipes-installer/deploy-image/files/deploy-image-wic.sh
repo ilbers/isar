@@ -90,7 +90,6 @@ fi
 TARGET_DEVICE_SIZE=$(lsblk --nodeps --noheadings -o SIZE /dev/"$TARGET_DEVICE")
 dialog --msgbox "Start installing '$DISK_IMAGE' to '$TARGET_DEVICE'(Size: '$TARGET_DEVICE_SIZE' )." 7 60
 
-set -e
 bmap_options=""
 if [ -z "$DISK_BMAP" ]; then
     bmap_options="--nobmap"
@@ -100,9 +99,5 @@ if ! bmaptool copy "${bmap_options}" "$DISK_IMAGE" "/dev/${TARGET_DEVICE}"; then
     exit 1
 fi
 
-# we need to umount before reboot to avoid
-# data corruption due to the use of vfat.
-umount "$installdata"
-sync
 dialog --title "Reboot" --msgbox "Installation is successful. System will be rebooted. Please remove the USB stick." 7 60
 exit 0
