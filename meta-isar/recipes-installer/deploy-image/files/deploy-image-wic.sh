@@ -12,9 +12,9 @@ if [ -z "$DISK_IMAGE" ]; then
     shopt -s nullglob
     array=(*)
     shopt -u nullglob
-    DISK_IMAGE=$(dialog --clear \
-                --no-tags --menu "Select image to be installed" 10 60 3 \
-                "${array[@]}" --output-fd 1)
+    DISK_IMAGE=$(dialog --no-tags \
+                 --menu "Select image to be installed" 10 60 3 \
+                 "${array[@]}" --output-fd 1)
     popd
 fi
 if [ ! -f "$installdata/$DISK_IMAGE" ]; then
@@ -80,9 +80,9 @@ if [ "$(echo "$target_device_list" | wc -w)" -gt 1 ]; then
         target_size=$(lsblk --nodeps --noheadings -o SIZE /dev/"$target")
         array+=("/dev/$target" "/dev/$target $target_size")
     done
-    TARGET_DEVICE=$(dialog --clear \
-                --no-tags --menu "Select device to install $DISK_IMAGE" 10 60 3 \
-                "${array[@]}" --output-fd 1)
+    TARGET_DEVICE=$(dialog --no-tags \
+                    --menu "Select device to install $DISK_IMAGE" 10 60 3 \
+                    "${array[@]}" --output-fd 1)
 
 else
     TARGET_DEVICE=/dev/$(echo "$target_device_list" | tr -d " ")
