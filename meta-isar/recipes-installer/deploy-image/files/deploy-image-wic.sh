@@ -6,7 +6,7 @@
 
 installdata=${INSTALL_DATA:-/install}
 
-DISK_IMAGE=$(find "$installdata" -type f -iname "*.wic*" -a -not -iname "*.wic.bmap")
+DISK_IMAGE=$(find "$installdata" -type f -iname "*.wic*" -a -not -iname "*.wic.bmap" -exec basename {} \;)
 if [ -z "$DISK_IMAGE" ]; then
     pushd "$installdata"
     shopt -s nullglob
@@ -17,11 +17,11 @@ if [ -z "$DISK_IMAGE" ]; then
                 "${array[@]}" --output-fd 1)
     popd
 fi
-if [ ! -f "$DISK_IMAGE" ]; then
+if [ ! -f "$installdata/$DISK_IMAGE" ]; then
     dialog --msgbox "Could not find an image to install. Installation aborted." 7 60
     exit 1
 fi
-DISK_BMAP=$(find "$installdata" -type f -iname "$DISK_IMAGE.bmap")
+DISK_BMAP=$(find "$installdata" -type f -iname "${DISK_IMAGE%.wic*}.wic.bmap")
 # inspired by poky/meta/recipes-core/initrdscripts/files/install-efi.sh
 
 target_device_list=""
@@ -95,7 +95,7 @@ if [ -z "$DISK_BMAP" ]; then
     bmap_options="--nobmap"
 fi
 clear
-if ! bmaptool copy "${bmap_options}" "$DISK_IMAGE" "/dev/${TARGET_DEVICE}"; then
+if ! bmaptool copy ${bmap_options} "$installdata/$DISK_IMAGE" "/dev/${TARGET_DEVICE}"; then
     exit 1
 fi
 
