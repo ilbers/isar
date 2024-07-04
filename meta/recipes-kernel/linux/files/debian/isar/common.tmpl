@@ -18,8 +18,7 @@ KERNEL_PKG_KERN_KBUILD_CROSS=${KERNEL_PKG_KERN_KBUILD}-${DISTRO_ARCH}-cross
 # The scripts and tools are always created for host arch
 if echo "${DEB_BUILD_PROFILES}" | grep -q -e "cross" -e "kbuild"
 then
-    eval $(dpkg-architecture -f -A ${DISTRO_ARCH})
-    CROSS_COMPILE=${DEB_TARGET_GNU_TYPE}-
+    CROSS_COMPILE=$(dpkg-architecture -f -A ${DISTRO_ARCH} -q DEB_TARGET_GNU_TYPE)-
 fi
 
 # Constants
