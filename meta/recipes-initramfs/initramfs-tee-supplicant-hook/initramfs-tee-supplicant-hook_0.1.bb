@@ -17,11 +17,11 @@ DEBIAN_DEPENDS = "initramfs-tools, tee-supplicant, procps"
 
 do_install[cleandirs] += " \
     ${D}/usr/share/initramfs-tools/hooks \
-    ${D}/usr/share/initramfs-tools/scripts/local-bottom"
+    ${D}/usr/share/initramfs-tools/scripts/local-top"
 
 do_install() {
     install -m 0755 "${WORKDIR}/tee-supplicant.hook" \
         "${D}/usr/share/initramfs-tools/hooks/tee-supplicant"
     install -m 0755 "${WORKDIR}/tee-supplicant.script" \
-        "${D}/usr/share/initramfs-tools/scripts/local-bottom/tee-supplicant"
+        "${D}/usr/share/initramfs-tools/scripts/local-top/tee-supplicant"
 }

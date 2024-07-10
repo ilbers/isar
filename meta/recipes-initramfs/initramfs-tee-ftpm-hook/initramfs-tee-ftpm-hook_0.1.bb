@@ -17,11 +17,11 @@ DEBIAN_DEPENDS = "initramfs-tools"
 
 do_install[cleandirs] += " \
     ${D}/usr/share/initramfs-tools/hooks \
-    ${D}/usr/share/initramfs-tools/scripts/local-bottom"
+    ${D}/usr/share/initramfs-tools/scripts/local-top"
 
 do_install() {
     install -m 0755 "${WORKDIR}/tee-ftpm.hook" \
         "${D}/usr/share/initramfs-tools/hooks/tee-ftpm"
     install -m 0755 "${WORKDIR}/tee-ftpm.script" \
-        "${D}/usr/share/initramfs-tools/scripts/local-bottom/tee-ftpm"
+        "${D}/usr/share/initramfs-tools/scripts/local-top/tee-ftpm"
 }
