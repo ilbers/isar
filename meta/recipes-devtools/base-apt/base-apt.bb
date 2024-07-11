@@ -48,7 +48,6 @@ populate_base_apt() {
     done
 }
 
-do_cache[stamp-extra-info] = "${DISTRO}"
 do_cache[lockfiles] = "${REPO_BASE_DIR}/isar.lock"
 
 repo() {
