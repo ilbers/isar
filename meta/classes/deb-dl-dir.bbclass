@@ -90,7 +90,8 @@ deb_dl_dir_export() {
     export owner=$(id -u):$(id -g)
     mkdir -p "${pc}"
 
-    isar_debs="\$(find '${REPO_ISAR_DIR}/${DISTRO}' -name '*.deb' -print)"
+    isar_debs="$(${SCRIPTSDIR}/lockrun.py -r -f '${REPO_ISAR_DIR}/isar.lock' -c \
+    "find '${REPO_ISAR_DIR}/${DISTRO}' -name '*.deb' -print")"
 
     flock "${pc}".lock sudo -Es << 'EOSUDO'
         set -e

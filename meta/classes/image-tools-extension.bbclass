@@ -46,6 +46,7 @@ imager_run() {
 
         E="${@ isar_export_proxies(d)}"
         deb_dl_dir_import ${schroot_dir} ${distro}
+        ${SCRIPTSDIR}/lockrun.py -r -f "${REPO_ISAR_DIR}/isar.lock" -s <<EOAPT
         schroot -r -c ${session_id} -d / -u root -- sh -c " \
             apt-get update \
                 -o Dir::Etc::SourceList='sources.list.d/isar-apt.list' \
@@ -54,6 +55,7 @@ imager_run() {
             apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y \
                 --allow-unauthenticated --allow-downgrades --download-only install \
                 ${local_install}"
+EOAPT
 
         deb_dl_dir_export ${schroot_dir} ${distro}
         schroot -r -c ${session_id} -d / -u root -- sh -c " \
