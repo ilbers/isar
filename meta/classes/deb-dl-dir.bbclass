@@ -89,6 +89,9 @@ deb_dl_dir_export() {
     export rootfs="${1}"
     export owner=$(id -u):$(id -g)
     mkdir -p "${pc}"
+
+    isar_debs="\$(find '${REPO_ISAR_DIR}/${DISTRO}' -name '*.deb' -print)"
+
     flock "${pc}".lock sudo -Es << 'EOSUDO'
         set -e
         printenv | grep -q BB_VERBOSE_LOGS && set -x
@@ -98,9 +101,8 @@ deb_dl_dir_export() {
         while read p; do
             # skip files from a previous export
             [ -f "${pc}/${p##*/}" ] && continue
-            # can not reuse bitbake function here, this is basically
-            # "repo_contains_package"
-            package=$(find "${REPO_ISAR_DIR}"/"${DISTRO}" -name ${p##*/})
+            # skip packages from isar-apt
+            package=$(echo "$isar_debs" | grep -F -m 1 "${p##*/}" | cat)
             if [ -n "$package" ]; then
                 cmp --silent "$package" "$p" && continue
             fi
