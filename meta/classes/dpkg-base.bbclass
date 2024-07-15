@@ -166,7 +166,7 @@ addtask apt_unpack after do_apt_fetch
 do_cleanall_apt[nostamp] = "1"
 do_cleanall_apt() {
     for uri in "${SRC_APT}"; do
-        rm -rf "${DEBSRCDIR}"/"${DISTRO}"/"$uri"
+        rm -rf "${DEBSRCDIR}/${BASE_DISTRO}-${BASE_DISTRO_CODENAME}/$uri"
     done
 }
 
