@@ -1520,3 +1520,61 @@ SBUILD_CHROOT_PREINSTALL_EXTRA += "<base packages>"
 
 Then, in the dpkg recipe of your package, simply set `SBUILD_FLAVOR = "<your flavor>"`.
 To install additional packages into the sbuild chroot, add them to `SBUILD_CHROOT_PREINSTALL_EXTRA`.
+
+## Pre-install container images
+
+If an isar-generated image shall provide a container runtime, it may also be
+desirable to pre-install container images to avoid having to download them on
+first boot or because they may not be accessible outside of the build
+environment. Isar supports this scenario via two services, a container fetcher
+and a container loader.
+
+### Bitbake fetcher for containers
+
+The bitbake fetching protocol "docker://" allows to download pre-built images
+from container registries. The URL consists of the image path, followed by
+a recommended digest in the form `digest=sha256:<sha256sum>` and an optional
+tag in the form `tag=<tag>`. A digest is preferred over a tag to identify an
+image when fetching because it also allows to validate its integrity. If a tag
+is not specified, `latest` is used as tag name.
+
+In case a multi-arch image is specified, the fetcher will only pull for the
+package architecture of the requesting recipe (`PACKAGE_ARCH`). The fetched
+images are stored as zstd-compressed in docker-archive format in the
+`WORKDIR` of the recipe. The name of the image is derived from the container
+image name, replacing all `/` with `.` and appending `:<tag>.zst`. Example:
+`docker://debian;tag=bookworm` will be saved as `debian:bookworm.zst`.
+
+### Container loader helpers
+
+To create a Debian package which can carry container images and load them into
+local storage of docker or podman, there is a set of helpers available. To use
+them in an own recipe, add
+`require recipes-support/container-loader/docker-loader.inc` when using docker
+and `require recipes-support/container-loader/podman-loader.inc` when using
+podman. The loader will try to transfer the packaged image into the container
+runtime storage on boot, but only if no container image of the same name and
+tag is present already.
+
+Unless `CONTAINER_DELETE_AFTER_LOAD` is set to `1`, the source container images
+remain by default available and may be used again for loading the storage after
+it may have been emptied later on (factory reset).
+
+Source container images may either be fetched as binaries from a registry, see
+above, or built via isar as well.
+
+### Example
+
+This creates a debian package which will download, package and then load the
+`debian:bookworm-20240701-slim` container image into the docker container
+storage. The package will depend on `docker.io`, insuring that that basic
+runtime services are installed on the target as well. The packaged image will
+be deleted from the target device's rootfs after successful import.
+
+```
+require recipes-support/container-loader/docker-loader.inc
+
+CONTAINER_DELETE_AFTER_LOAD = "1"
+
+SRC_URI += "docker://debian;digest=sha256:f528891ab1aa484bf7233dbcc84f3c806c3e427571d75510a9d74bb5ec535b33;tag=bookworm-20240701-slim"
+```
