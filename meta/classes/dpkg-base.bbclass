@@ -98,6 +98,12 @@ python() {
     if len(d.getVar('SRC_APT').strip()) > 0:
         bb.build.addtask('apt_unpack', 'do_patch', '', d)
         bb.build.addtask('cleanall_apt', 'do_cleanall', '', d)
+
+    # container docker fetcher
+    import container_fetcher
+    from bb.fetch2 import methods
+
+    methods.append(container_fetcher.Container())
 }
 
 do_apt_fetch() {
