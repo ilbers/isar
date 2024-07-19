@@ -1,0 +1,18 @@
+#!/bin/sh
+#
+# Copyright (c) Siemens AG, 2024
+#
+# SPDX-License-Identifier: MIT
+
+set -eu
+
+while read -r image ref; do
+    if [ -e /usr/share/${BPN}/images/"$image" ] && \
+       [ -z "$(${CONTAINER_ENGINE} images -q "$ref")" ]; then
+        pzstd -c -d /usr/share/${BPN}/images/"$image" | \
+            ${CONTAINER_ENGINE} load
+        if [ "${CONTAINER_DELETE_AFTER_LOAD}" = "1" ]; then
+            rm -f /usr/share/${BPN}/images/"$image"
+        fi
+    fi
+done < /usr/share/${BPN}/image.list

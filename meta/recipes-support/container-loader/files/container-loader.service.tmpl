@@ -1,0 +1,12 @@
+[Unit]
+Description=Load archived container images on boot
+After=${CONTAINER_ENGINE}.service
+Requires=${CONTAINER_ENGINE}.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/share/${BPN}/container-loader.sh
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target
