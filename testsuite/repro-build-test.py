@@ -15,32 +15,33 @@ class ReproBuild(CIBuilder):
 
     def test_repro_build(self):
         target = self.params.get(
-            "build_target", default="mc:qemuamd64-bullseye:isar-image-base"
+            'build_target', default='mc:qemuamd64-bullseye:isar-image-base'
         )
         source_date_epoch = self.params.get(
-            "source_date_epoch", default=self.git_last_commit_timestamp()
+            'source_date_epoch', default=self.git_last_commit_timestamp()
         )
         self.init()
-        self.build_repro_image(target, source_date_epoch, "image1.tar.gz")
-        self.build_repro_image(target, source_date_epoch, "image2.tar.gz")
-        self.compare_repro_image("image1.tar.gz", "image2.tar.gz")
+        self.build_repro_image(target, source_date_epoch, 'image1.tar.gz')
+        self.build_repro_image(target, source_date_epoch, 'image2.tar.gz')
+        self.compare_repro_image('image1.tar.gz', 'image2.tar.gz')
 
     def git_last_commit_timestamp(self):
-        return process.run("git log -1 --pretty=%ct").stdout.decode().strip()
+        return process.run('git log -1 --pretty=%ct').stdout.decode().strip()
 
     def get_image_path(self, target_name):
-        image_dir = "tmp/deploy/images"
-        machine, image_name = CIUtils.getVars('MACHINE', 'IMAGE_FULLNAME',
-                                              target=target_name)
+        image_dir = 'tmp/deploy/images'
+        machine, image_name = CIUtils.getVars(
+            'MACHINE', 'IMAGE_FULLNAME', target=target_name
+        )
         return f"{image_dir}/{machine}/{image_name}.tar.gz"
 
     def build_repro_image(
-        self, target, source_date_epoch=None, image_name="image.tar.gz"
+        self, target, source_date_epoch=None, image_name='image.tar.gz'
     ):
-
         if not source_date_epoch:
             self.error(
-             "Reproducible build should configure with source_date_epoch time"
+                "Reproducible build should configure with "
+                "source_date_epoch time"
             )
 
         # clean artifacts before build
@@ -48,7 +49,9 @@ class ReproBuild(CIBuilder):
 
         # Build
         self.log.info("Started Build " + image_name)
-        self.configure(source_date_epoch=source_date_epoch, use_apt_snapshot=True)
+        self.configure(
+            source_date_epoch=source_date_epoch, use_apt_snapshot=True
+        )
         self.bitbake(target)
 
         # copy the artifacts image name with given name
@@ -57,18 +60,16 @@ class ReproBuild(CIBuilder):
         self.move_in_build_dir(image_path, image_name)
 
     def clean(self):
-        self.delete_from_build_dir("tmp")
-        self.delete_from_build_dir("sstate-cache")
+        self.delete_from_build_dir('tmp')
+        self.delete_from_build_dir('sstate-cache')
 
     def compare_repro_image(self, image1, image2):
         self.log.info(
             "Compare artifacts image1: " + image1 + ", image2: " + image2
         )
         result = process.run(
-            "diffoscope "
-            "--text " + self.build_dir + "/diffoscope-output.txt"
-            " " + self.build_dir + "/" + image1 +
-            " " + self.build_dir + "/" + image2,
+            f"diffoscope --text {self.build_dir}/diffoscope-output.txt"
+            f" {self.build_dir}/{image1} {self.build_dir}/{image2}",
             ignore_status=True,
         )
         if result.exit_status > 0:
