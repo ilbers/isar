@@ -1,0 +1,9 @@
+# This software is a part of ISAR.
+# Copyright (c) Siemens AG, 2024
+
+header:
+  version: 14
+
+local_conf_header:
+  package-prebuilt-podman-img: |
+    IMAGE_INSTALL:append = " prebuilt-podman-img"

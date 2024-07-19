@@ -146,6 +146,25 @@ config KAS_INCLUDE_PACKAGE_ISAR_CI_SSH_SETUP
         default "kas/package/pkg_sshd-regen-keys.yaml"
         depends on PACKAGE_ISAR_CI_SSH_SETUP
 
+
+config PACKAGE_PREBUILT_DOCKER_IMG
+        bool "prebuilt-docker-img"
+        default y
+
+config KAS_INCLUDE_PACKAGE_PREBUILT_DOCKER_IMG
+        string
+        default "kas/package/pkg_prebuilt-docker-img.yaml"
+        depends on PACKAGE_PREBUILT_DOCKER_IMG
+
+config PACKAGE_PREBUILT_PODMAN_IMG
+        bool "prebuilt-podman-img"
+        default y
+
+config KAS_INCLUDE_PACKAGE_PREBUILT_PODMAN_IMG
+        string
+        default "kas/package/pkg_prebuilt-podman-img.yaml"
+        depends on PACKAGE_PREBUILT_PODMAN_IMG
+
 endmenu
 
 config KAS_IMAGE_PREINSTALL
