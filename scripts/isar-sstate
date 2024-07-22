@@ -869,9 +869,9 @@ def sstate_lint(target, verbose, sources_dir, build_dir, exit_code, pedantic, li
                name in ADDITIONAL_IGNORED_VARNAMES:
                 continue
             # remove leading whitespaces possibly added by appending
-            val = val.lstrip()
-            if not val:
+            if not val or not val.lstrip():
                 continue
+            val = val.lstrip()
 
             if name == 'SRC_URI':
                 src_uri = val.split()
