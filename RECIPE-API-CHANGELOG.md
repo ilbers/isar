@@ -629,3 +629,8 @@ into kernel kbuild package.
     Only the "host" specific package is built automatically at cross builds.
 
   * Support emulated module build with cross-compiled kernel for linux-module
+
+### Rate-Limit apt fetching
+
+When downloading from debian snapshot mirrors, rate limits might apply.
+To limit the amount of parallel fetching to n kB / s, you can set `ISAR_APT_DL_LIMIT="<n>`.

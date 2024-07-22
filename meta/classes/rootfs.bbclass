@@ -111,6 +111,10 @@ rootfs_configure_apt() {
     mkdir -p '${ROOTFSDIR}/etc/apt/apt.conf.d'
     {
         echo 'Acquire::Retries "3";'
+        if [ -n "${ISAR_APT_DL_LIMIT}" ]; then
+            echo 'Acquire::http::Dl-Limit "${ISAR_APT_DL_LIMIT}";'
+            echo 'Acquire::https::Dl-Limit "${ISAR_APT_DL_LIMIT}";'
+        fi
         echo 'APT::Install-Recommends "0";'
         echo 'APT::Install-Suggests "0";'
     } > '${ROOTFSDIR}/etc/apt/apt.conf.d/50isar'
