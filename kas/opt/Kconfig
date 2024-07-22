@@ -5,11 +5,11 @@
 #  Uladzimir Bely <ubely@ilbers.de>
 
 menu "Mirror selection"
-	depends on DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM || UBUNTU_FOCAL || UBUNTU_JAMMY
+	depends on DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM || DEBIAN_TRIXIE || DEBIAN_SID || UBUNTU_FOCAL || UBUNTU_JAMMY
 
 config MIRROR_DEBIAN
 	bool "Use specific Debian mirror"
-	depends on DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM
+	depends on DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM || DEBIAN_TRIXIE || DEBIAN_SID
 	help
 	  Select better local Debian mirror instead of deb.debian.org
 
@@ -42,7 +42,7 @@ config KAS_INCLUDE_MIRROR_UBUNTU
 
 config USE_APT_SNAPSHOT
 	bool "Use the distros snapshot mirror"
-	depends on !MIRROR_DEBIAN && (DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM || DEBIAN_TRIXIE || UBUNTU_FOCAL || UBUNTU_JAMMY)
+	depends on !MIRROR_DEBIAN && (DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM || DEBIAN_TRIXIE || DEBIAN_SID || UBUNTU_FOCAL || UBUNTU_JAMMY)
 	help
 		Use a snapshot mirror for the selected distribution. The date is defined by ISAR_APT_SNAPSHOT_TIMESTAMP.
 
