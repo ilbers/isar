@@ -32,6 +32,11 @@ and supports three remote backends (filesystem, http/webdav, AWS S3).
 The `upload` command pushes the contents of a local sstate cache to the
 remote location, uploading all files that don't already exist on the remote.
 
+`--max-age` specifies after which time artifacts in the cache should be
+refreshed. Files older than this age will be reuploaded to update its timestamp.
+This value should be chosen to be smaller than the clean max-age to ensure that
+the artifacts are refreshed before they are cleaned.
+
 ### clean
 
 The `clean` command deletes old artifacts from the remote cache. It takes two
@@ -178,6 +183,17 @@ SstateRegex = re.compile(r'(.*/)?sstate:(?P<pn>[^:]*):[^:]*:[^:]*:[^:]*:'
 StampsRegex = re.compile(
     r"(.*/)?(?P<arch>[^/]+)/(?P<pn>[^/]+)/([^/]+)\.do_(?P<task>[^/]+)\.(?P<suffix>sigdata)\.(?P<hash>[0-9a-f]{64})"
 )
+
+def convert_duration_string_to_seconds(x):
+    seconds_per_unit = {'s': 1, 'm': 60, 'h': 3600, 'd': 86400, 'w': 604800}
+    m = re.match(r'^(\d+)(w|d|h|m|s)?', x)
+    if m is None:
+        return None
+    unit = m.group(2)
+    if unit is None:
+        print("WARNING: MAX_AGE without unit, assuming 'days'")
+        unit = 'd'
+    return int(m.group(1)) * seconds_per_unit[unit]
 
 class SstateTargetBase(object):
     def __init__(self, path, cached=False):
@@ -598,7 +614,7 @@ def arguments():
         '-v', '--verbose', default=False, action='store_true')
     parser.add_argument(
         '--max-age', type=str, default='1d',
-        help="clean: remove archive files older than MAX_AGE (a number followed by w|d|h|m|s)")
+        help="clean/upload: remove/reupload archive files older than MAX_AGE (a number followed by w|d|h|m|s)")
     parser.add_argument(
         '--max-sig-age', type=str, default=None,
         help="clean: remove siginfo files older than MAX_SIG_AGE (defaults to MAX_AGE)")
@@ -632,7 +648,7 @@ def arguments():
     return args
 
 
-def sstate_upload(source, target, verbose, **kwargs):
+def sstate_upload(source, target, verbose, max_age="1d", **kwargs):
     if not os.path.isdir(source):
         print(f"WARNING: source {source} does not exist. Not uploading.")
         return 0
@@ -640,23 +656,37 @@ def sstate_upload(source, target, verbose, **kwargs):
         print(f"WARNING: target {target} does not exist and could not be created. Not uploading.")
         return 0
 
+    print(f"INFO: scanning {target}")
+    all_files = target.list_all()
+
+    def target_file_present(file_path):
+        for file in all_files:
+            if file.path == file_path:
+                return file
+
     print(f"INFO: uploading {source} to {target}")
     os.chdir(source)
-    upload, exists = [], []
+    upload, exists, update = [], [], []
     for subdir, dirs, files in os.walk('.'):
         target_dirs = subdir.split('/')[1:]
         for f in files:
             file_path = (('/'.join(target_dirs) + '/') if len(target_dirs) > 0 else '') + f
-            if target.exists(file_path):
+            target_file = target_file_present(file_path)
+            if target_file:
                 if verbose:
                     print(f"[EXISTS] {file_path}")
                 exists.append(file_path)
+                if target_file.age > convert_duration_string_to_seconds(max_age):
+                    update.append((file_path, target_dirs))
+                    if verbose:
+                        print(f"[UPDATE] {file_path}")
             else:
                 upload.append((file_path, target_dirs))
-    upload_gb = (sum([os.path.getsize(f[0]) for f in upload]) / 1024.0 / 1024.0 / 1024.0)
+    upload_gb = (sum([os.path.getsize(f[0]) for f in (upload + update)]) / 1024.0 / 1024.0 / 1024.0)
     print(f"INFO: uploading {len(upload)} files ({upload_gb:.02f} GB)")
     print(f"INFO: {len(exists)} files already present on target")
-    for file_path, target_dirs in upload:
+    print(f"INFO: {len(update)} files will be refreshed")
+    for file_path, target_dirs in upload + update:
         if verbose:
             print(f"[UPLOAD] {file_path}")
         target.mkdir('/'.join(target_dirs))
@@ -665,24 +695,13 @@ def sstate_upload(source, target, verbose, **kwargs):
 
 
 def sstate_clean(target, max_age, max_sig_age, verbose, **kwargs):
-    def convert_to_seconds(x):
-        seconds_per_unit = {'s': 1, 'm': 60, 'h': 3600, 'd': 86400, 'w': 604800}
-        m = re.match(r'^(\d+)(w|d|h|m|s)?', x)
-        if m is None:
-            return None
-        unit = m.group(2)
-        if unit is None:
-            print("WARNING: MAX_AGE without unit, assuming 'days'")
-            unit = 'd'
-        return int(m.group(1)) * seconds_per_unit[unit]
-
-    max_age_seconds = convert_to_seconds(max_age)
+    max_age_seconds = convert_duration_string_to_seconds(max_age)
     if max_age_seconds is None:
         print(f"ERROR: cannot parse MAX_AGE '{max_age}', needs to be a number followed by w|d|h|m|s")
         return 1
     if max_sig_age is None:
         max_sig_age = max_age
-    max_sig_age_seconds = max(max_age_seconds, convert_to_seconds(max_sig_age))
+    max_sig_age_seconds = max(max_age_seconds, convert_duration_string_to_seconds(max_sig_age))
 
     if not target.exists():
         print(f"WARNING: cannot access target {target}. Nothing to clean.")
