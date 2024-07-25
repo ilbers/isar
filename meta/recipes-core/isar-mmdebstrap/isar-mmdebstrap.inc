@@ -98,7 +98,8 @@ do_bootstrap() {
     fi
     E="${@ isar_export_proxies(d)}"
 
-    if [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" ]; then
+    if [ "${ISAR_PREFETCH_BASE_APT}" = "1" ] || \
+       [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" ]; then
         base_apt_tmp="$(mktemp -d /tmp/isar-base-aptXXXXXXXXXX)"
         bootstrap_list="${WORKDIR}/sources.list.d/base-apt.list"
         line="copy://$base_apt_tmp/${BOOTSTRAP_BASE_DISTRO} ${BASE_DISTRO_CODENAME} main"
@@ -126,6 +127,8 @@ do_bootstrap() {
                              \$1/etc/apt/sources.list.d/*.list && \
                          mkdir -p \$1/base-apt && \
                          mount -o bind,private '${REPO_BASE_DIR}' \$1/base-apt && \
+                         chroot \$1 mv /etc/apt/sources.list.d/0000base-apt.list \
+                                /etc/apt/sources.list.d/base-apt.list
                          chroot \$1 apt-get update -y \
                                 -o APT::Update::Error-Mode=any && \
                          chroot \$1 apt-get install -y dpkg && \
