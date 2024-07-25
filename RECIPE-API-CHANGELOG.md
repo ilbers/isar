@@ -719,3 +719,13 @@ available for respective bsps in apt feeds.
 
 Optional fields of the isar-apt repo can be controlled by adding to the
 `ISAR_APT_OPT_FIELD` map. Example: `ISAR_APT_OPT_FIELD[Origin]="isar"`.
+
+### "Prefetch" mode for base-apt
+
+Originally, `base-apt` repo is created only during second build when variable
+ISAR_USE_CACHED_BASE_REPO is set. The repo is populated with every package that
+took part in the first build and was cached in DL_DIR.
+
+New ISAR_PREFETCH_BASE_APT variable changes the way `base-apt` is populated.
+Packages added to the repo before running any task that need them. Separate
+`debrepo` script is used for populating base-apt repo.
