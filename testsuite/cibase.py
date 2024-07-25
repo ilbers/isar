@@ -51,10 +51,14 @@ class CIBaseTest(CIBuilder):
             self.fail("GPG import failed")
 
         try:
+            self.move_in_build_dir('tmp', 'tmp_before_repro')
             self.bitbake(targets, **kwargs)
 
             repro_type = 'signed' if signed else 'unsigned'
             self.move_in_build_dir('tmp', f"tmp_middle_repro_{repro_type}")
+
+            os.makedirs(f"{self.build_dir}/tmp/deploy/")
+            self.move_in_build_dir(f"tmp_middle_repro_{repro_type}/deploy/base-apt", 'tmp/deploy/base-apt')
             self.configure(
                 gpg_pub_key=gpg_pub_key if signed else None,
                 offline=True,
