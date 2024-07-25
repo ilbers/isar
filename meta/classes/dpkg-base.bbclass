@@ -11,6 +11,7 @@ inherit terminal
 inherit repository
 inherit deb-dl-dir
 inherit essential
+inherit debrepo
 
 DEPENDS ?= ""
 RPROVIDES ?= "${PROVIDES}"
