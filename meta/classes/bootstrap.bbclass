@@ -39,7 +39,8 @@ python () {
     # installation afterwards. However, bootstrap will include the key into
     # the rootfs automatically thus the right place is distro_bootstrap_keys.
 
-    if bb.utils.to_boolean(d.getVar('ISAR_USE_CACHED_BASE_REPO')):
+    if bb.utils.to_boolean(d.getVar('ISAR_PREFETCH_BASE_APT')) or \
+       bb.utils.to_boolean(d.getVar('ISAR_USE_CACHED_BASE_REPO')) :
         own_pub_key = d.getVar("BASE_REPO_KEY")
         if own_pub_key:
             distro_bootstrap_keys += own_pub_key.split()
@@ -115,7 +116,8 @@ def get_apt_source_mirror(d, aptsources_entry_list):
     # this is executed during parsing. No error checking possible
     use_snapshot = bb.utils.to_boolean(d.getVar('ISAR_USE_APT_SNAPSHOT'))
     snapshot_mirror = d.getVar('DISTRO_APT_SNAPSHOT_PREMIRROR')
-    if bb.utils.to_boolean(d.getVar('ISAR_USE_CACHED_BASE_REPO')):
+    if bb.utils.to_boolean(d.getVar('ISAR_PREFETCH_BASE_APT')) or \
+       bb.utils.to_boolean(d.getVar('ISAR_USE_CACHED_BASE_REPO')) :
         premirrors = "\S* file://${REPO_BASE_DIR}/${BOOTSTRAP_BASE_DISTRO}\n"
     elif use_snapshot and snapshot_mirror:
         premirrors = snapshot_mirror
