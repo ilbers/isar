@@ -18,3 +18,5 @@ SBUILD_CHROOT_PREINSTALL ?= " \
     crossbuild-essential-${DISTRO_ARCH} \
     apt-utils \
     "
+
+DEBREPO_WORKDIR = "${DEBREPO_HOST_DIR}"
