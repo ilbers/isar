@@ -27,8 +27,14 @@ DISTRO_VARS_PREFIX ?= "${@'HOST_' if bb.utils.to_boolean(d.getVar('BOOTSTRAP_FOR
 BOOTSTRAP_DISTRO = "${@d.getVar('HOST_DISTRO' if bb.utils.to_boolean(d.getVar('BOOTSTRAP_FOR_HOST')) else 'DISTRO')}"
 BOOTSTRAP_BASE_DISTRO = "${@d.getVar('HOST_BASE_DISTRO' if bb.utils.to_boolean(d.getVar('BOOTSTRAP_FOR_HOST')) else 'BASE_DISTRO')}"
 BOOTSTRAP_DISTRO_ARCH = "${@d.getVar('HOST_ARCH' if bb.utils.to_boolean(d.getVar('BOOTSTRAP_FOR_HOST')) else 'DISTRO_ARCH')}"
+
 ISAR_APT_SNAPSHOT_DATE ?= "${@ get_isar_apt_snapshot_date(d)}"
 ISAR_APT_SNAPSHOT_DATE[security] ?= "${@ get_isar_apt_snapshot_date(d, 'security')}"
+
+# For newer distros "usr-is-merged" indirectly required by debootstrap
+DISTRO_BOOTSTRAP_BASE_PACKAGES:append:bookworm = ",usr-is-merged"
+DISTRO_BOOTSTRAP_BASE_PACKAGES:append:sid = ",usr-is-merged"
+DISTRO_BOOTSTRAP_BASE_PACKAGES:append:sid-ports = ",usr-is-merged"
 
 python () {
     distro_bootstrap_keys = (d.getVar("DISTRO_BOOTSTRAP_KEYS") or "").split()
@@ -228,4 +234,45 @@ addtask apt_config_prepare before do_bootstrap after do_unpack
 CLEANFUNCS = "clean_deploy"
 clean_deploy() {
     rm -f "${DEPLOY_ISAR_BOOTSTRAP}"
+}
+
+inherit debrepo
+
+debrepo_bootstrap_prepare() {
+    [ "${ISAR_PREFETCH_BASE_APT}" != "1" ] && return
+    [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" ] && return
+
+    debrepo_args=""
+    if [ "${BASE_DISTRO}" != "debian" ]; then
+        if [ "${BASE_DISTRO}" != "raspbian" ] && [ "${BASE_DISTRO}" != "raspios" ] || [ "${BOOTSTRAP_FOR_HOST}" = "0" ]; then
+            debrepo_args="$debrepo_args --keydir=${WORKDIR}"
+        fi
+    else
+        if [ "${BASE_DISTRO_CODENAME}" = "sid" ]; then
+            debrepo_args="$debrepo_args --keydir=${WORKDIR}"
+        fi
+    fi
+    if [ "${ISAR_ENABLE_COMPAT_ARCH}" = "1" ]; then
+        debrepo_args="$debrepo_args --compatarch=${COMPAT_DISTRO_ARCH}"
+    fi
+
+    if [ "${BOOTSTRAP_FOR_HOST}" = "1" ]; then
+        debrepo_args="$debrepo_args --crossarch=${DISTRO_ARCH}"
+    fi
+
+    if [ -n "${GNUPGHOME}" ]; then
+        export GNUPGHOME="${GNUPGHOME}"
+    fi
+
+    ${SCRIPTSDIR}/debrepo --init \
+        --workdir="${DEBREPO_WORKDIR}" \
+        --aptsrcsfile="${APTSRCS_INIT}" \
+        --repodir="${REPO_BASE_DIR}" \
+        --repodbdir="${REPO_BASE_DB_DIR}" \
+        --mirror="${@get_distro_source(d)}" \
+        --arch="${BOOTSTRAP_DISTRO_ARCH}" \
+        --distro="${BOOTSTRAP_BASE_DISTRO}" \
+        --codename="${BASE_DISTRO_CODENAME}" \
+        ${debrepo_args} \
+        ${DISTRO_BOOTSTRAP_BASE_PACKAGES}
 }
