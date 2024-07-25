@@ -289,6 +289,9 @@ cache_deb_src() {
     sudo tar -xf "${BOOTSTRAP_SRC}" ./var/lib/apt/lists --one-top-level="${ROOTFSDIR}"
 
     deb_dl_dir_import ${ROOTFSDIR} ${ROOTFS_BASE_DISTRO}-${BASE_DISTRO_CODENAME}
+
+    debsrc_fill_base_apt ${ROOTFSDIR}
+    debrepo_update_apt_source_list "${ROOTFSDIR}" "base-apt"
     debsrc_download ${ROOTFSDIR} ${ROOTFS_BASE_DISTRO}-${BASE_DISTRO_CODENAME}
 
     sudo rm -f "${ROOTFSDIR}"/etc/resolv.conf
