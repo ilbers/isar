@@ -31,9 +31,21 @@ class AptSrc(FetchMethod):
         repo_isar_dir = d.getVar('REPO_ISAR_DIR')
         lockfile = bb.utils.lockfile(f'{repo_isar_dir}/isar.lock')
 
+        debrepo_target_dir = d.getVar('DEBREPO_TARGET_DIR')
+        isar_prefetch_base_apt = d.getVar('ISAR_PREFETCH_BASE_APT')
+        repo_base_dir = d.getVar('REPO_BASE_DIR')
+        scriptsdir = d.getVar('SCRIPTSDIR')
+
         try:
             runfetchcmd(f'''
                 set -e
+                if [ "{isar_prefetch_base_apt}" = "1" ]; then
+                    {scriptsdir}/debrepo --workdir={debrepo_target_dir} --srcmode "{ud.src_package}"
+                    flock -x "{repo_base_dir}/repo.lock" -c "
+                    schroot -r -c {session_id} -d / -u root -- \
+                        sh -c 'apt-get -y update -o Dir::Etc::SourceList=\"sources.list.d/base-apt.list\" -o Dir::Etc::SourceParts=\"-\" '
+                    "
+                fi
                 schroot -r -c {session_id} -d / -u root -- \
                     rm /etc/apt/sources.list.d/isar-apt.list /etc/apt/preferences.d/isar-apt
                 schroot -r -c {session_id} -d / -- \
@@ -60,9 +72,19 @@ class AptSrc(FetchMethod):
 
         pp = d.getVar('PP')
         pps = d.getVar('PPS')
+
+        isar_prefetch_base_apt = d.getVar('ISAR_PREFETCH_BASE_APT')
+        repo_base_dir = d.getVar('REPO_BASE_DIR')
+
         try:
             runfetchcmd(f'''
                 set -e
+                if [ "{isar_prefetch_base_apt}" = "1" ]; then
+                    flock -x "{repo_base_dir}/repo.lock" -c "
+                    schroot -r -c {session_id} -d / -u root -- \
+                        sh -c 'apt-get -y update -o Dir::Etc::SourceList=\"sources.list.d/base-apt.list\" -o Dir::Etc::SourceParts=\"-\" '
+                    "
+                fi
                 schroot -r -c {session_id} -d / -u root -- \
                     rm /etc/apt/sources.list.d/isar-apt.list /etc/apt/preferences.d/isar-apt
                 schroot -r -c {session_id} -d / -- \
