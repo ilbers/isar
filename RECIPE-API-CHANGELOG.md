@@ -714,3 +714,13 @@ For example, If `KERNEL_NAME` is configured as `foo` for arm64, now
 `linux-libc-dev-foo` and `linux-libc-dev-arm64-cross-foo` package will be
 generated. This will help to have multiple versions of linux-libc-dev packages
 available for respective bsps in apt feeds.
+
+### "Prefetch" mode for base-apt
+
+Originally, `base-apt` repo is created only during second build when variable
+ISAR_USE_CACHED_BASE_REPO is set. The repo is populated with every package that
+took part in the first build and was cached in DL_DIR.
+
+New ISAR_PREFETCH_BASE_APT variable changes the way `base-apt` is populated.
+Packages added to the repo before running any task that need them. Separate
+`debrepo` script is used for populating base-apt repo.
