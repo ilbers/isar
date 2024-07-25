@@ -142,6 +142,9 @@ class CIBuilder(Test):
         distro_apt_premir = os.getenv('DISTRO_APT_PREMIRRORS')
         fail_on_cleanup = os.getenv('ISAR_FAIL_ON_CLEANUP')
 
+        # get prefetch base apt mode from environment
+        prefetch_base_apt = os.getenv('ISAR_PREFETCH_BASE_APT')
+
         self.log.info(
             f"===================================================\n"
             f"Configuring build_dir {self.build_dir}\n"
@@ -162,6 +165,7 @@ class CIBuilder(Test):
             f"  image_install = {image_install}\n"
             f"  installer_image = {installer_image}\n"
             f"  customizations = {customizations}\n"
+            f"  prefetch_base_apt = {prefetch_base_apt}\n"
             f"==================================================="
         )
 
@@ -248,6 +252,8 @@ class CIBuilder(Test):
                 f.write('CUSTOMIZATION_VARS:append = " ${IMAGE}"\n')
                 f.write('CUSTOMIZATION_FOR_IMAGES:append = " isar-image-ci"\n')
                 f.write('HOSTNAME:isar-image-ci = "isar-ci"\n')
+            if prefetch_base_apt == "0":
+                f.write('ISAR_PREFETCH_BASE_APT = "0"\n')
 
         # include ci_build.conf in local.conf
         with open(self.build_dir + '/conf/local.conf', 'r+') as f:
