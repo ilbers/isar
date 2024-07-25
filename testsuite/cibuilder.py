@@ -137,6 +137,9 @@ class CIBuilder(Test):
         distro_apt_premir = os.getenv('DISTRO_APT_PREMIRRORS')
         fail_on_cleanup = os.getenv('ISAR_FAIL_ON_CLEANUP')
 
+        # get prefetch base apt mode from environment
+        prefetch_base_apt = os.getenv('ISAR_PREFETCH_BASE_APT')
+
         self.log.info(
             f"===================================================\n"
             f"Configuring build_dir {self.build_dir}\n"
@@ -155,6 +158,7 @@ class CIBuilder(Test):
             f"  sstate_dir = {sstate_dir}\n"
             f"  ccache_dir = {ccache_dir}\n"
             f"  image_install = {image_install}\n"
+            f"  prefetch_base_apt = {prefetch_base_apt}\n"
             f"==================================================="
         )
 
@@ -216,6 +220,8 @@ class CIBuilder(Test):
                 f.write('IMAGE_INSTALL = "%s"\n' % image_install)
             if fail_on_cleanup == '1':
                 f.write('ISAR_FAIL_ON_CLEANUP = "1"\n')
+            if prefetch_base_apt == "0":
+                f.write('ISAR_PREFETCH_BASE_APT = "0"\n')
 
         # include ci_build.conf in local.conf
         with open(self.build_dir + '/conf/local.conf', 'r+') as f:
