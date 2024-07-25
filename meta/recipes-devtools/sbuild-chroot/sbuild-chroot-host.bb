@@ -24,3 +24,5 @@ SBUILD_CHROOT_PREINSTALL:riscv64 ?= " \
     gcc-riscv64-linux-gnu \
     g++-riscv64-linux-gnu \
     dpkg-cross"
+
+DEBREPO_WORKDIR = "${DEBREPO_HOST_DIR}"
