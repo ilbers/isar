@@ -140,8 +140,9 @@ deb_debianize() {
 		done
 	done
 
-	# handle PN.service and PN.triggers files for use with debhelper
-	for f in service triggers
+	# handle system unit files and triggers for use with debhelper
+	for f in path service socket target timer triggers \
+        user.path user.service user.socket user.target user.timer
 	do
 		if [ -f ${WORKDIR}/${PN}.${f} ]; then
 			install -v -m 644 ${WORKDIR}/${PN}.${f} ${S}/debian/
