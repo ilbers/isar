@@ -91,6 +91,9 @@ do_bootstrap() {
             bbfatal "${DISTRO_ARCH} does not have a compat arch"
         fi
     fi
+
+    debrepo_bootstrap_prepare
+
     bootstrap_args="--verbose --variant=minbase --include=${DISTRO_BOOTSTRAP_BASE_PACKAGES}"
     if [ -f "${DISTRO_BOOTSTRAP_KEYRING}" ]; then
         bootstrap_args="$bootstrap_args --keyring=${DISTRO_BOOTSTRAP_KEYRING}"
@@ -183,6 +186,8 @@ do_bootstrap() {
                                  && sudo umount $base_apt_tmp \
                                  && rm -rf --one-file-system $base_apt_tmp' EXIT
 
+    if [ "${ISAR_PREFETCH_BASE_APT}" = "1" ]; then
+    ( flock 9
     sudo TMPDIR="${BOOTSTRAP_TMPDIR}" mmdebstrap $bootstrap_args \
                    $arch_param \
                    --mode=unshare \
@@ -208,7 +213,34 @@ do_bootstrap() {
                    "${@get_distro_suite(d)}" \
                    "${WORKDIR}/rootfs.tar.zst" \
                    "$bootstrap_list"
-
+    ) 9> "${REPO_BASE_DIR}/repo.lock"
+    else
+    sudo TMPDIR="${BOOTSTRAP_TMPDIR}" mmdebstrap $bootstrap_args \
+                   $arch_param \
+                   --mode=unshare \
+                   ${MMHOOKS} \
+                   --setup-hook='mkdir -p "$1/var/cache/apt/archives/"' \
+                   --setup-hook="$extra_setup" \
+                   --setup-hook='upload "${APTPREFS}" /etc/apt/preferences.d/bootstrap' \
+                   --setup-hook='upload "${APTSRCS_INIT}" /etc/apt/sources-list' \
+                   --setup-hook='upload "${WORKDIR}/locale" /etc/locale' \
+                   --setup-hook='mkdir -p "$1/etc/apt/trusted.gpg.d"' \
+                   --setup-hook='sync-in "${WORKDIR}/trusted.gpg.d" /etc/apt/trusted.gpg.d' \
+                   --setup-hook='install -v -m755 "${WORKDIR}/chroot-setup.sh" "$1/chroot-setup.sh"' \
+                   --extract-hook="$extra_extract" \
+                   --essential-hook="$extra_essential" \
+                   --customize-hook="$extra_customize" \
+                   --customize-hook='sed -i "/en_US.UTF-8 UTF-8/s/^#//g" "$1/etc/locale.gen"' \
+                   --customize-hook='chroot "$1" /usr/sbin/locale-gen' \
+                   --customize-hook='chroot "$1" /usr/bin/apt-get -y clean' \
+                   --skip=cleanup/apt \
+                   --skip=download/empty \
+                   ${@get_apt_opts(d, '--aptopt')} \
+                   ${@get_distro_components_argument(d)} \
+                   "${@get_distro_suite(d)}" \
+                   "${WORKDIR}/rootfs.tar.zst" \
+                   "$bootstrap_list"
+    fi
     # Finalize bootstrap by setting the link in deploy
     sudo ln -Tfsr "${WORKDIR}/rootfs.tar.zst" "${DEPLOY_ISAR_BOOTSTRAP}.tar.zst"
 

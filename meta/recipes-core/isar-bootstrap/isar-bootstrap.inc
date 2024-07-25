@@ -85,6 +85,9 @@ do_bootstrap() {
             bbfatal "${DISTRO_ARCH} does not have a compat arch"
         fi
     fi
+
+    debrepo_bootstrap_prepare
+
     debootstrap_args="--verbose --variant=minbase --include=${DISTRO_BOOTSTRAP_BASE_PACKAGES}"
     if [ -f "${DISTRO_BOOTSTRAP_KEYRING}" ]; then
         debootstrap_args="$debootstrap_args --keyring=${DISTRO_BOOTSTRAP_KEYRING}"
@@ -102,8 +105,10 @@ do_bootstrap() {
     sudo -E -s <<'EOSUDO'
         set -e
         if [ "${BOOTSTRAP_FOR_HOST}" = "0" ]; then
-            arch_param="--arch=${DISTRO_ARCH}"
+            arch_param="--arch=${BOOTSTRAP_DISTRO_ARCH}"
         fi
+        if [ "${ISAR_PREFETCH_BASE_APT}" = "1" ]; then
+        ( flock 9
         ${DEBOOTSTRAP} $debootstrap_args \
                        $arch_param \
                        ${@get_distro_components_argument(d)} \
@@ -111,7 +116,16 @@ do_bootstrap() {
                        "${ROOTFSDIR}" \
                        "${@get_distro_source(d)}" \
                        ${DISTRO_DEBOOTSTRAP_SCRIPT}
-
+        ) 9> "${REPO_BASE_DIR}/repo.lock"
+        else
+        ${DEBOOTSTRAP} $debootstrap_args \
+                       $arch_param \
+                       ${@get_distro_components_argument(d)} \
+                       "${@get_distro_suite(d)}" \
+                       "${ROOTFSDIR}" \
+                       "${@get_distro_source(d)}" \
+                       ${DISTRO_DEBOOTSTRAP_SCRIPT}
+        fi
         # Install apt config
         mkdir -p "${ROOTFSDIR}/etc/apt/preferences.d"
         install -v -m644 "${APTPREFS}" \
