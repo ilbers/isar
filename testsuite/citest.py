@@ -203,7 +203,7 @@ class NoCrossTest(CIBaseTest):
         targets = [
             'mc:qemuarm-buster:isar-image-ci',
             'mc:qemuarm-bullseye:isar-image-base',
-            'mc:qemuarm64-bullseye:isar-image-ci',
+            'mc:qemuarm64-bookworm:isar-image-ci',
             'mc:qemui386-buster:isar-image-base',
             'mc:qemui386-bullseye:isar-image-base',
             'mc:qemuamd64-buster:isar-image-ci',
@@ -334,7 +334,7 @@ class SignatureTest(CIBaseTest):
             'mc:qemuamd64-bullseye:isar-image-ci',
             'mc:qemuarm-bullseye:isar-image-base',
             'mc:qemuarm-bullseye:isar-image-base:do_populate_sdk',
-            'mc:qemuarm64-bullseye:isar-image-base',
+            'mc:qemuarm64-bookworm:isar-image-base',
             'mc:qemuamd64-focal:isar-image-base',
         ]
 
@@ -518,25 +518,25 @@ class VmBootTestFull(CIBaseTest):
             script='test_systemd_unit.sh getty.target 10',
         )
 
-    def test_arm64_bullseye(self):
+    def test_arm64_bookworm(self):
         self.init()
-        self.vm_start('arm64', 'bullseye', image='isar-image-ci', keep=True)
+        self.vm_start('arm64', 'bookworm', image='isar-image-ci', keep=True)
 
-    def test_arm64_bullseye_getty_target(self):
+    def test_arm64_bookworm_getty_target(self):
         self.init()
         self.vm_start(
             'arm64',
-            'bullseye',
+            'bookworm',
             image='isar-image-ci',
             cmd='systemctl is-active getty.target',
             keep=True,
         )
 
-    def test_arm64_bullseye_example_module(self):
+    def test_arm64_bookworm_example_module(self):
         self.init()
         self.vm_start(
             'arm64',
-            'bullseye',
+            'bookworm',
             image='isar-image-ci',
             script='test_kernel_module.sh example_module',
         )
