@@ -474,6 +474,7 @@ class CIBuilder(Test):
             rc, stdout, stderr = self.remote_run(cmd, script)
 
             if rc != 0:
+                self.whiteboard += f'stdout:\n{stdout}\n\nstderr:\n{stderr}\n'
                 self.fail(f"Failed with rc={rc}")
 
             return stdout, stderr
@@ -689,6 +690,7 @@ class CIBuilder(Test):
             if rc != 0:
                 if not keep:
                     self.vm_turn_off(vm)
+                self.whiteboard += f'stdout:\n{stdout}\n\nstderr:\n{stderr}\n'
                 self.fail("Failed to run test over ssh")
         else:
             multiconfig = 'mc:qemu' + arch + '-' + distro + ':' + image
