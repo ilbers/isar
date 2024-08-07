@@ -539,6 +539,7 @@ class VmBootTestFull(CIBaseTest):
             'bookworm',
             image='isar-image-ci',
             script='test_kernel_module.sh example_module',
+            keep=True,
         )
 
     def test_i386_buster(self):
@@ -577,7 +578,7 @@ class VmBootTestFull(CIBaseTest):
 
     def test_amd64_bookworm(self):
         self.init()
-        self.vm_start('amd64', 'bookworm', image='isar-image-ci')
+        self.vm_start('amd64', 'bookworm', image='isar-image-ci', keep=True)
 
     def test_arm_bookworm(self):
         self.init()
@@ -609,3 +610,13 @@ class VmBootTestFull(CIBaseTest):
             image='isar-image-ci',
             script='test_kernel_module.sh example_module',
         )
+
+    def test_amd64_bookworm_prebuilt_containers(self):
+        self.init()
+        self.vm_start('amd64', 'bookworm', image='isar-image-ci',
+                      script='test_prebuilt_containers.sh')
+
+    def test_arm64_bookworm_prebuilt_containers(self):
+        self.init()
+        self.vm_start('arm64', 'bookworm', image='isar-image-ci',
+                      script='test_prebuilt_containers.sh')
