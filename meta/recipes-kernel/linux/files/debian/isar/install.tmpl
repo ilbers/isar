@@ -193,6 +193,12 @@ kernel_headers() {
     (cd ${S}; find arch/${ARCH} -name module.lds -o -name Kbuild.platforms -o -name Platform) >>${src_hdr_files}
     (cd ${S}; find $(find arch/${ARCH} -name include -o -name scripts -type d) -type f) >>${src_hdr_files}
 
+    if [ -n "${HEADERS_INSTALL_EXTRA}" ]; then
+        for d in ${HEADERS_INSTALL_EXTRA}; do
+            (cd ${S}; find ${d} -type f) >>${src_hdr_files}
+        done
+    fi
+
     if [ -n "${CONFIG_MODULES}" ]; then
         echo Module.symvers >> ${obj_hdr_files}
     fi

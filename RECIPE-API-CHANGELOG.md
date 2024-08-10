@@ -634,3 +634,15 @@ into kernel kbuild package.
 
 When downloading from debian snapshot mirrors, rate limits might apply.
 To limit the amount of parallel fetching to n kB / s, you can set `ISAR_APT_DL_LIMIT="<n>`.
+
+### Custom directories in vendor kernels
+
+Some vendor kernels come with additional directories to be included in the
+linux-headers package in order to support building of their out-of-tree
+drivers. `HEADERS_INSTALL_EXTRA` may be set to a list of directories relative
+to ${S} in any kernel recipes that includes `linux-custom.inc`. A l4t kernel
+recipe would use the following setting:
+
+```
+HEADERS_INSTALL_EXTRA += "nvidia"
+```

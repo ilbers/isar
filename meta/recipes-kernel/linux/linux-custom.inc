@@ -48,6 +48,8 @@ LINUX_VERSION_EXTENSION ?= ""
 
 KERNEL_DEFCONFIG ??= ""
 
+HEADERS_INSTALL_EXTRA ??= ""
+
 # Add our template meta-data to the sources
 FILESPATH:append := ":${FILE_DIRNAME}/files"
 SRC_URI += "file://debian"
@@ -84,6 +86,7 @@ TEMPLATE_VARS += "                \
     KAFLAGS                       \
     DISTRIBUTOR                   \
     KERNEL_EXTRA_BUILDARGS        \
+    HEADERS_INSTALL_EXTRA         \
 "
 
 inherit dpkg
@@ -228,6 +231,15 @@ do_prepare_build:prepend() {
 
 	# produce a changelog for our kernel build
 	deb_add_changelog
+
+	# make sure user-specified directories do exist in ${S}
+	if [ -n "${HEADERS_INSTALL_EXTRA}" ]; then
+		for d in ${HEADERS_INSTALL_EXTRA}; do
+			[ -d ${S}/${d} ] || {
+				bbfatal "HEADERS_INSTALL_EXTRA: '${d}' not found in \${S}!"
+			}
+		done
+	fi
 }
 
 # build directory for our "full" kernel build
