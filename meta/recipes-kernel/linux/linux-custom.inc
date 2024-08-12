@@ -156,6 +156,10 @@ RECIPE_PROVIDES:remove:cross-profile = " \
     linux-headers-${KERNEL_NAME_PROVIDED} \
     linux-kbuild-${KERNEL_NAME_PROVIDED}"
 
+# As the multiarch class will not append -compat to -pseudo-native, we end up
+# with two providers of it. Remove the wrong one.
+RECIPE_PROVIDES:remove:class-compat = "${BPN}-pseudo-native"
+
 # Append headers depends
 HEADERS_DEPENDS = ", linux-kbuild-${KERNEL_NAME_PROVIDED} | linux-kbuild-${KERNEL_NAME_PROVIDED}-${DISTRO_ARCH}-cross"
 KERNEL_HEADERS_DEBIAN_DEPENDS:append = "${HEADERS_DEPENDS}"
