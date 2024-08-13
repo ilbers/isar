@@ -153,6 +153,22 @@ class CrossTest(CIBaseTest):
         self.init()
         self.perform_build_test(targets, debsrc_cache=True)
 
+    def test_cross_kselftest(self):
+        targets = [
+            'mc:qemuarm-buster:kselftest',
+            'mc:qemuarm-bullseye:kselftest',
+            'mc:de0-nano-soc-bullseye:kselftest',
+            'mc:stm32mp15x-bullseye:kselftest',
+            'mc:qemuarm-bookworm:kselftest',
+            'mc:qemuarm64-bookworm:kselftest',
+            'mc:qemuarm64-focal:kselftest',
+            'mc:nanopi-neo-efi-bookworm:kselftest',
+            'mc:phyboard-mira-bookworm:kselftest',
+        ]
+
+        self.init()
+        self.perform_build_test(targets)
+
     def test_cross_rpi(self):
         targets = [
             'mc:rpi-arm-v7-bullseye:isar-image-base',
