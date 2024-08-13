@@ -23,7 +23,7 @@ class DevTest(CIBaseTest):
     """
     Developer's test
 
-    :avocado: tags=dev,fast,full
+    :avocado: tags=dev,fast
     """
 
     def test_dev(self):
@@ -127,7 +127,7 @@ class CrossTest(CIBaseTest):
     """
     Start cross build for the defined set of configurations
 
-    :avocado: tags=cross,fast,full
+    :avocado: tags=cross,fast
     """
 
     def test_cross(self):
@@ -320,7 +320,7 @@ class ContainerImageTest(CIBaseTest):
     """
     Test containerized images creation
 
-    :avocado: tags=containerbuild,fast,full,container
+    :avocado: tags=containerbuild,full,container
     """
 
     @skipUnless(UMOCI_AVAILABLE and SKOPEO_AVAILABLE, 'umoci/skopeo not found')
@@ -340,7 +340,7 @@ class ContainerSdkTest(CIBaseTest):
     """
     Test SDK container image creation
 
-    :avocado: tags=containersdk,fast,full,container
+    :avocado: tags=containersdk,full,container
     """
 
     @skipUnless(UMOCI_AVAILABLE and SKOPEO_AVAILABLE, 'umoci/skopeo not found')
