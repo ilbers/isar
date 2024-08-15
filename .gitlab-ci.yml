@@ -15,8 +15,9 @@ variables:
   artifacts:
     name: "logs-$CI_JOB_ID"
     paths:
-      - build/tmp/work/*/*/*/temp
+      - build/tmp*/work/*/*/*/temp
       - build/job-results
+      - build/vm_start
     reports:
       junit:
         - build/job-results/job*/results.xml
