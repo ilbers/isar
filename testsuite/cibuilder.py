@@ -167,7 +167,6 @@ class CIBuilder(Test):
                 f.write('ISAR_ENABLE_COMPAT_ARCH:arm64 = "1"\n')
                 f.write('IMAGE_INSTALL:remove:arm64 = "hello-isar"\n')
                 f.write('IMAGE_INSTALL:append:arm64 = " hello-isar-compat"\n')
-                f.write('IMAGE_INSTALL += "kselftest"\n')
             if cross:
                 f.write('ISAR_CROSS_COMPILE = "1"\n')
                 f.write(
