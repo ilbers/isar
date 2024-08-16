@@ -555,6 +555,8 @@ class CIBuilder(Test):
         # the printk of recipes-kernel/example-module
         module_output = b'Just an example'
         resize_output = None
+        # systemd service ordering cycle
+        ordering_cycle = b'Found ordering cycle'
         image_fstypes, wks_file, bbdistro = CIUtils.getVars(
             'IMAGE_FSTYPES', 'WKS_FILE', 'DISTRO', target=multiconfig
         )
@@ -581,6 +583,9 @@ class CIBuilder(Test):
                 else:
                     rc = 2
                     self.log.error("No example module output while expected")
+                if ordering_cycle in data:
+                    rc = 3
+                    self.log.error("Systemd services ordering cycle detected")
         return rc
 
     def vm_dump_dict(self, vm):
