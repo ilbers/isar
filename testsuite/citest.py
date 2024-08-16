@@ -230,8 +230,6 @@ class NoCrossTest(CIBaseTest):
         ]
 
         self.init()
-        # Cleanup after cross build
-        self.move_in_build_dir('tmp', 'tmp_before_nocross')
         self.perform_build_test(targets, cross=False, debsrc_cache=True)
 
     def test_nocross_rpi(self):
