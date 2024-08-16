@@ -137,10 +137,17 @@ class CrossTest(CIBaseTest):
             'mc:de0-nano-soc-bullseye:isar-image-base',
             'mc:stm32mp15x-bullseye:isar-image-base',
             'mc:qemuarm-bookworm:isar-image-ci',
-            'mc:qemuarm64-bookworm:isar-image-ci',
             'mc:qemuarm64-focal:isar-image-base',
             'mc:nanopi-neo-efi-bookworm:isar-image-base',
             'mc:phyboard-mira-bookworm:isar-image-base',
+        ]
+
+        self.init()
+        self.perform_build_test(targets)
+
+    def test_cross_debsrc(self):
+        targets = [
+            'mc:qemuarm64-bookworm:isar-image-ci',
         ]
 
         self.init()
@@ -153,7 +160,7 @@ class CrossTest(CIBaseTest):
 
         self.init()
         try:
-            self.perform_build_test(targets, debsrc_cache=True)
+            self.perform_build_test(targets)
         except exceptions.TestFail:
             self.cancel('KFAIL')
 
@@ -174,7 +181,6 @@ class WicTest(CIBaseTest):
         self.perform_wic_partition_test(
             targets,
             wic_deploy_parts=False,
-            debsrc_cache=True,
             compat_arch=False,
         )
 
@@ -186,7 +192,6 @@ class WicTest(CIBaseTest):
         self.perform_wic_partition_test(
             targets,
             wic_deploy_parts=True,
-            debsrc_cache=True,
             compat_arch=False,
         )
 
@@ -218,15 +223,22 @@ class NoCrossTest(CIBaseTest):
             'mc:bananapi-bookworm:isar-image-base',
             'mc:nanopi-neo-bullseye:isar-image-base',
             'mc:nanopi-neo-bookworm:isar-image-base',
-            'mc:stm32mp15x-bullseye:isar-image-base',
             'mc:qemuamd64-focal:isar-image-ci',
             'mc:qemuamd64-bookworm:isar-image-ci',
-            'mc:qemuarm-bookworm:isar-image-ci',
             'mc:qemui386-bookworm:isar-image-base',
             'mc:qemumipsel-bookworm:isar-image-ci',
             'mc:hikey-bookworm:isar-image-base',
-            'mc:de0-nano-soc-bookworm:isar-image-base',
             'mc:beagleplay-bookworm:isar-image-base',
+        ]
+
+        self.init()
+        self.perform_build_test(targets, cross=False)
+
+    def test_nocross_debsrc(self):
+        targets = [
+            'mc:qemuarm-bookworm:isar-image-ci',
+            'mc:stm32mp15x-bullseye:isar-image-base',
+            'mc:de0-nano-soc-bookworm:isar-image-base',
         ]
 
         self.init()
@@ -238,10 +250,20 @@ class NoCrossTest(CIBaseTest):
             'mc:rpi-arm-v7-bullseye:isar-image-base',
             'mc:rpi-arm-v7l-bullseye:isar-image-base',
             'mc:rpi-arm64-v8-bullseye:isar-image-base',
+            'mc:rpi-arm64-v8-bookworm:isar-image-base',
+        ]
+
+        self.init()
+        try:
+            self.perform_build_test(targets, cross=False)
+        except exceptions.TestFail:
+            self.cancel('KFAIL')
+
+    def test_nocross_rpi_debsrc(self):
+        targets = [
             'mc:rpi-arm-bookworm:isar-image-base',
             'mc:rpi-arm-v7-bookworm:isar-image-base',
             'mc:rpi-arm-v7l-bookworm:isar-image-base',
-            'mc:rpi-arm64-v8-bookworm:isar-image-base',
         ]
 
         self.init()
