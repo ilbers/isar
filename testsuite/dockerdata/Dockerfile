@@ -4,7 +4,7 @@ ARG TARGETPLATFORM
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Isar testsuite dependencies
-RUN sudo pip3 --proxy=$https_proxy install avocado-framework==100.1 && \
+RUN sudo pip3 --proxy=$https_proxy install --break-system-packages avocado-framework==103.0 && \
     sudo apt-get update && \
     sudo apt-get install -y -f --no-install-recommends qemu-system ovmf && \
     sudo apt-get clean && \
