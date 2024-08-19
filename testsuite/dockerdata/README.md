@@ -1,7 +1,7 @@
 # Creating image
 
 ```
-export version="3.2.3"
+export version="4.4"
 cd <isar_dir>/testsuite/dockerdata
 sed "s/:<version>/:${version}/" Dockerfile | docker build -t ghcr.io/ilbers/docker-isar:${version} -
 ```
@@ -13,7 +13,7 @@ sed "s/:<version>/:${version}/" Dockerfile | docker build -t ghcr.io/ilbers/dock
 - Use it for uploading docker image:
 
 ```
-export version="3.2.3"
+export version="4.4"
 docker push ghcr.io/ilbers/docker-isar:${version}
 ```
 
