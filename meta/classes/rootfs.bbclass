@@ -76,6 +76,12 @@ rootfs_do_qemu() {
 BOOTSTRAP_SRC = "${DEPLOY_DIR_BOOTSTRAP}/${ROOTFS_DISTRO}-host_${DISTRO}-${DISTRO_ARCH}"
 BOOTSTRAP_SRC:${ROOTFS_ARCH} = "${DEPLOY_DIR_BOOTSTRAP}/${ROOTFS_DISTRO}-${ROOTFS_ARCH}"
 
+def rootfs_extra_import(d):
+    bb.utils._context["rootfs_progress"] = __import__("rootfs_progress")
+    return ""
+
+ROOTFS_EXTRA_IMPORTED := "${@rootfs_extra_import(d)}"
+
 rootfs_prepare[weight] = "25"
 rootfs_prepare(){
     sudo cp -Trpfx --reflink=auto '${BOOTSTRAP_SRC}/' '${ROOTFSDIR}'
@@ -153,6 +159,7 @@ rootfs_import_package_cache() {
 
 ROOTFS_INSTALL_COMMAND += "rootfs_install_pkgs_download"
 rootfs_install_pkgs_download[weight] = "600"
+rootfs_install_pkgs_download[progress] = "custom:rootfs_progress.PkgsDownloadProgressHandler"
 rootfs_install_pkgs_download[isar-apt-lock] = "release-after"
 rootfs_install_pkgs_download[network] = "${TASK_USE_NETWORK_AND_SUDO}"
 rootfs_install_pkgs_download() {
@@ -178,6 +185,7 @@ rootfs_install_clean_files() {
 
 ROOTFS_INSTALL_COMMAND += "rootfs_install_pkgs_install"
 rootfs_install_pkgs_install[weight] = "8000"
+rootfs_install_pkgs_install[progress] = "custom:rootfs_progress.PkgsInstallProgressHandler"
 rootfs_install_pkgs_install[network] = "${TASK_USE_SUDO}"
 rootfs_install_pkgs_install() {
     sudo -E chroot "${ROOTFSDIR}" \
@@ -206,6 +214,7 @@ python do_rootfs_install() {
                      for i in cmds]
 
     progress_reporter = bb.progress.MultiStageProgressReporter(d, stage_weights)
+    d.rootfs_progress = progress_reporter
 
     for cmd in cmds:
         progress_reporter.next_stage()
