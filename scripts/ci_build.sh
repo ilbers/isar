@@ -142,9 +142,16 @@ logs_dir = $(realpath "${BASE_DIR}")/job-results
 EOF
 export VIRTUAL_ENV="./"
 
+ret=0
+
 # the real stuff starts here, trace commands from now on
 set -x
 
 avocado ${VERBOSE} run "${TESTSUITE_DIR}/citest.py" \
     -t "${TAGS}" --max-parallel-tasks=1 --disable-sysinfo \
-    ${SSTATE} ${TIMEOUT}
+    ${SSTATE} ${TIMEOUT} \
+    || ret=$?
+
+python3 ${TESTSUITE_DIR}/cleanup.py
+
+exit ${ret}
