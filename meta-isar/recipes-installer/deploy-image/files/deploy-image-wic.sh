@@ -47,8 +47,14 @@ DISK_BMAP=$(find "$installdata" -type f -iname "${DISK_IMAGE%.wic*}.wic.bmap")
 
 if ! $AUTO_INSTALL; then
     target_device_list=""
-    current_root_dev=$(readlink -f "$(findmnt / -o source -n)")
-    current_root_dev=${current_root_dev#\/dev/}
+    current_root_dev_type=$(findmnt / -o fstype -n)
+    if [ ${current_root_dev_type} = "nfs" ]; then
+        current_root_dev="nfs"
+    else
+        current_root_dev=$(readlink -f "$(findmnt / -o source -n)")
+        current_root_dev=${current_root_dev#\/dev/}
+    fi
+
     case $current_root_dev in
         mmcblk*)
             ;;
