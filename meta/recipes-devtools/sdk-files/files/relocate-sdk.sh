@@ -27,7 +27,7 @@ fi
 
 echo -n "Adjusting path of SDK to '${new_sdkroot}'... "
 
-for binary in $(find ${sdkroot}/usr/bin ${sdkroot}/usr/sbin ${sdkroot}/usr/lib/gcc* -executable -type f); do
+for binary in $(find ${sdkroot}/usr/bin ${sdkroot}/usr/sbin ${sdkroot}/usr/lib/gcc* -executable -type f -exec file {} \; | grep ELF | awk -F ':' '{ print $1 }'); do
 	interpreter=$(patchelf --print-interpreter ${binary} 2>/dev/null)
 	oldpath=${interpreter%/lib*/ld-linux*}
 	interpreter=${interpreter#${oldpath}}
