@@ -980,7 +980,7 @@ While isar is building the system, build statistics is collected in
 The collected statistics can be represented visually by using
 `pybootchartgui.py` script (borrowed from OpenEmbedded):
 ```
-../scripts/pybootchartgui/pybootchartgui.py tmp/buildstats/20210911054429/ -f pdf -o ~/buildstats.pdf
+<path-to-isar>/scripts/pybootchartgui/pybootchartgui.py tmp/buildstats/20210911054429/ -f pdf -o ~/buildstats.pdf
 ```
 
 NOTE: `python3-cairo` package is required for `pybootchartgui.py` to work:
@@ -1197,6 +1197,12 @@ One may chroot into the SDK and install required target packages with the help o
 SDK_INCLUDE_ISAR_APT = "1"
 ```
 
+ - Set ISAR_CROSS_COMPILE by 1 for foreign architectures
+
+```
+ISAR_CROSS_COMPILE = "1"
+```
+
  - Trigger creation of SDK root filesystem
 
 ```
@@ -1212,7 +1218,7 @@ sudo tar xf tmp/deploy/images/qemuarm/isar-image-base-sdk-debian-bullseye-qemuar
  - Mount the following directories in chroot by passing resulting rootfs as an argument to the script `mount_chroot.sh`:
 
 ```
-cat ../scripts/mount_chroot.sh
+cat <path-to-isar>/scripts/mount_chroot.sh
 #!/bin/sh
 
 set -e
@@ -1224,7 +1230,7 @@ mount devtmpfs $1/dev     -t devtmpfs -o mode=0755,nosuid
 mount devpts   $1/dev/pts -t devpts   -o gid=5,mode=620
 mount tmpfs    $1/dev/shm -t tmpfs    -o rw,seclabel,nosuid,nodev
 
-sudo ../scripts/mount_chroot.sh tmp/deploy/images/qemuarm/isar-image-base-sdk-debian-bullseye-qemuarm
+sudo <path-to-isar>/scripts/mount_chroot.sh tmp/deploy/images/qemuarm/isar-image-base-sdk-debian-bullseye-qemuarm
 
 ```
 
@@ -1277,7 +1283,7 @@ public nameserver like:
  - Unmount rootfs paths:
 
 ```
-sudo ../scripts/umount_chroot.sh tmp/deploy/images/qemuarm/isar-image-base-sdk-debian-bullseye-qemuarm
+sudo <path-to-isar>/scripts/umount_chroot.sh tmp/deploy/images/qemuarm/isar-image-base-sdk-debian-bullseye-qemuarm
 ```
 
 ## Create a containerized Isar SDK root filesystem
