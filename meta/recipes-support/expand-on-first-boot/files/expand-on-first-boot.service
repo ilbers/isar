@@ -9,7 +9,8 @@ DefaultDependencies=no
 Conflicts=shutdown.target
 After=systemd-remount-fs.service
 Before=local-fs-pre.target shutdown.target
-ConditionPathIsReadWrite=/etc /tmp
+ConditionPathIsReadWrite=/etc
+ConditionPathIsReadWrite=/tmp
 
 [Service]
 Type=oneshot
