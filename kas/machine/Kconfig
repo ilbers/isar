@@ -110,6 +110,9 @@ config MACHINE_VMWARE
 	bool "vmware"
 	depends on DEBIAN_BULLSEYE
 
+config MACHINE_X86_PC
+	bool "x86 PC"
+
 endchoice
 
 config KAS_INCLUDE_MACHINE
@@ -139,5 +142,6 @@ config KAS_INCLUDE_MACHINE
 	default "kas/machine/stm32mp15x.yaml" if MACHINE_STM32MP15X
 	default "kas/machine/virtualbox.yaml" if MACHINE_VIRTUALBOX
 	default "kas/machine/vmware.yaml" if MACHINE_VMWARE
+	default "kas/machine/x86-pc.yaml" if MACHINE_X86_PC
 
 endmenu
