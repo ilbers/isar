@@ -24,7 +24,7 @@ esac
 . /usr/share/initramfs-tools/hook-functions
 
 hook_error() {
-    echo "(ERROR): $2" >&2
+    echo "(ERROR): $1" >&2
     exit 1
 }
 
