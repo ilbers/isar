@@ -57,7 +57,7 @@ dpkg_runbuild() {
         value=$(echo "${line}" | cut -d '=' -f2-)
         sbuild_export $var "$value"
 
-        # Don't warn some variables
+        # Don't warn dpkg specific environment variables
         [ "${var}" = "PARALLEL_MAKE" ] && continue
         [ "${var}" = "CCACHE_DIR" ] && continue
         [ "${var}" = "CCACHE_DEBUGDIR" ] && continue
@@ -66,15 +66,10 @@ dpkg_runbuild() {
         [ "${var}" = "PATH_PREPEND" ] && continue
         [ "${var}" = "DEB_BUILD_OPTIONS" ] && continue
 
-        [ "${var}" = "http_proxy" ] && continue
-        [ "${var}" = "HTTP_PROXY" ] && continue
-        [ "${var}" = "https_proxy" ] && continue
-        [ "${var}" = "HTTPS_PROXY" ] && continue
-        [ "${var}" = "ftp_proxy" ] && continue
-        [ "${var}" = "FTP_PROXY" ] && continue
-        [ "${var}" = "no_proxy" ] && continue
-        [ "${var}" = "NO_PROXY" ] && continue
-        [ "${var}" = "GIT_PROXY_COMMAND" ] && continue
+        # Don't warn environment variables exported to the bitbake fetcher
+        case " ${@" ".join(bb.fetch2.FETCH_EXPORT_VARS)} " in
+            *" ${var} "*) continue;;
+        esac
 
         bbwarn "Export of '${line}' detected, please migrate to templates"
     done
