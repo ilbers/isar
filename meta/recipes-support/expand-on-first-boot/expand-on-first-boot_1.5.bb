@@ -10,7 +10,19 @@ inherit dpkg-raw
 DESCRIPTION = "This service grows the last partition to the full medium during first boot"
 MAINTAINER = "isar-users <isar-users@googlegroups.com>"
 
-DEBIAN_DEPENDS = "systemd, sed, grep, coreutils, mount, e2fsprogs, fdisk (>=2.29.2-3) | util-linux (<2.29.2-3), util-linux"
+# Additional packages that are needed to resize the disk if it is encrypted.
+ADDITIONAL_DISK_ENCRYPTION_PACKAGES ?= ""
+DEBIAN_DEPENDS = " \
+    systemd, \
+    sed, \
+    grep, \
+    coreutils, \
+    mount, \
+    e2fsprogs, \
+    fdisk (>=2.29.2-3) | util-linux (<2.29.2-3), \
+    util-linux, \
+    ${ADDITIONAL_DISK_ENCRYPTION_PACKAGES} \
+    "
 
 SRC_URI = " \
     file://expand-on-first-boot.service \
