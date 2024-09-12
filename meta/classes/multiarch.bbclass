@@ -3,8 +3,6 @@
 #
 # SPDX-License-Identifier: MIT
 
-BPN = "${PN}"
-
 inherit compat
 python() {
     # provide compat only when we can build it

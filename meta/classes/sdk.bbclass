@@ -9,7 +9,6 @@ inherit crossvars
 
 # hook up the -sdk image variant
 BBCLASSEXTEND = "sdk"
-BPN = "${PN}"
 
 python sdk_virtclass_handler() {
     pn = e.data.getVar('PN')
