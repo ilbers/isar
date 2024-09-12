@@ -189,7 +189,7 @@ def get_package_srcdir(d):
 
 # Each package should have its own unique build folder, so use
 # recipe name as identifier
-PP = "/home/builder/${PN}"
+PP = "/home/builder/${BPN}"
 PPS ?= "${@get_package_srcdir(d)}"
 
 # Empty do_prepare_build() implementation, to be overwritten if needed
