@@ -49,7 +49,7 @@ override_dh_auto_clean:
 	$(MAKE) -C $(KDIR) M=${MODULE_DIR} clean
 
 override_dh_auto_build:
-	$(MAKE) -C $(KDIR) M=${MODULE_DIR} $(PARALLEL_MAKE) modules
+	$(MAKE) -C $(KDIR) M=${MODULE_DIR} $(PARALLEL_MAKE) KCFLAGS="${KCFLAGS}" KAFLAGS="${KAFLAGS}" modules
 ifneq ($(filter pkg.sign,$(DEB_BUILD_PROFILES)),)
 	find . -name "*.ko" -print -exec $(KDIR)/scripts/sign-file ${SIGNATURE_HASHFN} ${SIGNATURE_KEYFILE} ${SIGNATURE_CERTFILE} {} \;
 endif

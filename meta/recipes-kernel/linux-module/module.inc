@@ -48,12 +48,18 @@ TEMPLATE_VARS += " \
     KERNEL_TYPE \
     KERNEL_IMAGE_PKG \
     KERNEL_HEADERS_PKG \
+    KCFLAGS \
+    KAFLAGS \
     MODULE_DIR \
     DEBIAN_BUILD_DEPENDS \
     SIGNATURE_KEYFILE \
     SIGNATURE_CERTFILE \
     SIGNATURE_HASHFN \
     PN"
+
+# Add custom cflags to the kernel build
+KCFLAGS ?= "-fdebug-prefix-map=${CURDIR}=. -fmacro-prefix-map=${CURDIR}=."
+KAFLAGS ?= "-fdebug-prefix-map=${CURDIR}=."
 
 do_prepare_build() {
     rm -rf ${S}/debian
