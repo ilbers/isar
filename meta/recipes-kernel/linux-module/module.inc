@@ -19,6 +19,8 @@ KERNEL_IMAGE_PKG ??= "linux-image-${KERNEL_NAME}"
 KERNEL_HEADERS_PKG ??= "linux-headers-${KERNEL_NAME}"
 DEPENDS += "${KERNEL_HEADERS_PKG}-native"
 DEBIAN_BUILD_DEPENDS = "${KERNEL_HEADERS_PKG}"
+# Do not generate debug symbols packages, as not supported for modules
+DEB_BUILD_OPTIONS += "noautodbgsym"
 
 SIGNATURE_KEYFILE ??= ""
 SIGNATURE_CERTFILE ??= ""
