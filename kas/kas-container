@@ -2,7 +2,7 @@
 #
 # kas - setup tool for bitbake based projects
 #
-# Copyright (c) Siemens AG, 2018-2022
+# Copyright (c) Siemens AG, 2018-2024
 #
 # Authors:
 #  Jan Kiszka <jan.kiszka@siemens.com>
@@ -27,13 +27,19 @@
 
 set -e
 
+KAS_IMAGE_VERSION_DEFAULT="4.5"
+KAS_CONTAINER_IMAGE_PATH_DEFAULT="ghcr.io/siemens/kas"
+KAS_CONTAINER_IMAGE_NAME_DEFAULT="kas"
+KAS_CONTAINER_SELF_NAME="$(basename "$0")"
+
 usage()
 {
-	printf "%b" "Usage: $0 [OPTIONS] { build | shell } [KASOPTIONS] [KASFILE]\n"
-	printf "%b" "       $0 [OPTIONS] { checkout | dump } [KASOPTIONS] [KASFILE]\n"
-	printf "%b" "       $0 [OPTIONS] for-all-repos [KASOPTIONS] [KASFILE] COMMAND\n"
-	printf "%b" "       $0 [OPTIONS] { clean | cleansstate | cleanall}\n"
-	printf "%b" "       $0 [OPTIONS] menu [KCONFIG]\n"
+	SELF="${KAS_CONTAINER_SELF_NAME}"
+	printf "%b" "Usage: ${SELF} [OPTIONS] { build | shell } [KASOPTIONS] [KASFILE]\n"
+	printf "%b" "       ${SELF} [OPTIONS] { checkout | dump } [KASOPTIONS] [KASFILE]\n"
+	printf "%b" "       ${SELF} [OPTIONS] for-all-repos [KASOPTIONS] [KASFILE] COMMAND\n"
+	printf "%b" "       ${SELF} [OPTIONS] { clean | cleansstate | cleanall} [KASFILE]\n"
+	printf "%b" "       ${SELF} [OPTIONS] menu [KCONFIG]\n"
 	printf "%b" "\nPositional arguments:\n"
 	printf "%b" "build\t\t\tCheck out repositories and build target.\n"
 	printf "%b" "checkout\t\tCheck out repositories but do not build.\n"
@@ -80,6 +86,15 @@ usage()
 	exit 1
 }
 
+fatal_error(){
+	echo "${KAS_CONTAINER_SELF_NAME}: Error: $*" >&2
+	exit 1
+}
+
+warning(){
+	echo "${KAS_CONTAINER_SELF_NAME}: Warning: $*" >&2
+}
+
 trace()
 {
 	[ -n "${KAS_VERBOSE}" ] && echo "+ $*" >&2
@@ -113,7 +128,6 @@ enable_oe_mode() {
 
 run_clean() {
 	if [ -n "${KAS_ISAR_ARGS}" ]; then
-		set_container_image_var
 		# SC2086: Double quote to prevent globbing and word splitting.
 		# shellcheck disable=2086
 		trace ${KAS_CONTAINER_COMMAND} run -v "${KAS_BUILD_DIR}":/build:rw \
@@ -134,10 +148,6 @@ run_clean() {
 		fi
 	fi
 }
-
-KAS_IMAGE_VERSION_DEFAULT="4.0"
-KAS_CONTAINER_IMAGE_PATH_DEFAULT="ghcr.io/siemens/kas"
-KAS_CONTAINER_IMAGE_NAME_DEFAULT="kas"
 
 set_container_image_var() {
 	KAS_IMAGE_VERSION="${KAS_IMAGE_VERSION:-${KAS_IMAGE_VERSION_DEFAULT}}"
@@ -168,14 +178,12 @@ if [ -z "${KAS_CONTAINER_ENGINE}" ]; then
 			;;
 		*)
 			# The docker command is an unknown engine
-			echo "$0: docker command found, but unknown engine detected" >&2
-			exit 1
+			fatal_error "docker command found, but unknown engine detected"
 		esac
 	elif command -v podman >/dev/null; then
 		KAS_CONTAINER_ENGINE=podman
 	else
-		echo "$0: no container engine found, need docker or podman" >&2
-		exit 1
+		fatal_error "no container engine found, need docker or podman"
 	fi
 fi
 
@@ -190,8 +198,7 @@ podman)
 	KAS_RUNTIME_ARGS="${KAS_RUNTIME_ARGS} --security-opt label=disable"
 	;;
 *)
-	echo "$0: unknown container engine '${KAS_CONTAINER_ENGINE}'" >&2
-	exit 1
+	fatal_error "unknown container engine '${KAS_CONTAINER_ENGINE}'"
 	;;
 esac
 
@@ -205,8 +212,7 @@ while [ $# -gt 0 ]; do
 	--with-loop-dev)
 		if ! KAS_LOOP_DEV=$(/sbin/losetup -f 2>/dev/null); then
 			if [ "$(id -u)" -eq 0 ]; then
-				echo "Error: loop device not available!"
-				exit 1
+				fatal_error "loop device not available!"
 			fi
 			sudo_command="/sbin/losetup -f"
 			sudo_message="[sudo] enter password to setup loop"
@@ -216,10 +222,9 @@ while [ $# -gt 0 ]; do
 			# shellcheck disable=2086
 			if ! KAS_LOOP_DEV=$(sudo -p "$sudo_message" $sudo_command \
 				2>/dev/null); then
-				echo "Error: loop device setup unsuccessful!"
-				echo "try calling '$sudo_command' with root" \
-					"permissions manually."
-				exit 1
+				fatal_error "loop device setup unsuccessful!" \
+				            "try calling '$sudo_command' with root" \
+				            "permissions manually."
 			fi
 		fi
 		KAS_WITH_LOOP_DEV="--device ${KAS_LOOP_DEV}"
@@ -236,6 +241,9 @@ while [ $# -gt 0 ]; do
 		shift 2
 		;;
 	--ssh-agent)
+		if [ -z "${SSH_AUTH_SOCK}" ]; then
+			fatal_error "no SSH agent running"
+		fi
 		KAS_SSH_AUTH_SOCK=$(readlink -fv "$SSH_AUTH_SOCK")
 		shift 1
 		;;
@@ -274,16 +282,16 @@ while [ $# -gt 0 ]; do
 		shift 2
 		;;
 	--version)
-		echo "$(basename "$0") $KAS_IMAGE_VERSION_DEFAULT"
+		echo "${KAS_CONTAINER_SELF_NAME} $KAS_IMAGE_VERSION_DEFAULT"
 		exit 0
 		;;
 	--*)
 		usage
 		;;
 	clean|cleansstate|cleanall)
-		[ $# -eq 1 ] || usage
-		run_clean "$1"
-		exit 0
+		KAS_CMD=$1
+		shift 1
+		break
 		;;
 	shell)
 		KAS_REPO_MOUNT_OPT_DEFAULT="rw"
@@ -322,15 +330,21 @@ while [ $# -gt 0 ] && [ $KAS_EXTRA_BITBAKE_ARGS -eq 0 ]; do
 	case "$1" in
 	--skip|--target|--task)
 		KAS_OPTIONS="${KAS_OPTIONS} $1 $2"
-		shift 2
+		shift 1
+		shift 1 || KAS_OPTIONS="--help"
 		;;
 	-c|--cmd|--command)
 		KAS_BITBAKE_C_OPTION_ARGS="$2"
-		shift 2
+		shift 1
+		shift 1 || KAS_OPTIONS="--help"
 		;;
 	-E|--preserve-env)
-		echo "$1 is not supported with kas-container"
-		exit 1
+		fatal_error "$1 is not supported with ${KAS_CONTAINER_SELF_NAME}"
+		;;
+	--provenance)
+		KAS_OPTIONS="${KAS_OPTIONS} $1 $2"
+		shift 1
+		shift 1 || KAS_OPTIONS="--help"
 		;;
 	--)
 		KAS_EXTRA_BITBAKE_ARGS=$#
@@ -340,13 +354,23 @@ while [ $# -gt 0 ] && [ $KAS_EXTRA_BITBAKE_ARGS -eq 0 ]; do
 		shift 1
 		;;
 	*)
+		ARG="$1"
+		shift 1
+		if [ "$KAS_CMD" = "for-all-repos" ]; then
+			if [ $# -gt 0 ]; then
+				KAS_REPO_CMD="$1"
+				shift 1
+			else
+				KAS_REPO_CMD="$ARG"
+				unset ARG
+			fi
+		fi
 		KAS_FILES=
 		# SC2086: Double quote to prevent globbing and word splitting.
 		# shellcheck disable=2086
-		for FILE in $(IFS=':'; echo $1); do
+		for FILE in $(IFS=':'; echo $ARG); do
 			if ! KAS_REAL_FILE="$(realpath -qe "$FILE")"; then
-				echo "Error: configuration file '${FILE}' not found"
-				exit 1
+				fatal_error "configuration file '${FILE}' not found"
 			fi
 			if [ -z "${KAS_FILES}" ]; then
 				KAS_FIRST_FILE="${KAS_REAL_FILE}"
@@ -355,11 +379,6 @@ while [ $# -gt 0 ] && [ $KAS_EXTRA_BITBAKE_ARGS -eq 0 ]; do
 				KAS_FILES="${KAS_FILES}:${KAS_REAL_FILE}"
 			fi
 		done
-		shift 1
-		if [ "$KAS_CMD" = "for-all-repos" ]; then
-			KAS_REPO_CMD="$1"
-			shift 1
-		fi
 		;;
 	esac
 done
@@ -395,7 +414,7 @@ if [ "${KAS_CMD}" = "menu" ]; then
 		set -- "$@" -e _KAS_REPO_DIR_HOST="$(readlink -fv "${KAS_REPO_DIR}")"
 	fi
 
-	BUILD_SYSTEM=$(tr '\n' '\f' 2>/dev/null < ${KAS_FIRST_FILE} | \
+	BUILD_SYSTEM=$(tr '\n' '\f' 2>/dev/null < "${KAS_FIRST_FILE}" | \
 		sed -e 's/\(.*\fconfig KAS_BUILD_SYSTEM\f\(.*\)\|.*\)/\2/' \
 		    -e 's/\f\([[:alpha:]].*\|$\)//' \
 		    -e 's/.*default \"\(.*\)\".*/\1/')
@@ -416,18 +435,24 @@ fi
 
 set_container_image_var
 
+# short circuit for clean* commands. We just need
+# the build-system information, but no repo mounts, etc...
+if echo "${KAS_CMD}" | grep -qe "^clean"; then
+	run_clean "${KAS_CMD}"
+	exit 0
+fi
+
 KAS_REPO_MOUNT_OPT="${KAS_REPO_MOUNT_OPT:-${KAS_REPO_MOUNT_OPT_DEFAULT}}"
 
 KAS_FILES="$(echo "${KAS_FILES}" | sed 's|'"${KAS_REPO_DIR}"'/|/repo/|g')"
 
 if [ "$(id -u)" -eq 0 ] && [ "${KAS_ALLOW_ROOT}" != "yes" ] ; then
-	echo "Error: Running as root - may break certain recipes."
-	echo "Better give a regular user docker access. Set" \
-	     "KAS_ALLOW_ROOT=yes to override."
-	exit 1
+	fatal_error "Running as root - may break certain recipes." \
+	            "Better give a regular user docker access. Set" \
+	            "KAS_ALLOW_ROOT=yes to override."
 fi
 
-set -- "$@" -v "${KAS_REPO_DIR}":/repo:${KAS_REPO_MOUNT_OPT} \
+set -- "$@" -v "${KAS_REPO_DIR}:/repo:${KAS_REPO_MOUNT_OPT}" \
 	-v "${KAS_WORK_DIR}":/work:rw -e KAS_WORK_DIR=/work \
 	-v "${KAS_BUILD_DIR}":/build:rw \
 	--workdir=/repo \
@@ -436,16 +461,14 @@ set -- "$@" -v "${KAS_REPO_DIR}":/repo:${KAS_REPO_MOUNT_OPT} \
 
 if [ -n "${KAS_SSH_DIR}" ] ; then
 	if [ ! -d "${KAS_SSH_DIR}" ]; then
-		echo "Passed KAS_SSH_DIR '${KAS_SSH_DIR}' is not a directory"
-		exit 1
+		fatal_error "passed KAS_SSH_DIR '${KAS_SSH_DIR}' is not a directory"
 	fi
 	set -- "$@" -v "$(readlink -fv "${KAS_SSH_DIR}")":/var/kas/userdata/.ssh:ro
 fi
 
 if [ -n "${KAS_SSH_AUTH_SOCK}" ]; then
 	if [ ! -S "${KAS_SSH_AUTH_SOCK}" ]; then
-		echo "Passed SSH_AUTH_SOCK '${KAS_SSH_AUTH_SOCK}' is not a socket"
-		exit 1
+		fatal_error "passed SSH_AUTH_SOCK '${KAS_SSH_AUTH_SOCK}' is not a socket"
 	fi
 	set -- "$@" -v "${KAS_SSH_AUTH_SOCK}":/ssh-agent/ssh-auth-sock \
 		-e SSH_AUTH_SOCK=/ssh-agent/ssh-auth-sock
@@ -453,20 +476,27 @@ fi
 
 if [ -n "${KAS_AWS_DIR}" ] ; then
 	if [ ! -d "${KAS_AWS_DIR}" ]; then
-		echo "Passed KAS_AWS_DIR '${KAS_AWS_DIR}' is not a directory"
-		exit 1
+		fatal_error "passed KAS_AWS_DIR '${KAS_AWS_DIR}' is not a directory"
 	fi
 	set -- "$@" -v "$(readlink -fv "${KAS_AWS_DIR}")":/var/kas/userdata/.aws:ro \
 		-e AWS_CONFIG_FILE="${AWS_CONFIG_FILE:-/var/kas/userdata/.aws/config}" \
 		-e AWS_SHARED_CREDENTIALS_FILE="${AWS_SHARED_CREDENTIALS_FILE:-/var/kas/userdata/.aws/credentials}"
+fi
+if [ -n "${AWS_WEB_IDENTITY_TOKEN_FILE}" ] ; then
+	if [ ! -f "${AWS_WEB_IDENTITY_TOKEN_FILE}" ]; then
+		echo "Passed AWS_WEB_IDENTITY_TOKEN_FILE '${AWS_WEB_IDENTITY_TOKEN_FILE}' is not a directory"
+		exit 1
+	fi
+	set -- "$@" -v "$(readlink -fv "${AWS_WEB_IDENTITY_TOKEN_FILE}")":/var/kas/userdata/.aws/web_identity_token:ro \
+		-e AWS_WEB_IDENTITY_TOKEN_FILE="${AWS_CONFIG_FILE:-/var/kas/userdata/.aws/web_identity_token}" \
+		-e AWS_ROLE_ARN="${AWS_ROLE_ARN}"
 fi
 
 KAS_GIT_CREDENTIAL_HELPER_DEFAULT=""
 
 if [ -n "${KAS_GIT_CREDENTIAL_STORE}" ] ; then
 	if [ ! -f "${KAS_GIT_CREDENTIAL_STORE}" ]; then
-		echo "Passed KAS_GIT_CREDENTIAL_STORE '${KAS_GIT_CREDENTIAL_STORE}' is not a file"
-		exit 1
+		fatal_error "passed KAS_GIT_CREDENTIAL_STORE '${KAS_GIT_CREDENTIAL_STORE}' is not a file"
 	fi
 	KAS_GIT_CREDENTIAL_HELPER_DEFAULT="store --file=/var/kas/userdata/.git-credentials"
 	set -- "$@" -v "$(readlink -fv "${KAS_GIT_CREDENTIAL_STORE}")":/var/kas/userdata/.git-credentials:ro
@@ -481,6 +511,16 @@ fi
 if [ -f "${NETRC_FILE}" ]; then
 	set -- "$@" -v "$(readlink -fv "${NETRC_FILE}")":/var/kas/userdata/.netrc:ro \
 		-e NETRC_FILE="/var/kas/userdata/.netrc"
+fi
+
+if [ -f "${GITCONFIG_FILE}" ]; then
+	set -- "$@" -v "$(readlink -fv "${GITCONFIG_FILE}")":/var/kas/userdata/.gitconfig:ro \
+		-e GITCONFIG_FILE="/var/kas/userdata/.gitconfig"
+fi
+
+if [ -f "${REGISTRY_AUTH_FILE}" ]; then
+	set -- "$@" -v "$(readlink -fv "${REGISTRY_AUTH_FILE}")":/var/kas/userdata/.docker/config.json:ro \
+		-e REGISTRY_AUTH_FILE="/var/kas/userdata/.docker/config.json"
 fi
 
 if [ -t 1 ]; then
@@ -500,18 +540,24 @@ if [ -n "${SSTATE_DIR}" ]; then
 		-v "$(readlink -fv "${SSTATE_DIR}")":/sstate:rw \
 		-e SSTATE_DIR=/sstate
 fi
+if [ -n "${SSTATE_MIRRORS}" ]; then
+	if echo "${SSTATE_MIRRORS}" | grep -q "file:///"; then
+		warning "SSTATE_MIRRORS contains a local path." \
+		        "Make sure to make this path available inside the container."
+	fi
+	set -- "$@" -e "SSTATE_MIRRORS=${SSTATE_MIRRORS}"
+fi
 
 if [ -n "${KAS_REPO_REF_DIR}" ]; then
 	if [ ! -d "${KAS_REPO_REF_DIR}" ]; then
-		echo "Passed KAS_REPO_REF_DIR '${KAS_REPO_REF_DIR}' is not a directory"
-		exit 1
+		fatal_error "Passed KAS_REPO_REF_DIR '${KAS_REPO_REF_DIR}' is not a directory"
 	fi
 	set -- "$@" \
 		-v "$(readlink -fv "${KAS_REPO_REF_DIR}")":/repo-ref:rw \
 		-e KAS_REPO_REF_DIR=/repo-ref
 fi
 
-for var in TERM KAS_DISTRO KAS_MACHINE KAS_TARGET KAS_TASK \
+for var in TERM KAS_DISTRO KAS_MACHINE KAS_TARGET KAS_TASK KAS_CLONE_DEPTH \
            KAS_PREMIRRORS DISTRO_APT_PREMIRRORS BB_NUMBER_THREADS PARALLEL_MAKE \
            GIT_CREDENTIAL_USEHTTPPATH; do
 	if [ -n "$(eval echo \$${var})" ]; then
@@ -559,4 +605,5 @@ while [ $KAS_EXTRA_BITBAKE_ARGS -gt 0 ]; do
 	KAS_EXTRA_BITBAKE_ARGS=$((KAS_EXTRA_BITBAKE_ARGS - 1))
 done
 
+# shellcheck disable=SC2086
 trace ${KAS_CONTAINER_COMMAND} run "$@"
