@@ -768,6 +768,20 @@ inherit image
 
 ```
 
+If the resulting image should not ship apt sources used during the build but custom ones (e.g. for end-users to point
+to an external or simply different server when they "apt-get update", custom list files may be listed in `SRC_URI`:
+Isar will copy them to `/etc/apt/sources.list.d/` and omit bootstrap sources. Possible use-cases:
+
+ * image built from base-apt (which is by definition local to the build host)
+
+ * image built from an internal mirror, not reachable by devices running the produced image
+
+ * ship template list files for the end-user to edit (e.g. letting him uncomment `deb` or `deb-src` entries)
+
+It should be noted that Isar will not validate or even load supplied list files: they are simply copied verbatim to
+the root file-system just before creating an image out of it (loading sources from the network would make the build
+non-reproducible).
+
 ### Additional Notes
 
 The distribution selected via the `DISTRO` variable may need to run a post-configuration script after the root file-system

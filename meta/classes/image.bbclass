@@ -392,6 +392,18 @@ python do_deploy() {
 }
 addtask deploy before do_build after do_image
 
+def apt_list_files(d):
+    lists = []
+    sources = d.getVar("SRC_URI").split()
+    for s in sources:
+        _, _, local, _, _, parm = bb.fetch.decodeurl(s)
+        base, ext = os.path.splitext(os.path.basename(local))
+        if ext and ext in (".list"):
+            lists.append(local)
+    return lists
+
+IMAGE_LISTS = "${@ ' '.join(apt_list_files(d)) }"
+
 do_rootfs_finalize() {
     sudo -s <<'EOSUDO'
         set -e
@@ -428,6 +440,12 @@ do_rootfs_finalize() {
         if [ -e "${ROOTFSDIR}/etc/apt/sources-list" ]; then
             mv "${ROOTFSDIR}/etc/apt/sources-list" \
                 "${ROOTFSDIR}/etc/apt/sources.list.d/bootstrap.list"
+        fi
+        if [ -n "${IMAGE_LISTS}" ]; then
+            rm -f "${ROOTFSDIR}/etc/apt/sources.list.d/bootstrap.list"
+            for l in ${IMAGE_LISTS}; do
+                cp "${WORKDIR}"/${l} "${ROOTFSDIR}/etc/apt/sources.list.d/"
+            done
         fi
 
         rm -f "${ROOTFSDIR}/run/blkid/blkid.tab"
