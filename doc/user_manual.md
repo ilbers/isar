@@ -456,6 +456,7 @@ following distros:
  - debian-trixie (host >= bookworm)
  - ubuntu-focal
  - ubuntu-jammy (requires host dpkg >= 1.21)
+ - ubuntu-noble (requires host dpkg >= 1.21)
  - raspios-bullseye
 
 User can select appropriate distro for specific machine by setting the following variable in machine configuration file:
