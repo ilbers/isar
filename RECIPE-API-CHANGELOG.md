@@ -646,3 +646,13 @@ recipe would use the following setting:
 ```
 HEADERS_INSTALL_EXTRA += "nvidia"
 ```
+
+### Architecture for dpkg-raw packages
+
+The intent of the dpkg-raw class is to easily package configuration and data
+files into a Debian package. Packages to be compiled should really use other
+dpkg classes where support for cross-compilation and multiarch is provided
+and tested. `DPKG_ARCH` is now set to `all` for `dpkg-raw` recipes.
+
+This change fixes an issue where a `dpkg` package is built for `-compat` or
+`-native` and `DEPENDS` on a `dpkg-raw` package.
