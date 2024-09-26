@@ -5,7 +5,9 @@
 
 inherit compat
 python() {
+    pn = d.getVar('PN')
     archDiffers = d.getVar('HOST_ARCH') != d.getVar('DISTRO_ARCH')
+    archIsAll = d.getVar('DPKG_ARCH') == 'all'
 
     def pn_multiarch_target(pn):
         return pn.endswith('-native') or pn.endswith('-compat')
@@ -20,15 +22,17 @@ python() {
 
     # provide compat only when we can build it
     if isar_can_build_compat(d):
-        d.appendVar('BBCLASSEXTEND', ' compat')
+        # but do not build separately if architecture-independent
+        if archIsAll:
+            extend_provides(pn, 'compat', d)
+        else:
+            d.appendVar('BBCLASSEXTEND', ' compat')
 
     # build native separately only when it differs from the target variant
-    if archDiffers is False:
-        pn = d.getVar('PN')
-        if pn_multiarch_target(pn) is False:
-            extend_provides(pn, 'native', d)
-    else:
+    if archIsAll is False and archDiffers:
         d.appendVar('BBCLASSEXTEND', ' native')
+    else:
+        extend_provides(pn, 'native', d)
 
     # drop own -native build dependencies at recipe level if building natively
     # and not for the builder architecture
