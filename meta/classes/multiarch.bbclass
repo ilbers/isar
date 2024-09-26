@@ -5,25 +5,35 @@
 
 inherit compat
 python() {
+    archDiffers = d.getVar('HOST_ARCH') != d.getVar('DISTRO_ARCH')
+
+    def pn_multiarch_target(pn):
+        return pn.endswith('-native') or pn.endswith('-compat')
+
+    def extend_provides(pn, provides, d):
+        if not pn_multiarch_target(pn):
+            all_provides = (d.getVar('PROVIDES') or '').split()
+            for p in all_provides:
+                if not pn_multiarch_target(p):
+                    d.appendVar('PROVIDES', f' {p}-{provides}')
+            d.appendVar('PROVIDES', f' {pn}-{provides}')
+
     # provide compat only when we can build it
     if isar_can_build_compat(d):
         d.appendVar('BBCLASSEXTEND', ' compat')
 
     # build native separately only when it differs from the target variant
-    if d.getVar('HOST_ARCH') == d.getVar('DISTRO_ARCH'):
+    if archDiffers is False:
         pn = d.getVar('PN')
-        if not pn.endswith('-native') and not pn.endswith('-compat'):
-            provides = (d.getVar('PROVIDES') or '').split()
-            for p in provides:
-                d.appendVar('PROVIDES', f' {p}-native')
-            d.appendVar('PROVIDES', f' {pn}-native')
+        if pn_multiarch_target(pn) is False:
+            extend_provides(pn, 'native', d)
     else:
         d.appendVar('BBCLASSEXTEND', ' native')
 
     # drop own -native build dependencies at recipe level if building natively
     # and not for the builder architecture
     depends = d.getVar('DEPENDS')
-    if depends is not None and d.getVar('HOST_ARCH') != d.getVar('DISTRO_ARCH') \
+    if depends is not None and archDiffers \
        and not bb.utils.to_boolean(d.getVar('ISAR_CROSS_COMPILE')):
         new_deps = []
         for dep in depends.split():
