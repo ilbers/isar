@@ -45,6 +45,8 @@ do_generate_initramfs() {
           update-initramfs -u -v ;  \
         fi'
 
+    rootfs_do_umounts
+
     if [ ! -e "${INITRAMFS_ROOTFS}/initrd.img" ]; then
         bberror "No initramfs was found after generation!"
     fi
