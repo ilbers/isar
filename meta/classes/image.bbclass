@@ -405,6 +405,8 @@ def apt_list_files(d):
 IMAGE_LISTS = "${@ ' '.join(apt_list_files(d)) }"
 
 do_rootfs_finalize() {
+    rootfs_do_umounts
+
     sudo -s <<'EOSUDO'
         set -e
 
@@ -416,32 +418,6 @@ do_rootfs_finalize() {
         if [ ! -e "${ROOTFSDIR}/usr/share/doc/qemu-user-static" ]; then
             find "${ROOTFSDIR}/usr/bin" \
                 -maxdepth 1 -name 'qemu-*-static' -type f -delete
-        fi
-
-        if mountpoint -q '${ROOTFSDIR}/isar-apt'; then
-            umount '${ROOTFSDIR}/isar-apt'
-            rmdir --ignore-fail-on-non-empty ${ROOTFSDIR}/isar-apt
-        fi
-
-        if mountpoint -q '${ROOTFSDIR}/base-apt'; then
-            umount '${ROOTFSDIR}/base-apt'
-            rmdir --ignore-fail-on-non-empty ${ROOTFSDIR}/base-apt
-        fi
-
-        if mountpoint -q '${ROOTFSDIR}/dev/pts'; then
-            umount '${ROOTFSDIR}/dev/pts'
-        fi
-        if mountpoint -q '${ROOTFSDIR}/dev/shm'; then
-            umount '${ROOTFSDIR}/dev/shm'
-        fi
-        if mountpoint -q '${ROOTFSDIR}/dev'; then
-            umount '${ROOTFSDIR}/dev'
-        fi
-        if mountpoint -q '${ROOTFSDIR}/proc'; then
-            umount '${ROOTFSDIR}/proc'
-        fi
-        if mountpoint -q '${ROOTFSDIR}/sys'; then
-            umount '${ROOTFSDIR}/sys'
         fi
 
         if [ -e "${ROOTFSDIR}/etc/apt/sources-list" ]; then

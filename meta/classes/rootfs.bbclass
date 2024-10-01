@@ -65,6 +65,38 @@ rootfs_do_mounts() {
 EOSUDO
 }
 
+rootfs_do_umounts() {
+    sudo -s <<'EOSUDO'
+        set -e
+        if mountpoint -q '${ROOTFSDIR}/isar-apt'; then
+            umount '${ROOTFSDIR}/isar-apt'
+            rmdir --ignore-fail-on-non-empty ${ROOTFSDIR}/isar-apt
+        fi
+
+        if mountpoint -q '${ROOTFSDIR}/base-apt'; then
+            umount '${ROOTFSDIR}/base-apt'
+            rmdir --ignore-fail-on-non-empty ${ROOTFSDIR}/base-apt
+        fi
+
+        if mountpoint -q '${ROOTFSDIR}/dev/pts'; then
+            umount '${ROOTFSDIR}/dev/pts'
+        fi
+        if mountpoint -q '${ROOTFSDIR}/dev/shm'; then
+            umount '${ROOTFSDIR}/dev/shm'
+        fi
+        if mountpoint -q '${ROOTFSDIR}/dev'; then
+            umount '${ROOTFSDIR}/dev'
+        fi
+        if mountpoint -q '${ROOTFSDIR}/proc'; then
+            umount '${ROOTFSDIR}/proc'
+        fi
+        if mountpoint -q '${ROOTFSDIR}/sys'; then
+            umount '${ROOTFSDIR}/sys'
+        fi
+
+EOSUDO
+}
+
 rootfs_do_qemu() {
     if [ '${@repr(d.getVar('ROOTFS_ARCH') == d.getVar('HOST_ARCH'))}' = 'False' ]
     then
