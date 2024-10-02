@@ -248,18 +248,21 @@ python do_rootfs_install() {
     progress_reporter = bb.progress.MultiStageProgressReporter(d, stage_weights)
     d.rootfs_progress = progress_reporter
 
-    for cmd in cmds:
-        progress_reporter.next_stage()
+    try:
+        for cmd in cmds:
+            progress_reporter.next_stage()
 
-        if (d.getVarFlag(cmd, 'isar-apt-lock') or "") == "acquire-before":
-            lock = bb.utils.lockfile(d.getVar("REPO_ISAR_DIR") + "/isar.lock",
-                                     shared=True)
+            if (d.getVarFlag(cmd, 'isar-apt-lock') or "") == "acquire-before":
+                lock = bb.utils.lockfile(d.getVar("REPO_ISAR_DIR") + "/isar.lock",
+                                         shared=True)
 
-        bb.build.exec_func(cmd, d)
+            bb.build.exec_func(cmd, d)
 
-        if (d.getVarFlag(cmd, 'isar-apt-lock') or "") == "release-after":
-            bb.utils.unlockfile(lock)
-    progress_reporter.finish()
+            if (d.getVarFlag(cmd, 'isar-apt-lock') or "") == "release-after":
+                bb.utils.unlockfile(lock)
+            progress_reporter.finish()
+    finally:
+        bb.build.exec_func('rootfs_do_umounts', d)
 }
 addtask rootfs_install before do_rootfs_postprocess after do_unpack
 
@@ -379,9 +382,13 @@ python do_rootfs_postprocess() {
     if cmds is None or not cmds.strip():
         return
     cmds = cmds.split()
-    for i, cmd in enumerate(cmds):
-        bb.build.exec_func(cmd, d)
-        progress_reporter.update(int(i / len(cmds) * 100))
+
+    try:
+        for i, cmd in enumerate(cmds):
+            bb.build.exec_func(cmd, d)
+            progress_reporter.update(int(i / len(cmds) * 100))
+    finally:
+        bb.build.exec_func('rootfs_do_umounts', d)
 }
 addtask rootfs_postprocess before do_rootfs after do_unpack
 
