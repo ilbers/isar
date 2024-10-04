@@ -29,7 +29,7 @@ python() {
             d.appendVar('BBCLASSEXTEND', ' compat')
 
     # build native separately only when it differs from the target variant
-    if archIsAll is False and archDiffers:
+    if not archIsAll and archDiffers:
         d.appendVar('BBCLASSEXTEND', ' native')
     else:
         extend_provides(pn, 'native', d)
