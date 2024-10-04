@@ -7,9 +7,9 @@ inherit dpkg
 
 D = "${WORKDIR}/image"
 
-# Create a binary-indep package
-DPKG_ARCH = "all"
-DEBIAN_MULTI_ARCH = "${@ 'foreign' if '${DPKG_ARCH}' == 'all' else 'no' }"
+# Default to creating a binary-indep package
+DPKG_ARCH ??= "all"
+DEBIAN_MULTI_ARCH ??= "${@ 'foreign' if '${DPKG_ARCH}' == 'all' else 'no' }"
 
 # Populate folder that will be picked up as package
 do_install() {
