@@ -649,10 +649,19 @@ HEADERS_INSTALL_EXTRA += "nvidia"
 
 ### Architecture for dpkg-raw packages
 
-The intent of the dpkg-raw class is to easily package configuration and data
-files into a Debian package. Packages to be compiled should really use other
-dpkg classes where support for cross-compilation and multiarch is provided
-and tested. `DPKG_ARCH` is now set to `all` for `dpkg-raw` recipes.
+The primary use-case of the dpkg-raw class is to easily package configuration
+and data files into a Debian package: the target architecture will now default
+to "all". It may also be used to package binaries that were built outside of
+Isar: such recipes may still override `DPKG_ARCH` to `"any"` or a specific
+architecture matching binaries to be included in the payload of the package.
 
 This change fixes an issue where a `dpkg` package is built for `-compat` or
-`-native` and `DEPENDS` on a `dpkg-raw` package.
+`-native` and `DEPENDS` on a `dpkg-raw` package with `DPKG_ARCH` set to `"all"`.
+Some issues remain with `dpkg-raw` packages targetting a specific architecture:
+Isar will advertise -native and -compat variants even though such recipes can
+only produce packages for that architecture and not what could possibly expect
+for -native or -compat. If we consider a dpkg-raw recipe generating an `arm64`
+package on an `amd64` host: you would expect the -native variant to produce
+an `amd64` package and -compat an 'armhf` package: it will however remain
+`arm64` and build of dependent recipes (image or dpkg) may fail because of
+the architecture mismatch.
