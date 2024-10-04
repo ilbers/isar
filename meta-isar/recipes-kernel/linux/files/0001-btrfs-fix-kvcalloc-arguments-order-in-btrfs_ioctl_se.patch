@@ -1,0 +1,43 @@
+From 6ff09b6b8c2fb6b3edda4ffaa173153a40653067 Mon Sep 17 00:00:00 2001
+From: Dmitry Antipov <dmantipov@yandex.ru>
+Date: Thu, 21 Dec 2023 11:47:45 +0300
+Subject: [PATCH] btrfs: fix kvcalloc() arguments order in btrfs_ioctl_send()
+
+When compiling with gcc version 14.0.0 20231220 (experimental)
+and W=1, I've noticed the following warning:
+
+fs/btrfs/send.c: In function 'btrfs_ioctl_send':
+fs/btrfs/send.c:8208:44: warning: 'kvcalloc' sizes specified with 'sizeof'
+in the earlier argument and not in the later argument [-Wcalloc-transposed-args]
+ 8208 |         sctx->clone_roots = kvcalloc(sizeof(*sctx->clone_roots),
+      |                                            ^
+
+Since 'n' and 'size' arguments of 'kvcalloc()' are multiplied to
+calculate the final size, their actual order doesn't affect the result
+and so this is not a bug. But it's still worth to fix it.
+
+Signed-off-by: Dmitry Antipov <dmantipov@yandex.ru>
+Reviewed-by: David Sterba <dsterba@suse.com>
+Signed-off-by: David Sterba <dsterba@suse.com>
+---
+ fs/btrfs/send.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/fs/btrfs/send.c b/fs/btrfs/send.c
+index 4e36550618e5..2d7519a6ce72 100644
+--- a/fs/btrfs/send.c
++++ b/fs/btrfs/send.c
+@@ -8205,8 +8205,8 @@ long btrfs_ioctl_send(struct inode *inode, struct btrfs_ioctl_send_args *arg)
+ 		goto out;
+ 	}
+ 
+-	sctx->clone_roots = kvcalloc(sizeof(*sctx->clone_roots),
+-				     arg->clone_sources_count + 1,
++	sctx->clone_roots = kvcalloc(arg->clone_sources_count + 1,
++				     sizeof(*sctx->clone_roots),
+ 				     GFP_KERNEL);
+ 	if (!sctx->clone_roots) {
+ 		ret = -ENOMEM;
+-- 
+2.45.2
+
