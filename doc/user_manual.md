@@ -435,7 +435,8 @@ Some other variables include:
  - `ISAR_USE_APT_SNAPSHOT` - Use a frozen apt snapshot instead of the live mirror. Optional.
    `ISAR_APT_DL_LIMIT` - Rate limit the apt fetching to n kB / s. Optional.
  - `DISTRO_APT_SNAPSHOT_PREMIRROR` - Similar to `DISTRO_APT_PREMIRRORS` but for a snapshot, pre-defined for supported distros.
- - `ISAR_APT_SNAPSHOT_TIMESTAMP` - Timestamp of the apt snapshot. Automatically derived from `SOURCE_DATE_EPOCH` if not overwritten.
+ - `ISAR_APT_SNAPSHOT_TIMESTAMP` - Unix timestamp of the apt snapshot. Automatically derived from `SOURCE_DATE_EPOCH` if not overwritten. (Consider `ISAR_APT_SNAPSHOT_DATE` for a more user friendly format)
+ - `ISAR_APT_SNAPSHOT_DATE` - Timestamp in upstream format (e.g. `20240702T082400Z`) of the apt snapshot. Overrides `ISAR_APT_SNAPSHOT_TIMESTAMP` if set. Otherwise, will be automatically derived from `ISAR_APT_SNAPSHOT_TIMESTAMP`
  - `THIRD_PARTY_APT_KEYS` - List of gpg key URIs used to verify apt repos for apt installation after bootstrapping.
  - `FILESEXTRAPATHS` - The default directories BitBake uses when it processes recipes are initially defined by the FILESPATH variable. You can extend FILESPATH variable by using FILESEXTRAPATHS.
  - `FILESOVERRIDES` - A subset of OVERRIDES used by the build system for creating FILESPATH. The FILESOVERRIDES variable uses overrides to automatically extend the FILESPATH variable.

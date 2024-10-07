@@ -44,7 +44,7 @@ config USE_APT_SNAPSHOT
 	bool "Use the distros snapshot mirror"
 	depends on !MIRROR_DEBIAN && (DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM || DEBIAN_TRIXIE || DEBIAN_SID || UBUNTU_FOCAL || UBUNTU_JAMMY)
 	help
-		Use a snapshot mirror for the selected distribution. The date is defined by ISAR_APT_SNAPSHOT_TIMESTAMP.
+		Use a snapshot mirror for the selected distribution. The date is defined by ISAR_APT_SNAPSHOT_DATE.
 
 config KAS_INCLUDE_APT_SNAPSHOT
 	string
