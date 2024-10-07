@@ -34,7 +34,7 @@ DISTRO_VARS_PREFIX ?= "${@'HOST_' if bb.utils.to_boolean(d.getVar('BOOTSTRAP_FOR
 BOOTSTRAP_DISTRO = "${@d.getVar('HOST_DISTRO' if bb.utils.to_boolean(d.getVar('BOOTSTRAP_FOR_HOST')) else 'DISTRO')}"
 BOOTSTRAP_BASE_DISTRO = "${@d.getVar('HOST_BASE_DISTRO' if bb.utils.to_boolean(d.getVar('BOOTSTRAP_FOR_HOST')) else 'BASE_DISTRO')}"
 FILESEXTRAPATHS:append = ":${BBPATH}"
-APT_SNAPSHOT_DATE = "${@ get_apt_snapshot_date(d)}"
+ISAR_APT_SNAPSHOT_DATE ?= "${@ get_isar_apt_snapshot_date(d)}"
 
 inherit deb-dl-dir
 
@@ -110,7 +110,7 @@ def parse_aptsources_list_line(source_list_line):
 
     return [type, options, source, suite, components]
 
-def get_apt_snapshot_date(d):
+def get_isar_apt_snapshot_date(d):
     import time
     source_date_epoch = d.getVar('ISAR_APT_SNAPSHOT_TIMESTAMP')
     return time.strftime('%Y%m%dT%H%M%SZ', time.gmtime(int(source_date_epoch)))

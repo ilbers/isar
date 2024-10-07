@@ -37,4 +37,4 @@ SYSTEMD_BOOTLOADER_INSTALL:focal = "systemd:${DISTRO_ARCH}"
 SYSTEMD_BOOTLOADER_INSTALL:jammy = "systemd:${DISTRO_ARCH}"
 
 # snapshot mirror for reproducible builds
-DISTRO_APT_SNAPSHOT_PREMIRROR ??= "(http|https)://archive.ubuntu.com/(.*) https://snapshot.ubuntu.com/\2/${APT_SNAPSHOT_DATE}/\n"
+DISTRO_APT_SNAPSHOT_PREMIRROR ??= "(http|https)://archive.ubuntu.com/(.*) https://snapshot.ubuntu.com/\2/${ISAR_APT_SNAPSHOT_DATE}/\n"
