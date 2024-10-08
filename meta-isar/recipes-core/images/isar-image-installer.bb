@@ -12,6 +12,6 @@ INSTALLER_WKS_FILE ??= "installer-efi.wks.in"
 WKS_FILE = "${INSTALLER_WKS_FILE}"
 IMAGER_INSTALL:wic:append = " systemd-boot"
 
-IMAGE_INSTALL += "deploy-image"
+IMAGE_INSTALL += "deploy-image-service"
 
 IMAGE_INSTALL:remove = "expand-on-first-boot"
