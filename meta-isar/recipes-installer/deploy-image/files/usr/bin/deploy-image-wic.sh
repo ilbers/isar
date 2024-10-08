@@ -11,22 +11,16 @@ SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
 . ${SCRIPT_DIR}/../lib/deploy-image-wic/handle-config.sh
 
 
-# Map config params
-AUTO_INSTALL=${installer_unattended}
-DISK_IMAGE=${installer_image_uri}
-TARGET_DEVICE=${installer_target_dev}
-OVERWRITE=${installer_target_overwrite}
-
-if ! $AUTO_INSTALL; then
-    DISK_IMAGE=$(find "$installdata" -type f -iname "*.wic*" -a -not -iname "*.wic.bmap" -exec basename {} \;)
-    if [ -z "$DISK_IMAGE" ] || [ ! -f "$installdata/$DISK_IMAGE" ]; then
+if ! $installer_unattended; then
+    installer_image_uri=$(find "$installdata" -type f -iname "*.wic*" -a -not -iname "*.wic.bmap" -exec basename {} \;)
+    if [ -z "$installer_image_uri" ] || [ ! -f "$installdata/$installer_image_uri" ]; then
         pushd "$installdata"
         for f in $(find . -type f); do
             array+=("$f" "$f")
         done
         popd
         if [ ${#array[@]} -gt 0 ]; then
-            if ! DISK_IMAGE=$(dialog --no-tags \
+            if ! installer_image_uri=$(dialog --no-tags \
                               --menu "Select image to be installed" 10 60 3 \
                               "${array[@]}" --output-fd 1); then
                 exit 0
@@ -34,11 +28,11 @@ if ! $AUTO_INSTALL; then
         fi
     fi
 
-    if [ ! -f "$installdata/$DISK_IMAGE" ]; then
+    if [ ! -f "$installdata/$installer_image_uri" ]; then
         dialog --msgbox "Could not find an image to install. Installation aborted." 6 60
         exit 1
     fi
-    DISK_BMAP=$(find "$installdata" -type f -iname "${DISK_IMAGE%.wic*}.wic.bmap")
+    DISK_BMAP=$(find "$installdata" -type f -iname "${installer_image_uri%.wic*}.wic.bmap")
 
     # inspired by poky/meta/recipes-core/initrdscripts/files/install-efi.sh
     target_device_list=""
@@ -108,37 +102,37 @@ if ! $AUTO_INSTALL; then
             fi
             array+=("/dev/$target" "/dev/$target ($target_size, $state)")
         done
-        if ! TARGET_DEVICE=$(dialog --no-tags \
+        if ! installer_target_dev=$(dialog --no-tags \
                              --menu "Select device to install image to" 10 60 3 \
                              "${array[@]}" --output-fd 1); then
             exit 0
         fi
     else
-        TARGET_DEVICE=/dev/$(echo "$target_device_list" | tr -d " ")
+        installer_target_dev=/dev/$(echo "$target_device_list" | tr -d " ")
     fi
-    TARGET_DEVICE_SIZE=$(lsblk --nodeps --noheadings -o SIZE "$TARGET_DEVICE" | tr -d " ")
+    TARGET_DEVICE_SIZE=$(lsblk --nodeps --noheadings -o SIZE "$installer_target_dev" | tr -d " ")
     if ! dialog --yes-label Ok --no-label Cancel \
-                --yesno "Start installing\n'$DISK_IMAGE'\nto $TARGET_DEVICE (capacity: $TARGET_DEVICE_SIZE)" 7 60; then
+                --yesno "Start installing\n'$installer_image_uri'\nto $installer_target_dev (capacity: $TARGET_DEVICE_SIZE)" 7 60; then
         exit 0
     fi
 
     # set absolute paths to be compatible with unattended mode
-    DISK_IMAGE="$installdata/$DISK_IMAGE"
+    installer_image_uri="$installdata/$installer_image_uri"
 
     if [ -z "$DISK_BMAP" ]; then
         DISK_BMAP="$installdata/$DISK_BMAP"
     fi
 fi
 
-if ! cmp /dev/zero "$TARGET_DEVICE" -n 1M; then
-    if ! $AUTO_INSTALL && \
+if ! cmp /dev/zero "$installer_target_dev" -n 1M; then
+    if ! $installer_unattended && \
        ! dialog --defaultno \
                 --yesno "WARNING: Target device is not empty! Continue anyway?" 5 60; then
         exit 0
     else
-        if [ "$OVERWRITE" != "OVERWRITE" ]; then
+        if [ "$installer_target_overwrite" != "installer_target_overwrite" ]; then
             echo "Target device is not empty! -> Abort"
-            echo "If you want to override existing data set \"installer_target_overwrite=OVERWRITE\""
+            echo "If you want to override existing data set \"installer_target_overwrite=installer_target_overwrite\""
         fi
     fi
 fi
@@ -148,15 +142,15 @@ if [ -z "$DISK_BMAP" ]; then
     bmap_options="--nobmap"
 fi
 
-if ! $AUTO_INSTALL; then
+if ! $installer_unattended; then
     clear
 fi
 
-if ! bmaptool copy ${bmap_options} "$DISK_IMAGE" "${TARGET_DEVICE}"; then
+if ! bmaptool copy ${bmap_options} "$installer_image_uri" "${installer_target_dev}"; then
     exit 1
 fi
 
-if ! $AUTO_INSTALL; then
+if ! $installer_unattended; then
     dialog --title "Reboot" \
            --msgbox "Installation was successful. System will be rebooted. Please remove the USB stick." 6 60
 else
