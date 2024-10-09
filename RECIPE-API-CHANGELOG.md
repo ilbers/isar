@@ -665,3 +665,12 @@ package on an `amd64` host: you would expect the -native variant to produce
 an `amd64` package and -compat an 'armhf` package: it will however remain
 `arm64` and build of dependent recipes (image or dpkg) may fail because of
 the architecture mismatch.
+
+### Changes in cleanup handler
+
+Bitbake BuildCompleted event handler is now executed only once per build and
+always outputs a warning if mounts are left behind after the build.
+
+Bitbake exit status depends on ISAR_FAIL_ON_CLEANUP bitbake variable:
+ - 0 or unset: Output a warning, unmount, build succeeds (default).
+ - 1: Output a warning, keep mounts left behind, build fails.
