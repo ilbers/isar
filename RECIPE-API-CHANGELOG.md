@@ -674,3 +674,8 @@ always outputs a warning if mounts are left behind after the build.
 Bitbake exit status depends on ISAR_FAIL_ON_CLEANUP bitbake variable:
  - 0 or unset: Output a warning, unmount, build succeeds (default).
  - 1: Output a warning, keep mounts left behind, build fails.
+
+### Strict rootfs mounts management
+
+There is no more mounts cleanup inside do_rootfs_finalize.
+Every individual task that does mounting must also do the umounting at its end.
