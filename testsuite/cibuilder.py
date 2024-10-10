@@ -129,6 +129,7 @@ class CIBuilder(Test):
 
         # get parameters from environment
         distro_apt_premir = os.getenv('DISTRO_APT_PREMIRRORS')
+        fail_on_cleanup = os.getenv('ISAR_FAIL_ON_CLEANUP')
 
         self.log.info(
             f"===================================================\n"
@@ -204,7 +205,9 @@ class CIBuilder(Test):
             if sstate_dir:
                 f.write('SSTATE_DIR = "%s"\n' % sstate_dir)
             if image_install is not None:
-                f.write('IMAGE_INSTALL = "%s"' % image_install)
+                f.write('IMAGE_INSTALL = "%s"\n' % image_install)
+            if fail_on_cleanup == '1':
+                f.write('ISAR_FAIL_ON_CLEANUP = "1"\n')
 
         # include ci_build.conf in local.conf
         with open(self.build_dir + '/conf/local.conf', 'r+') as f:
