@@ -44,7 +44,25 @@ config USE_APT_SNAPSHOT
 	bool "Use the distros snapshot mirror"
 	depends on !MIRROR_DEBIAN && (DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM || DEBIAN_TRIXIE || DEBIAN_SID || UBUNTU_FOCAL || UBUNTU_JAMMY)
 	help
-		Use a snapshot mirror for the selected distribution. The date is defined by ISAR_APT_SNAPSHOT_DATE.
+		Use a snapshot mirror for the selected distribution.
+
+choice
+	prompt "Snapshot date"
+	depends on USE_APT_SNAPSHOT
+	default APT_SNAPSHOT_GIT_DATE
+
+config APT_SNAPSHOT_GIT_DATE
+	bool "Timestamp of latest git commit"
+
+config APT_SNAPSHOT_CUSTOM_DATE
+	bool "Custom date"
+
+endchoice
+
+config ISAR_APT_SNAPSHOT_DATE
+	string "Custom snapshot date"
+	depends on APT_SNAPSHOT_CUSTOM_DATE
+	default "20240211T000000Z"
 
 config KAS_INCLUDE_APT_SNAPSHOT
 	string
