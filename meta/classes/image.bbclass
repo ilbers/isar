@@ -418,31 +418,24 @@ do_rootfs_finalize() {
                 -maxdepth 1 -name 'qemu-*-static' -type f -delete
         fi
 
-        if mountpoint -q '${ROOTFSDIR}/isar-apt'; then
-            umount '${ROOTFSDIR}/isar-apt'
+        mountpoint -q '${ROOTFSDIR}/isar-apt' && \
+            umount '${ROOTFSDIR}/isar-apt' && \
             rmdir --ignore-fail-on-non-empty ${ROOTFSDIR}/isar-apt
-        fi
 
-        if mountpoint -q '${ROOTFSDIR}/base-apt'; then
-            umount '${ROOTFSDIR}/base-apt'
+        mountpoint -q '${ROOTFSDIR}/base-apt' && \
+            umount '${ROOTFSDIR}/base-apt' && \
             rmdir --ignore-fail-on-non-empty ${ROOTFSDIR}/base-apt
-        fi
 
-        if mountpoint -q '${ROOTFSDIR}/dev/pts'; then
+        mountpoint -q '${ROOTFSDIR}/dev/pts' && \
             umount '${ROOTFSDIR}/dev/pts'
-        fi
-        if mountpoint -q '${ROOTFSDIR}/dev/shm'; then
+        mountpoint -q '${ROOTFSDIR}/dev/shm' && \
             umount '${ROOTFSDIR}/dev/shm'
-        fi
-        if mountpoint -q '${ROOTFSDIR}/dev'; then
+        mountpoint -q '${ROOTFSDIR}/dev' && \
             umount '${ROOTFSDIR}/dev'
-        fi
-        if mountpoint -q '${ROOTFSDIR}/proc'; then
+        mountpoint -q '${ROOTFSDIR}/proc' && \
             umount '${ROOTFSDIR}/proc'
-        fi
-        if mountpoint -q '${ROOTFSDIR}/sys'; then
+        mountpoint -q '${ROOTFSDIR}/sys' && \
             umount '${ROOTFSDIR}/sys'
-        fi
 
         if [ -e "${ROOTFSDIR}/etc/apt/sources-list" ]; then
             mv "${ROOTFSDIR}/etc/apt/sources-list" \
