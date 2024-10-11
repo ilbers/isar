@@ -405,8 +405,6 @@ def apt_list_files(d):
 IMAGE_LISTS = "${@ ' '.join(apt_list_files(d)) }"
 
 do_rootfs_finalize() {
-    rootfs_do_umounts
-
     sudo -s <<'EOSUDO'
         set -e
 
