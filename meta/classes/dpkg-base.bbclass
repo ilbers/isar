@@ -231,7 +231,6 @@ def isar_deb_build_options(d):
 
 # use with caution: might contaminate multiple tasks
 def isar_export_build_settings(d):
-    import os
     os.environ['DEB_BUILD_OPTIONS']  = isar_deb_build_options(d)
     os.environ['DEB_BUILD_PROFILES'] = isar_deb_build_profiles(d)
 
