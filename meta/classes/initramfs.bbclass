@@ -35,6 +35,10 @@ do_generate_initramfs[sstate-inputdirs] = "${DEPLOYDIR}"
 do_generate_initramfs[sstate-outputdirs] = "${DEPLOY_DIR_IMAGE}"
 do_generate_initramfs() {
     rootfs_do_mounts
+
+    trap 'exit 1' INT HUP QUIT TERM ALRM USR1
+    trap 'rootfs_do_umounts' EXIT
+
     rootfs_do_qemu
 
     sudo -E chroot "${INITRAMFS_ROOTFS}" sh -c '\
