@@ -48,6 +48,9 @@ debsrc_download() {
 
     debsrc_do_mounts "${rootfs}"
 
+    trap 'exit 1' INT HUP QUIT TERM ALRM USR1
+    trap 'debsrc_undo_mounts "${rootfs}"' EXIT
+
     ( flock 9
     set -e
     printenv | grep -q BB_VERBOSE_LOGS && set -x
