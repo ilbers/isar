@@ -5,7 +5,7 @@ inherit dpkg
 
 require recipes-bsp/barebox/barebox.inc
 
-SRC_URI += "https://git.pengutronix.de/cgit/barebox/snapshot/barebox-${PV}.tar.gz \
+SRC_URI += "https://github.com/barebox/${PN}/archive/refs/tags/v${PV}.tar.gz;downloadfilename=${P}.tar.gz \
             file://0001-of_dump-Add-a-simple-node-check-up.patch"
 
 S = "${WORKDIR}/barebox-${PV}"
