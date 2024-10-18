@@ -15,7 +15,6 @@ inherit essential
 DEPENDS ?= ""
 RPROVIDES ?= "${PROVIDES}"
 
-DEPENDS:append:riscv64 = "${@' crossbuild-essential-riscv64' if bb.utils.to_boolean(d.getVar('ISAR_CROSS_COMPILE')) and d.getVar('PN') != 'crossbuild-essential-riscv64' else ''}"
 DEB_BUILD_PROFILES ?= ""
 DEB_BUILD_OPTIONS ?= ""
 
