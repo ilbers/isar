@@ -29,6 +29,6 @@ SRC_URI = " \
     file://expand-last-partition.sh"
 
 do_install() {
-    install -d -m 755 ${D}/usr/share/expand-on-first-boot
-    install -m 755 ${WORKDIR}/expand-last-partition.sh ${D}/usr/share/expand-on-first-boot/
+    install -d -m 755 ${D}/usr/lib/expand-on-first-boot
+    install -m 755 ${WORKDIR}/expand-last-partition.sh ${D}/usr/lib/expand-on-first-boot/
 }
