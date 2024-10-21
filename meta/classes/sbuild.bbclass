@@ -54,6 +54,11 @@ EOSUDO
 }
 
 schroot_delete_configs() {
+    schroot --lock || true
+
+    trap 'exit 1' INT HUP QUIT TERM ALRM USR1
+    trap 'schroot --unlock || true' EXIT
+
     sudo -s <<'EOSUDO'
         set -e
         if [ -d "${SBUILD_CONF_DIR}" ]; then
@@ -63,6 +68,8 @@ schroot_delete_configs() {
         echo "Removing ${SCHROOT_CONF_FILE}"
         rm -f "${SCHROOT_CONF_FILE}"
 EOSUDO
+
+    schroot --unlock || true
 }
 
 sbuild_add_env_filter() {
