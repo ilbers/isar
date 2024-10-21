@@ -14,7 +14,7 @@ ConditionPathIsReadWrite=/tmp
 
 [Service]
 Type=oneshot
-ExecStart=/usr/share/expand-on-first-boot/expand-last-partition.sh
+ExecStart=/usr/lib/expand-on-first-boot/expand-last-partition.sh
 ExecStartPost=-/bin/systemctl disable expand-on-first-boot.service
 ExecStopPost=-/bin/systemctl disable expand-on-first-boot.service
 
