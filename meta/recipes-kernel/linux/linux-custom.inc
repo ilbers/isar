@@ -296,6 +296,16 @@ EOF
 	done
 }
 
+get_localversion_auto() {
+	if grep -q "^CONFIG_LOCALVERSION_AUTO=y" ${S}/${KERNEL_BUILD_DIR}/.config; then
+		cd ${S}
+		if head=$(git rev-parse --verify --short HEAD 2>/dev/null); then
+			echo "-g${head}" >${S}/.scmversion
+		fi
+	fi
+}
+
 do_dpkg_source:prepend() {
 	dpkg_configure_kernel
+	get_localversion_auto
 }

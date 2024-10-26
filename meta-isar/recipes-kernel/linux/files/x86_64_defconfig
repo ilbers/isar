@@ -1,6 +1,6 @@
 # Copy of linux/arch/x86/configs/x86_64_defconfig for demonstration purposes
 
-# CONFIG_LOCALVERSION_AUTO is not set
+CONFIG_LOCALVERSION_AUTO=y
 CONFIG_SYSVIPC=y
 CONFIG_POSIX_MQUEUE=y
 CONFIG_BSD_PROCESS_ACCT=y
