@@ -1,7 +1,7 @@
 # Example recipe for building the CIP 4.4 kernel
 #
 # This software is a part of ISAR.
-# Copyright (c) Siemens AG, 2018
+# Copyright (c) Siemens AG, 2024
 #
 # SPDX-License-Identifier: MIT
 
@@ -13,4 +13,4 @@ SRC_URI += " \
 
 SRCREV = "af3adf9f9c633ac0e1d68487d7fad22285dda8a3"
 
-KERNEL_DEFCONFIG:qemuamd64 = "x86_64_defconfig"
+KERNEL_DEFCONFIG:qemuamd64-cip = "x86_64_defconfig"

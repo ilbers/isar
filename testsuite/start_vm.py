@@ -148,7 +148,7 @@ def start_qemu(arch, build, distro, image, out, pid, enforce_pcbios):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    arch_names = ['arm', 'arm64', 'amd64', 'amd64-sb', 'i386', 'mipsel']
+    arch_names = ['arm', 'arm64', 'amd64', 'amd64-sb', 'amd64-cip', 'i386', 'mipsel']
     distro_names = [
         'buster',
         'bullseye',

@@ -46,6 +46,10 @@ config MACHINE_PHYBOARD_MIRA
 	bool "phyboard-mira"
 	depends on DEBIAN_BULLSEYE || DEBIAN_BOOKWORM
 
+config MACHINE_QEMU_AMD64_CIP
+	bool "qemuamd64-cip"
+	depends on DEBIAN_BOOKWORM
+
 config MACHINE_QEMU_AMD64_SB
 	bool "qemuamd64-sb"
 	depends on DEBIAN_BULLSEYE
@@ -126,6 +130,7 @@ config KAS_INCLUDE_MACHINE
 	default "kas/machine/nanopi-neo.yaml" if MACHINE_NANOPI_NEO
 	default "kas/machine/nanopi-neo-efi.yaml" if MACHINE_NANOPI_NEO_EFI
 	default "kas/machine/phyboard-mira.yaml" if MACHINE_PHYBOARD_MIRA
+	default "kas/machine/qemuamd64-cip.yaml" if MACHINE_QEMU_AMD64_CIP
 	default "kas/machine/qemuamd64-sb.yaml" if MACHINE_QEMU_AMD64_SB
 	default "kas/machine/qemuamd64.yaml" if MACHINE_QEMU_AMD64
 	default "kas/machine/qemuarm.yaml" if MACHINE_QEMU_ARM
