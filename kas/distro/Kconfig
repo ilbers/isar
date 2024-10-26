@@ -37,6 +37,9 @@ config UBUNTU_FOCAL
 config UBUNTU_JAMMY
 	bool "Ubuntu 22.04 (Jammy)"
 
+config UBUNTU_NOBLE
+	bool "Ubuntu 24.04 (Noble)"
+
 endchoice
 
 config KAS_INCLUDE_DISTRO
@@ -50,5 +53,6 @@ config KAS_INCLUDE_DISTRO
 	default "kas/distro/raspios-bookworm.yaml" if RASPIOS_BOOKWORM
 	default "kas/distro/ubuntu-focal.yaml" if UBUNTU_FOCAL
 	default "kas/distro/ubuntu-jammy.yaml" if UBUNTU_JAMMY
+	default "kas/distro/ubuntu-noble.yaml" if UBUNTU_NOBLE
 
 endmenu
