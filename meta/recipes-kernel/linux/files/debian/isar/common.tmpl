@@ -51,7 +51,7 @@ main() {
     done
 
     # variables to be exported
-    export ARCH
+    export ARCH CROSS_COMPILE
 
     # are we cross-compiling?
     BUILD_ARCH=$(dpkg-architecture -qDEB_BUILD_ARCH)

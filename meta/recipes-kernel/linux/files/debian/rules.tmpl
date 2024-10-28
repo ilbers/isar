@@ -1,7 +1,5 @@
 #!/usr/bin/make -f
 
-CROSS_COMPILE:=$(DEB_HOST_GNU_TYPE)-
-
 MAINTAINER := $(shell sed -ne 's,^Maintainer: .[^<]*<\([^>]*\)>,\1,p' debian/control)
 DISTRIBUTOR := ${DISTRIBUTOR}
 SOURCE_DATE := $(shell dpkg-parsechangelog -SDate)
@@ -13,7 +11,6 @@ deb_top_dir:=$(S)/debian
 
 # Dynamic variables to be passed to Isar build scripts
 isar_env=$(strip \
-	export CROSS_COMPILE='$(CROSS_COMPILE)' && \
 	export DEB_BUILD_PROFILES='$(DEB_BUILD_PROFILES)' && \
 	export DEB_HOST_GNU_TYPE='$(DEB_HOST_GNU_TYPE)' && \
 	export MAKE='$(MAKE)' && \
