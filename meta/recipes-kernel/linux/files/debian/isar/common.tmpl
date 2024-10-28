@@ -21,6 +21,11 @@ then
     CROSS_COMPILE=$(dpkg-architecture -f -A ${DISTRO_ARCH} -q DEB_TARGET_GNU_TYPE)-
 fi
 
+# Required from building a compat vDSO on arm64
+if [ "${ISAR_ENABLE_COMPAT_ARCH}" = "1" ] && [ "${DISTRO_ARCH}" = "arm64" ]; then
+    CROSS_COMPILE_COMPAT=$(dpkg-architecture -f -A ${COMPAT_DISTRO_ARCH} -q DEB_TARGET_GNU_TYPE)-
+fi
+
 # Constants
 KCONF=.config
 
@@ -51,7 +56,7 @@ main() {
     done
 
     # variables to be exported
-    export ARCH CROSS_COMPILE
+    export ARCH CROSS_COMPILE CROSS_COMPILE_COMPAT
 
     # are we cross-compiling?
     BUILD_ARCH=$(dpkg-architecture -qDEB_BUILD_ARCH)

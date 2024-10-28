@@ -87,6 +87,8 @@ TEMPLATE_VARS += "                \
     DISTRIBUTOR                   \
     KERNEL_EXTRA_BUILDARGS        \
     HEADERS_INSTALL_EXTRA         \
+    ISAR_ENABLE_COMPAT_ARCH       \
+    COMPAT_DISTRO_ARCH            \
 "
 
 inherit dpkg
