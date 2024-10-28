@@ -370,10 +370,6 @@ do_bootstrap() {
         sed -i '/en_US.UTF-8 UTF-8/s/^#//g' "${ROOTFSDIR}/etc/locale.gen"
         chroot "${ROOTFSDIR}" /usr/sbin/locale-gen
 
-        # setup chroot
-        install -v -m755 "${WORKDIR}/chroot-setup.sh" "${ROOTFSDIR}/chroot-setup.sh"
-        "${ROOTFSDIR}/chroot-setup.sh" "setup" "${ROOTFSDIR}"
-
         # update APT
         mount -o bind,private /dev ${ROOTFSDIR}/dev
         mount -o bind,private /dev/pts "${ROOTFSDIR}/dev/pts"
@@ -394,6 +390,13 @@ do_bootstrap() {
 
         chroot "${ROOTFSDIR}" /usr/bin/apt-get update -y \
                                 -o APT::Update::Error-Mode=any
+
+        chroot "${ROOTFSDIR}" /usr/bin/apt-get install -y dpkg
+
+        # setup chroot
+        install -v -m755 "${WORKDIR}/chroot-setup.sh" "${ROOTFSDIR}/chroot-setup.sh"
+        "${ROOTFSDIR}/chroot-setup.sh" "setup" "${ROOTFSDIR}"
+
         chroot "${ROOTFSDIR}" /usr/bin/apt-get install -y -f
         chroot "${ROOTFSDIR}" /usr/bin/apt-get dist-upgrade -y \
                                 -o Debug::pkgProblemResolver=yes
