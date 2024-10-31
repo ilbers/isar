@@ -130,9 +130,11 @@ if ! cmp /dev/zero "$installer_target_dev" -n 1M; then
                 --yesno "WARNING: Target device is not empty! Continue anyway?" 5 60; then
         exit 0
     else
-        if [ "$installer_target_overwrite" != "installer_target_overwrite" ]; then
+        if [ "$installer_target_overwrite" != "OVERWRITE" ]; then
             echo "Target device is not empty! -> Abort"
-            echo "If you want to override existing data set \"installer_target_overwrite=installer_target_overwrite\""
+            echo "If you want to override existing data set \"installer.target.overwrite=OVERWRITE\" on your kernel cmdline or edit your \"auto.install\" file accordingly."
+
+            exit 1
         fi
     fi
 fi
