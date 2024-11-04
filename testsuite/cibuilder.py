@@ -513,7 +513,7 @@ class CIBuilder(Test):
             os.unlink(latest_link)
         os.symlink(os.path.basename(boot_log), latest_link)
 
-        cmdline = start_vm.format_qemu_cmdline(
+        cmdline, self.vm_ctx = start_vm.format_qemu_cmdline(
             arch, self.build_dir, distro, image, boot_log, None, enforce_pcbios
         )
         cmdline.insert(1, '-nographic')
@@ -572,9 +572,10 @@ class CIBuilder(Test):
         resize_output = None
         # systemd service ordering cycle
         ordering_cycle = b'Found ordering cycle'
-        image_fstypes, wks_file, bbdistro = CIUtils.getVars(
-            'IMAGE_FSTYPES', 'WKS_FILE', 'DISTRO', target=multiconfig
-        )
+
+        image_fstypes = self.vm_ctx['IMAGE_FSTYPES']
+        wks_file = self.vm_ctx['WKS_FILE']
+        bbdistro = self.vm_ctx['DISTRO']
 
         # only the first type will be tested in start_vm
         if image_fstypes.split()[0] == 'wic':
