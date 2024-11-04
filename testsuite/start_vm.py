@@ -19,9 +19,12 @@ def format_qemu_cmdline(
     arch, build, distro, image, out, pid, enforce_pcbios=False
 ):
     multiconfig = f"mc:qemu{arch}-{distro}:{image}"
+    vm_ctx = {}
 
     (
-        image_fstypes,
+        vm_ctx['IMAGE_FSTYPES'],
+        vm_ctx['WKS_FILE'],
+        vm_ctx['DISTRO'],
         deploy_dir_image,
         kernel_image,
         initrd_image,
@@ -33,6 +36,8 @@ def format_qemu_cmdline(
         qemu_disk_args,
     ) = CIUtils.getVars(
         'IMAGE_FSTYPES',
+        'WKS_FILE',
+        'DISTRO',
         'DEPLOY_DIR_IMAGE',
         'KERNEL_IMAGE',
         'INITRD_DEPLOY_FILE',
@@ -47,6 +52,7 @@ def format_qemu_cmdline(
 
     extra_args = ''
 
+    image_fstypes = vm_ctx['IMAGE_FSTYPES']
     image_type = image_fstypes.split()[0]
     base = 'ubuntu' if distro in ['jammy', 'focal'] else 'debian'
 
@@ -103,7 +109,7 @@ def format_qemu_cmdline(
     cmd.extend(extra_args)
     cmd.extend(qemu_disk_args)
 
-    return cmd
+    return cmd, vm_ctx
 
 
 def sb_copy_vars(cmdline):
@@ -130,7 +136,7 @@ def sb_cleanup():
 
 
 def start_qemu(arch, build, distro, image, out, pid, enforce_pcbios):
-    cmdline = format_qemu_cmdline(
+    cmdline, vm_ctx = format_qemu_cmdline(
         arch, build, distro, image, out, pid, enforce_pcbios
     )
     cmdline.insert(1, '-nographic')
