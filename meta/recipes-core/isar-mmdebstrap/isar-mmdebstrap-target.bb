@@ -9,4 +9,6 @@ Description = "Minimal target Debian root file system"
 
 DEPLOY_ISAR_BOOTSTRAP = "${DEPLOY_DIR_BOOTSTRAP}/${DISTRO}-${DISTRO_ARCH}"
 
+PROVIDES += "bootstrap-target"
+
 require isar-mmdebstrap.inc
