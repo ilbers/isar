@@ -26,6 +26,7 @@ DISTRO_BOOTSTRAP_BASE_PACKAGES ??= ""
 DISTRO_VARS_PREFIX ?= "${@'HOST_' if bb.utils.to_boolean(d.getVar('BOOTSTRAP_FOR_HOST')) else ''}"
 BOOTSTRAP_DISTRO = "${@d.getVar('HOST_DISTRO' if bb.utils.to_boolean(d.getVar('BOOTSTRAP_FOR_HOST')) else 'DISTRO')}"
 BOOTSTRAP_BASE_DISTRO = "${@d.getVar('HOST_BASE_DISTRO' if bb.utils.to_boolean(d.getVar('BOOTSTRAP_FOR_HOST')) else 'BASE_DISTRO')}"
+BOOTSTRAP_DISTRO_ARCH = "${@d.getVar('HOST_ARCH' if bb.utils.to_boolean(d.getVar('BOOTSTRAP_FOR_HOST')) else 'DISTRO_ARCH')}"
 ISAR_APT_SNAPSHOT_DATE ?= "${@ get_isar_apt_snapshot_date(d)}"
 
 python () {
