@@ -105,8 +105,8 @@ rootfs_do_qemu() {
     fi
 }
 
-BOOTSTRAP_SRC = "${DEPLOY_DIR_BOOTSTRAP}/${ROOTFS_DISTRO}-host_${DISTRO}-${DISTRO_ARCH}"
-BOOTSTRAP_SRC:${ROOTFS_ARCH} = "${DEPLOY_DIR_BOOTSTRAP}/${ROOTFS_DISTRO}-${ROOTFS_ARCH}"
+BOOTSTRAP_SRC = "${DEPLOY_DIR_BOOTSTRAP}/${ROOTFS_DISTRO}-host_${DISTRO}-${DISTRO_ARCH}.tar.zst"
+BOOTSTRAP_SRC:${ROOTFS_ARCH} = "${DEPLOY_DIR_BOOTSTRAP}/${ROOTFS_DISTRO}-${ROOTFS_ARCH}.tar.zst"
 
 def rootfs_extra_import(d):
     bb.utils._context["rootfs_progress"] = __import__("rootfs_progress")
@@ -116,7 +116,10 @@ ROOTFS_EXTRA_IMPORTED := "${@rootfs_extra_import(d)}"
 
 rootfs_prepare[weight] = "25"
 rootfs_prepare(){
-    sudo cp -Trpfx --reflink=auto '${BOOTSTRAP_SRC}/' '${ROOTFSDIR}'
+    sudo tar -xf "${BOOTSTRAP_SRC}" -C "${ROOTFSDIR}" --exclude="./dev/console"
+
+    # setup chroot
+    sudo "${ROOTFSDIR}/chroot-setup.sh" "setup" "${ROOTFSDIR}"
 }
 
 ROOTFS_CONFIGURE_COMMAND += "rootfs_configure_isar_apt"
@@ -278,7 +281,7 @@ cache_deb_src() {
     # Note: ISAR updates the apt state information(apt-get update) only once during bootstrap and
     # relies on that through out the build. Copy that state information instead of apt-get update
     # which generates a new state from upstream.
-    sudo cp -Trpn --reflink=auto "${BOOTSTRAP_SRC}/var/lib/apt/lists/" "${ROOTFSDIR}/var/lib/apt/lists/"
+    sudo tar -xf "${BOOTSTRAP_SRC}" ./var/lib/apt/lists --one-top-level="${ROOTFSDIR}"
 
     deb_dl_dir_import ${ROOTFSDIR} ${ROOTFS_BASE_DISTRO}-${BASE_DISTRO_CODENAME}
     debsrc_download ${ROOTFSDIR} ${ROOTFS_BASE_DISTRO}-${BASE_DISTRO_CODENAME}

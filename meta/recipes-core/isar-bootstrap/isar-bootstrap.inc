@@ -183,9 +183,8 @@ do_bootstrap() {
 
         chroot "${ROOTFSDIR}" /usr/bin/apt-get install -y dpkg
 
-        # setup chroot
+        # prepare setup chroot script
         install -v -m755 "${WORKDIR}/chroot-setup.sh" "${ROOTFSDIR}/chroot-setup.sh"
-        "${ROOTFSDIR}/chroot-setup.sh" "setup" "${ROOTFSDIR}"
 
         chroot "${ROOTFSDIR}" /usr/bin/apt-get install -y -f
         chroot "${ROOTFSDIR}" /usr/bin/apt-get dist-upgrade -y \
@@ -199,8 +198,12 @@ do_bootstrap() {
         mountpoint -q "${ROOTFSDIR}/base-apt" && \
             umount "${ROOTFSDIR}/base-apt"
 
+        # Compress rootfs for compatibility
+        lopts="--one-file-system --exclude=var/cache/apt/archives"
+        tar --zstd -cf "${WORKDIR}/rootfs.tar.zst" $lopts -C "${ROOTFSDIR}" .
+
         # Finalize debootstrap by setting the link in deploy
-        ln -Tfsr "${ROOTFSDIR}" "${DEPLOY_ISAR_BOOTSTRAP}"
+        ln -Tfsr "${WORKDIR}/rootfs.tar.zst" "${DEPLOY_ISAR_BOOTSTRAP}.tar.zst"
 EOSUDO
     deb_dl_dir_export "${ROOTFSDIR}" "${BOOTSTRAP_BASE_DISTRO}-${BASE_DISTRO_CODENAME}"
 
@@ -216,19 +219,17 @@ SSTATEPOSTINSTFUNCS += "bootstrap_sstate_finalize"
 
 bootstrap_sstate_prepare() {
     # this runs in SSTATE_BUILDDIR, which will be deleted automatically
-    lopts="--one-file-system --exclude=var/cache/apt/archives"
-    sudo tar -C $(dirname "${ROOTFSDIR}") -cpSf bootstrap.tar $lopts $(basename "${ROOTFSDIR}")
-    sudo chown $(id -u):$(id -g) bootstrap.tar
+    sudo cp -a "${WORKDIR}/rootfs.tar.zst" ./bootstrap.tar.zst
+    sudo chown $(id -u):$(id -g) bootstrap.tar.zst
 }
 
 bootstrap_sstate_finalize() {
     # this runs in SSTATE_INSTDIR
-    # - after building the bootstrap, the tar won't be there, but we also don't need to unpack
-    # - after restoring from cache, there will be a tar which we unpack and then delete
-    if [ -f bootstrap.tar ]; then
-        sudo tar -C $(dirname "${ROOTFSDIR}") -xpf bootstrap.tar
-        sudo ln -Tfsr "${ROOTFSDIR}" "${DEPLOY_ISAR_BOOTSTRAP}"
-        rm bootstrap.tar
+    # we should restore symlinks after using tar
+    if [ -f bootstrap.tar.zst ]; then
+        mv bootstrap.tar.zst "${WORKDIR}/rootfs.tar.zst"
+        sudo ln -Tfsr "${WORKDIR}/rootfs.tar.zst" \
+                      "${DEPLOY_ISAR_BOOTSTRAP}.tar.zst"
     fi
 }
 

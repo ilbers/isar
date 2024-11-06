@@ -11,7 +11,6 @@ inherit deb-dl-dir
 
 FILESEXTRAPATHS:append = ":${LAYERDIR_core}/recipes-core/isar-bootstrap/files"
 
-ROOTFSDIR = "${WORKDIR}/rootfs"
 DISTRO_BOOTSTRAP_BASE_PACKAGES = "locales,apt,usrmerge"
 BOOTSTRAP_TMPDIR = "${WORKDIR}/tempdir"
 
@@ -72,9 +71,6 @@ do_bootstrap() {
         cp "${DISTRO_BOOTSTRAP_KEYRING}" "${WORKDIR}/trusted.gpg.d/"
     fi
     E="${@ isar_export_proxies(d)}"
-
-    sudo rm -rf --one-file-system "${ROOTFSDIR}"
-    mkdir -p "${ROOTFSDIR}"
 
     if [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" ]; then
         base_apt_tmp="$(mktemp -d /tmp/isar-base-aptXXXXXXXXXX)"
@@ -182,17 +178,9 @@ do_bootstrap() {
                    "${WORKDIR}/rootfs.tar.zst" \
                    "$bootstrap_list"
 
-    sudo -E -s <<'EOSUDO'
-        set -e
+    # Finalize bootstrap by setting the link in deploy
+    sudo ln -Tfsr "${WORKDIR}/rootfs.tar.zst" "${DEPLOY_ISAR_BOOTSTRAP}.tar.zst"
 
-        tar -xf "${WORKDIR}/rootfs.tar.zst" -C "${ROOTFSDIR}" --exclude="./dev/console"
-
-        # setup chroot
-        "${ROOTFSDIR}/chroot-setup.sh" "setup" "${ROOTFSDIR}"
-
-        # Finalize bootstrap by setting the link in deploy
-        ln -Tfsr "${ROOTFSDIR}" "${DEPLOY_ISAR_BOOTSTRAP}"
-EOSUDO
     if [ "${ISAR_USE_CACHED_BASE_REPO}" != "1" ]; then
         deb_dl_dir_export "${WORKDIR}/dl_dir" "${BOOTSTRAP_BASE_DISTRO}-${BASE_DISTRO_CODENAME}"
         sudo rm -rf --one-file-system "${WORKDIR}/dl_dir"
@@ -206,7 +194,7 @@ SSTATEPOSTINSTFUNCS += "bootstrap_sstate_finalize"
 
 bootstrap_sstate_prepare() {
     # this runs in SSTATE_BUILDDIR, which will be deleted automatically
-    sudo cp -a "$(dirname "${ROOTFSDIR}")/rootfs.tar.zst" ./bootstrap.tar.zst
+    sudo cp -a "${WORKDIR}/rootfs.tar.zst" ./bootstrap.tar.zst
     sudo chown $(id -u):$(id -g) bootstrap.tar.zst
 }
 
@@ -214,8 +202,8 @@ bootstrap_sstate_finalize() {
     # this runs in SSTATE_INSTDIR
     # we should restore symlinks after using tar
     if [ -f bootstrap.tar.zst ]; then
-        mv bootstrap.tar.zst "$(dirname "${ROOTFSDIR}")/rootfs.tar.zst"
-        sudo ln -Tfsr "$(dirname "${ROOTFSDIR}")/rootfs.tar.zst" \
+        mv bootstrap.tar.zst "${WORKDIR}/rootfs.tar.zst"
+        sudo ln -Tfsr "${WORKDIR}/rootfs.tar.zst" \
                       "${DEPLOY_ISAR_BOOTSTRAP}.tar.zst"
     fi
 }
