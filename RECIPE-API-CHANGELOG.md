@@ -680,3 +680,16 @@ Bitbake exit status depends on ISAR_FAIL_ON_CLEANUP bitbake variable:
 rootfs_do_umounts is not called from do_rootfs_finalize anymore.
 
 Every individual task that does mounting must also do the umounting at its end.
+
+### Default boostrap recipe changed to mmdebstrap
+
+New virtual packages bootstrap-host and bootstrap-target are introduced.
+There are two providers of bootstrap-host/-target currently:
+  * isar-mmdebstrap: deafult one using mmdebstrap to prepare rootfs
+  * isar-bootstrap: previous bootstrap implementation left for compatibility
+
+So default bootstrap procedure is now performing with mmdebstrap.
+Previous implementation still can be selected by setting in local.conf:
+
+PREFERRED_PROVIDER_bootstrap-host ?= "isar-bootstrap-host"
+PREFERRED_PROVIDER_bootstrap-target ?= "isar-bootstrap-target"
