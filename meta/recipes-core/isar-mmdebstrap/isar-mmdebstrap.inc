@@ -17,6 +17,14 @@ DISTRO_BOOTSTRAP_BASE_PACKAGES:append:gnupg = ",gnupg"
 DISTRO_BOOTSTRAP_BASE_PACKAGES:append:https-support = ",ca-certificates"
 BOOTSTRAP_TMPDIR = "${WORKDIR}/tempdir"
 
+# Fix for /var/lib/apt/available while maybe-jessie-or-older hook do not work
+MM_HOOK_JESSIE = "/usr/share/mmdebstrap/hooks/jessie-or-older"
+DPKG_HOOKS ?= "${@'--hook-dir='+d.getVar('MM_HOOK_JESSIE') \
+              if os.path.isdir(d.getVar('MM_HOOK_JESSIE')) \
+              else '--customize-hook=\'touch /var/lib/dpkg/available\''}"
+MMHOOKS:ubuntu-focal ?= "${DPKG_HOOKS}"
+MMHOOKS:debian-buster ?= "${DPKG_HOOKS}"
+
 def get_distro_primary_source_entry(d):
     for source in generate_distro_sources(d):
         if source[0] == "deb":
@@ -98,6 +106,7 @@ do_bootstrap() {
     sudo TMPDIR="${BOOTSTRAP_TMPDIR}" mmdebstrap $bootstrap_args \
                    $arch_param \
                    --mode=unshare \
+                   ${MMHOOKS} \
                    ${@get_distro_components_argument(d)} \
                    "${@get_distro_suite(d)}" \
                    "${WORKDIR}/rootfs.tar.zst" \
