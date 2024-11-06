@@ -148,7 +148,10 @@ rootfs_configure_apt() {
 
     mkdir -p '${ROOTFSDIR}/etc/apt/apt.conf.d'
     {
-        echo 'Acquire::Retries "3";'
+        echo 'Acquire::Retries "${ISAR_APT_RETRIES}";'
+        if [ -n "${ISAR_APT_DELAY_MAX}" ]; then
+            echo 'Acquire::Retries::Delay::Maximum "${ISAR_APT_DELAY_MAX}";'
+        fi
         if [ -n "${ISAR_APT_DL_LIMIT}" ]; then
             echo 'Acquire::http::Dl-Limit "${ISAR_APT_DL_LIMIT}";'
             echo 'Acquire::https::Dl-Limit "${ISAR_APT_DL_LIMIT}";'
