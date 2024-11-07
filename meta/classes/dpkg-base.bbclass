@@ -146,13 +146,19 @@ do_apt_unpack() {
     rm -rf ${S}
     schroot_create_configs
 
+    session_id=$(schroot -q -b -c ${SBUILD_CHROOT})
+    echo "Started session: ${session_id}"
+
     schroot_cleanup() {
+        schroot -q -f -e -c ${session_id} > /dev/null 2>&1
         schroot_delete_configs
     }
     trap 'exit 1' INT HUP QUIT TERM ALRM USR1
     trap 'schroot_cleanup' EXIT
 
-    schroot -d / -c ${SBUILD_CHROOT} -- \
+    schroot -r -c ${session_id} -d / -u root -- \
+        rm /etc/apt/sources.list.d/isar-apt.list /etc/apt/preferences.d/isar-apt
+    schroot -r -c ${session_id} -d / -- \
         sh -c '
             set -e
             for uri in $2; do
@@ -162,6 +168,8 @@ do_apt_unpack() {
                 dpkg-source -x "${dscfile}" "${PPS}"
             done' \
                 my_script "${BASE_DISTRO}-${BASE_DISTRO_CODENAME}" "${SRC_APT}"
+
+    schroot -e -c ${session_id}
     schroot_delete_configs
 }
 do_apt_unpack[network] = "${TASK_USE_SUDO}"
