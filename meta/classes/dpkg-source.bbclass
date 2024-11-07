@@ -20,6 +20,13 @@ do_dpkg_source() {
 }
 addtask dpkg_source after do_prepare_build
 
+CLEANFUNCS += "deb_clean_source"
+
+deb_clean_source() {
+    repo_del_srcpackage "${REPO_ISAR_DIR}"/"${DISTRO}" \
+        "${REPO_ISAR_DB_DIR}"/"${DISTRO}" "${DEBDISTRONAME}" "${DEBIAN_SOURCE}"
+}
+
 do_deploy_source[depends] += "isar-apt:do_cache_config"
 do_deploy_source[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
 do_deploy_source[dirs] = "${S}"
