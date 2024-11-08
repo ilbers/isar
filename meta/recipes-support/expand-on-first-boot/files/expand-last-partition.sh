@@ -78,28 +78,14 @@ fi
 # some filesystems need to be mounted i.e. btrfs, but mounting also helps
 # detect the filesystem type without having to wait for udev
 # mount $LAST_PART out of tree, so we won't conflict with other mounts
+MOUNT_POINT=$(mktemp -d -p "" "$(basename "$0").XXXXXXXXXX")
+mount "${LAST_PART}" "${MOUNT_POINT}"
+
 ret=0
 # Determine the filesystem type and perform the appropriate resize function
-FS_TYPE=$(blkid --output value --match-tag TYPE "${LAST_PART}" )
-MOUNT_POINT=$(mktemp -d -p "" "$(basename "$0").XXXXXXXXXX")
-if [ "$FS_TYPE" = "crypto_LUKS" ]; then
-	if [ ! -x /usr/sbin/cryptsetup ]; then
-		echo "'cryptsetup' is missing cannot resize last partition as it is from type 'crypto_LUKS'"
-		exit 1
-	fi
-	last_part_device_name=${LAST_PART#\/dev/}
-
-	mapping_name=$(cat /sys/class/block/"$last_part_device_name"/holders/*/dm/name)
-	cryptsetup resize "$mapping_name"
-	mount /dev/mapper/"$mapping_name" "${MOUNT_POINT}"
-	FS_TYPE=$(findmnt -fno FSTYPE "${MOUNT_POINT}" )
-	LAST_PART=/dev/mapper/"$mapping_name"
-else
-	mount "${LAST_PART}" "${MOUNT_POINT}"
-fi
+FS_TYPE=$(findmnt -fno FSTYPE "${MOUNT_POINT}" )
 case ${FS_TYPE} in
 ext*)
-
 	# Do not fail resize2fs if no mtab entry is found, e.g.,
 	# when using systemd mount units.
 	export EXT2FS_NO_MTAB_OK=1
