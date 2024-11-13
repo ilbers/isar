@@ -10,14 +10,16 @@ inherit dpkg-raw
 DESCRIPTION = "This service grows the last partition to the full medium during first boot"
 MAINTAINER = "isar-users <isar-users@googlegroups.com>"
 
+EXPAND_FSTYPES ?= "ext4 btrfs"
+
 DEBIAN_DEPENDS = " \
     systemd, \
     sed, \
     grep, \
     coreutils, \
     mount, \
-    btrfs-progs, \
-    e2fsprogs, \
+    ${@'e2fsprogs' if 'ext4' in d.getVar('EXPAND_FSTYPES').split() else ''}, \
+    ${@'btrfs-progs' if 'btrfs' in d.getVar('EXPAND_FSTYPES').split() else ''}, \
     fdisk (>=2.29.2-3) | util-linux (<2.29.2-3), \
     util-linux"
 
