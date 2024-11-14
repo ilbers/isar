@@ -1,0 +1,5 @@
+# short-description: Create qcow2 image for QEMU machines
+
+part / --source rootfs --fstype=ext4 --label root --align 4096 --size 4G
+
+bootloader

@@ -8,6 +8,9 @@ USING_WIC = "${@bb.utils.contains('IMAGE_BASETYPES', 'wic', '1', '0', d)}"
 WKS_FILE_CHECKSUM = "${@'${WKS_FULL_PATH}:%s' % os.path.exists('${WKS_FULL_PATH}') if bb.utils.to_boolean(d.getVar('USING_WIC')) else ''}"
 
 WKS_FILE ??= "sdimage-efi"
+# grub-efi is incompatible with targets riscv64 and mipsel
+WKS_FILE:riscv64 ??= "qemuriscv"
+WKS_FILE:mipsel ??= "qemudefault"
 
 do_copy_wks_template[file-checksums] += "${WKS_FILE_CHECKSUM}"
 do_copy_wks_template[vardepsexclude] += "WKS_TEMPLATE_PATH"
