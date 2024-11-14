@@ -150,6 +150,7 @@ config KAS_INCLUDE_PACKAGE_ISAR_CI_SSH_SETUP
 config PACKAGE_PREBUILT_DOCKER_IMG
         bool "prebuilt-docker-img"
         default y
+        depends on ARCH_AMD64 || ARCH_ARM64 || ARCH_ARM
 
 config KAS_INCLUDE_PACKAGE_PREBUILT_DOCKER_IMG
         string
