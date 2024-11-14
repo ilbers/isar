@@ -1,0 +1,7 @@
+# short-description: Create installer image for RPi machines
+
+part /boot --source bootimg-partition --fstype=vfat --label boot --active --align 4096 --size 10 --use-uuid
+part / --source rootfs --fstype ext4 --exclude-path=install --label installroot --align 4096 --exclude-path=boot --use-uuid
+part /install --source rootfs --change-directory=install --label INSTALLDATA --size 4G --fstype=vfat --use-uuid --align 4096
+
+bootloader
