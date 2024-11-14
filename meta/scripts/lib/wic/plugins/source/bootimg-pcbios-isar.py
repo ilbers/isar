@@ -134,7 +134,9 @@ class BootimgPcbiosIsarPlugin(SourcePlugin):
 
             kernel = "/vmlinuz"
 
-            kernel, initrd = isar_get_filenames(get_bitbake_var("IMAGE_ROOTFS"))
+            kernel, initrd = isar_get_filenames(
+                get_bitbake_var("IMAGE_ROOTFS"), get_bitbake_var("KERNEL_FILE")
+            )
 
             syslinux_conf += "KERNEL " + kernel + "\n"
 

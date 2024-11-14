@@ -15,9 +15,13 @@ def isar_populate_boot_cmd(rootfs_dir, hdddir):
     # no not copy symlinks (ubuntu places them here) because targetfs is fat
     return "find %s/boot -type f -exec cp -a {} %s ;" % (rootfs_dir, hdddir)
 
-def isar_get_filenames(rootfs_dir):
+
+def isar_get_filenames(rootfs_dir, kernel_file=None):
     # figure out the real filename in /boot by following debian symlinks
-    for kernel_symlink in ["vmlinuz", "vmlinux" ]:
+    possible_kernel_files = ["vmlinuz", "vmlinux"]
+    if kernel_file:
+        possible_kernel_files.insert(0, kernel_file)
+    for kernel_symlink in possible_kernel_files:
         kernel_file_abs = os.path.join(rootfs_dir, kernel_symlink)
         if os.path.isfile(kernel_file_abs):
             break

@@ -110,7 +110,7 @@ WICVARS += "\
            ROOTFS_SIZE STAGING_DATADIR STAGING_DIR STAGING_LIBDIR TARGET_SYS TRANSLATED_TARGET_ARCH"
 
 # Isar specific vars used in our plugins
-WICVARS += "DISTRO DISTRO_ARCH"
+WICVARS += "DISTRO DISTRO_ARCH KERNEL_FILE"
 
 python do_rootfs_wicenv () {
     wicvars = d.getVar('WICVARS')
