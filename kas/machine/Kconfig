@@ -6,6 +6,24 @@
 
 menu "Machine selection"
 
+config ARCH_AMD64
+	bool
+
+config ARCH_ARM64
+	bool
+
+config ARCH_ARMHF
+	bool
+
+config ARCH_I386
+	bool
+
+config ARCH_MIPSEL
+	bool
+
+config ARCH_RISCV64
+	bool
+
 choice
 	prompt "Machine selection"
 	default MACHINE_QEMU_AMD64
@@ -13,110 +31,137 @@ choice
 config MACHINE_BANANAPI
 	bool "bananapi"
 	depends on DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM
+	select ARCH_ARM64
 
 config MACHINE_BEAGLEPLAY
 	bool "beagleplay"
 	depends on DEBIAN_BOOKWORM
+	select ARCH_ARM64
 
 config MACHINE_CONTAINER_AMD64
 	bool "container-amd64"
 	depends on DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM
+	select ARCH_AMD64
 
 config MACHINE_DE0_NANO_SOC
 	bool "de0-nano-soc"
 	depends on DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM
+	select ARCH_ARMHF
 
 config MACHINE_HIKEY
 	bool "hikey"
 	depends on DEBIAN_BULLSEYE || DEBIAN_BOOKWORM
+	select ARCH_ARM64
 
 config MACHINE_IMX6_SABRELITE
 	bool "imx6-sabrelite"
 	depends on DEBIAN_BUSTER || DEBIAN_BULLSEYE
+	select ARCH_ARMHF
 
 config MACHINE_NANOPI_NEO
 	bool "nanopi-neo"
 	depends on DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM
+	select ARCH_ARMHF
 
 config MACHINE_NANOPI_NEO_EFI
 	bool "nanopi-neo-efi"
 	depends on DEBIAN_BOOKWORM
+	select ARCH_ARMHF
 
 config MACHINE_PHYBOARD_MIRA
 	bool "phyboard-mira"
 	depends on DEBIAN_BULLSEYE || DEBIAN_BOOKWORM
+	select ARCH_ARMHF
 
 config MACHINE_QEMU_AMD64_CIP
 	bool "qemuamd64-cip"
 	depends on DEBIAN_BOOKWORM
+	select ARCH_AMD64
 
 config MACHINE_QEMU_AMD64_SB
 	bool "qemuamd64-sb"
 	depends on DEBIAN_BULLSEYE
+	select ARCH_AMD64
 
 config MACHINE_QEMU_AMD64
 	bool "qemuamd64"
 	depends on DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM || DEBIAN_TRIXIE || UBUNTU_FOCAL || UBUNTU_JAMMY || UBUNTU_NOBLE
+	select ARCH_AMD64
 
 config MACHINE_QEMU_ARM
 	bool "qemuarm"
 	depends on DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM || DEBIAN_TRIXIE
+	select ARCH_ARMHF
 
 config MACHINE_QEMU_ARM64
 	bool "qemuarm64"
 	depends on DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM || DEBIAN_TRIXIE || UBUNTU_FOCAL || UBUNTU_JAMMY || UBUNTU_NOBLE
+	select ARCH_ARM64
 
 config MACHINE_QEMU_I386
 	bool "qemui386"
 	depends on DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM
+	select ARCH_I386
 
 config MACHINE_QEMU_MIPSEL
 	bool "qemumipsel"
 	depends on DEBIAN_BULLSEYE || DEBIAN_BOOKWORM
+	select ARCH_MIPSEL
 
 config MACHINE_QEMU_RISCV64
 	bool "qemuriscv64"
 	depends on DEBIAN_TRIXIE || DEBIAN_SID
+	select ARCH_RISCV64
 
 config MACHINE_RPI_ARM_V7
 	bool "rpi-arm-v7"
 	depends on RASPIOS_BULLSEYE || RASPIOS_BOOKWORM
+	select ARCH_ARMHF
 
 config MACHINE_RPI_ARM_V7L
 	bool "rpi-arm-v7l"
 	depends on RASPIOS_BULLSEYE || RASPIOS_BOOKWORM
+	select ARCH_ARMHF
 
 config MACHINE_RPI_ARM
 	bool "rpi-arm"
 	depends on RASPIOS_BULLSEYE || RASPIOS_BOOKWORM
+	select ARCH_ARMHF
 
 config MACHINE_RPI_ARM64_V8
 	bool "rpi-arm64-v8"
 	depends on RASPIOS_BULLSEYE || RASPIOS_BOOKWORM
+	select ARCH_ARM64
 
 config MACHINE_SIFIVE_FU540
 	bool "sifive-fu540"
 	depends on DEBIAN_TRIXIE || DEBIAN_SID
+	select ARCH_RISCV64
 
 config MACHINE_STARFIVE_VISIONFIVE2
 	bool "starfive-visionfive2"
 	depends on DEBIAN_TRIXIE || DEBIAN_SID
+	select ARCH_RISCV64
 
 config MACHINE_STM32MP15X
 	bool "stm32mp15x"
 	depends on DEBIAN_BULLSEYE
+	select ARCH_ARMHF
 
 config MACHINE_VIRTUALBOX
 	bool "virtualbox"
 	depends on DEBIAN_BULLSEYE || DEBIAN_BOOKWORM
+	select ARCH_AMD64
 
 config MACHINE_VMWARE
 	bool "vmware"
 	depends on DEBIAN_BULLSEYE
+	select ARCH_AMD64
 
 config MACHINE_X86_PC
 	bool "x86 PC"
 	depends on DEBIAN_BULLSEYE || DEBIAN_BOOKWORM || DEBIAN_TRIXIE || UBUNTU_FOCAL || UBUNTU_JAMMY || UBUNTU_NOBLE
+	select ARCH_AMD64
 
 endchoice
 
