@@ -159,6 +159,8 @@ config KAS_INCLUDE_PACKAGE_PREBUILT_DOCKER_IMG
 config PACKAGE_PREBUILT_PODMAN_IMG
         bool "prebuilt-podman-img"
         default y
+        depends on DEBIAN_BULLSEYE || DEBIAN_BOOKWORM || DEBIAN_TRIXIE || UBUNTU_JAMMY || UBUNTU_NOBLE
+        depends on ARCH_AMD64 || ARCH_ARM64 || ARCH_ARM
 
 config KAS_INCLUDE_PACKAGE_PREBUILT_PODMAN_IMG
         string
