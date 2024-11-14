@@ -284,6 +284,7 @@ python() {
         # set per type imager dependencies
         d.setVar('INSTALL_image_%s' % bt_clean, d.getVar('IMAGER_INSTALL'))
         d.appendVar('INSTALL_image_%s' % bt_clean, ' ' + ' '.join(sorted(local_imager_install | local_conversion_install)))
+        d.appendVarFlag(task, 'vardeps', ' INSTALL_image_%s' % bt_clean)
 
     d.appendVar('IMAGER_INSTALL', ' ' + ' '.join(sorted(imager_install | conversion_install)))
     d.appendVar('IMAGER_BUILD_DEPS', ' ' + ' '.join(sorted(imager_build_deps)))
