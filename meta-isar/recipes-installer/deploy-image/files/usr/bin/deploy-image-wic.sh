@@ -125,10 +125,11 @@ if ! $installer_unattended; then
 fi
 
 if ! cmp /dev/zero "$installer_target_dev" -n 1M; then
-    if ! $installer_unattended && \
-       ! dialog --defaultno \
-                --yesno "WARNING: Target device is not empty! Continue anyway?" 5 60; then
-        exit 0
+    if ! $installer_unattended; then
+        if ! dialog --defaultno \
+                    --yesno "WARNING: Target device is not empty! Continue anyway?" 5 60; then
+            exit 0
+        fi
     else
         if [ "$installer_target_overwrite" != "OVERWRITE" ]; then
             echo "Target device is not empty! -> Abort"
