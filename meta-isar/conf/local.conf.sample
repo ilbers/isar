@@ -30,7 +30,7 @@ MACHINE ??= "qemuarm"
 # generation of schroot environment and target root filesystem.
 #
 # This sets the default distribution configuration:
-DISTRO ??= "debian-bullseye"
+DISTRO ??= "debian-bookworm"
 DISTRO_ARCH ??= "armhf"
 
 #
