@@ -14,6 +14,6 @@ INITRAMFS_PREINSTALL += " \
 
 # Recipes that should be installed into the initramfs build rootfs.
 INITRAMFS_INSTALL += " \
-    initramfs-example \
+    initramfs-isar-example-hook \
     initramfs-fsck-hook-ext4 \
     "

@@ -4,37 +4,30 @@
 #
 # This software is a part of ISAR.
 
+require recipes-initramfs/initramfs-hook/hook.inc
+
 DESCRIPTION = "Sample initramfs module for ISAR"
 MAINTAINER = "Your name here <you@domain.com>"
-DEBIAN_DEPENDS = "initramfs-tools"
 
 # If the conf-hook enables BUSYBOX=y, busybox is needed:
 DEBIAN_DEPENDS .= ", busybox"
 
-SRC_URI = " \
+SRC_URI += " \
     file://example.conf-hook \
-    file://example.hook \
-    file://example.script \
+    file://local-top \
     "
-
-inherit dpkg-raw
 
 do_install[cleandirs] += " \
     ${D}/usr/share/initramfs-tools/conf-hooks.d \
-    ${D}/usr/share/initramfs-tools/hooks \
-    ${D}/usr/share/initramfs-tools/scripts/local-top \
     "
-do_install() {
+do_install:append() {
     # See "CONFIGURATION HOOK SCRIPTS" in initramfs-tools(7) for details.
     install "${WORKDIR}/example.conf-hook" \
         "${D}/usr/share/initramfs-tools/conf-hooks.d/isar-example"
 
-    # See "HOOK SCRIPTS" in initramfs-tools(7) for details.
-    install "${WORKDIR}/example.hook" \
-        "${D}/usr/share/initramfs-tools/hooks/isar-example"
+    # See "HOOK SCRIPTS" in initramfs-tools(7) for details on
+    # hook-header[.tmpl] + hook.
 
     # Note that there are other places where a boot script might be deployed to,
     # apart from local-top.  See "BOOT SCRIPTS" in initramfs-tools(7) for details.
-    install "${WORKDIR}/example.script" \
-        "${D}/usr/share/initramfs-tools/scripts/local-top/example.script"
 }

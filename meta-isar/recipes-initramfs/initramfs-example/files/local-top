@@ -1,0 +1,3 @@
+# Script header is provided by initramfs-hook/hook.inc
+
+log_success_msg "Hello from ISAR!"
