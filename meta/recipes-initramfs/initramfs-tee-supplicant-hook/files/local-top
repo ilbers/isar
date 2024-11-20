@@ -1,4 +1,4 @@
-#!/bin/sh
+#
 # Copyright (c) Siemens AG, 2023
 #
 # Authors:
@@ -6,22 +6,6 @@
 #
 # SPDX-License-Identifier: MIT
 #
-
-set -e
-
-PREREQ=""
-prereqs()
-{
-	echo "$PREREQ"
-}
-case $1 in
-prereqs)
-	prereqs
-	exit 0
-	;;
-esac
-
-. /scripts/functions
 
 /usr/sbin/modprobe optee
 /usr/sbin/tee-supplicant -d
