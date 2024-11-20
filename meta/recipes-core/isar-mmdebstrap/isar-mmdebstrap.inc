@@ -19,8 +19,8 @@ MM_HOOK_JESSIE = "/usr/share/mmdebstrap/hooks/jessie-or-older"
 DPKG_HOOKS ?= "${@'--hook-dir='+d.getVar('MM_HOOK_JESSIE') \
               if os.path.isdir(d.getVar('MM_HOOK_JESSIE')) \
               else '--customize-hook=\'touch /var/lib/dpkg/available\''}"
-MMHOOKS:ubuntu-focal ?= "${DPKG_HOOKS}"
-MMHOOKS:debian-buster ?= "${DPKG_HOOKS}"
+MMHOOKS:focal ?= "${DPKG_HOOKS}"
+MMHOOKS:buster ?= "${DPKG_HOOKS}"
 
 DISTRO_BOOTSTRAP_KEYRING = "${WORKDIR}/distro-keyring.gpg"
 
