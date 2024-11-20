@@ -1611,3 +1611,61 @@ CONTAINER_DELETE_AFTER_LOAD = "1"
 
 SRC_URI += "docker://debian;digest=sha256:f528891ab1aa484bf7233dbcc84f3c806c3e427571d75510a9d74bb5ec535b33;tag=bookworm-20240701-slim"
 ```
+
+## Customize the initramfs
+
+Isar supports the customization of initramfs images by providing an
+infrastructure for quickly creating hooks and by allowing to replace the
+Debian-generated image with a separately built one.
+
+### Creating initramfs hooks
+
+To create an initramfs hook that adds tools or modules to the image and may
+also run custom scripts during boot, use the include file
+`recipes-initramfs/initramfs-hook/hook.inc`. It is controlled via a number of
+variables:
+
+ - `HOOK_PREREQ` defines the prerequisites for running the hook script.
+ - `HOOK_ADD_MODULES` passes the provided modules names to the
+   `manual_add_modules` function during initramfs creation.
+ - `HOOK_COPY_EXECS` identifies the source of the passed executables on the
+   rootfs that runs mkinitramfs and passes that to `copy_exec`. If an
+   executable is not found, an error thrown, and the creation fails.
+ - `SCRIPT_PREREQ` defines the prerequisites for running the boot script(s).
+
+If the generated hook script is not sufficient, you can append an own
+bottom-half script by providing a `hook` file in `${WORKDIR}`. It will be
+appended to the `hook-header` that the helper generates.
+
+For running a custom script during boot-up, provide a bottom-half file in
+`${WORKDIR}`. Its name defines where it is hooked up with the initramfs boot
+process: `init-top`, `init-premount`, `local-top`, `nfs-top`, `local-block`,
+`local-premount`, `nfs-premount`, `local-bottom`, `nfs-bottom`, `init-bottom`.
+If you do not benefit from the script header with its static `SCRIPT_PREREQ`,
+you may instead provide `init-top-complete`, `init-premount-complete` etc. to
+still use automatic installation while defining the boot script completely
+yourself.
+
+See https://manpages.debian.org/stable/initramfs-tools-core/initramfs-tools.7.en.html
+for further details.
+
+The hook recipe should follow the naming convention `initramfs-<hook-name>-hook`
+so that its scripts will then be called `<hook-name>` in the generated
+initramfs.
+
+See `initramfs-example` for an exemplary hook recipe.
+
+### Creating an initramfs image aside the rootfs
+
+To avoid shipping all tools and binaries needed to generate an initramfs, isar
+provides the initramfs class. It creates a temporary Debian rootfs with all
+those dependencies and generates the initramfs from there, rather than the
+target's rootfs.
+
+This initramfs class should be pulled in by an image recipe. Said recipe
+specifies all dependencies of the initramfs via `INITRAMFS_INSTALL` for
+self-built packages and `INITRAMFS_PREINSTALL` for prebuilt ones, analogously
+to the respective `IMAGE_*` variables. Note that the kernel is automatically
+added to `INITRAMFS_INSTALL` if `KERNEL_NAME` is set.
+
+See `isar-initramfs` for an example recipe.
