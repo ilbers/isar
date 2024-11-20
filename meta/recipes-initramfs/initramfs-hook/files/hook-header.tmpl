@@ -1,0 +1,39 @@
+#!/bin/sh
+#
+# Copyright (c) Siemens AG, 2024
+#
+# Authors:
+#  Jan Kiszka <jan.kiszka@siemens.com>
+#
+# SPDX-License-Identifier: MIT
+#
+
+set -e
+
+prereqs()
+{
+	echo "${HOOK_PREREQ}"
+}
+
+case $1 in
+prereqs)
+	prereqs
+	exit 0
+	;;
+esac
+
+. /usr/share/initramfs-tools/hook-functions
+
+for module in ${HOOK_ADD_MODULES}; do
+	manual_add_modules $module
+done
+
+for executable in ${HOOK_COPY_EXECS}; do
+	if exec_path=$(command -v $executable 2>/dev/null); then
+		copy_exec "$exec_path"
+	else
+		echo "(ERROR): Unable to copy $executable" >&2
+		exit 1
+	fi
+done
+
