@@ -128,8 +128,10 @@ do_apt_fetch() {
                 mkdir -p /downloads/deb-src/"$1"/${uri}
                 cd /downloads/deb-src/"$1"/${uri}
                 apt-get -y --download-only --only-source source ${uri}
+                mkdir -p ../$2_$3
+                cp *.* ../$2_$3/
             done' \
-                my_script "${BASE_DISTRO}-${BASE_DISTRO_CODENAME}" "${SRC_APT}"
+                my_script "${BASE_DISTRO}-${BASE_DISTRO_CODENAME}" "${SRC_APT}" "${session_id}"
 
     schroot -e -c ${session_id}
     schroot_delete_configs
