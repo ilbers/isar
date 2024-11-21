@@ -24,6 +24,19 @@ MMHOOKS:buster ?= "${DPKG_HOOKS}"
 
 DISTRO_BOOTSTRAP_KEYRING = "${WORKDIR}/distro-keyring.gpg"
 
+def get_apt_opts(d, param):
+    opts = []
+    retries = d.getVar('ISAR_APT_RETRIES') or "3"
+    opts.append(f'Acquire::Retries="{retries}"')
+    max_delay = d.getVar('ISAR_APT_DELAY_MAX')
+    if max_delay:
+        opts.append(f'Acquire::Retries::Delay::Maximum="{max_delay}"')
+    dl_limit = d.getVar('ISAR_APT_DL_LIMIT')
+    if dl_limit:
+        opts.append(f'Acquire::http::Dl-Limit="{dl_limit}"')
+        opts.append(f'Acquire::https::Dl-Limit="{dl_limit}"')
+    return ' '.join([f'{param} {o}' for o in opts])
+
 do_generate_keyrings[cleandirs] = "${WORKDIR}/trusted.gpg.d"
 do_generate_keyrings[dirs] = "${DEBDIR}"
 do_generate_keyrings[vardeps] += "DISTRO_BOOTSTRAP_KEYS THIRD_PARTY_APT_KEYS"
@@ -126,7 +139,8 @@ do_bootstrap() {
                                  -o Dir::State="$1/var/lib/apt" \
                                  -o Dir::Etc="$1/etc/apt" \
                                  -o Dir::Cache="$1/var/cache/apt" \
-                                 -o Apt::Architecture="${BOOTSTRAP_DISTRO_ARCH}"'
+                                 -o Apt::Architecture="${BOOTSTRAP_DISTRO_ARCH}" \
+                                 ${@get_apt_opts(d, '-o')}'
         extra_essential="$extra_essential && $syncout"
         extra_customize="$syncout"
     fi
@@ -173,6 +187,7 @@ do_bootstrap() {
                    --customize-hook='chroot "$1" /usr/bin/apt-get -y clean' \
                    --skip=cleanup/apt \
                    --skip=download/empty \
+                   ${@get_apt_opts(d, '--aptopt')} \
                    ${@get_distro_components_argument(d)} \
                    "${@get_distro_suite(d)}" \
                    "${WORKDIR}/rootfs.tar.zst" \
