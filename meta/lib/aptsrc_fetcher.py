@@ -42,6 +42,8 @@ class AptSrc(FetchMethod):
                         mkdir -p /downloads/{ud.localfile}
                         cd /downloads/{ud.localfile}
                         apt-get -y --download-only --only-source source {ud.src_package}
+                        mkdir -p ../{ud.src_package}_{session_id}
+                        cp *.* ../{ud.src_package}_{session_id}/
                         '
                 ''', d)
         except (OSError, FetchError):
