@@ -93,7 +93,9 @@ repo_del_package() {
 
 repo_contains_package() {
     local dir="$1"
-    local file="$2"
+    local dbdir="$2"
+    local codename="$3"
+    local file="$4"
     local package
 
     package=$(find ${dir} -name ${file##*/})
