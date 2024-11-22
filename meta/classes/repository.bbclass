@@ -98,7 +98,28 @@ repo_contains_package() {
     local file="$4"
     local package
 
-    package=$(find ${dir} -name ${file##*/})
+    # Extract meta-data from the provided .deb file
+    package=$(dpkg-deb -f ${file} Package Version Architecture)
+
+    # Output for each field is "Field: Value"
+    # odd indexes hold field names, even indexes hold values
+    set -- ${package}
+
+    # lookup ${file} in the database for the current suite
+    package=$(reprepro -b ${dir} --dbdir ${dbdir} \
+                       --list-format '${$fullfilename}\n' \
+                       listfilter ${codename} '
+                           Package (= '${2}'),
+                           Version (= '${4}'),
+                           Architecture (= '${6}'),
+                           $PackageType (= deb)')
+
+    # we only need the first match (should there be more). Use shell builtins to avoid
+    # spawning an additional process (e.g. "head")
+    set -- ${package}
+    package="${1}"
+
+    # package found in the database?
     if [ -n "$package" ]; then
         # yes
         cmp --silent "$package" "$file" && return 0
