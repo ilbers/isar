@@ -84,14 +84,11 @@ repo_del_package() {
     if [ -n "${GNUPGHOME}" ]; then
         export GNUPGHOME="${GNUPGHOME}"
     fi
-    local p=$( dpkg-deb --show --showformat '${Package}' "${file}" )
-    local a=$( dpkg-deb --show --showformat '${Architecture}' "${file}" )
-    # removing "all" means no arch
-    local aarg="-A ${a}"
-    [ "${a}" = "all" ] && aarg=""
-    reprepro -b "${dir}" --dbdir "${dbdir}" -C main ${aarg} \
-        remove "${codename}" \
-        "${p}"
+    set -- $( dpkg-deb --show --showformat '${Package} ${Architecture}' "${file}" )
+    local p="${1}" a="${2}"
+    reprepro -b "${dir}" --dbdir "${dbdir}" -C main \
+        removefilter "${codename}" \
+        'Package (= '${p}'), Architecture (= '${a}'), $PackageType (= deb)'
 }
 
 repo_contains_package() {
