@@ -12,6 +12,8 @@ inherit deb-dl-dir
 FILESEXTRAPATHS:append = ":${LAYERDIR_core}/recipes-core/isar-bootstrap/files"
 
 DISTRO_BOOTSTRAP_BASE_PACKAGES = "locales,apt,usrmerge"
+DISTRO_BOOTSTRAP_BASE_PACKAGES:append:https-support = ",ca-certificates"
+
 BOOTSTRAP_TMPDIR = "${WORKDIR}/tempdir"
 
 # Fix for /var/lib/apt/available while maybe-jessie-or-older hook do not work
@@ -23,6 +25,17 @@ MMHOOKS:focal ?= "${DPKG_HOOKS}"
 MMHOOKS:buster ?= "${DPKG_HOOKS}"
 
 DISTRO_BOOTSTRAP_KEYRING = "${WORKDIR}/distro-keyring.gpg"
+
+def get_distro_have_https_source(d):
+    return any(source[2].startswith("https://") for source in generate_distro_sources(d))
+
+def get_distro_needs_https_support(d):
+    if get_distro_have_https_source(d):
+        return "https-support"
+    else:
+        return ""
+
+OVERRIDES:append = ":${@get_distro_needs_https_support(d)}"
 
 def get_apt_opts(d, param):
     opts = []
