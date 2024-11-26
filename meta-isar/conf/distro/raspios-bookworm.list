@@ -1,5 +1,5 @@
-deb http://raspbian.raspberrypi.org/raspbian/ bookworm main contrib non-free rpi
-deb-src http://raspbian.raspberrypi.org/raspbian/ bookworm main contrib non-free rpi
+deb http://raspbian.raspberrypi.org/raspbian bookworm main contrib non-free rpi
+deb-src http://raspbian.raspberrypi.org/raspbian bookworm main contrib non-free rpi
 
-deb http://archive.raspberrypi.org/debian/ bookworm main
-deb-src http://archive.raspberrypi.org/debian/ bookworm main
+deb http://archive.raspberrypi.org/debian bookworm main
+deb-src http://archive.raspberrypi.org/debian bookworm main
