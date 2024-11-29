@@ -14,9 +14,30 @@ IMAGE_CMD:tar() {
 
 # image type: ext4
 IMAGER_INSTALL:ext4 += "e2fsprogs"
-MKE2FS_ARGS ?=  "-t ext4"
 
+# NOTE: Creating reproducible ext4 images requires timestamp clamping to SOURCE_DATE_EPOCH and deterministic uuid, hash_seed to be set.
+# Timestamp clamping to SOURCE_DATE_EPOCH is only available from e2fsprogs v1.47.1 onwards. Older versions cannot generate reproducible ext4 images.
+python set_mke2fs_args () {
+    import uuid
+
+    mke2fs_args = "-t ext4"
+    sde_time = int(os.getenv('SOURCE_DATE_EPOCH'))
+
+    # set uuid
+    fsuuid = uuid.UUID(int=sde_time)
+    mke2fs_args += " -U " + str(fsuuid)
+
+    # set hash_seed
+    hash_seed = str(uuid.uuid5(fsuuid, str(sde_time)))
+    mke2fs_args += " -E hash_seed=" + hash_seed
+
+    d.setVar("MKE2FS_ARGS", mke2fs_args)
+}
+
+do_image_ext4[prefuncs] = "set_mke2fs_args"
 IMAGE_CMD:ext4() {
+    export E2FSPROGS_FAKE_TIME="${SOURCE_DATE_EPOCH}"
+
     truncate -s ${ROOTFS_SIZE}K '${IMAGE_FILE_HOST}'
 
     ${SUDO_CHROOT} /sbin/mke2fs ${MKE2FS_ARGS} \
