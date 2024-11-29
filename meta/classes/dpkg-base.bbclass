@@ -79,108 +79,26 @@ do_adjust_git[lockfiles] += "${DL_DIR}/git/isar.lock"
 inherit patch
 addtask patch after do_adjust_git
 
-SRC_APT ?= ""
-
-# filter out all "apt://" URIs out of SRC_URI and stick them into SRC_APT
 python() {
+    from bb.fetch2 import methods
+
+    # apt-src fetcher
+    import aptsrc_fetcher
+    methods.append(aptsrc_fetcher.AptSrc())
+
     src_uri = (d.getVar('SRC_URI', False) or "").split()
-
-    prefix = "apt://"
-    src_apt = []
     for u in src_uri:
-        if u.startswith(prefix):
-            src_apt.append(u[len(prefix) :])
-            d.setVar('SRC_URI:remove', u)
+        if u.startswith("apt://"):
+            d.appendVarFlag('do_fetch', 'depends', d.getVar('SCHROOT_DEP'))
 
-    d.prependVar('SRC_APT', ' '.join(src_apt))
-
-    if len(d.getVar('SRC_APT').strip()) > 0:
-        bb.build.addtask('apt_unpack', 'do_patch', '', d)
-        bb.build.addtask('cleanall_apt', 'do_cleanall', '', d)
+            d.appendVarFlag('do_unpack', 'cleandirs', d.getVar('S'))
+            d.setVarFlag('do_unpack', 'network', d.getVar('TASK_USE_SUDO'))
+            break
 
     # container docker fetcher
     import container_fetcher
-    from bb.fetch2 import methods
 
     methods.append(container_fetcher.Container())
-}
-
-do_apt_fetch() {
-    E="${@ isar_export_proxies(d)}"
-    schroot_create_configs
-
-    session_id=$(schroot -q -b -c ${SBUILD_CHROOT})
-    echo "Started session: ${session_id}"
-
-    schroot_cleanup() {
-        schroot -q -f -e -c ${session_id} > /dev/null 2>&1
-        schroot_delete_configs
-    }
-    trap 'exit 1' INT HUP QUIT TERM ALRM USR1
-    trap 'schroot_cleanup' EXIT
-
-    schroot -r -c ${session_id} -d / -u root -- \
-        rm /etc/apt/sources.list.d/isar-apt.list /etc/apt/preferences.d/isar-apt
-    schroot -r -c ${session_id} -d / -- \
-        sh -c '
-            set -e
-            for uri in $2; do
-                mkdir -p /downloads/deb-src/"$1"/${uri}
-                cd /downloads/deb-src/"$1"/${uri}
-                apt-get -y --download-only --only-source source ${uri}
-            done' \
-                my_script "${BASE_DISTRO}-${BASE_DISTRO_CODENAME}" "${SRC_APT}"
-
-    schroot -e -c ${session_id}
-    schroot_delete_configs
-}
-
-addtask apt_fetch
-do_apt_fetch[lockfiles] += "${REPO_ISAR_DIR}/isar.lock"
-do_apt_fetch[network] = "${TASK_USE_NETWORK_AND_SUDO}"
-
-# Add dependency from the correct schroot: host or target
-do_apt_fetch[depends] += "${SCHROOT_DEP}"
-
-do_apt_unpack() {
-    rm -rf ${S}
-    schroot_create_configs
-
-    session_id=$(schroot -q -b -c ${SBUILD_CHROOT})
-    echo "Started session: ${session_id}"
-
-    schroot_cleanup() {
-        schroot -q -f -e -c ${session_id} > /dev/null 2>&1
-        schroot_delete_configs
-    }
-    trap 'exit 1' INT HUP QUIT TERM ALRM USR1
-    trap 'schroot_cleanup' EXIT
-
-    schroot -r -c ${session_id} -d / -u root -- \
-        rm /etc/apt/sources.list.d/isar-apt.list /etc/apt/preferences.d/isar-apt
-    schroot -r -c ${session_id} -d / -- \
-        sh -c '
-            set -e
-            for uri in $2; do
-                dscfile="$(apt-get -y -qq --print-uris --only-source source $uri | cut -d " " -f2 | grep -E "*.dsc")"
-                cd ${PP}
-                cp /downloads/deb-src/"${1}"/${uri}/* ${PP}
-                dpkg-source -x "${dscfile}" "${PPS}"
-            done' \
-                my_script "${BASE_DISTRO}-${BASE_DISTRO_CODENAME}" "${SRC_APT}"
-
-    schroot -e -c ${session_id}
-    schroot_delete_configs
-}
-do_apt_unpack[network] = "${TASK_USE_SUDO}"
-
-addtask apt_unpack after do_apt_fetch
-
-do_cleanall_apt[nostamp] = "1"
-do_cleanall_apt() {
-    for uri in "${SRC_APT}"; do
-        rm -rf "${DEBSRCDIR}/${BASE_DISTRO}-${BASE_DISTRO_CODENAME}/$uri"
-    done
 }
 
 def get_package_srcdir(d):
