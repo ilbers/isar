@@ -85,13 +85,10 @@ inherit image-account-extension
 ROOTFS_EXTRA ?= "64"
 
 def get_rootfs_size(d):
-    import subprocess
+    import subprocess, oe.utils
     rootfs_extra = int(d.getVar("ROOTFS_EXTRA"))
 
-    output = subprocess.check_output(
-        ["sudo", "du", "-xs", "--block-size=1k", d.getVar("IMAGE_ROOTFS")]
-    )
-    base_size = int(output.split()[0])
+    base_size = int(oe.utils.directory_size(d.getVar("IMAGE_ROOTFS")) / 1024)
 
     return base_size + rootfs_extra * 1024
 
