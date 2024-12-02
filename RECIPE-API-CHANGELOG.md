@@ -693,3 +693,12 @@ Previous implementation still can be selected by setting in local.conf:
 
 PREFERRED_PROVIDER_bootstrap-host ?= "isar-bootstrap-host"
 PREFERRED_PROVIDER_bootstrap-target ?= "isar-bootstrap-target"
+
+### Cross-compilation is enabled by default
+
+Default ISAR_CROSS_COMPILE value was changed to "1".
+There is no more need to set global ISAR_CROSS_COMPILE = "1" in local.conf to
+enable cross-compilation. Otherwize ISAR_CROSS_COMPILE = "0" now should be set
+in local.conf to disable cross-compilation for all the recipes.
+Sample local.conf from meta-isar used by isar-init-build-env is also changed
+to enable cross-compilation by default.

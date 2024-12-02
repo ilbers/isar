@@ -1,7 +1,10 @@
 # This software is a part of ISAR.
-# Copyright (C) 2022 ilbers GmbH
+# Copyright (C) 2023-2024 ilbers GmbH
+# Copyright (C) 2023-2024 Siemens AG
+#
+# SPDX-License-Identifier: MIT
 
-ISAR_CROSS_COMPILE ??= "0"
+ISAR_CROSS_COMPILE ??= "1"
 
 inherit compat
 
