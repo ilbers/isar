@@ -1,5 +1,8 @@
 # This software is a part of ISAR.
-# Copyright (C) 2023 ilbers GmbH
+# Copyright (C) 2016-2024 ilbers GmbH
+# Copyright (C) 2017-2024 Siemens AG
+#
+# SPDX-License-Identifier: MIT
 
 #
 # This file is your local configuration file and is where all local user settings
@@ -157,8 +160,8 @@ IMAGE_INSTALL:remove:qemuamd64-sb = "example-module-${KERNEL_NAME}"
 IMAGE_INSTALL:append:qemuamd64-sb = " example-module-signed-${KERNEL_NAME}"
 
 #
-# Enable cross-compilation support
-ISAR_CROSS_COMPILE ?= "0"
+# Uncomment this to disable cross-compilation support
+#ISAR_CROSS_COMPILE ?= "0"
 
 #
 # Uncomment to enable 32-bit compat architecture support

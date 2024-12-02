@@ -1,8 +1,11 @@
 # This software is a part of ISAR.
-# Copyright (C) 2023 ilbers GmbH
+# Copyright (C) 2023-2024 ilbers GmbH
+# Copyright (C) 2024 Siemens AG
 #
 # Authors:
 #  Uladzimir Bely <ubely@ilbers.de>
+#
+# SPDX-License-Identifier: MIT
 
 menu "Mirror selection"
 	depends on DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM || DEBIAN_TRIXIE || DEBIAN_SID || UBUNTU_FOCAL || UBUNTU_JAMMY
@@ -149,10 +152,14 @@ config ISAR_CROSS_COMPILE
 	bool "Enable cross compilation mode"
 	default y
 
+config KAS_ISAR_CROSS_COMPILE
+	string
+	default "1" if ISAR_CROSS_COMPILE
+	default "0" if !ISAR_CROSS_COMPILE
+
 config KAS_INCLUDE_ISAR_CROSS_COMPILE
 	string
 	default "kas/opt/crosscompile.yaml"
-	depends on ISAR_CROSS_COMPILE
 
 
 config USE_CCACHE

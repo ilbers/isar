@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+#
+# This software is a part of ISAR.
+# Copyright (C) 2022-2024 ilbers GmbH
+# Copyright (C) 2022-2024 Siemens AG
+#
+# SPDX-License-Identifier: MIT
 
 import logging
 import os
@@ -168,7 +174,9 @@ class CIBuilder(Test):
                 f.write('ISAR_ENABLE_COMPAT_ARCH:arm64 = "1"\n')
                 f.write('IMAGE_INSTALL:remove:arm64 = "hello-isar"\n')
                 f.write('IMAGE_INSTALL:append:arm64 = " hello-isar-compat"\n')
-            if cross:
+            if not cross:
+                f.write('ISAR_CROSS_COMPILE = "0"\n')
+            else:
                 f.write('ISAR_CROSS_COMPILE = "1"\n')
                 f.write(
                     'IMAGE_INSTALL:append:hikey = '
