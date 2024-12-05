@@ -1,0 +1,43 @@
+#!/bin/bash
+#
+# This software is a part of ISAR.
+# Copyright (C) 2024 ilbers GmbH
+#
+# SPDX-License-Identifier: MIT
+
+set -e
+
+# Save command line
+OPTS=("$@")
+
+# Analyze used flags
+while [ $# -gt 0 ]
+do
+    key="$1"
+
+    case $key in
+    -b|--begin-session)
+        BEGIN="1"
+        ;;
+    -r|--run-session)
+        RUN="1"
+        ;;
+    -e|--end-session)
+        END="1"
+        ;;
+    esac
+
+    shift
+done
+
+# Use exclusive lock for configs rm, shared for any other calls
+TYPE="-s"
+if [ "$END" == "1" ]; then
+    TYPE="-x"
+fi
+
+# A place for lock available for all the users
+LOCKDIR="/tmp"
+
+# Run schroot protected with lock
+flock $TYPE $LOCKDIR/schroot.lock /usr/bin/schroot "${OPTS[@]}"
