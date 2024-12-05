@@ -96,6 +96,9 @@ dpkg_runbuild() {
 
     export SBUILD_CONFIG="${SBUILD_CONFIG}"
 
+    # Provide locking filter for schroot
+    sbuild_add_env_filter "PATH"
+
     for envvar in http_proxy HTTP_PROXY https_proxy HTTPS_PROXY \
         ftp_proxy FTP_PROXY no_proxy NO_PROXY; do
         sbuild_add_env_filter "$envvar"
