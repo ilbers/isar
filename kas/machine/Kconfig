@@ -31,7 +31,7 @@ choice
 config MACHINE_BANANAPI
 	bool "bananapi"
 	depends on DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM
-	select ARCH_ARM64
+	select ARCH_ARMHF
 
 config MACHINE_BEAGLEPLAY
 	bool "beagleplay"
