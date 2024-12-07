@@ -1,6 +1,8 @@
 # This software is a part of ISAR.
 # Copyright (C) 2023 ilbers GmbH
 #
+# SPDX-License-Identifier: MIT
+#
 # Authors:
 #  Uladzimir Bely <ubely@ilbers.de>
 
@@ -14,8 +16,8 @@ config KAS_BUILD_SYSTEM
 	string
 	default "isar"
 
-source "kas/distro/Kconfig"
 source "kas/machine/Kconfig"
+source "kas/distro/Kconfig"
 source "kas/image/Kconfig"
 source "kas/package/Kconfig"
 source "kas/opt/Kconfig"

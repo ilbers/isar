@@ -1,10 +1,45 @@
 # This software is a part of Isar.
 # Copyright (C) 2023-2024 ilbers GmbH
 #
+# SPDX-License-Identifier: MIT
+#
 # Authors:
 #  Uladzimir Bely <ubely@ilbers.de>
 
 menu "Distro selection"
+
+config DISTRO_DEBIAN
+	bool
+
+config DISTRO_RASPIOS
+	bool
+
+config DISTRO_UBUNTU
+	bool
+
+config CODENAME_BUSTER
+	bool
+
+config CODENAME_BULLSEYE
+	bool
+
+config CODENAME_BOOKWORM
+	bool
+
+config CODENAME_TRIXIE
+	bool
+
+config CODENAME_SID
+	bool
+
+config CODENAME_FOCAL
+	bool
+
+config CODENAME_JAMMY
+	bool
+
+config CODENAME_NOBLE
+	bool
 
 choice
 	prompt "Distro selection"
@@ -12,33 +47,43 @@ choice
 
 config DEBIAN_BUSTER
 	bool "Debian 10 (buster)"
+	depends on DISTRO_DEBIAN && CODENAME_BUSTER
 
 config DEBIAN_BULLSEYE
 	bool "Debian 11 (bullseye)"
+	depends on DISTRO_DEBIAN && CODENAME_BULLSEYE
 
 config DEBIAN_BOOKWORM
 	bool "Debian 12 (bookworm)"
+	depends on DISTRO_DEBIAN && CODENAME_BOOKWORM
 
 config DEBIAN_TRIXIE
 	bool "Debian 13 (trixie)"
+	depends on DISTRO_DEBIAN && CODENAME_TRIXIE
 
 config DEBIAN_SID
 	bool "Debian Sid (unstable)"
+	depends on DISTRO_DEBIAN && CODENAME_SID
 
 config RASPIOS_BULLSEYE
 	bool "Raspberry Pi OS Debian 11 (bullseye)"
+	depends on DISTRO_RASPIOS && CODENAME_BULLSEYE
 
 config RASPIOS_BOOKWORM
 	bool "Raspberry Pi OS Debian 12 (bookworm)"
+	depends on DISTRO_RASPIOS && CODENAME_BOOKWORM
 
 config UBUNTU_FOCAL
 	bool "Ubuntu 20.04 (Focal)"
+	depends on DISTRO_UBUNTU && CODENAME_FOCAL
 
 config UBUNTU_JAMMY
 	bool "Ubuntu 22.04 (Jammy)"
+	depends on DISTRO_UBUNTU && CODENAME_JAMMY
 
 config UBUNTU_NOBLE
 	bool "Ubuntu 24.04 (Noble)"
+	depends on DISTRO_UBUNTU && CODENAME_NOBLE
 
 endchoice
 
