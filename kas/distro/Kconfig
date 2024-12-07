@@ -47,45 +47,52 @@ choice
 
 config DEBIAN_BUSTER
 	bool "Debian 10 (buster)"
-	depends on DISTRO_DEBIAN && CODENAME_BUSTER
+	depends on (DISTRO_DEBIAN && CODENAME_BUSTER) || ANY_MACHINE_DISTRO
 
 config DEBIAN_BULLSEYE
 	bool "Debian 11 (bullseye)"
-	depends on DISTRO_DEBIAN && CODENAME_BULLSEYE
+	depends on (DISTRO_DEBIAN && CODENAME_BULLSEYE) || ANY_MACHINE_DISTRO
 
 config DEBIAN_BOOKWORM
 	bool "Debian 12 (bookworm)"
-	depends on DISTRO_DEBIAN && CODENAME_BOOKWORM
+	depends on (DISTRO_DEBIAN && CODENAME_BOOKWORM) || ANY_MACHINE_DISTRO
 
 config DEBIAN_TRIXIE
 	bool "Debian 13 (trixie)"
-	depends on DISTRO_DEBIAN && CODENAME_TRIXIE
+	depends on (DISTRO_DEBIAN && CODENAME_TRIXIE) || ANY_MACHINE_DISTRO
 
 config DEBIAN_SID
 	bool "Debian Sid (unstable)"
-	depends on DISTRO_DEBIAN && CODENAME_SID
+	depends on (DISTRO_DEBIAN && CODENAME_SID) || ANY_MACHINE_DISTRO
 
 config RASPIOS_BULLSEYE
 	bool "Raspberry Pi OS Debian 11 (bullseye)"
-	depends on DISTRO_RASPIOS && CODENAME_BULLSEYE
+	depends on (DISTRO_RASPIOS && CODENAME_BULLSEYE) || ANY_MACHINE_DISTRO
 
 config RASPIOS_BOOKWORM
 	bool "Raspberry Pi OS Debian 12 (bookworm)"
-	depends on DISTRO_RASPIOS && CODENAME_BOOKWORM
+	depends on (DISTRO_RASPIOS && CODENAME_BOOKWORM) || ANY_MACHINE_DISTRO
 
 config UBUNTU_FOCAL
 	bool "Ubuntu 20.04 (Focal)"
-	depends on DISTRO_UBUNTU && CODENAME_FOCAL
+	depends on (DISTRO_UBUNTU && CODENAME_FOCAL) || ANY_MACHINE_DISTRO
 
 config UBUNTU_JAMMY
 	bool "Ubuntu 22.04 (Jammy)"
-	depends on DISTRO_UBUNTU && CODENAME_JAMMY
+	depends on (DISTRO_UBUNTU && CODENAME_JAMMY) || ANY_MACHINE_DISTRO
 
 config UBUNTU_NOBLE
 	bool "Ubuntu 24.04 (Noble)"
-	depends on DISTRO_UBUNTU && CODENAME_NOBLE
+	depends on (DISTRO_UBUNTU && CODENAME_NOBLE) || ANY_MACHINE_DISTRO
 
 endchoice
+
+config ANY_MACHINE_DISTRO
+	bool "Allow any machine-distro combinations"
+	default n
+	help
+	  This allows to select any machine-distro combinations some of which
+	  may be not bootable or even buildable.
 
 config KAS_INCLUDE_DISTRO
 	string
