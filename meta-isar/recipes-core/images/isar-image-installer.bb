@@ -10,6 +10,7 @@ DESCRIPTION = "Example of a ISAR based Installer Image"
 # Use variable to switch easily to another wks
 INSTALLER_WKS_FILE ??= "installer-efi.wks.in"
 WKS_FILE = "${INSTALLER_WKS_FILE}"
+ADDITIONAL_KERNEL_CMDLINE ??= ""
 IMAGER_INSTALL:wic:append = " ${SYSTEMD_BOOTLOADER_INSTALL}"
 
 IMAGE_INSTALL += "deploy-image-service"
