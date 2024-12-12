@@ -67,6 +67,43 @@ config INSTALLER_TARGET_IMAGE
 	default "isar-image-base" if INSTALL_IMAGE_BASE
 	default "isar-image-base" if INSTALL_IMAGE_DEBUG
 
+config INSTALL_UNATTENDED
+	bool "Run installer unattended"
+
+if INSTALL_UNATTENDED
+
+config INSTALLER_UNATTENDED
+	string
+	default "1" if INSTALL_UNATTENDED
+	default ""
+
+config INSTALLER_TARGET_DEVICE
+	string "Target device to deploy"
+	default "/dev/sda"
+	help
+	  Device to deploy the image onto.
+	  Leave this empty to get prompted during installation
+	  Examples: /dev/sda, /dev/nvme0n1
+
+choice
+	prompt "Overwrite handling"
+	default OPT_INSTALLER_TARGET_OVERWRITE
+
+config OPT_INSTALLER_TARGET_OVERWRITE
+	bool "Overwrite if target is not empty"
+
+config OPT_INSTALLER_TARGET_ABORT
+	bool "Abort if target is not empty"
+
+endchoice
+
+config INSTALLER_TARGET_OVERWRITE
+    string
+    default "OVERWRITE" if OPT_INSTALLER_TARGET_OVERWRITE
+    default "ABORT" if OPT_INSTALLER_TARGET_ABORT
+
+endif
+
 endif
 
 config KAS_INCLUDE_IMAGE
