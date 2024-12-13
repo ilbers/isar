@@ -416,7 +416,7 @@ do_rootfs_finalize() {
                 -maxdepth 1 -name 'qemu-*-static' -type f -delete
         fi
 
-        if [ -e "${ROOTFSDIR}/etc/apt/sources-list" ] && [ -e "${ROOTFSDIR}/etc/apt/sources-list.d" ]; then
+        if [ -e "${ROOTFSDIR}/etc/apt/sources-list" ] && [ -d "${ROOTFSDIR}/etc/apt/sources.list.d" ]; then
             mv "${ROOTFSDIR}/etc/apt/sources-list" \
                 "${ROOTFSDIR}/etc/apt/sources.list.d/bootstrap.list"
         fi
