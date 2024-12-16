@@ -359,16 +359,16 @@ rootfs_cleanup_isar_apt() {
         set -e
         rm -f "${ROOTFSDIR}/etc/apt/sources.list.d/isar-apt.list"
         rm -f "${ROOTFSDIR}/etc/apt/preferences.d/isar-apt"
+        rm -f "${ROOTFSDIR}/etc/apt/apt.conf.d/50isar"
 EOSUDO
 }
 
-ROOTFS_POSTPROCESS_COMMAND += "rootfs_cleanup_base_apt"
+ROOTFS_POSTPROCESS_COMMAND += "${@'rootfs_cleanup_base_apt' if bb.utils.to_boolean(d.getVar('ISAR_USE_CACHED_BASE_REPO')) else ''}"
 rootfs_cleanup_base_apt[weight] = "2"
 rootfs_cleanup_base_apt() {
     sudo -s <<'EOSUDO'
         set -e
-        rm -f "${ROOTFSDIR}/etc/apt/sources.list.d/base-apt.list"
-        rm -f "${ROOTFSDIR}/etc/apt/apt.conf.d/50isar"
+        rm -f "${ROOTFSDIR}/etc/apt/sources.list.d/*base-apt.list"
 EOSUDO
 }
 
