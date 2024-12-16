@@ -2,7 +2,7 @@ Source: linux-${KERNEL_NAME_PROVIDED}
 Section: kernel
 Priority: optional
 Maintainer: ${MAINTAINER}
-Build-Depends: bc, kmod, cpio, ${KBUILD_DEPENDS}
+Build-Depends: debhelper-compat (= ${DEBIAN_COMPAT}), bc, kmod, cpio, ${KBUILD_DEPENDS}
 Homepage: http://www.kernel.org/
 
 Package: linux-image-${KERNEL_NAME_PROVIDED}

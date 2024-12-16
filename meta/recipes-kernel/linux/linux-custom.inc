@@ -89,6 +89,7 @@ TEMPLATE_VARS += "                \
     HEADERS_INSTALL_EXTRA         \
     ISAR_ENABLE_COMPAT_ARCH       \
     COMPAT_DISTRO_ARCH            \
+    DEBIAN_COMPAT                 \
 "
 
 inherit dpkg
