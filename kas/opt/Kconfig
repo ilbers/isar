@@ -8,7 +8,7 @@
 # SPDX-License-Identifier: MIT
 
 menu "Mirror selection"
-	depends on DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM || DEBIAN_TRIXIE || DEBIAN_SID || UBUNTU_FOCAL || UBUNTU_JAMMY
+	depends on DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM || DEBIAN_TRIXIE || DEBIAN_SID || UBUNTU_FOCAL || UBUNTU_JAMMY || UBUNTU_NOBLE
 
 config MIRROR_DEBIAN
 	bool "Use specific Debian mirror"
@@ -45,7 +45,7 @@ config KAS_INCLUDE_MIRROR_UBUNTU
 
 config USE_APT_SNAPSHOT
 	bool "Use the distros snapshot mirror"
-	depends on !MIRROR_DEBIAN && (DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM || DEBIAN_TRIXIE || DEBIAN_SID || UBUNTU_FOCAL || UBUNTU_JAMMY)
+	depends on !MIRROR_DEBIAN && (DEBIAN_BUSTER || DEBIAN_BULLSEYE || DEBIAN_BOOKWORM || DEBIAN_TRIXIE || DEBIAN_SID || UBUNTU_FOCAL || UBUNTU_JAMMY || UBUNTU_NOBLE)
 	help
 		Use a snapshot mirror for the selected distribution.
 
