@@ -14,8 +14,8 @@ PV = "1.0"
 DEBOOTSTRAP ?= "qemu-debootstrap"
 ROOTFSDIR = "${WORKDIR}/rootfs"
 DISTRO_BOOTSTRAP_BASE_PACKAGES = "locales"
-DISTRO_BOOTSTRAP_BASE_PACKAGES:append:gnupg = ",gnupg"
-DISTRO_BOOTSTRAP_BASE_PACKAGES:append:https-support = ",ca-certificates"
+DISTRO_BOOTSTRAP_BASE_PACKAGES:append:gnupg = " gnupg"
+DISTRO_BOOTSTRAP_BASE_PACKAGES:append:https-support = " ca-certificates"
 
 inherit deb-dl-dir
 
@@ -79,13 +79,14 @@ do_bootstrap[network] = "${TASK_USE_NETWORK_AND_SUDO}"
 
 inherit compat
 
+do_bootstrap[vardeps] += "DISTRO_BOOTSTRAP_BASE_PACKAGES"
 do_bootstrap() {
     if [ "${ISAR_ENABLE_COMPAT_ARCH}" = "1" ]; then
         if [ -z "${COMPAT_DISTRO_ARCH}" ]; then
             bbfatal "${DISTRO_ARCH} does not have a compat arch"
         fi
     fi
-    debootstrap_args="--verbose --variant=minbase --include=${DISTRO_BOOTSTRAP_BASE_PACKAGES}"
+    debootstrap_args="--verbose --variant=minbase --include=${@','.join(d.getVar('DISTRO_BOOTSTRAP_BASE_PACKAGES').split())}"
     if [ -f "${DISTRO_BOOTSTRAP_KEYRING}" ]; then
         debootstrap_args="$debootstrap_args --keyring=${DISTRO_BOOTSTRAP_KEYRING}"
     fi

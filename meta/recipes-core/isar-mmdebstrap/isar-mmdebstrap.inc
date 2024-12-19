@@ -11,8 +11,8 @@ inherit deb-dl-dir
 
 FILESEXTRAPATHS:append = ":${LAYERDIR_core}/recipes-core/isar-bootstrap/files"
 
-DISTRO_BOOTSTRAP_BASE_PACKAGES = "locales,apt,usrmerge"
-DISTRO_BOOTSTRAP_BASE_PACKAGES:append:https-support = ",ca-certificates"
+DISTRO_BOOTSTRAP_BASE_PACKAGES = "locales apt usrmerge"
+DISTRO_BOOTSTRAP_BASE_PACKAGES:append:https-support = " ca-certificates"
 
 BOOTSTRAP_TMPDIR = "${WORKDIR}/tempdir"
 
@@ -85,13 +85,14 @@ do_bootstrap[network] = "${TASK_USE_NETWORK_AND_SUDO}"
 
 DEB_DL_LOCK ?= "${DEBDIR}/${BOOTSTRAP_BASE_DISTRO}-${BASE_DISTRO_CODENAME}.lock"
 
+do_bootstrap[vardeps] += "DISTRO_BOOTSTRAP_BASE_PACKAGES"
 do_bootstrap() {
     if [ "${ISAR_ENABLE_COMPAT_ARCH}" = "1" ]; then
         if [ -z "${COMPAT_DISTRO_ARCH}" ]; then
             bbfatal "${DISTRO_ARCH} does not have a compat arch"
         fi
     fi
-    bootstrap_args="--verbose --variant=minbase --include=${DISTRO_BOOTSTRAP_BASE_PACKAGES}"
+    bootstrap_args="--verbose --variant=minbase --include=${@','.join(d.getVar('DISTRO_BOOTSTRAP_BASE_PACKAGES').split())}"
     if [ -f "${DISTRO_BOOTSTRAP_KEYRING}" ]; then
         bootstrap_args="$bootstrap_args --keyring=${DISTRO_BOOTSTRAP_KEYRING}"
         cp "${DISTRO_BOOTSTRAP_KEYRING}" "${WORKDIR}/trusted.gpg.d/"
