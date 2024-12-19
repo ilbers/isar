@@ -16,6 +16,10 @@ BOOTSTRAP_KEY = "file://${LAYERDIR_isar}/conf/distro/ubuntu.public.key;sha256sum
 DISTRO_BOOTSTRAP_KEYS += "${BOOTSTRAP_KEY}"
 HOST_DISTRO_BOOTSTRAP_KEYS += "${BOOTSTRAP_KEY}"
 
+# from noble on this package does not exist anymore, before it is needed
+DISTRO_BOOTSTRAP_BASE_PACKAGES:append:focal = " usrmerge"
+DISTRO_BOOTSTRAP_BASE_PACKAGES:append:jammy = " usrmerge"
+
 # kernel package name is linux-image-generic in Ubuntu
 KERNEL_NAME = "generic"
 
