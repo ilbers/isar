@@ -13,7 +13,7 @@ PV = "1.0"
 
 DEBOOTSTRAP ?= "qemu-debootstrap"
 ROOTFSDIR = "${WORKDIR}/rootfs"
-DISTRO_BOOTSTRAP_BASE_PACKAGES = "locales"
+DISTRO_BOOTSTRAP_BASE_PACKAGES += "locales"
 DISTRO_BOOTSTRAP_BASE_PACKAGES:append:gnupg = " gnupg"
 DISTRO_BOOTSTRAP_BASE_PACKAGES:append:https-support = " ca-certificates"
 
