@@ -14,6 +14,9 @@ SCHROOT_CONF_FILE ?= "${SCHROOT_CONF}/chroot.d/${SBUILD_CHROOT}"
 
 SBUILD_CONFIG="${WORKDIR}/sbuild.conf"
 
+# Lockfile available for all the users
+SCHROOT_LOCKFILE = "/tmp/schroot.lock"
+
 schroot_create_configs() {
     mkdir -p "${TMPDIR}/schroot-overlay"
     echo "Creating ${SCHROOT_CONF_FILE}"
@@ -54,6 +57,8 @@ EOSUDO
 }
 
 schroot_delete_configs() {
+    (flock -x 9
+    set -e
     sudo -s <<'EOSUDO'
         set -e
         if [ -d "${SBUILD_CONF_DIR}" ]; then
@@ -63,6 +68,7 @@ schroot_delete_configs() {
         echo "Removing ${SCHROOT_CONF_FILE}"
         rm -f "${SCHROOT_CONF_FILE}"
 EOSUDO
+    ) 9>"${SCHROOT_LOCKFILE}"
 }
 
 sbuild_add_env_filter() {
