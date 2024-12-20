@@ -103,6 +103,7 @@ config MACHINE_QEMU_AMD64_CIP
 
 config MACHINE_QEMU_AMD64_SB
 	bool "qemuamd64-sb"
+	select DISTRO_DEBIAN
 	select CODENAME_BULLSEYE
 	select ARCH_AMD64
 
