@@ -5,6 +5,16 @@
 # Load common stuff
 . ${S}/debian/isar/common
 
+get_kernel_arch() {
+    case "${1}" in
+        amd64|i386) echo "x86";;
+        arm64) echo "arm64";;
+        armhf) echo "arm";;
+        mipsel) echo "mips";;
+        riscv64) echo "riscv";;
+    esac
+}
+
 do_install() {
 
     # check if our kernel was configured
@@ -165,13 +175,26 @@ headers_check() {
 
 libc_headers() {
     mkdir -p ${deb_libc_hdr_dir}
-    ${MAKE} O=${O} headers_install INSTALL_HDR_PATH=${deb_libc_hdr_dir}/usr
-    host_arch=$(dpkg-architecture -a${DISTRO_ARCH} -qDEB_HOST_MULTIARCH)
-    mkdir ${deb_libc_hdr_dir}/usr/include/${host_arch}
-    mv ${deb_libc_hdr_dir}/usr/include/asm ${deb_libc_hdr_dir}/usr/include/${host_arch}/
+    arches="${DISTRO_ARCH}"
+    if echo "${DEB_BUILD_PROFILES}" | grep -q "libcdev-arch-all"; then
+        arches="amd64 armhf arm64 i386 mipsel riscv64"
+    fi
+    for distro_arch in ${arches}; do
+        target_arch=$(dpkg-architecture --force -A${distro_arch} -qDEB_TARGET_MULTIARCH)
+        kernel_arch=$(get_kernel_arch ${distro_arch})
+        [ -n "${kernel_arch}" ] || {
+            echo "fatal: don't know the kernel arch for '${distro_arch}'!" >&2
+            return 1
+        }
+        ${MAKE} O=${O} headers_install ARCH=${kernel_arch} INSTALL_HDR_PATH=${deb_libc_hdr_dir}/usr
+        mkdir ${deb_libc_hdr_dir}/usr/include/${target_arch}
+        mv ${deb_libc_hdr_dir}/usr/include/asm ${deb_libc_hdr_dir}/usr/include/${target_arch}/
 
-    mkdir -p ${deb_libc_hdr_cross_dir}
-    ${MAKE} O=${O} headers_install INSTALL_HDR_PATH=${deb_libc_hdr_cross_dir}/usr/${host_arch}
+        if [ "${distro_arch}" = "${DISTRO_ARCH}" ]; then
+            mkdir -p ${deb_libc_hdr_cross_dir}
+            ${MAKE} O=${O} headers_install INSTALL_HDR_PATH=${deb_libc_hdr_cross_dir}/usr/${target_arch}
+        fi
+    done
 }
 
 kernel_tools() {
