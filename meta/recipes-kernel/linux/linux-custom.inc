@@ -39,6 +39,8 @@ LIBSSL_DEP:bullseye = "libssl1.1"
 KERNEL_HEADERS_DEBIAN_DEPENDS ?= "libc6, \
                                   ${LIBSSL_DEP},"
 
+KERNEL_LIBC_DEV_ARCH_ALL = "0"
+KERNEL_LIBC_DEV_ARCH_ALL:trixie = "1"
 KERNEL_LIBC_DEV_DEPLOY ?= "0"
 
 # Settings that may be changed on a per distro, machine or layer basis
@@ -79,6 +81,7 @@ TEMPLATE_VARS += "                \
     KERNEL_BUILD_DIR              \
     KERNEL_FILE                   \
     KERNEL_HEADERS_DEBIAN_DEPENDS \
+    KERNEL_LIBC_DEV_ARCH          \
     LINUX_VERSION_EXTENSION       \
     KERNEL_NAME_PROVIDED          \
     KERNEL_CONFIG_FRAGMENTS       \
@@ -214,8 +217,11 @@ def get_additional_build_profiles(d):
     profiles = d.getVar('BASE_DISTRO')
     if not bb.utils.to_boolean(d.getVar('KERNEL_LIBC_DEV_DEPLOY')):
         profiles += ' nolibcdev'
+    elif bb.utils.to_boolean(d.getVar('KERNEL_LIBC_DEV_ARCH_ALL')):
+        profiles += ' libcdev-arch-all'
     return profiles
 
+KERNEL_LIBC_DEV_ARCH = "${@ bb.utils.contains('DEB_BUILD_PROFILES', 'libcdev-arch-all', 'all', 'any', d) }"
 DEB_BUILD_PROFILES += "${@get_additional_build_profiles(d)}"
 
 do_prepare_build:prepend() {
