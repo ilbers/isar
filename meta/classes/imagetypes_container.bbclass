@@ -1,5 +1,5 @@
 # This software is a part of ISAR.
-# Copyright (C) Siemens AG, 2021
+# Copyright (C) Siemens AG, 2021-2025
 #
 # SPDX-License-Identifier: MIT
 #
@@ -11,6 +11,8 @@ USING_CONTAINER = "${@bb.utils.contains_any('IMAGE_BASETYPES', d.getVar('CONTAIN
 
 CONTAINER_IMAGE_NAME ?= "${PN}-${DISTRO}-${DISTRO_ARCH}"
 CONTAINER_IMAGE_TAG ?= "${PV}-${PR}"
+CONTAINER_IMAGE_CMD ?= "/bin/dash"
+CONTAINER_IMAGE_ENTRYPOINT ?= ""
 
 python() {
     if not bb.utils.to_boolean(d.getVar('USING_CONTAINER')):
@@ -24,7 +26,8 @@ python() {
 }
 
 do_containerize() {
-    local cmd="/bin/dash"
+    local cmd="${CONTAINER_IMAGE_CMD}"
+    local entrypoint="${CONTAINER_IMAGE_ENTRYPOINT}"
     local empty_tag="empty"
     local tag="${CONTAINER_IMAGE_TAG}"
     local oci_img_dir="${WORKDIR}/oci-image"
@@ -35,8 +38,14 @@ do_containerize() {
     sudo rm -rf "${oci_img_dir}" "${oci_img_dir}_unpacked"
     sudo umoci init --layout "${oci_img_dir}"
     sudo umoci new --image "${oci_img_dir}:${empty_tag}"
-    sudo umoci config --image "${oci_img_dir}:${empty_tag}" \
-        --config.cmd="${cmd}"
+    if [ -n "${cmd}" ]; then
+        sudo umoci config --image "${oci_img_dir}:${empty_tag}" \
+            --config.cmd="${cmd}"
+    fi
+    if [ -n "${entrypoint}" ]; then
+        sudo umoci config --image "${oci_img_dir}:${empty_tag}" \
+            --config.entrypoint="${entrypoint}"
+    fi
     sudo umoci unpack --image "${oci_img_dir}:${empty_tag}" \
         "${oci_img_dir}_unpacked"
 
