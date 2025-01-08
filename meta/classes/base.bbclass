@@ -123,9 +123,10 @@ python() {
     needsrcrev = False
     srcuri = d.getVar('SRC_URI')
     for uri_string in srcuri.split():
-        uri = bb.fetch.URI(uri_string)
-        if uri.scheme in ("svn", "git", "gitsm", "hg", "p4", "repo"):
-            needsrcrev = True
+        if not uri_string.startswith("apt://"):
+            uri = bb.fetch.URI(uri_string)
+            if uri.scheme in ("svn", "git", "gitsm", "hg", "p4", "repo"):
+                needsrcrev = True
 
     if needsrcrev:
         d.setVar("SRCPV", "${@bb.fetch2.get_srcrev(d)}")
