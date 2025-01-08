@@ -258,7 +258,7 @@ python do_devshell() {
         apt-get -y -q update -o Dir::Etc::SourceList=\"sources.list.d/isar-apt.list\" -o Dir::Etc::SourceParts=\"-\" -o APT::Get::List-Cleanup=\"0\"; \
         apt-get -y upgrade; \
         {2}; \
-        export PATH=$PATH_PREPEND:$PATH; \
+        if [ -n \"$PATH_PREPEND\" ]; then export PATH=$PATH_PREPEND:$PATH; fi; \
         $SHELL -i \
     '"
     oe_terminal(termcmd.format(schroot, pp_pps, install_deps), "Isar devshell", d)
