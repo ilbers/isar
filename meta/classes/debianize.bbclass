@@ -11,6 +11,7 @@ DEBIAN_DEPENDS ??= ""
 DEBIAN_PROVIDES ??= ""
 DEBIAN_REPLACES ??= ""
 DEBIAN_CONFLICTS ??= ""
+DEBIAN_BREAKS ??= ""
 DEBIAN_MULTI_ARCH ??= "no"
 DEBIAN_COMPAT ??= "10"
 DESCRIPTION ??= "must not be empty"
@@ -78,6 +79,7 @@ Architecture: ${DPKG_ARCH}
 Depends: ${DEBIAN_DEPENDS}
 Provides: ${DEBIAN_PROVIDES}
 Replaces: ${DEBIAN_REPLACES}
+Breaks: ${DEBIAN_BREAKS}
 Conflicts: ${DEBIAN_CONFLICTS}
 Multi-Arch: ${DEBIAN_MULTI_ARCH}
 Description: ${DESCRIPTION}
