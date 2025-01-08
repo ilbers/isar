@@ -987,6 +987,7 @@ Note that the package will be build using the whole debian package workflow, so 
 Other (optional) customization variables include:
  - `DEBIAN_PROVIDES` - declare a virtual package to satisfy dependencies
  - `DEBIAN_REPLACES` - to replace a package with another
+ - `DEBIAN_BREAKS` - Packages which break other packages
 
 ### Prebuilt .deb packages from somewhere
 
