@@ -108,9 +108,12 @@ class BootimgEFIPlugin(SourcePlugin):
             if label:
                 label_conf = "LABEL=%s" % label
 
-            kernel, initrd = isar_get_filenames(
+            kernel, default_initrd = isar_get_filenames(
                 get_bitbake_var("IMAGE_ROOTFS"), get_bitbake_var("KERNEL_FILE")
             )
+            if not initrd:
+                initrd = default_initrd
+
             grubefi_conf += "linux /%s %s rootwait %s\n" \
                 % (kernel, label_conf, bootloader.append)
 
@@ -187,12 +190,11 @@ class BootimgEFIPlugin(SourcePlugin):
 
             title = source_params.get('title')
 
-            temp_initrd = initrd
-            kernel, initrd = isar_get_filenames(
+            kernel, default_initrd = isar_get_filenames(
                 get_bitbake_var("IMAGE_ROOTFS"), get_bitbake_var("KERNEL_FILE")
             )
-            if temp_initrd:
-                initrd = temp_initrd
+            if not initrd:
+                initrd = default_initrd
 
             boot_conf = ""
             boot_conf += "title %s\n" % (title if title else "boot")
