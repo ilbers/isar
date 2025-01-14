@@ -23,21 +23,21 @@ python() {
 
     if d.getVar('DISTRO_GCC'):
         d.appendVar('SBUILD_CHROOT_PREINSTALL_COMMON',
-                    ' libgcc-{}-dev:{}'.format(distro_gcc, distro_arch))
+                    f" libgcc-{distro_gcc}-dev:{distro_arch}")
         d.appendVar('SBUILD_CHROOT_PREINSTALL_COMMON',
-                    ' libstdc++-{}-dev:{}'.format(distro_gcc, distro_arch))
+                    f" libstdc++-{distro_gcc}-dev:{distro_arch}")
 
     if bb.utils.to_boolean(d.getVar('ISAR_ENABLE_COMPAT_ARCH')):
         compat_arch = d.getVar('COMPAT_DISTRO_ARCH')
         d.appendVar('SBUILD_CHROOT_COMPAT_PREINSTALL',
-                    ' libc6-dev:{}'.format(compat_arch))
+                    f" libc6-dev:{compat_arch}")
         d.appendVar('SBUILD_CHROOT_COMPAT_PREINSTALL',
-                    ' crossbuild-essential-{}'.format(compat_arch))
+                    f" crossbuild-essential-{compat_arch}")
         if d.getVar('DISTRO_GCC'):
             d.appendVar('SBUILD_CHROOT_COMPAT_PREINSTALL',
-                        ' libgcc-{}-dev:{}'.format(distro_gcc, compat_arch))
+                        f" libgcc-{distro_gcc}-dev:{compat_arch}")
             d.appendVar('SBUILD_CHROOT_COMPAT_PREINSTALL',
-                        ' libstdc++-{}-dev:{}'.format(distro_gcc, compat_arch))
+                        f" libstdc++-{distro_gcc}-dev:{compat_arch}")
 }
 
 SBUILD_CHROOT_PREINSTALL_COMMON = " \
