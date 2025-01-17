@@ -38,6 +38,6 @@ python __anonymous() {
     d.setVar('SCHROOT_DIR', schroot_dir + flavor_suffix)
     d.setVar('SCHROOT_DEP', sbuild_dep)
     if isar_can_build_compat(d):
-        sdk_toolchain += " crossbuild-essential-" + d.getVar('COMPAT_DISTRO_ARCH')
+        sdk_toolchain += " crossbuild-essential-" + compat_arch
     d.setVar('SDK_TOOLCHAIN', sdk_toolchain)
 }
