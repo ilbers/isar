@@ -90,16 +90,8 @@ sdkchroot_configscript () {
 
 ROOTFS_POSTPROCESS_COMMAND:append:class-sdk = " sdkchroot_finalize"
 sdkchroot_finalize() {
-    mountpoint -q "${ROOTFSDIR}/dev/pts" && \
-        sudo umount "${ROOTFSDIR}/dev/pts"
-    mountpoint -q "${ROOTFSDIR}/dev/shm" && \
-        sudo umount "${ROOTFSDIR}/dev/shm"
-    mountpoint -q "${ROOTFSDIR}/dev" && \
-        sudo umount "${ROOTFSDIR}/dev"
-    mountpoint -q "${ROOTFSDIR}/proc" && \
-        sudo umount "${ROOTFSDIR}/proc"
-    mountpoint -q "${ROOTFSDIR}/sys" && \
-        sudo umount "${ROOTFSDIR}/sys"
+
+    rootfs_do_umounts
 
     # Remove setup scripts
     sudo rm -f ${ROOTFSDIR}/chroot-setup.sh ${ROOTFSDIR}/configscript.sh
