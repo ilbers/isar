@@ -1127,7 +1127,15 @@ modprobe example-module
 mokutil --import /etc/sb-mok-keys/MOK/MOK.der
 ```
 
-Use the previously definded password to enroll the key, then reboot.
+Use the previously defined password to enroll the key, then reboot.
+
+If EFI variable access is disabled on kernel (due to high latencies under RT kernel),
+enrolling will result in failure `EFI variables are not supported on this system`.
+EFI variable access can be enabled by passing `efi=runtime` kernel parameter.
+
+Similarly, in cases where EFI variables are not supported, the system will not be able
+to import the keys defined on the platform in the kernel platform keyring. This will also
+result in kernel modules not being verified if they are signed with one of these platform keys.
 
 **Boot self-signed image**:
 
