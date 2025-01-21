@@ -702,3 +702,15 @@ enable cross-compilation. Otherwize ISAR_CROSS_COMPILE = "0" now should be set
 in local.conf to disable cross-compilation for all the recipes.
 Sample local.conf from meta-isar used by isar-init-build-env is also changed
 to enable cross-compilation by default.
+
+### Enable linux-libc-dev package with KERNEL_NAME
+
+By default linux-libc-dev and linux-libc-dev-${DISTRO_ARCH}-cross package
+was generated for architecture it builds for.
+
+This change helps to generate the `linux-libc-dev-${KERNEL_NAME}` and
+`linux-libc-dev-${DISTRO_ARCH}-cross-${KERNEL_NAME}`.
+For example, If `KERNEL_NAME` is configured as `foo` for arm64, now
+`linux-libc-dev-foo` and `linux-libc-dev-arm64-cross-foo` package will be
+generated. This will help to have multiple versions of linux-libc-dev packages
+available for respective bsps in apt feeds.

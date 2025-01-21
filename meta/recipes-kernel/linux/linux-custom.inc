@@ -152,7 +152,9 @@ RECIPE_PROVIDES = " \
     linux-image-${KERNEL_NAME_PROVIDED} \
     linux-headers-${KERNEL_NAME_PROVIDED} \
     linux-libc-dev \
+    linux-libc-dev-${KERNEL_NAME_PROVIDED} \
     linux-libc-dev-${DISTRO_ARCH}-cross \
+    linux-libc-dev-${DISTRO_ARCH}-cross-${KERNEL_NAME_PROVIDED} \
     linux-image-${KERNEL_NAME_PROVIDED}-dbg \
     linux-kbuild-${KERNEL_NAME_PROVIDED} \
     ${BPN}-pseudo-native \

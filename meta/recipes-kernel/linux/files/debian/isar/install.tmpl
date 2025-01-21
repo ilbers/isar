@@ -248,7 +248,7 @@ install_headers() {
     if dpkg --compare-versions "${krel}" "lt" "5.4.24"; then
         headers_check
     fi
-    [ -z ${kern_pkgs["linux-libc-dev"]} ] || libc_headers
+    [ -z ${kern_pkgs["linux-libc-dev-${KERNEL_NAME_PROVIDED}"]} ] || libc_headers
     kernel_headers
 }
 
