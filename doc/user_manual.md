@@ -1151,6 +1151,10 @@ recipes. This target opens a terminal inside the schroot rootfs that runs the
 package build. To invoke it, just call
 `bitbake mc:${MACHINE}-${DISTRO}:<package_name> -c devshell`.
 
+To debug build dependency issues, there is also the devshell_nodeps target. It
+skips any failing dependency installation, allowing to run them manually in the
+schroot.
+
 
 ## Using ccache for custom packages
 
