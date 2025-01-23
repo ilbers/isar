@@ -1141,6 +1141,30 @@ result in kernel modules not being verified if they are signed with one of these
 
 Now the image should be up again and `modprobe example-module` should work.
 
+**Sign kernel modules with custom signer hooks**
+
+The kernel module signing process establishes a chain of trust from the kernel to the modules, ensuring that
+all components of the system are from trusted sources. If Secure Boot is enabled or the module signing
+facility is enabled by kernel configuration or via `module.sig_enforce` kernel parameter, the kernel checks
+the signature of the modules against the public keys from kernel system keyring and kernel platform keyring.
+
+Please note that if the certificates you use to sign modules are not included in one of these keyrings or are
+blacklisted, the signature will be rejected and the module will not be loaded by the kernel.
+
+Many regulatory standards and compliance frameworks require the use of signing methods that are
+designed to protect cryptographic keys and signing operations to ensure a high level of security.
+
+In order to use solutions like Hardware Security Module (HSM) or server-side signing, which
+are usually made available via a client, an API endpoint or a plug-in, for signing kernel modules,
+Isar provides a build profile called `pkg.signwith` for kernel module recipes.
+
+To provide a signer script that implements your custom signing solution, `SIGNATURE_SIGNWITH` variable
+can be set for the script path within the module recipe together with `SIGNATURE_CERTFILE` to define the public
+certificate path of the signer.
+
+Please see how `module-signer-example` hook generates a detached signature for the kernel module implemented in
+`example-module-signedwith` recipe.
+
 ### Cross Support for Imagers
 
 If `ISAR_CROSS_COMPILE = "1"`, the imager and optional compression tasks
