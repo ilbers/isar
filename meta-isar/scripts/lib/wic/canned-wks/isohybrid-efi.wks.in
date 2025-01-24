@@ -1,0 +1,2 @@
+part /boot --source isoimage-isohybrid-isar --sourceparams="loader=grub-efi,payload=${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.squashfs" --ondisk cd --label LIVECD
+bootloader --timeout=10 --append "console=ttyS0,115200 console=tty0 boot=live toram=${IMAGE_FULLNAME}.squashfs"
