@@ -61,6 +61,7 @@ config KAS_INCLUDE_PACKAGE_EXAMPLE_PREBUILT
 config PACKAGE_EXPAND_ON_FIRST_BOOT
         bool "expand-on-first-boot"
         default y
+        depends on !MACHINE_QEMU_AMD64_ISO
 
 config KAS_INCLUDE_PACKAGE_EXPAND_ON_FIRST_BOOT
         string
@@ -151,6 +152,7 @@ config PACKAGE_PREBUILT_DOCKER_IMG
         bool "prebuilt-docker-img"
         default y
         depends on ARCH_AMD64 || ARCH_ARM64 || ARCH_ARM
+        depends on !MACHINE_QEMU_AMD64_ISO
 
 config KAS_INCLUDE_PACKAGE_PREBUILT_DOCKER_IMG
         string
@@ -162,6 +164,7 @@ config PACKAGE_PREBUILT_PODMAN_IMG
         default y
         depends on DEBIAN_BULLSEYE || DEBIAN_BOOKWORM || DEBIAN_TRIXIE || UBUNTU_JAMMY || UBUNTU_NOBLE
         depends on ARCH_AMD64 || ARCH_ARM64 || ARCH_ARM
+        depends on !MACHINE_QEMU_AMD64_ISO
 
 config KAS_INCLUDE_PACKAGE_PREBUILT_PODMAN_IMG
         string

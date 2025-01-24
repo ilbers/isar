@@ -107,6 +107,12 @@ config MACHINE_QEMU_AMD64_SB
 	select CODENAME_BULLSEYE
 	select ARCH_AMD64
 
+config MACHINE_QEMU_AMD64_ISO
+	bool "qemuamd64-iso"
+	select DISTRO_DEBIAN
+	select CODENAME_BOOKWORM
+	select ARCH_AMD64
+
 config MACHINE_QEMU_AMD64
 	bool "qemuamd64"
 	select DISTRO_DEBIAN
@@ -252,6 +258,7 @@ config KAS_INCLUDE_MACHINE
 	default "kas/machine/phyboard-mira.yaml" if MACHINE_PHYBOARD_MIRA
 	default "kas/machine/qemuamd64-cip.yaml" if MACHINE_QEMU_AMD64_CIP
 	default "kas/machine/qemuamd64-sb.yaml" if MACHINE_QEMU_AMD64_SB
+	default "kas/machine/qemuamd64-iso.yaml" if MACHINE_QEMU_AMD64_ISO
 	default "kas/machine/qemuamd64.yaml" if MACHINE_QEMU_AMD64
 	default "kas/machine/qemuarm.yaml" if MACHINE_QEMU_ARM
 	default "kas/machine/qemuarm64.yaml" if MACHINE_QEMU_ARM64
