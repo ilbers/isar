@@ -129,7 +129,7 @@ IMAGE_BASETYPES = "${@get_image_basetypes(d)}"
 
 # image types
 IMAGE_CLASSES ??= ""
-IMGCLASSES = "imagetypes imagetypes_wic imagetypes_vm imagetypes_container"
+IMGCLASSES = "imagetypes imagetypes_wic imagetypes_vm imagetypes_container squashfs"
 IMGCLASSES += "${IMAGE_CLASSES}"
 inherit ${IMGCLASSES}
 
