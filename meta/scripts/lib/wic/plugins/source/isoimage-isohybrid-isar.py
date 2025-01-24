@@ -18,6 +18,12 @@ from wic.engine import get_custom_config
 from wic.pluginbase import SourcePlugin
 from wic.misc import exec_cmd, exec_native_cmd, get_bitbake_var
 
+# allow plugins to import from isarpluginbase
+if '__file__' in globals():
+    import sys
+    sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
+from isarpluginbase import (isar_get_filenames, isar_populate_boot_cmd)
+
 logger = logging.getLogger('wic')
 
 class IsoImagePlugin(SourcePlugin):
@@ -44,6 +50,7 @@ class IsoImagePlugin(SourcePlugin):
     """
 
     name = 'isoimage-isohybrid'
+    name = 'isoimage-isohybrid-isar'
 
     @classmethod
     def do_configure_syslinux(cls, creator, cr_workdir):
@@ -71,6 +78,9 @@ class IsoImagePlugin(SourcePlugin):
         syslinux_conf += "LABEL boot\n"
 
         kernel = get_bitbake_var("KERNEL_IMAGETYPE")
+        kernel, initrd = isar_get_filenames(
+            get_bitbake_var("IMAGE_ROOTFS"), get_bitbake_var("KERNEL_FILE")
+        )
         if get_bitbake_var("INITRAMFS_IMAGE_BUNDLE") == "1":
             if get_bitbake_var("INITRAMFS_IMAGE"):
                 kernel = "%s-%s.bin" % \
@@ -79,6 +89,13 @@ class IsoImagePlugin(SourcePlugin):
         syslinux_conf += "KERNEL /" + kernel + "\n"
         syslinux_conf += "APPEND initrd=/initrd LABEL=boot %s\n" \
                              % bootloader.append
+
+        # replace initrd with correct one
+        if initrd:
+            syslinux_conf = syslinux_conf.replace(
+                "initrd=/initrd", "initrd=/%s" % initrd)
+        else:
+            raise WicError("Couldn't find initrd, exiting.")
 
         logger.debug("Writing syslinux config %s/ISO/isolinux/isolinux.cfg",
                      cr_workdir)
@@ -125,9 +142,23 @@ class IsoImagePlugin(SourcePlugin):
                     kernel = "%s-%s.bin" % \
                         (get_bitbake_var("KERNEL_IMAGETYPE"), get_bitbake_var("INITRAMFS_LINK_NAME"))
 
+            kernel, initrd = isar_get_filenames(
+                get_bitbake_var("IMAGE_ROOTFS"), get_bitbake_var("KERNEL_FILE")
+            )
+
+            bootloader.append = bootloader.append or ""
             grubefi_conf += "linux /%s rootwait %s\n" \
                             % (kernel, bootloader.append)
             grubefi_conf += "initrd /initrd \n"
+            grubefi_conf = '\n'.join(grubefi_conf.splitlines()[:-1]) + '\n'
+
+            if initrd:
+                initrds = initrd.split(';')
+                grubefi_conf += "initrd"
+                for rd in initrds:
+                    grubefi_conf += " /%s" % rd
+                grubefi_conf += "\n"
+
             grubefi_conf += "}\n"
 
             if splashline:
@@ -156,12 +187,14 @@ class IsoImagePlugin(SourcePlugin):
                 raise WicError("Couldn't find IMAGE_BASENAME, exiting.")
 
             image_type = get_bitbake_var("INITRAMFS_FSTYPES")
+            image_type = image_type or "img"
             if not image_type:
                 raise WicError("Couldn't find INITRAMFS_FSTYPES, exiting.")
 
             machine = os.path.basename(initrd_dir)
 
             pattern = '%s/%s*%s.%s' % (initrd_dir, image_name, machine, image_type)
+            pattern = '%s/%s-%s-initrd.%s' % (initrd_dir, image_name, machine, image_type)
             files = glob.glob(pattern)
             if files:
                 initrd = files[0]
@@ -227,6 +260,12 @@ class IsoImagePlugin(SourcePlugin):
 
             logger.debug("Payload directory: %s", payload_dir)
             shutil.copytree(payload_dir, iso_dir, symlinks=True, dirs_exist_ok=True)
+        if source_params.get('payload'):
+            payload = source_params.get('payload')
+
+            logger.debug("Payload: %s", payload)
+            os.mkdir('%s/live' % iso_dir)
+            shutil.copy(payload, '%s/live' % iso_dir)
 
     @classmethod
     def do_prepare_partition(cls, part, source_params, creator, cr_workdir,
@@ -299,6 +338,7 @@ class IsoImagePlugin(SourcePlugin):
 
         install_cmd = "install -m 0644 %s/%s %s/%s" % \
                       (kernel_dir, kernel, isodir, kernel)
+        install_cmd = isar_populate_boot_cmd(rootfs_dir, isodir)
         exec_cmd(install_cmd)
 
         #Create bootloader for efi boot
@@ -313,18 +353,45 @@ class IsoImagePlugin(SourcePlugin):
                 # Builds bootx64.efi/bootia32.efi if ISODIR didn't exist or
                 # didn't contains it
                 target_arch = get_bitbake_var("TARGET_SYS")
+                distro_arch = get_bitbake_var("DISTRO_ARCH")
+                if distro_arch == "amd64":
+                    target_arch = "x86_64"
+                else:
+                    target_arch = distro_arch
+
                 if not target_arch:
                     raise WicError("Coludn't find target architecture")
 
                 if re.match("x86_64", target_arch):
+                    grub_target = "x86_64-efi"
                     grub_src_image = "grub-efi-bootx64.efi"
                     grub_dest_image = "bootx64.efi"
+                    grub_modules = "multiboot efi_uga iorw ata "
+                    if get_bitbake_var("DISTRO").startswith("ubuntu") and \
+                        os.path.exists('/usr/lib/grub/x86_64-efi/linuxefi.mod'):
+                        grub_modules += "linuxefi "
                 elif re.match('i.86', target_arch):
+                    grub_target = "i386-efi"
                     grub_src_image = "grub-efi-bootia32.efi"
                     grub_dest_image = "bootia32.efi"
+                    grub_modules = "multiboot efi_uga iorw ata "
                 else:
                     raise WicError("grub-efi is incompatible with target %s" %
                                    target_arch)
+
+                if not os.path.isfile("%s/%s" \
+                                      % (target_dir, grub_dest_image)):
+                    grub_cmd = "grub-mkimage -p /EFI/BOOT "
+                    grub_cmd += "-O %s -o %s/%s " \
+                                % (grub_target, target_dir, grub_dest_image)
+                    grub_cmd += "part_gpt part_msdos ntfs ntfscomp fat ext2 "
+                    grub_cmd += "normal chain boot configfile linux "
+                    grub_cmd += "search efi_gop font gfxterm gfxmenu "
+                    grub_cmd += "terminal minicmd test loadenv echo help "
+                    grub_cmd += "reboot serial terminfo iso9660 loopback tar "
+                    grub_cmd += "memdisk ls search_fs_uuid udf btrfs xfs lvm "
+                    grub_cmd += "reiserfs regexp " + grub_modules
+                    exec_cmd(grub_cmd)
 
                 grub_target = os.path.join(target_dir, grub_dest_image)
                 if not os.path.isfile(grub_target):
@@ -393,18 +460,23 @@ class IsoImagePlugin(SourcePlugin):
         cls.do_configure_syslinux(creator, cr_workdir)
 
         install_cmd = "install -m 444 %s/syslinux/ldlinux.sys " % syslinux_dir
+        # different name in Debian
+        install_cmd = "install -m 444 %s/syslinux/modules/bios/ldlinux.c32 " % syslinux_dir
         install_cmd += "%s/isolinux/ldlinux.sys" % isodir
         exec_cmd(install_cmd)
 
         install_cmd = "install -m 444 %s/syslinux/isohdpfx.bin " % syslinux_dir
+        install_cmd = install_cmd.replace('/syslinux/', '/ISOLINUX/')
         install_cmd += "%s/isolinux/isohdpfx.bin" % isodir
         exec_cmd(install_cmd)
 
         install_cmd = "install -m 644 %s/syslinux/isolinux.bin " % syslinux_dir
+        install_cmd = install_cmd.replace('/syslinux/', '/ISOLINUX/')
         install_cmd += "%s/isolinux/isolinux.bin" % isodir
         exec_cmd(install_cmd)
 
         install_cmd = "install -m 644 %s/syslinux/ldlinux.c32 " % syslinux_dir
+        install_cmd = install_cmd.replace('/syslinux/', '/syslinux/modules/bios/')
         install_cmd += "%s/isolinux/ldlinux.c32" % isodir
         exec_cmd(install_cmd)
 
@@ -415,6 +487,8 @@ class IsoImagePlugin(SourcePlugin):
         efi_img = "efi.img"
 
         mkisofs_cmd = "mkisofs -V %s " % part.label
+        # use xorriso from Debian
+        mkisofs_cmd = "xorriso -as mkisofs -V %s " % part.label
         mkisofs_cmd += "-o %s -U " % iso_img
         mkisofs_cmd += "-J -joliet-long -r -iso-level 2 -b %s " % iso_bootimg
         mkisofs_cmd += "-c %s -no-emul-boot -boot-load-size 4 " % iso_bootcat
