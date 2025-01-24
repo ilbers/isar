@@ -5,23 +5,6 @@
 
 inherit repository
 
-is_not_part_of_current_build() {
-    local package="$( dpkg-deb --show --showformat '${Package}' "${1}" )"
-    local arch="$( dpkg-deb --show --showformat '${Architecture}' "${1}" )"
-    local version="$( dpkg-deb --show --showformat '${Version}' "${1}" )"
-    # Since we are parsing all the debs in DEBDIR, we can to some extend
-    # try to eliminate some debs that are not part of the current multiconfig
-    # build using the below method.
-    local output="$( grep -xhs ".* status installed ${package}:${arch} ${version}" \
-            "${IMAGE_ROOTFS}"/var/log/dpkg.log \
-            "${SCHROOT_HOST_DIR}"/var/log/dpkg.log \
-            "${SCHROOT_TARGET_DIR}"/var/log/dpkg.log \
-            "${SCHROOT_HOST_DIR}"/tmp/dpkg_common.log \
-            "${SCHROOT_TARGET_DIR}"/tmp/dpkg_common.log | head -1 )"
-
-    [ -z "${output}" ]
-}
-
 debsrc_do_mounts() {
     sudo -s <<EOSUDO
     set -e
@@ -54,17 +37,17 @@ debsrc_download() {
     ( flock 9
     set -e
     printenv | grep -q BB_VERBOSE_LOGS && set -x
-    find "${rootfs}/var/cache/apt/archives/" -maxdepth 1 -type f -iname '*\.deb' | while read package; do
-        is_not_part_of_current_build "${package}" && continue
-        local src="$( dpkg-deb --show --showformat '${source:Package}' "${package}" )"
-        local version="$( dpkg-deb --show --showformat '${source:Version}' "${package}" )"
-        local dscname="$(echo ${src}_${version} | sed -e 's/_[0-9]\+:/_/')"
-        local dscfile=$(find "${DEBSRCDIR}"/"${rootfs_distro}" -name "${dscname}.dsc")
-        [ -n "$dscfile" ] && continue
+    sudo -E chroot --userspec=$( id -u ):$( id -g ) ${rootfs} \
+        dpkg-query -f '${source:Package} ${source:Version}\n' -W | while read -r src srcver; do
+            ver_stripped=$(echo "$srcver" | sed 's/^[0-9]*://')
+            test -f "${DEBSRCDIR}/${rootfs_distro}/${src}/${src}_${ver_stripped}.dsc" && continue
 
-        sudo -E chroot --userspec=$( id -u ):$( id -g ) ${rootfs} \
-            sh -c ' mkdir -p "/deb-src/${1}/${2}" && cd "/deb-src/${1}/${2}" && apt-get -y --download-only --only-source source "$2"="$3" ' download-src "${rootfs_distro}" "${src}" "${version}"
-    done
+            # Note: package built by using dpkg-prebuilt are tend to be missing
+            sudo -E chroot --userspec=$( id -u ):$( id -g ) ${rootfs} \
+                sh -c ' mkdir -p "/deb-src/${1}/${2}" && cd "/deb-src/${1}/${2}" && apt-get -y --download-only --only-source source "$2"="$3" ' \
+                    download-src "${rootfs_distro}" "${src}" "${srcver}" || \
+                    bbwarn "Failed to download source package ${src}_${srcver}"
+        done
     ) 9>"${DEBSRCDIR}/${rootfs_distro}.lock"
 
     debsrc_undo_mounts "${rootfs}"
