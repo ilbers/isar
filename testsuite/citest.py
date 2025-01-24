@@ -241,6 +241,7 @@ class NoCrossTest(CIBaseTest):
             'mc:nanopi-neo-bookworm:isar-image-base',
             'mc:qemuamd64-focal:isar-image-ci',
             'mc:qemuamd64-bookworm:isar-image-ci',
+            'mc:qemuamd64-iso-bookworm:isar-image-ci',
             'mc:qemui386-bookworm:isar-image-base',
             'mc:qemumipsel-bookworm:isar-image-ci',
             'mc:hikey-bookworm:isar-image-base',
@@ -656,3 +657,14 @@ class VmBootTestFull(CIBaseTest):
         self.init()
         self.vm_start('arm64', 'bookworm', image='isar-image-ci',
                       script='test_prebuilt_containers.sh')
+
+    def test_amd64_bookworm_iso(self):
+        self.init()
+        self.vm_start('amd64-iso', 'bookworm', image='isar-image-ci',
+                      keep = True
+        )
+
+    def test_amd64_bookworm_iso_system_check(self):
+        self.init()
+        self.vm_start('amd64-iso', 'bookworm', image='isar-image-ci',
+                      script='test_system_running.sh 30')
