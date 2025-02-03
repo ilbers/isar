@@ -14,6 +14,9 @@ DESCRIPTION ?= "Custom kernel"
 MAINTAINER ?= "isar-users <isar-users@googlegroups.com>"
 DISTRIBUTOR ?= "ISAR"
 
+# pinned due to known or possible issues with compat 12
+DEBIAN_COMPAT:buster = "10"
+
 KBUILD_DEPENDS ?= "build-essential:native, \
                    libelf-dev:native, \
                    libncurses-dev:native, \
