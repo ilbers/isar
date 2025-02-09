@@ -8,6 +8,7 @@
 FILESPATH:append := ":${FILE_DIRNAME}/files"
 
 DESCRIPTION ?= "Custom kernel module ${PN}"
+MAINTAINER ?= "isar-users <isar-users@googlegroups.com>"
 
 KERNEL_NAME ?= ""
 # directory with KBuild file (M=${MODULE_DIR})
