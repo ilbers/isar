@@ -33,8 +33,8 @@ python() {
 
     # add dependencies to all packages from the essential list
     for p in essential_packages:
-        if d.getVar('do_prepare_build'):
-            d.appendVarFlag('do_prepare_build', 'depends', f' {p}:do_deploy_deb')
+        if d.getVar('do_local_isarapt'):
+            d.appendVarFlag('do_local_isarapt', 'depends', f' {p}:do_deploy_deb')
         if d.getVar('do_install_rootfs'):
             d.appendVarFlag('do_install_rootfs', 'depends', f' {p}:do_deploy_deb')
 }
