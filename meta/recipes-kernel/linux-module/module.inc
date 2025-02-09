@@ -44,7 +44,6 @@ python() {
 inherit dpkg
 
 TEMPLATE_FILES = "debian/control.tmpl \
-                  debian/changelog.tmpl \
                   debian/rules.tmpl"
 TEMPLATE_VARS += " \
     KERNEL_NAME \
@@ -69,6 +68,8 @@ KAFLAGS ?= "-fdebug-prefix-map=${CURDIR}=."
 do_prepare_build() {
     rm -rf ${S}/debian
     cp -r ${WORKDIR}/debian ${S}/
+
+    deb_add_changelog
 
     for module in ${AUTOLOAD}; do
         echo "echo $module >> /etc/modules" >> ${S}/debian/postinst
