@@ -77,6 +77,34 @@ class CIBaseTest(CIBuilder):
             process.run('gpgconf --kill gpg-agent')
             shutil.rmtree(gnupg_home, True)
 
+    def perform_installer_build_test(self, target, distro, machine, **kwargs):
+        self.configure(**kwargs)
+
+        install_target = self.build_dir + '/installer.wic'
+
+        # Create empty file installer will write to
+        with open(install_target, 'w') as f:
+            size = 4294967296 # 4GiB should be enough for the target
+            f.write("\0" * size)
+
+        # append ci_build.conf
+        with open(self.build_dir + '/conf/ci_build.conf', 'a') as f:
+            f.write('\n#Installer image configuration\n')
+            f.write('BBMULTICONFIG += "isar-installer installer-target"\n')
+            f.write('INSTALLER_TARGET_IMAGE = "isar-image-ci"\n')
+            f.write('INSTALLER_UNATTENDED = "1"\n')
+            f.write('INSTALLER_TARGET_DEVICE = "/dev/sda"\n')
+            f.write('INSTALLER_TARGET_OVERWRITE = "OVERWRITE"\n')
+            f.write(f'DISTRO ?= "{distro}"\n');
+            f.write(f'MACHINE ?= "{machine}"\n');
+            f.write(f'QEMU_DISK_ARGS = "-bios /usr/share/ovmf/OVMF.fd"\n')
+            f.write(f'QEMU_DISK_ARGS += "-hda {install_target}"\n')
+            f.write(f'QEMU_DISK_ARGS += "-hdb ##ROOTFS_IMAGE##"\n')
+
+        self.log.info("Starting build...")
+
+        self.bitbake(target, **kwargs)
+
     def perform_ccache_test(self, targets, **kwargs):
         def ccache_stats(dir, field):
             # Look ccache source's 'src/core/Statistic.hpp' for field meanings

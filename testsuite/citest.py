@@ -122,6 +122,32 @@ class CcacheTest(CIBaseTest):
         self.perform_ccache_test(targets)
 
 
+class InstallerTest(CIBaseTest):
+
+    """
+    Installer test
+
+    :avocado: tags=installer,full
+    """
+
+    def test_installer_build(self):
+        self.init()
+        target = "mc:isar-installer:isar-image-installer"
+        distro = "debian-bookworm"
+        machine = "qemuamd64"
+        self.perform_installer_build_test(target, distro, machine)
+
+    def test_installer_run(self):
+        self.init()
+        self.vm_start('amd64', 'bookworm', image='isar-image-installer',
+                      keep=True)
+
+    def test_installer_root_partition(self):
+        self.init()
+        self.vm_start('amd64', 'bookworm', image='isar-image-installer',
+            cmd='findmnt -n -o SOURCE / | grep -q sda2')
+
+
 class CrossTest(CIBaseTest):
 
     """
