@@ -175,10 +175,7 @@ class CrossTest(CIBaseTest):
         ]
 
         self.init()
-        try:
-            self.perform_build_test(targets)
-        except exceptions.TestFail:
-            self.cancel('KFAIL')
+        self.perform_build_test(targets)
 
 
 class WicTest(CIBaseTest):
@@ -271,10 +268,7 @@ class NoCrossTest(CIBaseTest):
         ]
 
         self.init()
-        try:
-            self.perform_build_test(targets, cross=False)
-        except exceptions.TestFail:
-            self.cancel('KFAIL')
+        self.perform_build_test(targets, cross=False)
 
     def test_nocross_rpi_debsrc(self):
         targets = [
@@ -284,10 +278,7 @@ class NoCrossTest(CIBaseTest):
         ]
 
         self.init()
-        try:
-            self.perform_build_test(targets, cross=False, debsrc_cache=True)
-        except exceptions.TestFail:
-            self.cancel('KFAIL')
+        self.perform_build_test(targets, cross=False, debsrc_cache=True)
 
     def test_nocross_trixie(self):
         targets = [
