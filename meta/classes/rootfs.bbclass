@@ -368,7 +368,7 @@ rootfs_cleanup_base_apt[weight] = "2"
 rootfs_cleanup_base_apt() {
     sudo -s <<'EOSUDO'
         set -e
-        rm -f "${ROOTFSDIR}/etc/apt/sources.list.d/*base-apt.list"
+        rm -f "${ROOTFSDIR}/etc/apt/sources.list.d/"*base-apt.list
 EOSUDO
 }
 
