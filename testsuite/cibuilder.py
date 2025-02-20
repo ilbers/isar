@@ -109,6 +109,10 @@ class CIBuilder(Test):
         source_date_epoch=None,
         use_apt_snapshot=False,
         image_install=None,
+        installer_image=None,
+        installer_machine=None,
+        installer_distro=None,
+        installer_device=None,
         **kwargs,
     ):
         # write configuration file and set bitbake_args
@@ -155,6 +159,7 @@ class CIBuilder(Test):
             f"  sstate_dir = {sstate_dir}\n"
             f"  ccache_dir = {ccache_dir}\n"
             f"  image_install = {image_install}\n"
+            f"  installer_image = {installer_image}\n"
             f"==================================================="
         )
 
@@ -216,6 +221,23 @@ class CIBuilder(Test):
                 f.write('IMAGE_INSTALL = "%s"\n' % image_install)
             if fail_on_cleanup == '1':
                 f.write('ISAR_FAIL_ON_CLEANUP = "1"\n')
+            if installer_image:
+                install_target = self.build_dir + '/installer.wic'
+                # Create empty file installer will write to
+                with open(install_target, 'w') as wic:
+                    size = 4294967296 # 4GiB should be enough for the target
+                    wic.write("\0" * size)
+
+                f.write('BBMULTICONFIG += "isar-installer installer-target"\n')
+                f.write('INSTALLER_UNATTENDED = "1"\n')
+                f.write('INSTALLER_TARGET_OVERWRITE = "OVERWRITE"\n')
+                f.write(f'INSTALLER_TARGET_IMAGE = "{installer_image}"\n')
+                f.write(f'INSTALLER_TARGET_DEVICE = "{installer_device}"\n')
+                f.write(f'DISTRO ?= "{installer_distro}"\n')
+                f.write(f'MACHINE ?= "{installer_machine}"\n')
+                f.write(f'QEMU_DISK_ARGS = "-bios /usr/share/ovmf/OVMF.fd"\n')
+                f.write(f'QEMU_DISK_ARGS += "-hda {install_target}"\n')
+                f.write(f'QEMU_DISK_ARGS += "-hdb ##ROOTFS_IMAGE##"\n')
 
         # include ci_build.conf in local.conf
         with open(self.build_dir + '/conf/local.conf', 'r+') as f:
