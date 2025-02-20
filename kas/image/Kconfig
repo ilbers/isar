@@ -48,6 +48,11 @@ config INSTALL_IMAGE_BASE
 	help
 	  Embed the basic Isar image into the installer image.
 
+config INSTALL_IMAGE_CI
+	bool "CI image"
+	help
+	  Embed the Isar CI image into the installer image.
+
 config INSTALL_IMAGE_DEBUG
 	bool "Debug image"
 	help
@@ -65,7 +70,8 @@ endchoice
 config INSTALLER_TARGET_IMAGE
 	string
 	default "isar-image-base" if INSTALL_IMAGE_BASE
-	default "isar-image-base" if INSTALL_IMAGE_DEBUG
+	default "isar-image-ci" if INSTALL_IMAGE_CI
+	default "isar-image-debug" if INSTALL_IMAGE_DEBUG
 
 config INSTALL_UNATTENDED
 	bool "Run installer unattended"
