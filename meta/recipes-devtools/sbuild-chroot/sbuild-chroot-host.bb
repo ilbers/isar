@@ -18,9 +18,3 @@ SBUILD_CHROOT_PREINSTALL ?= " \
     crossbuild-essential-${DISTRO_ARCH} \
     apt-utils \
     "
-
-SBUILD_CHROOT_PREINSTALL:riscv64 ?= " \
-    ${SBUILD_CHROOT_PREINSTALL_COMMON} \
-    gcc-riscv64-linux-gnu \
-    g++-riscv64-linux-gnu \
-    dpkg-cross"
