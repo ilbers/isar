@@ -14,12 +14,13 @@ DEBIAN_CONFLICTS ??= ""
 DEBIAN_BREAKS ??= ""
 DEBIAN_MULTI_ARCH ??= "no"
 DEBIAN_COMPAT ??= "10"
+DEBIAN_CHANGELOG_TIMESTAMP ??= "3600"
 DESCRIPTION ??= "must not be empty"
 MAINTAINER ??= "Unknown maintainer <unknown@example.com>"
 
 deb_add_changelog() {
 	changelog_v="${CHANGELOG_V}"
-	timestamp=3600
+	timestamp="${DEBIAN_CHANGELOG_TIMESTAMP}"
 	if [ -f ${S}/debian/changelog ]; then
 		if [ ! -f ${WORKDIR}/changelog.orig ]; then
 			cp ${S}/debian/changelog ${WORKDIR}/changelog.orig
