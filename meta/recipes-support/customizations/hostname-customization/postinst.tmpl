@@ -1,0 +1,5 @@
+#!/bin/sh
+
+echo "${HOSTNAME}" > /etc/hostname
+echo "127.0.1.1	${HOSTNAME}" >> /etc/hosts
+sed -i  -e 's/^127.0.0.1[[:space:]]\+localhost$/& localhost.localdomain/' /etc/hosts
