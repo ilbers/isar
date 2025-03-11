@@ -372,6 +372,27 @@ class ContainerSdkTest(CIBaseTest):
         )
 
 
+class CustomizationsTest(CIBaseTest):
+    """
+    Test image customizations using the hostname-customizations package.
+
+    :avocado: tags=customizations,single,full
+    """
+
+    def test_single_customization(self):
+        self.init()
+        machine = self.params.get("machine", default="qemuamd64")
+        distro = self.params.get("distro", default="bullseye")
+
+        self.perform_build_test("mc:%s-%s:%s" % (machine, distro, "isar-image-ci"), customizations="hostname", image_install="")
+        self.vm_start(
+            machine.removeprefix('qemu'),
+            distro,
+            image="isar-image-ci",
+            cmd="hostname | grep isar-ci"
+        )
+
+
 class SignatureTest(CIBaseTest):
 
     """

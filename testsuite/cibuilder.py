@@ -113,6 +113,7 @@ class CIBuilder(Test):
         installer_machine=None,
         installer_distro=None,
         installer_device=None,
+        customizations=None,
         **kwargs,
     ):
         # write configuration file and set bitbake_args
@@ -160,6 +161,7 @@ class CIBuilder(Test):
             f"  ccache_dir = {ccache_dir}\n"
             f"  image_install = {image_install}\n"
             f"  installer_image = {installer_image}\n"
+            f"  customizations = {customizations}\n"
             f"==================================================="
         )
 
@@ -239,6 +241,13 @@ class CIBuilder(Test):
                 f.write(f'QEMU_DISK_ARGS += "-drive file={install_target},'\
                     'if=ide,bus=0,unit=0,format=raw,snapshot=off"\n')
                 f.write(f'QEMU_DISK_ARGS += "-hdb ##ROOTFS_IMAGE##"\n')
+            if customizations is not None:
+                if not isinstance(customizations, str):
+                    customizations = ' '.join(customizations)
+                f.write('CUSTOMIZATIONS = "%s"\n' % customizations)
+                f.write('CUSTOMIZATION_VARS:append = " ${IMAGE}"\n')
+                f.write('CUSTOMIZATION_FOR_IMAGES:append = " isar-image-ci"\n')
+                f.write('HOSTNAME:isar-image-ci = "isar-ci"\n')
 
         # include ci_build.conf in local.conf
         with open(self.build_dir + '/conf/local.conf', 'r+') as f:
