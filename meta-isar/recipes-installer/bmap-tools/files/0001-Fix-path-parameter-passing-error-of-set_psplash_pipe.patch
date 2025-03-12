@@ -1,0 +1,28 @@
+From 06fa51d0270f84d9553c044bd7391f01459a70e8 Mon Sep 17 00:00:00 2001
+From: Jason <zxcv1884@gmail.com>
+Date: Wed, 26 Jan 2022 16:26:47 +0800
+Subject: [PATCH] Fix path parameter passing error of set_psplash_pipe function
+
+---
+ bmaptools/BmapCopy.py | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/bmaptools/BmapCopy.py b/bmaptools/BmapCopy.py
+index c6a2603..dba24a5 100644
+--- a/bmaptools/BmapCopy.py
++++ b/bmaptools/BmapCopy.py
+@@ -228,11 +228,11 @@ def set_psplash_pipe(self, path):
+         a best effort.
+         """
+ 
+-        if os.path.exists(pipe) and stat.S_ISFIFO(os.stat(pipe).st_mode):
+-            self._psplash_pipe = pipe
++        if os.path.exists(path) and stat.S_ISFIFO(os.stat(path).st_mode):
++            self._psplash_pipe = path
+         else:
+             _log.warning("'%s' is not a pipe, so psplash progress will not be "
+-                         "updated" % pipe)
++                         "updated" % path)
+ 
+     def set_progress_indicator(self, file_obj, format_string):
+         """

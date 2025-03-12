@@ -1,0 +1,78 @@
+From 163a49259d025e220e9de4fc2a6296c2c3053500 Mon Sep 17 00:00:00 2001
+From: Jason <zxcv1884@gmail.com>
+Date: Mon, 7 Feb 2022 17:55:16 +0800
+Subject: [PATCH] Fix _psplash_pipe part was skipped when _progress_file is
+ null
+
+---
+ bmaptools/BmapCopy.py | 56 +++++++++++++++++++++----------------------
+ 1 file changed, 27 insertions(+), 29 deletions(-)
+
+diff --git a/bmaptools/BmapCopy.py b/bmaptools/BmapCopy.py
+index dba24a5..ca22aba 100644
+--- a/bmaptools/BmapCopy.py
++++ b/bmaptools/BmapCopy.py
+@@ -396,36 +396,34 @@ def _update_progress(self, blocks_written):
+         else:
+             _log.debug("wrote %d blocks" % blocks_written)
+ 
+-        if not self._progress_file:
+-            return
+-
+-        if self.mapped_cnt:
+-            progress = '\r' + self._progress_format % percent + '\n'
+-        else:
+-            # Do not rotate the wheel too fast
+-            now = datetime.datetime.now()
+-            min_delta = datetime.timedelta(milliseconds=250)
+-            if now - self._progress_time < min_delta:
+-                return
+-            self._progress_time = now
+-
+-            progress_wheel = ('-', '\\', '|', '/')
+-            progress = '\r' + progress_wheel[self._progress_index % 4] + '\n'
+-            self._progress_index += 1
+-
+-        # This is a little trick we do in order to make sure that the next
+-        # message will always start from a new line - we switch to the new
+-        # line after each progress update and move the cursor up. As an
+-        # example, this is useful when the copying is interrupted by an
+-        # exception - the error message will start form new line.
+-        if self._progress_started:
+-            # The "move cursor up" escape sequence
+-            self._progress_file.write('\033[1A')  # pylint: disable=W1401
+-        else:
+-            self._progress_started = True
++        if self._progress_file:
++            if self.mapped_cnt:
++                progress = '\r' + self._progress_format % percent + '\n'
++            else:
++                # Do not rotate the wheel too fast
++                now = datetime.datetime.now()
++                min_delta = datetime.timedelta(milliseconds=250)
++                if now - self._progress_time < min_delta:
++                    return
++                self._progress_time = now
++
++                progress_wheel = ('-', '\\', '|', '/')
++                progress = '\r' + progress_wheel[self._progress_index % 4] + '\n'
++                self._progress_index += 1
++
++            # This is a little trick we do in order to make sure that the next
++            # message will always start from a new line - we switch to the new
++            # line after each progress update and move the cursor up. As an
++            # example, this is useful when the copying is interrupted by an
++            # exception - the error message will start form new line.
++            if self._progress_started:
++                # The "move cursor up" escape sequence
++                self._progress_file.write('\033[1A')  # pylint: disable=W1401
++            else:
++                self._progress_started = True
+ 
+-        self._progress_file.write(progress)
+-        self._progress_file.flush()
++            self._progress_file.write(progress)
++            self._progress_file.flush()
+ 
+         # Update psplash progress when configured. This is using a best effort
+         # strategy to not affect the writing process when psplash breaks, is
