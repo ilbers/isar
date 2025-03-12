@@ -11,6 +11,9 @@ SRC_URI += " \
     file://container-loader.service.tmpl \
     file://container-loader.sh.tmpl"
 
+DPKG_ARCH ?= "${DISTRO_ARCH}"
+DEBIAN_MULTI_ARCH ?= "allowed"
+
 CONTAINER_DELETE_AFTER_LOAD ?= "0"
 
 DEBIAN_DEPENDS += "${CONTAINER_ENGINE_PACKAGES}, zstd"
