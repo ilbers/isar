@@ -1,7 +1,7 @@
 # Custom OP-TEE OS build
 #
 # This software is a part of ISAR.
-# Copyright (c) Siemens AG, 2020-2023
+# Copyright (c) Siemens AG, 2020-2025
 #
 # SPDX-License-Identifier: MIT
 
@@ -23,7 +23,7 @@ DEBIAN_PACKAGE_NAME ?= "optee-os-${OPTEE_NAME}"
 DEBIAN_BUILD_DEPENDS ?= "python3-pycryptodome:native, python3-pyelftools"
 
 TEMPLATE_FILES = "debian/control.tmpl debian/rules.tmpl"
-TEMPLATE_VARS += "DEBIAN_PACKAGE_NAME OPTEE_NAME DEBIAN_BUILD_DEPENDS OPTEE_PLATFORM OPTEE_EXTRA_BUILDARGS"
+TEMPLATE_VARS += "DEBIAN_COMPAT DEBIAN_PACKAGE_NAME OPTEE_NAME DEBIAN_BUILD_DEPENDS OPTEE_PLATFORM OPTEE_EXTRA_BUILDARGS"
 
 # split strip platform flavor, if any, from the specified platform string
 OPTEE_PLATFORM_BASE = "${@d.getVar('OPTEE_PLATFORM').split('-')[0]}"
