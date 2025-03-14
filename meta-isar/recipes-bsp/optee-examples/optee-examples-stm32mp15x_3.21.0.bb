@@ -1,5 +1,5 @@
 #
-# Copyright (c) Siemens AG, 2023
+# Copyright (c) Siemens AG, 2023-2025
 #
 # SPDX-License-Identifier: MIT
 inherit dpkg
@@ -43,7 +43,7 @@ DEBIAN_BUILD_DEPENDS ?= " \
     optee-os-tadevkit-${OPTEE_NAME}"
 
 TEMPLATE_FILES = "debian/control.tmpl debian/rules.tmpl"
-TEMPLATE_VARS += "DEBIAN_BUILD_DEPENDS OPTEE_PLATFORM TA_DEV_KIT_DIR"
+TEMPLATE_VARS += "DEBIAN_BUILD_DEPENDS OPTEE_PLATFORM TA_DEV_KIT_DIR DEBIAN_COMPAT"
 
 do_prepare_build() {
     cp -r ${WORKDIR}/debian ${S}/
