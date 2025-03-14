@@ -1,7 +1,7 @@
 # Custom Trusted Firmware A build
 #
 # This software is a part of ISAR.
-# Copyright (c) Siemens AG, 2020
+# Copyright (c) Siemens AG, 2020-2025
 #
 # SPDX-License-Identifier: MIT
 
@@ -23,7 +23,8 @@ DEBIAN_BUILD_DEPENDS ?= ""
 PROVIDES += "trusted-firmware-a-${TF_A_NAME}"
 
 TEMPLATE_FILES = "debian/control.tmpl debian/rules.tmpl"
-TEMPLATE_VARS += "TF_A_NAME DEBIAN_BUILD_DEPENDS TF_A_PLATFORM TF_A_EXTRA_BUILDARGS"
+TEMPLATE_VARS += "DEBIAN_COMPAT \
+    TF_A_NAME DEBIAN_BUILD_DEPENDS TF_A_PLATFORM TF_A_EXTRA_BUILDARGS"
 
 do_prepare_build() {
     cp -r ${WORKDIR}/debian ${S}/
