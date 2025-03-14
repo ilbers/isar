@@ -1,8 +1,13 @@
 Source: ${PN}
 Priority: optional
 Maintainer: Unknown maintainer <unknown@example.com>
-Build-Depends: pkg-config, uuid-dev
-Standards-Version: 4.1.3
+Build-Depends: debhelper-compat (= 12),
+               docbook-xml,
+               docbook-xsl,
+               pkg-config,
+               uuid-dev,
+               xsltproc
+Standards-Version: 4.5.1
 Section: libs
 Homepage: https://github.com/OP-TEE/optee_client
 Rules-Requires-Root: no
@@ -11,7 +16,10 @@ Package: optee-client-dev
 Section: libdevel
 Architecture: ${DISTRO_ARCH}
 Multi-Arch: same
-Depends: libteec1 (= ${binary:Version}),
+Depends: libckteec0 (= ${binary:Version}),
+         libseteec0 (= ${binary:Version}),
+         libteeacl0.1.0 (= ${binary:Version}),
+         libteec1 (= ${binary:Version}),
          ${misc:Depends}
 Description: normal world user space client APIs for OP-TEE (development)
  OP-TEE is a Trusted Execution Environment (TEE) designed as companion to a
@@ -22,6 +30,21 @@ Description: normal world user space client APIs for OP-TEE (development)
  Client API library.
  .
  This package contains the development files OpTEE Client API
+
+Package: libteeacl0.1.0
+Architecture: ${DISTRO_ARCH}
+Multi-Arch: same
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: normal world user space client APIs for OP-TEE
+ OP-TEE is a Trusted Execution Environment (TEE) designed as companion to a
+ non-secure Linux kernel running on Arm; Cortex-A cores using the TrustZone
+ technology. OP-TEE implements TEE Internal Core API v1.1.x which is the API
+ exposed to Trusted Applications and the TEE Client API v1.0, which is the
+ API describing how to communicate with a TEE. This package provides the TEE
+ Client API library.
+ .
+ This package contains libteeacl library.
+
 
 Package: libteec1
 Architecture: ${DISTRO_ARCH}
@@ -36,6 +59,36 @@ Description: normal world user space client APIs for OP-TEE
  Client API library.
  .
  This package contains libteec library.
+
+Package: libckteec0
+Architecture: ${DISTRO_ARCH}
+Multi-Arch: same
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: normal world user space client APIs for OP-TEE
+ OP-TEE is a Trusted Execution Environment (TEE) designed as companion to a
+ non-secure Linux kernel running on Arm; Cortex-A cores using the TrustZone
+ technology. OP-TEE implements TEE Internal Core API v1.1.x which is the API
+ exposed to Trusted Applications and the TEE Client API v1.0, which is the
+ API describing how to communicate with a TEE. This package provides the TEE
+ Client API library.
+ .
+ This package contains libckteec library.
+
+Package: libseteec0
+Architecture: ${DISTRO_ARCH}
+Multi-Arch: same
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: normal world user space client APIs for OP-TEE
+ OP-TEE is a Trusted Execution Environment (TEE) designed as companion to a
+ non-secure Linux kernel running on Arm; Cortex-A cores using the TrustZone
+ technology. OP-TEE implements TEE Internal Core API v1.1.x which is the API
+ exposed to Trusted Applications and the TEE Client API v1.0, which is the
+ API describing how to communicate with a TEE. This package provides the TEE
+ Client API library.
+ .
+ libseteec stands for secure element control.
+ .
+ This package contains libseteec library.
 
 Package: tee-supplicant
 Architecture: ${DISTRO_ARCH}
