@@ -1,4 +1,4 @@
-# Copyright (c) Siemens AG, 2023
+# Copyright (c) Siemens AG, 2023-2025
 #
 # Authors:
 #  Su Bao Cheng <baocheng.su@siemens.com>
@@ -29,6 +29,7 @@ OPTEE_FTPM_BUILD_ARGS_EXTRA ?= " "
 
 TEMPLATE_FILES = "debian/rules.tmpl debian/control.tmpl"
 TEMPLATE_VARS += "DEBIAN_BUILD_DEPENDS \
+    DEBIAN_COMPAT \
     OPTEE_FTPM_BUILD_ARGS_EXTRA \
     TA_CPU \
     TA_DEV_KIT_DIR"

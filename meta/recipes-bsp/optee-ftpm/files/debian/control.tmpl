@@ -3,7 +3,7 @@ Section: misc
 Priority: optional
 Standards-Version: 3.9.6
 Maintainer: Unknown maintainer <unknown@example.com>
-Build-Depends: debhelper (>= 10), ${DEBIAN_BUILD_DEPENDS}
+Build-Depends: debhelper-compat (= ${DEBIAN_COMPAT}), ${DEBIAN_BUILD_DEPENDS}
 
 Package: ${PN}
 Architecture: any
