@@ -13,7 +13,7 @@ WKS_FILE = "${INSTALLER_WKS_FILE}"
 
 ADDITIONAL_KERNEL_CMDLINE ??= ""
 
-OVERRIDES .= "${@':unattended-installer' if d.getVar('INSTALLER_UNATTENDED') else ''}"
+OVERRIDES .= "${@':unattended-installer' if bb.utils.to_boolean(d.getVar('INSTALLER_UNATTENDED')) else ''}"
 ADDITIONAL_KERNEL_CMDLINE:append:unattended-installer = " \
     installer.unattended \
     installer.image.uri=/install/${IMAGE_DATA_FILE}.${IMAGE_DATA_POSTFIX} \
