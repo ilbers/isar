@@ -236,7 +236,8 @@ class CIBuilder(Test):
                 f.write(f'DISTRO ?= "{installer_distro}"\n')
                 f.write(f'MACHINE ?= "{installer_machine}"\n')
                 f.write(f'QEMU_DISK_ARGS = "-bios /usr/share/ovmf/OVMF.fd"\n')
-                f.write(f'QEMU_DISK_ARGS += "-hda {install_target}"\n')
+                f.write(f'QEMU_DISK_ARGS += "-drive file={install_target},'\
+                    'if=ide,bus=0,unit=0,format=raw,snapshot=off"\n')
                 f.write(f'QEMU_DISK_ARGS += "-hdb ##ROOTFS_IMAGE##"\n')
 
         # include ci_build.conf in local.conf
