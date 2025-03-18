@@ -124,7 +124,7 @@ dpkg_runbuild() {
         --finished-build-commands="rm -f ${deb_dir}/sbuild-build-depends-main-dummy_*.deb" \
         --finished-build-commands="find ${deb_dir} -maxdepth 1 -type f -name '*.deb' -print -exec cp ${CP_FLAGS} -t ${ext_deb_dir}/ {} +" \
         --finished-build-commands="cp /var/log/dpkg.log ${ext_root}/dpkg_partial.log" \
-        --build-dir=${WORKDIR} --dist="${DEBDISTRONAME}" ${DSC_FILE}
+        --build-path="" --build-dir=${WORKDIR} --dist="${DEBDISTRONAME}" ${DSC_FILE}
 
     sbuild_dpkg_log_export "${WORKDIR}/rootfs/dpkg_partial.log"
     deb_dl_dir_export "${WORKDIR}/rootfs" "${distro}"
