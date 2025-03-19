@@ -149,7 +149,43 @@ if ! $installer_unattended; then
     clear
 fi
 
-if ! bmaptool copy ${bmap_options} "$installer_image_uri" "${installer_target_dev}"; then
+# Function to compare version numbers
+version_ge() {
+    if [ "$(printf '%s\n' "$1"X "$2" | sort -V | head -n 1)" != "$1"X ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Get bmap-tools version
+bmap_version=$(bmaptool --version | awk '{ print $NF }')
+
+if version_ge "$bmap_version" "3.8"; then
+    # Create a named pipe for progress communication
+    progress_pipe="/tmp/progress"
+    if ! mkfifo "$progress_pipe"; then
+        echo "Error: Failed to create named pipe $progress_pipe"
+        exit 1
+    fi
+
+    # Add psplash pipe to bmap_options
+    bmap_options="$bmap_options --psplash-pipe=$progress_pipe"
+    quiet_flag="-q"
+
+    # Initialize the dialog gauge and update it dynamically
+    (
+        while true; do
+            if read -r line < "$progress_pipe"; then
+                percentage=$(echo "$line" | awk '{ print $2 }')
+                echo "$percentage"
+            fi
+        done
+    ) | dialog --gauge "Flashing image, please wait..." 10 70 0 &
+
+fi
+
+if ! bmaptool ${quiet_flag} copy ${bmap_options} "$installer_image_uri" "${installer_target_dev}"; then
     exit 1
 fi
 
