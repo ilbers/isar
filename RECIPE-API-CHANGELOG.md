@@ -714,3 +714,8 @@ For example, If `KERNEL_NAME` is configured as `foo` for arm64, now
 `linux-libc-dev-foo` and `linux-libc-dev-arm64-cross-foo` package will be
 generated. This will help to have multiple versions of linux-libc-dev packages
 available for respective bsps in apt feeds.
+
+### ISAR APT Repository
+
+Optional fields of the isar-apt repo can be controlled by adding to the
+`ISAR_APT_OPT_FIELD` map. Example: `ISAR_APT_OPT_FIELD[Origin]="isar"`.

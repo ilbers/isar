@@ -4,12 +4,19 @@
 #
 # SPDX-License-Identifier: MIT
 
+def repo_expand_opt_fields(d, var):
+    f = d.getVarFlags(var)
+    if not f:
+        return ''
+    return '\n'.join('{}: {}'.format(k, v) for k, v in f.items())
+
 repo_create() {
     local dir="$1"
     local dbdir="$2"
     local codename="$3"
     local distros_in="$4"
     local keyfiles="$5"
+    local conf_append="$6"
 
     if [ -n "${GNUPGHOME}" ]; then
         export GNUPGHOME="${GNUPGHOME}"
@@ -26,6 +33,9 @@ repo_create() {
 	      option="${option}${keyid} "
 	    done
 	    echo "SignWith: ${option}" >> "${dir}"/conf/distributions
+        fi
+        if [ -n "${conf_append}" ]; then
+            echo "${conf_append}" >> "${dir}"/conf/distributions
         fi
     fi
     if [ ! -d "${dbdir}" ]; then
