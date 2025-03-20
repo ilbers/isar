@@ -1,6 +1,7 @@
 # This software is a part of ISAR.
 # Copyright (C) 2017-2019 Siemens AG
 # Copyright (C) 2021 Siemens Mobility GmbH
+# Copyright (C) 2025 ilbers GmbH
 #
 # SPDX-License-Identifier: MIT
 
@@ -17,6 +18,8 @@ DEBIAN_COMPAT ??= "10"
 DEBIAN_CHANGELOG_TIMESTAMP ??= "3600"
 DESCRIPTION ??= "must not be empty"
 MAINTAINER ??= "Unknown maintainer <unknown@example.com>"
+
+DEBIANIZE_BUILD_DEPENDS ?= "debhelper-compat (= ${DEBIAN_COMPAT}), ${DEBIAN_BUILD_DEPENDS}"
 
 deb_add_changelog() {
 	changelog_v="${CHANGELOG_V}"
@@ -66,6 +69,12 @@ EOF
 }
 
 
+deb_create_control[vardeps] += "DEBIANIZE_BUILD_DEPENDS \
+                                DEBIAN_DEPENDS \
+                                DEBIAN_PROVIDES \
+                                DEBIAN_REPLACES \
+                                DEBIAN_BREAKS \
+                                DEBIAN_CONFLICTS"
 deb_create_control() {
 	cat << EOF > ${S}/debian/control
 Source: ${BPN}
@@ -73,15 +82,15 @@ Section: misc
 Priority: optional
 Standards-Version: 3.9.6
 Maintainer: ${MAINTAINER}
-Build-Depends: debhelper-compat (= ${DEBIAN_COMPAT}), ${DEBIAN_BUILD_DEPENDS}
+Build-Depends: ${@ deb_list_beautify(d, 'DEBIANIZE_BUILD_DEPENDS')}
 
 Package: ${BPN}
 Architecture: ${DPKG_ARCH}
-Depends: ${DEBIAN_DEPENDS}
-Provides: ${DEBIAN_PROVIDES}
-Replaces: ${DEBIAN_REPLACES}
-Breaks: ${DEBIAN_BREAKS}
-Conflicts: ${DEBIAN_CONFLICTS}
+Depends: ${@ deb_list_beautify(d, 'DEBIAN_DEPENDS')}
+Provides: ${@ deb_list_beautify(d, 'DEBIAN_PROVIDES')}
+Replaces: ${@ deb_list_beautify(d, 'DEBIAN_REPLACES')}
+Breaks: ${@ deb_list_beautify(d, 'DEBIAN_BREAKS')}
+Conflicts: ${@ deb_list_beautify(d, 'DEBIAN_CONFLICTS')}
 Multi-Arch: ${DEBIAN_MULTI_ARCH}
 Description: ${DESCRIPTION}
 EOF

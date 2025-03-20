@@ -1,4 +1,8 @@
+# This software is a part of ISAR.
+#
 # Copyright (C) 2003  Chris Larson
+# Copyright (C) 2015-2025 ilbers GmbH
+# Copyright (C) 2017-2025 Siemens AG
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -334,3 +338,15 @@ do_unpack[postfuncs] += "create_source_date_epoch_stamp"
 
 def get_source_date_epoch_value(d):
     return oe.reproducible.epochfile_read(d.getVar('SDE_FILE'), d)
+
+def deb_list_beautify(d, varname):
+    line = d.getVar(varname)
+    if not line:
+        return ''
+
+    var_list = []
+    for a in line.split(','):
+        stripped = a.strip()
+        if stripped:
+            var_list.append(stripped)
+    return ', '.join(var_list)
