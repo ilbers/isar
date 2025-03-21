@@ -98,19 +98,12 @@ Plan merges to `master` so that both fit the two-week window; short extensions s
           meta:
           meta-isar:
     EOF
-    kas/kas-container shell kas.yml
+    kas/kas-container --entrypoint /work/scripts/ci_setup.sh shell kas.yml
     ```
 
     In kas shell:
 
     ```
-    wget -q http://deb.isar-build.org/debian-isar.key -O- |gpg --dearmor \
-        |sudo dd of=/etc/apt/trusted.gpg.d/debian-isar.gpg
-    echo "deb [signed-by=/etc/apt/trusted.gpg.d/debian-isar.gpg] \
-        http://deb.isar-build.org/debian-isar bookworm-isar main" \
-        |sudo tee /etc/apt/sources.list.d/10-isar_build.list
-    sudo apt-get update
-    sudo apt-get install -y avocado qemu-system-arm qemu-system-x86
     cd /work/isar/testsuite
     avocado run citest.py -t dev --max-parallel-tasks=1
     ```
