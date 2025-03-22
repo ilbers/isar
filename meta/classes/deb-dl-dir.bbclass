@@ -5,23 +5,6 @@
 
 inherit repository
 
-is_not_part_of_current_build() {
-    local package="$( dpkg-deb --show --showformat '${Package}' "${1}" )"
-    local arch="$( dpkg-deb --show --showformat '${Architecture}' "${1}" )"
-    local version="$( dpkg-deb --show --showformat '${Version}' "${1}" )"
-    # Since we are parsing all the debs in DEBDIR, we can to some extend
-    # try to eliminate some debs that are not part of the current multiconfig
-    # build using the below method.
-    local output="$( grep -xhs ".* status installed ${package}:${arch} ${version}" \
-            "${IMAGE_ROOTFS}"/var/log/dpkg.log \
-            "${SCHROOT_HOST_DIR}"/var/log/dpkg.log \
-            "${SCHROOT_TARGET_DIR}"/var/log/dpkg.log \
-            "${SCHROOT_HOST_DIR}"/tmp/dpkg_common.log \
-            "${SCHROOT_TARGET_DIR}"/tmp/dpkg_common.log | head -1 )"
-
-    [ -z "${output}" ]
-}
-
 debsrc_do_mounts() {
     sudo -s <<EOSUDO
     set -e
@@ -41,6 +24,24 @@ debsrc_undo_mounts() {
 EOSUDO
 }
 
+debsrc_source_version_filter() {
+    # Filter the input to only consider Package, Version and Source lines
+    #
+    #    Package: <binary-name>
+    #    Version: <binary-version>
+    #    Source: <source-name> (<source-version>)
+    #
+    # If Source is omitted, then <source-name>=<binary-name> and
+    # if <source-version> is not specified then it is <binary-version>.
+    # The awk script handles these optional fields. It looks for Size: as a
+    # trigger to print the source,version tupple
+    awk '/^Package:/ { s=$2; }
+         /^Version:/ { v=$2; next }
+         /^Source:/ { s=$2; if ($3 ~ /^\(/) v=substr($3, 2, length($3)-2) }
+         /^Size:/ { print s, v}' \
+    | sort -u
+}
+
 debsrc_download() {
     export rootfs="$1"
     export rootfs_distro="$2"
@@ -54,16 +55,39 @@ debsrc_download() {
     ( flock 9
     set -e
     printenv | grep -q BB_VERBOSE_LOGS && set -x
-    find "${rootfs}/var/cache/apt/archives/" -maxdepth 1 -type f -iname '*\.deb' | while read package; do
-        is_not_part_of_current_build "${package}" && continue
-        local src="$( dpkg-deb --show --showformat '${source:Package}' "${package}" )"
-        local version="$( dpkg-deb --show --showformat '${source:Version}' "${package}" )"
-        local dscname="$(echo ${src}_${version} | sed -e 's/_[0-9]\+:/_/')"
-        local dscfile=$(find "${DEBSRCDIR}"/"${rootfs_distro}" -name "${dscname}.dsc")
-        [ -n "$dscfile" ] && continue
 
-        sudo -E chroot --userspec=$( id -u ):$( id -g ) ${rootfs} \
-            sh -c ' mkdir -p "/deb-src/${1}/${2}" && cd "/deb-src/${1}/${2}" && apt-get -y --download-only --only-source source "$2"="$3" ' download-src "${rootfs_distro}" "${src}" "${version}"
+    # We need temporary files for our lists of source packages
+    # trap exit of this sub-shell to remove them (this script may exit abruptly
+    # since "set -e" is used)
+    avail=$(mktemp)
+    wanted=$(mktemp)
+    trap "rm -f ${avail} ${wanted}" EXIT
+
+    # List all packages known to apt
+    apt-cache -o Dir=${rootfs} dumpavail | debsrc_source_version_filter > ${avail}
+
+    # Use apt-ftparchive to scan all .deb files found in the download directory
+    # and get the <source> <version> pairs that we wish to download
+    apt-ftparchive --md5=no --sha1=no --sha256=no --sha512=no \
+                   -a "${DISTRO_ARCH}" packages \
+                   "${rootfs}/var/cache/apt/archives" \
+    | debsrc_source_version_filter > ${wanted}
+
+    # We now have two sorted lists: source packages we want and those known to
+    # apt. We will only consider source packages that may be found in both.
+    comm -12 ${wanted} ${avail} \
+    | while read src version; do
+        # Name of the .dsc file does not include Epoch, remove it before checking
+        # if sources were already downloaded. Avoid using sed here to reduce the
+        # number of processes being spawned by this function: we assume that the
+        # version is correctly formatted and simply strip everything up to the
+        # first colon
+        dscname="${src}_${version#*:}.dsc"
+        [ -f "${DEBSRCDIR}"/"${rootfs_distro}"/"${src}"/"${dscname}" ] || {
+            # use apt-get source to download sources in DEBSRCDIR
+            sudo -E chroot --userspec=$( id -u ):$( id -g ) ${rootfs} \
+                sh -c ' mkdir -p "/deb-src/${1}/${2}" && cd "/deb-src/${1}/${2}" && apt-get -y --download-only --only-source source "$2"="$3" ' download-src "${rootfs_distro}" "${src}" "${version}"
+        }
     done
     ) 9>"${DEBSRCDIR}/${rootfs_distro}.lock"
 
