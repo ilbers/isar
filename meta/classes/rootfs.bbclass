@@ -293,6 +293,28 @@ cache_deb_src() {
     fi
 }
 
+ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'cache-dbg-pkgs', 'rootfs_export_package_cache', '', d)}"
+cache_dbg_pkgs() {
+    if [ -e "${ROOTFSDIR}"/etc/resolv.conf ] ||
+       [ -h "${ROOTFSDIR}"/etc/resolv.conf ]; then
+        sudo mv "${ROOTFSDIR}"/etc/resolv.conf "${ROOTFSDIR}"/etc/resolv.conf.isar
+    fi
+    rootfs_install_resolvconf
+    # Note: ISAR updates the apt state information(apt-get update) only once during bootstrap and
+    # relies on that through out the build. Copy that state information instead of apt-get update
+    # which generates a new state from upstream.
+    sudo tar -xf "${BOOTSTRAP_SRC}" ./var/lib/apt/lists --one-top-level="${ROOTFSDIR}"
+
+    deb_dl_dir_import ${ROOTFSDIR} ${ROOTFS_BASE_DISTRO}-${BASE_DISTRO_CODENAME}
+    dbg_pkgs_download ${ROOTFSDIR}
+
+    sudo rm -f "${ROOTFSDIR}"/etc/resolv.conf
+    if [ -e "${ROOTFSDIR}"/etc/resolv.conf.isar ] ||
+       [ -h "${ROOTFSDIR}"/etc/resolv.conf.isar ]; then
+        sudo mv "${ROOTFSDIR}"/etc/resolv.conf.isar "${ROOTFSDIR}"/etc/resolv.conf
+    fi
+}
+
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'clean-package-cache', 'rootfs_postprocess_clean_package_cache', '', d)}"
 rootfs_postprocess_clean_package_cache() {
     sudo -E chroot '${ROOTFSDIR}' \

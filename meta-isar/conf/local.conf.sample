@@ -172,6 +172,9 @@ IMAGE_INSTALL:append:qemuamd64-sb = " example-module-signed-${KERNEL_NAME}"
 # Without this feature, only sources of packages downloaded with apt:// are downloaded.
 #BASE_REPO_FEATURES ?= "cache-deb-src"
 
+# Uncomment this to enable caching of all debug symbol packages.
+#BASE_REPO_FEATURES += "cache-dbg-pkgs"
+
 #
 # Uncomment this to enable use of cached base repository
 #ISAR_USE_CACHED_BASE_REPO ?= "1"
