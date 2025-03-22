@@ -94,6 +94,24 @@ debsrc_download() {
     debsrc_undo_mounts "${rootfs}"
 }
 
+dbg_pkgs_download() {
+    export rootfs="$1"
+
+    apt-ftparchive --md5=no --sha1=no --sha256=no --sha512=no \
+                   -a "${DISTRO_ARCH}" packages \
+                   "${rootfs}/var/cache/apt/archives" \
+    | awk '/^Package:/ {print $2}' \
+    | sort -u \
+    | while read pkg; do
+        apt-cache -o Dir=${rootfs} showsrc ${pkg} \
+            | awk '/^Package-List:/,/^$/' \
+            | grep -E "${pkg}-(dbg|dbgsym)" \
+            | grep "${DISTRO_ARCH}" \
+            | awk '!/Binary:/ {print $1}' \
+            | sort -u
+    done | xargs -r sudo -E chroot ${rootfs} sh -c '/usr/bin/apt-get -y --download-only install "$@"' --
+}
+
 deb_dl_dir_import() {
     export pc="${DEBDIR}/${2}"
     export rootfs="${1}"

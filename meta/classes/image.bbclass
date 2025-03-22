@@ -73,6 +73,7 @@ ROOTFS_DPKGSTATUS_DEPLOY_DIR ?= "${DEPLOY_DIR_IMAGE}"
 ROOTFS_PACKAGE_SUFFIX ?= "${PN}-${DISTRO}-${MACHINE}"
 
 ROOTFS_POSTPROCESS_COMMAND:prepend = "${@bb.utils.contains('BASE_REPO_FEATURES', 'cache-deb-src', 'cache_deb_src', '', d)} "
+ROOTFS_POSTPROCESS_COMMAND:prepend = "${@bb.utils.contains('BASE_REPO_FEATURES', 'cache-dbg-pkgs', 'cache_dbg_pkgs', '', d)} "
 
 inherit rootfs
 inherit sdk
