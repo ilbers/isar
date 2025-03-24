@@ -27,24 +27,28 @@
 
 set -e
 
-KAS_IMAGE_VERSION_DEFAULT="4.5"
+KAS_IMAGE_VERSION_DEFAULT="4.7"
 KAS_CONTAINER_IMAGE_PATH_DEFAULT="ghcr.io/siemens/kas"
 KAS_CONTAINER_IMAGE_NAME_DEFAULT="kas"
 KAS_CONTAINER_SELF_NAME="$(basename "$0")"
 
+# usage [exit_code]
 usage()
 {
+	EXIT_CODE="$1"
 	SELF="${KAS_CONTAINER_SELF_NAME}"
+
 	printf "%b" "Usage: ${SELF} [OPTIONS] { build | shell } [KASOPTIONS] [KASFILE]\n"
-	printf "%b" "       ${SELF} [OPTIONS] { checkout | dump } [KASOPTIONS] [KASFILE]\n"
+	printf "%b" "       ${SELF} [OPTIONS] { checkout | dump | lock } [KASOPTIONS] [KASFILE]\n"
 	printf "%b" "       ${SELF} [OPTIONS] for-all-repos [KASOPTIONS] [KASFILE] COMMAND\n"
-	printf "%b" "       ${SELF} [OPTIONS] { clean | cleansstate | cleanall} [KASFILE]\n"
+	printf "%b" "       ${SELF} [OPTIONS] { clean | cleansstate | cleanall } [KASFILE]\n"
 	printf "%b" "       ${SELF} [OPTIONS] menu [KCONFIG]\n"
 	printf "%b" "\nPositional arguments:\n"
 	printf "%b" "build\t\t\tCheck out repositories and build target.\n"
 	printf "%b" "checkout\t\tCheck out repositories but do not build.\n"
 	printf "%b" "dump\t\t\tCheck out repositories and write flat version\n"
 	printf "%b" "    \t\t\tof config to stdout.\n"
+	printf "%b" "lock\t\t\tCreate and update kas project lockfiles\n"
 	printf "%b" "shell\t\t\tRun a shell in the build environment.\n"
 	printf "%b" "for-all-repos\t\tRun specified command in each repository.\n"
 	printf "%b" "clean\t\t\tClean build artifacts, keep sstate cache and " \
@@ -63,9 +67,7 @@ usage()
 	printf "%b" "--runtime-args\t\tAdditional arguments to pass to the " \
 			"container runtime\n"
 	printf "%b" "\t\t\tfor running the build.\n"
-	printf "%b" "-d\t\t\tPrint debug output (deprecated, use -l debug).\n"
 	printf "%b" "-l, --log-level\t\tSet log level (default=info).\n"
-	printf "%b" "-v\t\t\tSame as -d (deprecated).\n"
 	printf "%b" "--version\t\tprint program version.\n"
 	printf "%b" "--ssh-dir\t\tDirectory containing SSH configurations.\n"
 	printf "%b" "\t\t\tAvoid \$HOME/.ssh unless you fully trust the " \
@@ -80,19 +82,29 @@ usage()
 		    "\t\t\t(default for build command)\n"
 	printf "%b" "--repo-rw\t\tMount current repository writeable\n" \
 		    "\t\t\t(default for shell command)\n"
+	printf "%b" "-h, --help\t\tShow this help message and exit.\n"
 	printf "%b" "\n"
 	printf "%b" "You can force the use of podman over docker using " \
 		    "KAS_CONTAINER_ENGINE=podman.\n"
-	exit 1
+
+	exit "${EXIT_CODE:-1}"
 }
 
-fatal_error(){
+fatal_error()
+{
 	echo "${KAS_CONTAINER_SELF_NAME}: Error: $*" >&2
 	exit 1
 }
 
-warning(){
+warning()
+{
 	echo "${KAS_CONTAINER_SELF_NAME}: Warning: $*" >&2
+}
+
+debug(){
+	if [ -n "${KAS_VERBOSE}" ]; then
+		echo "${KAS_CONTAINER_SELF_NAME}: Debug: $*" >&2
+	fi
 }
 
 trace()
@@ -101,7 +113,8 @@ trace()
 	"$@"
 }
 
-enable_isar_mode() {
+enable_isar_mode()
+{
 	if [ -n "${ISAR_MODE}" ]; then
 		return
 	fi
@@ -118,7 +131,8 @@ enable_isar_mode() {
 	fi
 }
 
-enable_oe_mode() {
+enable_oe_mode()
+{
 	if [ "${KAS_CONTAINER_ENGINE}" = "podman" ]; then
 		# The container entry point expects that the current userid
 		# calling "podman run" has a 1:1 mapping
@@ -126,7 +140,23 @@ enable_oe_mode() {
 	fi
 }
 
-run_clean() {
+enable_unpriv_userns_docker()
+{
+	if [ -f /etc/os-release ] && grep -q 'NAME="Ubuntu"' /etc/os-release &&
+	   [ -f /proc/sys/kernel/apparmor_restrict_unprivileged_userns ] &&
+	   [ "$(cat /proc/sys/kernel/apparmor_restrict_unprivileged_userns)" = "1" ]; then
+		if [ -f /etc/apparmor.d/rootlesskit ]; then
+			debug "AppArmor restricts unprivileged userns, using \"rootlesskit\" profile"
+			KAS_RUNTIME_ARGS="${KAS_RUNTIME_ARGS} --security-opt apparmor=rootlesskit"
+		else
+			warning "AppArmor restricts unprivileged userns but no suitable apparmor " \
+			        "profile found. Consider setting apparmor_restrict_unprivileged_userns=0"
+		fi
+	fi
+}
+
+run_clean()
+{
 	if [ -n "${KAS_ISAR_ARGS}" ]; then
 		# SC2086: Double quote to prevent globbing and word splitting.
 		# shellcheck disable=2086
@@ -149,7 +179,17 @@ run_clean() {
 	fi
 }
 
-set_container_image_var() {
+KAS_GIT_OVERLAY_FILE=""
+kas_container_cleanup()
+{
+	if [ -f "${KAS_GIT_OVERLAY_FILE}" ]; then
+		trace rm -f "${KAS_GIT_OVERLAY_FILE}"
+	fi
+}
+trap kas_container_cleanup EXIT INT TERM
+
+set_container_image_var()
+{
 	KAS_IMAGE_VERSION="${KAS_IMAGE_VERSION:-${KAS_IMAGE_VERSION_DEFAULT}}"
 	KAS_CONTAINER_IMAGE_NAME="${KAS_CONTAINER_IMAGE_NAME:-${KAS_CONTAINER_IMAGE_NAME_DEFAULT}}"
 	KAS_CONTAINER_IMAGE_PATH="${KAS_CONTAINER_IMAGE_PATH:-${KAS_CONTAINER_IMAGE_PATH_DEFAULT}}"
@@ -158,8 +198,10 @@ set_container_image_var() {
 }
 
 KAS_WORK_DIR=$(readlink -fv "${KAS_WORK_DIR:-$(pwd)}")
-# KAS_WORK_DIR needs to exist for the subsequent code
-trace mkdir -p "${KAS_WORK_DIR}"
+if ! [ -d "${KAS_WORK_DIR}" ]; then
+	fatal_error "KAS_WORK_DIR '${KAS_WORK_DIR}' is not a directory"
+fi
+
 KAS_BUILD_DIR=$(readlink -fv "${KAS_BUILD_DIR:-${KAS_WORK_DIR}/build}")
 trace mkdir -p "${KAS_BUILD_DIR}"
 
@@ -192,6 +234,7 @@ KAS_RUNTIME_ARGS="--log-driver=none --user=root"
 case "${KAS_CONTAINER_ENGINE}" in
 docker)
 	KAS_CONTAINER_COMMAND="docker"
+	enable_unpriv_userns_docker
 	;;
 podman)
 	KAS_CONTAINER_COMMAND="podman"
@@ -269,11 +312,6 @@ while [ $# -gt 0 ]; do
 		KAS_REPO_MOUNT_OPT="rw"
 		shift 1
 		;;
-	-v | -d)
-		KAS_VERBOSE=1
-		KAS_OPTIONS_DIRECT="${KAS_OPTIONS_DIRECT} -d"
-		shift 1
-		;;
 	-l | --log-level)
 		if [ "$2" = "debug" ]; then
 			KAS_VERBOSE=1
@@ -285,6 +323,9 @@ while [ $# -gt 0 ]; do
 		echo "${KAS_CONTAINER_SELF_NAME} $KAS_IMAGE_VERSION_DEFAULT"
 		exit 0
 		;;
+	-h | --help)
+		usage 0
+		;;
 	--*)
 		usage
 		;;
@@ -293,7 +334,7 @@ while [ $# -gt 0 ]; do
 		shift 1
 		break
 		;;
-	shell)
+	shell|lock)
 		KAS_REPO_MOUNT_OPT_DEFAULT="rw"
 		KAS_CMD=$1
 		shift 1
@@ -459,6 +500,22 @@ set -- "$@" -v "${KAS_REPO_DIR}:/repo:${KAS_REPO_MOUNT_OPT}" \
 	-e KAS_BUILD_DIR=/build \
 	-e USER_ID="$(id -u)" -e GROUP_ID="$(id -g)" --rm --init
 
+if git_com_dir=$(git -C "${KAS_REPO_DIR}" rev-parse --git-common-dir 2>/dev/null) \
+	&& [ "$git_com_dir" != "$(git -C "${KAS_REPO_DIR}" rev-parse --git-dir)" ]; then
+	# If (it's a git repo) and the common dir isn't the git-dir, it is shared worktree and
+	# we have to mount the common dir in the container to make git work
+	# The mount path inside the container is different from the host path. Hence, we over-mount
+	# the .git file to point to the correct path.
+	KAS_GIT_OVERLAY_FILE=$(mktemp)
+	sed "s|gitdir: ${git_com_dir}/|gitdir: /repo-common/|" "${KAS_REPO_DIR}/.git" > "${KAS_GIT_OVERLAY_FILE}"
+	set -- "$@" -v "${git_com_dir}:/repo-common:${KAS_REPO_MOUNT_OPT}" \
+		-v "${KAS_GIT_OVERLAY_FILE}:/repo/.git:ro"
+	# if the workdir is the same as the repo dir, it is the same shared worktree
+	if [ "${KAS_WORK_DIR}" = "${KAS_REPO_DIR}" ]; then
+		set -- "$@" -v "${KAS_GIT_OVERLAY_FILE}:/work/.git:ro"
+	fi
+fi
+
 if [ -n "${KAS_SSH_DIR}" ] ; then
 	if [ ! -d "${KAS_SSH_DIR}" ]; then
 		fatal_error "passed KAS_SSH_DIR '${KAS_SSH_DIR}' is not a directory"
@@ -484,7 +541,7 @@ if [ -n "${KAS_AWS_DIR}" ] ; then
 fi
 if [ -n "${AWS_WEB_IDENTITY_TOKEN_FILE}" ] ; then
 	if [ ! -f "${AWS_WEB_IDENTITY_TOKEN_FILE}" ]; then
-		echo "Passed AWS_WEB_IDENTITY_TOKEN_FILE '${AWS_WEB_IDENTITY_TOKEN_FILE}' is not a directory"
+		echo "Passed AWS_WEB_IDENTITY_TOKEN_FILE '${AWS_WEB_IDENTITY_TOKEN_FILE}' is not a file"
 		exit 1
 	fi
 	set -- "$@" -v "$(readlink -fv "${AWS_WEB_IDENTITY_TOKEN_FILE}")":/var/kas/userdata/.aws/web_identity_token:ro \
