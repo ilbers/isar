@@ -84,7 +84,7 @@ Plan merges to `master` so that both fit the two-week window; short extensions s
     git clone https://github.com/siemens/kas
     cat > kas.yml <<EOF
     header:
-      version: 12
+      version: 14
     build_system: isar
     defaults:
       repos:
@@ -93,7 +93,7 @@ Plan merges to `master` so that both fit the two-week window; short extensions s
     repos:
       isar:
         url: "http://github.com:/ilbers/isar"
-        refspec: master
+        branch: master
         layers:
           meta:
           meta-isar:
