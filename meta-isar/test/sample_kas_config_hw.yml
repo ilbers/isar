@@ -1,5 +1,5 @@
 header:
-  version: 11
+  version: 14
 
 build_system: isar
 
@@ -9,7 +9,7 @@ target: mc:rpi-arm-v7-bullseye:isar-image-ci
 repos:
   isar:
     url: "https://github.com/ilbers/isar.git"
-    refspec: next
+    branch: next
     layers:
       meta:
       meta-isar:
