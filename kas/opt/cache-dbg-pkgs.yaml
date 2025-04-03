@@ -1,0 +1,9 @@
+# This software is a part of ISAR.
+# Copyright (C) 2025 ilbers GmbH
+
+header:
+  version: 14
+
+local_conf_header:
+  cache-dbg-pkgs: |
+    BASE_REPO_FEATURES:append = " cache-dbg-pkgs"
