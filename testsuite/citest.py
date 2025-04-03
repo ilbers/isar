@@ -5,6 +5,7 @@ from avocado.core import exceptions
 from avocado.utils import path
 from cibase import CIBaseTest
 from utils import CIUtils
+from cibuilder import isar_root
 
 UMOCI_AVAILABLE = True
 SKOPEO_AVAILABLE = True
@@ -712,3 +713,27 @@ class VmBootTestFull(CIBaseTest):
         self.init()
         self.vm_start('amd64-iso', 'bookworm', image='isar-image-ci',
                       script='test_system_running.sh 30')
+
+
+class World(CIBaseTest):
+
+    """
+    All targets build test
+
+    :avocado: tags=world
+    """
+    def test_world(self):
+        name = self.params.get('name')
+        image = self.params.get('image', default='isar-image-ci')
+        targets = []
+
+        if name is None:
+            self.init()
+            for target in self.get_targets():
+                for image in self.get_test_images():
+                    targets.append(f'mc:{target}:{image}')
+        else:
+            targets.append(f'mc:{name}:{image}')
+            self.init(f'build-{name}')
+
+        self.perform_build_test(targets)
