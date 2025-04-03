@@ -272,7 +272,8 @@ python do_rootfs_install() {
 }
 addtask rootfs_install before do_rootfs_postprocess after do_unpack
 
-cache_deb_src() {
+do_cache_deb_src[network] = "${TASK_USE_SUDO}"
+do_cache_deb_src() {
     if [ -e "${ROOTFSDIR}"/etc/resolv.conf ] ||
        [ -h "${ROOTFSDIR}"/etc/resolv.conf ]; then
         sudo mv "${ROOTFSDIR}"/etc/resolv.conf "${ROOTFSDIR}"/etc/resolv.conf.isar
