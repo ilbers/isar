@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+#
+# This software is a part of ISAR.
+# Copyright (C) 2024-2025 ilbers GmbH
+#
+# SPDX-License-Identifier: MIT
 
 import os
 import sys
@@ -10,8 +15,10 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../bitbake/lib'))
 import bb
 import bb.tinfoil
 
+isar_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
-class CIUtils():
+
+class CIUtils:
     @staticmethod
     def getVars(*vars, target=None):
         def fixStream(stream):
@@ -53,3 +60,29 @@ class CIUtils():
             return tar.getnames()
         except Exception:
             return []
+
+    @staticmethod
+    def get_test_images():
+        return ['isar-image-base', 'isar-image-ci']
+
+    @staticmethod
+    def get_targets():
+        d = bb.data.init()
+        d.setVar('BBPATH', os.path.join(isar_root, 'meta-isar'))
+        d = bb.cookerdata.parse_config_file('conf/mc.conf', d, False)
+        return d.getVar('BBMULTICONFIG').split()
+
+    @staticmethod
+    def gen_targets_yaml(fn='targets.yml'):
+        targetsfile = os.path.join(os.path.dirname(__file__), 'data', fn)
+        with open(targetsfile, 'w') as f:
+            f.write('a: !mux\n')
+            for target in CIUtils.get_targets():
+                f.write(f'  {target}:\n    name: {target}\n')
+            f.write('b: !mux\n')
+            prefix = 'isar-image-'
+            for image in CIUtils.get_test_images():
+                nodename = image
+                if image.startswith(prefix):
+                    nodename = image[len(prefix):]
+                f.write(f'  {nodename}:\n    image: {image}\n')

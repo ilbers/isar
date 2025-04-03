@@ -1,0 +1,132 @@
+a: !mux
+  qemuarm-buster:
+    name: qemuarm-buster
+  qemuarm-bullseye:
+    name: qemuarm-bullseye
+  qemuarm-bookworm:
+    name: qemuarm-bookworm
+  qemuarm-trixie:
+    name: qemuarm-trixie
+  qemuarm64-buster:
+    name: qemuarm64-buster
+  qemuarm64-bullseye:
+    name: qemuarm64-bullseye
+  qemuarm64-bookworm:
+    name: qemuarm64-bookworm
+  qemuarm64-trixie:
+    name: qemuarm64-trixie
+  qemui386-buster:
+    name: qemui386-buster
+  qemui386-bullseye:
+    name: qemui386-bullseye
+  qemui386-bookworm:
+    name: qemui386-bookworm
+  qemuamd64-buster:
+    name: qemuamd64-buster
+  qemuamd64-bullseye:
+    name: qemuamd64-bullseye
+  qemuamd64-sb-bullseye:
+    name: qemuamd64-sb-bullseye
+  qemuamd64-bookworm:
+    name: qemuamd64-bookworm
+  qemuamd64-cip-bookworm:
+    name: qemuamd64-cip-bookworm
+  qemuamd64-iso-bookworm:
+    name: qemuamd64-iso-bookworm
+  qemuamd64-trixie:
+    name: qemuamd64-trixie
+  container-amd64-buster:
+    name: container-amd64-buster
+  container-amd64-bullseye:
+    name: container-amd64-bullseye
+  container-amd64-bookworm:
+    name: container-amd64-bookworm
+  qemumipsel-bullseye:
+    name: qemumipsel-bullseye
+  qemumipsel-bookworm:
+    name: qemumipsel-bookworm
+  qemuriscv64-trixie:
+    name: qemuriscv64-trixie
+  bananapi-buster:
+    name: bananapi-buster
+  bananapi-bullseye:
+    name: bananapi-bullseye
+  bananapi-bookworm:
+    name: bananapi-bookworm
+  beagleplay-bookworm:
+    name: beagleplay-bookworm
+  de0-nano-soc-buster:
+    name: de0-nano-soc-buster
+  de0-nano-soc-bullseye:
+    name: de0-nano-soc-bullseye
+  de0-nano-soc-bookworm:
+    name: de0-nano-soc-bookworm
+  hikey-bullseye:
+    name: hikey-bullseye
+  hikey-bookworm:
+    name: hikey-bookworm
+  imx6-sabrelite-buster:
+    name: imx6-sabrelite-buster
+  imx6-sabrelite-bullseye:
+    name: imx6-sabrelite-bullseye
+  phyboard-mira-bullseye:
+    name: phyboard-mira-bullseye
+  phyboard-mira-bookworm:
+    name: phyboard-mira-bookworm
+  nanopi-neo-buster:
+    name: nanopi-neo-buster
+  nanopi-neo-bullseye:
+    name: nanopi-neo-bullseye
+  nanopi-neo-bookworm:
+    name: nanopi-neo-bookworm
+  nanopi-neo-efi-bookworm:
+    name: nanopi-neo-efi-bookworm
+  stm32mp15x-bullseye:
+    name: stm32mp15x-bullseye
+  virtualbox-bullseye:
+    name: virtualbox-bullseye
+  virtualbox-bookworm:
+    name: virtualbox-bookworm
+  x86-pc-bookworm:
+    name: x86-pc-bookworm
+  rpi-arm-bullseye:
+    name: rpi-arm-bullseye
+  rpi-arm-bookworm:
+    name: rpi-arm-bookworm
+  rpi-arm-v7-bullseye:
+    name: rpi-arm-v7-bullseye
+  rpi-arm-v7-bookworm:
+    name: rpi-arm-v7-bookworm
+  rpi-arm-v7l-bullseye:
+    name: rpi-arm-v7l-bullseye
+  rpi-arm-v7l-bookworm:
+    name: rpi-arm-v7l-bookworm
+  rpi-arm64-v8-bullseye:
+    name: rpi-arm64-v8-bullseye
+  rpi-arm64-v8-bookworm:
+    name: rpi-arm64-v8-bookworm
+  sifive-fu540-trixie:
+    name: sifive-fu540-trixie
+  starfive-visionfive2-trixie:
+    name: starfive-visionfive2-trixie
+  qemuarm64-focal:
+    name: qemuarm64-focal
+  qemuarm64-jammy:
+    name: qemuarm64-jammy
+  qemuarm64-noble:
+    name: qemuarm64-noble
+  qemuamd64-focal:
+    name: qemuamd64-focal
+  qemuamd64-jammy:
+    name: qemuamd64-jammy
+  qemuamd64-noble:
+    name: qemuamd64-noble
+  qemuamd64-sid:
+    name: qemuamd64-sid
+  qemuarm64-sid:
+    name: qemuarm64-sid
+b: !mux
+  base:
+    image: isar-image-base
+  ci:
+    image: isar-image-ci
