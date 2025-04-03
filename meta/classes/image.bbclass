@@ -72,7 +72,12 @@ ROOTFS_MANIFEST_DEPLOY_DIR ?= "${DEPLOY_DIR_IMAGE}"
 ROOTFS_DPKGSTATUS_DEPLOY_DIR ?= "${DEPLOY_DIR_IMAGE}"
 ROOTFS_PACKAGE_SUFFIX ?= "${PN}-${DISTRO}-${MACHINE}"
 
-ROOTFS_POSTPROCESS_COMMAND:prepend = "${@bb.utils.contains('BASE_REPO_FEATURES', 'cache-deb-src', 'cache_deb_src', '', d)} "
+CACHE_DEB_SRC = "${@bb.utils.contains('BASE_REPO_FEATURES', 'cache-deb-src', '1', '0', d)}"
+python () {
+    if bb.utils.to_boolean(d.getVar('CACHE_DEB_SRC')):
+        bb.build.addtask('do_cache_deb_src', 'do_deploy', 'do_image', d)
+}
+
 ROOTFS_POSTPROCESS_COMMAND:prepend = "${@bb.utils.contains('BASE_REPO_FEATURES', 'cache-dbg-pkgs', 'cache_dbg_pkgs', '', d)} "
 
 inherit rootfs
