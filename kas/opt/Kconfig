@@ -182,3 +182,15 @@ config KAS_INCLUDE_CACHE_DEB_SRC
 	string
 	default "kas/opt/cache-deb-src.yaml"
 	depends on CACHE_DEB_SRC
+
+
+config CACHE_DBG_PKGS
+	bool "Cache all debug packages"
+	help
+	  This feature allows to download debug symbol packages for any binary package
+	  that took part in the build (including ones downloaded from distro mirrors).
+
+config KAS_INCLUDE_CACHE_DBG_PKGS
+	string
+	default "kas/opt/cache-dbg-pkgs.yaml"
+	depends on CACHE_DBG_PKGS
