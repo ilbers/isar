@@ -98,7 +98,7 @@ Plan merges to `master` so that both fit the two-week window; short extensions s
           meta:
           meta-isar:
     EOF
-    kas/kas-container --entrypoint /work/scripts/ci_setup.sh shell kas.yml
+    kas/kas-container shell --command /work/isar/scripts/ci_setup.sh kas.yml
     ```
 
     In kas shell:
