@@ -294,7 +294,7 @@ do_cache_deb_src() {
     fi
 }
 
-ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'cache-dbg-pkgs', 'rootfs_export_package_cache', '', d)}"
+ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('BASE_REPO_FEATURES', 'cache-dbg-pkgs', 'rootfs_export_package_cache', '', d)}"
 cache_dbg_pkgs() {
     if [ -e "${ROOTFSDIR}"/etc/resolv.conf ] ||
        [ -h "${ROOTFSDIR}"/etc/resolv.conf ]; then
