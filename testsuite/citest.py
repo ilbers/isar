@@ -724,7 +724,7 @@ class World(CIBaseTest):
     """
     def test_world(self):
         name = self.params.get('name')
-        image = self.params.get('image', default='isar-image-ci')
+        image = self.params.get('image', default='isar-image-base')
         targets = []
 
         if name is None:
@@ -740,7 +740,7 @@ class World(CIBaseTest):
 
     def test_runworld(self):
         name = self.params.get('name')
-        image = self.params.get('image', default='isar-image-ci')
+        image = self.params.get('image', default='isar-image-base')
         targets = []
 
         if name is None:
