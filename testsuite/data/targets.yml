@@ -124,5 +124,3 @@ a: !mux
 b: !mux
   base:
     image: isar-image-base
-  ci:
-    image: isar-image-ci
