@@ -726,17 +726,24 @@ class World(CIBaseTest):
         name = self.params.get('name')
         image = self.params.get('image', default='isar-image-base')
         targets = []
+        targets_sdk = []
 
         if name is None:
             self.init()
             for target in self.get_targets():
                 for image in self.get_test_images():
                     targets.append(f'mc:{target}:{image}')
+                    targets_sdk.append(f'mc:{target}:{image}:do_populate_sdk')
         else:
             targets.append(f'mc:{name}:{image}')
+            targets_sdk.append(f'mc:{name}:{image}:do_populate_sdk')
             self.init(f'build-{name}')
 
         self.perform_build_test(targets)
+        try:
+            self.perform_build_test(targets_sdk)
+        except exceptions.TestFail:
+            self.cancel('Build - ok, SDK - fail')
 
     def test_runworld(self):
         name = self.params.get('name')
