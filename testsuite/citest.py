@@ -767,3 +767,25 @@ class World(CIBaseTest):
         self.perform_build_test(
             targets, container=name and name.startswith('container')
         )
+
+    def test_runworld(self):
+        name = self.params.get('name')
+        image = self.params.get('image', default='isar-image-ci')
+        targets = []
+
+        if name is None:
+            self.init()
+            for target in CIUtils.get_targets():
+                for image in CIUtils.get_test_images():
+                    targets.append(f'mc:{target}:{image}')
+        else:
+            targets.append(f'mc:{name}:{image}')
+            self.init(f'build-{name}')
+
+        for target in targets:
+            t_list = target.split(':', 2)
+            if not t_list[1].startswith('qemu'):
+                self.cancel(f"{t_list[1]} skipped as non qemu")
+            distro = t_list[1].split('-')[-1]
+            arch = t_list[1].removeprefix('qemu').removesuffix(f"-{distro}")
+            self.vm_start(arch, distro, image=t_list[2])
