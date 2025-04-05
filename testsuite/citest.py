@@ -473,7 +473,7 @@ class SourceTest(CIBaseTest):
     """
     Source contents test
 
-    :avocado: tags=source
+    :avocado: tags=source,full
     """
 
     def test_source(self):

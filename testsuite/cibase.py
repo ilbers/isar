@@ -5,6 +5,7 @@ import os
 import re
 import shutil
 import tempfile
+import tarfile
 
 from cibuilder import CIBuilder, isar_root
 from utils import CIUtils
@@ -305,6 +306,16 @@ class CIBaseTest(CIBuilder):
             self.fail("Failed rebuild package and image")
 
     def perform_source_test(self, targets, **kwargs):
+        def is_deb_quilt_package(tar_path):
+            with tarfile.open(tar_path) as tar:
+                 is_quilt_package = True
+                 for member in tar.getnames():
+                     if '/debian/source/format' in member:
+                        file_data = tar.extractfile(member).read()
+                        if b'3.0 (native)' in file_data:
+                           is_quilt_package = False
+            return is_quilt_package
+
         def get_source_content(targets):
             sfiles = dict()
             for target in targets:
@@ -316,7 +327,8 @@ class CIBaseTest(CIBuilder):
                 if len(targz) < 1:
                     self.fail("No source packages found")
                 for fname in targz:
-                    sfiles[target][fname] = CIUtils.get_tar_content(fname)
+                    if is_deb_quilt_package(fname):
+                       sfiles[target][fname]  = CIUtils.get_tar_content(fname)
             return sfiles
 
         self.configure(**kwargs)
