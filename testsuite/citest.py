@@ -28,10 +28,10 @@ class DevTest(CIBaseTest):
 
     def test_dev(self):
         targets = [
-            'mc:qemuamd64-bullseye:isar-image-ci',
-            'mc:qemuarm-bullseye:isar-image-base',
-            'mc:qemuarm-bullseye:isar-image-base:do_populate_sdk',
-            'mc:qemuarm64-bullseye:isar-image-base',
+            'mc:qemuamd64-bookworm:isar-image-ci',
+            'mc:qemuarm-bookworm:isar-image-base',
+            'mc:qemuarm-bookworm:isar-image-base:do_populate_sdk',
+            'mc:qemuarm64-bookworm:isar-image-base',
         ]
 
         self.init()
@@ -39,8 +39,8 @@ class DevTest(CIBaseTest):
 
     def test_dev_apps(self):
         targets = [
-            'mc:qemuamd64-bullseye:isar-image-ci',
-            'mc:qemuarm64-bullseye:isar-image-base',
+            'mc:qemuamd64-bookworm:isar-image-ci',
+            'mc:qemuarm64-bookworm:isar-image-base',
         ]
 
         self.init()
@@ -57,21 +57,21 @@ class DevTest(CIBaseTest):
             file.write('do_fetch:append() {\n\n}')
 
         try:
-            self.perform_build_test('mc:qemuamd64-bullseye:isar-image-ci')
+            self.perform_build_test('mc:qemuamd64-bookworm:isar-image-ci')
         finally:
             self.restorefile(dpkgbase_file)
 
-    def test_dev_run_amd64_bullseye(self):
+    def test_dev_run_amd64_bookworm(self):
         self.init()
-        self.vm_start('amd64', 'bullseye', image='isar-image-ci')
+        self.vm_start('amd64', 'bookworm', image='isar-image-ci')
 
-    def test_dev_run_arm64_bullseye(self):
+    def test_dev_run_arm64_bookworm(self):
         self.init()
-        self.vm_start('arm64', 'bullseye')
+        self.vm_start('arm64', 'bookworm')
 
-    def test_dev_run_arm_bullseye(self):
+    def test_dev_run_arm_bookworm(self):
         self.init()
-        self.vm_start('arm', 'bullseye', skip_modulecheck=True)
+        self.vm_start('arm', 'bookworm', skip_modulecheck=True)
 
 
 class ReproTest(CIBaseTest):
@@ -410,7 +410,6 @@ class SignatureTest(CIBaseTest):
             'mc:qemuamd64-bullseye:isar-image-ci',
             'mc:qemuarm-bullseye:isar-image-base',
             'mc:qemuarm-bullseye:isar-image-base:do_populate_sdk',
-            'mc:qemuarm64-bookworm:isar-image-base',
             'mc:qemuamd64-focal:isar-image-base',
         ]
 
