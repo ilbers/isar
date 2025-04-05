@@ -275,6 +275,7 @@ class NoCrossTest(CIBaseTest):
             'mc:qemuamd64-noble:isar-image-base',
             'mc:qemuamd64-jammy:isar-image-base',
             'mc:qemuarm64-jammy:isar-image-base',
+            'mc:x86-pc-bookworm:isar-image-base',
         ]
 
         self.init()
