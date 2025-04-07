@@ -1,5 +1,11 @@
 [pi3]
 # Restore UART0/ttyAMA0 over GPIOs 14 & 15
+# On RPi 3, using mini UART for serial console is unstable.
+# 1/3 boots produce garbage and doesn't reach login
 dtoverlay=miniuart-bt
+
+[pi4]
+# Enable mini UART (UART1/ttyS0) for serial console for RPi 4
+enable_uart=1
 
 [all]
