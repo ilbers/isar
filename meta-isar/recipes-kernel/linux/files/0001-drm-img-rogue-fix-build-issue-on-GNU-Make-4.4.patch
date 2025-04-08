@@ -1,0 +1,29 @@
+From 6b09bb490fb1a575a023c168a6db2d2470129885 Mon Sep 17 00:00:00 2001
+From: Icenowy Zheng <uwu@icenowy.me>
+Date: Sat, 22 Jun 2024 22:03:02 +0800
+Subject: [PATCH] drm: img-rogue: fix build issue on GNU Make 4.4+
+
+Signed-off-by: Icenowy Zheng <uwu@icenowy.me>
+---
+ drivers/gpu/drm/img/img-rogue/Makefile | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/drivers/gpu/drm/img/img-rogue/Makefile b/drivers/gpu/drm/img/img-rogue/Makefile
+index ee37ef8cadbf..fe3bad2b77ea 100644
+--- a/drivers/gpu/drm/img/img-rogue/Makefile
++++ b/drivers/gpu/drm/img/img-rogue/Makefile
+@@ -73,7 +73,11 @@ WINDOW_SYSTEM=nulldrmws
+ #include $(OUT)/config_kernel.mk
+ include $(srctree)/$(src)/config_kernel.mk
+ 
++ifneq ($(and $(filter notintermediate, $(.FEATURES)),$(filter-out 4.4,$(MAKE_VERSION))),)
++.NOTINTERMEDIATE:
++else
+ .SECONDARY:
++endif
+ 
+ define symlink-source-file
+ @if [ ! -e $(dir $@) ]; then mkdir -p $(dir $@); fi
+-- 
+2.49.0
+
