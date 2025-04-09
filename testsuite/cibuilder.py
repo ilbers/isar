@@ -738,6 +738,12 @@ class CIBuilder(Test):
             self.log.info(f"Connect command:\n{cmd_prefix}")
 
             rc, stdout, stderr = self.remote_run(cmd, script, timeout)
+
+            standard_output = stdout.decode('utf-8') if isinstance(stdout, bytes) else stdout
+            standard_error = stderr.decode('utf-8') if isinstance(stderr, bytes) else stderr
+            self.log.info("standard output log:\n" + standard_output)
+            self.log.info("standard error log:\n" + standard_error)
+
             if rc != 0:
                 if not keep:
                     self.vm_turn_off(vm)
