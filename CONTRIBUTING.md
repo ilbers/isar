@@ -93,7 +93,7 @@ Plan merges to `master` so that both fit the two-week window; short extensions s
     repos:
       isar:
         url: "http://github.com:/ilbers/isar"
-        branch: master
+        branch: next
         layers:
           meta:
           meta-isar:
@@ -115,7 +115,7 @@ Plan merges to `master` so that both fit the two-week window; short extensions s
     repos:
       isar:
         url: "http://github.com:/ilbers/isar"
-        refspec: master
+        branch: next
 	patches:
           0001:
             path: /work/0001-my-contribution-to-isar.patch
