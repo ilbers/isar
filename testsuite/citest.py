@@ -84,9 +84,9 @@ class ReproTest(CIBaseTest):
 
     def test_repro_signed(self):
         targets = [
-            'mc:rpi-arm-v7-bullseye:isar-image-base',
-            'mc:rpi-arm64-v8-bullseye:isar-image-base',
-            'mc:qemuarm64-bullseye:isar-image-base',
+            'mc:rpi-arm-v7-bookworm:isar-image-base',
+            'mc:rpi-arm64-v8-bookworm:isar-image-base',
+            'mc:qemuarm64-bookworm:isar-image-base',
         ]
 
         self.init()
@@ -97,8 +97,8 @@ class ReproTest(CIBaseTest):
 
     def test_repro_unsigned(self):
         targets = [
-            'mc:qemuamd64-bullseye:isar-image-base',
-            'mc:qemuarm-bullseye:isar-image-base',
+            'mc:qemuamd64-bookworm:isar-image-base',
+            'mc:qemuarm-bookworm:isar-image-base',
         ]
 
         self.init()
@@ -248,6 +248,7 @@ class NoCrossTest(CIBaseTest):
         targets = [
             'mc:qemuarm-buster:isar-image-ci',
             'mc:qemuarm-bullseye:isar-image-base',
+            'mc:qemuarm64-bullseye:isar-image-base',
             'mc:qemuarm64-bookworm:isar-image-ci',
             'mc:qemui386-buster:isar-image-base',
             'mc:qemui386-bullseye:isar-image-base',
@@ -291,7 +292,6 @@ class NoCrossTest(CIBaseTest):
             'mc:rpi-arm-v7-bullseye:isar-image-base',
             'mc:rpi-arm-v7l-bullseye:isar-image-base',
             'mc:rpi-arm64-v8-bullseye:isar-image-base',
-            'mc:rpi-arm64-v8-bookworm:isar-image-base',
         ]
 
         self.init()
@@ -300,7 +300,6 @@ class NoCrossTest(CIBaseTest):
     def test_nocross_rpi_debsrc(self):
         targets = [
             'mc:rpi-arm-bookworm:isar-image-base',
-            'mc:rpi-arm-v7-bookworm:isar-image-base',
             'mc:rpi-arm-v7l-bookworm:isar-image-base',
         ]
 
