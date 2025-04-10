@@ -67,6 +67,8 @@ inherit essential
 
 ROOTFSDIR = "${IMAGE_ROOTFS}"
 ROOTFS_FEATURES += "clean-package-cache clean-pycache generate-manifest export-dpkg-status clean-log-files clean-debconf-cache"
+# when using a custom initrd, do not generate one as part of the image rootfs
+ROOTFS_FEATURES += "${@ '' if d.getVar('INITRD_IMAGE') == '' else 'no-generate-initrd'}"
 ROOTFS_PACKAGES += "${IMAGE_PREINSTALL} ${@isar_multiarch_packages('IMAGE_INSTALL', d)}"
 ROOTFS_MANIFEST_DEPLOY_DIR ?= "${DEPLOY_DIR_IMAGE}"
 ROOTFS_DPKGSTATUS_DEPLOY_DIR ?= "${DEPLOY_DIR_IMAGE}"
@@ -346,17 +348,6 @@ do_copy_boot_files() {
         sudo cat "$kernel" > "${DEPLOYDIR}/${KERNEL_IMAGE}"
     fi
 
-    if [ -z "${INITRD_IMAGE}" ]; then
-        # deploy default initrd if no custom one is build
-        initrd="$(realpath -q '${IMAGE_ROOTFS}/initrd.img')"
-        if [ ! -f "$initrd" ]; then
-            initrd="$(realpath -q '${IMAGE_ROOTFS}/boot/initrd.img')"
-        fi
-        if [ -f "$initrd" ]; then
-            cp -f "$initrd" '${DEPLOYDIR}/${INITRD_DEPLOY_FILE}'
-        fi
-    fi
-
     for file in ${DTB_FILES}; do
         dtb="$(find '${IMAGE_ROOTFS}/usr/lib' -type f \
                     -iwholename '*linux-image-*/'${file} | head -1)"
@@ -455,7 +446,7 @@ EOSUDO
         -exec touch '{}' -h -d@${SOURCE_DATE_EPOCH} ';'
 }
 do_rootfs_finalize[network] = "${TASK_USE_SUDO}"
-addtask rootfs_finalize before do_rootfs after do_rootfs_postprocess
+addtask rootfs_finalize before do_rootfs after do_rootfs_postprocess do_generate_initramfs
 
 ROOTFS_QA_FIND_ARGS ?= ""
 
@@ -466,6 +457,8 @@ do_rootfs_quality_check() {
     args="${ROOTFS_QA_FIND_ARGS}"
     # rootfs_finalize chroot-setup.sh
     args="${args} ! -path ${ROOTFSDIR}/var/lib/dpkg/diversions"
+    # initramfs is generated outside of the image rootfs
+    args="${args} ! -path ${ROOTFSDIR}/boot/initrd.img*"
     for cmd in ${ROOTFS_POSTPROCESS_COMMAND}; do
         case "${cmd}" in
 	    image_postprocess_mark)
