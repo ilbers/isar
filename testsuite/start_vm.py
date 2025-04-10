@@ -48,7 +48,7 @@ def format_qemu_cmdline(
     extra_args = ''
 
     image_type = image_fstypes.split()[0]
-    base = 'ubuntu' if distro in ['jammy', 'focal'] else 'debian'
+    base = 'ubuntu' if distro in ['jammy', 'focal', 'noble'] else 'debian'
 
     rootfs_image = f"{image}-{base}-{distro}-qemu{arch}.{image_type}"
 
@@ -156,6 +156,7 @@ def parse_args():
         'trixie',
         'focal',
         'jammy',
+        'noble',
     ]
     parser.add_argument(
         '-a',
