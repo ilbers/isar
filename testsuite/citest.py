@@ -327,6 +327,18 @@ class NoCrossTest(CIBaseTest):
         except exceptions.TestFail:
             self.cancel('KFAIL')
 
+    def test_nocross_sid(self):
+        targets = [
+            'mc:qemuamd64-sid:isar-image-base',
+            'mc:qemuarm64-sid:isar-image-base',
+        ]
+
+        self.init()
+        try:
+            self.perform_build_test(targets, cross=False)
+        except exceptions.TestFail:
+            self.cancel('KFAIL')
+
 
 class ContainerImageTest(CIBaseTest):
 
