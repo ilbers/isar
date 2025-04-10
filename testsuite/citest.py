@@ -311,19 +311,9 @@ class NoCrossTest(CIBaseTest):
             'mc:qemuamd64-trixie:isar-image-base',
             'mc:qemuarm64-trixie:isar-image-base',
             'mc:qemuarm-trixie:isar-image-base',
-        ]
-
-        self.init()
-        try:
-            self.perform_build_test(targets, cross=False)
-        except exceptions.TestFail:
-            self.cancel('KFAIL')
-
-    def test_nocross_sid(self):
-        targets = [
-            'mc:qemuriscv64-sid:isar-image-base',
-            'mc:sifive-fu540-sid:isar-image-base',
-            'mc:starfive-visionfive2-sid:isar-image-base',
+            'mc:qemuriscv64-trixie:isar-image-base',
+            'mc:sifive-fu540-trixie:isar-image-base',
+            'mc:starfive-visionfive2-trixie:isar-image-base',
         ]
 
         self.init()
