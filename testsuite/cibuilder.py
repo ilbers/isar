@@ -114,6 +114,7 @@ class CIBuilder(Test):
         installer_distro=None,
         installer_device=None,
         customizations=None,
+        lines=None,
         **kwargs,
     ):
         # write configuration file and set bitbake_args
@@ -142,6 +143,7 @@ class CIBuilder(Test):
         distro_apt_premir = os.getenv('DISTRO_APT_PREMIRRORS')
         fail_on_cleanup = os.getenv('ISAR_FAIL_ON_CLEANUP')
 
+        strlines = None if lines is None else '\\n'.join(lines)
         self.log.info(
             f"===================================================\n"
             f"Configuring build_dir {self.build_dir}\n"
@@ -162,6 +164,7 @@ class CIBuilder(Test):
             f"  image_install = {image_install}\n"
             f"  installer_image = {installer_image}\n"
             f"  customizations = {customizations}\n"
+            f"  lines = {strlines}\n"
             f"==================================================="
         )
 
@@ -248,6 +251,8 @@ class CIBuilder(Test):
                 f.write('CUSTOMIZATION_VARS:append = " ${IMAGE}"\n')
                 f.write('CUSTOMIZATION_FOR_IMAGES:append = " isar-image-ci"\n')
                 f.write('HOSTNAME:isar-image-ci = "isar-ci"\n')
+            if lines is not None:
+                f.writelines((line + '\n' if not line.endswith('\n') else line) for line in lines)
 
         # include ci_build.conf in local.conf
         with open(self.build_dir + '/conf/local.conf', 'r+') as f:
