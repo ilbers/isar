@@ -205,6 +205,28 @@ class CrossTest(CIBaseTest):
         self.perform_build_test(targets)
 
 
+class KernelTests(CIBaseTest):
+    """
+    Tests associated with kernel builds and development.
+    :avocado: tags=kernel,full
+    """
+
+    def test_per_kernel(self):
+        """Test per-kernel recipe variants for external kernel modules."""
+
+        targets = ['mc:qemuarm64-bookworm:isar-image-ci']
+        kernel_names = self.params.get('kernel_names', default='mainline')
+        kernel_names = [k.strip() for k in kernel_names.split(',') if k.strip()]
+        modules = [f"example-module-{k}" for k in kernel_names]
+        modules.append('example-module-${KERNEL_NAME}')
+        kernel_names = ' '.join(sorted(kernel_names))
+        lines = [
+            f"KERNEL_NAMES:append = ' {kernel_names}'",
+        ]
+        self.init()
+        self.perform_build_test(targets, image_install=' '.join(modules), lines=lines)
+
+
 class WicTest(CIBaseTest):
 
     """
