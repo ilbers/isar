@@ -43,6 +43,7 @@ python() {
 }
 
 inherit dpkg
+inherit per-kernel
 
 TEMPLATE_FILES = "debian/control.tmpl \
                   debian/rules.tmpl"
