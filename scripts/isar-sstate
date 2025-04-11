@@ -31,6 +31,7 @@ and supports three remote backends (filesystem, http/webdav, AWS S3).
 
 The `upload` command pushes the contents of a local sstate cache to the
 remote location, uploading all files that don't already exist on the remote.
+If some file should not be uploaded, use a negative filter like '(?!sbuild)'.
 
 ### clean
 
@@ -603,6 +604,9 @@ def arguments():
         '--max-sig-age', type=str, default=None,
         help="clean: remove siginfo files older than MAX_SIG_AGE (defaults to MAX_AGE)")
     parser.add_argument(
+        '--filter', type=str, default=None,
+        help="filter tasks by PN (regex)")
+    parser.add_argument(
         '--sources-dir', type=str, default='/work/',
         help="lint: absolute path to sources folder (e.g. layerbase)")
     parser.add_argument(
@@ -632,13 +636,15 @@ def arguments():
     return args
 
 
-def sstate_upload(source, target, verbose, **kwargs):
+def sstate_upload(source, target, verbose, filter, **kwargs):
     if not os.path.isdir(source):
         print(f"WARNING: source {source} does not exist. Not uploading.")
         return 0
     if not target.exists() and not target.create():
         print(f"WARNING: target {target} does not exist and could not be created. Not uploading.")
         return 0
+    if filter:
+        reg_exp = re.compile(filter)
 
     print(f"INFO: uploading {source} to {target}")
     os.chdir(source)
@@ -646,6 +652,10 @@ def sstate_upload(source, target, verbose, **kwargs):
     for subdir, dirs, files in os.walk('.'):
         target_dirs = subdir.split('/')[1:]
         for f in files:
+            if filter:
+                parts = f.split(':')
+                if len(parts) > 1 and not reg_exp.match(parts[1]):
+                    continue
             file_path = (('/'.join(target_dirs) + '/') if len(target_dirs) > 0 else '') + f
             if target.exists(file_path):
                 if verbose:
@@ -664,7 +674,7 @@ def sstate_upload(source, target, verbose, **kwargs):
     return 0
 
 
-def sstate_clean(target, max_age, max_sig_age, verbose, **kwargs):
+def sstate_clean(target, max_age, max_sig_age, verbose, filter, **kwargs):
     def convert_to_seconds(x):
         seconds_per_unit = {'s': 1, 'm': 60, 'h': 3600, 'd': 86400, 'w': 604800}
         m = re.match(r'^(\d+)(w|d|h|m|s)?', x)
@@ -695,6 +705,10 @@ def sstate_clean(target, max_age, max_sig_age, verbose, **kwargs):
         print(f"NOTE: we have links: {links}")
     archive_files = [f for f in all_files if f.suffix in ['tgz', 'tar.zst']]
     siginfo_files = [f for f in all_files if f.suffix in ['tgz.siginfo', 'tar.zst.siginfo']]
+    if filter:
+        reg_exp = re.compile(filter)
+        archive_files = [f for f in archive_files if reg_exp.match(f.pn)]
+        siginfo_files = [f for f in all_files if reg_exp.match(f.pn)]
     del_archive_files = [f for f in archive_files if f.age >= max_age_seconds]
     del_archive_hashes = [f.hash for f in del_archive_files]
     del_siginfo_files = [f for f in siginfo_files if
@@ -712,13 +726,16 @@ def sstate_clean(target, max_age, max_sig_age, verbose, **kwargs):
     return 0
 
 
-def sstate_info(target, verbose, **kwargs):
+def sstate_info(target, verbose, filter, **kwargs):
     if not target.exists():
         print(f"WARNING: cannot access target {target}. No info to show.")
         return 0
 
     print(f"INFO: scanning {target}")
     all_files = target.list_all()
+    if filter:
+        reg_exp = re.compile(filter)
+        all_files = [f for f in all_files if reg_exp.match(f.pn)]
     size_gb = sum([x.size for x in all_files]) / 1024.0 / 1024.0 / 1024.0
     print(f"INFO: found {len(all_files)} files ({size_gb:0.2f} GB)")
 
@@ -753,7 +770,7 @@ def sstate_info(target, verbose, **kwargs):
     return 0
 
 
-def sstate_analyze(source, target, **kwargs):
+def sstate_analyze(source, target, filter, **kwargs):
     if not os.path.isdir(source):
         print(f"WARNING: source {source} does not exist. Nothing to analyze.")
         return 0
@@ -767,6 +784,10 @@ def sstate_analyze(source, target, **kwargs):
     remote_sigs = {s.hash: s for s in target.list_all() if s.suffix.endswith('.siginfo')}
 
     key_tasks = 'dpkg_build rootfs_install bootstrap'.split()
+
+    if filter:
+        reg_exp = re.compile(filter)
+        local_sigs = {k: v for k, v in local_sigs.items() if reg_exp.match(v.pn)}
 
     check = [k for k, v in local_sigs.items() if v.task in key_tasks]
     for local_hash in check:
@@ -828,7 +849,7 @@ def sstate_analyze(source, target, **kwargs):
 
 
 def sstate_lint(target, verbose, sources_dir, build_dir, exit_code, pedantic, lint_stamps,
-                excluded_tasks, **kwargs):
+                excluded_tasks, filter, **kwargs):
     ADDITIONAL_IGNORED_VARNAMES = 'PP'.split()
     # only list non-cacheable tasks here
     # note that these still can break caching of other tasks that depend on these.
@@ -843,6 +864,10 @@ def sstate_lint(target, verbose, sources_dir, build_dir, exit_code, pedantic, li
         cache_sigs = {s.hash: s for s in target.list_all()}
     else:
         cache_sigs = {s.hash: s for s in target.list_all() if s.suffix.endswith('.siginfo')}
+
+    if filter:
+        reg_exp = re.compile(filter)
+        cache_sigs = {k: v for k, v in cache_sigs.items() if reg_exp.match(v.pn)}
 
     hits_srcdir = 0
     hits_builddir = 0
