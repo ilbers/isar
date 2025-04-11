@@ -219,12 +219,14 @@ SSTATECREATEFUNCS += "bootstrap_sstate_prepare"
 SSTATEPOSTINSTFUNCS += "bootstrap_sstate_finalize"
 
 bootstrap_sstate_prepare() {
+    (isar_check_current_task "do_bootstrap" || return) || true
     # this runs in SSTATE_BUILDDIR, which will be deleted automatically
     sudo cp -a "${WORKDIR}/rootfs.tar.zst" ./bootstrap.tar.zst
     sudo chown $(id -u):$(id -g) bootstrap.tar.zst
 }
 
 bootstrap_sstate_finalize() {
+    (isar_check_current_task "do_bootstrap_setscene" || return) || true
     # this runs in SSTATE_INSTDIR
     # we should restore symlinks after using tar
     if [ -f bootstrap.tar.zst ]; then

@@ -184,6 +184,7 @@ SSTATECREATEFUNCS += "dpkg_build_sstate_prepare"
 SSTATEPOSTINSTFUNCS += "dpkg_build_sstate_finalize"
 
 dpkg_build_sstate_prepare() {
+    (isar_check_current_task "do_dpkg_build" || return) || true
     # this runs in SSTATE_BUILDDIR, which will be deleted automatically
     if [ -n "$(find ${WORKDIR} -maxdepth 1 -name '*.deb' -print -quit)" ]; then
         cp -f ${WORKDIR}/*.deb -t .
@@ -191,6 +192,7 @@ dpkg_build_sstate_prepare() {
 }
 
 dpkg_build_sstate_finalize() {
+    (isar_check_current_task "do_dpkg_build_setscene" || return) || true
     # this runs in SSTATE_INSTDIR
     if [ -n "$(find . -maxdepth 1 -name '*.deb' -print -quit)" ]; then
         mv -f ./*.deb -t ${WORKDIR}/

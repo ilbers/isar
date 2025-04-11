@@ -204,6 +204,15 @@ def isar_export_ccache(d):
     else:
         os.environ['CCACHE_DISABLE'] = '1'
 
+isar_check_current_task() {
+    if [ "do_${BB_CURRENTTASK}" = "$1" ]; then
+        return 0
+    else
+        echo "skipping because current task is not $1"
+        return 1
+    fi
+}
+
 do_fetch[dirs] = "${DL_DIR}"
 do_fetch[file-checksums] = "${@bb.fetch.get_checksum_file_list(d)}"
 do_fetch[vardeps] += "SRCREV"
