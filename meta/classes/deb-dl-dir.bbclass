@@ -35,8 +35,12 @@ debsrc_source_version_filter() {
     # if <source-version> is not specified then it is <binary-version>.
     # The awk script handles these optional fields. It looks for Size: as a
     # trigger to print the source,version tupple
-    awk '/^Package:/ { s=$2; }
-         /^Version:/ { v=$2; next }
+    #
+    # Notes: Source may appear before Version. We however assume that
+    # Package is the first pattern we will match in a package block
+    # and Size the last.
+    awk '/^Package:/ { s=$2; v="" }
+         /^Version:/ { if (v == "") v=$2 }
          /^Source:/ { s=$2; if ($3 ~ /^\(/) v=substr($3, 2, length($3)-2) }
          /^Size:/ { print s, v}' \
     | sort -u
