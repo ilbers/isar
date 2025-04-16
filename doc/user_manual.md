@@ -1161,8 +1161,16 @@ To provide a signer script that implements your custom signing solution, `SIGNAT
 can be set for the script path within the module recipe together with `SIGNATURE_CERTFILE` to define the public
 certificate path of the signer.
 
+In order to choose between different signing solutions, signer recipes should provide the `module-signer`
+target and package while certificate provider recipes should provide the `secure-boot-secrets` as target and package
+to meet build dependencies. This way, desired signers and certificates can be configured using `PREFERRED_PROVIDER`.
+
 Please see how `module-signer-example` hook generates a detached signature for the kernel module implemented in
 `example-module-signedwith` recipe.
+
+You can enable build-wide kernel module signing by defining `KERNEL_MODULE_SIGNATURES = "1"` globally,
+in this case, `pkg.signwith` build profile is added by default in addition to
+`module-signer` and `secure-boot-secrets` target and package dependencies to the kernel module recipes.
 
 ### Cross Support for Imagers
 
