@@ -9,6 +9,9 @@ inherit dpkg-raw
 
 DPKG_ARCH = "all"
 
+PROVIDES = "module-signer"
+DEBIAN_PROVIDES = "module-signer"
+
 DEPENDS = "sb-mok-keys"
 DEBIAN_DEPENDS += "openssl, sb-mok-keys"
 
