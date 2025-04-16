@@ -5,6 +5,8 @@
 
 inherit dpkg
 
+PROVIDES = "secure-boot-secrets"
+DEBIAN_PROVIDES = "secure-boot-secrets"
 
 SRC_URI = "file://Makefile.tmpl"
 S = "${WORKDIR}/src"
