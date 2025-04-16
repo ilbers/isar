@@ -23,10 +23,10 @@ DEBIAN_BUILD_DEPENDS = "${KERNEL_HEADERS_PKG}"
 # Do not generate debug symbols packages, as not supported for modules
 DEB_BUILD_OPTIONS += "noautodbgsym"
 
-SIGNATURE_KEYFILE ??= ""
-SIGNATURE_CERTFILE ??= ""
+SIGNATURE_KEYFILE ??= "/usr/share/secure-boot-secrets/secure-boot.key"
+SIGNATURE_CERTFILE ??= "/usr/share/secure-boot-secrets/secure-boot.pem"
 SIGNATURE_HASHFN ??= "sha256"
-SIGNATURE_SIGNWITH ??= ""
+SIGNATURE_SIGNWITH ??= "/usr/bin/sign-module.sh"
 
 SRC_URI += "file://debian/"
 
