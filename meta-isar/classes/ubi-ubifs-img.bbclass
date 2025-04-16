@@ -12,4 +12,9 @@ IMAGE_CMD:ubi_ubifs() {
     # we need to produce output (with extension .ubi-ubifs),
     # so just create a symlink
     ln -sf ${IMAGE_FULLNAME}.ubi ${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.ubi-ubifs
+
+    bbwarn "ubi-ubifs-img image type is deprecated, please use built-in image"\
+           "classes instead:\n"\
+           "IMAGE_TYPEDEP:ubi += \"ubifs fit\"\n"\
+           "IMAGE_FSTYPES ?= \"ubi ubifs\""
 }
