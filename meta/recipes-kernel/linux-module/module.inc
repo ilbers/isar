@@ -28,6 +28,13 @@ SIGNATURE_CERTFILE ??= "/usr/share/secure-boot-secrets/secure-boot.pem"
 SIGNATURE_HASHFN ??= "sha256"
 SIGNATURE_SIGNWITH ??= "/usr/bin/sign-module.sh"
 
+KERNEL_MODULE_SIGNATURES ??= ""
+
+# Define signing profile and dependencies if KERNEL_MODULE_SIGNATURES is set to "1"
+DEB_BUILD_PROFILES += "${@'pkg.signwith' if bb.utils.to_boolean(d.getVar('KERNEL_MODULE_SIGNATURES')) else ''}"
+DEPENDS += "${@'module-signer secure-boot-secrets' if bb.utils.to_boolean(d.getVar('KERNEL_MODULE_SIGNATURES')) else ''}"
+DEBIAN_BUILD_DEPENDS .= "${@', module-signer, secure-boot-secrets' if bb.utils.to_boolean(d.getVar('KERNEL_MODULE_SIGNATURES')) else ''}"
+
 SRC_URI += "file://debian/"
 
 AUTOLOAD ?= ""
