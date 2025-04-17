@@ -87,9 +87,9 @@ config INSTALLER_TARGET_DEVICE
 	string "Target device to deploy"
 	default "/dev/sda"
 	help
-	  Device to deploy the image onto.
+          Deploy image to this target device. Accepts comma/colon-separated multiple devices; installs on the first available.
 	  Leave this empty to get prompted during installation
-	  Examples: /dev/sda, /dev/nvme0n1
+	  Examples: /dev/sda, /dev/nvme0n1, /dev/sda:/dev/nvme0n1
 
 choice
 	prompt "Overwrite handling"
