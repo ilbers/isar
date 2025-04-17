@@ -31,6 +31,14 @@ for x in $(cat /proc/cmdline); do
         ;;
         installer.target.dev=*)
             installer_target_dev=${x#installer.target.dev=}
+            installer_target_dev_list=$(echo "$installer_target_dev" | sed 's/[,:]/ /g')
+            boot_device=$(lsblk -no PKNAME,MOUNTPOINT | grep -E '/boot| /$' | awk '{print "/dev/"$1}' | uniq)
+            for dev in ${installer_target_dev_list}; do
+                if [ -b "${dev}" ] && [ "${dev}" != "${boot_device}" ]; then
+                    installer_target_dev=${dev}
+                    break
+                fi
+            done
             installer_unattended=true
         ;;
         installer.target.overwrite*)
