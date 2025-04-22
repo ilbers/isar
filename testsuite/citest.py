@@ -204,6 +204,17 @@ class CrossTest(CIBaseTest):
         self.init()
         self.perform_build_test(targets)
 
+    def test_cross_riscv(self):
+        targets = [
+            'mc:qemuriscv64-jammy:isar-image-ci',
+        ]
+
+        self.init()
+        try:
+            self.perform_build_test(targets, cross=False)
+        except exceptions.TestFail:
+            self.cancel('KFAIL')
+
 
 class WicTest(CIBaseTest):
 
