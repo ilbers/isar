@@ -4,6 +4,9 @@ Supported Configurations
 Release next
 ------------
 
+Release v0.11
+-------------
+
 ### Host System: debian-stretch-amd64
 
 Not supported

@@ -4,6 +4,9 @@ Tested Status
 Release next
 ------------
 
+Release v0.11
+-------------
+
 ### Host System: debian-stretch-amd64
 
 NOT SUPPORTED

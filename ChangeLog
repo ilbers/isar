@@ -1,5 +1,7 @@
 Release next
 
+Release v0.11
+
  * Add Debian Trixie support
  * Add Ubuntu 24.04 (Noble) support
  * Add AMD64 and ARM64 Debian Sid targets

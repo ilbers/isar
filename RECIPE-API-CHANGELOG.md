@@ -572,7 +572,7 @@ the module build recipe.
 Remove all uses of the function deb_compat. The functionality was replaced with
 a dependency to the package debhelper-compat.
 
-Changes in next
+Changes in v0.11
 ---------------
 
 ### Change OPTEE_BINARIES default ###0
@@ -719,3 +719,6 @@ available for respective bsps in apt feeds.
 
 Optional fields of the isar-apt repo can be controlled by adding to the
 `ISAR_APT_OPT_FIELD` map. Example: `ISAR_APT_OPT_FIELD[Origin]="isar"`.
+
+Changes in next
+---------------
