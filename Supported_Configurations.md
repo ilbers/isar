@@ -4,6 +4,64 @@ Supported Configurations
 Release next
 ------------
 
+### Host System: debian-stretch-amd64
+
+Not supported
+
+### Host System: debian-buster-amd64
+
+TBD
+
+### Host System: debian-bullseye-amd64
+
+TBD
+
+### Host System: debian-bookworm-amd64
+
+| Target System            |Native Build|Cross Build|QEMU test|SDK Support| Notes                     |
+|:------------------------:|:----------:|:---------:|:-------:|:---------:|:-------------------------:|
+| debian-stretch-i386      | NO         | NO        | NO      | NO        | Not supported             |
+| debian-stretch-amd64     | NO         | NO        | NO      | NO        | Not supported             |
+| debian-stretch-armhf     | NO         | NO        | NO      | NO        | Not supported             |
+| debian-stretch-arm64     | NO         | NO        | NO      | NO        | Not supported             |
+| debian-stretch-mipsel    | NO         | NO        | NO      | NO        | Not supported             |
+| debian-buster-i386       | YES        | YES       | YES     | YES       | Supported since 4808430d6 |
+| debian-buster-amd64      | YES        | YES       | YES     | YES       | Supported since 4808430d6 |
+| debian-buster-armhf      | YES        | YES       | YES     | YES       | Supported since 4808430d6 |
+| debian-buster-arm64      | YES        | YES       | YES     | YES       | Supported since 4808430d6 |
+| debian-buster-mipsel     | NO         | NO        | NO      | NO        | Not supported             |
+| debian-bullseye-i386     | YES        | YES       | YES     | YES       | Supported since bba34a42f |
+| debian-bullseye-amd64    | YES        | YES       | YES     | YES       | Supported since bba34a42f |
+| debian-bullseye-armhf    | YES        | YES       | YES     | YES       | Supported since bba34a42f |
+| debian-bullseye-arm64    | YES        | YES       | YES     | YES       | Supported since bba34a42f |
+| debian-bullseye-mipsel   | YES        | NO        | YES     | YES       | Supported since bba34a42f |
+| debian-bookworm-i386     | YES        | YES       | YES     | YES       | Supported since 4d05d16ca |
+| debian-bookworm-amd64    | YES        | YES       | YES     | YES       | Supported since 4d05d16ca |
+| debian-bookworm-armhf    | YES        | YES       | YES     | YES       | Supported since 4d05d16ca |
+| debian-bookworm-arm64    | YES        | YES       | YES     | YES       | Supported since 4d05d16ca |
+| debian-bookworm-mipsel   | YES        | YES       | YES     | YES       | Supported since 4d05d16ca |
+| debian-trixie-amd64      | YES        | YES       | YES     | YES       | Supported since 86e154f77 |
+| debian-trixie-armhf      | YES        | YES       | YES     | YES       | Supported since 86e154f77 |
+| debian-trixie-arm64      | YES        | YES       | YES     | YES       | Supported since 86e154f77 |
+| debian-trixie-riscv64    | YES        | YES       | YES     | YES       | Supported since 08e3909f5 |
+| debian-sid-amd64         | YES        | YES       | YES     | YES       | Supported since 600af981f |
+| debian-sid-arm64         | YES        | YES       | YES     | YES       | Supported since 600af981f |
+| debian-sid-riscv64       | NO         | NO        | NO      | NO        | Not supported             |
+| ubuntu-focal-arm64       | YES        | YES       | YES     | YES       | Supported since 738cd8ad6 |
+| ubuntu-focal-amd64       | YES        | YES       | YES     | YES       | Supported since 738cd8ad6 |
+| ubuntu-jammy-arm64       | YES        | YES       | YES     | YES       | Supported since 33292b9e9 |
+| ubuntu-jammy-amd64       | YES        | YES       | YES     | YES       | Supported since 33292b9e9 |
+| ubuntu-noble-arm64       | YES        | YES       | YES     | YES       | Supported since 85cc470a4 |
+| ubuntu-noble-amd64       | YES        | YES       | YES     | YES       | Supported since 85cc470a4 |
+
+### Host System: debian-stretch-i386
+
+Not supported
+
+### Host System: debian-buster-i386
+
+TBD
+
 Release v0.10
 -------------
 

@@ -4,6 +4,103 @@ Tested Status
 Release next
 ------------
 
+### Host System: debian-stretch-amd64
+
+NOT SUPPORTED
+
+### Host System: debian-buster-amd64
+
+NOT TESTED
+
+### Host System: debian-bullseye-amd64
+
+NOT TESTED
+
+### Host System: debian-bookworm-amd64
+
+| Target System               | Native Build  | Cross Build   |Login prompt ("smoke" test)|SDK Support|Cached repo| Version  |
+|:---------------------------:|:-------------:|:-------------:|:-------------------------:|:---------:|:---------:|:--------:|
+| qemuarm-buster              | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | 237aa528 |
+| qemuarm-bullseye            | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | 237aa528 |
+| qemuarm-bookworm            | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | 237aa528 |
+| qemuarm-trixie              | PASSED        | PASSED        | FAILED                    | PASSED    | UNTESTED  | 237aa528 |
+| qemuarm64-buster            | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | 237aa528 |
+| qemuarm64-bullseye          | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | PASSED    | 237aa528 |
+| qemuarm64-bookworm          | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | 237aa528 |
+| qemuarm64-trixie            | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | 237aa528 |
+| qemuarm64-sid               | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | 237aa528 |
+| qemuarm64-focal             | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | 237aa528 |
+| qemuarm64-jammy             | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | 237aa528 |
+| qemuarm64-noble             | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | 237aa528 |
+| qemui386-buster             | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | 237aa528 |
+| qemui386-bullseye           | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | 237aa528 |
+| qemui386-bookworm           | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | 237aa528 |
+| qemuamd64-buster            | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | 237aa528 |
+| qemuamd64-bullseye          | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | PASSED    | 237aa528 |
+| qemuamd64-sb-bullseye       | PASSED        | PASSED        | FAILED                    | PASSED    | UNTESTED  | 237aa528 |
+| qemuamd64-bookworm          | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | 237aa528 |
+| qemuamd64-cip-bookworm      | UNTESTED      | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | 237aa528 |
+| qemuamd64-iso-bookworm      | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | 237aa528 |
+| qemuamd64-trixie            | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | 237aa528 |
+| qemuamd64-sid               | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | 237aa528 |
+| qemuamd64-focal             | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | 237aa528 |
+| qemuamd64-jammy             | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | 237aa528 |
+| qemuamd64-noble             | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | 237aa528 |
+| qemumipsel-bullseye         | PASSED        | FAILED        | UNTESTED                  | PASSED    | UNTESTED  | 237aa528 |
+| qemumipsel-bookworm         | PASSED        | PASSED        | PASSED (QEMU)             | PASSED    | UNTESTED  | 237aa528 |
+| qemuriscv64-trixie          | PASSED        | PASSED        | FAILED                    | PASSED    | UNTESTED  | 237aa528 |
+| container-amd64-buster      | PASSED        | PASSED        | PASSED (Docker)           | PASSED    | UNTESTED  | 237aa528 |
+| container-amd64-bullseye    | PASSED        | PASSED        | PASSED (Docker)           | PASSED    | UNTESTED  | 237aa528 |
+| container-amd64-bookworm    | PASSED        | PASSED        | PASSED (Docker)           | PASSED    | UNTESTED  | 237aa528 |
+| virtualbox-bullseye         | PASSED        | PASSED        | UNTESTED                  | PASSED    | UNTESTED  | 237aa528 |
+| virtualbox-bookworm         | PASSED        | PASSED        | PASSED (Virtualbox)       | PASSED    | UNTESTED  | 237aa528 |
+| x86-pc-bookworm             | PASSED        | PASSED        | UNTESTED                  | PASSED    | UNTESTED  | 237aa528 |
+| bananapi-buster             | PASSED        | PASSED        | UNTESTED                  | PASSED    | UNTESTED  | 237aa528 |
+| bananapi-bullseye           | PASSED        | PASSED        | UNTESTED                  | PASSED    | UNTESTED  | 237aa528 |
+| bananapi-bookworm           | PASSED        | PASSED        | PASSED #3                 | PASSED    | UNTESTED  | 237aa528 |
+| beagleplay-bookworm         | PASSED        | PASSED        | UNTESTED                  | PASSED    | UNTESTED  | 237aa528 |
+| de0-nano-soc-buster         | FAILED        | FAILED        | UNTESTED                  | UNTESTED  | UNTESTED  | 237aa528 |
+| de0-nano-soc-bullseye       | PASSED        | PASSED        | UNTESTED                  | PASSED    | UNTESTED  | 237aa528 |
+| de0-nano-soc-bookworm       | PASSED        | PASSED        | PASSED #4                 | PASSED    | UNTESTED  | 237aa528 |
+| hikey-bullseye              | PASSED        | PASSED        | UNTESTED                  | PASSED    | UNTESTED  | 237aa528 |
+| hikey-bookworm              | PASSED        | PASSED        | PASSED #5                 | PASSED    | UNTESTED  | 237aa528 |
+| imx6-sabrelite-buster       | PASSED        | PASSED        | UNTESTED                  | PASSED    | UNTESTED  | 237aa528 |
+| imx6-sabrelite-bullseye     | PASSED        | PASSED        | UNTESTED                  | PASSED    | UNTESTED  | 237aa528 |
+| nanopi-neo-buster           | PASSED        | PASSED        | UNTESTED                  | PASSED    | UNTESTED  | 237aa528 |
+| nanopi-neo-bullseye         | PASSED        | PASSED        | UNTESTED                  | PASSED    | UNTESTED  | 237aa528 |
+| nanopi-neo-bookworm         | PASSED        | PASSED        | PASSED #6                 | PASSED    | UNTESTED  | 237aa528 |
+| nanopi-neo-efi-bookworm     | PASSED        | PASSED        | PASSED #6                 | PASSED    | UNTESTED  | 237aa528 |
+| phyboard-mira-bullseye      | PASSED        | PASSED        | UNTESTED                  | PASSED    | UNTESTED  | 237aa528 |
+| phyboard-mira-bookworm      | UNTESTED      | PASSED        | PASSED #7                 | PASSED    | UNTESTED  | 237aa528 |
+| rpi-arm-bullseye            | PASSED        | PASSED        | UNTESTED                  | PASSED    | UNTESTED  | 237aa528 |
+| rpi-arm-bookworm            | PASSED        | PASSED        | PASSED #1                 | PASSED    | UNTESTED  | 237aa528 |
+| rpi-arm-v7-bullseye         | PASSED        | PASSED        | UNTESTED                  | PASSED    | PASSED    | 237aa528 |
+| rpi-arm-v7-bookworm         | PASSED        | PASSED        | PASSED #1                 | PASSED    | UNTESTED  | 237aa528 |
+| rpi-arm-v7l-bullseye        | PASSED        | PASSED        | UNTESTED                  | PASSED    | UNTESTED  | 237aa528 |
+| rpi-arm-v7l-bookworm        | PASSED        | PASSED        | PASSED #1                 | PASSED    | UNTESTED  | 237aa528 |
+| rpi-arm64-v8-bullseye       | PASSED        | PASSED        | UNTESTED                  | PASSED    | PASSED    | 237aa528 |
+| rpi-arm64-v8-bookworm       | PASSED        | PASSED        | PASSED #2                 | PASSED    | UNTESTED  | 237aa528 |
+| sifive-fu540-trixie         | PASSED        | PASSED        | UNTESTED                  | PASSED    | UNTESTED  | 237aa528 |
+| starfive-visionfive2-trixie | PASSED        | PASSED        | PASSED #8                 | PASSED    | UNTESTED  | 237aa528 |
+| stm32mp15x-bullseye         | PASSED        | PASSED        | UNTESTED                  | PASSED    | UNTESTED  | 237aa528 |
+
+#1: Tested on RPI3B+
+#2: Tested on RPI4B (with manual adjustments in config.txt)
+#3: Tested on BPI-A20
+#4: Tested on Terasic Atlas-SoC
+#5: Tested on LeMaker HiKey 2 GB
+#6: Tested on NanoPi Neo LTS 512 MB
+#7: Tested on i.MX6 Quad
+#8: Tested on StarFive VisionFive 2
+
+### Host System: debian-stretch-i386
+
+NOT SUPPORTED
+
+### Host System: debian-buster-i386
+
+NOT TESTED
+
 Release v0.10
 -------------
 
