@@ -454,6 +454,10 @@ do_generate_initramfs[sstate-outputdirs] = "${DEPLOY_DIR_IMAGE}"
 python do_generate_initramfs() {
     bb.build.exec_func('rootfs_do_mounts', d)
     bb.build.exec_func('rootfs_do_qemu', d)
+
+    progress_reporter = bb.progress.ProgressHandler(d)
+    d.rootfs_progress = progress_reporter
+
     try:
         bb.build.exec_func('rootfs_generate_initramfs', d)
     finally:
@@ -468,7 +472,9 @@ rootfs_generate_initramfs[progress] = "custom:rootfs_progress.InitrdProgressHand
 rootfs_generate_initramfs() {
     if [ -n "$(sudo find '${ROOTFSDIR}/boot' -type f -name 'vmlinu[xz]*')" ]; then
         sudo -E chroot "${ROOTFSDIR}" sh -c '\
+            mods_total="$(find /usr/lib/modules -type f -name '*.ko*' | wc -l)"; \
             export kernel_version=$(basename /boot/vmlinu[xz]-* | cut -d'-' -f2-); \
+            echo "Total number of modules: $mods_total"; \
             echo "Generating initrd for kernel version: $kernel_version"; \
             update-initramfs -u -v -k "$kernel_version";'
         if [ -n "${INITRD_DEPLOY_FILE}" ]; then
