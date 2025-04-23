@@ -14,6 +14,7 @@ ROOTFS_BASE_DISTRO ?= "${BASE_DISTRO}"
 # 'generate-manifest' - generate a package manifest of the rootfs into ${ROOTFS_MANIFEST_DEPLOY_DIR}
 # 'export-dpkg-status' - exports /var/lib/dpkg/status file to ${ROOTFS_DPKGSTATUS_DEPLOY_DIR}
 # 'clean-log-files' - delete log files that are not owned by packages
+# 'no-generate-initrd' - do not generate debian default initrd
 ROOTFS_FEATURES ?= ""
 
 ROOTFS_APT_ARGS="install --yes -o Debug::pkgProblemResolver=yes"
@@ -21,6 +22,9 @@ ROOTFS_APT_ARGS="install --yes -o Debug::pkgProblemResolver=yes"
 ROOTFS_CLEAN_FILES="/etc/hostname /etc/resolv.conf"
 
 ROOTFS_PACKAGE_SUFFIX ?= "${PN}-${DISTRO}-${DISTRO_ARCH}"
+
+# path to deploy stubbed versions of initrd update scripts during do_rootfs_install
+ROOTFS_STUBS_DIR = "/usr/local/isar-sbin"
 
 # Useful environment variables:
 export E = "${@ isar_export_proxies(d)}"
@@ -165,6 +169,13 @@ rootfs_configure_apt() {
 EOSUDO
 }
 
+ROOTFS_CONFIGURE_COMMAND += "rootfs_disable_initrd_generation"
+rootfs_disable_initrd_generation[weight] = "1"
+rootfs_disable_initrd_generation() {
+    # fully disable initrd generation
+    sudo mkdir -p "${ROOTFSDIR}${ROOTFS_STUBS_DIR}"
+    sudo cp -a ${ROOTFSDIR}/usr/bin/true ${ROOTFSDIR}${ROOTFS_STUBS_DIR}/update-initramfs
+}
 
 ROOTFS_INSTALL_COMMAND += "rootfs_install_pkgs_update"
 rootfs_install_pkgs_update[weight] = "5"
@@ -227,7 +238,21 @@ rootfs_install_pkgs_install[progress] = "custom:rootfs_progress.PkgsInstallProgr
 rootfs_install_pkgs_install[network] = "${TASK_USE_SUDO}"
 rootfs_install_pkgs_install() {
     sudo -E chroot "${ROOTFSDIR}" \
-        /usr/bin/apt-get ${ROOTFS_APT_ARGS} ${ROOTFS_PACKAGES}
+        /usr/bin/apt-get ${ROOTFS_APT_ARGS} \
+            -o DPkg::Path='${ROOTFS_STUBS_DIR}:/usr/sbin:/usr/bin:/sbin:/bin' \
+            ${ROOTFS_PACKAGES}
+}
+
+ROOTFS_INSTALL_COMMAND += "rootfs_restore_initrd_tooling"
+rootfs_restore_initrd_tooling[weight] = "1"
+rootfs_restore_initrd_tooling() {
+    sudo rm -rf "${ROOTFSDIR}${ROOTFS_STUBS_DIR}"
+}
+
+ROOTFS_INSTALL_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'no-generate-initrd', 'rootfs_clear_initrd_symlinks', '', d)}"
+rootfs_clear_initrd_symlinks() {
+    sudo rm -f ${ROOTFSDIR}/initrd.img
+    sudo rm -f ${ROOTFSDIR}/initrd.img.old
 }
 
 do_rootfs_install[root_cleandirs] = "${ROOTFSDIR}"
@@ -420,6 +445,51 @@ python do_rootfs_postprocess() {
         bb.build.exec_func('rootfs_do_umounts', d)
 }
 addtask rootfs_postprocess before do_rootfs after do_unpack
+
+SSTATETASKS += "do_generate_initramfs"
+do_generate_initramfs[network] = "${TASK_USE_SUDO}"
+do_generate_initramfs[cleandirs] += "${DEPLOYDIR}"
+do_generate_initramfs[sstate-inputdirs] = "${DEPLOYDIR}"
+do_generate_initramfs[sstate-outputdirs] = "${DEPLOY_DIR_IMAGE}"
+python do_generate_initramfs() {
+    bb.build.exec_func('rootfs_do_mounts', d)
+    bb.build.exec_func('rootfs_do_qemu', d)
+    try:
+        bb.build.exec_func('rootfs_generate_initramfs', d)
+    finally:
+        bb.build.exec_func('rootfs_do_umounts', d)
+}
+
+python do_generate_initramfs_setscene () {
+    sstate_setscene(d)
+}
+
+rootfs_generate_initramfs[progress] = "custom:rootfs_progress.InitrdProgressHandler"
+rootfs_generate_initramfs() {
+    if [ -n "$(sudo find '${ROOTFSDIR}/boot' -type f -name 'vmlinu[xz]*')" ]; then
+        sudo -E chroot "${ROOTFSDIR}" sh -c '\
+            export kernel_version=$(basename /boot/vmlinu[xz]-* | cut -d'-' -f2-); \
+            echo "Generating initrd for kernel version: $kernel_version"; \
+            update-initramfs -u -v -k "$kernel_version";'
+        if [ -n "${INITRD_DEPLOY_FILE}" ]; then
+            if [ -f "${ROOTFSDIR}/initrd.img" ]; then
+                # debian (mkinitramfs)
+                cp ${ROOTFSDIR}/initrd.img ${DEPLOYDIR}/${INITRD_DEPLOY_FILE}
+            else
+                # ubuntu (dracut)
+                cp ${ROOTFSDIR}/boot/initrd.img ${DEPLOYDIR}/${INITRD_DEPLOY_FILE}
+            fi
+        fi
+    else
+        echo "no kernel in this rootfs, do not generate initrd"
+    fi
+}
+
+python() {
+    if 'no-generate-initrd' not in d.getVar('ROOTFS_FEATURES', True).split():
+        bb.build.addtask('do_generate_initramfs', 'do_rootfs', 'do_rootfs_postprocess', d)
+        bb.build.addtask('do_generate_initramfs_setscene', None, None, d)
+}
 
 python do_rootfs() {
     """Virtual task"""
