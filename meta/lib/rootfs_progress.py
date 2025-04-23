@@ -28,13 +28,15 @@ class PkgsProgressHandler(bb.progress.ProgressHandler):
             self._linebuffer = self._linebuffer[breakpos:]
 
             if self._stage == 'prepare':
-                match = re.search(
-                    r'^([0-9]+) upgraded, ([0-9]+) newly installed', line)
-                if match:
-                    self._num_pkgs = int(match.group(1)) + int(match.group(2))
-                    self._stage = 'post-prepare'
+                self.process_total(line)
             else:
                 self.process_line(line)
+
+    def process_total(self, line):
+        m = re.search(r'^([0-9]+) upgraded, ([0-9]+) newly installed', line)
+        if m:
+            self._num_pkgs = int(m.group(1)) + int(m.group(2))
+            self._stage = 'post-prepare'
 
     def process_line(self, line):
         return
@@ -65,3 +67,24 @@ class PkgsInstallProgressHandler(PkgsProgressHandler):
 
         progress = 99 * (self._pkg + self._pkg_set_up) / (self._num_pkgs * 2)
         self._progress.update(progress)
+
+
+class InitrdProgressHandler(PkgsProgressHandler):
+    def __init__(self, d, outfile, otherargs=None):
+        super().__init__(d, outfile)
+
+    def process_total(self, line):
+        m = re.search(r'^Total number of modules: ([0-9]+)', line)
+        if m:
+            # in MODULES=most mode, we install ~half of all modules
+            self._num_pkgs = int(m.group(1)) // 2
+            self._stage = 'post-prepare'
+
+    def process_line(self, line):
+        if line.startswith('Adding module'):
+            self._pkg += 1
+        elif line.startswith('(excluding'):
+            self._pkg += len(line.split(' ')) - 1
+        else:
+            return
+        self._progress.update(99 * self._pkg / self._num_pkgs)
