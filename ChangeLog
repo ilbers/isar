@@ -1,5 +1,43 @@
 Release next
 
+ * Add Debian Trixie support
+ * Add Ubuntu 24.04 (Noble) support
+ * Add AMD64 and ARM64 Debian Sid targets
+ * Migrate riscv64 targets from Sid to Trixie
+ * Add separate AMD64 target with CIP kernel
+ * Add hybrid iso9660 image target
+ * Drop MIPS support for Debian Buster
+ * Add x86 PC target
+ * Add support for the BeaglePlay board
+ * Add installer image support
+ * Update BitBake version to 2.8.0 release
+ * Update OE-core libs to 5.0 LTS
+ * Update WIC to the revision a4e7334a4
+ * Update kas-container to version 4.7
+ * Update mainline kernel to 6.6.11
+ * Update linux-starfive kernel to 6.6
+ * Update Barebox to 2024.05.0
+ * Make cross-compilation to be default
+ * Add mmdebstrap rootfs generation support
+ * Add native bitbake fetcher for APT sources
+ * Add squashfs imagetype
+ * Add prebuilt containers install demo packages
+ * Add image customization package support
+ * Add variable feature lists support
+ * Add apt fetching rate limit ability
+ * Drop lazy and recursive unmounts in tasks
+ * Improve post-task and post-build mounts cleanup
+ * Speedup testsuite
+ * Rebuild and improve startvm scripts
+ * Migrate to newer debhelper-compat syntax
+ * Improve schroot config handling stability
+ * Improve custom kernel packages splitting
+ * Improve initramfs customization
+ * Improve debianize script
+ * Improve builds reproducibility and snapshot usage
+ * Improve working with internal repositories
+ * Multiple improvements in expand-on-first-boot
+
 Release v0.10
 
  * Add Debian Bookworm targets for some machines
