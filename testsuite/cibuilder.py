@@ -558,7 +558,7 @@ class CIBuilder(Test):
         need_sb_cleanup = start_vm.sb_copy_vars(cmdline)
 
         self.log.info(f"QEMU boot line:\n{' '.join(cmdline)}")
-        self.log.info(f"QEMU boot log:\ni{boot_log}")
+        self.log.info(f"QEMU boot log:\n{boot_log}")
 
         p1 = subprocess.Popen(
             f"exec {' '.join(cmdline)}",
