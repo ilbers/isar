@@ -12,6 +12,9 @@ HOST_BASE_DISTRO = "${BASE_DISTRO}"
 DISTRO_APT_SOURCES:arm64 ?= "conf/distro/${BASE_DISTRO}-${BASE_DISTRO_CODENAME}-ports.list"
 HOST_DISTRO_APT_SOURCES:arm64 ?= "conf/distro/${HOST_DISTRO}.list conf/distro/${HOST_DISTRO}-ports.list"
 
+DISTRO_APT_SOURCES:riscv64 ?= "conf/distro/${BASE_DISTRO}-${BASE_DISTRO_CODENAME}-ports.list"
+HOST_DISTRO_APT_SOURCES:riscv64 ?= "conf/distro/${HOST_DISTRO}.list conf/distro/${HOST_DISTRO}-ports.list"
+
 BOOTSTRAP_KEY = "file://${LAYERDIR_isar}/conf/distro/ubuntu.public.key;sha256sum=36a38199a4bf4eae1e7f574891f7dfcb79b91b87a33a499383265e1224b5e989"
 DISTRO_BOOTSTRAP_KEYS += "${BOOTSTRAP_KEY}"
 HOST_DISTRO_BOOTSTRAP_KEYS += "${BOOTSTRAP_KEY}"
