@@ -204,6 +204,21 @@ class CrossTest(CIBaseTest):
         self.init()
         self.perform_build_test(targets)
 
+    def test_cross_riscv64(self):
+        """
+        :avocado: tags=riscv64
+        """
+        targets = [
+            'mc:qemuriscv64-trixie:isar-image-ci',
+            'mc:qemuriscv64-noble:isar-image-ci',
+        ]
+
+        self.init()
+        try:
+            self.perform_build_test(targets, cross=False)
+        except exceptions.TestFail:
+            self.cancel('KFAIL')
+
 
 class WicTest(CIBaseTest):
 
@@ -562,6 +577,26 @@ class VmBootTestFast(CIBaseTest):
             image='isar-image-ci',
             script='test_systemd_unit.sh getty.target 10',
         )
+
+    def test_riscv64_trixie(self):
+        """
+        :avocado: tags=riscv64
+        """
+        self.init()
+        try:
+            self.vm_start('riscv64', 'trixie', image='isar-image-ci')
+        except exceptions.TestFail:
+            self.cancel('KFAIL')
+
+    def test_riscv64_noble(self):
+        """
+        :avocado: tags=riscv64
+        """
+        self.init()
+        try:
+            self.vm_start('riscv64', 'noble', image='isar-image-ci')
+        except exceptions.TestFail:
+            self.cancel('KFAIL')
 
 
 class VmBootTestFull(CIBaseTest):
