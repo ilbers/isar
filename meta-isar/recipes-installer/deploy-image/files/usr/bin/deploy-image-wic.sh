@@ -161,7 +161,7 @@ version_ge() {
 # Get bmap-tools version
 bmap_version=$(bmaptool --version | awk '{ print $NF }')
 
-if version_ge "$bmap_version" "3.8"; then
+if version_ge "$bmap_version" "3.6"; then
     # Create a named pipe for progress communication
     progress_pipe="/tmp/progress"
     if ! mkfifo "$progress_pipe"; then
