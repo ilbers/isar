@@ -28,7 +28,7 @@ update_etc_os_release() {
     fi
     if [ -n "${OS_RELEASE_VARIANT_VERSION}" ]; then
         sudo sed -i '/^VARIANT_VERSION=.*/d' '${IMAGE_ROOTFS}/etc/os-release'
-        echo "VARIANT_VERSION=\"${PV}\"" | \
+        echo "VARIANT_VERSION=\"${OS_RELEASE_VARIANT_VERSION}\"" | \
             sudo tee -a '${IMAGE_ROOTFS}/etc/os-release'
     fi
 }
