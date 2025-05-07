@@ -6,7 +6,7 @@
 # This class provides the task 'containerize'
 # to create container images containing the target rootfs.
 
-CONTAINER_TYPES = "oci oci-archive docker-archive docker-daemon containers-storage"
+CONTAINER_TYPES = "oci-archive docker-archive docker-daemon containers-storage"
 USING_CONTAINER = "${@bb.utils.contains_any('IMAGE_BASETYPES', d.getVar('CONTAINER_TYPES').split(), '1', '0', d)}"
 
 CONTAINER_IMAGE_NAME ?= "${PN}-${DISTRO}-${DISTRO_ARCH}"
@@ -86,10 +86,6 @@ convert_container() {
             skopeo --insecure-policy copy \
                 --tmpdir "${WORKDIR}" \
                 "oci:${oci_img_dir}:${tag}" "${target}"
-            ;;
-        "oci")
-            tar --create --directory "${oci_img_dir}" \
-                --file "${image_archive}" .
             ;;
         "docker-daemon" | "containers-storage")
             if [ -f /.dockerenv ] || [ -f /run/.containerenv ] ; then

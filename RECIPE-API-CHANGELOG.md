@@ -722,3 +722,8 @@ Optional fields of the isar-apt repo can be controlled by adding to the
 
 Changes in next
 ---------------
+
+### Drop unused container image format `oci`
+
+This was never documented and never had practical relevance. `oci-archive` is
+the useful OCI image format that can be imported, e.g., by podman.

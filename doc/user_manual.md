@@ -273,7 +273,7 @@ https://github.com/intel/bmap-tools
 ### Generate container image with root filesystem
 
 A runnable container image is generated if IMAGE_FSTYPES variable includes
-one of the supported container formats `oci`, `oci-archive`, `docker-archive`,
+one of the supported container formats `oci-archive`, `docker-archive`,
 `docker-daemon`, or `containers-storage`.
 Getting a container image can be the main purpose of an Isar configuration, 
 but not only.
