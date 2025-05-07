@@ -501,7 +501,11 @@ Currently, the following image types are provided:
  - `ext4` - raw ext4 filesystem image (default option for `qemuarm` machine)
  - `wic` - full disk image with user-specified partitions created and populated using the wic tool
  - `ubi` - image for use on mtd nand partitions employing UBI
+ - `ubifs` - raw UBI filesystem image, normally used together with UBI partitions
  - `ova` - Open Virtual Appliance: image for use on VirtualBox or VMware
+ - `squashfs` - raw squashfs filesystem image
+ - `fit` - FIT image as used by U-Boot
+ - `oci-archive`, `docker-archive`, `docker-daemon`, `containers-storage` - see [generating container images](#generate-container-image-with-root-filesystem)
 
 In addition, image types can be converted using suffixes, e.g. `tar.gz`.
 Available conversions are `gz` and `xz`, which both provide image compression.
