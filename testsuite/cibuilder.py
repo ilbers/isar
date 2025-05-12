@@ -199,10 +199,6 @@ class CIBuilder(Test):
                 f.write('BB_NO_NETWORK = "1"\n')
             if container:
                 f.write('SDK_FORMATS = "docker-archive"\n')
-                f.write(
-                    'IMAGE_INSTALL:remove = '
-                    '"example-module-${KERNEL_NAME} enable-fsck"\n'
-                )
             if gpg_pub_key:
                 f.write('BASE_REPO_KEY="file://' + gpg_pub_key + '"\n')
             if wic_deploy_parts:
