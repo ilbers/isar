@@ -30,6 +30,9 @@ MIRRORS += "https?://cdn\.kernel\.org/.* https://mirrors.edge.kernel.org/PATH"
 # The default list of extra packages
 IMAGE_INSTALL = "hello-isar example-raw example-module-${KERNEL_NAME} enable-fsck isar-exclude-docs samefile hello isar-disable-apt-cache cowsay example-prebuilt"
 
+# Container machines don't need example module and enable-fsck.
+IMAGE_INSTALL:remove:container-amd64 = "example-module-${KERNEL_NAME} enable-fsck"
+
 # Machines with secure boot should use signed modules
 IMAGE_INSTALL:remove:qemuamd64-sb = "example-module-${KERNEL_NAME}"
 IMAGE_INSTALL:append:qemuamd64-sb = " example-module-signed-${KERNEL_NAME}"
