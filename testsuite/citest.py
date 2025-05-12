@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+#
+# This software is a part of ISAR.
+# Copyright (C) 2022-2025 ilbers GmbH
+# Copyright (C) 2022-2025 Siemens AG
+#
+# SPDX-License-Identifier: MIT
 
 from avocado import skipUnless
 from avocado.core import exceptions
@@ -734,3 +740,30 @@ class VmBootTestFull(CIBaseTest):
         self.init()
         self.vm_start('amd64-iso', 'bookworm', image='isar-image-ci',
                       script='test_system_running.sh 30')
+
+
+class World(CIBaseTest):
+
+    """
+    All targets build test
+
+    :avocado: tags=world
+    """
+
+    def test_world(self):
+        name = self.params.get('name')
+        image = self.params.get('image', default='isar-image-ci')
+        targets = []
+
+        if name is None:
+            self.init()
+            for target in CIUtils.get_targets():
+                for image in CIUtils.get_test_images():
+                    targets.append(f'mc:{target}:{image}')
+        else:
+            targets.append(f'mc:{name}:{image}')
+            self.init(f'build-{name}')
+
+        self.perform_build_test(
+            targets, container=name and name.startswith('container')
+        )
