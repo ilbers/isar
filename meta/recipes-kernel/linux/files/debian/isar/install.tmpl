@@ -139,34 +139,26 @@ install_dtbs() {
 
 install_kmods() {
     [ -n "${CONFIG_MODULES}" ] || return 0
-    ${MAKE} O=${O} INSTALL_MOD_PATH=${deb_img_dir} modules_install
+    ${MAKE} O=${O} modules_install \
+        INSTALL_MOD_PATH=${deb_img_dir} \
+        INSTALL_MOD_STRIP=1
     touch ${deb_img_dir}/lib/modules/${krel}/.fresh-install
     rm -fv ${deb_img_dir}/lib/modules/${krel}/build
     rm -fv ${deb_img_dir}/lib/modules/${krel}/source
     install_kmods_debug
 }
 
-kmods_sign() {
-    [ -n "${CONFIG_MODULE_SIG_ALL}" ] || return 0
-    ${MAKE} O=${O} INSTALL_MOD_PATH=${deb_img_dir} modules_sign
-}
-
 install_kmods_debug() {
     [ -n "${CONFIG_DEBUG_INFO}" ] || return 0
 
-    kmod_inst_dir=${deb_img_dir}/lib/modules
-    kmod_debug_dir=${deb_dbg_dir}/usr/lib/debug
+    kmod_inst_dir=${deb_dbg_dir}/usr/lib/debug
 
-    # copy kernels modules to usr/lib/debug
-    mkdir -p ${kmod_debug_dir}
-    tar -C ${kmod_inst_dir}/ -cO --exclude='modules.*' . | tar -C ${kmod_debug_dir}/ -xf -
-    # strip everything but debug sections for modules in usr/lib/debug
-    find ${kmod_debug_dir} -name *.ko -exec ${CROSS_COMPILE}objcopy --only-keep-debug {} \;
-    # and strip debug sections from modules in lib/modules
-    find ${kmod_inst_dir} -name *.ko -exec ${CROSS_COMPILE}objcopy --strip-debug {} \;
-
-    # re-sign stripped kernel modules
-    kmods_sign
+    # cmd_sign=: Don't sign modules
+    # suffix-y=: Don't compress modules
+    ${MAKE} O=${O} modules_install \
+        INSTALL_MOD_PATH=${kmod_inst_dir} \
+        cmd_sign= \
+        suffix-y=
 }
 
 headers_check() {
