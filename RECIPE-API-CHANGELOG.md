@@ -727,3 +727,9 @@ Changes in next
 
 This was never documented and never had practical relevance. `oci-archive` is
 the useful OCI image format that can be imported, e.g., by podman.
+
+### Require bubblewrap to run non-privileged commands with bind-mounts
+
+Isar occasionally needs to run commands within root file-systems that it
+builds and with several bind-mounts (e.g. /isar-apt). bubblewrap may be
+used in Isar classes instead of `sudo chroot`.
