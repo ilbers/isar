@@ -55,7 +55,7 @@ image_postprocess_mark() {
 
 # Use dpkg to find out which version of systemd is installed into the image or reports "0"
 image_systemd_version() {
-    sudo chroot ${IMAGE_ROOTFS} dpkg-query --showformat='${source:Upstream-Version}' --show systemd || echo "0"
+    rootfs_cmd ${IMAGE_ROOTFS} -- dpkg-query --showformat='${source:Upstream-Version}' --show systemd || echo "0"
 }
 
 ROOTFS_POSTPROCESS_COMMAND =+ "image_postprocess_machine_id"
