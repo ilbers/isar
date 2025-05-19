@@ -53,12 +53,17 @@ image_postprocess_mark() {
         --build-id "${BUILD_ID}" --variant "${DESCRIPTION}" --version "${PV}"
 }
 
+# Use dpkg to find out which version of systemd is installed into the image or reports "0"
+image_systemd_version() {
+    sudo chroot ${IMAGE_ROOTFS} dpkg-query --showformat='${source:Upstream-Version}' --show systemd || echo "0"
+}
+
 ROOTFS_POSTPROCESS_COMMAND =+ "image_postprocess_machine_id"
 image_postprocess_machine_id() {
     # systemd(1) takes care of recreating the machine-id on first boot
     # for systemd < v247, set to empty string, else set to uninitialized
     # (required if initramfs with ro root is used)
-    SYSTEMD_VERSION=$( sudo chroot ${IMAGE_ROOTFS} dpkg-query --showformat='${source:Upstream-Version}' --show systemd || echo "0" )
+    SYSTEMD_VERSION=$( image_systemd_version )
     MACHINE_ID="uninitialized"
     if dpkg --compare-versions "$SYSTEMD_VERSION" "lt" "247"; then
         MACHINE_ID=""
@@ -82,10 +87,7 @@ image_postprocess_sshd_key_regen() {
 
 ROOTFS_POSTPROCESS_COMMAND =+ "image_posprocess_disable_systemd_firstboot"
 image_posprocess_disable_systemd_firstboot() {
-    SYSTEMD_VERSION=$(sudo chroot '${ROOTFSDIR}' dpkg-query \
-        --showformat='${source:Upstream-Version}' \
-        --show systemd || echo "0" )
-
+    SYSTEMD_VERSION=$( image_systemd_version )
     if dpkg --compare-versions "$SYSTEMD_VERSION" "ge" "251"; then
         sudo chroot '${ROOTFSDIR}' systemctl mask systemd-firstboot
         if ! cmd_output=$(sudo chroot '${ROOTFSDIR}' systemd-firstboot \
