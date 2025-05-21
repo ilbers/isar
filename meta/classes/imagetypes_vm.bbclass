@@ -70,9 +70,9 @@ IMAGE_CMD:ova() {
     if [ ! ${VIRTUAL_MACHINE_IMAGE_TYPE} = "vmdk" ]; then
         exit 0
     fi
-    rm -f '${DEPLOY_DIR_IMAGE}/${OVA_NAME}.ova'
-    rm -f '${DEPLOY_DIR_IMAGE}/${OVA_NAME}.ovf'
-    rm -f '${DEPLOY_DIR_IMAGE}/${OVA_NAME}.mf'
+    rm -f '${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.ova'
+    rm -f '${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.ovf'
+    rm -f '${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.mf'
 
     export PRIMARY_MAC=$(macgen)
     export LAST_CHANGE=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
@@ -85,16 +85,16 @@ IMAGE_CMD:ova() {
         export DISK_UUID=$(uuidgen)
         export VM_UUID=$(uuidgen)
         # create ovf
-        cat ${PP_WORK}/${OVF_TEMPLATE_STAGE2} | envsubst > ${PP_DEPLOY}/${OVA_NAME}.ovf
-        tar -cvf ${PP_DEPLOY}/${OVA_NAME}.ova -C ${PP_DEPLOY} ${OVA_NAME}.ovf
+        cat ${PP_WORK}/${OVF_TEMPLATE_STAGE2} | envsubst > ${PP_DEPLOY}/${IMAGE_FULLNAME}.ovf
+        tar -cvf ${PP_DEPLOY}/${IMAGE_FULLNAME}.ova -C ${PP_DEPLOY} ${IMAGE_FULLNAME}.ovf
 
         # VirtualBox needs here a manifest file. VMware does accept that format.
         if [ "${VMDK_SUBFORMAT}" = "monolithicSparse" ]; then
-            echo "SHA${OVA_SHA_ALG}(${VIRTUAL_MACHINE_IMAGE_FILE})=$(sha${OVA_SHA_ALG}sum ${PP_DEPLOY}/${VIRTUAL_MACHINE_IMAGE_FILE} | cut -d' ' -f1)" >> ${PP_DEPLOY}/${OVA_NAME}.mf
-            echo "SHA${OVA_SHA_ALG}(${OVA_NAME}.ovf)=$(sha${OVA_SHA_ALG}sum ${PP_DEPLOY}/${OVA_NAME}.ovf | cut -d' ' -f1)" >> ${PP_DEPLOY}/${OVA_NAME}.mf
-            tar -uvf ${PP_DEPLOY}/${OVA_NAME}.ova -C ${PP_DEPLOY} ${OVA_NAME}.mf
+            echo "SHA${OVA_SHA_ALG}(${VIRTUAL_MACHINE_IMAGE_FILE})=$(sha${OVA_SHA_ALG}sum ${PP_DEPLOY}/${VIRTUAL_MACHINE_IMAGE_FILE} | cut -d' ' -f1)" >> ${PP_DEPLOY}/${IMAGE_FULLNAME}.mf
+            echo "SHA${OVA_SHA_ALG}(${IMAGE_FULLNAME}.ovf)=$(sha${OVA_SHA_ALG}sum ${PP_DEPLOY}/${IMAGE_FULLNAME}.ovf | cut -d' ' -f1)" >> ${PP_DEPLOY}/${IMAGE_FULLNAME}.mf
+            tar -uvf ${PP_DEPLOY}/${IMAGE_FULLNAME}.ova -C ${PP_DEPLOY} ${IMAGE_FULLNAME}.mf
         fi
-        tar -uvf ${PP_DEPLOY}/${OVA_NAME}.ova -C ${PP_DEPLOY} ${VIRTUAL_MACHINE_IMAGE_FILE}
+        tar -uvf ${PP_DEPLOY}/${IMAGE_FULLNAME}.ova -C ${PP_DEPLOY} ${VIRTUAL_MACHINE_IMAGE_FILE}
 EOIMAGER
 }
 IMAGE_CMD:ova[depends] = "${PN}:do_transform_template"
