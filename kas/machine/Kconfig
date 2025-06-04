@@ -198,6 +198,12 @@ config MACHINE_RPI_ARM64_V8
 	select CODENAME_BOOKWORM
 	select ARCH_ARM64
 
+config MACHINE_RPI_ARM64_V8_EFI
+	bool "rpi-arm64-v8-efi"
+	select DISTRO_DEBIAN
+	select CODENAME_BOOKWORM
+	select ARCH_ARM64
+
 config MACHINE_SIFIVE_FU540
 	bool "sifive-fu540"
 	select DISTRO_DEBIAN
@@ -269,6 +275,7 @@ config KAS_INCLUDE_MACHINE
 	default "kas/machine/rpi-arm-v7l.yaml" if MACHINE_RPI_ARM_V7L
 	default "kas/machine/rpi-arm.yaml" if MACHINE_RPI_ARM
 	default "kas/machine/rpi-arm64-v8.yaml" if MACHINE_RPI_ARM64_V8
+	default "kas/machine/rpi-arm64-v8-efi.yaml" if MACHINE_RPI_ARM64_V8_EFI
 	default "kas/machine/sifive-fu540.yaml" if MACHINE_SIFIVE_FU540
 	default "kas/machine/starfive-visionfive2.yaml" if MACHINE_STARFIVE_VISIONFIVE2
 	default "kas/machine/stm32mp15x.yaml" if MACHINE_STM32MP15X
