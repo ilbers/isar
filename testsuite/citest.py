@@ -205,6 +205,7 @@ class CrossTest(CIBaseTest):
     def test_cross_rpi(self):
         targets = [
             'mc:rpi-arm-v7-bullseye:isar-image-base',
+            'mc:rpi-arm64-v8-efi-bookworm:isar-image-base',
         ]
 
         self.init()
