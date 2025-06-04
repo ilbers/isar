@@ -1,0 +1,5 @@
+boot/bootcode.bin		usr/lib/rpi-firmware
+boot/LICENCE.broadcom		usr/lib/rpi-firmware
+boot/*.dat			usr/lib/rpi-firmware
+boot/*.dtb			usr/lib/rpi-firmware
+boot/*.elf			usr/lib/rpi-firmware
