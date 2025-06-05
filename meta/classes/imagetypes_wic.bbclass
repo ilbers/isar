@@ -157,6 +157,7 @@ generate_wic_image() {
     export FAKEROOTCMD=${FAKEROOTCMD}
     export BUILDDIR=${TOPDIR}
     export MTOOLS_SKIP_CHECK=1
+    export PYTHONDONTWRITEBYTECODE=1
     mkdir -p ${IMAGE_ROOTFS}/../pseudo
     touch ${IMAGE_ROOTFS}/../pseudo/files.db
 
