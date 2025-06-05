@@ -68,7 +68,9 @@ debsrc_download() {
     trap "rm -f ${avail} ${wanted}" EXIT
 
     # List all packages known to apt
-    apt-cache -o Dir=${rootfs} dumpavail | debsrc_source_version_filter > ${avail}
+    sudo -E chroot --userspec=$( id -u ):$( id -g ) ${rootfs} \
+        apt-cache dumpavail \
+        | debsrc_source_version_filter > ${avail}
 
     # Use apt-ftparchive to scan all .deb files found in the download directory
     # and get the <source> <version> pairs that we wish to download
