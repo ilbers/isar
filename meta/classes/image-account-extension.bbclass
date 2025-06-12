@@ -132,7 +132,7 @@ def image_create_users(d: "DataSmart") -> None:
                 source_date_epoch = d.getVar("SOURCE_DATE_EPOCH")
                 command.append("-e")
                 salt = hashlib.sha256("{}\n".format(source_date_epoch).encode()).hexdigest()[0:15]
-                password = bb.process.run('openssl passwd -6 --salt {} {}'.format(salt, password))[0].strip()
+                password = bb.process.run(['openssl', 'passwd', '-6', '--salt', salt, password])[0].strip()
 
             else:
                 command.append("-e")
