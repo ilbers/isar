@@ -48,6 +48,12 @@ rootfs_do_mounts() {
             mount -o bind,private /sys '${ROOTFSDIR}/sys'
         mount --make-rslave '${ROOTFSDIR}/sys'
 
+        # Mount a tmpfs on /sys/firmware to avoid host contamination problems
+        # (maintainer scripts shouldn't pull host data from there)
+        if [ -d '${ROOTFSDIR}/sys/firmware' ]; then
+            mount -t tmpfs -o size=1m,nosuid,nodev none '${ROOTFSDIR}/sys/firmware'
+        fi
+
         # Mount isar-apt if the directory does not exist or if it is empty
         # This prevents overwriting something that was copied there
         if [ ! -e '${ROOTFSDIR}/isar-apt' ] || \
@@ -93,6 +99,9 @@ rootfs_do_umounts() {
         fi
         if mountpoint -q '${ROOTFSDIR}/proc'; then
             umount '${ROOTFSDIR}/proc'
+        fi
+        if mountpoint -q '${ROOTFSDIR}/sys/firmware'; then
+            umount '${ROOTFSDIR}/sys/firmware'
         fi
         if mountpoint -q '${ROOTFSDIR}/sys'; then
             umount '${ROOTFSDIR}/sys'
