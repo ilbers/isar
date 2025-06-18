@@ -716,7 +716,7 @@ The `USERS` and `USER:<username>` variable works similar to the `GROUPS` and `GR
  - `uid` - The numeric user id.
  - `gid` -  The numeric group id or group name of this users initial login group.
  - `comment` - This users comment field. Commonly the following format `full name,room number,work phone number,home phone number,other entry`.
- - `home` - This users home directory
+ - `home` - This changes the default home directory of the user with `usermod --move-home`. Only takes effect when used together with the `create-home` flag.
  - `shell` - This users login shell
  - `groups` - A space separated list of groups this user is a member of.
  - `flags` - A list of additional flags of the user:
