@@ -710,7 +710,7 @@ The `GROUP_<groupname>` variable contains the settings of a group named `groupna
 
 The `USERS` and `USER:<username>` variable works similar to the `GROUPS` and `GROUP:<groupname>` variable. The difference are the accepted flags of the `USER:<username>` variable. It accepts the following flags:
 
- - `password` - The crypt(3) encrypted password. To encrypt a password use for example `mkpasswd` or `openssl passwd -6`. You can find `mkpasswd` in the `whois` package of Debian.
+ - `password` - The clear-text or crypt(3) encrypted password. In case of clear-text password, the `clear-text-password` flag must be set. To encrypt a password use for example `mkpasswd` or `openssl passwd -6`. You can find `mkpasswd` in the `whois` package of Debian.
  - `expire` - A `YYYY-MM-DD` formatted date on which the user account will be disabled. (see useradd(8))
  - `inactive` - The number of days after a password expires until the account is permanently disabled. (see useradd(8))
  - `uid` - The numeric user id.
