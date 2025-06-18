@@ -8,21 +8,20 @@
 USERS ??= ""
 GROUPS ??= ""
 
-# rebuild rootfs on change of USERS as homes might be moved / created
-# no need to depend on GROUPS as they don't create directories
-# groups need to be created before users, hence do not move the user creation into
-# the do_rootfs_install task but only add a dependency
+# rebuild rootfs on change of USERS or GROUPS as homes might be created, moved
+# or given different IDs.
 python() {
     for entry in (d.getVar("GROUPS") or "").split():
         group_entry = "GROUP_{}".format(entry)
         d.appendVarFlag("image_postprocess_accounts", "vardeps", " {}".format(group_entry))
+        d.appendVarFlag("do_rootfs_install", "vardeps", " {}".format(group_entry))
 
     for entry in (d.getVar("USERS") or "").split():
         user_entry = "USER_{}".format(entry)
         d.appendVarFlag("image_postprocess_accounts", "vardeps", " {}".format(user_entry))
         d.appendVarFlag("do_rootfs_install", "vardeps", " {}".format(user_entry))
 }
-do_rootfs_install[vardeps] += "USERS"
+do_rootfs_install[vardeps] += "GROUPS USERS"
 
 def image_create_groups(d: "DataSmart") -> None:
     """Creates the groups defined in the ``GROUPS`` bitbake variable.
