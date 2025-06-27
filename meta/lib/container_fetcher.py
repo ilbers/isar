@@ -11,6 +11,7 @@ from   bb.fetch2 import FetchMethod
 from   bb.fetch2 import logger
 from   bb.fetch2 import MissingChecksumEvent
 from   bb.fetch2 import NoChecksumError
+from   bb.fetch2 import ChecksumError
 from   bb.fetch2 import runfetchcmd
 
 class Container(FetchMethod):
@@ -47,6 +48,22 @@ class Container(FetchMethod):
     def download(self, ud, d):
         tarball = ud.localfile[:-len('.zst')]
         with tempfile.TemporaryDirectory(dir=d.getVar('DL_DIR')) as tmpdir:
+            # If both tag and digest are provided, verify they match
+            if ud.digest and "tag" in ud.parm:
+                inspect_output = runfetchcmd(f"skopeo inspect docker://{ud.container_name}:{ud.tag}", d, True)
+                actual_digest = json.loads(inspect_output)["Digest"]
+                if actual_digest != ud.digest:
+                    messages = []
+                    messages.append(f"Checksum mismatch for {ud.container_name}:{ud.tag}")
+                    messages.append("If this change is expected (e.g. you have upgraded " \
+                                "to a new version without updating the checksums) " \
+                                "then you can use these lines within the recipe:")
+                    messages.append(f'SRC_URI = "docker://{ud.container_name};digest={actual_digest};tag={ud.tag}"')
+                    messages.append("Otherwise you should retry the download and/or " \
+                                "check with upstream to determine if the container image has " \
+                                "become corrupted or otherwise unexpectedly modified.")
+                    raise ChecksumError("\n".join(messages), ud.url, actual_digest)
+
             # Take a two steps for downloading into a docker archive because
             # not all source may have the required Docker schema 2 manifest.
             runfetchcmd("skopeo copy --preserve-digests " + \
