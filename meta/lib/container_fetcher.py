@@ -6,6 +6,7 @@
 import oe.path
 import os
 import tempfile
+import json
 from   bb.fetch2 import FetchMethod
 from   bb.fetch2 import logger
 from   bb.fetch2 import MissingChecksumEvent
@@ -60,16 +61,17 @@ class Container(FetchMethod):
         if ud.digest:
             return
 
-        checksum = bb.utils.sha256_file(ud.localpath + "/manifest.json")
-        checksum_line = f"SRC_URI = \"{ud.url};digest=sha256:{checksum}\""
+        inspect_output = runfetchcmd(f"skopeo inspect docker://{ud.container_name}:{ud.tag}", d, True)
+        digest = json.loads(inspect_output)["Digest"]
 
+        checksum_line = f'SRC_URI = "{ud.url};digest={digest}"'
         strict = d.getVar("BB_STRICT_CHECKSUM") or "0"
 
         # If strict checking enabled and neither sum defined, raise error
         if strict == "1":
             raise NoChecksumError(checksum_line)
 
-        checksum_event = {"sha256sum": checksum}
+        checksum_event = {"sha256sum": digest}
         bb.event.fire(MissingChecksumEvent(ud.url, **checksum_event), d)
 
         if strict == "ignore":
@@ -77,7 +79,7 @@ class Container(FetchMethod):
 
         # Log missing digest so user can more easily add it
         logger.warning(
-            f"Missing checksum for '{ud.localpath}', consider using this " \
+            f"Missing checksum for '{ud.url}', consider using this " \
             f"SRC_URI in the recipe:\n{checksum_line}")
 
     def unpack(self, ud, rootdir, d):
