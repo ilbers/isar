@@ -1,0 +1,16 @@
+#!/bin/sh
+
+set -e
+
+DEST="/etc/systemd/system/tmp.mount"
+
+if [ ! -e "${DEST}" ]; then
+    # Possible source paths for tmp.mount
+    for SRC in /usr/share/systemd/tmp.mount /usr/lib/systemd/system/tmp.mount; do
+        # If the source file exists, copy it to the destination and exit the loop
+        [ -e "${SRC}" ] && cp ${SRC} ${DEST} && break
+    done
+fi
+
+# Enable the mount unit using deb-systemd-helper; ignore errors if it fails
+deb-systemd-helper enable tmp.mount || true

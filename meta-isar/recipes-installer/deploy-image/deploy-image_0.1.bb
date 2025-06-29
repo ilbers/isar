@@ -10,8 +10,10 @@ inherit dpkg-raw
 SRC_URI = "file://usr/bin/deploy-image-wic.sh \
            file://usr/lib/deploy-image-wic/handle-config.sh \
           "
-DEPENDS:bookworm += "bmap-tools"
-DEBIAN_DEPENDS = "bmap-tools, pv, dialog, util-linux, parted, fdisk, gdisk, pigz, xz-utils, pbzip2, zstd"
+
+DEPENDS:append:bookworm = " bmap-tools"
+DEPENDS:append = " systemd-tmpfs-tmp"
+DEBIAN_DEPENDS = "bmap-tools, pv, dialog, util-linux, parted, fdisk, gdisk, pigz, systemd-tmpfs-tmp, xz-utils, pbzip2, zstd"
 do_install[cleandirs] = "${D}/usr/bin/ \
                          ${D}/usr/lib/deploy-image-wic \
                         "
