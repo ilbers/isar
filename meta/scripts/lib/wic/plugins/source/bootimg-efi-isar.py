@@ -469,7 +469,10 @@ class BootimgEFIPlugin(SourcePlugin):
                 kernel_dir = "/usr/lib/systemd/boot/efi/"
 
                 for mod in [x for x in os.listdir(kernel_dir) if x.startswith("systemd-")]:
-                    cp_cmd = "cp %s/%s %s/EFI/BOOT/%s" % (kernel_dir, mod, hdddir, mod[8:])
+                    target = mod[8:]
+                    if target.endswith('.signed'):
+                        target = target[:-7]
+                    cp_cmd = "cp %s/%s %s/EFI/BOOT/%s" % (kernel_dir, mod, hdddir, target)
                     exec_cmd(cp_cmd, True)
 
                 kernel_dir = kernel_dir_orig
