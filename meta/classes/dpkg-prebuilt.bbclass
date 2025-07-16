@@ -27,3 +27,5 @@ do_dpkg_build() {
         find ${WORKDIR} -name '*.deb' | xargs -n1 dpkg -I
     fi
 }
+
+do_local_isarapt[noexec] = "1"
