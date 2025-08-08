@@ -628,6 +628,13 @@ class VmBootTestFull(CIBaseTest):
             script='test_systemd_unit.sh getty.target 10',
         )
 
+    def test_arm_trixie(self):
+        self.init()
+        try:
+            self.vm_start('arm', 'trixie')
+        except exceptions.TestFail:
+            self.cancel('KFAIL')
+
     def test_arm64_bookworm(self):
         self.init()
         self.vm_start('arm64', 'bookworm', image='isar-image-ci', keep=True)
@@ -651,6 +658,10 @@ class VmBootTestFull(CIBaseTest):
             script='test_kernel_module.sh example_module',
             keep=True,
         )
+
+    def test_arm64_trixie(self):
+        self.init()
+        self.vm_start('arm64', 'trixie')
 
     def test_i386_buster(self):
         self.init()
@@ -702,6 +713,10 @@ class VmBootTestFull(CIBaseTest):
         self.init()
         self.vm_start('mipsel', 'bookworm', image='isar-image-ci', keep=True)
 
+    def test_amd64_trixie(self):
+        self.init()
+        self.vm_start('amd64', 'trixie')
+
     def test_mipsel_bookworm_getty_target(self):
         self.init()
         self.vm_start(
@@ -720,6 +735,13 @@ class VmBootTestFull(CIBaseTest):
             image='isar-image-ci',
             script='test_kernel_module.sh example_module',
         )
+
+    def test_riscv64_trixie(self):
+        self.init()
+        try:
+            self.vm_start('riscv64', 'trixie')
+        except exceptions.TestFail:
+            self.cancel('KFAIL')
 
     def test_amd64_bookworm_prebuilt_containers(self):
         self.init()
