@@ -186,6 +186,18 @@ class CrossTest(CIBaseTest):
         self.init()
         self.perform_build_test(targets, debsrc_cache=True)
 
+    def test_cross_trixie(self):
+        targets = [
+            'mc:qemuamd64-trixie:isar-image-base',
+            'mc:qemuarm64-trixie:isar-image-base',
+        ]
+
+        self.init()
+        try:
+            self.perform_build_test(targets, cross=False)
+        except exceptions.TestFail:
+            self.cancel('KFAIL')
+
     def test_cross_kselftest(self):
         targets = [
             'mc:qemuarm-buster:kselftest',
@@ -591,6 +603,14 @@ class VmBootTestFast(CIBaseTest):
             image='isar-image-ci',
             script='test_systemd_unit.sh getty.target 10',
         )
+
+    def test_amd64_trixie(self):
+        self.init()
+        self.vm_start('amd64', 'trixie')
+
+    def test_arm64_trixie(self):
+        self.init()
+        self.vm_start('arm64', 'trixie')
 
 
 class VmBootTestFull(CIBaseTest):
