@@ -71,6 +71,12 @@ debsrc_download() {
     apt-cache -o APT::Architecture=${DISTRO_ARCH} -o Dir=${rootfs} dumpavail \
     | debsrc_source_version_filter > ${avail}
 
+    if [ $(cat ${avail} | wc -l) -eq 0 ]; then
+        bberror "No packages were found in apt cache"
+        debsrc_undo_mounts "${rootfs}"
+        return 1
+    fi
+
     # Use apt-ftparchive to scan all .deb files found in the download directory
     # and get the <source> <version> pairs that we wish to download
     apt-ftparchive --md5=no --sha1=no --sha256=no --sha512=no \
