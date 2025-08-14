@@ -178,25 +178,29 @@ class CIBuilder(Test):
         # write ci_build.conf
         with open(self.build_dir + '/conf/ci_build.conf', 'w') as f:
             if compat_arch:
-                f.write('ISAR_ENABLE_COMPAT_ARCH:amd64 = "1"\n')
-                f.write('IMAGE_INSTALL:remove:amd64 = "hello-isar"\n')
-                f.write('IMAGE_INSTALL:append:amd64 = " hello-isar-compat"\n')
-                f.write('ISAR_ENABLE_COMPAT_ARCH:arm64 = "1"\n')
-                f.write('IMAGE_INSTALL:remove:arm64 = "hello-isar"\n')
-                f.write('IMAGE_INSTALL:append:arm64 = " hello-isar-compat"\n')
+                f.write(
+                    'ISAR_ENABLE_COMPAT_ARCH:amd64 = "1"\n'
+                    'IMAGE_INSTALL:remove:amd64 = "hello-isar"\n'
+                    'IMAGE_INSTALL:append:amd64 = " hello-isar-compat"\n'
+                    'ISAR_ENABLE_COMPAT_ARCH:arm64 = "1"\n'
+                    'IMAGE_INSTALL:remove:arm64 = "hello-isar"\n'
+                    'IMAGE_INSTALL:append:arm64 = " hello-isar-compat"\n'
+                )
             if not cross:
                 f.write('ISAR_CROSS_COMPILE = "0"\n')
             else:
-                f.write('ISAR_CROSS_COMPILE = "1"\n')
                 f.write(
+                    'ISAR_CROSS_COMPILE = "1"\n'
                     'IMAGE_INSTALL:append:hikey = '
                     '" linux-headers-${KERNEL_NAME}"\n'
                 )
             if debsrc_cache:
                 f.write('BASE_REPO_FEATURES = "cache-deb-src"\n')
             if offline:
-                f.write('ISAR_USE_CACHED_BASE_REPO = "1"\n')
-                f.write('BB_NO_NETWORK = "1"\n')
+                f.write(
+                    'ISAR_USE_CACHED_BASE_REPO = "1"\n'
+                    'BB_NO_NETWORK = "1"\n'
+                )
             if container:
                 f.write('SDK_FORMATS = "docker-archive"\n')
             if gpg_pub_key:
@@ -206,8 +210,10 @@ class CIBuilder(Test):
             if distro_apt_premir:
                 f.write('DISTRO_APT_PREMIRRORS = "%s"\n' % distro_apt_premir)
             if ccache:
-                f.write('USE_CCACHE = "1"\n')
-                f.write('CCACHE_TOP_DIR = "%s"\n' % ccache_dir)
+                f.write(
+                    'USE_CCACHE = "1"\n'
+                    'CCACHE_TOP_DIR = "%s"\n' % ccache_dir
+                )
             if source_date_epoch:
                 f.write(
                     'SOURCE_DATE_EPOCH_FALLBACK = "%s"\n' % source_date_epoch
@@ -229,24 +235,28 @@ class CIBuilder(Test):
                     size = 4294967296 # 4GiB should be enough for the target
                     wic.write("\0" * size)
 
-                f.write('BBMULTICONFIG += "isar-installer installer-target"\n')
-                f.write('INSTALLER_UNATTENDED = "1"\n')
-                f.write('INSTALLER_TARGET_OVERWRITE = "OVERWRITE"\n')
-                f.write(f'INSTALLER_TARGET_IMAGE = "{installer_image}"\n')
-                f.write(f'INSTALLER_TARGET_DEVICE = "{installer_device}"\n')
-                f.write(f'DISTRO ?= "{installer_distro}"\n')
-                f.write(f'MACHINE ?= "{installer_machine}"\n')
-                f.write(f'QEMU_DISK_ARGS = "-bios /usr/share/ovmf/OVMF.fd"\n')
-                f.write(f'QEMU_DISK_ARGS += "-drive file={install_target},'\
-                    'if=ide,bus=0,unit=0,format=raw,snapshot=off"\n')
-                f.write(f'QEMU_DISK_ARGS += "-hdb ##ROOTFS_IMAGE##"\n')
+                f.write(
+                    'BBMULTICONFIG += "isar-installer installer-target"\n'
+                    'INSTALLER_UNATTENDED = "1"\n'
+                    'INSTALLER_TARGET_OVERWRITE = "OVERWRITE"\n'
+                    f'INSTALLER_TARGET_IMAGE = "{installer_image}"\n'
+                    f'INSTALLER_TARGET_DEVICE = "{installer_device}"\n'
+                    f'DISTRO ?= "{installer_distro}"\n'
+                    f'MACHINE ?= "{installer_machine}"\n'
+                    'QEMU_DISK_ARGS = "-bios /usr/share/ovmf/OVMF.fd"\n'
+                    f'QEMU_DISK_ARGS += "-drive file={install_target},'\
+                        'if=ide,bus=0,unit=0,format=raw,snapshot=off"\n'
+                    'QEMU_DISK_ARGS += "-hdb ##ROOTFS_IMAGE##"\n'
+                )
             if customizations is not None:
                 if not isinstance(customizations, str):
                     customizations = ' '.join(customizations)
-                f.write('CUSTOMIZATIONS = "%s"\n' % customizations)
-                f.write('CUSTOMIZATION_VARS:append = " ${IMAGE}"\n')
-                f.write('CUSTOMIZATION_FOR_IMAGES:append = " isar-image-ci"\n')
-                f.write('HOSTNAME:isar-image-ci = "isar-ci"\n')
+                f.write(
+                    f'CUSTOMIZATIONS = "{customizations}"\n'
+                    'CUSTOMIZATION_VARS:append = " ${IMAGE}"\n'
+                    'CUSTOMIZATION_FOR_IMAGES:append = " isar-image-ci"\n'
+                    'HOSTNAME:isar-image-ci = "isar-ci"\n'
+                )
             if lines is not None:
                 f.writelines((line + '\n' if not line.endswith('\n') else line) for line in lines)
 
