@@ -1,5 +1,5 @@
 # This software is a part of ISAR.
-# Copyright (C) Siemens AG, 2019
+# Copyright (C) Siemens AG, 2019-2024
 #
 # SPDX-License-Identifier: MIT
 #
@@ -9,7 +9,11 @@ inherit sbuild
 
 IMAGER_INSTALL ??= ""
 IMAGER_BUILD_DEPS ??= ""
-DEPENDS += "${IMAGER_BUILD_DEPS}"
+
+python() {
+    for dep in d.getVar('IMAGER_BUILD_DEPS').split():
+        d.appendVarFlag('do_image_tools', 'depends', ' ' + dep + ':do_deploy_deb')
+}
 
 SCHROOT_MOUNTS = "${WORKDIR}:${PP_WORK} ${IMAGE_ROOTFS}:${PP_ROOTFS} ${DEPLOY_DIR_IMAGE}:${PP_DEPLOY}"
 SCHROOT_MOUNTS += "${REPO_ISAR_DIR}/${DISTRO}:/isar-apt"
