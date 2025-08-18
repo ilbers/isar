@@ -734,3 +734,10 @@ Set `TEE_SUPPLICANT_IN_USERLAND` to 0 if you are using a kernel that supports
 `CONFIG_RPMB` and you only need the daemon for RPMB access. Default is 1, but
 this will eventually be changed to 0. Therefore, explicitly set the variable
 to 1 to stay compatible.
+
+### Support for new optee_ftpm
+
+By setting `MS_TPM_20_REF_DIR` in an optee-ftpm recipe, it is now possible to
+use the new optee_ftpm code base from the OP-TEE project. That variable has to
+point to a subdir in `WORKDIR` which contains the unpacked ms-tpm-20-ref source
+code.
