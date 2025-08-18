@@ -41,6 +41,7 @@ config KAS_INCLUDE_PACKAGE_EXAMPLE_RAW
 config PACKAGE_EXAMPLE_MODULE
         bool "example-module"
         default y
+        depends on !MACHINE_CONTAINER_AMD64
 
 config KAS_INCLUDE_PACKAGE_EXAMPLE_MODULE
         string
