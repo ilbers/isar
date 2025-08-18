@@ -727,3 +727,10 @@ Changes in next
 
 This was never documented and never had practical relevance. `oci-archive` is
 the useful OCI image format that can be imported, e.g., by podman.
+
+### Control tee-supplicant userspace service usage
+
+Set `TEE_SUPPLICANT_IN_USERLAND` to 0 if you are using a kernel that supports
+`CONFIG_RPMB` and you only need the daemon for RPMB access. Default is 1, but
+this will eventually be changed to 0. Therefore, explicitly set the variable
+to 1 to stay compatible.
