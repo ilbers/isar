@@ -5,7 +5,7 @@
 
 inherit dpkg
 
-D = "${WORKDIR}/image"
+D = "${S}/image"
 
 # Default to creating a binary-indep package
 DPKG_ARCH ??= "all"
@@ -30,6 +30,6 @@ do_prepare_build() {
 	cat <<EOF >> ${S}/debian/rules
 
 override_dh_install:
-	dh_install --sourcedir=${PP}/image
+	dh_install --sourcedir=image
 EOF
 }
