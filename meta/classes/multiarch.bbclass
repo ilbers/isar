@@ -29,7 +29,11 @@ python() {
             d.appendVar('BBCLASSEXTEND', ' compat')
 
     # build native separately only when it differs from the target variant
-    if not archIsAll and archDiffers:
+    # We must not short-circuit for DPKG_ARCH=all packages, as they might
+    # have transitive dependencies which need to be built for -native.
+    # This special handling for DPKG_ARCH=all packages is left to the
+    # multiarch_virtclass_handler
+    if archDiffers:
         d.appendVar('BBCLASSEXTEND', ' native')
     else:
         extend_provides(pn, 'native', d)
@@ -86,6 +90,8 @@ python multiarch_virtclass_handler() {
             d.setVar(var, ' '.join(multiarch_var))
 
     pn = e.data.getVar('PN')
+    archDiffers = d.getVar('HOST_ARCH') != d.getVar('DISTRO_ARCH')
+    archIsAll = d.getVar('DPKG_ARCH') == 'all'
     if pn.endswith('-compat'):
         e.data.setVar('BPN', pn[:-len('-compat')])
         e.data.appendVar('OVERRIDES', ':class-compat')
@@ -96,6 +102,16 @@ python multiarch_virtclass_handler() {
         e.data.appendVar('OVERRIDES', ':class-native')
         fixup_pn_in_vars(e.data)
         fixup_depends('-native', e.data)
+    elif archIsAll and archDiffers:
+        # Arch=all packages might build depend on other arch=all packages,
+        # hence we need to correctly model the dependency chain.
+        # We implement this by dispatching the non-native variant to the -native
+        # variant by adding a dependency. We further replace the non-native
+        # do_deploy_dep task with a noop to preserve the dependency chain.
+        e.data.setVar('do_deploy_deb', '')
+        bb.build.deltask('deploy_deb', e.data)
+        bb.build.addtask('deploy_deb', 'do_build', '', e.data)
+        e.data.setVarFlag('do_deploy_deb', 'depends', f'{pn}-native:do_deploy_deb')
 }
 addhandler multiarch_virtclass_handler
 multiarch_virtclass_handler[eventmask] = "bb.event.RecipePreFinalise"
