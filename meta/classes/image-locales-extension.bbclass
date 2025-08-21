@@ -29,8 +29,10 @@ ROOTFS_INSTALL_COMMAND_BEFORE_EXPORT += "image_install_localepurge_download"
 image_install_localepurge_download[weight] = "40"
 image_install_localepurge_download[network] = "${TASK_USE_NETWORK_AND_SUDO}"
 image_install_localepurge_download() {
-    sudo -E chroot '${ROOTFSDIR}' \
-        /usr/bin/apt-get ${ROOTFS_APT_ARGS} --download-only localepurge
+    sudo -E apt-get \
+        ${ROOTFS_APT_ARGS} \
+        ${NO_CHROOT_APT_ARGS} \
+        --download-only localepurge
 }
 
 ROOTFS_INSTALL_COMMAND += "image_install_localepurge_install"
@@ -63,7 +65,7 @@ __EOF__
     sudo -E -s <<'EOSUDO'
         set -e
         localepurge_state='i'
-        if chroot '${ROOTFSDIR}' dpkg -s localepurge 2>/dev/null >&2
+        if dpkg --root '${ROOTFSDIR}' -s localepurge 2>/dev/null >&2
         then
             echo 'localepurge was installed (leaving it installed later)'
         else

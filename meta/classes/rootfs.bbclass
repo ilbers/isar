@@ -18,6 +18,7 @@ ROOTFS_BASE_DISTRO ?= "${BASE_DISTRO}"
 ROOTFS_FEATURES ?= ""
 
 ROOTFS_APT_ARGS="install --yes -o Debug::pkgProblemResolver=yes"
+NO_CHROOT_APT_ARGS ?= "-o APT::Architecture=${DISTRO_ARCH} -o Dir=${ROOTFSDIR}"
 
 ROOTFS_CLEAN_FILES="/etc/hostname /etc/resolv.conf"
 
