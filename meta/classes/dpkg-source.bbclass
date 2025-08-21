@@ -79,3 +79,4 @@ do_fetch_common_source() {
 addtask fetch_common_source
 
 do_dpkg_build[depends] += "${@'${PN}:do_dpkg_source' if '${PN}' == '${BPN}' else '${PN}:do_fetch_common_source'}"
+do_clean[depends] += "${@'' if '${PN}' == '${BPN}' else '${BPN}:do_clean'}"
