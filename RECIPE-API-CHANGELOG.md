@@ -326,7 +326,7 @@ Output file names now include distro name and architecture/machine name parts.
 ### Using custom package name for linux kernel and headers
 
 Isar assumes that linux kernel is provided by linux-image-${KERNEL_NAME}
-package, while headers are provided by linux-image-${KERNEL_NAME} package.
+package, while headers are provided by linux-headers-${KERNEL_NAME} package.
 This naming may be different in other distributions like Raspberry Pi OS.
 
 KERNEL_IMAGE_PKG and KERNEL_HEADERS_PKG variables allow to use custom package
