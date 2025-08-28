@@ -481,11 +481,13 @@ rootfs_generate_initramfs[progress] = "custom:rootfs_progress.InitrdProgressHand
 rootfs_generate_initramfs() {
     if [ -n "$(sudo find '${ROOTFSDIR}/boot' -type f -name 'vmlinu[xz]*')" ]; then
         sudo -E chroot "${ROOTFSDIR}" sh -c '\
-            mods_total="$(find /usr/lib/modules -type f -name '*.ko*' | wc -l)"; \
-            export kernel_version=$(basename /boot/vmlinu[xz]-* | cut -d'-' -f2-); \
-            echo "Total number of modules: $mods_total"; \
-            echo "Generating initrd for kernel version: $kernel_version"; \
-            update-initramfs -u -v -k "$kernel_version";'
+            for kernel in /boot/vmlinu[xz]-*; do \
+                export kernel_version=$(basename $kernel | cut -d'-' -f2-); \
+                mods_total="$(find /usr/lib/modules/$kernel_version -type f -name '*.ko*' | wc -l)"; \
+                echo "Total number of modules: $mods_total"; \
+                echo "Generating initrd for kernel version: $kernel_version"; \
+                update-initramfs -u -v -k "$kernel_version"; \
+            done;'
         if [ -n "${INITRD_DEPLOY_FILE}" ]; then
             if [ -f "${ROOTFSDIR}/initrd.img" ]; then
                 # debian (mkinitramfs)
