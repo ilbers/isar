@@ -691,6 +691,9 @@ class VmBootTestFull(CIBaseTest):
         self.init()
         # test efi boot
         self.vm_start('amd64', 'buster', image='isar-image-ci')
+
+    def test_amd64_buster_pcbios(self):
+        self.init()
         # test pcbios boot
         self.vm_start('amd64', 'buster', True, image='isar-image-ci')
 
