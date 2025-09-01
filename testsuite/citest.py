@@ -741,6 +741,7 @@ class NoCrossTest(CIBaseTest):
             'mc:bananapi-trixie:isar-image-base',
             'mc:nanopi-neo-bullseye:isar-image-base',
             'mc:nanopi-neo-bookworm:isar-image-base',
+            'mc:nanopi-neo-trixie:isar-image-base',
             'mc:qemuamd64-focal:isar-image-ci',
             'mc:qemuamd64-bookworm:isar-image-ci',
             'mc:qemuamd64-iso-bookworm:isar-image-ci',
