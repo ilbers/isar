@@ -749,6 +749,7 @@ class NoCrossTest(CIBaseTest):
             'mc:qemui386-bookworm:isar-image-base',
             'mc:qemumipsel-bookworm:isar-image-ci',
             'mc:hikey-bookworm:isar-image-base',
+            'mc:hikey-trixie:isar-image-base',
             'mc:beagleplay-bookworm:isar-image-base',
             'mc:qemuarm64-noble:isar-image-base',
             'mc:qemuamd64-noble:isar-image-base',
