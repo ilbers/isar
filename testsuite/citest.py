@@ -1066,6 +1066,7 @@ class ContainerImageTest(CIBaseTest):
             'mc:container-amd64-buster:isar-image-base',
             'mc:container-amd64-bullseye:isar-image-base',
             'mc:container-amd64-bookworm:isar-image-base',
+            'mc:container-amd64-trixie:isar-image-base',
         ]
 
         self.init()
