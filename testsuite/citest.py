@@ -243,6 +243,7 @@ class CrossTest(CIBaseTest):
             'mc:qemuarm-bookworm:isar-image-ci',
             'mc:qemuarm64-focal:isar-image-base',
             'mc:nanopi-neo-efi-bookworm:isar-image-base',
+            'mc:phyboard-mira-trixie:isar-image-base',
         ]
 
         self.init()
