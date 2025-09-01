@@ -16,7 +16,7 @@ Description: ${KERNEL_NAME_PROVIDED} Linux kernel, version @KR@
 Package: linux-headers-${KERNEL_NAME_PROVIDED}
 Build-Profiles: <kernel>
 Architecture: any
-Depends: ${KERNEL_HEADERS_DEBIAN_DEPENDS}, ${perl:Depends}, ${shlib:Depends}
+Depends: ${KERNEL_HEADERS_DEBIAN_DEPENDS}, ${perl:Depends}, ${shlibs:Depends}
 Description: ${KERNEL_NAME_PROVIDED} Linux kernel headers for @KR@
  This package provides kernel header files for @KR@ on ${DISTRO_ARCH}
  .
@@ -57,7 +57,7 @@ Description: Linux kernel debugging symbols for @KR@
 Package: linux-kbuild-${KERNEL_NAME_PROVIDED}
 Build-Profiles: <kbuild !cross>
 Architecture: any
-Depends: ${perl:Depends}, ${shlib:Depends}
+Depends: ${perl:Depends}, ${shlibs:Depends}
 Description: ${KERNEL_NAME_PROVIDED} Linux kbuild scripts and tools for @KR@
  This package provides kernel kbuild scripts and tools for @KR@
  This is useful for people who need to build external modules
@@ -66,7 +66,7 @@ Package: linux-kbuild-${KERNEL_NAME_PROVIDED}-${DISTRO_ARCH}-cross
 Build-Profiles: <kbuild cross>
 Architecture: any
 Multi-Arch: foreign
-Depends: ${perl:Depends}, ${shlib:Depends}
+Depends: ${perl:Depends}, ${shlibs:Depends}
 Conflicts: linux-kbuild-${KERNEL_NAME_PROVIDED}
 Description: ${KERNEL_NAME_PROVIDED} Linux kbuild scripts and tools for @KR@
  This package provides kernel kbuild scripts and tools for @KR@
