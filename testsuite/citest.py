@@ -459,6 +459,7 @@ class KernelTests(CIBaseTest):
         """Targets that build a custom kernel"""
         targets = [
             'mc:de0-nano-soc-bullseye:isar-image-base',
+            'mc:de0-nano-soc-trixie:isar-image-base',
             'mc:stm32mp15x-bullseye:isar-image-base',
             'mc:phyboard-mira-bookworm:isar-image-base',
         ]
