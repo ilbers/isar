@@ -601,6 +601,21 @@ To add new machine user should perform the following steps:
 
 ---
 
+### Kernel Support
+
+A machine can be configured to select a specific kernel recipe by setting the `KERNEL_NAME` variable, and may be configured to support multiple kernels by using the `KERNEL_NAMES` variable in addition. The latter is optional, and also enables generating packages like external kernel modules for all specified kernel variants.
+
+For example, in your machine configuration:
+
+```bitbake
+KERNEL_NAME = "armmp"
+KERNEL_NAMES = "armmp mainline"
+```
+
+When `KERNEL_NAMES` is set, recipes inheriting the `per-kernel` class will generate variants for each listed kernel. Installation of each must be explicitly handled in the image.
+
+---
+
 ## Add a New Image
 
 Image in Isar contains the following artifacts:
