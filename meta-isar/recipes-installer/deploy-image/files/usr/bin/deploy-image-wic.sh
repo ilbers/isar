@@ -8,8 +8,7 @@ installdata=${INSTALL_DATA:-/install}
 
 SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
 
-. ${SCRIPT_DIR}/../lib/deploy-image-wic/handle-config.sh
-
+. "${SCRIPT_DIR}/../lib/deploy-image-wic/handle-config.sh"
 
 if ! $installer_unattended; then
     installer_image_uri=$(find "$installdata" -type f -iname "*.wic*" -a -not -iname "*.wic.bmap" -exec basename {} \;)
@@ -37,7 +36,7 @@ if ! $installer_unattended; then
     # inspired by poky/meta/recipes-core/initrdscripts/files/install-efi.sh
     target_device_list=""
     current_root_dev_type=$(findmnt / -o fstype -n)
-    if [ ${current_root_dev_type} = "nfs" ]; then
+    if [ "$current_root_dev_type" = "nfs" ]; then
         current_root_dev="nfs"
     else
         current_root_dev=$(readlink -f "$(findmnt / -o source -n)")
@@ -108,7 +107,7 @@ if ! $installer_unattended; then
             exit 0
         fi
     else
-        installer_target_dev=/dev/$(echo "$target_device_list" | tr -d " ")
+        installer_target_dev="/dev/$(echo "$target_device_list" | tr -d " ")"
     fi
     TARGET_DEVICE_SIZE=$(lsblk --nodeps --noheadings -o SIZE "$installer_target_dev" | tr -d " ")
     if ! dialog --yes-label Ok --no-label Cancel \
@@ -186,11 +185,13 @@ if version_ge "$bmap_version" "3.6"; then
     gauge_pid=$!
 fi
 
-if ! bmaptool ${quiet_flag} copy ${bmap_options} "$installer_image_uri" "${installer_target_dev}"; then
+if ! bmaptool $quiet_flag copy $bmap_options "$installer_image_uri" "$installer_target_dev"; then
     kill "$gauge_pid"
     exit 1
 fi
 
+# Attempt to terminate the gauge process if still running.
+# Errors are ignored since the process may already have exited.
 kill "$gauge_pid" 2>/dev/null
 
 if ! $installer_unattended; then
