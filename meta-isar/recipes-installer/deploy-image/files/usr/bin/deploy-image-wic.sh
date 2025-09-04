@@ -183,11 +183,15 @@ if version_ge "$bmap_version" "3.6"; then
         done
     ) | dialog --gauge "Flashing image, please wait..." 10 70 0 &
 
+    gauge_pid=$!
 fi
 
 if ! bmaptool ${quiet_flag} copy ${bmap_options} "$installer_image_uri" "${installer_target_dev}"; then
+    kill "$gauge_pid"
     exit 1
 fi
+
+kill "$gauge_pid" 2>/dev/null
 
 if ! $installer_unattended; then
     dialog --title "Reboot" \
