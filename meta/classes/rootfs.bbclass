@@ -30,9 +30,10 @@ ROOTFS_STUBS_DIR = "/usr/local/isar-sbin"
 export E = "${@ isar_export_proxies(d)}"
 export DEBIAN_FRONTEND = "noninteractive"
 # To avoid Perl locale warnings:
-export LANG = "C"
-export LANGUAGE = "C"
-export LC_ALL = "C"
+LOCALE_DEFAULT ??= "C"
+export LANG = "${LOCALE_DEFAULT}"
+export LANGUAGE = "${LOCALE_DEFAULT}"
+export LC_ALL = "${LOCALE_DEFAULT}"
 
 rootfs_do_mounts[weight] = "3"
 rootfs_do_mounts() {
