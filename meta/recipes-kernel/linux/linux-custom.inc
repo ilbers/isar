@@ -219,7 +219,7 @@ def get_additional_build_profiles(d):
         profiles += ' libcdev-arch-all'
     return profiles
 
-KERNEL_LIBC_DEV_ARCH = "${@ bb.utils.contains('DEB_BUILD_PROFILES', 'libcdev-arch-all', 'all', 'any', d) }"
+KERNEL_LIBC_DEV_ARCH = "${@ bb.utils.contains('DEB_BUILD_PROFILES', 'libcdev-arch-all', 'all\nMulti-Arch: foreign', 'any', d) }"
 DEB_BUILD_PROFILES += "${@get_additional_build_profiles(d)}"
 
 do_prepare_build:prepend() {
