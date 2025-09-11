@@ -51,9 +51,9 @@ The linux-custom recipe provides support for:
 
     Only the `host` specific package is built automatically at cross builds.
 
- 10. Produce a `linux-libc-dev-${KERNEL_NAME}` package to support user-land builds
+ 10. Produce a `linux-libc-dev` package to support user-land builds
 
- 11. Only build/ship the `linux-libc-dev-${KERNEL_NAME}` package if instructed to
+ 11. Only build/ship the `linux-libc-dev` package if instructed to
      (`KERNEL_LIBC_DEV_DEPLOY` equals to `"1"`)
 
  12. Support both native and cross compiles (`ISAR_CROSS_COMPILE`)

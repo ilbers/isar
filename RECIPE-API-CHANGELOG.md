@@ -761,3 +761,10 @@ the following variables in your image recipe. For example, to use German, add:
 LOCALE_GEN = "de_DE.UTF-8 UTF-8\n"
 LOCALE_DEFAULT = "de_DE.UTF-8"
 ```
+
+### Revert enabling of linux-libc-dev package with KERNEL_NAME
+
+The change "Enable linux-libc-dev package with KERNEL_NAME" turned out to be
+incompatible with how Debian selects dependencies. It is therefore necessary
+to only enable `KERNEL_LIBC_DEV_DEPLOY` for a single kernel in case multiples
+are configured via `KERNEL_NAMES`.

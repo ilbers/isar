@@ -22,23 +22,19 @@ Description: ${KERNEL_NAME_PROVIDED} Linux kernel headers for @KR@
  .
  This is useful for people who need to build external modules
 
-Package: linux-libc-dev-${KERNEL_NAME_PROVIDED}
+Package: linux-libc-dev
 Build-Profiles: <!nolibcdev kernel>
 Section: devel
-Conflicts: linux-libc-dev
-Provides: linux-libc-dev
-Replaces: linux-libc-dev
+Provides: linux-kernel-headers
 Architecture: ${KERNEL_LIBC_DEV_ARCH}
 Description: Linux support headers for userspace development
  This package provides userspaces headers from the Linux kernel. These headers
  are used by the installed headers for GNU glibc and other system libraries.
 
-Package: linux-libc-dev-${DISTRO_ARCH}-cross-${KERNEL_NAME_PROVIDED}
+Package: linux-libc-dev-${DISTRO_ARCH}-cross
 Build-Profiles: <!nolibcdev cross !kbuild>
 Section: devel
-Conflicts: linux-kernel-headers-${DISTRO_ARCH}-cross
 Provides: linux-kernel-headers-${DISTRO_ARCH}-cross
-Replaces: linux-kernel-headers-${DISTRO_ARCH}-cross
 Architecture: all
 Description: Linux Kernel Headers for development (for cross-compiling)
  This package provides headers from the Linux kernel.  These headers
