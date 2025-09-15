@@ -102,7 +102,7 @@ mmdebstrap:
 apt install debootstrap
 ```
 
-If your host is >= buster, also install the following package.
+If your host is bullseye or bookworm, also install the following package.
 ```
 apt install python3-distutils
 ```
