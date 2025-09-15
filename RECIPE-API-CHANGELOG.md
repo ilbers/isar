@@ -761,3 +761,11 @@ the following variables in your image recipe. For example, to use German, add:
 LOCALE_GEN = "de_DE.UTF-8 UTF-8\n"
 LOCALE_DEFAULT = "de_DE.UTF-8"
 ```
+
+### Allow setting Rules-Requires-Root
+
+Recipes based on the `debianize` class can now set the
+`DEBIAN_RULES_REQUIRES_ROOT` variable to control the value of the
+`Rules-Requires-Root` setting in the `debian/control` file. If this variable is
+unset (the default), `Rules-Requires-Root` will not be added. Otherwise,
+`Rules-Requires-Root` will be added and set to the value of the variable.
