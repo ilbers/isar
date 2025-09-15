@@ -776,3 +776,11 @@ The change "Enable linux-libc-dev package with KERNEL_NAME" turned out to be
 incompatible with how Debian selects dependencies. It is therefore necessary
 to only enable `KERNEL_LIBC_DEV_DEPLOY` for a single kernel in case multiples
 are configured via `KERNEL_NAMES`.
+
+### Allow setting Rules-Requires-Root
+
+Recipes based on the `debianize` class can now set the
+`DEBIAN_RULES_REQUIRES_ROOT` variable to control the value of the
+`Rules-Requires-Root` setting in the `debian/control` file. If this variable is
+unset (the default), `Rules-Requires-Root` will not be added. Otherwise,
+`Rules-Requires-Root` will be added and set to the value of the variable.

@@ -17,6 +17,7 @@ DEBIAN_BUILT_USING ??= ""
 DEBIAN_MULTI_ARCH ??= "no"
 DEBIAN_COMPAT ??= "10"
 DEBIAN_CHANGELOG_TIMESTAMP ??= "3600"
+DEBIAN_RULES_REQUIRES_ROOT ??= ""
 DESCRIPTION ??= "must not be empty"
 MAINTAINER ??= "Unknown maintainer <unknown@example.com>"
 
@@ -76,8 +77,10 @@ deb_create_control[vardeps] += "DEBIANIZE_BUILD_DEPENDS \
                                 DEBIAN_REPLACES \
                                 DEBIAN_BREAKS \
                                 DEBIAN_BUILT_USING \
-                                DEBIAN_CONFLICTS"
+                                DEBIAN_CONFLICTS \
+                                DEBIAN_RULES_REQUIRES_ROOT"
 deb_create_control() {
+	# Add Source section
 	cat << EOF > ${S}/debian/control
 Source: ${BPN}
 Section: misc
@@ -85,6 +88,18 @@ Priority: optional
 Standards-Version: 3.9.6
 Maintainer: ${MAINTAINER}
 Build-Depends: ${@ deb_list_beautify(d, 'DEBIANIZE_BUILD_DEPENDS')}
+EOF
+
+	# If a value has been set, add the value of DEBIAN_RULES_REQUIRES_ROOT to
+	# the control file.
+	if [ -n "${DEBIAN_RULES_REQUIRES_ROOT}" ]; then
+		echo "Rules-Requires-Root: ${DEBIAN_RULES_REQUIRES_ROOT}" >> \
+			${S}/debian/control
+	fi
+
+	# Add Package section proceeded by an empty line to separate it from the
+	# previous section.
+	cat << EOF >> ${S}/debian/control
 
 Package: ${BPN}
 Architecture: ${DPKG_ARCH}
