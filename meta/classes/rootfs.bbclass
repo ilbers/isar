@@ -246,8 +246,11 @@ rootfs_export_package_cache() {
 ROOTFS_INSTALL_COMMAND += "${@ 'rootfs_install_clean_files' if (d.getVar('ROOTFS_CLEAN_FILES') or '').strip() else ''}"
 rootfs_install_clean_files[weight] = "2"
 rootfs_install_clean_files() {
-    sudo -E chroot '${ROOTFSDIR}' \
-        /bin/rm -f ${ROOTFS_CLEAN_FILES}
+    sudo -s <<'EOSUDO'
+    for clean_file in ${ROOTFS_CLEAN_FILES}; do
+        rm -f "${ROOTFSDIR}/$clean_file"
+    done
+EOSUDO
 }
 
 ROOTFS_INSTALL_COMMAND += "rootfs_install_pkgs_install"
@@ -491,14 +494,14 @@ python do_generate_initramfs_setscene () {
 rootfs_generate_initramfs[progress] = "custom:rootfs_progress.InitrdProgressHandler"
 rootfs_generate_initramfs() {
     if [ -n "$(sudo find '${ROOTFSDIR}/boot' -type f -name 'vmlinu[xz]*')" ]; then
-        sudo -E chroot "${ROOTFSDIR}" sh -c '\
-            for kernel in /boot/vmlinu[xz]-*; do \
-                export kernel_version=$(basename $kernel | cut -d'-' -f2-); \
-                mods_total="$(find /usr/lib/modules/$kernel_version -type f -name '*.ko*' | wc -l)"; \
-                echo "Total number of modules: $mods_total"; \
-                echo "Generating initrd for kernel version: $kernel_version"; \
-                update-initramfs -u -v -k "$kernel_version"; \
-            done;'
+        for kernel in ${ROOTFSDIR}/boot/vmlinu[xz]-*; do
+            export kernel_version=$(basename $kernel | cut -d'-' -f2-)
+            mods_total="$(find ${ROOTFSDIR}/usr/lib/modules/$kernel_version -type f -name '*.ko*' | wc -l)"
+            echo "Total number of modules: $mods_total"
+            echo "Generating initrd for kernel version: $kernel_version"
+            sudo -E chroot "${ROOTFSDIR}" sh -c ' \
+                update-initramfs -u -v -k "$kernel_version"'
+        done
         if [ -n "${INITRD_DEPLOY_FILE}" ]; then
             if [ -f "${ROOTFSDIR}/initrd.img" ]; then
                 # debian (mkinitramfs)
