@@ -105,8 +105,7 @@ EOSH
         if [ "$localepurge_state" = 'p' ]
         then
             echo removing localepurge...
-            chroot '${ROOTFSDIR}' apt-get purge --yes localepurge
-            chroot '${ROOTFSDIR}' apt-get autoremove --purge --yes
+            chroot '${ROOTFSDIR}' apt-get autopurge --yes localepurge
         fi
 EOSUDO
 }
