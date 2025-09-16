@@ -183,8 +183,12 @@ ROOTFS_CONFIGURE_COMMAND += "rootfs_disable_initrd_generation"
 rootfs_disable_initrd_generation[weight] = "1"
 rootfs_disable_initrd_generation() {
     # fully disable initrd generation
-    sudo mkdir -p "${ROOTFSDIR}${ROOTFS_STUBS_DIR}"
-    sudo cp -a ${ROOTFSDIR}/usr/bin/true ${ROOTFSDIR}${ROOTFS_STUBS_DIR}/update-initramfs
+    sudo -s <<'EOSUDO'
+    set -e
+
+    mkdir -p "${ROOTFSDIR}${ROOTFS_STUBS_DIR}"
+    ln -s /usr/bin/true ${ROOTFSDIR}${ROOTFS_STUBS_DIR}/update-initramfs
+EOSUDO
 }
 
 ROOTFS_INSTALL_COMMAND += "rootfs_install_pkgs_update"
