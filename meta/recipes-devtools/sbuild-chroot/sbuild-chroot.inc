@@ -57,6 +57,8 @@ ROOTFSDIR = "${SBUILD_CHROOT_DIR}"
 ROOTFS_PACKAGES = "${SBUILD_CHROOT_PREINSTALL}"
 ROOTFS_FEATURES += "no-generate-initrd"
 
+ROOTFS_INSTALL_COMMAND:remove = "rootfs_restore_initrd_tooling"
+
 ROOTFS_POSTPROCESS_COMMAND:remove = "rootfs_cleanup_isar_apt"
 
 # Do not cleanup base-apt

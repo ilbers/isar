@@ -188,6 +188,10 @@ rootfs_disable_initrd_generation() {
 
     mkdir -p "${ROOTFSDIR}${ROOTFS_STUBS_DIR}"
     ln -s /usr/bin/true ${ROOTFSDIR}${ROOTFS_STUBS_DIR}/update-initramfs
+
+    mkdir -p '${ROOTFSDIR}/etc/apt/apt.conf.d'
+    echo 'DPkg::Path ${ROOTFS_STUBS_DIR}:/usr/sbin:/usr/bin:/sbin:/bin;' \
+        > '${ROOTFSDIR}/etc/apt/apt.conf.d/50isar-stubs'
 EOSUDO
 }
 
@@ -252,15 +256,17 @@ rootfs_install_pkgs_install[progress] = "custom:rootfs_progress.PkgsInstallProgr
 rootfs_install_pkgs_install[network] = "${TASK_USE_SUDO}"
 rootfs_install_pkgs_install() {
     sudo -E chroot "${ROOTFSDIR}" \
-        /usr/bin/apt-get ${ROOTFS_APT_ARGS} \
-            -o DPkg::Path='${ROOTFS_STUBS_DIR}:/usr/sbin:/usr/bin:/sbin:/bin' \
-            ${ROOTFS_PACKAGES}
+        /usr/bin/apt-get ${ROOTFS_APT_ARGS} ${ROOTFS_PACKAGES}
 }
 
 ROOTFS_INSTALL_COMMAND += "rootfs_restore_initrd_tooling"
 rootfs_restore_initrd_tooling[weight] = "1"
 rootfs_restore_initrd_tooling() {
-    sudo rm -rf "${ROOTFSDIR}${ROOTFS_STUBS_DIR}"
+    sudo -s <<'EOSUDO'
+    set -e
+    rm -f "${ROOTFSDIR}/etc/apt/apt.conf.d/50isar-stubs"
+    rm -rf "${ROOTFSDIR}${ROOTFS_STUBS_DIR}"
+EOSUDO
 }
 
 ROOTFS_INSTALL_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'no-generate-initrd', 'rootfs_clear_initrd_symlinks', '', d)}"
