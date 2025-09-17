@@ -24,6 +24,18 @@ except path.CmdNotFoundError:
     SKOPEO_AVAILABLE = False
 
 
+class EnvTest(CIBaseTest):
+
+    """
+    Test environment
+
+    :avocado: tags=env
+    """
+
+    def test_nop(self):
+        self.log.info("test_nop finish")
+
+
 class DevTest(CIBaseTest):
 
     """
