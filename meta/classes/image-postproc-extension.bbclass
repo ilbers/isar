@@ -63,7 +63,7 @@ image_postprocess_machine_id() {
     if dpkg --compare-versions "$SYSTEMD_VERSION" "lt" "247"; then
         MACHINE_ID=""
     fi
-    echo "$MACHINE_ID" | sudo tee '${IMAGE_ROOTFS}/etc/machine-id'
+    echo "$MACHINE_ID" | sudo chroot ${IMAGE_ROOTFS} tee /etc/machine-id
     sudo rm -f '${IMAGE_ROOTFS}/var/lib/dbus/machine-id'
 }
 
