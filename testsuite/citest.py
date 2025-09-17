@@ -35,6 +35,18 @@ class EnvTest(CIBaseTest):
     def test_nop(self):
         self.log.info("test_nop finish")
 
+    def test_bitbake(self):
+        self.init()
+        bitbake_ret = self.exec_cmd("-e", "bitbake")
+
+        self.log.info("result on: bitbake -e")
+        self.log.info(f"return code: {str(bitbake_ret[0])}")
+        self.log.info(f"stdout: {str(bitbake_ret[1])}")
+        self.log.info(f"stderr: {str(bitbake_ret[2])}")
+
+        if(bitbake_ret[0] != 0):
+            self.fail("bitbake -e: returned an error")
+
 
 class DevTest(CIBaseTest):
 
