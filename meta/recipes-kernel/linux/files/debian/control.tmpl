@@ -4,6 +4,7 @@ Priority: optional
 Maintainer: ${MAINTAINER}
 Build-Depends: debhelper-compat (= ${DEBIAN_COMPAT}), bc, kmod, cpio, ${KBUILD_DEPENDS}
 Homepage: http://www.kernel.org/
+Rules-Requires-Root: no
 
 Package: linux-image-${KERNEL_NAME_PROVIDED}
 Build-Profiles: <kernel>

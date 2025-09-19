@@ -784,3 +784,10 @@ Recipes based on the `debianize` class can now set the
 `Rules-Requires-Root` setting in the `debian/control` file. If this variable is
 unset (the default), `Rules-Requires-Root` will not be added. Otherwise,
 `Rules-Requires-Root` will be added and set to the value of the variable.
+
+### Avoid unnecessary use of fakeroot
+
+Set `Rules-Requires-Root: no` in `debian/control` files to prevent unnecessary
+invocation of fakeroot during package builds. This follows Debian guidelines
+recommending not to use fakeroot when no privileged operations (e.g., `chown`,
+root file modifications) are required. 
