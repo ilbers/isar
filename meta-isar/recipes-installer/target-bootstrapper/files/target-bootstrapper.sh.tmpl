@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# This software is a part of ISAR.
+# Copyright (C) Siemens AG, 2024
+#
+# SPDX-License-Identifier: MIT
+
+task_names=($TMPL_TARGET_BOOTSTRAPPER_TASK_NAMES)
+task_workdirs=($TMPL_TARGET_BOOTSTRAPPER_TASK_WORKDIRS)
+task_scripts=($TMPL_TARGET_BOOTSTRAPPER_TASK_SCRIPTS)
+task_efforts=($TMPL_TARGET_BOOTSTRAPPER_TASK_EFFORTS)
+handled_effort=0
+total_effort=$TMPL_TARGET_BOOTSTRAPPER_TASK_TOTAL_EFFORT
+
+tasks_total=${#task_names[@]}
+tasks_indices=${!task_names[@]}
+
+echo "Found $tasks_total tasks to execute for target bootstrapping."
+echo ""
+
+for idx in ${tasks_indices}
+do
+  echo "Task $(( idx+1 ))/${tasks_total} - $((handled_effort*100/total_effort))%"
+  echo "Handling task ${task_names[$idx]}"
+
+  echo "Entering workdir ${task_workdirs[$idx]}..."
+  pushd ${task_workdirs[$idx]} > /dev/null
+
+  ## execute task in subshell
+  (./${task_scripts[$idx]})
+  execution_result=$?
+  if [ ${execution_result} -eq 0 ]; then
+    echo "${task_names[$idx]} executed sucessfully"
+  else
+    echo "${task_names[$idx]} failed with ${execution_result}" -> abort!
+    exit ${execution_result}
+  fi
+
+  echo "Leaving workdir ${task_workdirs[$idx]}..."
+  popd > /dev/null
+
+  handled_effort=$((handled_effort+task_efforts[idx]))
+done
+
+echo "All tasks completed!"
