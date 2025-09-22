@@ -11,3 +11,9 @@ target: mc:isar-installer:isar-image-installer
 local_conf_header:
   installer_multiconfig: |
     BBMULTICONFIG += "isar-installer installer-target"
+
+  target_bootstrapper: |
+    TARGET_BOOTSTRAPPER_ADDITIONAL_PACKAGES ?= "deploy-image"
+    TARGET_BOOTSTRAPPER_TASK_deploy-image[script] ?= "deploy-image-wic.sh"
+    TARGET_BOOTSTRAPPER_TASK_deploy-image[workdir] ?= "/usr/bin"
+    TARGET_BOOTSTRAPPER_TASK_deploy-image[effort] ?= "2"

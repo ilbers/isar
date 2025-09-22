@@ -23,6 +23,6 @@ ADDITIONAL_KERNEL_CMDLINE:append:unattended-installer = " \
 
 IMAGER_INSTALL:wic:append = " ${SYSTEMD_BOOTLOADER_INSTALL}"
 
-IMAGE_INSTALL += "deploy-image-service"
+IMAGE_INSTALL += "target-bootstrapper-service"
 
 IMAGE_INSTALL:remove = "expand-on-first-boot"
