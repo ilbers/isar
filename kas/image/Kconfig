@@ -37,15 +37,19 @@ config IMAGE_INSTALLER
 
 endchoice
 
-if IMAGE_INSTALLER
-source "kas/installer/Kconfig"
-endif
-
 config KAS_INCLUDE_IMAGE
 	string
 	default "kas/image/isar-image-base.yaml" if IMAGE_BASE
 	default "kas/image/isar-image-debug.yaml" if IMAGE_DEBUG
 	default "kas/image/isar-image-ci.yaml" if IMAGE_CI
 	default "kas/image/isar-image-installer.yaml" if IMAGE_INSTALLER
+
+if IMAGE_INSTALLER
+menu "Installer config"
+
+source "kas/installer/Kconfig"
+
+endmenu
+endif
 
 endmenu
