@@ -1,0 +1,18 @@
+# This software is a part of ISAR.
+# Copyright (C) Siemens AG, 2025
+#
+# SPDX-License-Identifier: MIT
+
+header:
+  version: 14
+
+local_conf_header:
+  target_bootstrapper_deploy-image: |
+    INSTALLER_UNATTENDED = "1"
+    INSTALLER_TARGET_DEVICE ?= "/dev/sda:/dev/nvme0n1"
+    INSTALLER_TARGET_OVERWRITE ?= "OVERWRITE"
+
+  target_bootstrapper-tty: |
+    TARGET_BOOTSTRAPPER_TTY_SERVICES ?= "\
+        serial-getty@ttyS0 \
+    "

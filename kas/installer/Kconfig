@@ -3,7 +3,9 @@
 #
 # SPDX-License-Identifier: MIT
 
-menu "Installer config"
+config KAS_INCLUDE_IMAGE
+	string
+	default "kas/image/isar-image-installer.yaml"
 
 choice
 	prompt "Image to install"
@@ -44,6 +46,10 @@ config INSTALL_UNATTENDED
 
 if INSTALL_UNATTENDED
 
+config KAS_INCLUDE_INSTALLER_UNATTENDED
+	string
+	default "kas/installer/unattended.yaml"
+
 config INSTALLER_UNATTENDED
 	string
 	default "1" if INSTALL_UNATTENDED
@@ -76,4 +82,13 @@ config INSTALLER_TARGET_OVERWRITE
 
 endif
 
-endmenu
+config INSTALLER_TTY_SERVICES
+	string "TTY Service to use"
+	default "getty@tty1 serial-getty@ttyS0" if !INSTALL_UNATTENDED
+	default "serial-getty@ttyS0" if INSTALL_UNATTENDED
+	help
+          TTY Service(s) used to execute the installer on.
+	  In case of unattended installers, make sure only one tty
+	  is specified here, else race condition between installer
+	  instances may occur.
+	  Examples: "serial-getty@ttyS0", "getty@tty1" or combinations like "getty@tty1 serial-getty@ttyS0"
