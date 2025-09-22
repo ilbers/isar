@@ -1,0 +1,79 @@
+# This software is a part of ISAR.
+# Copyright (C) Siemens AG, 2025
+#
+# SPDX-License-Identifier: MIT
+
+menu "Installer config"
+
+choice
+	prompt "Image to install"
+	default INSTALL_IMAGE_BASE
+
+config INSTALL_IMAGE_BASE
+	bool "Base image"
+	help
+	  Embed the basic Isar image into the installer image.
+
+config INSTALL_IMAGE_CI
+	bool "CI image"
+	help
+	  Embed the Isar CI image into the installer image.
+
+config INSTALL_IMAGE_DEBUG
+	bool "Debug image"
+	help
+	  Embed the Isar debug image into the installer image.
+
+config INSTALL_EMPTY
+	bool "No installer payload"
+	help
+	  This will generate a installer image without payload. The user of
+	  that image needs then to copy a image to the partition labeled
+	  INSTALLDATA.
+
+endchoice
+
+config INSTALLER_TARGET_IMAGE
+	string
+	default "isar-image-base" if INSTALL_IMAGE_BASE
+	default "isar-image-ci" if INSTALL_IMAGE_CI
+	default "isar-image-debug" if INSTALL_IMAGE_DEBUG
+
+config INSTALL_UNATTENDED
+	bool "Run installer unattended"
+
+if INSTALL_UNATTENDED
+
+config INSTALLER_UNATTENDED
+	string
+	default "1" if INSTALL_UNATTENDED
+	default ""
+
+config INSTALLER_TARGET_DEVICE
+	string "Target device to deploy"
+	default "/dev/sda"
+	help
+          Deploy image to this target device. Accepts comma/colon-separated multiple devices; installs on the first available.
+	  Leave this empty to get prompted during installation
+	  Examples: /dev/sda, /dev/nvme0n1, /dev/sda:/dev/nvme0n1
+
+choice
+	prompt "Overwrite handling"
+	default OPT_INSTALLER_TARGET_OVERWRITE
+
+config OPT_INSTALLER_TARGET_OVERWRITE
+	bool "Overwrite if target is not empty"
+
+config OPT_INSTALLER_TARGET_ABORT
+	bool "Abort if target is not empty"
+
+endchoice
+
+config INSTALLER_TARGET_OVERWRITE
+    string
+    default "OVERWRITE" if OPT_INSTALLER_TARGET_OVERWRITE
+    default "ABORT" if OPT_INSTALLER_TARGET_ABORT
+
+endif
+
+endmenu
