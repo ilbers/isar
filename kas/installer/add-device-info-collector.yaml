@@ -1,0 +1,14 @@
+# This software is a part of ISAR.
+# Copyright (C) Siemens AG, 2025
+#
+# SPDX-License-Identifier: MIT
+
+header:
+  version: 14
+
+local_conf_header:
+  target_bootstrapper-add-device-info-collector: |
+    TARGET_BOOTSTRAPPER_ADDITIONAL_PACKAGES:append = " device-info-collector"
+    TARGET_BOOTSTRAPPER_TASK_device-info-collector[script] = "device-info-collector.sh"
+    TARGET_BOOTSTRAPPER_TASK_device-info-collector[workdir] = "/usr/bin"
+    TARGET_BOOTSTRAPPER_TASK_device-info-collector[effort] = "1"
