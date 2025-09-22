@@ -82,6 +82,16 @@ config INSTALLER_TARGET_OVERWRITE
 
 endif
 
+
+config INSTALLER_ADD_DEVICE_INFO_COLLECTOR
+        bool "Add Device Info Collector"
+        default n
+
+config KAS_INCLUDE_INSTALLER_ADD_DEVICE_INFO_COLLECTOR
+	string
+	default "kas/installer/add-device-info-collector.yaml"
+    depends on INSTALLER_ADD_DEVICE_INFO_COLLECTOR
+
 config INSTALLER_TTY_SERVICES
 	string "TTY Service to use"
 	default "getty@tty1 serial-getty@ttyS0" if !INSTALL_UNATTENDED
