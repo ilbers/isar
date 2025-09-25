@@ -107,9 +107,24 @@ dbg_pkgs_download() {
 deb_dl_dir_import() {
     export pc="${DEBDIR}/${2}"
     export rootfs="${1}"
-    sudo mkdir -p "${rootfs}"/var/cache/apt/archives/
+    export uid=$(id -u)
+    export gid=$(id -g)
+
+    # let our unprivileged user place downloaded packages in /var/cache/apt/archives/
+    sudo -Es << '    EOSUDO'
+        mkdir -p "${rootfs}"/var/cache/apt/archives/partial/
+        touch "${rootfs}"/var/cache/apt/archives/lock
+        chown -R ${uid}:${gid} "${rootfs}"/var/cache/apt/archives/
+    EOSUDO
+
+    # nothing to copy if download directory does not exist just yet
     [ ! -d "${pc}" ] && return 0
-    flock -s "${pc}".lock sudo -Es << 'EOSUDO'
+
+    # attempt to create hard-links for .deb files from downloads/ into
+    # /var/cache/apt/archives/ so apt will only download packages we
+    # have not yet downloaded. perform a regular copy whenever hard-links
+    # cannot be created
+    ( flock 9
         set -e
         printenv | grep -q BB_VERBOSE_LOGS && set -x
 
@@ -118,7 +133,7 @@ deb_dl_dir_import() {
             ln -Pf -t "${rootfs}"/var/cache/apt/archives/ "$p" 2>/dev/null ||
                 cp -n --no-preserve=owner -t "${rootfs}"/var/cache/apt/archives/ "$p"
         done
-EOSUDO
+    ) 9>"${pc}".lock
 }
 
 deb_dl_dir_export() {
