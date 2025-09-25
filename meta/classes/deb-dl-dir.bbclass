@@ -5,25 +5,6 @@
 
 inherit repository
 
-debsrc_do_mounts() {
-    sudo -s <<EOSUDO
-    set -e
-    mkdir -p "${1}/deb-src"
-    mountpoint -q "${1}/deb-src" || \
-    mount -o bind,private "${DEBSRCDIR}" "${1}/deb-src"
-EOSUDO
-}
-
-debsrc_undo_mounts() {
-    sudo -s <<EOSUDO
-    set -e
-    mkdir -p "${1}/deb-src"
-    mountpoint -q "${1}/deb-src" && \
-    umount "${1}/deb-src"
-    rm -rf "${1}/deb-src"
-EOSUDO
-}
-
 debsrc_source_version_filter() {
     # Filter the input to only consider Package, Version and Source lines
     #
@@ -50,11 +31,6 @@ debsrc_download() {
     export rootfs="$1"
     export rootfs_distro="$2"
     mkdir -p "${DEBSRCDIR}"/"${rootfs_distro}"
-
-    debsrc_do_mounts "${rootfs}"
-
-    trap 'exit 1' INT HUP QUIT TERM ALRM USR1
-    trap 'debsrc_undo_mounts "${rootfs}"' EXIT
 
     ( flock 9
     set -e
@@ -96,13 +72,18 @@ debsrc_download() {
         dscname="${src}_${version#*:}.dsc"
         [ -f "${DEBSRCDIR}"/"${rootfs_distro}"/"${src}"/"${dscname}" ] || {
             # use apt-get source to download sources in DEBSRCDIR
-            sudo -E chroot --userspec=$( id -u ):$( id -g ) ${rootfs} \
-                sh -c ' mkdir -p "/deb-src/${1}/${2}" && cd "/deb-src/${1}/${2}" && apt-get -y --download-only --only-source source "$2"="$3" ' download-src "${rootfs_distro}" "${src}" "${version}"
+            mkdir -p "${DEBSRCDIR}/${rootfs_distro}"/"${src}"
+            rootfs_cmd \
+                --bind "${DEBSRCDIR}" "/deb-src" \
+                --bind "${rootfs}" "${rootfs}" \
+                --chdir "/deb-src/${rootfs_distro}/${src}" \
+                -- \
+                apt-get -o APT::Architecture=${DISTRO_ARCH} \
+                        -o Dir="${rootfs}" -y --download-only \
+                        --only-source source "${src}=${version}"
         }
     done
     ) 9>"${DEBSRCDIR}/${rootfs_distro}.lock"
-
-    debsrc_undo_mounts "${rootfs}"
 }
 
 dbg_pkgs_download() {
