@@ -181,6 +181,10 @@ do_bootstrap() {
                                  && sudo umount $base_apt_tmp \
                                  && rm -rf --one-file-system $base_apt_tmp' EXIT
 
+    # Create lock file so that it is owned by the user running the build (not root)
+    mkdir -p ${DEBDIR}
+    touch ${DEB_DL_LOCK}
+
     sudo TMPDIR="${BOOTSTRAP_TMPDIR}" mmdebstrap $bootstrap_args \
                    $arch_param \
                    --mode=unshare \
