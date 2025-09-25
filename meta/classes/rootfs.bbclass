@@ -35,6 +35,73 @@ export LANG = "${LOCALE_DEFAULT}"
 export LANGUAGE = "${LOCALE_DEFAULT}"
 export LC_ALL = "${LOCALE_DEFAULT}"
 
+# Execute a command against a rootfs and with isar-apt bind-mounted.
+# Additional mounts may be specified using --bind <source> <target> and a
+# custom directory for the command to be executed with --chdir <dir>. The
+# command is assumed to follow the special "--" argument. This would replace
+# "sudo chroot" calls especially when a native command may be used instead of
+# chroot'ed command and without elevated privileges (the command will likely
+# take the rootfs as argument; e.g. apt-get -o Dir=${ROOTFSDIR}). If the
+# optional rootfs argument is omitted, the host rootfs will be used (e.g. to
+# run native commands): this should be used with care.
+#
+# Usage: rootfs_cmd [options] [rootfs] -- command
+#
+rootfs_cmd() {
+    set -- "$@"
+    bwrap_args="--bind ${REPO_ISAR_DIR}/${DISTRO} /isar-apt"
+    bwrap_binds=""
+    bwrap_rootfs=""
+
+    while [ "${#}" -gt "0" ] && [ "${1}" != "--" ]; do
+        case "${1}" in
+            --bind)
+                if [ "${#}" -lt "3" ]; then
+                    bbfatal "--bind requires two arguments"
+                fi
+                bwrap_binds="${bwrap_binds} --bind ${2} ${3}"
+                shift 3
+                ;;
+            --chdir)
+                if [ "${#}" -lt "2" ]; then
+                    bbfatal "${1} requires an argument"
+                fi
+                bwrap_args="${bwrap_args} ${1} ${2}"
+                shift 2
+                ;;
+            -*)
+                bbfatal "${1} is not a supported option!"
+                ;;
+            *)
+                if [ -z "${bwrap_rootfs}" ]; then
+                    bwrap_rootfs="${1}"
+                    shift
+                else
+                    bbfatal "unexpected argument '${1}'"
+                fi
+                ;;
+        esac
+    done
+
+    if [ -n "${bwrap_rootfs}" ]; then
+        bwrap_args="${bwrap_args} --bind ${bwrap_rootfs} /"
+    fi
+
+    if [ "${#}" -le "1" ] || [ "${1}" != "--" ]; then
+        bbfatal "no command specified (missing --)"
+    fi
+    shift  # remove "--", command and its arguments follows
+
+    for ro_d in bin etc lib lib64 sys usr var; do
+        [ -d ${bwrap_rootfs}/${ro_d} ] || continue
+        bwrap_args="${bwrap_args} --ro-bind ${bwrap_rootfs}/${ro_d} /${ro_d}"
+    done
+
+    bwrap --unshare-user --unshare-pid ${bwrap_args} \
+        --dev-bind /dev /dev --proc /proc --tmpfs /tmp \
+        ${bwrap_binds} -- "${@}"
+}
+
 rootfs_do_mounts[weight] = "3"
 rootfs_do_mounts() {
     sudo -s <<'EOSUDO'

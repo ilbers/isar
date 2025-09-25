@@ -761,3 +761,11 @@ the following variables in your image recipe. For example, to use German, add:
 LOCALE_GEN = "de_DE.UTF-8 UTF-8\n"
 LOCALE_DEFAULT = "de_DE.UTF-8"
 ```
+
+### Require bubblewrap to run non-privileged commands with bind-mounts
+
+Isar occasionally needs to run commands within root file-systems that it
+builds and with several bind-mounts (e.g. /isar-apt). bubblewrap may be
+used in Isar classes instead of `sudo chroot` to avoid unecessary privilege
+elevations (when we "just" need to chroot but do not require root). It is
+pre-installed in kas-container version 4.8 (or later).

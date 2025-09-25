@@ -75,6 +75,7 @@ Install the following packages:
 ```
 apt install \
   binfmt-support \
+  bubblewrap \
   bzip2 \
   mmdebstrap \
   arch-test \
