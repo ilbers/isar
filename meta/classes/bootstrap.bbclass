@@ -27,8 +27,9 @@ DISTRO_VARS_PREFIX ?= "${@'HOST_' if bb.utils.to_boolean(d.getVar('BOOTSTRAP_FOR
 BOOTSTRAP_DISTRO = "${@d.getVar('HOST_DISTRO' if bb.utils.to_boolean(d.getVar('BOOTSTRAP_FOR_HOST')) else 'DISTRO')}"
 BOOTSTRAP_BASE_DISTRO = "${@d.getVar('HOST_BASE_DISTRO' if bb.utils.to_boolean(d.getVar('BOOTSTRAP_FOR_HOST')) else 'BASE_DISTRO')}"
 BOOTSTRAP_DISTRO_ARCH = "${@d.getVar('HOST_ARCH' if bb.utils.to_boolean(d.getVar('BOOTSTRAP_FOR_HOST')) else 'DISTRO_ARCH')}"
-ISAR_APT_SNAPSHOT_DATE ?= "${@ get_isar_apt_snapshot_date(d)}"
-ISAR_APT_SNAPSHOT_DATE[security] ?= "${@ get_isar_apt_snapshot_date(d, 'security')}"
+# use internal variables to track where the value comes from
+ISAR_APT_SNAPSHOT_DATE_INTERNAL ?= "${@ get_isar_apt_snapshot_date(d)}"
+ISAR_APT_SNAPSHOT_DATE_INTERNAL[security] ?= "${@ get_isar_apt_snapshot_date(d, 'security')}"
 
 python () {
     distro_bootstrap_keys = (d.getVar("DISTRO_BOOTSTRAP_KEYS") or "").split()
@@ -104,6 +105,12 @@ def parse_aptsources_list_line(source_list_line):
 
 def get_isar_apt_snapshot_date(d, dist=None):
     import time
+    snapshot_date = d.getVar('ISAR_APT_SNAPSHOT_DATE')
+    if dist:
+        snapshot_date = d.getVarFlag('ISAR_APT_SNAPSHOT_DATE', dist) or snapshot_date
+    if snapshot_date:
+        return snapshot_date
+    # no ISAR_APT_SNAPSHOT_DATE set, compute from timestamp
     source_date_epoch = d.getVar('ISAR_APT_SNAPSHOT_TIMESTAMP')
     if dist:
         source_date_epoch = d.getVarFlag('ISAR_APT_SNAPSHOT_TIMESTAMP', dist) or source_date_epoch
