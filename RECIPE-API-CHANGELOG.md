@@ -761,3 +761,18 @@ the following variables in your image recipe. For example, to use German, add:
 LOCALE_GEN = "de_DE.UTF-8 UTF-8\n"
 LOCALE_DEFAULT = "de_DE.UTF-8"
 ```
+
+### Change DEPLOY_DIR_IMAGE path
+
+Change DEPLOY_DIR_IMAGE from ${DEPLOY_DIR}/images/${MACHINE} to
+${DEPLOY_DIR}/images/${MACHINE}-${DISTRO}-${KERNEL_NAME}. When building
+different distros with the same machine the following error occurs:
+
+do_copy_boot_files: The recipe isar-image-base is trying to install files
+into a shared area when those files already exists. It happens when some
+files have the same names (e.g., dtb files) for different distros.
+
+To prevent this new path is separated also by distro and kernel values.
+
+This change will influence on build artifacts location and should be taken
+into account by downstreams.
