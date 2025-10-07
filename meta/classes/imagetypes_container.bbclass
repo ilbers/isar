@@ -13,6 +13,7 @@ CONTAINER_IMAGE_NAME ?= "${PN}-${DISTRO}-${DISTRO_ARCH}"
 CONTAINER_IMAGE_TAG ?= "${PV}-${PR}"
 CONTAINER_IMAGE_CMD ?= "/bin/dash"
 CONTAINER_IMAGE_ENTRYPOINT ?= ""
+CONTAINER_IMAGE_PATH ?= "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 python() {
     if not bb.utils.to_boolean(d.getVar('USING_CONTAINER')):
@@ -30,6 +31,7 @@ do_containerize() {
     local entrypoint="${CONTAINER_IMAGE_ENTRYPOINT}"
     local empty_tag="empty"
     local tag="${CONTAINER_IMAGE_TAG}"
+    local path="${CONTAINER_IMAGE_PATH}"
     local oci_img_dir="${WORKDIR}/oci-image"
     local rootfs="${IMAGE_ROOTFS}"
 
@@ -45,6 +47,10 @@ do_containerize() {
     if [ -n "${entrypoint}" ]; then
         sudo umoci config --image "${oci_img_dir}:${empty_tag}" \
             --config.entrypoint="${entrypoint}"
+    fi
+    if [ -n "${path}" ]; then
+        sudo umoci config --image "${oci_img_dir}:${empty_tag}" \
+            --config.env="PATH=${path}"
     fi
     sudo umoci unpack --image "${oci_img_dir}:${empty_tag}" \
         "${oci_img_dir}_unpacked"
