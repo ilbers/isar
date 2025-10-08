@@ -677,6 +677,39 @@ class WicTest(CIBaseTest):
         )
 
 
+class DtbDeployTest(CIBaseTest):
+
+    """
+    Build some targets potentially causing DTB deploy issues.
+
+    :avocado: tags=dtbdeploy,full
+    """
+
+    def test_dtb_deploy_distros(self):
+        """
+        Cover case: Same machine, different distros
+        """
+        targets = [
+            'mc:phyboard-mira-bullseye:isar-image-base',
+            'mc:phyboard-mira-bookworm:isar-image-base',
+        ]
+
+        self.init()
+        self.perform_build_test(targets)
+
+    def test_dtb_deploy_images(self):
+        """
+        Cover case: Same machine/distro, different images
+        """
+        targets = [
+            'mc:phyboard-mira-bookworm:isar-image-base',
+            'mc:phyboard-mira-bookworm:isar-image-ci',
+        ]
+
+        self.init()
+        self.perform_build_test(targets)
+
+
 class NoCrossTest(CIBaseTest):
 
     """
