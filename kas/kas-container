@@ -27,7 +27,7 @@
 
 set -e
 
-KAS_CONTAINER_SCRIPT_VERSION="4.8.1"
+KAS_CONTAINER_SCRIPT_VERSION="4.8.2"
 KAS_IMAGE_VERSION_DEFAULT="${KAS_CONTAINER_SCRIPT_VERSION}"
 KAS_CONTAINER_IMAGE_PATH_DEFAULT="ghcr.io/siemens/kas"
 KAS_CONTAINER_IMAGE_NAME_DEFAULT="kas"
@@ -454,6 +454,7 @@ done
 [ -n "${KAS_CMD}" ] || usage
 
 KAS_EXTRA_BITBAKE_ARGS=0
+KAS_FILES=
 
 # parse kas sub-command options
 while [ $# -gt 0 ] && [ $KAS_EXTRA_BITBAKE_ARGS -eq 0 ]; do
@@ -686,12 +687,9 @@ if [ -n "${SSTATE_MIRRORS}" ]; then
 	set -- "$@" -e "SSTATE_MIRRORS=${SSTATE_MIRRORS}"
 fi
 
-# propagate timezone information
-if [ -f "/etc/localtime" ]; then
-	set -- "$@" -v "$(realpath -e "/etc/localtime")":/etc/localtime:ro
-fi
-if [ -f "/etc/timezone" ]; then
-	set -- "$@" -v "$(realpath -e "/etc/timezone")":/etc/timezone:ro
+# propagate timezone information to entrypoint (requires systemd 239)
+if command -v timedatectl >/dev/null; then
+	set -- "$@" -e "KAS_HOST_TZ=$(timedatectl show -p Timezone --value 2>/dev/null)"
 fi
 
 for var in TERM KAS_DISTRO KAS_MACHINE KAS_TARGET KAS_TASK KAS_CLONE_DEPTH \
