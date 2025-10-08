@@ -381,6 +381,11 @@ INITRD_IMG = "${PP_DEPLOY}/${INITRD_DEPLOY_FILE}"
 # only one dtb file supported, pick the first
 DTB_IMG = "${PP_DEPLOY}/${@(d.getVar('DTB_FILES').split() or [''])[0]}"
 
+python() {
+    if d.getVar('DTB_FILES'):
+        d.appendVarFlag("do_copy_boot_files", "depends", "dtb-files-${MACHINE}:do_deploy")
+}
+
 do_copy_boot_files[cleandirs] += "${DEPLOYDIR}"
 do_copy_boot_files[sstate-inputdirs] = "${DEPLOYDIR}"
 do_copy_boot_files[sstate-outputdirs] = "${DEPLOY_DIR_IMAGE}"
@@ -394,16 +399,6 @@ do_copy_boot_files() {
         sudo cat "$kernel" > "${DEPLOYDIR}/${KERNEL_IMAGE}"
     fi
 
-    for file in ${DTB_FILES}; do
-        dtb="$(find '${IMAGE_ROOTFS}/usr/lib' -type f \
-                    -iwholename '*linux-image-*/'${file} | head -1)"
-
-        if [ -z "$dtb" -o ! -e "$dtb" ]; then
-            die "${file} not found"
-        fi
-
-        cp -f "$dtb" "${DEPLOYDIR}/"
-    done
 }
 addtask copy_boot_files before do_rootfs_postprocess after do_rootfs_install
 
