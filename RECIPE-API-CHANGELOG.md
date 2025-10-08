@@ -962,3 +962,18 @@ INSTALLER_UNATTENDED_ABORT_ENABLE = "1"
 # Optional: set countdown timeout in seconds (default 5)
 INSTALLER_UNATTENDED_ABORT_TIMEOUT = "5"
 ```
+
+### Change DEPLOY_DIR_IMAGE path
+
+Change DEPLOY_DIR_IMAGE from ${DEPLOY_DIR}/images/${MACHINE} to
+${DEPLOY_DIR}/images/${MACHINE}-${DISTRO}-${KERNEL_NAME}. When building
+different distros with the same machine the following error occurs:
+
+do_copy_boot_files: The recipe isar-image-base is trying to install files
+into a shared area when those files already exists. It happens when some
+files have the same names (e.g., dtb files) for different distros.
+
+To prevent this new path is separated also by distro and kernel values.
+
+This change will influence on build artifacts location and should be taken
+into account by downstreams.
