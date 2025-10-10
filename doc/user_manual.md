@@ -1007,6 +1007,9 @@ Other (optional) customization variables include:
  - `DEBIAN_PROVIDES` - declare a virtual package to satisfy dependencies
  - `DEBIAN_REPLACES` - to replace a package with another
  - `DEBIAN_BREAKS` - Packages which break other packages
+ - `DEBIAN_BUILT_USING` - Used when a binary package includes parts of other source packages, f.e: by statically linking their libraries or embedding their
+    code or data during the build.
+    E.x: Built-Using: <name> (= <version>)
 
 ### Prebuilt .deb packages from somewhere
 

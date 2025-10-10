@@ -13,6 +13,7 @@ DEBIAN_PROVIDES ??= ""
 DEBIAN_REPLACES ??= ""
 DEBIAN_CONFLICTS ??= ""
 DEBIAN_BREAKS ??= ""
+DEBIAN_BUILT_USING ??= ""
 DEBIAN_MULTI_ARCH ??= "no"
 DEBIAN_COMPAT ??= "10"
 DEBIAN_CHANGELOG_TIMESTAMP ??= "3600"
@@ -74,6 +75,7 @@ deb_create_control[vardeps] += "DEBIANIZE_BUILD_DEPENDS \
                                 DEBIAN_PROVIDES \
                                 DEBIAN_REPLACES \
                                 DEBIAN_BREAKS \
+                                DEBIAN_BUILT_USING \
                                 DEBIAN_CONFLICTS"
 deb_create_control() {
 	cat << EOF > ${S}/debian/control
@@ -90,6 +92,7 @@ Depends: ${@ deb_list_beautify(d, 'DEBIAN_DEPENDS')}
 Provides: ${@ deb_list_beautify(d, 'DEBIAN_PROVIDES')}
 Replaces: ${@ deb_list_beautify(d, 'DEBIAN_REPLACES')}
 Breaks: ${@ deb_list_beautify(d, 'DEBIAN_BREAKS')}
+Built-Using: ${@ deb_list_beautify(d, 'DEBIAN_BUILT_USING')}
 Conflicts: ${@ deb_list_beautify(d, 'DEBIAN_CONFLICTS')}
 Multi-Arch: ${DEBIAN_MULTI_ARCH}
 Description: ${DESCRIPTION}
