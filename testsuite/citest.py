@@ -47,6 +47,14 @@ class EnvTest(CIBaseTest):
         if(bitbake_ret[0] != 0):
             self.fail("bitbake -e: returned an error")
 
+    def test_build(self):
+        targets = [
+            'mc:qemuamd64-bookworm:prebuilt-deb',
+        ]
+
+        self.init()
+        self.perform_build_test(targets)
+
 
 class DevTest(CIBaseTest):
 
