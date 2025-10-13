@@ -489,7 +489,7 @@ rootfs_generate_manifest () {
     mkdir -p ${ROOTFS_MANIFEST_DEPLOY_DIR}
     sudo -E chroot --userspec=$(id -u):$(id -g) '${ROOTFSDIR}' \
         dpkg-query -W -f \
-            '${source:Package}|${source:Version}|${binary:Package}|${Version}\n' > \
+            '${source:Package}|${source:Version}|${Package}:${Architecture}|${Version}\n' > \
         '${ROOTFS_MANIFEST_DEPLOY_DIR}'/'${ROOTFS_PACKAGE_SUFFIX}'.manifest
 }
 
