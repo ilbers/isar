@@ -769,3 +769,10 @@ builds and with several bind-mounts (e.g. /isar-apt). bubblewrap may be
 used in Isar classes instead of `sudo chroot` to avoid unecessary privilege
 elevations (when we "just" need to chroot but do not require root). It is
 pre-installed in kas-container version 4.8 (or later).
+
+### Revert enabling of linux-libc-dev package with KERNEL_NAME
+
+The change "Enable linux-libc-dev package with KERNEL_NAME" turned out to be
+incompatible with how Debian selects dependencies. It is therefore necessary
+to only enable `KERNEL_LIBC_DEV_DEPLOY` for a single kernel in case multiples
+are configured via `KERNEL_NAMES`.
