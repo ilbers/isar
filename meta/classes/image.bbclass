@@ -373,7 +373,7 @@ python do_image_tools() {
 addtask image_tools before do_build after do_rootfs
 
 # all imagetypes are depend on schroot and isar-apt
-do_image_tools[depends] = "${SCHROOT_DEP} isar-apt:do_cache_config"
+do_image_tools[depends] += "${SCHROOT_DEP} isar-apt:do_cache_config"
 do_image_tools[deptask] = "do_deploy_deb"
 
 python do_image() {
