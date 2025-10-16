@@ -44,9 +44,14 @@ def get_mc_depends(d, task):
     installer_target_mc = d.getVar('INSTALLER_TARGET_MC') or ""
     return f"mc:{installer_mc}:{installer_target_mc}:{installer_target_image}:{task}"
 
+def get_image_type(suffix):
+    image_type = suffix.split(".")[0]
+    return f"{image_type}"
+
 ROOTFS_ADDITIONAL_FILE_installer-target[source] = "${@ get_installer_source(d, d.getVar('IMAGE_DATA_POSTFIX'))}"
 ROOTFS_ADDITIONAL_FILE_installer-target[destination] = "${@ get_installer_destination(d, d.getVar('IMAGE_DATA_POSTFIX'))}"
 ROOTFS_ADDITIONAL_FILE_installer-target-bmap[source] = "${@ get_installer_source(d, "wic.bmap")}"
 ROOTFS_ADDITIONAL_FILE_installer-target-bmap[destination] = "${@ get_installer_destination(d, "wic.bmap")}"
 
-do_rootfs_install[mcdepends] += "${@ get_mc_depends(d, "do_image_wic")}"
+INSTALLER_TARGET_TASK ??="do_image_${@ get_image_type(d.getVar('IMAGE_DATA_POSTFIX'))}"
+do_rootfs_install[mcdepends] += "${@ get_mc_depends(d, d.getVar('INSTALLER_TARGET_TASK'))}"
