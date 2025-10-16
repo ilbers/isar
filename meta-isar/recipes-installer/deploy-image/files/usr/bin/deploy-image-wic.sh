@@ -60,6 +60,24 @@ if ! $installer_unattended; then
     devices="$devices $mmc_devices"
 
     for device in $devices; do
+        is_raid_member=0
+
+        if [ -d "/sys/block/$device/holders" ] && [ ! -d "/sys/block/$device/md" ]; then
+            for holder_path in /sys/block/$device/holders/*; do
+                holder_name=$(basename "$holder_path")
+                case "$holder_name" in
+                    md[0-9]*)
+                        is_raid_member=1
+                        break
+                        ;;
+                esac
+            done
+        fi
+
+        if [ "$is_raid_member" -eq 1 ]; then
+            continue # Skip RAID member disks
+        fi
+
         case $device in
             loop*)
                 # skip loop device

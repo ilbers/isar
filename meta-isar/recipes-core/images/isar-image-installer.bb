@@ -26,3 +26,5 @@ IMAGER_INSTALL:wic:append = " ${SYSTEMD_BOOTLOADER_INSTALL}"
 IMAGE_INSTALL += "target-bootstrapper-service"
 
 IMAGE_INSTALL:remove = "expand-on-first-boot"
+
+IMAGE_PREINSTALL:append = "${@ bb.utils.contains('MACHINE_FEATURES', 'raid', ' mdadm', '', d) }"
