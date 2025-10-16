@@ -4,6 +4,8 @@ inherit dpkg-raw
 DESCRIPTION = "Configuration to exclude most documentation"
 MAINTAINER = "isar-users <isar-users@googlegroups.com>"
 
+DEBIAN_SECTION = "utils"
+
 SRC_URI = "file://${BPN} \
 	   file://postinst"
 

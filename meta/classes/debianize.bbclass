@@ -8,6 +8,7 @@
 CHANGELOG_V ??= "${PV}"
 DPKG_ARCH ??= "any"
 DEBIAN_BUILD_DEPENDS ??= ""
+DEBIAN_SECTION ??= "misc"
 DEBIAN_DEPENDS ??= ""
 DEBIAN_PROVIDES ??= ""
 DEBIAN_REPLACES ??= ""
@@ -72,6 +73,7 @@ EOF
 
 
 deb_create_control[vardeps] += "DEBIANIZE_BUILD_DEPENDS \
+                                DEBIAN_SECTION \
                                 DEBIAN_DEPENDS \
                                 DEBIAN_PROVIDES \
                                 DEBIAN_REPLACES \
@@ -83,7 +85,7 @@ deb_create_control() {
 	# Add Source section
 	cat << EOF > ${S}/debian/control
 Source: ${BPN}
-Section: misc
+Section: ${@ deb_list_beautify(d, 'DEBIAN_SECTION')}
 Priority: optional
 Standards-Version: 3.9.6
 Maintainer: ${MAINTAINER}

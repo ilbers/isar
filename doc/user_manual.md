@@ -1010,6 +1010,7 @@ Other (optional) customization variables include:
  - `DEBIAN_BUILT_USING` - Used when a binary package includes parts of other source packages, f.e: by statically linking their libraries or embedding their
     code or data during the build.
     E.x: Built-Using: <name> (= <version>)
+ - `DEBIAN_SECTION` - Specifies the category under which the package is classified
 
 ### Prebuilt .deb packages from somewhere
 
