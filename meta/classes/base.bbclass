@@ -62,6 +62,30 @@ def get_deb_host_arch():
 HOST_ARCH ??= "${@get_deb_host_arch()}"
 HOST_DISTRO ??= "${DISTRO}"
 
+# Inject the PREFERRED_PROVIDERs for multiarch variants. This corresponds to
+# the multiarch_virtclass_handler logic in multiarch.bbclass, but needs to be
+# done prior to recipe parsing.
+def inject_preferred_providers(provider, suffix, d):
+    PP_PREFIX = 'PREFERRED_PROVIDER_'
+    if provider.endswith(suffix):
+        return
+    prefp_value = d.getVar(PP_PREFIX + provider)
+    if prefp_value and not d.getVar(PP_PREFIX + provider + suffix):
+        d.setVar(PP_PREFIX + provider + suffix, prefp_value + suffix)
+
+python multiarch_preferred_providers_handler() {
+    if d.getVar('HOST_ARCH') == d.getVar('DISTRO_ARCH'):
+        return
+
+    pref_vars = {var: e.data.getVar(var)
+                 for var in e.data.keys()
+                 if var.startswith('PREFERRED_PROVIDER_')}
+    for p in pref_vars:
+        inject_preferred_providers(p.replace('PREFERRED_PROVIDER_', ''), '-native', e.data)
+}
+addhandler multiarch_preferred_providers_handler
+multiarch_preferred_providers_handler[eventmask] = "bb.event.ConfigParsed"
+
 die() {
 	bbfatal "$*"
 }
