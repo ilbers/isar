@@ -1,5 +1,7 @@
 #
+# This software is a part of ISAR.
 # Copyright (c) Siemens AG, 2023-2024
+# Copyright (C) 2025 ilbers GmbH
 #
 # SPDX-License-Identifier: MIT
 
@@ -9,9 +11,9 @@ TI_FIRMWARE_SRCREV = "9ee2fedb1fb4815f54310dd872d34faf9948c7c1"
 
 SRC_URI += " \
     https://ftp.denx.de/pub/u-boot/u-boot-${PV}.tar.bz2 \
-    https://git.ti.com/cgit/processor-firmware/ti-linux-firmware/plain/ti-sysfw/ti-fs-firmware-am62x-gp.bin?id=${TI_FIRMWARE_SRCREV};downloadfilename=ti-fs-firmware-am62x-gp.bin;name=sysfw \
-    https://git.ti.com/cgit/processor-firmware/ti-linux-firmware/plain/ti-sysfw/ti-fs-stub-firmware-am62x-gp.bin?id=${TI_FIRMWARE_SRCREV};downloadfilename=ti-fs-stub-firmware-am62x-gp.bin;name=sysfw-stub \
-    https://git.ti.com/cgit/processor-firmware/ti-linux-firmware/plain/ti-dm/am62xx/ipc_echo_testb_mcu1_0_release_strip.xer5f?id=${TI_FIRMWARE_SRCREV};downloadfilename=ipc_echo_testb_mcu1_0_release_strip.xer5f;name=dm \
+    https://github.com/TexasInstruments/ti-linux-firmware/raw/${TI_FIRMWARE_SRCREV}/ti-sysfw/ti-fs-firmware-am62x-gp.bin;downloadfilename=ti-fs-firmware-am62x-gp.bin;name=sysfw \
+    https://github.com/TexasInstruments/ti-linux-firmware/raw/${TI_FIRMWARE_SRCREV}/ti-sysfw/ti-fs-stub-firmware-am62x-gp.bin;downloadfilename=ti-fs-stub-firmware-am62x-gp.bin;name=sysfw-stub \
+    https://github.com/TexasInstruments/ti-linux-firmware/raw/${TI_FIRMWARE_SRCREV}/ti-dm/am62xx/ipc_echo_testb_mcu1_0_release_strip.xer5f;downloadfilename=ipc_echo_testb_mcu1_0_release_strip.xer5f;name=dm \
     file://0001-TMP-board-ti-am62x-Add-basic-initialization-for-usb-.patch \
     file://rules-beagleplay"
 SRC_URI[sha256sum] = "b99611f1ed237bf3541bdc8434b68c96a6e05967061f992443cb30aabebef5b3"
