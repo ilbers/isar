@@ -15,5 +15,5 @@ SRC_URI += "file://local-top"
 TEE_SUPPLICANT_IN_USERLAND ?= "1"
 
 HOOK_PREREQ = "${@'tee-supplicant' if bb.utils.to_boolean(d.getVar('TEE_SUPPLICANT_IN_USERLAND')) else ''}"
-HOOK_ADD_MODULES = "tpm_ftpm_tee"
+HOOK_ADD_MODULES = "amdtee arm-tstee optee qcomtee tpm_ftpm_tee"
 SCRIPT_PREREQ = "${@'tee-supplicant' if bb.utils.to_boolean(d.getVar('TEE_SUPPLICANT_IN_USERLAND')) else ''}"
