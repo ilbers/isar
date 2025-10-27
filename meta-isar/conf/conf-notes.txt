@@ -1,4 +1,4 @@
 Common targets are:
-    mc:qemuarm-bookworm:isar-image-base
-    mc:qemuarm64-bookworm:isar-image-base
-    mc:qemuamd64-bookworm:isar-image-base
+    mc:qemuarm-trixie:isar-image-base
+    mc:qemuarm64-trixie:isar-image-base
+    mc:qemuamd64-trixie:isar-image-base
