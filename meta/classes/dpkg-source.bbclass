@@ -65,6 +65,8 @@ do_fetch_common_source() {
     trap 'exit 1' INT HUP QUIT TERM ALRM USR1
     trap 'schroot_cleanup' EXIT
 
+    E="${@ isar_export_proxies(d)}"
+
     schroot -r -c ${session_id} -d / -u root -- \
         apt-get update -o Dir::Etc::SourceList="sources.list.d/isar-apt.list" -o Dir::Etc::SourceParts="-" -o APT::Get::List-Cleanup="0"
     schroot -r -c ${session_id} -d / -- \
