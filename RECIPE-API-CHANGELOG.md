@@ -797,3 +797,22 @@ root file modifications) are required.
 A new class called `opensbi` has been introduced that shall help writing
 shorter recipes for custom OpenSBI builds. Usage examples can be found in
 `meta-isar/recipes/bsp/opensbi`.
+root file modifications) are required.
+
+### Populate systemd units based on presets during image postprocessing
+
+By default population of the presets is automatically done by systemd
+on first-boot.
+
+There were several issues with that:
+
+1. The rootfs we get as a build artifact does not reflect the actual
+system running in the field.
+
+2. For setups without writeable /etc this fails. With that addition
+it happens already at build time.
+
+**Note**: Additional services are enabled only. Services already enabled
+during the package installation won't be changed.
+
+Opt-out: `ROOTFS_FEATURES:remove = "populate-systemd-preset"`

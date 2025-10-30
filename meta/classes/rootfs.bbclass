@@ -15,6 +15,7 @@ ROOTFS_BASE_DISTRO ?= "${BASE_DISTRO}"
 # 'export-dpkg-status' - exports /var/lib/dpkg/status file to ${ROOTFS_DPKGSTATUS_DEPLOY_DIR}
 # 'clean-log-files' - delete log files that are not owned by packages
 # 'no-generate-initrd' - do not generate debian default initrd
+# 'populate-systemd-preset' - enable systemd units according to systemd presets
 ROOTFS_FEATURES ?= ""
 
 ROOTFS_APT_ARGS="install --yes -o Debug::pkgProblemResolver=yes"
@@ -518,6 +519,17 @@ rootfs_cleanup_base_apt() {
         set -e
         rm -f "${ROOTFSDIR}/etc/apt/sources.list.d/"*base-apt.list
 EOSUDO
+}
+
+ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'populate-systemd-preset', 'image_postprocess_populate_systemd_preset', '', d)}"
+image_postprocess_populate_systemd_preset() {
+    SYSTEMD_INSTALLED=$(sudo chroot '${ROOTFSDIR}' dpkg-query \
+        --showformat='${db:Status-Status}' \
+        --show systemd || echo "" )
+
+    if (test "$SYSTEMD_INSTALLED" = "installed"); then
+        sudo chroot '${ROOTFSDIR}' systemctl preset-all --preset-mode="enable-only"
+    fi
 }
 
 do_rootfs_postprocess[vardeps] = "${ROOTFS_POSTPROCESS_COMMAND}"

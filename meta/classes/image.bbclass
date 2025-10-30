@@ -73,6 +73,7 @@ ROOTFS_FEATURES += "\
     export-dpkg-status \
     clean-log-files \
     clean-debconf-cache \
+    populate-systemd-preset \
     "
 # when using a custom initrd, do not generate one as part of the image rootfs
 ROOTFS_FEATURES += "${@ '' if d.getVar('INITRD_IMAGE') == '' else 'no-generate-initrd'}"
