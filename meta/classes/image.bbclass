@@ -66,7 +66,14 @@ inherit multiarch
 inherit essential
 
 ROOTFSDIR = "${IMAGE_ROOTFS}"
-ROOTFS_FEATURES += "clean-package-cache clean-pycache generate-manifest export-dpkg-status clean-log-files clean-debconf-cache"
+ROOTFS_FEATURES += "\
+    clean-package-cache \
+    clean-pycache \
+    generate-manifest \
+    export-dpkg-status \
+    clean-log-files \
+    clean-debconf-cache \
+    "
 # when using a custom initrd, do not generate one as part of the image rootfs
 ROOTFS_FEATURES += "${@ '' if d.getVar('INITRD_IMAGE') == '' else 'no-generate-initrd'}"
 ROOTFS_PACKAGES += "${IMAGE_PREINSTALL} ${@isar_multiarch_packages('IMAGE_INSTALL', d)}"
