@@ -78,6 +78,17 @@ if ! $installer_unattended; then
             continue # Skip RAID member disks
         fi
 
+        if [[ "$device" == md* ]]; then
+            if [ -f "/sys/block/$device/md/array_state" ]; then
+                state=$(cat /sys/block/$device/md/array_state)
+                if [ "$state" != "active" ] && [ "$state" != "clean" ]; then
+                    continue
+                fi
+            else
+                continue
+            fi
+        fi
+
         case $device in
             loop*)
                 # skip loop device
