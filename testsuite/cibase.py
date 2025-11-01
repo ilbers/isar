@@ -14,12 +14,12 @@ from avocado.utils import process
 
 
 class CIBaseTest(CIBuilder):
-    def perform_build_test(self, targets, **kwargs):
+    def perform_build_test(self, targets, should_fail=False, **kwargs):
         self.configure(**kwargs)
 
         self.log.info("Starting build...")
 
-        self.bitbake(targets, **kwargs)
+        self.bitbake(targets, should_fail=should_fail, **kwargs)
 
     def perform_wic_partition_test(self, targets, wic_deploy_parts, **kwargs):
         self.configure(wic_deploy_parts=wic_deploy_parts, **kwargs)

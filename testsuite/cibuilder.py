@@ -281,7 +281,8 @@ class CIBuilder(Test):
         if os.path.exists(self.build_dir + '/' + src):
             shutil.move(self.build_dir + '/' + src, self.build_dir + '/' + dst)
 
-    def bitbake(self, target, bitbake_cmd=None, sig_handler=None, **kwargs):
+    def bitbake(self, target, bitbake_cmd=None, should_fail=False,
+                sig_handler=None, **kwargs):
         self.check_init()
         self.log.info("===================================================")
         self.log.info(f"Building {str(target)}")
@@ -318,13 +319,16 @@ class CIBuilder(Test):
                         continue
                     if fd == p1.stdout.fileno():
                         self.log.info(p1.stdout.readline().rstrip())
-                    if fd == p1.stderr.fileno():
+                    if fd == p1.stderr.fileno() and should_fail is False:
                         app_log.error(p1.stderr.readline().rstrip())
                 if p1.poll() is not None:
                     break
             p1.wait()
-            if p1.returncode:
-                self.fail("Bitbake failed")
+            if should_fail is False:
+                if p1.returncode:
+                    self.fail("Bitbake failed")
+            elif p1.returncode == 0:
+                self.fail("Bitbake suceeded but was expected to fail!")
 
     def backupfile(self, path):
         self.check_init()
