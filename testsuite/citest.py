@@ -278,6 +278,64 @@ class KernelTests(CIBaseTest):
         self.perform_build_test(targets, image_install=' '.join(modules), lines=lines)
 
 
+class InitRdBaseTest(CIBaseTest):
+    """
+    Helper class for InitRd build tests
+    """
+
+    DRACUT_CONF = [
+        "IMAGE_PREINSTALL:append = ' dracut'",
+        "IMAGE_INSTALL:remove = 'enable-fsck'",
+    ]
+
+    def dracut_in_image(self, targets):
+        machine = 'qemuamd64'
+        distro = 'bookworm'
+        image = 'isar-image-ci'
+        self.init()
+        self.perform_build_test(targets, lines=InitRdBaseTest.DRACUT_CONF)
+
+        for target in targets:
+            config = target.split(':')
+            machine = config[1].split('-')[0]
+            distro = config[1].split('-')[1]
+            image = config[2]
+
+            # systems booted via a dracut initrd have a dracut-shutdown service
+            # check its presence
+            self.vm_start(
+                machine.removeprefix('qemu'), distro, image=image,
+                cmd="systemctl is-active dracut-shutdown"
+            )
+
+
+class InitRdTest(InitRdBaseTest):
+    """
+    Tests for initrd generation
+    :avocado: tags=initrd,single,full
+    """
+
+    def test_dracut_in_image(self):
+        """Test switch to dracut in an image recipe."""
+        self.dracut_in_image(['mc:qemuamd64-bookworm:isar-image-ci'])
+
+
+class InitRdCrossTests(InitRdBaseTest):
+    """
+    Tests for initrd generation
+    :avocado: tags=initrd,full
+    """
+
+    def test_dracut_in_image(self):
+        """Test switch to dracut in an image recipe."""
+        self.dracut_in_image([
+            'mc:qemuamd64-bookworm:isar-image-ci',
+            'mc:qemuamd64-trixie:isar-image-ci',
+            'mc:qemuarm64-bookworm:isar-image-ci',
+            'mc:qemuarm64-trixie:isar-image-ci'
+        ])
+
+
 class WicTest(CIBaseTest):
 
     """
