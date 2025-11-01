@@ -3,6 +3,6 @@ part /boot --ondisk sda --source bootimg-efi-isar --sourceparams="loader=grub-ef
 # when excluding paths, just specify --exclude-path once and separate paths using spaces
 part /     --ondisk sda --source rootfs --fstype=ext4 --mkfs-extraopts "-T default" --label platform --align 1024 --exclude-path boot home --extra-space 1G
 # put home last to support auto-expand of this partition
-part /home --ondisk sda --source rootfs --rootfs-dir=${IMAGE_ROOTFS}/home --fstype=ext4 --mkfs-extraopts "-T default" --label platform --align 1024
+part /home --ondisk sda --source rootfs --rootfs-dir=${IMAGE_ROOTFS}/home --fstype=ext4 --mkfs-extraopts "-T default" --label home --align 1024
 
 bootloader --ptable gpt --timeout 3 --append "rootwait console=ttyS0,115200 console=tty0"
