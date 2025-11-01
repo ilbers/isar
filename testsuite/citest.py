@@ -324,6 +324,14 @@ class InitRdTest(InitRdBaseTest):
         self.init()
         self.perform_build_test(['mc:qemuamd64-bookworm:isar-dracut'])
 
+    def test_dracut_build_failure(self):
+        """ Check if the build fails if dracut fails to generate an initrd."""
+        lines = InitRdBaseTest.DRACUT_CONF
+        lines.append("ROOTFS_INITRAMFS_GENERATOR_CMDLINE:append = ' --unknown-option'")
+        self.init()
+        self.perform_build_test('mc:qemuamd64-bookworm:isar-image-ci',
+                                should_fail=True, lines=lines)
+
 
 class InitRdCrossTests(InitRdBaseTest):
     """
