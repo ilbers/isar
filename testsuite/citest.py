@@ -319,6 +319,11 @@ class InitRdTest(InitRdBaseTest):
         """Test switch to dracut in an image recipe."""
         self.dracut_in_image(['mc:qemuamd64-bookworm:isar-image-ci'])
 
+    def test_dracut_build_initrd(self):
+        """ Test build of an initrd image that uses dracut."""
+        self.init()
+        self.perform_build_test(['mc:qemuamd64-bookworm:isar-dracut'])
+
 
 class InitRdCrossTests(InitRdBaseTest):
     """
@@ -333,6 +338,16 @@ class InitRdCrossTests(InitRdBaseTest):
             'mc:qemuamd64-trixie:isar-image-ci',
             'mc:qemuarm64-bookworm:isar-image-ci',
             'mc:qemuarm64-trixie:isar-image-ci'
+        ])
+
+    def test_dracut_build_initrd(self):
+        """ Test build of initrd images that use dracut."""
+        self.init()
+        self.perform_build_test([
+            'mc:qemuamd64-bookworm:isar-dracut',
+            'mc:qemuamd64-trixie:isar-dracut',
+            'mc:qemuarm64-bookworm:isar-dracut',
+            'mc:qemuarm64-trixie:isar-dracut'
         ])
 
 
