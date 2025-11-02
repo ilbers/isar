@@ -288,6 +288,13 @@ class InitRdBaseTest(CIBaseTest):
         "IMAGE_INSTALL:remove = 'enable-fsck'",
     ]
 
+    def init(self):
+        super().init()
+        self.deploy_dir = os.path.join(self.build_dir, 'tmp', 'deploy')
+
+    def deploy_dir_image(self, machine):
+        return os.path.join(self.deploy_dir, 'images', machine)
+
     def dracut_in_image(self, targets):
         machine = 'qemuamd64'
         distro = 'bookworm'
@@ -307,6 +314,36 @@ class InitRdBaseTest(CIBaseTest):
                 machine.removeprefix('qemu'), distro, image=image,
                 cmd="systemctl is-active dracut-shutdown"
             )
+
+    def build_image_with_dependent_initrd(self, image, initrd,
+                                          distro="debian-bookworm",
+                                          machine="qemuamd64",
+                                          lines='',
+                                          bb_should_fail=False):
+        mc = f'mc:{machine}-{distro.removeprefix("debian-")}'
+        initrd_image = f'{initrd}-{distro}-{machine}.initrd.img'
+        initrd_path = os.path.join(self.deploy_dir_image(machine), initrd_image)
+
+        # cleansstate if the initrd image was already built/deployed to verify
+        # that a new build does result in the image being deployed
+        ret, _, err = self.exec_cmd(f'{mc}:{initrd}', 'bitbake -c cleansstate')
+        if ret:
+            self.fail(f"failed to clean {initrd}: {err}")
+
+        # Make sure it is no longer deployed
+        if os.path.exists(initrd_path):
+            os.unlink(initrd_path)
+
+        # Build the rootfs image and verify that its dependent initrd image
+        # was built and deployed
+        self.perform_build_test(f'{mc}:{image}', lines=lines, should_fail=bb_should_fail)
+
+        if bb_should_fail is False:
+            if os.path.exists(initrd_path) is False:
+                self.fail(f"initrd image not found: {initrd_path}!")
+        else:
+            if os.path.exists(initrd_path):
+                self.fail(f"initrd found despite bitbake failure: {initrd_path}!")
 
 
 class InitRdTest(InitRdBaseTest):
@@ -331,6 +368,52 @@ class InitRdTest(InitRdBaseTest):
         self.init()
         self.perform_build_test('mc:qemuamd64-bookworm:isar-image-ci',
                                 should_fail=True, lines=lines)
+
+    def test_var_initrd_image(self):
+        """ Check if deprecated INITRD_IMAGE variable may be used. """
+        initrd = 'isar-initramfs'
+        distro = 'debian-bookworm'
+        machine = 'qemuamd64'
+
+        lines = [
+            f"INITRD_IMAGE = '{initrd}-{distro}-{machine}.initrd.img'",
+            f"do_image[depends] += '{initrd}:do_build'"
+        ]
+
+        self.init()
+        self.build_image_with_dependent_initrd('isar-image-ci', initrd,
+                                               distro, machine, lines)
+
+    def test_var_image_initrd(self):
+        """ Check build of an image with a dependent initrd using IMAGE_INITRD. """
+        initrd = 'isar-initramfs'
+        lines = [f"IMAGE_INITRD = '{initrd}'"]
+
+        self.init()
+        self.build_image_with_dependent_initrd('isar-image-ci', initrd, lines=lines)
+
+    def test_var_image_initrd_and_initrd_image(self):
+        """ Check use of both IMAGE_INITRD and INITRD_IMAGE. """
+        initrd = 'isar-initramfs'
+
+        self.init()
+
+        # While both may be set, IMAGE_INITRD takes precedence. Ensure
+        # by specifying an invalid recipe name: bitbake should fail.
+        lines = [
+            "IMAGE_INITRD = 'not-a-valid-initrd-recipe'",
+            f"INITRD_IMAGE = '{initrd}-debian-bookworm-qemuamd64.initrd.img'"
+        ]
+        self.build_image_with_dependent_initrd('isar-image-ci', initrd, lines=lines,
+                                               bb_should_fail=True)
+
+        # The build should succeed if we have a valid IMAGE_INITRD even
+        # with an invalifd INITRD_IMAGE
+        lines = [
+            f"IMAGE_INITRD = '{initrd}'",
+            "INITRD_IMAGE = 'not-a-valid-initrd-file'"
+        ]
+        self.build_image_with_dependent_initrd('isar-image-ci', initrd, lines=lines)
 
 
 class InitRdCrossTests(InitRdBaseTest):

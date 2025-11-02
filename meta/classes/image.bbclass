@@ -21,9 +21,35 @@ IMAGE_INSTALL += "${KERNEL_IMAGE_PKG}"
 # Name of the image including distro&machine names
 IMAGE_FULLNAME = "${PN}-${DISTRO}-${MACHINE}"
 
-# These variables are used by wic and start_vm
+# Deprecated; this would be set to e.g. "${INITRAMFS_RECIPE}-${DISTRO}-${MACHINE}.initrd.img"
+INITRD_IMAGE ?= ""
+
+# IMAGE_INITRD should be used instead (variables consumed by this image class should
+# be prefixed with IMAGE_ for consistency)
+IMAGE_INITRD ?= ""
+
+# Name of the deployed initrd image
+INITRD_DEPLOY_FILE = "${@ d.getVar('IMAGE_INITRD') or '${PN}' }-${DISTRO}-${MACHINE}-initrd.img"
+
+# Make sure dependent initramfs recipe is built
+do_image[depends] += "${@ '${IMAGE_INITRD}:do_build' if '${IMAGE_INITRD}' else '' }"
+
+# Produce warning(s) if INITRD_IMAGE is used
+python() {
+    initrd_image = d.getVar('INITRD_IMAGE')
+    image_initrd = d.getVar('IMAGE_INITRD')
+    if initrd_image and image_initrd:
+        bb.warn('both INITRD_IMAGE (deprecated) and IMAGE_INITRD were set, '
+                'ignoring INITRD_IMAGE and using '
+                f'IMAGE_INITRD = "{image_initrd}"')
+        d.setVar('INITRD_IMAGE', '')
+    elif initrd_image:
+        bb.warn('INITRD_IMAGE is deprecated, use IMAGE_INITRD instead')
+        d.setVar('INITRD_DEPLOY_FILE', initrd_image)
+}
+
+# This variable is used by wic and start_vm
 KERNEL_IMAGE ?= "${IMAGE_FULLNAME}-${KERNEL_FILE}"
-INITRD_DEPLOY_FILE = "${@ d.getVar('INITRD_IMAGE') or '${IMAGE_FULLNAME}-initrd.img'}"
 
 # This defines the deployed dtbs for reuse by imagers
 DTB_FILES ?= ""
