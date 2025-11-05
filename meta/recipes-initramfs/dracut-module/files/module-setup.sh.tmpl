@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# called by dracut
+check() {
+
+    # If the binary(s) requirements are not fulfilled the module can't be installed.
+    require_binaries \
+        ${DRACUT_REQUIRED_BINARIES} \
+        || return 1
+    # ISAR_DRACUT_CHECK
+    return 0
+
+}
+
+# Module dependency requirements.
+depends() {
+    echo "${DRACUT_MODULE_DEPENDENCIES}"
+    # ISAR_DRACUT_DEPENDS
+    return 0
+
+}
+installkernel() {
+    # ISAR_DRACUT_KERNELINSTALL
+    return 0
+}
+
+cmdline() {
+    # ISAR_DRACUT_CMDLINE
+    return 0
+}
+
+install() {
+    for executable in ${DRACUT_REQUIRED_BINARIES}; do
+        if exec_path=$(command -v $executable 2>/dev/null); then
+            inst_binary "$exec_path"
+        else
+            echo "(ERROR): Unable to copy $executable" >&2
+            exit 1
+        fi
+    done
+    # ISAR_DRACUT_INSTALL
+}
