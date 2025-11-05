@@ -816,3 +816,17 @@ it happens already at build time.
 during the package installation won't be changed.
 
 Opt-out: `ROOTFS_FEATURES:remove = "populate-systemd-preset"`
+
+### Rework `no-generate-initrd` rootfs feature
+
+This negative feature is being replaced with a positive one:
+`generate-initrd`. The default behavior remains unchanged, as `generate-initrd`
+is now a default rootfs feature. Disabling initrd creation can be done in the
+following way:
+```
+ROOTFS_FEATURE:remove = "generate-initrd"
+```
+instead of
+```
+ROOTFS_FEATURE += "no-generate-initrd"
+```

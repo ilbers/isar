@@ -8,15 +8,17 @@ ROOTFS_DISTRO ?= "${DISTRO}"
 ROOTFS_PACKAGES ?= ""
 ROOTFS_BASE_DISTRO ?= "${BASE_DISTRO}"
 
+INITRD_IMAGE ?= ""
+
 # Features of the rootfs creation:
 # available features are:
 # 'clean-package-cache' - delete package cache from rootfs
 # 'generate-manifest' - generate a package manifest of the rootfs into ${ROOTFS_MANIFEST_DEPLOY_DIR}
 # 'export-dpkg-status' - exports /var/lib/dpkg/status file to ${ROOTFS_DPKGSTATUS_DEPLOY_DIR}
 # 'clean-log-files' - delete log files that are not owned by packages
-# 'no-generate-initrd' - do not generate debian default initrd
 # 'populate-systemd-preset' - enable systemd units according to systemd presets
-ROOTFS_FEATURES ?= ""
+# 'generate-initrd' - generate debian default initrd
+ROOTFS_FEATURES += "${@ 'generate-initrd' if d.getVar('INITRD_IMAGE') == '' else ''}"
 
 ROOTFS_APT_ARGS="install --yes -o Debug::pkgProblemResolver=yes"
 
@@ -350,7 +352,7 @@ rootfs_restore_initrd_tooling() {
 EOSUDO
 }
 
-ROOTFS_INSTALL_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'no-generate-initrd', 'rootfs_clear_initrd_symlinks', '', d)}"
+ROOTFS_INSTALL_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'generate-initrd', '', 'rootfs_clear_initrd_symlinks', d)}"
 rootfs_clear_initrd_symlinks() {
     sudo rm -f ${ROOTFSDIR}/initrd.img
     sudo rm -f ${ROOTFSDIR}/initrd.img.old
@@ -606,7 +608,7 @@ rootfs_generate_initramfs() {
 }
 
 python() {
-    if 'no-generate-initrd' not in d.getVar('ROOTFS_FEATURES', True).split():
+    if 'generate-initrd' in d.getVar('ROOTFS_FEATURES', True).split():
         bb.build.addtask('do_generate_initramfs', 'do_rootfs', 'do_rootfs_postprocess', d)
         bb.build.addtask('do_generate_initramfs_setscene', None, None, d)
 }

@@ -55,7 +55,7 @@ SBUILD_CHROOT_PREINSTALL_COMMON = " \
 SBUILD_CHROOT_DIR = "${WORKDIR}/rootfs"
 ROOTFSDIR = "${SBUILD_CHROOT_DIR}"
 ROOTFS_PACKAGES = "${SBUILD_CHROOT_PREINSTALL}"
-ROOTFS_FEATURES += "no-generate-initrd"
+ROOTFS_FEATURES:remove = "generate-initrd"
 
 ROOTFS_INSTALL_COMMAND:remove = "rootfs_restore_initrd_tooling"
 
