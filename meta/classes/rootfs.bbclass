@@ -610,7 +610,7 @@ rootfs_generate_initramfs() {
             mods_total="$(find ${ROOTFSDIR}/usr/lib/modules/$kernel_version -type f -name '*.ko*' | wc -l)"
             echo "Total number of modules: $mods_total"
             echo "Generating initrd for kernel version: $kernel_version"
-            sudo -E chroot "${ROOTFSDIR}" sh -c ' \
+            sudo -E chroot "${ROOTFSDIR}" sh -ec ' \
                 ${ROOTFS_INITRAMFS_GENERATOR_CMDLINE}; \
                 find /boot -name "initrd.img-$kernel_version*" -exec install --mode 0644 {} /isar-work/initrd.img \; \
                 '
