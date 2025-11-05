@@ -5,7 +5,13 @@ inherit deb-dl-dir
 
 ROOTFS_ARCH ?= "${DISTRO_ARCH}"
 ROOTFS_DISTRO ?= "${DISTRO}"
+
+def initramfs_generator_cmdline(d):
+    return "update-initramfs -u -v -k \"$kernel_version\""
+
 ROOTFS_PACKAGES ?= ""
+ROOTFS_INITRAMFS_GENERATOR_CMD = "${@ d.getVar('ROOTFS_INITRAMFS_GENERATOR_CMDLINE').split()[0]}"
+ROOTFS_INITRAMFS_GENERATOR_CMDLINE = "${@ initramfs_generator_cmdline(d)}"
 ROOTFS_BASE_DISTRO ?= "${BASE_DISTRO}"
 
 INITRD_IMAGE ?= ""
@@ -257,7 +263,7 @@ rootfs_disable_initrd_generation() {
     set -e
 
     mkdir -p "${ROOTFSDIR}${ROOTFS_STUBS_DIR}"
-    ln -s /usr/bin/true ${ROOTFSDIR}${ROOTFS_STUBS_DIR}/update-initramfs
+    ln -s /usr/bin/true ${ROOTFSDIR}${ROOTFS_STUBS_DIR}/${ROOTFS_INITRAMFS_GENERATOR_CMD}
 
     mkdir -p '${ROOTFSDIR}/etc/apt/apt.conf.d'
     echo 'DPkg::Path ${ROOTFS_STUBS_DIR}:/usr/sbin:/usr/bin:/sbin:/bin;' \
@@ -591,7 +597,7 @@ rootfs_generate_initramfs() {
             echo "Total number of modules: $mods_total"
             echo "Generating initrd for kernel version: $kernel_version"
             sudo -E chroot "${ROOTFSDIR}" sh -c ' \
-                update-initramfs -u -v -k "$kernel_version"'
+                ${ROOTFS_INITRAMFS_GENERATOR_CMDLINE};'
         done
         if [ -n "${INITRD_DEPLOY_FILE}" ]; then
             if [ -f "${ROOTFSDIR}/initrd.img" ]; then
