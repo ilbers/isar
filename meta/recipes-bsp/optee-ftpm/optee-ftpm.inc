@@ -42,7 +42,8 @@ TEMPLATE_VARS += "DEBIAN_BUILD_DEPENDS \
     TA_CPU \
     TA_DEV_KIT_DIR \
     MS_TPM_20_REF_DIR \
-    OPTEE_FTPM_SRCDIR"
+    OPTEE_FTPM_SRCDIR \
+    DEBIAN_STANDARDS_VERSION"
 
 do_prepare_build() {
     rm -rf "${S}/debian"

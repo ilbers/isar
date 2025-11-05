@@ -68,7 +68,8 @@ TEMPLATE_VARS += " \
     SIGNATURE_HASHFN \
     SIGNATURE_SIGNWITH \
     PN \
-    DEBIAN_COMPAT"
+    DEBIAN_COMPAT \
+    DEBIAN_STANDARDS_VERSION"
 
 # Add custom cflags to the kernel build
 KCFLAGS ?= "-fdebug-prefix-map=${CURDIR}=. -fmacro-prefix-map=${CURDIR}=."
