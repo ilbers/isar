@@ -799,14 +799,13 @@ unset (the default), `Rules-Requires-Root` will not be added. Otherwise,
 Set `Rules-Requires-Root: no` in `debian/control` files to prevent unnecessary
 invocation of fakeroot during package builds. This follows Debian guidelines
 recommending not to use fakeroot when no privileged operations (e.g., `chown`,
-root file modifications) are required. 
+root file modifications) are required.
 
 ### Add opensbi class to simplify custom OpenSBI builds
 
 A new class called `opensbi` has been introduced that shall help writing
 shorter recipes for custom OpenSBI builds. Usage examples can be found in
 `meta-isar/recipes/bsp/opensbi`.
-root file modifications) are required.
 
 ### Populate systemd units based on presets during image postprocessing
 
