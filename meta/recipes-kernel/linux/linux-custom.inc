@@ -31,7 +31,7 @@ KBUILD_DEPENDS ?= "build-essential:native, \
                    linux-image-${KERNEL_NAME_PROVIDED}:${DISTRO_ARCH} <pkg.${BPN}.kbuild !pkg.${BPN}.kernel>, \
                    rsync,"
 
-KERNEL_DEBIAN_DEPENDS ?= "initramfs-tools | linux-initramfs-tool, \
+KERNEL_DEBIAN_DEPENDS ?= "initramfs-tools | linux-initramfs-tool | dracut, \
                           kmod, \
                           linux-base (>= 4.3~),"
 
