@@ -1682,13 +1682,36 @@ CONTAINER_DELETE_AFTER_LOAD = "1"
 SRC_URI += "docker://debian;digest=sha256:f528891ab1aa484bf7233dbcc84f3c806c3e427571d75510a9d74bb5ec535b33;tag=bookworm-20240701-slim"
 ```
 
+
+## Switch from initramfs-tools to dracut
+
+To build a Isar image with dracut as the initramfs generator instead
+of initramfs-tools in Debian 13(trixie) or previous versions add dracut
+as a package to the image:
+
+```
+IMAGE_PREINSTALL +=  "dracut"
+```
+
+An dracut based initrd contains the file `/usr/lib/initrd-release`. In
+case of trixie the file has the following content:
+
+```bash
+NAME=dracut
+ID=dracut
+VERSION_ID="106-6"
+ANSI_COLOR="0;34"
+```
+
+
 ## Customize the initramfs
 
 Isar supports the customization of initramfs images by providing an
-infrastructure for quickly creating hooks and by allowing to replace the
-Debian-generated image with a separately built one.
+infrastructure for quickly creating hooks in case of `initramfs-tools`
+or modules for `dracut` by allowing to replace the Debian-generated
+image with a separately built one.
 
-### Creating initramfs hooks
+### Creating initramfs-tools hooks
 
 To create an initramfs hook that adds tools or modules to the image and may
 also run custom scripts during boot, use the include file
@@ -1725,6 +1748,33 @@ initramfs.
 
 See `initramfs-example` for an exemplary hook recipe.
 
+### Creating dracut modules
+
+To create a custom dracut module that adds tools, kernel-modules or services
+to the initrd, use the class `dracut-module`.
+It is controlled by following variables:
+
+- `DRACUT_REQUIRED_BINARIES` defines the binaries required by the module.
+- `DRACUT_MODULE_DEPENDENCIES` defines dependencies to other dracut modules.
+- `DRACUT_MODULE_NO` defines the module number which prefixes the module name
+to define the execution order.The default is `50`.
+- `DRACUT_MODULE_NAME` the name of the module which is used to install the
+module in the initrd or as a dependency to other modules. It defaults to
+`${PN}` without the prefix `dracut-`.
+- `DRACUT_MODULE_PATH` contains the path to the installed module. It is set
+to `${D}/usr/lib/dracut/modules.d/${DRACUT_MODULE_NO}${DRACUT_MODULE_NAME}/`
+
+The `install()` function is added by storing the file `install.sh` in the
+files directory of the dracut module.
+
+Other files can by added to the module by coping them to the Module folder
+with:
+```bash
+install -m 666 ${WORKDIR}/lighttpd.service ${DRACUT_MODULE_PATH}
+```
+
+See `dracut-example-lighttpd` for an exemplary hook recipe.
+
 ### Creating an initramfs image aside the rootfs
 
 To avoid shipping all tools and binaries needed to generate an initramfs, isar
@@ -1738,4 +1788,19 @@ self-built packages and `INITRAMFS_PREINSTALL` for prebuilt ones, analogously
 to the respective `IMAGE_*` variables. Note that the kernel is automatically
 added to `INITRAMFS_INSTALL` if `KERNEL_NAME` is set.
 
-See `isar-initramfs` for an example recipe.
+See `isar-initramfs` or `isar-dracut` for an example recipes.
+
+#### dracut config
+
+A dracut initramfs can be configured by the command line or a configuration file.
+The use configuration files is preferred:
+ - Debian provides dracut-config-* packages
+ - It is easier to upstream and to maintain.
+
+The configuration file can be chosen with the variable `DRACUT_CONFIG_PATH`. This variable
+contains the absolut path to the used configuration in the root file system.
+
+Still there are some use cases like debugging to add modules via the command line.
+For this the recipe meta/classes/initrd-dracut.bbclass provides the following options:
+ - `DRACUT_EXTRA_DRIVERS` add extra drivers to the dracut initrd
+ - `DRACUT_EXTRA_MODULES` add extra modules to the dracut initrd
