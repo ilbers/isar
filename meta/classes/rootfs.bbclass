@@ -141,6 +141,12 @@ rootfs_do_mounts() {
                 mount -o bind,private '${REPO_ISAR_DIR}/${DISTRO}' '${ROOTFSDIR}/isar-apt'
         fi
 
+        if [ ! -e '$ROOTFSDIR'/isar-work ]; then
+            mkdir -p '${ROOTFSDIR}/isar-work'
+            mountpoint -q '${ROOTFSDIR}/isar-work' || \
+                mount -o bind,private '${WORKDIR}' '${ROOTFSDIR}/isar-work'
+        fi
+
         # Mount base-apt if 'ISAR_USE_CACHED_BASE_REPO' is set
         if [ "${@repr(bb.utils.to_boolean(d.getVar('ISAR_USE_CACHED_BASE_REPO')))}" = 'True' ]
         then
@@ -163,6 +169,11 @@ rootfs_do_umounts() {
         if mountpoint -q '${ROOTFSDIR}/base-apt'; then
             umount '${ROOTFSDIR}/base-apt'
             rmdir --ignore-fail-on-non-empty ${ROOTFSDIR}/base-apt
+        fi
+
+        if mountpoint -q '${ROOTFSDIR}/isar-work'; then
+            umount '${ROOTFSDIR}/isar-work'
+            rmdir --ignore-fail-on-non-empty ${ROOTFSDIR}/isar-work
         fi
 
         if mountpoint -q '${ROOTFSDIR}/dev/pts'; then
