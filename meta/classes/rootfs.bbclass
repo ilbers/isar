@@ -6,9 +6,14 @@ inherit deb-dl-dir
 ROOTFS_ARCH ?= "${DISTRO_ARCH}"
 ROOTFS_DISTRO ?= "${DISTRO}"
 
+# This variable is intended to be set if dracut is
+# the default initramfs generator and it is not
+# possible to derive the value in another way
+ROOTFS_USE_DRACUT ??= ""
+
 def initramfs_generator_cmdline(d):
     rootfs_packages =  d.getVar('ROOTFS_PACKAGES') or ''
-    if 'dracut' in rootfs_packages:
+    if 'dracut' in rootfs_packages or bb.utils.to_boolean(d.getVar('ROOTFS_USE_DRACUT')):
         return "dracut --force --kver \"$kernel_version\""
     return "update-initramfs -u -v -k \"$kernel_version\""
 
