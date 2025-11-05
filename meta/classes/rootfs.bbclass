@@ -608,17 +608,11 @@ rootfs_generate_initramfs() {
             echo "Total number of modules: $mods_total"
             echo "Generating initrd for kernel version: $kernel_version"
             sudo -E chroot "${ROOTFSDIR}" sh -c ' \
-                ${ROOTFS_INITRAMFS_GENERATOR_CMDLINE};'
+                ${ROOTFS_INITRAMFS_GENERATOR_CMDLINE}; \
+                find /boot -name "initrd.img-$kernel_version*" -exec install --mode 0644 {} /isar-work/initrd.img \; \
+                '
         done
-        if [ -n "${INITRD_DEPLOY_FILE}" ]; then
-            if [ -f "${ROOTFSDIR}/initrd.img" ]; then
-                # debian (mkinitramfs)
-                cp ${ROOTFSDIR}/initrd.img ${DEPLOYDIR}/${INITRD_DEPLOY_FILE}
-            else
-                # ubuntu (dracut)
-                cp ${ROOTFSDIR}/boot/initrd.img ${DEPLOYDIR}/${INITRD_DEPLOY_FILE}
-            fi
-        fi
+        install --owner $(id -u) --group $(id -g) ${WORKDIR}/initrd.img ${DEPLOYDIR}/${INITRD_DEPLOY_FILE}
     else
         echo "no kernel in this rootfs, do not generate initrd"
     fi
