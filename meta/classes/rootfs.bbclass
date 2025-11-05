@@ -7,6 +7,9 @@ ROOTFS_ARCH ?= "${DISTRO_ARCH}"
 ROOTFS_DISTRO ?= "${DISTRO}"
 
 def initramfs_generator_cmdline(d):
+    rootfs_packages =  d.getVar('ROOTFS_PACKAGES') or ''
+    if 'dracut' in rootfs_packages:
+        return "dracut --force --kver \"$kernel_version\""
     return "update-initramfs -u -v -k \"$kernel_version\""
 
 ROOTFS_PACKAGES ?= ""
