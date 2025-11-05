@@ -17,6 +17,7 @@ DEBIAN_BREAKS ??= ""
 DEBIAN_BUILT_USING ??= ""
 DEBIAN_MULTI_ARCH ??= "no"
 DEBIAN_COMPAT ??= "10"
+DEBIAN_STANDARDS_VERSION ??= "3.9.6"
 DEBIAN_CHANGELOG_TIMESTAMP ??= "3600"
 DEBIAN_RULES_REQUIRES_ROOT ??= ""
 DESCRIPTION ??= "must not be empty"
@@ -80,14 +81,15 @@ deb_create_control[vardeps] += "DEBIANIZE_BUILD_DEPENDS \
                                 DEBIAN_BREAKS \
                                 DEBIAN_BUILT_USING \
                                 DEBIAN_CONFLICTS \
-                                DEBIAN_RULES_REQUIRES_ROOT"
+                                DEBIAN_RULES_REQUIRES_ROOT \
+                                DEBIAN_STANDARDS_VERSION"
 deb_create_control() {
 	# Add Source section
 	cat << EOF > ${S}/debian/control
 Source: ${BPN}
 Section: ${@ deb_list_beautify(d, 'DEBIAN_SECTION')}
 Priority: optional
-Standards-Version: 3.9.6
+Standards-Version: ${DEBIAN_STANDARDS_VERSION}
 Maintainer: ${MAINTAINER}
 Build-Depends: ${@ deb_list_beautify(d, 'DEBIANIZE_BUILD_DEPENDS')}
 EOF

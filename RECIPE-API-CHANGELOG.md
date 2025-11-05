@@ -242,6 +242,15 @@ consumption by imaging classes.
 Additional build dependencies of auto-debianized packages can now be defined
 by setting DEBIAN_BUILD_DEPENDS.
 
+### Add DEBIAN_STANDARDS_VERSION as a deb_debianize parameter
+
+By default, the Standards-Version field in the debian/control file is automatically
+set based on the corresponding Debian suite.
+If you need to override this default value, you can do so by defining
+the DEBIAN_STANDARDS_VERSION variable in your recipe.
+
+E.x: `DEBIAN_STANDARDS_VERSION:<suite-name> = <version>`
+
 ### Separation of ${S} and ${D} in dpkg-raw
 
 ${S} can now be used for checking out sources without being linked implicitly
