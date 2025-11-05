@@ -14,4 +14,12 @@ INITRAMFS_PREINSTALL += " \
 
 # Recipes that should be installed into the initramfs build rootfs.
 INITRAMFS_INSTALL += " \
+    dracut-example-lighttpd \
     "
+
+# This option does not work with some of the dracut modules in Debian
+# as there is no standardized mapping between module name and package name
+DRACUT_EXTRACT_MODULES_FROM_PACKAGE_NAMES = "True"
+
+# Alternative is to add the example module manually
+#DRACUT_EXTRA_MODULES += "example-lighttpd"
