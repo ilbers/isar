@@ -33,7 +33,7 @@ Description: Linux support headers for userspace development
  are used by the installed headers for GNU glibc and other system libraries.
 
 Package: linux-libc-dev-${DISTRO_ARCH}-cross
-Build-Profiles: <!pkg.${BPN}.nolibcdev cross !pkg.${BPN}.kbuild>
+Build-Profiles: <!pkg.${BPN}.nolibcdev pkg.${BPN}.cross !pkg.${BPN}.kbuild>
 Section: devel
 Provides: linux-kernel-headers-${DISTRO_ARCH}-cross
 Architecture: all
@@ -53,7 +53,7 @@ Description: Linux kernel debugging symbols for @KR@
  all the necessary debug symbols for the kernel and its modules.
 
 Package: linux-kbuild-${KERNEL_NAME_PROVIDED}
-Build-Profiles: <pkg.${BPN}.kbuild !cross>
+Build-Profiles: <pkg.${BPN}.kbuild !pkg.${BPN}.cross>
 Architecture: any
 Depends: ${perl:Depends}, ${shlibs:Depends}
 Description: ${KERNEL_NAME_PROVIDED} Linux kbuild scripts and tools for @KR@
@@ -61,7 +61,7 @@ Description: ${KERNEL_NAME_PROVIDED} Linux kbuild scripts and tools for @KR@
  This is useful for people who need to build external modules
 
 Package: linux-kbuild-${KERNEL_NAME_PROVIDED}-${DISTRO_ARCH}-cross
-Build-Profiles: <pkg.${BPN}.kbuild cross>
+Build-Profiles: <pkg.${BPN}.kbuild pkg.${BPN}.cross>
 Architecture: any
 Multi-Arch: foreign
 Depends: ${perl:Depends}, ${shlibs:Depends}
