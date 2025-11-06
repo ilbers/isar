@@ -168,7 +168,7 @@ headers_check() {
 libc_headers() {
     mkdir -p ${deb_libc_hdr_dir}
     arches="${DISTRO_ARCH}"
-    if echo "${DEB_BUILD_PROFILES}" | grep -q "libcdev-arch-all"; then
+    if echo "${DEB_BUILD_PROFILES}" | grep -q "pkg.${BPN}.libcdev-arch-all"; then
         arches="amd64 armhf arm64 i386 mipsel riscv64"
     fi
     for distro_arch in ${arches}; do

@@ -28,7 +28,7 @@ KBUILD_DEPENDS ?= "build-essential:native, \
                    flex, \
                    git, \
                    kmod, \
-                   linux-image-${KERNEL_NAME_PROVIDED}:${DISTRO_ARCH} <kbuild !kernel>, \
+                   linux-image-${KERNEL_NAME_PROVIDED}:${DISTRO_ARCH} <pkg.${BPN}.kbuild !pkg.${BPN}.kernel>, \
                    rsync,"
 
 KERNEL_DEBIAN_DEPENDS ?= "initramfs-tools | linux-initramfs-tool, \
@@ -73,6 +73,7 @@ TEMPLATE_FILES += "                  \
 "
 
 TEMPLATE_VARS += "                \
+    BPN                           \
     KBUILD_DEPENDS                \
     KERNEL_ARCH                   \
     KERNEL_DEBIAN_DEPENDS         \
@@ -114,17 +115,17 @@ python() {
 }
 
 # Default profiles and provides
-BUILD_PROFILES = "kernel kbuild"
+BUILD_PROFILES = "pkg.${BPN}.kernel pkg.${BPN}.kbuild"
 
 # We only offer the -kbuildtarget variant when actually cross compiling
 BBCLASSEXTEND:append:cross-profile = " kbuildtarget"
 
 # When cross-profile is active:
 # build only kernel (including config) with the default variant of the recipe
-BUILD_PROFILES:cross-profile = "kernel"
+BUILD_PROFILES:cross-profile = "pkg.${BPN}.kernel"
 
 # -native: kbuild package for host
-BUILD_PROFILES:class-native = "kbuild"
+BUILD_PROFILES:class-native = "pkg.${BPN}.kbuild"
 RECIPE_PROVIDES:class-native = " \
     linux-headers-${KERNEL_NAME_PROVIDED} \
     linux-kbuild-${KERNEL_NAME_PROVIDED}"
@@ -135,7 +136,7 @@ RECIPE_PROVIDES:class-native = " \
 DEPENDS:class-native += "${BPN}-pseudo"
 
 # -kbuildtarget: kbuild package for target, enforcing non-cross-build
-BUILD_PROFILES:class-kbuildtarget = "kbuild"
+BUILD_PROFILES:class-kbuildtarget = "pkg.${BPN}.kbuild"
 RECIPE_PROVIDES:class-kbuildtarget = " \
     linux-headers-${KERNEL_NAME_PROVIDED} \
     linux-kbuild-${KERNEL_NAME_PROVIDED}"
@@ -214,12 +215,12 @@ def config_fragments(d):
 def get_additional_build_profiles(d):
     profiles = d.getVar('BASE_DISTRO')
     if not bb.utils.to_boolean(d.getVar('KERNEL_LIBC_DEV_DEPLOY')):
-        profiles += ' nolibcdev'
+        profiles += ' pkg.{}.nolibcdev'.format(d.getVar('BPN'))
     elif bb.utils.to_boolean(d.getVar('KERNEL_LIBC_DEV_ARCH_ALL')):
-        profiles += ' libcdev-arch-all'
+        profiles += ' pkg.{}.libcdev-arch-all'.format(d.getVar('BPN'))
     return profiles
 
-KERNEL_LIBC_DEV_ARCH = "${@ bb.utils.contains('DEB_BUILD_PROFILES', 'libcdev-arch-all', 'all\nMulti-Arch: foreign', 'any', d) }"
+KERNEL_LIBC_DEV_ARCH = "${@ bb.utils.contains('DEB_BUILD_PROFILES', 'pkg.{}.libcdev-arch-all'.format(d.getVar('BPN')), 'all\nMulti-Arch: foreign', 'any', d) }"
 DEB_BUILD_PROFILES += "${@get_additional_build_profiles(d)}"
 
 do_prepare_build:prepend() {
