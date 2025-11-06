@@ -8,8 +8,8 @@ CUSTOMIZATIONS[doc] = "List of customization packages to be installed in images.
 
 CUSTOMIZATION_VARS ?= "${DISTRO} ${MACHINE}"
 CUSTOMIZATION_VARS[doc] = "List of variables that should be added to customization package names."
-CUSTOMIZATION_VARS_IMAGE ?= "${IMAGE}"
-CUSTOMIZATION_VARS:append = " ${@d.getVar('CUSTOMIZATION_VARS_IMAGE') if d.getVar('CUSTOMIZATION_FOR_IMAGES').strip() else ''}"
+OVERRIDES:append = "${@ ':customization-for-images' if (d.getVar('CUSTOMIZATION_FOR_IMAGES') or '').strip() else '' }"
+CUSTOMIZATION_VARS:append:customization-for-images = " ${IMAGE}"
 
 CUSTOMIZATION_VARS_PREFIXED ?= "${DISTRO}"
 CUSTOMIZATION_VARS_PREFIXED[doc] = "List of variables from CUSTOMIZATION_VARS that should be prefixed rather than suffixed to customization package names."
