@@ -106,11 +106,13 @@ python multiarch_virtclass_handler() {
         # Arch=all packages might build depend on other arch=all packages,
         # hence we need to correctly model the dependency chain.
         # We implement this by dispatching the non-native variant to the -native
-        # variant by adding a dependency. We further replace the non-native
-        # do_deploy_dep task with a noop to preserve the dependency chain.
+        # variant by adding a dependency. We further empty the non-native
+        # do_deploy_dep task and clear the internal dependency chain, but keep
+        # other attached variables like RDEPENDS to preserve the dependency chain.
         e.data.setVar('do_deploy_deb', '')
-        bb.build.deltask('deploy_deb', e.data)
-        bb.build.addtask('deploy_deb', 'do_build', '', e.data)
+        # clear internal dependencies (e.g. to do_dpkg_build)
+        e.data.setVarFlag('do_deploy_deb', 'deps', [])
+        # dispatch to native variant
         e.data.setVarFlag('do_deploy_deb', 'depends', f'{pn}-native:do_deploy_deb')
 }
 addhandler multiarch_virtclass_handler
