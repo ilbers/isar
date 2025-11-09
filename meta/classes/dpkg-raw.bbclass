@@ -23,7 +23,7 @@ do_prepare_build[cleandirs] += "${S}/debian"
 do_prepare_build() {
 	cd ${D}
 	find . -maxdepth 1 ! -name .. -and ! -name . -and ! -name debian | \
-		sed 's:^./::' > ${S}/debian/${PN}.install
+		sed 's:^./::' | sort > ${S}/debian/${PN}.install
 
 	deb_debianize
 
