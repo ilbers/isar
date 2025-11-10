@@ -156,12 +156,19 @@ ISAR_CROSS_COMPILE:class-kbuildtarget = "0"
 RECIPE_PROVIDES = " \
     linux-image-${KERNEL_NAME_PROVIDED} \
     linux-headers-${KERNEL_NAME_PROVIDED} \
-    linux-libc-dev \
-    linux-libc-dev-${DISTRO_ARCH}-cross \
     linux-image-${KERNEL_NAME_PROVIDED}-dbg \
     linux-kbuild-${KERNEL_NAME_PROVIDED} \
     ${BPN}-pseudo-native \
 "
+
+# Provide linux-libc-dev packages unless nolibcdev profile used
+OVERRIDES:append = ":${@ bb.utils.contains('DEB_BUILD_PROFILES', 'pkg.{}.nolibcdev'.format(d.getVar('BPN')), 'nolibcdev', 'libcdev', d)}"
+
+RECIPE_PROVIDES:append:libcdev = " \
+    linux-libc-dev \
+    linux-libc-dev-${DISTRO_ARCH}-cross \
+"
+
 # When cross-profile is active:
 # kbuild package is provided by -native or -kbuildtarget variant. Also headers
 # provisioning moves over to ensure those variants are pulled, although the
