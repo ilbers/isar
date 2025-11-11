@@ -446,14 +446,6 @@ do_rootfs_finalize() {
                 -maxdepth 1 -name 'qemu-*-static' -type f -delete
         fi
 
-        # needed only for debootstrap, mmdebstrap leave a 0000bootstrap.list behind
-        if [ -e "${ROOTFSDIR}/etc/apt/sources-list" ] && \
-           [ -d "${ROOTFSDIR}/etc/apt/sources.list.d" ] && \
-           [ -z "$(find ${ROOTFSDIR}/etc/apt/sources.list.d -mindepth 1)" ]; then
-            mv "${ROOTFSDIR}/etc/apt/sources-list" \
-                "${ROOTFSDIR}/etc/apt/sources.list.d/bootstrap.list"
-        fi
-
         if [ -n "${IMAGE_LISTS}" ]; then
             find "${ROOTFSDIR}/etc/apt/sources.list.d/" ! -type d -exec rm -f {} \;
             for l in ${IMAGE_LISTS}; do

@@ -231,7 +231,3 @@ USER_isar[flags] += "clear-text-password"
 # To know more details about this variable and how to set the value refer below
 # https://reproducible-builds.org/docs/source-date-epoch/
 #SOURCE_DATE_EPOCH =
-
-# Uncomment this to use old isar-bootstrap provider for rootfs prepare
-#PREFERRED_PROVIDER_bootstrap-host ?= "isar-bootstrap-host"
-#PREFERRED_PROVIDER_bootstrap-target ?= "isar-bootstrap-target"

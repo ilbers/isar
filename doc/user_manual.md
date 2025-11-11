@@ -66,8 +66,7 @@ The steps below describe how to build the images provided by default.
 
 ### Install Host Tools
 
-The supported host system is >= buster for debootstrap and >= bullseye for
-default mmdebstrap provider.
+The supported host system is >= bullseye for default mmdebstrap provider.
 
 Building `debian-trixie` requires host system >= bookworm.
 
@@ -95,12 +94,6 @@ apt install \
   sbuild \
   schroot \
   zstd
-```
-
-If using isar-bootstrap provider, debootstrap should be installed instead of
-mmdebstrap:
-```
-apt install debootstrap
 ```
 
 If your host is bullseye or bookworm, also install the following package.
@@ -1254,7 +1247,7 @@ The debug artifacts will be placed in `${CCACHE_DIR}/debug`.
 Isar supports caching of bitbake task artifacts using the sstate-cache
 feature known from OpenEmbedded. Isar caches
 
-  * the Debian bootstrap (`isar-bootstrap` recipe)
+  * the Debian bootstrap (`isar-mmdebstrap` recipe)
   * Debian packages (built with the `dpkg` or `dpkg-raw` classes)
   * root file systems (schroot and image rootfs)
 

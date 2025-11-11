@@ -889,3 +889,11 @@ method (based on deboostrap)
 
 Use wic's gpt-hybrid partition type combined with --mbr for the legacy
 partitions instead.
+
+### Remove isar-bootstrap support
+
+The default bootstrap procedure is performed with isar-mmdebstrap.
+The alternative with isar-bootstrap is outdated and untested. It is therefore
+removed.
+A custom implementation still can be selected by setting
+PREFERRED_PROVIDER_bootstrap-{host,target} in local.conf.

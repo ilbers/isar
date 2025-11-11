@@ -9,8 +9,6 @@ inherit bootstrap
 inherit compat
 inherit deb-dl-dir
 
-FILESEXTRAPATHS:append = ":${LAYERDIR_core}/recipes-core/isar-bootstrap/files"
-
 DISTRO_BOOTSTRAP_BASE_PACKAGES += "locales apt"
 DISTRO_BOOTSTRAP_BASE_PACKAGES:append:https-support = " ca-certificates"
 

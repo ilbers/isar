@@ -14,7 +14,7 @@ config IMAGE_BASE
 	bool "Base image"
 	help
 	  This is the basic Isar image with bare minimum of preinstalled packages.
-	  It's technically close do the debootstrapped system with packages
+	  It's technically close do the mmdebstrapped system with packages
 	  required to boot up the system.
 
 config IMAGE_DEBUG

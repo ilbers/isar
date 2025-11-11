@@ -23,9 +23,6 @@ DISTRO_BOOTSTRAP_BASE_PACKAGES:append:jammy = " usrmerge"
 # kernel package name is linux-image-generic in Ubuntu
 KERNEL_NAME = "generic"
 
-# that is what debootstrap_1.0.118ubuntu1 does anyways
-DISTRO_DEBOOTSTRAP_SCRIPT = "/usr/share/debootstrap/scripts/gutsy"
-
 DISTRO_CONFIG_SCRIPT ?= "debian-configscript.sh"
 
 DISTRO_KERNELS ?= " \
