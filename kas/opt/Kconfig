@@ -194,3 +194,13 @@ config KAS_INCLUDE_CACHE_DBG_PKGS
 	string
 	default "kas/opt/cache-dbg-pkgs.yaml"
 	depends on CACHE_DBG_PKGS
+
+config USE_DRACUT
+	bool "Use dracut to generate the initramfs"
+	help
+          This feature enables generating the initramfs using the dracut tool
+
+config KAS_INCLUDE_USE_DRACUT
+	string
+	default "kas/opt/dracut.yaml"
+	depends on USE_DRACUT
