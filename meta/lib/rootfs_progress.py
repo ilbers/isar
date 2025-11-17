@@ -81,7 +81,11 @@ class InitrdProgressHandler(PkgsProgressHandler):
             self._stage = 'post-prepare'
 
     def process_line(self, line):
-        if line.startswith('Adding module'):
+        if (
+            line.startswith("Adding module")
+            or line.startswith("dracut-install: cp")
+            or line.startswith("dracut-install: Failed to find module")
+        ):
             self._pkg += 1
         elif line.startswith('(excluding'):
             self._pkg += len(line.split(' ')) - 1
