@@ -252,7 +252,7 @@ install_kbuild() {
 
     mkdir -p ${destdir}
 
-    (cd ${S}; find . -path './scripts/*' -a -path './tools/*' -a \( -name 'Makefile*' -o -name 'Kconfig*' -o -name '*.pl' \)) >>${src_kbuild_files}
+    (cd ${S}; find . \( -path './scripts/*' -o -path './tools/*' \) -a \( -name 'Makefile*' -o -name 'Kconfig*' -o -name '*.pl' \)) >>${src_kbuild_files}
     (cd ${S}; find scripts -type f -o -type l) >>${src_kbuild_files}
 
     (cd ${O}; find scripts -type f) >>${obj_kbuild_files}
