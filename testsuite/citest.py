@@ -255,6 +255,17 @@ class CrossTest(CIBaseTest):
         self.init()
         self.perform_build_test(targets)
 
+    def test_cross_dependencies(self):
+        targets = [
+            'mc:qemuarm64-bookworm:isar-image-ci',
+        ]
+
+        lines = [f"IMAGER_BUILD_DEPS:append = ' test-all-depnocross-native'",
+                 f"IMAGE_INSTALL:append = ' test-all-deponlycross'",
+        ]
+
+        self.init()
+        self.perform_build_test(targets, lines=lines)
 
 class KernelTests(CIBaseTest):
     """

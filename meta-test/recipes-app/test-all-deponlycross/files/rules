@@ -1,0 +1,11 @@
+#!/usr/bin/make -f
+%:
+	dh \$@
+
+# Detect cross-compilation and fail if so
+override_dh_auto_configure:
+	@if [ "$(DEB_BUILD_ARCH)" != "$(DEB_HOST_ARCH)" ]; then \
+		echo "Cross-compilation detected! This is an \"all\" package."; \
+		exit 1; \
+	fi
+	dh_auto_configure
