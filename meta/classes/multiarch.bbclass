@@ -31,8 +31,6 @@ python() {
     # build native separately only when it differs from the target variant
     # We must not short-circuit for DPKG_ARCH=all packages, as they might
     # have transitive dependencies which need to be built for -native.
-    # This special handling for DPKG_ARCH=all packages is left to the
-    # multiarch_virtclass_handler
     if archDiffers:
         d.appendVar('BBCLASSEXTEND', ' native')
     else:
@@ -103,17 +101,8 @@ python multiarch_virtclass_handler() {
         fixup_pn_in_vars(e.data)
         fixup_depends('-native', e.data)
     elif archIsAll and archDiffers:
-        # Arch=all packages might build depend on other arch=all packages,
-        # hence we need to correctly model the dependency chain.
-        # We implement this by dispatching the non-native variant to the -native
-        # variant by adding a dependency. We further empty the non-native
-        # do_deploy_dep task and clear the internal dependency chain, but keep
-        # other attached variables like RDEPENDS to preserve the dependency chain.
-        e.data.setVar('do_deploy_deb', '')
-        # clear internal dependencies (e.g. to do_dpkg_build)
-        e.data.setVarFlag('do_deploy_deb', 'deps', [])
-        # dispatch to native variant
-        e.data.setVarFlag('do_deploy_deb', 'depends', f'{pn}-native:do_deploy_deb')
+        # Speed up Arch=all package build
+        e.data.setVar('PACKAGE_ARCH', d.getVar('HOST_ARCH'))
 }
 addhandler multiarch_virtclass_handler
 multiarch_virtclass_handler[eventmask] = "bb.event.RecipePreFinalise"
