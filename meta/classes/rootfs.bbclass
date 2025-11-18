@@ -388,7 +388,8 @@ do_rootfs_install[root_cleandirs] = "${ROOTFSDIR}"
 do_rootfs_install[vardeps] += "${ROOTFS_CONFIGURE_COMMAND} ${ROOTFS_INSTALL_COMMAND} ${ROOTFS_VARDEPS}"
 do_rootfs_install[vardepsexclude] += "IMAGE_ROOTFS"
 do_rootfs_install[depends] = "bootstrap-${@'target' if d.getVar('ROOTFS_ARCH') == d.getVar('DISTRO_ARCH') else 'host'}:do_build"
-do_rootfs_install[recrdeptask] = "do_deploy_deb"
+do_rootfs_install[deptask] = "do_deploy_deb"
+do_rootfs_install[rdeptask] = "do_deploy_deb"
 do_rootfs_install[network] = "${TASK_USE_SUDO}"
 python do_rootfs_install() {
     configure_cmds = (d.getVar("ROOTFS_CONFIGURE_COMMAND") or "").split()
