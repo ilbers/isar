@@ -310,6 +310,20 @@ class BootimgEFIPlugin(SourcePlugin):
             logger.debug("Payload directory: %s", payload_dir)
             shutil.copytree(payload_dir, iso_dir, symlinks=True, dirs_exist_ok=True)
 
+    @classmethod
+    def _sign_file(cls, signee, source_params):
+        sign_script = source_params.get("signwith")
+        if sign_script and os.path.exists(sign_script):
+            logger.info("sign with script %s", sign_script)
+            orig_signee = signee + ".unsigned"
+            os.rename(signee, orig_signee)
+            sign_cmd = "{sign_script} {orig_signee} {signee}"\
+                .format(sign_script=sign_script, orig_signee=orig_signee,
+                        signee=signee)
+            exec_cmd(sign_cmd)
+        elif sign_script and not os.path.exists(sign_script):
+            logger.error("Could not find script %s", sign_script)
+            exit(1)
 
     @classmethod
     def do_prepare_partition(cls, part, source_params, creator, cr_workdir,
@@ -406,6 +420,8 @@ class BootimgEFIPlugin(SourcePlugin):
 
             install_cmd = isar_populate_boot_cmd(rootfs_dir['ROOTFS_DIR'], hdddir)
             exec_cmd(install_cmd)
+            for mod in [x for x in os.listdir(hdddir) if x.startswith("vmlinu")]:
+                cls._sign_file(f"{hdddir}/{mod}", source_params)
 
         cls._install_payload(source_params, hdddir)
 
@@ -488,6 +504,7 @@ class BootimgEFIPlugin(SourcePlugin):
                         target = target[:-7]
                     cp_cmd = "cp %s/%s %s/EFI/BOOT/%s" % (kernel_dir, mod, hdddir, target)
                     exec_cmd(cp_cmd, True)
+                    cls._sign_file(f"{hdddir}/EFI/BOOT/{mod[8:]}", source_params)
 
                 kernel_dir = kernel_dir_orig
             else:
