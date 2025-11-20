@@ -298,6 +298,19 @@ class BootimgEFIPlugin(SourcePlugin):
                 else:
                     cls.install_task.append((src, dst))
 
+    @staticmethod
+    def _install_payload(source_params, iso_dir):
+        """
+        Copies contents of payload directory (as specified in 'payload_dir' param) into iso_dir
+        """
+
+        if source_params.get('payload_dir'):
+            payload_dir = source_params['payload_dir']
+
+            logger.debug("Payload directory: %s", payload_dir)
+            shutil.copytree(payload_dir, iso_dir, symlinks=True, dirs_exist_ok=True)
+
+
     @classmethod
     def do_prepare_partition(cls, part, source_params, creator, cr_workdir,
                              oe_builddir, bootimg_dir, kernel_dir,
@@ -394,6 +407,7 @@ class BootimgEFIPlugin(SourcePlugin):
             install_cmd = isar_populate_boot_cmd(rootfs_dir['ROOTFS_DIR'], hdddir)
             exec_cmd(install_cmd)
 
+        cls._install_payload(source_params, hdddir)
 
         if get_bitbake_var("IMAGE_EFI_BOOT_FILES"):
             for src_path, dst_path in cls.install_task:
