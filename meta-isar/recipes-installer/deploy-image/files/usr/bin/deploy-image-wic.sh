@@ -36,22 +36,39 @@ if ! $installer_unattended; then
     # inspired by poky/meta/recipes-core/initrdscripts/files/install-efi.sh
     target_device_list=""
     current_root_dev_type=$(findmnt / -o fstype -n)
+    exclude_list=()
+
     if [ "$current_root_dev_type" = "nfs" ]; then
         current_root_dev="nfs"
+        exclude_list+=("nfs")
     else
-        current_root_dev=$(readlink -f "$(findmnt / -o source -n)")
-        current_root_dev=${current_root_dev#\/dev/}
-    fi
+    # For normal or immutable systems, get the backing device of '/'
+        root_source=$(findmnt / -o source -n)
+        root_source_resolved=$(readlink -f "$root_source" 2>/dev/null || echo "$root_source")
+        current_root_dev=${root_source_resolved#/dev/}
 
-    case $current_root_dev in
-        mmcblk*)
-            ;;
-        nvme*)
-            ;;
-        *)
-            current_root_dev=${current_root_dev%%[0-9]*}
-            ;;
-    esac
+        # Always exclude the exact device mounted as /
+        exclude_list+=("$current_root_dev")
+
+        base_no_part=${current_root_dev%%[0-9]*}
+        if [ -n "$base_no_part" ]; then
+            exclude_list+=("$base_no_part")
+        fi
+
+        # If root is coming through a dm-* device (e.g., dm-verity),
+        # the actual physical devices appear under /sys/block/<dm>/slaves/.
+        # We must exclude those slaves as well, otherwise the installer
+        # might show the live USB stick as a valid target.
+        if [ -d "/sys/block/$current_root_dev/slaves" ]; then
+            for slave in /sys/block/"$current_root_dev"/slaves/*; do
+                [ -e "$slave" ] || continue
+                slave_dev=$(basename "$slave")
+                exclude_list+=("$slave_dev")
+                slave_base=${slave_dev%%[0-9]*}
+                [ -n "$slave_base" ] && exclude_list+=("$slave_base")
+            done
+        fi
+    fi
 
     echo "Searching for target device..."
 
@@ -102,14 +119,18 @@ if ! $installer_unattended; then
                 # skip ram device
                 ;;
             *)
-                case $device in
-                    $current_root_dev*)
-                    # skip the device we are running from
-                    ;;
-                    *)
-                        target_device_list="$target_device_list $device"
-                    ;;
-                esac
+                #skip any excluded devices (root and its slaves)
+                skip_device=0
+                for ex in "${exclude_list[@]}"; do
+                    if [[ "$device" == "$ex"* ]]; then
+                        skip_device=1
+                        break
+                    fi
+                done
+
+                if [ "$skip_device" -eq 0 ]; then
+                    target_device_list="$target_device_list $device"
+                fi
                 ;;
         esac
     done
