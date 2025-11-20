@@ -43,7 +43,7 @@ config CODENAME_NOBLE
 
 choice
 	prompt "Distro selection"
-	default DEBIAN_BOOKWORM
+	default DEBIAN_TRIXIE
 
 config DEBIAN_BUSTER
 	bool "Debian 10 (buster)"
