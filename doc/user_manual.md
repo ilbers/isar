@@ -451,6 +451,7 @@ Some other variables include:
  - `ISAR_APT_SNAPSHOT_TIMESTAMP[security]` - Unix timestamp of the security distribution. Optional.
  - `ISAR_APT_SNAPSHOT_DATE` - Timestamp in upstream format (e.g. `20240702T082400Z`) of the apt snapshot. Overrides `ISAR_APT_SNAPSHOT_TIMESTAMP` if set. Otherwise, will be automatically derived from `ISAR_APT_SNAPSHOT_TIMESTAMP`
  - `ISAR_APT_SNAPSHOT_DATE[security]` - Timestamp in upstream format of the security distribution. Optional.
+ * `ISAR_APT_CREDS` - List of of remote apt servers requiring credentials (individually configured with `ISAR_APT_CREDS_server_fqdn = "user password")`
  - `THIRD_PARTY_APT_KEYS` - List of gpg key URIs used to verify apt repos for apt installation after bootstrapping.
  - `FILESEXTRAPATHS` - The default directories BitBake uses when it processes recipes are initially defined by the FILESPATH variable. You can extend FILESPATH variable by using FILESEXTRAPATHS.
  - `FILESOVERRIDES` - A subset of OVERRIDES used by the build system for creating FILESPATH. The FILESOVERRIDES variable uses overrides to automatically extend the FILESPATH variable.
@@ -539,6 +540,15 @@ DISTRO_BOOTSTRAP_KEYS += "https://archive.raspbian.org/raspbian.public.key;sha25
 DISTRO_CONFIG_SCRIPT?= "raspbian-configscript.sh"
 DISTRO_KERNELS ?= "rpi rpi2 rpi-rpfv rpi2-rpfv"
 ```
+
+If the distribution has apt sources requiring authentication, users may add the following to e.g. `local.conf`:
+
+    ```
+    ISAR_APT_CREDS += "apt.restricted-server.com"
+    ISAR_APT_CREDS_apt.restricted-server.com = "my-user-name my-password-or-token"
+    ```
+
+Consider passing these credentials via (CI-protected) environment variables and refrain from leaving your credentials in `local.conf`.
 
 For RaspiOS a different DISTRO_KERNELS list is used:
  - `kernel` - for Raspberry Pi 1, Pi Zero, Pi Zero W, and Compute Module

@@ -838,3 +838,21 @@ instead of
 ```
 ROOTFS_FEATURE += "no-generate-initrd"
 ```
+
+### User-authentification for apt sources
+
+Some organization may restrict access to their package feeds and require
+users to supply a user and password/token. With Isar having adopted
+mmdebstrap, we may now supply an apt auth configuration file in
+/etc/apt/auth.conf.d/. Credentials may be specified in local.conf (a kas
+configuration fragment with environment variables may be used). Multiple
+remotes and their respective credentials may be listed:
+
+    ISAR_APT_CREDS += "apt.server1.com"
+    ISAR_APT_CREDS_apt.server1.com = "my-user-for-server1 pass-for-server1"
+
+    ISAR_APT_CREDS += "apt.server2.com"
+    ISAR_APT_CREDS_apt.server2.com = "another-user-for-server2 different-pass"
+
+NOTE: this is not supported for the (soon-to-be-removed?) legacy bootstrap
+method (based on deboostrap)
