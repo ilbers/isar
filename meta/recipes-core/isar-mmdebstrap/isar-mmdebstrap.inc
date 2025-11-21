@@ -74,6 +74,39 @@ do_generate_keyrings() {
 }
 addtask generate_keyrings before do_build after do_unpack
 
+# Generate an apt configuration file holding credentials for the apt sources
+# requiring user authentication
+do_generate_auth_file[vardeps] += "ISAR_APT_CREDS"
+python do_generate_auth_file() {
+    creds = d.getVar('ISAR_APT_CREDS') or ''
+    auth_file = os.path.join(d.getVar('WORKDIR'), 'apt-auth')
+    if not creds:
+        if os.path.exists(auth_file):
+            os.unlink(auth_file)
+        return
+
+    with open(auth_file, "w") as f:
+        for machine in creds.split():
+            user_password = d.getVar(f"ISAR_APT_CREDS_{machine}")
+            try:
+                user, passwd = user_password.split()
+                f.write(f"machine {machine}\n"
+                        f"  user {user}\n"
+                        f"  password {passwd}\n")
+            except ValueError:
+                bb.fatal(f"Too few/many tokens in ISAR_APT_CREDS['{machine}']: "
+                         f"user and password expected (got '{user_password}')!")
+}
+addtask generate_auth_file before do_bootstrap after do_unpack
+
+def get_apt_auth_opts(d):
+    creds = d.getVar('ISAR_APT_CREDS') or ''
+    workdir = d.getVar('WORKDIR')
+    if creds:
+        return "--setup-hook='mkdir -p \"$1/etc/apt/auth.conf.d\"' " + \
+               f"--setup-hook='upload \"{workdir}/apt-auth\" /etc/apt/auth.conf.d/isar.conf'"
+    return ''
+
 do_bootstrap[vardeps] += " \
     DISTRO_APT_PREMIRRORS \
     ISAR_ENABLE_COMPAT_ARCH \
@@ -189,6 +222,7 @@ do_bootstrap() {
                    $arch_param \
                    --mode=unshare \
                    ${MMHOOKS} \
+                   ${@get_apt_auth_opts(d)} \
                    --setup-hook='mkdir -p "$1/var/cache/apt/archives/"' \
                    --setup-hook="$extra_setup" \
                    --setup-hook='upload "${APTPREFS}" /etc/apt/preferences.d/bootstrap' \
