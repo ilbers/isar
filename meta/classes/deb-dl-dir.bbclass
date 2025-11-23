@@ -41,7 +41,8 @@ debsrc_download() {
     # since "set -e" is used)
     avail=$(mktemp)
     wanted=$(mktemp)
-    trap "rm -f ${avail} ${wanted}" EXIT
+    missing=$(mktemp)
+    trap "rm -f ${avail} ${wanted} ${missing}" EXIT
 
     # List all packages known to apt
     apt-cache -o APT::Architecture=${DISTRO_ARCH} -o Dir=${rootfs} dumpavail \
@@ -80,9 +81,16 @@ debsrc_download() {
                 -- \
                 apt-get -o APT::Architecture=${DISTRO_ARCH} \
                         -o Dir="${rootfs}" -y --download-only \
-                        --only-source source "${src}=${version}"
+                        --only-source source "${src}=${version}" \
+                || echo "${src} ${version}" >> ${missing}
         }
     done
+
+    # warn for missing source packages
+    sort -u -o ${missing} ${missing}
+    while read pkg ver; do
+        bbwarn "could not find or download sources for ${pkg} ${ver}"
+    done < ${missing}
     ) 9>"${DEBSRCDIR}/${rootfs_distro}.lock"
 }
 
