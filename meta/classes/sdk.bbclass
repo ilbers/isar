@@ -55,6 +55,7 @@ def get_rootfs_distro(d):
 ROOTFS_ARCH:class-sdk = "${HOST_ARCH}"
 ROOTFS_DISTRO:class-sdk = "${@get_rootfs_distro(d)}"
 ROOTFS_PACKAGES:class-sdk = "sdk-files ${SDK_TOOLCHAIN} ${SDK_PREINSTALL} ${@isar_multiarch_packages('SDK_INSTALL', d)}"
+ROOTFS_VARDEPS:class-sdk = "SDK_INSTALL SDK_INCLUDE_ISAR_APT"
 ROOTFS_FEATURES:append:class-sdk = " clean-package-cache generate-manifest export-dpkg-status"
 ROOTFS_MANIFEST_DEPLOY_DIR:class-sdk = "${DEPLOY_DIR_SDKCHROOT}"
 ROOTFS_DPKGSTATUS_DEPLOY_DIR:class-sdk = "${DEPLOY_DIR_SDKCHROOT}"
@@ -69,10 +70,6 @@ DEPENDS:class-sdk = "${SDKDEPENDS}"
 SDKROOTFSDEPENDS = ""
 SDKROOTFSDEPENDS:class-sdk = "${BPN}:do_rootfs"
 do_rootfs_install[depends] += "${SDKROOTFSDEPENDS}"
-
-SDKROOTFSVARDEPS = ""
-SDKROOTFSVARDEPS:class-sdk = "SDK_INCLUDE_ISAR_APT"
-do_rootfs_install[vardeps] += "${SDKROOTFSVARDEPS}"
 
 ROOTFS_POSTPROCESS_COMMAND:remove = "${@'rootfs_cleanup_isar_apt' if bb.utils.to_boolean(d.getVar('SDK_INCLUDE_ISAR_APT')) else ''}"
 

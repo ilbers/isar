@@ -18,6 +18,7 @@ def initramfs_generator_cmdline(d):
     return "update-initramfs -u -v -k \"$kernel_version\""
 
 ROOTFS_PACKAGES ?= ""
+ROOTFS_VARDEPS ?= ""
 ROOTFS_INITRAMFS_GENERATOR_CMD = "${@ d.getVar('ROOTFS_INITRAMFS_GENERATOR_CMDLINE').split()[0]}"
 ROOTFS_INITRAMFS_GENERATOR_CMDLINE = "${@ initramfs_generator_cmdline(d)}"
 ROOTFS_BASE_DISTRO ?= "${BASE_DISTRO}"
@@ -384,7 +385,7 @@ rootfs_clear_initrd_symlinks() {
 }
 
 do_rootfs_install[root_cleandirs] = "${ROOTFSDIR}"
-do_rootfs_install[vardeps] += "${ROOTFS_CONFIGURE_COMMAND} ${ROOTFS_INSTALL_COMMAND}"
+do_rootfs_install[vardeps] += "${ROOTFS_CONFIGURE_COMMAND} ${ROOTFS_INSTALL_COMMAND} ${ROOTFS_VARDEPS}"
 do_rootfs_install[vardepsexclude] += "IMAGE_ROOTFS"
 do_rootfs_install[depends] = "bootstrap-${@'target' if d.getVar('ROOTFS_ARCH') == d.getVar('DISTRO_ARCH') else 'host'}:do_build"
 do_rootfs_install[recrdeptask] = "do_deploy_deb"
