@@ -1,4 +1,4 @@
-require recipes-kernel/linux/linux-mainline_6.6.11.bb
+require recipes-kernel/linux/linux-mainline_${PV}.bb
 
 SRC_URI:remove = "file://ftpm-module.cfg"
 SRC_URI:remove = "file://subdir/no-ubifs-fs.cfg"
