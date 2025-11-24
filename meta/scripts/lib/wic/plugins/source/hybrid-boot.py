@@ -27,6 +27,7 @@ class HybridBoot(SourcePlugin):
     @classmethod
     def do_install_disk(cls, disk, disk_name, creator, workdir, oe_builddir,
                         bootimg_dir, kernel_dir, native_sysroot):
+        logger.warning("hybrid-boot is deprecated, use --ptable gpt-hybrid instead")
         for part in creator.parts:
             if part.active:
                 break

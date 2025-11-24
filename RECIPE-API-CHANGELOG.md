@@ -884,3 +884,8 @@ remotes and their respective credentials may be listed:
 
 NOTE: this is not supported for the (soon-to-be-removed?) legacy bootstrap
 method (based on deboostrap)
+
+### Deprecate hybrid-boot wic plugin
+
+Use wic's gpt-hybrid partition type combined with --mbr for the legacy
+partitions instead.
