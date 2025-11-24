@@ -7,4 +7,9 @@ require container-loader.inc
 
 CONTAINER_ENGINE = "docker"
 
-CONTAINER_ENGINE_PACKAGES ?= "docker.io, apparmor"
+DOCKER_PKGS = "docker-cli, docker.io"
+DOCKER_PKGS:buster = "docker.io"
+DOCKER_PKGS:bullseye = "docker.io"
+DOCKER_PKGS:bookworm = "docker.io"
+
+CONTAINER_ENGINE_PACKAGES ?= "${DOCKER_PKGS}, apparmor"
