@@ -13,10 +13,10 @@ SET_CROSS_BUILD_TOOLS=CROSS_BUILD_TOOLS=y
 endif
 
 override_dh_auto_build:
-	$(MAKE) $(PARALLEL_MAKE) ARCH=arm am62x_evm_r5_defconfig beagleplay_r5.config
+	$(MAKE) $(PARALLEL_MAKE) ARCH=arm am62x_beagleplay_r5_defconfig
 	$(MAKE) $(PARALLEL_MAKE) ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf-
 
-	$(MAKE) $(PARALLEL_MAKE) am62x_evm_a53_defconfig beagleplay_a53.config
+	$(MAKE) $(PARALLEL_MAKE) am62x_beagleplay_a53_defconfig
 	$(MAKE) $(PARALLEL_MAKE) BL31=/usr/lib/trusted-firmware-a/beagleplay/bl31.bin \
 		TEE=/usr/lib/optee-os/beagleplay/tee-raw.bin
 	$(MAKE) $(PARALLEL_MAKE) u-boot-initial-env
