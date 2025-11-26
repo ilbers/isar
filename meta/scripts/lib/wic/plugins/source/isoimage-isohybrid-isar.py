@@ -533,3 +533,4 @@ class IsoImagePlugin(SourcePlugin):
         os.remove(disk.path)
         shutil.copy2(iso_img, full_path_iso)
         shutil.copy2(full_path_iso, full_path)
+        disk.path=full_path
