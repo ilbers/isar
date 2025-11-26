@@ -174,12 +174,32 @@ deb_debianize() {
 		done
 	done
 
-	# handle system unit files and triggers for use with debhelper
-	for f in path service socket target timer triggers \
-        user.path user.service user.socket user.target user.timer
+	# handle system unit files, tmpfiles and triggers for use with debhelper
+	dh_installdeb_handled=" \
+		.triggers
+	"
+
+	dh_installsystemd_handled=" \
+		.mount .path .service .socket .target .timer \
+		@.path @.service @.socket @.target @.timer \
+	"
+
+	dh_installsystemduser_handled=" \
+		.user.path .user.service .user.socket .user.target .user.timer \
+		@.user.path @.user.service @.user.socket @.user.target @.user.timer \
+	"
+
+	dh_installtmpfiles_handled=" \
+		.tmpfiles
+	"
+
+	for f in ${dh_installdeb_handled} \
+			 ${dh_installsystemd_handled} \
+			 ${dh_installsystemduser_handled} \
+	         ${dh_installtmpfiles_handled}
 	do
-		if [ -f ${WORKDIR}/${PN}.${f} ]; then
-			install -v -m 644 ${WORKDIR}/${PN}.${f} ${S}/debian/
+		if [ -f ${WORKDIR}/${PN}${f} ]; then
+			install -v -m 644 ${WORKDIR}/${PN}${f} ${S}/debian/
 		fi
 	done
 }
