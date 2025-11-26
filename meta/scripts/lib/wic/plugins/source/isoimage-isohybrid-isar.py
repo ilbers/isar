@@ -203,8 +203,14 @@ class IsoImagePlugin(SourcePlugin):
             # Create initrd from rootfs directory
             initrd = "%s/initrd.cpio.gz" % cr_workdir
             initrd_dir = "%s/INITRD" % cr_workdir
+            def ignore_contents(src, names):
+                if os.path.basename(src) == 'dev':
+                    return names
+                return []
+
             shutil.copytree("%s" % rootfs_dir, \
-                            "%s" % initrd_dir, symlinks=True)
+                            "%s" % initrd_dir, \
+                            ignore=ignore_contents, symlinks=True)
 
             if os.path.isfile("%s/init" % rootfs_dir):
                 shutil.copy2("%s/init" % rootfs_dir, "%s/init" % initrd_dir)
