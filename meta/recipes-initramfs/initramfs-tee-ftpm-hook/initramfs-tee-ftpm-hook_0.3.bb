@@ -14,7 +14,7 @@ SRC_URI += "file://local-top"
 # NOTE: default will eventually be flipped
 TEE_SUPPLICANT_IN_USERLAND ?= "1"
 
-OVERRIDES .= "${@'supp-user' if bb.utils.to_boolean(d.getVar('TEE_SUPPLICANT_IN_USERLAND')) else ''}"
+OVERRIDES .= "${@':supp-user' if bb.utils.to_boolean(d.getVar('TEE_SUPPLICANT_IN_USERLAND')) else ''}"
 
 HOOK_PREREQ:supp-user = "tee-supplicant"
 HOOK_ADD_MODULES = "amdtee arm-tstee optee qcomtee tpm_ftpm_tee"
