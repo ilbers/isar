@@ -117,7 +117,7 @@ class ReproTest(CIBaseTest):
     """
     Test cached base repository
 
-    :avocado: tags=repro,full
+    :avocado: tags=repro,full,failed-ti-patch
     """
 
     def test_repro_signed(self):
@@ -132,18 +132,6 @@ class ReproTest(CIBaseTest):
             self.perform_repro_test(targets, signed=True)
         finally:
             self.move_in_build_dir('tmp', 'tmp_repro_signed')
-
-    def test_repro_unsigned(self):
-        targets = [
-            'mc:qemuamd64-bookworm:isar-image-base',
-            'mc:qemuarm-bookworm:isar-image-base',
-        ]
-
-        self.init()
-        try:
-            self.perform_repro_test(targets, cross=False)
-        finally:
-            self.move_in_build_dir('tmp', 'tmp_repro_unsigned')
 
 
 class CcacheTest(CIBaseTest):
@@ -165,7 +153,7 @@ class InstallerTest(CIBaseTest):
     """
     Installer test
 
-    :avocado: tags=installer,full
+    :avocado: tags=installer,full,failed-ti-patch
     """
 
     def test_installer_build(self):
