@@ -577,7 +577,7 @@ Every machine is described in its configuration file. The file defines the follo
    - U-Boot or other boot loader.
    - Machine-specific firmware.
  - `KERNEL_IMAGE` - The name of kernel binary that it installed to `/boot` folder in target filesystem. This variable is used by Isar to extract the kernel binary and put it into the deploy folder. This makes sense for embedded devices, where kernel and root filesystem are written to different flash partitions. This variable is optional.
- - `INITRD_IMAGE` - The name of `initramfs` recipe to be built and used by the imager.
+ - `IMAGE_INITRD` - The name of `initramfs` recipe to be built and used by the imager.
  - `MACHINE_SERIAL` - The name of serial device that will be used for console output.
  - `IMAGE_FSTYPES` - The types of images to be generated for this machine.
 
