@@ -843,24 +843,14 @@ ROOTFS_FEATURE += "no-generate-initrd"
 
 INITRD_IMAGE could be set to the full name of an initrd image to be found in
 DEPLOY_DIR_IMAGE. Downstream layers had to assume how Isar names its image
-artifacts (presently adding a ${DISTRO}-${IMAGE}-initrd.img suffix to initrd
+artifacts (presently adding a ${DISTRO}-${IMAGE}.initrd.img suffix to initrd
 images) and insert the build of their initramfs recipe into the image build
 pipeline.
 
-IMAGE_INITRD is introduced to (1) have a constistent naming convention for
-variables consumed by the image class (IMAGE_ prefix) (2) only require
-this variable to be set when a custom initrd should be built and used by the
-imager.
-
-For instance, cip-core was doing the following:
-
-     INITRAMFS_RECIPE ?= "cip-core-initramfs"
-     INITRD_IMAGE = "${INITRAMFS_RECIPE}-${DISTRO}-${MACHINE}.initrd.img"
-     do_image_wic[depends] += "${INITRAMFS_RECIPE}:do_build"
-
-And it could now be changed to:
-
-     IMAGE_INITRD ?= "cip-core-initramfs"
+IMAGE_INITRD is introduced to have a consistent naming convention for
+variables consumed by the image class (IMAGE_ prefix). If no image type
+specific dependency exist, the automatically provided one will ensure the
+build of IMAGE_INITRD.
 
 INITRD_IMAGE is "only" deprecated; meaning that it may still be used (but
 build-time warnings will be raised). If both IMAGE_INITRD and INITRD_IMAGE
