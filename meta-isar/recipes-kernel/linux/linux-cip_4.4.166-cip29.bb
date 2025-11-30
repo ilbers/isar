@@ -5,7 +5,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-require recipes-kernel/linux/linux-custom.inc
+inherit linux-kernel
 
 SRC_URI += " \
     git://git.kernel.org/pub/scm/linux/kernel/git/cip/linux-cip.git;branch=linux-4.4.y-cip;destsuffix=${P} \

@@ -5,7 +5,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-require recipes-kernel/linux/linux-custom.inc
+inherit linux-kernel
 
 ARCHIVE_VERSION = "${@ d.getVar('PV')[:-2] if d.getVar('PV').endswith('.0') else d.getVar('PV') }"
 

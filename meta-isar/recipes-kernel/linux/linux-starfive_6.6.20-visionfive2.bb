@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-require recipes-kernel/linux/linux-custom.inc
+inherit linux-kernel
 
 SRC_URI += " \
     https://github.com/starfive-tech/linux/archive/${SRCREV}.tar.gz;downloadfilename=linux-starfive-${SRCREV}.tar.gz \
