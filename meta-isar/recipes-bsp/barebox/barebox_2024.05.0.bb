@@ -1,9 +1,10 @@
 # This software is a part of ISAR.
 # Copyright (C) 2022 ilbers GmbH
+# Copyright (c) Siemens AG, 2025
 #
 # SPDX-License-Identifier: MIT
 
-require recipes-bsp/barebox/barebox.inc
+inherit barebox
 
 SRC_URI += "https://github.com/barebox/${PN}/archive/refs/tags/v${PV}.tar.gz;downloadfilename=${P}.tar.gz \
             file://0001-of_dump-Add-a-simple-node-check-up.patch"
