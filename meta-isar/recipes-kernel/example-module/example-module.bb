@@ -5,7 +5,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-require recipes-kernel/linux-module/module.inc
+inherit linux-module
 
 SRC_URI += "file://src"
 
