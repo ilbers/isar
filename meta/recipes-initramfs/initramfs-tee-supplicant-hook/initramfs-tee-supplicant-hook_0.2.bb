@@ -1,4 +1,4 @@
-# Copyright (c) Siemens AG, 2023-2024
+# Copyright (c) Siemens AG, 2023-2025
 #
 # Authors:
 #  Su Bao Cheng <baocheng.su@siemens.com>
@@ -6,7 +6,7 @@
 # SPDX-License-Identifier: MIT
 #
 
-require recipes-initramfs/initramfs-hook/hook.inc
+inherit initramfs-hook
 
 SRC_URI += "file://local-top"
 

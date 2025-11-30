@@ -4,7 +4,7 @@
 #
 # This software is a part of ISAR.
 
-require recipes-initramfs/initramfs-hook/hook.inc
+inherit initramfs-hook
 
 DESCRIPTION = "Sample initramfs module for ISAR"
 MAINTAINER = "Your name here <you@domain.com>"
