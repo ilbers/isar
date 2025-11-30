@@ -1716,9 +1716,8 @@ image with a separately built one.
 ### Creating initramfs-tools hooks
 
 To create an initramfs hook that adds tools or modules to the image and may
-also run custom scripts during boot, use the include file
-`recipes-initramfs/initramfs-hook/hook.inc`. It is controlled via a number of
-variables:
+also run custom scripts during boot, use the `initramfs-hook` class. It is
+controlled via a number of variables:
 
  - `HOOK_PREREQ` defines the prerequisites for running the hook script.
  - `HOOK_ADD_MODULES` passes the provided modules names to the
