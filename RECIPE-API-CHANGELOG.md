@@ -902,3 +902,30 @@ PREFERRED_PROVIDER_bootstrap-{host,target} in local.conf.
 
 There is no longer the need to explicitly inherit dpkg in custom barebox
 recipes if the helper include is used.
+
+### Conversion of recipe helper includes to classes
+
+All recipes helper include like `recipes-kernel/linux/linux-custom.inc` have
+been migrated to classes. The following transitions were applied:
+
+ - `recipes-kernel/linux/linux-custom.inc` -> `linux-kernel.bbclass`
+ - `recipes-kernel/linux-module/module.inc` -> `linux-module.bbclass`
+ - `recipes-kernel/kselftest/kselftest.inc` -> `kselftest.bbclass`
+ - `recipes-bsp/u-boot/u-boot-custom.inc` -> `u-boot.bbclass`
+ - `recipes-bsp/optee-os/optee-os-custom.inc` -> `optee-os.bbclass`
+ - `recipes-bsp/optee-os/optee-os-tadevkit-custom.inc` -> `optee-os-tadevkit.bbclass`
+ - `recipes-bsp/optee-client/optee-client-custom.inc` -> `optee-client.bbclass`
+ - `recipes-bsp/trusted-firmware-a/trusted-firmware-a-custom.inc` -> `trusted-firmware-a.bbclass`
+ - `recipes-bsp/barebox/barebox.inc` -> `barebox.bbclass`
+ - `recipes-initramfs/initramfs-hook/hook.inc` -> `initramfs-hook.bbclass`
+ - `recipes-support/container-loader/docker-loader.inc` -> `docker-loader.bbclass`
+ - `recipes-support/container-loader/podman-loader.inc` -> `podman-loader.bbclass`
+
+The following includes were considered internal and are no longer available:
+
+ - `recipes-bsp/optee-os/optee-os.inc`
+ - `recipes-support/container-loader/container-loader.inc`
+
+The other original includes still exist and inherit the corresponding new
+class. However, they issue a warning to perform the recommended conversion
+because these transitional includes will eventually be dropped.
