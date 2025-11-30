@@ -1,39 +1,13 @@
-# Custom Trusted Firmware A build
+# Transitional include for trusted-firmware-a.bbclass
 #
 # This software is a part of ISAR.
-# Copyright (c) Siemens AG, 2020-2025
+# Copyright (c) Siemens AG, 2025
 #
 # SPDX-License-Identifier: MIT
 
-inherit dpkg
+inherit trusted-firmware-a
 
-FILESPATH:append := ":${FILE_DIRNAME}/files"
-
-SRC_URI += "file://debian/"
-
-DESCRIPTION ?= "Custom Trusted Firmware A"
-
-TF_A_NAME ?= "${MACHINE}"
-TF_A_PLATFORM ?= "unknown"
-TF_A_EXTRA_BUILDARGS ?= ""
-TF_A_BINARIES ?= "release/bl31.bin"
-
-DEBIAN_BUILD_DEPENDS ?= ""
-
-PROVIDES += "trusted-firmware-a-${TF_A_NAME}"
-
-TEMPLATE_FILES = "debian/control.tmpl debian/rules.tmpl"
-TEMPLATE_VARS += "DEBIAN_COMPAT \
-    TF_A_NAME DEBIAN_BUILD_DEPENDS TF_A_PLATFORM TF_A_EXTRA_BUILDARGS DEBIAN_STANDARDS_VERSION"
-
-do_prepare_build() {
-    cp -r ${WORKDIR}/debian ${S}/
-
-    deb_add_changelog
-
-    rm -f ${S}/debian/trusted-firmware-a-${TF_A_NAME}.install
-    for binary in ${TF_A_BINARIES}; do
-        echo "build/${TF_A_PLATFORM}/$binary /usr/lib/trusted-firmware-a/${TF_A_NAME}/" >> \
-            ${S}/debian/trusted-firmware-a-${TF_A_NAME}.install
-    done
+do_warn_custom_inc() {
+    bbwarn "Please migrate from \"require recipes-bsp/trusted-firmware-a/trusted-firmware-a-custom.inc\" to \"inherit trusted-firmware-a\""
 }
+addtask warn_custom_inc before do_unpack
