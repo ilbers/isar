@@ -181,12 +181,12 @@ Isar image that can be customized according to the user requirements:
 Isar provides the possibility to build Debian packages from sources. This
 feature works with Debian-like source packages, i.e. the source code tree
 should contain debian folder. This build process is implemented in
-`meta/classes/dpkg.bbclass`. Moreover this process is common for both: native
-and cross compilation modes.
+`meta/classes-recipe/dpkg.bbclass`. Moreover this process is common for both:
+native and cross compilation modes.
 
 Another way of creating Debian packages is implemented in
-`meta/classes/dpkg-raw.bbclass`. This class can be used for customizations that
-are not based on source code that should become a package.
+`meta/classes-recipe/dpkg-raw.bbclass`. This class can be used for
+customizations that are not based on source code that should become a package.
 
 Both consist of the following steps:
 

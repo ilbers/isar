@@ -17,7 +17,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../../bitbake/lib'))
 from bb import process
 from bb.data_smart import DataSmart
 
-file_name = 'meta/classes/image-account-extension.bbclass'
+file_name = 'meta/classes-recipe/image-account-extension.bbclass'
 image_create_users = load_function(file_name, 'image_create_users')
 image_create_groups = load_function(file_name, 'image_create_groups')
 

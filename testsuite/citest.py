@@ -88,7 +88,7 @@ class DevTest(CIBaseTest):
         self.init()
         layerdir_core = CIUtils.getVars('LAYERDIR_core')
 
-        dpkgbase_file = layerdir_core + '/classes/dpkg-base.bbclass'
+        dpkgbase_file = layerdir_core + '/classes-recipe/dpkg-base.bbclass'
 
         self.backupfile(dpkgbase_file)
         with open(dpkgbase_file, 'a') as file:

@@ -966,7 +966,7 @@ If it does not fully fit your needs, it probably gives you a good starting point
 
 The shell function `deb_debianize` creates a `debian` folder. But it will not overwrite files that already are in WORKDIR. So you can either just call it to fully generate the `debian` folder. Or you combine it with pre-existing parts.
 
-Have a look at meta-isar/recipes-app/samefile/samefile_2.14.bb and meta/classes/debianize.bbclass for an example and the implementation.
+Have a look at `meta-isar/recipes-app/samefile/samefile_2.14.bb` and `meta/classes-recipe/debianize.bbclass` for an example and the implementation.
 
 Here ISAR's debianize class generates/adds the following files under debian directory:
 
