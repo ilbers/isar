@@ -1,9 +1,9 @@
 # This software is a part of ISAR.
-# Copyright (c) Siemens AG, 2024
+# Copyright (c) Siemens AG, 2024-2025
 #
 # SPDX-License-Identifier: MIT
 
-require recipes-support/container-loader/docker-loader.inc
+inherit docker-loader
 
 CONTAINER_DELETE_AFTER_LOAD = "1"
 

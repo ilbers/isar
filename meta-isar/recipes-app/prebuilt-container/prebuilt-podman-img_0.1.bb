@@ -1,9 +1,9 @@
 # This software is a part of ISAR.
-# Copyright (c) Siemens AG, 2024
+# Copyright (c) Siemens AG, 2024-2025
 #
 # SPDX-License-Identifier: MIT
 
-require recipes-support/container-loader/podman-loader.inc
+inherit podman-loader
 
 SRC_URI += "\
     docker://quay.io/libpod/alpine;tag=latest \
