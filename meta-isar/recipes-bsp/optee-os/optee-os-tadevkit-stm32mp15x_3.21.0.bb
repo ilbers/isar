@@ -3,5 +3,6 @@
 #
 # SPDX-License-Identifier: MIT
 
-require recipes-bsp/optee-os/optee-os-tadevkit-custom.inc
+inherit optee-os-tadevkit
+
 require optee-os-stm32mp15x_${PV}.inc

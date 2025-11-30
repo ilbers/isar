@@ -3,7 +3,8 @@
 #
 # SPDX-License-Identifier: MIT
 
-require recipes-bsp/optee-os/optee-os-custom.inc
+inherit optee-os
+
 require optee-os-stm32mp15x_${PV}.inc
 
 # optee-examples integration
