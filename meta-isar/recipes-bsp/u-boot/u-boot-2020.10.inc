@@ -1,9 +1,9 @@
 #
-# Copyright (c) Siemens AG, 2018-2020
+# Copyright (c) Siemens AG, 2018-2025
 #
 # SPDX-License-Identifier: MIT
 
-require recipes-bsp/u-boot/u-boot-custom.inc
+inherit u-boot
 
 SRC_URI += " \
     https://ftp.denx.de/pub/u-boot/u-boot-${PV}.tar.bz2 \

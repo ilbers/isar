@@ -1,11 +1,11 @@
 #
 # This software is a part of ISAR.
-# Copyright (c) Siemens AG, 2023-2024
+# Copyright (c) Siemens AG, 2023-2025
 # Copyright (C) 2025 ilbers GmbH
 #
 # SPDX-License-Identifier: MIT
 
-require recipes-bsp/u-boot/u-boot-custom.inc
+inherit u-boot
 
 TI_FIRMWARE_SRCREV = "0a37dc07b1120127eba73c7196a0b532350b9639"
 

@@ -1,9 +1,9 @@
 #
-# Copyright (c) Siemens AG, 2023-2024
+# Copyright (c) Siemens AG, 2023-2025
 #
 # SPDX-License-Identifier: MIT
 
-require recipes-bsp/u-boot/u-boot-custom.inc
+inherit u-boot
 
 COMPATIBLE_MACHINE = "starfive-visionfive2"
 
