@@ -1,26 +1,13 @@
-# Custom OP-TEE OS build for TA devkit
+# Transitional include for optee-os-tadevkit.bbclass
 #
 # This software is a part of ISAR.
-# Copyright (c) Siemens AG, 2023
+# Copyright (c) Siemens AG, 2025
 #
 # SPDX-License-Identifier: MIT
 
-require optee-os.inc
+inherit optee-os-tadevkit
 
-DEBIAN_PACKAGE_NAME = "optee-os-tadevkit-${OPTEE_NAME}"
-DESCRIPTION:append = ", trust application development kit."
-
-PROVIDES += "${DEBIAN_PACKAGE_NAME}"
-
-do_prepare_build:append() {
-    if [ "${DISTRO_ARCH}" = "arm64" ]; then
-        TADEVKIT_DIR="export-ta_arm64"
-    elif [ "${DISTRO_ARCH}" = "armhf" ]; then
-        TADEVKIT_DIR="export-ta_arm32"
-    else
-        bbfatal "${DISTRO_ARCH} does not have a compat arch for optee TA devkit!"
-    fi
-
-    echo "out/arm-plat-${OPTEE_PLATFORM_BASE}/${TADEVKIT_DIR} /usr/lib/optee-os/${OPTEE_NAME}/" > \
-        ${S}/debian/optee-os-tadevkit-${OPTEE_NAME}.install
+do_warn_custom_inc() {
+    bbwarn "Please migrate from \"require recipes-bsp/optee-os/optee-os-tadevkit-custom.inc\" to \"inherit optee-os-tadevkit\""
 }
+addtask warn_custom_inc before do_unpack

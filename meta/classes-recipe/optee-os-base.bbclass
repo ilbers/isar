@@ -7,8 +7,7 @@
 
 inherit dpkg
 
-FILESPATH:append := ":${FILE_DIRNAME}/files"
-
+FILESPATH:append = ":${LAYERDIR_core}/recipes-bsp/optee-os/files"
 SRC_URI += "file://debian/"
 
 DESCRIPTION ?= "Custom OP-TEE OS"
