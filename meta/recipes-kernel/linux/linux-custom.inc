@@ -95,7 +95,6 @@ TEMPLATE_VARS += "                \
 "
 
 inherit dpkg
-inherit template
 inherit kbuildtarget
 
 # Add custom cflags to the kernel build
