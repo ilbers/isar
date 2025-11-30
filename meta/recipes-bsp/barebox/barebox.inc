@@ -1,5 +1,7 @@
 # This software is a part of ISAR.
 # Copyright (C) 2022 ilbers GmbH
+#
+# SPDX-License-Identifier: MIT
 
 DESCRIPTION ?= "The barebox is a bootloader designed for embedded systems. It \
                 runs on a variety of architectures including x86, ARM, MIPS, \

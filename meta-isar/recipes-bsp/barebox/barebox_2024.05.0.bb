@@ -1,5 +1,7 @@
 # This software is a part of ISAR.
 # Copyright (C) 2022 ilbers GmbH
+#
+# SPDX-License-Identifier: MIT
 
 inherit dpkg
 
