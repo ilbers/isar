@@ -1,12 +1,11 @@
 # This software is a part of ISAR.
-# Copyright (c) Siemens AG, 2024
+# Copyright (c) Siemens AG, 2024-2025
 #
 # SPDX-License-Identifier: MIT
 
-FILESPATH:append := ":${FILE_DIRNAME}/files"
-
 inherit dpkg-raw
 
+FILESPATH:append = ":${LAYERDIR_core}/recipes-support/container-loader/files"
 SRC_URI += " \
     file://container-loader.service.tmpl \
     file://container-loader.sh.tmpl"

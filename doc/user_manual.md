@@ -1654,12 +1654,10 @@ image name, replacing all `/` with `.` and appending `:<tag>.zst`. Example:
 
 To create a Debian package which can carry container images and load them into
 local storage of docker or podman, there is a set of helpers available. To use
-them in an own recipe, add
-`require recipes-support/container-loader/docker-loader.inc` when using docker
-and `require recipes-support/container-loader/podman-loader.inc` when using
-podman. The loader will try to transfer the packaged image into the container
-runtime storage on boot, but only if no container image of the same name and
-tag is present already.
+them in an own recipe, add `inherit docker-loader` when using docker and
+`inherit podman-loader` when using podman. The loader will try to transfer the
+packaged image into the container runtime storage on boot, but only if no
+container image of the same name and tag is present already.
 
 Unless `CONTAINER_DELETE_AFTER_LOAD` is set to `1`, the source container images
 remain by default available and may be used again for loading the storage after
@@ -1677,7 +1675,7 @@ runtime services are installed on the target as well. The packaged image will
 be deleted from the target device's rootfs after successful import.
 
 ```
-require recipes-support/container-loader/docker-loader.inc
+inherit docker-loader
 
 CONTAINER_DELETE_AFTER_LOAD = "1"
 
