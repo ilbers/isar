@@ -897,3 +897,8 @@ The alternative with isar-bootstrap is outdated and untested. It is therefore
 removed.
 A custom implementation still can be selected by setting
 PREFERRED_PROVIDER_bootstrap-{host,target} in local.conf.
+
+### barebox.inc inherits dpkg itself
+
+There is no longer the need to explicitly inherit dpkg in custom barebox
+recipes if the helper include is used.

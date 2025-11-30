@@ -3,8 +3,6 @@
 #
 # SPDX-License-Identifier: MIT
 
-inherit dpkg
-
 require recipes-bsp/barebox/barebox.inc
 
 SRC_URI += "https://github.com/barebox/${PN}/archive/refs/tags/v${PV}.tar.gz;downloadfilename=${P}.tar.gz \

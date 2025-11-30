@@ -3,6 +3,8 @@
 #
 # SPDX-License-Identifier: MIT
 
+inherit dpkg
+
 DESCRIPTION ?= "The barebox is a bootloader designed for embedded systems. It \
                 runs on a variety of architectures including x86, ARM, MIPS, \
                 PowerPC and others."
