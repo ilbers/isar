@@ -1,9 +1,9 @@
 #
-# Copyright (c) Siemens AG, 2023-2024
+# Copyright (c) Siemens AG, 2023-2025
 #
 # SPDX-License-Identifier: MIT
 
-require recipes-bsp/trusted-firmware-a/trusted-firmware-a-custom.inc
+inherit trusted-firmware-a
 
 SRC_URI += "https://github.com/ARM-software/arm-trusted-firmware/archive/v${PV}.tar.gz;downloadfilename=arm-trusted-firmware-${PV}.tar.gz"
 SRC_URI[sha256sum] = "2e18b881ada9198173238cca80086c787b1fa3f698944bde1743142823fc511c"
