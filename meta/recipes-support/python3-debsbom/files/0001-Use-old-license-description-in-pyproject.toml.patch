@@ -1,0 +1,28 @@
+From 8f926ab0ed1585656ba7de80a82cc802c3ccbdbf Mon Sep 17 00:00:00 2001
+From: Christoph Steiger <christoph.steiger@siemens.com>
+Date: Mon, 8 Sep 2025 17:17:49 +0200
+Subject: [PATCH 1/1] Use old license description in pyproject.toml
+
+Older setuptools versions may require a different license field.
+
+Signed-off-by: Christoph Steiger <christoph.steiger@siemens.com>
+---
+ pyproject.toml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/pyproject.toml b/pyproject.toml
+index cc34bdb..701da4a 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -22,7 +22,7 @@ maintainers = [
+ ]
+ description = "Generate SBOMs for Debian-based distributions."
+ readme = "README.md"
+-license = "MIT"
++license = {text = "MIT"}
+ classifiers = [
+   "Intended Audience :: Developers",
+   "Operating System :: POSIX :: Linux",
+-- 
+2.39.5
+
