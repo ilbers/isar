@@ -1,0 +1,25 @@
+#!/usr/bin/make -f
+
+#export DH_VERBOSE = 1
+export PYBUILD_NAME = spdx-tools
+export PYBUILD_SYSTEM = distutils
+
+# skip tests that require hard-to-package dependencies and tests that rely on relative file paths
+# TODO: figure out a way to make these tests work
+export PYBUILD_TEST_ARGS=--ignore tests/spdx3/validation/json_ld/test_shacl_validation.py \
+	-k 'not test_examples \
+	and not test_parse_from_file \
+	and not test_annotation_parser \
+	and not test_snippet_parser \
+	and not test_creation_info_parser \
+	and not test_json_ld_writer \
+	and not test_extracted_licensing_info_parser \
+	and not test_parse_file \
+	and not test_package_parser \
+	and not test_relationship_parser \
+	and not test_graph_parsing_function \
+	and not test_license_expression_parser \
+	'
+
+%:
+	dh $@ --with python3 --buildsystem=pybuild
