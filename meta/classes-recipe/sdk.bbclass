@@ -43,14 +43,6 @@ SDK_PREINSTALL += " \
     devscripts \
     equivs"
 
-def get_rootfs_distro(d):
-    host_arch = d.getVar('HOST_ARCH')
-    distro_arch = d.getVar('DISTRO_ARCH')
-    if host_arch == distro_arch:
-        return d.getVar('DISTRO')
-    else:
-        return d.getVar('HOST_DISTRO')
-
 # rootfs/image overrides for the SDK
 ROOTFS_ARCH:class-sdk = "${HOST_ARCH}"
 ROOTFS_DISTRO:class-sdk = "${@get_rootfs_distro(d)}"

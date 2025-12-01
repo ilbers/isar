@@ -40,6 +40,15 @@ ROOTFS_PACKAGE_SUFFIX ?= "${PN}-${DISTRO}-${DISTRO_ARCH}"
 # path to deploy stubbed versions of initrd update scripts during do_rootfs_install
 ROOTFS_STUBS_DIR = "/usr/local/isar-sbin"
 
+# helper to compute the rootfs distro also under cross building
+def get_rootfs_distro(d):
+    host_arch = d.getVar('HOST_ARCH')
+    distro_arch = d.getVar('DISTRO_ARCH')
+    if host_arch == distro_arch:
+        return d.getVar('DISTRO')
+    else:
+        return d.getVar('HOST_DISTRO')
+
 # Useful environment variables:
 export E = "${@ isar_export_proxies(d)}"
 export DEBIAN_FRONTEND = "noninteractive"
