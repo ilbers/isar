@@ -3,6 +3,8 @@
 
 inherit deb-dl-dir
 
+inherit sbom
+
 ROOTFS_ARCH ?= "${DISTRO_ARCH}"
 ROOTFS_DISTRO ?= "${DISTRO}"
 
@@ -27,9 +29,16 @@ ROOTFS_BASE_DISTRO ?= "${BASE_DISTRO}"
 # available features are:
 # 'clean-package-cache' - delete package cache from rootfs
 # 'generate-manifest' - generate a package manifest of the rootfs into ${ROOTFS_MANIFEST_DEPLOY_DIR}
+# 'generate-sbom' - generate a SBOM of the rootfs into ${DEPLOY_DIR_SBOM}
 # 'export-dpkg-status' - exports /var/lib/dpkg/status file to ${ROOTFS_DPKGSTATUS_DEPLOY_DIR}
 # 'clean-log-files' - delete log files that are not owned by packages
 # 'populate-systemd-preset' - enable systemd units according to systemd presets
+
+# only supported from bookworm / jammy on
+ROOTFS_FEATURES:remove:buster = "generate-sbom"
+ROOTFS_FEATURES:remove:bullseye = "generate-sbom"
+ROOTFS_FEATURES:remove:jammy = "generate-sbom"
+ROOTFS_FEATURES:remove:focal = "generate-sbom"
 
 ROOTFS_APT_ARGS="install --yes -o Debug::pkgProblemResolver=yes"
 
@@ -476,6 +485,9 @@ cache_dbg_pkgs() {
     fi
 }
 
+# The sbom generator needs the apt-cache, hence run before cleaning it
+ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'generate-sbom', 'do_generate_sbom', '', d)}"
+
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'clean-package-cache', 'rootfs_postprocess_clean_package_cache', '', d)}"
 rootfs_postprocess_clean_package_cache() {
     sudo -E chroot '${ROOTFSDIR}' \
@@ -645,7 +657,7 @@ python do_rootfs() {
 }
 addtask rootfs before do_build
 
-do_rootfs_postprocess[depends] = "base-apt:do_cache isar-apt:do_cache_config"
+do_rootfs_postprocess[depends] = "base-apt:do_cache isar-apt:do_cache_config ${@bb.utils.contains('ROOTFS_FEATURES', 'generate-sbom', 'sbom-chroot:do_sbomchroot_deploy', '', d)}"
 
 SSTATETASKS += "do_rootfs_install"
 SSTATECREATEFUNCS += "rootfs_install_sstate_prepare"
