@@ -1685,16 +1685,16 @@ SRC_URI += "docker://debian;digest=sha256:f528891ab1aa484bf7233dbcc84f3c806c3e42
 
 ## Switch from initramfs-tools to dracut
 
-To build a Isar image with dracut as the initramfs generator instead
-of initramfs-tools in Debian 13(trixie) or previous versions add dracut
+To build an Isar image with dracut as the initramfs generator instead
+of initramfs-tools in Debian 13 (trixie) or previous versions, add dracut
 as a package to the image:
 
 ```
 IMAGE_PREINSTALL +=  "dracut"
 ```
 
-An dracut based initrd contains the file `/usr/lib/initrd-release`. In
-case of trixie the file has the following content:
+A dracut-based initrd contains the file `/usr/lib/initrd-release`. In
+case of trixie, the file has the following content:
 
 ```bash
 NAME=dracut
@@ -1734,7 +1734,7 @@ For running a custom script during boot-up, provide a bottom-half file in
 process: `init-top`, `init-premount`, `local-top`, `nfs-top`, `local-block`,
 `local-premount`, `nfs-premount`, `local-bottom`, `nfs-bottom`, `init-bottom`.
 If you do not benefit from the script header with its static `SCRIPT_PREREQ`,
-you may instead provide `init-top-complete`, `init-premount-complete` etc. to
+you may instead provide `init-top-complete`, `init-premount-complete`, etc., to
 still use automatic installation while defining the boot script completely
 yourself.
 
@@ -1756,17 +1756,17 @@ It is controlled by following variables:
 - `DRACUT_REQUIRED_BINARIES` defines the binaries required by the module.
 - `DRACUT_MODULE_DEPENDENCIES` defines dependencies to other dracut modules.
 - `DRACUT_MODULE_NO` defines the module number which prefixes the module name
-to define the execution order.The default is `50`.
-- `DRACUT_MODULE_NAME` the name of the module which is used to install the
+to determine the execution order. The default is `50`.
+- `DRACUT_MODULE_NAME` defines the name of the module which is used to install the
 module in the initrd or as a dependency to other modules. It defaults to
 `${PN}` without the prefix `dracut-`.
 - `DRACUT_MODULE_PATH` contains the path to the installed module. It is set
-to `${D}/usr/lib/dracut/modules.d/${DRACUT_MODULE_NO}${DRACUT_MODULE_NAME}/`
+to `${D}/usr/lib/dracut/modules.d/${DRACUT_MODULE_NO}${DRACUT_MODULE_NAME}/`.
 
 The `install()` function is added by storing the file `install.sh` in the
 files directory of the dracut module.
 
-Other files can by added to the module by coping them to the Module folder
+Other files can by added to the module by copying them to the module folder
 with:
 ```bash
 install -m 666 ${WORKDIR}/lighttpd.service ${DRACUT_MODULE_PATH}
@@ -1791,15 +1791,16 @@ See `isar-initramfs` or `isar-dracut` for an example recipes.
 
 #### dracut config
 
-A dracut initramfs can be configured by the command line or a configuration file.
-The use configuration files is preferred:
+A dracut initramfs can be configured via the command line or a configuration file.
+The use of configuration files is preferred:
  - Debian provides dracut-config-* packages
  - It is easier to upstream and to maintain.
 
 The configuration file can be chosen with the variable `DRACUT_CONFIG_PATH`. This variable
-contains the absolut path to the used configuration in the root file system.
+contains the absolute path to the used configuration in the root file system.
+The configuration file should be placed in `/etc/dracut.conf.d` to follow the dracut convention.
 
-Still there are some use cases like debugging to add modules via the command line.
-For this the recipe meta/classes/initrd-dracut.bbclass provides the following options:
+There are still some use cases, like debugging, where modules can be added via the command line.
+For this, the recipe meta/classes/initrd-dracut.bbclass provides the following options:
  - `DRACUT_EXTRA_DRIVERS` add extra drivers to the dracut initrd
  - `DRACUT_EXTRA_MODULES` add extra modules to the dracut initrd

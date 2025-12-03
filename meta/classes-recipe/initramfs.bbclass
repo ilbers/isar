@@ -29,9 +29,9 @@ ROOTFSDIR = "${INITRAMFS_ROOTFS}"
 ROOTFS_FEATURES = "generate-manifest"
 ROOTFS_PACKAGES = "${INITRAMFS_GENERATOR_PKG} ${INITRAMFS_PREINSTALL} ${INITRAMFS_INSTALL}"
 
-# validate if have incompatible packages in the installation list
+# validate whether there are incompatible packages in the installation list
 python do_validate_rootfs_packages () {
-    # in Debian initramfs-tools specific packages should end or star
+    # in Debian, initramfs-tools specific packages should end or start
     # with initramfs
     # dracut specific packages end with dracut
     incompatible_initrd_packages = { 'initramfs-tools':['dracut'],
