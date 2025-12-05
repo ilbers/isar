@@ -5,7 +5,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-inherir optee-os
+inherit optee-os
 
 do_warn_custom_inc() {
     bbwarn "Please migrate from \"require recipes-bsp/optee-os/optee-os-custom.inc\" to \"inherit optee-os\""
