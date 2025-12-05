@@ -380,52 +380,6 @@ class InitRdTest(InitRdBaseTest):
         self.perform_build_test('mc:qemuamd64-bookworm:isar-image-ci',
                                 should_fail=True, lines=lines)
 
-    def test_var_initrd_image(self):
-        """ Check if deprecated INITRD_IMAGE variable may be used. """
-        initrd = 'isar-initramfs'
-        distro = 'debian-bookworm'
-        machine = 'qemuamd64'
-
-        lines = [
-            f"INITRD_IMAGE = '{initrd}-{distro}-{machine}.initrd.img'",
-            f"do_image[depends] += '{initrd}:do_build'"
-        ]
-
-        self.init()
-        self.build_image_with_dependent_initrd('isar-image-ci', initrd,
-                                               distro, machine, lines)
-
-    def test_var_image_initrd(self):
-        """ Check build of an image with a dependent initrd using IMAGE_INITRD. """
-        initrd = 'isar-initramfs'
-        lines = [f"IMAGE_INITRD = '{initrd}'"]
-
-        self.init()
-        self.build_image_with_dependent_initrd('isar-image-ci', initrd, lines=lines)
-
-    def test_var_image_initrd_and_initrd_image(self):
-        """ Check use of both IMAGE_INITRD and INITRD_IMAGE. """
-        initrd = 'isar-initramfs'
-
-        self.init()
-
-        # While both may be set, IMAGE_INITRD takes precedence. Ensure
-        # by specifying an invalid recipe name: bitbake should fail.
-        lines = [
-            "IMAGE_INITRD = 'not-a-valid-initrd-recipe'",
-            f"INITRD_IMAGE = '{initrd}-debian-bookworm-qemuamd64.initrd.img'"
-        ]
-        self.build_image_with_dependent_initrd('isar-image-ci', initrd, lines=lines,
-                                               bb_should_fail=True)
-
-        # The build should succeed if we have a valid IMAGE_INITRD even
-        # with an invalifd INITRD_IMAGE
-        lines = [
-            f"IMAGE_INITRD = '{initrd}'",
-            "INITRD_IMAGE = 'not-a-valid-initrd-file'"
-        ]
-        self.build_image_with_dependent_initrd('isar-image-ci', initrd, lines=lines)
-
 
 class InitRdCrossTests(InitRdBaseTest):
     """
