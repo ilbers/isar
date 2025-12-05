@@ -5,6 +5,10 @@
 
 inherit dpkg
 
+# Set DPKG_SOURCE_EXTRA_ARGS to empty to allow
+# adding excluded files, e.g. *.so to a package.
+DPKG_SOURCE_EXTRA_ARGS = ""
+
 D = "${S}/image"
 
 # Default to creating a binary-indep package
