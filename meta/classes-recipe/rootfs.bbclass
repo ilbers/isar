@@ -23,8 +23,6 @@ ROOTFS_INITRAMFS_GENERATOR_CMD = "${@ d.getVar('ROOTFS_INITRAMFS_GENERATOR_CMDLI
 ROOTFS_INITRAMFS_GENERATOR_CMDLINE = "${@ initramfs_generator_cmdline(d)}"
 ROOTFS_BASE_DISTRO ?= "${BASE_DISTRO}"
 
-IMAGE_INITRD ?= ""
-
 # Features of the rootfs creation:
 # available features are:
 # 'clean-package-cache' - delete package cache from rootfs
@@ -32,8 +30,6 @@ IMAGE_INITRD ?= ""
 # 'export-dpkg-status' - exports /var/lib/dpkg/status file to ${ROOTFS_DPKGSTATUS_DEPLOY_DIR}
 # 'clean-log-files' - delete log files that are not owned by packages
 # 'populate-systemd-preset' - enable systemd units according to systemd presets
-# 'generate-initrd' - generate debian default initrd
-ROOTFS_FEATURES += "${@ 'generate-initrd' if d.getVar('IMAGE_INITRD') == '' else ''}"
 
 ROOTFS_APT_ARGS="install --yes -o Debug::pkgProblemResolver=yes"
 

@@ -48,6 +48,9 @@ python() {
         d.setVar('INITRD_DEPLOY_FILE', initrd_image)
 }
 
+# Generate and deploy debian default initrd if no custom initrd needs to be built
+ROOTFS_FEATURES += "${@ 'generate-initrd' if (d.getVar('INITRD_IMAGE') == '' and d.getVar('IMAGE_INITRD') == '') else ''}"
+
 # This variable is used by wic and start_vm
 KERNEL_IMAGE ?= "${IMAGE_FULLNAME}-${KERNEL_FILE}"
 

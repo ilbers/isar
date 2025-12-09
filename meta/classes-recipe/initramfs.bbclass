@@ -27,6 +27,7 @@ DEPENDS += "${INITRAMFS_INSTALL}"
 
 ROOTFSDIR = "${INITRAMFS_ROOTFS}"
 ROOTFS_FEATURES = "generate-manifest"
+ROOTFS_FEATURES += "generate-initrd"
 ROOTFS_PACKAGES = "${INITRAMFS_GENERATOR_PKG} ${INITRAMFS_PREINSTALL} ${INITRAMFS_INSTALL}"
 
 # validate whether there are incompatible packages in the installation list
