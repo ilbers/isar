@@ -17,7 +17,7 @@ DRACUT_MODULE_SETUP = "module-setup.sh"
 SRC_URI:append = "file://${DRACUT_MODULE_SETUP}.tmpl"
 
 DRACUT_MODULE_NO ??= "50"
-DRACUT_MODULE_NAME ?= "${@ d.getVar('PN')[7:] if d.getVar('PN').startswith('dracut-') else d.getVAR('PN')}"
+DRACUT_MODULE_NAME ?= "${@ d.getVar('PN')[7:] if d.getVar('PN').startswith('dracut-') else d.getVar('PN')}"
 
 DEBIAN_DEPENDS = "dracut-core"
 DRACUT_MODULE_PATH = "${D}/usr/lib/dracut/modules.d/${DRACUT_MODULE_NO}${DRACUT_MODULE_NAME}/"
