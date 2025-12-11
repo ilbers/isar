@@ -8,11 +8,6 @@
 
 inherit dpkg
 
-# Some test-cases like memfd compilation failed in cross-compilation.
-# Force native compilation for now to have consistent output across
-# ISAR native/cross compilation setups.
-ISAR_CROSS_COMPILE = "0"
-
 DESCRIPTION ?= "Kernel selftests from Linux kernel ${PV}"
 
 DEBIAN_BUILD_DEPENDS ?= " \
@@ -20,13 +15,13 @@ DEBIAN_BUILD_DEPENDS ?= " \
     flex,  \
     bison, \
     ${@ 'fuse' if d.getVar('BASE_DISTRO_CODENAME') in ['bullseye', 'buster'] else 'fuse3'}, \
-    libelf-dev:native, \
-    libcap-ng-dev:native, \
-    libpopt-dev:native, \
-    libcap-dev:native, \
-    libmount-dev:native, \
-    libfuse-dev:native, \
-    libmnl-dev:native, \
+    libelf-dev, \
+    libcap-ng-dev, \
+    libpopt-dev, \
+    libcap-dev, \
+    libmount-dev, \
+    libfuse-dev, \
+    libmnl-dev, \
     pkg-config, \
     clang:native, \
     llvm:native, \
