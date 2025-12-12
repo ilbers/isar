@@ -905,6 +905,7 @@ been migrated to classes. The following transitions were applied:
  - `recipes-bsp/optee-os/optee-os-custom.inc` -> `optee-os.bbclass`
  - `recipes-bsp/optee-os/optee-os-tadevkit-custom.inc` -> `optee-os-tadevkit.bbclass`
  - `recipes-bsp/optee-client/optee-client-custom.inc` -> `optee-client.bbclass`
+ - `recipes-bsp/optee-ftpm/optee-ftpm.inc` -> `optee-ftpm.bbclass`
  - `recipes-bsp/trusted-firmware-a/trusted-firmware-a-custom.inc` -> `trusted-firmware-a.bbclass`
  - `recipes-bsp/barebox/barebox.inc` -> `barebox.bbclass`
  - `recipes-initramfs/initramfs-hook/hook.inc` -> `initramfs-hook.bbclass`
