@@ -843,7 +843,7 @@ ROOTFS_FEATURE += "no-generate-initrd"
 
 INITRD_IMAGE could be set to the full name of an initrd image to be found in
 DEPLOY_DIR_IMAGE. Downstream layers had to assume how Isar names its image
-artifacts (presently adding a ${DISTRO}-${IMAGE}.initrd.img suffix to initrd
+artifacts (presently adding a ${DISTRO}-${IMAGE}-initrd.img suffix to initrd
 images) and insert the build of their initramfs recipe into the image build
 pipeline.
 
@@ -919,3 +919,11 @@ The following includes were considered internal and are no longer available:
 The other original includes still exist and inherit the corresponding new
 class. However, they issue a warning to perform the recommended conversion
 because these transitional includes will eventually be dropped.
+
+### Align custom initramfs deployment name to standard initramfs
+
+While `INITRAMFS_IMAGE_NAME` ended on `.initrd.img`, standard initramfs where
+deployed as `-initrd.img`. This caused confusion and is now even breaking at
+several points as `INITRD_DEPLOY_FILE` is supposed to be used as canonical
+source of the filename. Therefore, switch `INITRAMFS_IMAGE_NAME` to the
+`-initrd.img` suffix as well.

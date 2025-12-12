@@ -21,7 +21,7 @@ IMAGE_INSTALL += "${KERNEL_IMAGE_PKG}"
 # Name of the image including distro&machine names
 IMAGE_FULLNAME = "${PN}-${DISTRO}-${MACHINE}"
 
-# Deprecated; this would be set to e.g. "${INITRAMFS_RECIPE}-${DISTRO}-${MACHINE}.initrd.img"
+# Deprecated; this would be set to e.g. "${INITRAMFS_RECIPE}-${DISTRO}-${MACHINE}-initrd.img"
 INITRD_IMAGE ?= ""
 
 # IMAGE_INITRD should be used instead (variables consumed by this image class should

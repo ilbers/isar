@@ -1,6 +1,6 @@
 # Example of a custom initramfs image recipe.  The image will be deployed to
 #
-#   build/tmp/deploy/images/${MACHINE}/isar-initramfs-${DISTRO}-${MACHINE}.initrd.img
+#   build/tmp/deploy/images/${MACHINE}/isar-initramfs-${DISTRO}-${MACHINE}-initrd.img
 #
 # This software is a part of ISAR.
 

@@ -332,7 +332,7 @@ class InitRdBaseTest(CIBaseTest):
                                           lines='',
                                           bb_should_fail=False):
         mc = f'mc:{machine}-{distro.removeprefix("debian-")}'
-        initrd_image = f'{initrd}-{distro}-{machine}.initrd.img'
+        initrd_image = f'{initrd}-{distro}-{machine}-initrd.img'
         initrd_path = os.path.join(self.deploy_dir_image(machine), initrd_image)
 
         # cleansstate if the initrd image was already built/deployed to verify
@@ -387,7 +387,7 @@ class InitRdTest(InitRdBaseTest):
         machine = 'qemuamd64'
 
         lines = [
-            f"INITRD_IMAGE = '{initrd}-{distro}-{machine}.initrd.img'",
+            f"INITRD_IMAGE = '{initrd}-{distro}-{machine}-initrd.img'",
             f"do_image[depends] += '{initrd}:do_build'"
         ]
 
@@ -413,7 +413,7 @@ class InitRdTest(InitRdBaseTest):
         # by specifying an invalid recipe name: bitbake should fail.
         lines = [
             "IMAGE_INITRD = 'not-a-valid-initrd-recipe'",
-            f"INITRD_IMAGE = '{initrd}-debian-bookworm-qemuamd64.initrd.img'"
+            f"INITRD_IMAGE = '{initrd}-debian-bookworm-qemuamd64-initrd.img'"
         ]
         self.build_image_with_dependent_initrd('isar-image-ci', initrd, lines=lines,
                                                bb_should_fail=True)
