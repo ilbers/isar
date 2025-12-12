@@ -21,9 +21,9 @@ class ReproBuild(CIBuilder):
             'source_date_epoch', default=self.git_last_commit_timestamp()
         )
         self.init()
-        self.build_repro_image(target, source_date_epoch, 'image1.tar.gz')
-        self.build_repro_image(target, source_date_epoch, 'image2.tar.gz')
-        self.compare_repro_image('image1.tar.gz', 'image2.tar.gz')
+        self.build_repro_image(target, source_date_epoch, 'image1.tar.zst')
+        self.build_repro_image(target, source_date_epoch, 'image2.tar.zst')
+        self.compare_repro_image('image1.tar.zst', 'image2.tar.zst')
 
     def git_last_commit_timestamp(self):
         return process.run('git log -1 --pretty=%ct').stdout.decode().strip()
@@ -33,10 +33,10 @@ class ReproBuild(CIBuilder):
         machine, image_name = CIUtils.getVars(
             'MACHINE', 'IMAGE_FULLNAME', target=target_name
         )
-        return f"{image_dir}/{machine}/{image_name}.tar.gz"
+        return f"{image_dir}/{machine}/{image_name}.tar.zst"
 
     def build_repro_image(
-        self, target, source_date_epoch=None, image_name='image.tar.gz'
+        self, target, source_date_epoch=None, image_name='image.tar.zst'
     ):
         if not source_date_epoch:
             self.error(

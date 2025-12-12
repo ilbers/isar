@@ -19,7 +19,7 @@ WKS_FILE:qemuamd64:debian-bookworm ?= "multipart-efi.wks"
 IMAGE_INSTALL:append:qemuamd64:debian-bookworm = " prebuilt-docker-img prebuilt-podman-img"
 
 # qemuamd64-bullseye
-IMAGE_FSTYPES:append:qemuamd64:debian-bullseye ?= " cpio.gz tar.gz"
+IMAGE_FSTYPES:append:qemuamd64:debian-bullseye ?= " cpio.zst tar.zst"
 WKS_FILE:qemuamd64:debian-bullseye ?= "sdimage-efi-btrfs"
 IMAGE_INSTALL:append:qemuamd64:debian-bullseye = " expand-on-first-boot"
 IMAGER_INSTALL:remove:qemuamd64:debian-bullseye ?= "${GRUB_BOOTLOADER_INSTALL}"
