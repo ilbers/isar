@@ -6,7 +6,7 @@
 # SPDX-License-Identifier: MIT
 #
 
-require recipes-bsp/optee-ftpm/optee-ftpm.inc
+inherit optee-ftpm
 
 SRC_URI += " \
     https://github.com/Microsoft/ms-tpm-20-ref/archive/${SRCREV}.tar.gz \
