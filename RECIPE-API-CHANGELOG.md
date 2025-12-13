@@ -928,3 +928,16 @@ deployed as `-initrd.img`. This caused confusion and is now even breaking at
 several points as `INITRD_DEPLOY_FILE` is supposed to be used as canonical
 source of the filename. Therefore, switch `INITRAMFS_IMAGE_NAME` to the
 `-initrd.img` suffix as well.
+
+### Support bundling multiple images in the installer
+
+Introduce `INSTALLER_TARGET_IMAGES` to allow bundling multiple installer
+images (defaulting to `INSTALLER_TARGET_IMAGE` if unset), dynamically
+generate `ROOTFS_ADDITIONAL_FILES` for each target image including `.wic`
+and `.wic.bmap` files, and update MC task dependencies to include all
+configured installer images.
+
+Example: To bundle multiple target images, set the following in local.conf:
+```
+INSTALLER_TARGET_IMAGES = "isar-image-base isar-image-debug isar-image-ci"
+```
