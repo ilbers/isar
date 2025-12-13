@@ -14,7 +14,7 @@ if ! $installer_unattended; then
     installer_image_uri=$(find "$installdata" -type f -iname "*.wic*" -a -not -iname "*.wic.bmap" -exec basename {} \;)
     if [ -z "$installer_image_uri" ] || [ ! -f "$installdata/$installer_image_uri" ]; then
         pushd "$installdata"
-        for f in $(find . -type f); do
+        for f in $(find . -type f ! -iname "*.wic.bmap"); do
             array+=("$f" "$f")
         done
         popd
