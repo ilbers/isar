@@ -31,7 +31,6 @@ if ! $installer_unattended; then
         dialog --msgbox "Could not find an image to install. Installation aborted." 6 60
         exit 1
     fi
-    DISK_BMAP=$(find "$installdata" -type f -iname "${installer_image_uri%.wic*}.wic.bmap")
 
     # inspired by poky/meta/recipes-core/initrdscripts/files/install-efi.sh
     target_device_list=""
@@ -167,10 +166,6 @@ if ! $installer_unattended; then
 
     # set absolute paths to be compatible with unattended mode
     installer_image_uri="$installdata/$installer_image_uri"
-
-    if [ -z "$DISK_BMAP" ]; then
-        DISK_BMAP="$installdata/$DISK_BMAP"
-    fi
 fi
 
 if ! cmp /dev/zero "$installer_target_dev" -n 1M; then
@@ -190,7 +185,11 @@ if ! cmp /dev/zero "$installer_target_dev" -n 1M; then
 fi
 
 bmap_options=""
-if [ -z "$DISK_BMAP" ]; then
+
+# bmap file is expected to be next to the installer image
+DISK_BMAP="${installer_image_uri%.wic*}.wic.bmap"
+
+if [ ! -f "$DISK_BMAP" ]; then
     bmap_options="--nobmap"
 fi
 
