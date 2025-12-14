@@ -22,8 +22,12 @@ python(){
 inherit dpkg-raw
 
 SRC_URI = "\
+    file://postinst.tmpl \
     file://target-bootstrapper.override.conf \
     "
+
+TEMPLATE_FILES = "postinst.tmpl"
+TEMPLATE_VARS = "TARGET_BOOTSTRAPPER_TTY_SERVICES"
 
 DEPENDS += " target-bootstrapper"
 DEBIAN_DEPENDS = "target-bootstrapper"
