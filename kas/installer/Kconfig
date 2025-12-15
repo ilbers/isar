@@ -92,7 +92,7 @@ config KAS_INCLUDE_INSTALLER_ADD_DEVICE_INFO_COLLECTOR
 	default "kas/installer/add-device-info-collector.yaml"
     depends on INSTALLER_ADD_DEVICE_INFO_COLLECTOR
 
-config INSTALLER_TTY_SERVICES
+config TARGET_BOOTSTRAPPER_TTY_SERVICES
 	string "TTY Service to use"
 	default "getty@tty1 serial-getty@ttyS0" if !INSTALL_UNATTENDED
 	default "serial-getty@ttyS0" if INSTALL_UNATTENDED
