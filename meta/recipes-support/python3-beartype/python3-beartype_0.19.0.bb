@@ -18,7 +18,7 @@ DEBIAN_CHANGELOG_TIMESTAMP = "315532800"
 DESCRIPTION = "Unbearably fast near-real-time hybrid runtime-static type-checking in pure Python."
 
 SRC_URI = "\
-    https://github.com/beartype/beartype/archive/refs/tags/v0.19.0.tar.gz \
+    https://github.com/beartype/beartype/archive/refs/tags/v0.19.0.tar.gz;downloadfilename=${BPN}-${PV}.tar.gz  \
     file://rules \
     "
 SRC_URI[sha256sum] = "e7ad00eebf527d60f30e0b391209b561dabd2074b608c50e26c94c2d8250a6cd"

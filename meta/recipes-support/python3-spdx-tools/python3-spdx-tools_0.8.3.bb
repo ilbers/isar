@@ -35,7 +35,7 @@ DEB_BUILD_OPTIONS += "nocheck"
 DESCRIPTION = "SPDX parser and tools."
 
 SRC_URI = "\
-    https://github.com/spdx/tools-python/archive/refs/tags/v0.8.3.tar.gz \
+    https://github.com/spdx/tools-python/archive/refs/tags/v0.8.3.tar.gz;downloadfilename=${BPN}-${PV}.tar.gz \
     file://rules \
     "
 SRC_URI[sha256sum] = "17cb0140adbaefb58819c9d5d56060dc6a70c673a854fa9bd882ecfa4e062a7f"
