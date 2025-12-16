@@ -1762,9 +1762,22 @@ module in the initrd or as a dependency to other modules. It defaults to
 `${PN}` without the prefix `dracut-`.
 - `DRACUT_MODULE_PATH` contains the path to the installed module. It is set
 to `${D}/usr/lib/dracut/modules.d/${DRACUT_MODULE_NO}${DRACUT_MODULE_NAME}/`.
+- `DRACUT_CHECK_CONTENT_FILE_NAME` contents for check() function
+- `DRACUT_DEPENDS_CONTENT_FILE_NAME` contents for depends() function
+- `DRACUT_CMDLINE_CONTENT_FILE_NAME` contents for cmdline() function
+- `DRACUT_INSTALL_CONTENT_FILE_NAME` contents for install() function
+- `DRACUT_INSTALLKERNEL_CONTENT_FILE_NAME` contents for installkernel() function
 
-The `install()` function is added by storing the file `install.sh` in the
-files directory of the dracut module.
+Hook functions such as check(), depends(), cmdline(), install(), and
+installkernel() are provided by replacing placeholders in dracut module
+module-setup.sh template with content from individual files, selected via
+the corresponding `DRACUT_<FUNCTION>_CONTENT_FILE_NAME` variables.
+
+Example:
+
+The `install()` function can be provided by placing a file (for example,
+`install.sh`) in the dracut module’s files directory and assigning it to
+`DRACUT_INSTALL_CONTENT_FILE_NAME`.
 
 Other files can by added to the module by copying them to the module folder
 with:

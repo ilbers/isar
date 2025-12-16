@@ -37,15 +37,28 @@ def add_file_if_variable_is_set(d, variable_name, prefix):
     return ''
 
 def replace_marker_with_file_content(template_file, content_file, marker):
-    with open(template_file, 'r') as template_fd:
-        tmpl_content = template_fd.read()
+    import re, bb
 
-    with open(content_file, 'r') as content_fd:
-        content = content_fd.read()
+    tmpl = open(template_file).read()
+    content = open(content_file).read().rstrip('\n')
 
-    new_tpml_content = tmpl_content.replace(marker, content)
-    with open(template_file, 'w') as tmpl_fd:
-        tmpl_fd.write(new_tpml_content)
+    # locate marker and its indentation
+    m = re.search(rf'^(?P<indent>\s*){re.escape(marker)}\s*$', tmpl, re.MULTILINE)
+    if not m:
+        bb.fatal(f"Marker '{marker}' not found in {template_file}")
+
+    indent = m.group('indent')
+
+    # indent all non-blank lines
+    indented = '\n'.join(
+        (indent + line) if line.strip() else ''
+        for line in content.splitlines()
+    )
+
+    # replace the exact marker line
+    new_tmpl = tmpl[:m.start()] + indented + tmpl[m.end():]
+
+    open(template_file, 'w').write(new_tmpl)
 
 SRC_URI:append = " ${@ add_file_if_variable_is_set(d, 'DRACUT_CHECK_CONTENT_FILE_NAME', 'file://')} \
             ${@ add_file_if_variable_is_set(d, 'DRACUT_DEPENDS_CONTENT_FILE_NAME', 'file://')} \
