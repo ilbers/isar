@@ -80,8 +80,8 @@ image_postprocess_sshd_key_regen() {
     fi
 }
 
-ROOTFS_POSTPROCESS_COMMAND =+ "image_posprocess_disable_systemd_firstboot"
-image_posprocess_disable_systemd_firstboot() {
+ROOTFS_POSTPROCESS_COMMAND =+ "image_postprocess_disable_systemd_firstboot"
+image_postprocess_disable_systemd_firstboot() {
     SYSTEMD_VERSION=$(sudo chroot '${ROOTFSDIR}' dpkg-query \
         --showformat='${source:Upstream-Version}' \
         --show systemd || echo "0" )
