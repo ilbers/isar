@@ -27,6 +27,9 @@ $ avocado run ../testsuite/citest.py -t dev --max-parallel-tasks=1
 
 ```
 $ avocado run ../testsuite/citest.py -t single --max-parallel-tasks=1 -p machine=qemuamd64 -p distro=bullseye
+# Generate bitbake dependency graph as well
+# The output will be in build_dir/{task-depends-<testname>.dot, pn-buildlist-<testname>}
+$ avocado run ../testsuite/citest.py -t single --max-parallel-tasks=1 -p machine=qemuamd64 -p distro=bullseye -p depgraph=1
 ```
 
 ## Fast build test

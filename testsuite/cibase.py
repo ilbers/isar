@@ -17,9 +17,28 @@ class CIBaseTest(CIBuilder):
     def perform_build_test(self, targets, should_fail=False, **kwargs):
         self.configure(**kwargs)
 
+        if bool(int(self.params.get('depgraph', default=0))):
+            self.generate_dependency_graph(targets, reconfigure=False, **kwargs)
+
         self.log.info("Starting build...")
 
         self.bitbake(targets, should_fail=should_fail, **kwargs)
+
+    def generate_dependency_graph(self,
+                                  targets,
+                                  should_fail=False,
+                                  reconfigure=True,
+                                  **kwargs):
+        """Debug helper to better understand test task graphs."""
+        if reconfigure:
+            self.configure(**kwargs)
+
+        self.log.info("Generating dependency graph...")
+
+        self.bitbake(targets, should_fail=should_fail,
+                     bitbake_extra_args=["-g"], **kwargs)
+        self.move_in_build_dir('task-depends.dot', f"task-depends-{self.name}.dot")
+        self.move_in_build_dir('pn-buildlist', f"pn-buildlist-{self.name}")
 
     def perform_wic_partition_test(self, targets, wic_deploy_parts, **kwargs):
         self.configure(wic_deploy_parts=wic_deploy_parts, **kwargs)
