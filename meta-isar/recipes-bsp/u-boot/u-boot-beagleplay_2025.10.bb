@@ -22,7 +22,7 @@ SRC_URI[dm.sha256sum] = "0748804446dc79a8f9564f2d734d1f4346639a55e667707714c11e6
 
 S = "${WORKDIR}/u-boot-${PV}"
 
-COMPATIBLE_MACHINE = "beagleplay"
+COMPATIBLE_MACHINE = "^(beagleplay)$"
 
 U_BOOT_BIN_INSTALL = "tiboot3-am62x-gp-evm.bin tispl.bin_unsigned u-boot.img_unsigned"
 

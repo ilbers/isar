@@ -17,4 +17,4 @@ OPTEE_EXTRA_BUILDARGS = " \
     TEE_IMPL_VERSION=${PV} \
     CFG_ARM64_core=y CFG_USER_TA_TARGETS=ta_arm64"
 
-COMPATIBLE_MACHINE = "beagleplay"
+COMPATIBLE_MACHINE = "^(beagleplay)$"

@@ -14,4 +14,4 @@ TF_A_PLATFORM = "k3"
 TF_A_EXTRA_BUILDARGS = "CFG_ARM64=y TARGET_BOARD=lite SPD=opteed"
 TF_A_BINARIES = "lite/release/bl31.bin"
 
-COMPATIBLE_MACHINE = "beagleplay"
+COMPATIBLE_MACHINE = "^(beagleplay)$"

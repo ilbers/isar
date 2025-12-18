@@ -15,4 +15,4 @@ S = "${WORKDIR}/opensbi-${PV}"
 OPENSBI_EXTRA_BUILDARGS = "FW_TEXT_START=0x40000000 FW_OPTIONS=0"
 OPENSBI_BIN = "fw_dynamic.bin"
 
-COMPATIBLE_MACHINE = "starfive-visionfive2"
+COMPATIBLE_MACHINE = "^(starfive-visionfive2)$"

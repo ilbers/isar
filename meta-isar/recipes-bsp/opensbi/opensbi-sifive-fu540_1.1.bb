@@ -15,4 +15,4 @@ DEBIAN_BUILD_DEPENDS = "u-boot-sifive"
 OPENSBI_EXTRA_BUILDARGS = "FW_PAYLOAD_PATH=/usr/lib/u-boot/sifive_unleashed/u-boot.bin"
 OPENSBI_BIN = "fw_payload.bin"
 
-COMPATIBLE_MACHINE = "sifive-fu540"
+COMPATIBLE_MACHINE = "^(sifive-fu540)$"

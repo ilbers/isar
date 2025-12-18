@@ -27,4 +27,4 @@ do_install() {
     fi
 }
 
-COMPATIBLE_MACHINE = "rpi"
+COMPATIBLE_MACHINE = "^rpi-arm"

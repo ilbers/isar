@@ -19,4 +19,4 @@ do_prepare_build(){
     echo "spl_tool usr/bin" > ${S}/debian/${BPN}.install
 }
 
-COMPATIBLE_MACHINE = "starfive-visionfive2"
+COMPATIBLE_MACHINE = "^(starfive-visionfive2)$"

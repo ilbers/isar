@@ -17,4 +17,4 @@ OPTEE_EXTRA_BUILDARGS = " \
     CFG_TEE_CORE_LOG_LEVEL=2"
 OPTEE_BINARIES = "tee-header_v2.stm32 tee-pageable_v2.stm32 tee-pager_v2.stm32"
 
-COMPATIBLE_MACHINE = "stm32mp15x"
+COMPATIBLE_MACHINE = "^(stm32mp15x)$"

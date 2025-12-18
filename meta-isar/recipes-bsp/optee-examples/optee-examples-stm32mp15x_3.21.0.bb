@@ -99,4 +99,4 @@ do_prepare_build() {
         ${S}/debian/${PN}-secure-storage-host.install
 }
 
-COMPATIBLE_MACHINE = "stm32mp15x"
+COMPATIBLE_MACHINE = "^(stm32mp15x)$"

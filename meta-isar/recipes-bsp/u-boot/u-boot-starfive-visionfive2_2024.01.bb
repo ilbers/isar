@@ -5,7 +5,7 @@
 
 inherit u-boot
 
-COMPATIBLE_MACHINE = "starfive-visionfive2"
+COMPATIBLE_MACHINE = "^(starfive-visionfive2)$"
 
 SRC_URI += "https://ftp.denx.de/pub/u-boot/u-boot-${PV}.tar.bz2 \
     file://0001-scripts-dtc-pylibfdt-libfdt.i_shipped-Use-SWIG_Appen.patch \

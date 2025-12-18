@@ -20,4 +20,4 @@ TF_A_EXTRA_BUILDARGS = " \
     DTB_FILE_NAME=stm32mp157c-ev1.dtb"
 TF_A_BINARIES = "release/tf-a-stm32mp157c-ev1.stm32"
 
-COMPATIBLE_MACHINE = "stm32mp15x"
+COMPATIBLE_MACHINE = "^(stm32mp15x)$"

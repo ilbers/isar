@@ -11,4 +11,4 @@ KERNEL_DEFCONFIG = "imx_v6_v7_defconfig"
 
 LINUX_VERSION_EXTENSION = "-isar"
 
-COMPATIBLE_MACHINE = "phyboard-mira"
+COMPATIBLE_MACHINE = "^(phyboard-mira)$"
