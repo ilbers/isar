@@ -265,6 +265,25 @@ class CrossTest(CIBaseTest):
         self.init()
         self.perform_build_test(targets, lines=lines)
 
+class PrebuiltTest(CIBaseTest):
+    """
+    Tests associated with prebuilt artifacts (containers, debs).
+    :avocado: tags=prebuilt,fast
+    """
+
+    def test_prebuilt_containers(self):
+        targets = [
+            'mc:qemuamd64-bookworm:isar-image-ci',
+            'mc:qemuarm64-bookworm:isar-image-ci',
+        ]
+
+        self.init()
+        self.perform_build_test(
+            targets,
+            bitbake_cmd='do_rootfs_install',
+            image_install="prebuilt-docker-img prebuilt-podman-img")
+
+
 class KernelTests(CIBaseTest):
     """
     Tests associated with kernel builds and development.
@@ -984,11 +1003,17 @@ class VmBootTestFull(CIBaseTest):
 
     def test_amd64_bookworm_prebuilt_containers(self):
         self.init()
+        self.perform_build_test(
+            ['mc:qemuamd64-bookworm:isar-image-ci'],
+            image_install="prebuilt-docker-img prebuilt-podman-img")
         self.vm_start('amd64', 'bookworm', image='isar-image-ci',
                       script='test_prebuilt_containers.sh')
 
     def test_arm64_bookworm_prebuilt_containers(self):
         self.init()
+        self.perform_build_test(
+            ['mc:qemuarm64-bookworm:isar-image-ci'],
+            image_install="prebuilt-docker-img prebuilt-podman-img")
         self.vm_start('arm64', 'bookworm', image='isar-image-ci',
                       script='test_prebuilt_containers.sh')
 

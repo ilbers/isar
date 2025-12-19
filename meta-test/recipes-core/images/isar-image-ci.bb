@@ -16,7 +16,6 @@ IMAGE_INSTALL += "sshd-regen-keys"
 
 # qemuamd64-bookworm
 WKS_FILE:qemuamd64:debian-bookworm ?= "multipart-efi.wks"
-IMAGE_INSTALL:append:qemuamd64:debian-bookworm = " prebuilt-docker-img prebuilt-podman-img"
 
 # qemuamd64-bullseye
 IMAGE_FSTYPES:append:qemuamd64:debian-bullseye ?= " cpio.zst tar.zst"
@@ -52,4 +51,3 @@ IMAGER_INSTALL:append:qemuarm:debian-bookworm ?= " ${SYSTEMD_BOOTLOADER_INSTALL}
 # qemuarm64-bookworm
 IMAGE_FSTYPES:append:qemuarm64:debian-bookworm ?= " wic.xz"
 IMAGER_INSTALL:append:qemuarm64:debian-bookworm ?= " ${GRUB_BOOTLOADER_INSTALL}"
-IMAGE_INSTALL:append:qemuarm64:debian-bookworm = " prebuilt-docker-img prebuilt-podman-img"
