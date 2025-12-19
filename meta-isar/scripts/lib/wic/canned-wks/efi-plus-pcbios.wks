@@ -1,6 +1,6 @@
 # Example to show how to create an efi + pcbios image
 # Note, that the loader argument is mandatory. But systemd-boot also works.
-part /boot --source bootimg-biosplusefi-isar --sourceparams="loader=grub-efi" --label boot --active --align 1024 --use-uuid
+part /boot --source bootimg-biosplusefi-isar --sourceparams="loader=grub-efi" --label boot --part-type EF00 --active --align 1024 --use-uuid
 part / --source rootfs --fstype=ext4 --mkfs-extraopts "-T default" --label platform --align 1024 --use-uuid --exclude-path=boot
 
 bootloader --ptable gpt --timeout 3 --append "rootwait console=ttyS0,115200 console=tty0"
