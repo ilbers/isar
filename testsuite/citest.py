@@ -708,10 +708,10 @@ class SignatureTest(CIBaseTest):
     def test_signature_lint(self):
         verbose = bool(int(self.params.get('verbose', default=0)))
         targets = [
-            'mc:qemuamd64-bullseye:isar-image-ci',
-            'mc:qemuarm-bullseye:isar-image-base',
-            'mc:qemuarm-bullseye:isar-image-base:do_populate_sdk',
-            'mc:qemuamd64-focal:isar-image-base',
+            'mc:qemuamd64-trixie:isar-image-ci',
+            'mc:qemuarm-trixie:isar-image-base',
+            'mc:qemuarm-trixie:isar-image-base:do_populate_sdk',
+            'mc:qemuamd64-noble:isar-image-base',
         ]
 
         self.init()
