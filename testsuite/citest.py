@@ -280,7 +280,7 @@ class KernelTests(CIBaseTest):
         ]
 
         self.init()
-        self.perform_build_test(targets)
+        self.perform_build_test(targets, ccache=True)
 
     def test_per_kernel(self):
         """Test per-kernel recipe variants for external kernel modules."""
