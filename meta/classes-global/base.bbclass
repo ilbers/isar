@@ -59,7 +59,8 @@ def get_deb_host_arch():
         ["dpkg", "--print-architecture"]
     ).decode('utf-8').strip()
     return host_arch
-HOST_ARCH ??= "${@get_deb_host_arch()}"
+# immediately evaluate to avoid costly process call
+HOST_ARCH := "${@get_deb_host_arch()}"
 HOST_DISTRO ??= "${DISTRO}"
 
 # Inject the PREFERRED_PROVIDERs for multiarch variants. This corresponds to
