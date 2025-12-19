@@ -145,6 +145,9 @@ BUILD_PROFILES:class-kbuildtarget = "pkg.${BPN}.kbuild"
 RECIPE_PROVIDES:class-kbuildtarget = " \
     linux-headers-${KERNEL_NAME_PROVIDED} \
     linux-kbuild-${KERNEL_NAME_PROVIDED}"
+RECIPE_PROVIDES:remove:class-kbuildtarget = " \
+    linux-libc-dev \
+    linux-libc-dev-${DISTRO_ARCH}-cross"
 # Using DEPENDS instead of RDEPENDS to ensure creation of kernel including
 # pregenerated kernel config before target specific linux-kbuild package build
 DEPENDS:class-kbuildtarget = "${BPN}"
@@ -161,12 +164,12 @@ RECIPE_PROVIDES = " \
 "
 
 # Provide linux-libc-dev packages unless nolibcdev profile used
-OVERRIDES:append = ":${@ bb.utils.contains('DEB_BUILD_PROFILES', 'pkg.{}.nolibcdev'.format(d.getVar('BPN')), 'nolibcdev', 'libcdev', d)}"
+OVERRIDES:append = ":${@ bb.utils.contains('DEB_BUILD_PROFILES', 'pkg.{}.nolibcdev'.format(d.getVar('BPN')), '', 'libcdev', d)}"
 
 RECIPE_PROVIDES:append:libcdev = " \
-    linux-libc-dev \
-    linux-libc-dev-${DISTRO_ARCH}-cross \
-"
+    linux-libc-dev"
+RECIPE_PROVIDES:append:libcdev:cross-profile = " \
+    linux-libc-dev-${DISTRO_ARCH}-cross"
 
 # When cross-profile is active:
 # kbuild package is provided by -native or -kbuildtarget variant. Also headers
