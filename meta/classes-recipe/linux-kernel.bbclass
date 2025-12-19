@@ -125,8 +125,9 @@ BUILD_PROFILES = "pkg.${BPN}.kernel pkg.${BPN}.kbuild"
 BBCLASSEXTEND:append:cross-profile = " kbuildtarget"
 
 # When cross-profile is active:
-# build only kernel (including config) with the default variant of the recipe
-BUILD_PROFILES:cross-profile = "pkg.${BPN}.kernel"
+# Build kernel (including config) cross packages (linux-libc-dev-*-cross)
+# with the default variant of the recipe
+BUILD_PROFILES:cross-profile = "pkg.${BPN}.kernel pkg.${BPN}.cross"
 
 # -native: kbuild package for host
 BUILD_PROFILES:class-native = "pkg.${BPN}.kbuild"
