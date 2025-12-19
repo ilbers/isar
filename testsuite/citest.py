@@ -131,6 +131,27 @@ class CompatTest(CIBaseTest):
         self.perform_build_test(targets, compat_arch=True)
 
 
+class SbuildFlavor(CIBaseTest):
+    """
+    Test package build with a custom sbuild chroot.
+    :avocado: tags=sbuildflavor,fast
+    """
+
+    def test_sbuild_flavor(self):
+        targets = [
+            'mc:qemuamd64-trixie:hello-isar',
+            'mc:qemuarm64-trixie:hello-isar',
+        ]
+
+        lines = [
+            'SBUILD_FLAVOR:hello-isar = "db2m"',
+            'SBUILD_FLAVOR:libhello = "db2m"'
+        ]
+
+        self.init()
+        self.perform_build_test(targets, lines=lines)
+
+
 class ReproTest(CIBaseTest):
 
     """

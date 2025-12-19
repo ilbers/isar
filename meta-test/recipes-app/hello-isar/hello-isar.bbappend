@@ -15,3 +15,6 @@ SRC_URI:append = " \
 "
 SRC_URI:remove = "file://nonexist-file"
 SRC_URI:remove = "git://nonexist-git"
+
+# avoid creating a dedicated sbuild chroot
+SBUILD_FLAVOR = ""
