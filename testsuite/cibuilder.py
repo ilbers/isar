@@ -126,6 +126,7 @@ class CIBuilder(Test):
         installer_distro=None,
         installer_device=None,
         customizations=None,
+        generate_sbom=False,
         lines=None,
         **kwargs,
     ):
@@ -176,6 +177,7 @@ class CIBuilder(Test):
             f"  image_install = {image_install}\n"
             f"  installer_image = {installer_image}\n"
             f"  customizations = {customizations}\n"
+            f"  generate_sbom = {generate_sbom}\n"
             f"  lines = {strlines}\n"
             f"==================================================="
         )
@@ -275,6 +277,8 @@ class CIBuilder(Test):
                     'CUSTOMIZATION_FOR_IMAGES:append = " isar-image-ci"\n'
                     'HOSTNAME:isar-image-ci = "isar-ci"\n'
                 )
+            if generate_sbom is False:
+                f.write('ROOTFS_FEATURES:remove = "generate-sbom"\n')
             if lines is not None:
                 f.writelines((line + '\n' if not line.endswith('\n') else line) for line in lines)
 

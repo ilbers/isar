@@ -694,6 +694,39 @@ class CustomizationsTest(CIBaseTest):
         )
 
 
+class SbomTest(CIBaseTest):
+    """
+    Test to check if sbom is generated and contains expected packages.
+    Most tests are rootfs tests to avoid costly initrd build and imaging.
+
+    :avocado: tags=sbom,fast
+    """
+
+    def test_sbom_rootfs_generate(self):
+        targets = [
+            'mc:qemuamd64-bookworm:isar-rootfs-ci',
+            'mc:qemuarm64-bookworm:isar-rootfs-ci',
+            'mc:qemuamd64-trixie:isar-rootfs-ci',
+            'mc:qemuarm64-trixie:isar-rootfs-ci',
+            'mc:qemuamd64-noble:isar-rootfs-ci',
+        ]
+
+        self.init()
+        self.perform_sbom_test(targets)
+
+    def test_sbom_unsupported(self):
+        targets = [
+            'mc:qemuamd64-bullseye:isar-rootfs-ci',
+            'mc:qemuamd64-focal:isar-rootfs-ci',
+        ]
+
+        self.init()
+        self.perform_build_test(
+            targets, bitbake_cmd='do_rootfs', image_install='cowsay',
+            generate_sbom=True
+        )
+
+
 class SignatureTest(CIBaseTest):
 
     """
