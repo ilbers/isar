@@ -232,6 +232,8 @@ class CIBuilder(Test):
                 f.write('DL_DIR = "%s"\n' % dl_dir)
             if sstate_dir:
                 f.write('SSTATE_DIR = "%s"\n' % sstate_dir)
+            if sstate and 'SSTATE_MIRRORS' in os.environ:
+                f.write('SSTATE_MIRRORS = "%s"\n' % os.environ['SSTATE_MIRRORS'])
             if image_install is not None:
                 f.write('IMAGE_INSTALL = "%s"\n' % image_install)
             else:
