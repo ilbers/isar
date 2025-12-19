@@ -112,6 +112,25 @@ class DevTest(CIBaseTest):
         self.vm_start('arm', 'bookworm', skip_modulecheck=True)
 
 
+class CompatTest(CIBaseTest):
+    """
+    Test compilation of recipes for compat architecture.
+    This also tests a custom sbuild chroot for compat.
+    :avocado: tags=compat,fast
+    """
+
+    def test_compat_recipe(self):
+        targets = [
+            'mc:qemuamd64-bookworm:hello-isar-compat',
+            'mc:qemuarm64-bookworm:hello-isar-compat',
+            'mc:qemuamd64-trixie:hello-isar-compat',
+            'mc:qemuarm64-trixie:hello-isar-compat',
+        ]
+
+        self.init()
+        self.perform_build_test(targets, compat_arch=True)
+
+
 class ReproTest(CIBaseTest):
 
     """

@@ -180,11 +180,7 @@ class CIBuilder(Test):
             if compat_arch:
                 f.write(
                     'ISAR_ENABLE_COMPAT_ARCH:amd64 = "1"\n'
-                    'IMAGE_INSTALL:remove:amd64 = "hello-isar"\n'
-                    'IMAGE_INSTALL:append:amd64 = " hello-isar-compat"\n'
                     'ISAR_ENABLE_COMPAT_ARCH:arm64 = "1"\n'
-                    'IMAGE_INSTALL:remove:arm64 = "hello-isar"\n'
-                    'IMAGE_INSTALL:append:arm64 = " hello-isar-compat"\n'
                 )
             if not cross:
                 f.write('ISAR_CROSS_COMPILE = "0"\n')
