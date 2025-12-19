@@ -110,12 +110,11 @@ KERNEL_NAME_PROVIDED ?= "${@ d.getVar('BPN').partition('linux-')[2]}"
 # Determine cross-profile override
 python() {
     if d.getVar("DISTRO_ARCH") != d.getVar("HOST_ARCH") and bb.utils.to_boolean(d.getVar("ISAR_CROSS_COMPILE")):
-        if "class-native" not in d.getVar("OVERRIDES").split(":"):
-            # cross compiling
-            d.appendVar("OVERRIDES", ":cross-profile")
-        else:
+        if "class-native" in d.getVar("OVERRIDES").split(":"):
             # generating -cross packages (in HOST_ARCH) from a -native variant
-            d.appendVar("OVERRIDES", ":cross-pkgs")
+            d.appendVar("OVERRIDES", ":cross-profile-native")
+        else:
+            d.appendVar("OVERRIDES", ":cross-profile")
 }
 
 # Default profiles and provides
@@ -129,9 +128,9 @@ BBCLASSEXTEND:append:cross-profile = " kbuildtarget"
 # with the default variant of the recipe
 BUILD_PROFILES:cross-profile = "pkg.${BPN}.kernel pkg.${BPN}.cross"
 
-# -native: kbuild package for host
+# -native: kbuild package for host, in cross variant if needed
 BUILD_PROFILES:class-native = "pkg.${BPN}.kbuild"
-BUILD_PROFILES:append:cross-pkgs = " pkg.${BPN}.cross"
+BUILD_PROFILES:append:cross-profile-native = " pkg.${BPN}.cross"
 RECIPE_PROVIDES:class-native = " \
     linux-headers-${KERNEL_NAME_PROVIDED} \
     linux-kbuild-${KERNEL_NAME_PROVIDED}"
