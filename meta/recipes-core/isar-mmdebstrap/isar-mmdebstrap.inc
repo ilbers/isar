@@ -18,7 +18,7 @@ BOOTSTRAP_TMPDIR = "${WORKDIR}/tempdir"
 MM_HOOK_JESSIE = "/usr/share/mmdebstrap/hooks/jessie-or-older"
 DPKG_HOOKS ?= "${@'--hook-dir='+d.getVar('MM_HOOK_JESSIE') \
               if os.path.isdir(d.getVar('MM_HOOK_JESSIE')) \
-              else '--customize-hook=\'touch /var/lib/dpkg/available\''}"
+              else '--customize-hook=\'touch $1/var/lib/dpkg/available\''}"
 MMHOOKS:focal ?= "${DPKG_HOOKS}"
 MMHOOKS:buster ?= "${DPKG_HOOKS}"
 
