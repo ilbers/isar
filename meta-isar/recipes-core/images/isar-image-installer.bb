@@ -11,7 +11,8 @@ DESCRIPTION = "Example of a ISAR based Installer Image"
 INSTALLER_WKS_FILE ??= "installer-efi.wks.in"
 WKS_FILE = "${INSTALLER_WKS_FILE}"
 
-ADDITIONAL_KERNEL_CMDLINE ??= ""
+# Hide kernel warning/info/debug messages
+ADDITIONAL_KERNEL_CMDLINE ??= "loglevel=4"
 
 OVERRIDES .= "${@':unattended-installer' if bb.utils.to_boolean(d.getVar('INSTALLER_UNATTENDED')) else ''}"
 ADDITIONAL_KERNEL_CMDLINE:append:unattended-installer = " \
