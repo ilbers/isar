@@ -13,7 +13,7 @@ ROOTFS_ARCH = "${HOST_ARCH}"
 ROOTFS_DISTRO = "${@get_rootfs_distro(d)}"
 ROOTFS_BASE_DISTRO = "${HOST_BASE_DISTRO}"
 
-ROOTFS_FEATURES = "no-generate-initrd"
+ROOTFS_FEATURES:remove = "generate-initrd"
 ROOTFS_INSTALL_COMMAND:remove = "rootfs_restore_initrd_tooling"
 
 # additional packages for the SBOM chroot
