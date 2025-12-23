@@ -537,8 +537,10 @@ class BootimgEFIPlugin(SourcePlugin):
 
         label = part.label if part.label else "ESP"
 
-        dosfs_cmd = "mkdosfs -n %s -i %s -C %s %d" % \
-                    (label, part.fsuuid, bootimg, blocks)
+        extraargs = source_params.get('extraargs', "-S 512")
+
+        dosfs_cmd = "mkdosfs -n %s -i %s %s -C %s %d" % \
+                    (label, part.fsuuid, extraargs, bootimg, blocks)
         exec_native_cmd(dosfs_cmd, native_sysroot)
 
         mcopy_cmd = "mcopy -i %s -s %s/* ::/" % (bootimg, hdddir)
