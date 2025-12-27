@@ -17,3 +17,8 @@ local_conf_header:
     TARGET_BOOTSTRAPPER_TASK_deploy-image[script] ?= "deploy-image-wic.sh"
     TARGET_BOOTSTRAPPER_TASK_deploy-image[workdir] ?= "/usr/bin"
     TARGET_BOOTSTRAPPER_TASK_deploy-image[effort] ?= "2"
+
+  installer_target_images: |
+    INSTALLER_TARGET_IMAGES += " ${@d.getVar('INSTALLER_TARGET_IMAGE_BASE') or ''}"
+    INSTALLER_TARGET_IMAGES += " ${@d.getVar('INSTALLER_TARGET_IMAGE_CI') or ''}"
+    INSTALLER_TARGET_IMAGES += " ${@d.getVar('INSTALLER_TARGET_IMAGE_DEBUG') or ''}"

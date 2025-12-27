@@ -7,42 +7,42 @@ config KAS_INCLUDE_IMAGE
 	string
 	default "kas/image/isar-image-installer.yaml"
 
-choice
-	prompt "Image to install"
-	default INSTALL_IMAGE_BASE
+comment "Images to bundle"
 
-config INSTALL_IMAGE_BASE
+config BUNDLE_IMAGE_BASE
 	bool "Base image"
+	default y
 	help
 	  Embed the basic Isar image into the installer image.
 
-config INSTALL_IMAGE_CI
+config BUNDLE_IMAGE_CI
 	bool "CI image"
 	help
 	  Embed the Isar CI image into the installer image.
 
-config INSTALL_IMAGE_DEBUG
+config BUNDLE_IMAGE_DEBUG
 	bool "Debug image"
 	help
 	  Embed the Isar debug image into the installer image.
 
-config INSTALL_EMPTY
-	bool "No installer payload"
-	help
-	  This will generate a installer image without payload. The user of
-	  that image needs then to copy a image to the partition labeled
-	  INSTALLDATA.
-
-endchoice
-
-config INSTALLER_TARGET_IMAGE
-	string
-	default "isar-image-base" if INSTALL_IMAGE_BASE
-	default "isar-image-ci" if INSTALL_IMAGE_CI
-	default "isar-image-debug" if INSTALL_IMAGE_DEBUG
+comment "No installer payload. Copy image(s) manually to the INSTALLDATA partition"
+	depends on !BUNDLE_IMAGE_BASE && !BUNDLE_IMAGE_CI && !BUNDLE_IMAGE_DEBUG
 
 config INSTALL_UNATTENDED
 	bool "Run installer unattended"
+	depends on BUNDLE_IMAGE_BASE || BUNDLE_IMAGE_CI || BUNDLE_IMAGE_DEBUG
+
+config INSTALLER_TARGET_IMAGE_BASE
+	string
+	default "isar-image-base" if BUNDLE_IMAGE_BASE
+
+config INSTALLER_TARGET_IMAGE_CI
+	string
+	default "isar-image-ci" if BUNDLE_IMAGE_CI
+
+config INSTALLER_TARGET_IMAGE_DEBUG
+	string
+	default "isar-image-debug" if BUNDLE_IMAGE_DEBUG
 
 if INSTALL_UNATTENDED
 
@@ -54,6 +54,36 @@ config INSTALLER_UNATTENDED
 	string
 	default "1" if INSTALL_UNATTENDED
 	default ""
+
+choice
+	prompt "Image to install unattended"
+
+config INSTALL_IMAGE_BASE
+	bool "Base image"
+	depends on BUNDLE_IMAGE_BASE
+	help
+	  Install the basic Isar image in unattended mode.
+
+config INSTALL_IMAGE_CI
+	bool "CI image"
+	depends on BUNDLE_IMAGE_CI
+	help
+	  Install the Isar CI image in unattended mode.
+
+config INSTALL_IMAGE_DEBUG
+	bool "Debug image"
+	depends on BUNDLE_IMAGE_DEBUG
+	help
+	  Install the Isar debug image in unattended mode.
+
+endchoice
+
+config INSTALLER_TARGET_IMAGE
+	string
+	default "isar-image-base" if INSTALL_IMAGE_BASE
+	default "isar-image-ci" if INSTALL_IMAGE_CI
+	default "isar-image-debug" if INSTALL_IMAGE_DEBUG
+
 
 config INSTALLER_TARGET_DEVICE
 	string "Target device to deploy"
@@ -76,12 +106,11 @@ config OPT_INSTALLER_TARGET_ABORT
 endchoice
 
 config INSTALLER_TARGET_OVERWRITE
-    string
-    default "OVERWRITE" if OPT_INSTALLER_TARGET_OVERWRITE
-    default "ABORT" if OPT_INSTALLER_TARGET_ABORT
+	string
+	default "OVERWRITE" if OPT_INSTALLER_TARGET_OVERWRITE
+	default "ABORT" if OPT_INSTALLER_TARGET_ABORT
 
 endif
-
 
 config INSTALLER_ADD_DEVICE_INFO_COLLECTOR
         bool "Add Device Info Collector"
