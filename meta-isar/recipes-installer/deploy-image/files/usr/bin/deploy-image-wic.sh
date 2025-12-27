@@ -10,6 +10,21 @@ SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
 
 . "${SCRIPT_DIR}/../lib/deploy-image-wic/handle-config.sh"
 
+if [ "$installer_unattended" = true ] && [ "$installer_unattended_abort_enable" = true ]; then
+    abort_file=/tmp/attended_mode_trigger
+    for ((i=$installer_unattended_abort_timeout; i>0; i--)); do
+        echo -ne "\rUnattended installation will start in $i seconds. Press any key to switch to attended mode..."
+
+	# Switch to attended mode if the abort file exists or any key pressed during countdown
+	# Create abort file to notify all other console instances to abort
+        if [ -f "$abort_file" ] || read -n 1 -t 1; then
+            installer_unattended=false
+            touch "$abort_file"
+            break
+        fi
+    done
+fi
+
 if ! $installer_unattended; then
     installer_image_uri=$(find "$installdata" -type f -iname "*.wic*" -a -not -iname "*.wic.bmap" -exec basename {} \;)
     if [ -z "$installer_image_uri" ] || [ ! -f "$installdata/$installer_image_uri" ]; then

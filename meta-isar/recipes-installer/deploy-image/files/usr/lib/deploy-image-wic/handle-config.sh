@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: MIT
 
 installer_unattended=false
+installer_unattended_abort_enable=false
+installer_unattended_abort_timeout=5
 installer_image_uri=
 installer_target_dev=
 installer_target_overwrite=
@@ -14,6 +16,8 @@ if [ -f "$installdata/auto.install" ]; then
     read -r installer_image_uri <&3
     read -r installer_target_dev <&3
     read -r installer_target_overwrite <&3
+    read -r installer_unattended_abort_enable <&3
+    read -r installer_unattended_abort_timeout <&3
     exec 3>&-
 
     installer_unattended=true
@@ -22,7 +26,7 @@ fi
 # But let kernel cmdline overrule
 for x in $(cat /proc/cmdline); do
     case $x in
-        installer.unattended*)
+        installer.unattended)
             installer_unattended=true
         ;;
         installer.image.uri=*)
@@ -45,6 +49,12 @@ for x in $(cat /proc/cmdline); do
             installer_target_overwrite="OVERWRITE"
             installer_unattended=true
         ;;
+        installer.unattended.abort.enable)
+            installer_unattended_abort_enable=true
+        ;;
+        installer.unattended.abort.timeout=*)
+            installer_unattended_abort_timeout=${x#installer.unattended.abort.timeout=}
+        ;;
     esac
 done
 
@@ -65,6 +75,8 @@ if ${installer_unattended}; then
     echo "  installer_image_uri=${installer_image_uri}"
     echo "  installer_target_dev=${installer_target_dev}"
     echo "  installer_target_overwrite=${installer_target_overwrite}"
+    echo "  installer_unattended_abort_enable=${installer_unattended_abort_enable}"
+    echo "  installer_unattended_abort_timeout=${installer_unattended_abort_timeout}"
 
     case ${installer_target_overwrite} in
         OVERWRITE|ABORT)

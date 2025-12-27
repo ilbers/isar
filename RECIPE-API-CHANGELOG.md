@@ -941,3 +941,24 @@ Example: To bundle multiple target images, set the following in local.conf:
 ```
 INSTALLER_TARGET_IMAGES = "isar-image-base isar-image-debug isar-image-ci"
 ```
+
+### Allow unattended installation to be aborted with configurable timeout
+
+Enable users to abort unattended installations before they start by setting
+`INSTALLER_UNATTENDED_ABORT_ENABLE = 1`. Set the optional countdown timeout
+with `INSTALLER_UNATTENDED_ABORT_TIMEOUT` (default 5 seconds).
+
+Automatically append `installer.unattended.abort.enable` and
+`installer.unattended.abort.timeout=<timeout-in-seconds>` to the kernel
+command line only when the feature is enabled.
+
+Abort unattended mode via keypress and switch to normal installation mode.
+Notify all console instances via a shared file `/tmp/attended_mode_trigger`.
+
+Opt-in: Add the following to local.conf to enable the feature:
+```
+INSTALLER_UNATTENDED_ABORT_ENABLE = "1"
+
+# Optional: set countdown timeout in seconds (default 5)
+INSTALLER_UNATTENDED_ABORT_TIMEOUT = "5"
+```

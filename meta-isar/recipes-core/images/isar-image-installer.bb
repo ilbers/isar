@@ -22,6 +22,13 @@ ADDITIONAL_KERNEL_CMDLINE:append:unattended-installer = " \
     installer.target.overwrite=${INSTALLER_TARGET_OVERWRITE} \
     "
 
+INSTALLER_UNATTENDED_ABORT_TIMEOUT ??= "5"
+ADDITIONAL_KERNEL_CMDLINE:append:unattended-installer = " \
+    ${@' installer.unattended.abort.enable \
+        installer.unattended.abort.timeout=%s' % d.getVar('INSTALLER_UNATTENDED_ABORT_TIMEOUT') \
+        if d.getVar('INSTALLER_UNATTENDED_ABORT_ENABLE') == '1' else ''} \
+"
+
 IMAGER_INSTALL:wic:append = " ${SYSTEMD_BOOTLOADER_INSTALL}"
 
 IMAGE_INSTALL += "target-bootstrapper-service"
