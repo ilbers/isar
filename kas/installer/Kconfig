@@ -110,6 +110,25 @@ config INSTALLER_TARGET_OVERWRITE
 	default "OVERWRITE" if OPT_INSTALLER_TARGET_OVERWRITE
 	default "ABORT" if OPT_INSTALLER_TARGET_ABORT
 
+config OPT_INSTALLER_UNATTENDED_ABORT_ENABLE
+	bool "Allow aborting unattended installation"
+	help
+	  Allow users to abort unattended installation before it starts by
+	  pressing a key during a configurable timeout, switching to normal
+	  installation mode.
+
+config INSTALLER_UNATTENDED_ABORT_ENABLE
+	string
+	default "1" if OPT_INSTALLER_UNATTENDED_ABORT_ENABLE
+
+config INSTALLER_UNATTENDED_ABORT_TIMEOUT
+	string "Unattended abort timeout (seconds)"
+	depends on OPT_INSTALLER_UNATTENDED_ABORT_ENABLE
+	default "5"
+	help
+	  Set the number of seconds users have to press a key to abort
+	  unattended installation and switch to normal installation mode.
+
 endif
 
 config INSTALLER_ADD_DEVICE_INFO_COLLECTOR

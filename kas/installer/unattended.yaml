@@ -9,6 +9,7 @@ header:
 local_conf_header:
   target_bootstrapper_deploy-image: |
     INSTALLER_UNATTENDED = "1"
+    INSTALLER_UNATTENDED_ABORT_ENABLE ?= "0"
     INSTALLER_TARGET_DEVICE ?= "/dev/sda:/dev/nvme0n1"
     INSTALLER_TARGET_OVERWRITE ?= "OVERWRITE"
 
