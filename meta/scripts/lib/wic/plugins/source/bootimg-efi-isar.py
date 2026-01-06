@@ -461,6 +461,10 @@ class BootimgEFIPlugin(SourcePlugin):
                     grub_target = 'arm64-efi'
                     grub_image = "bootaa64.efi"
                     grub_modules = ""
+                elif distro_arch == "armhf":
+                    grub_target = 'arm-efi'
+                    grub_image = "bootarm.efi"
+                    grub_modules = ""
                 else:
                     raise WicError("grub-efi is incompatible with target %s" %
                                    distro_arch)
