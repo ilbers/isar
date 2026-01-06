@@ -37,7 +37,7 @@ def add_file_if_variable_is_set(d, variable_name, prefix):
     return ''
 
 def replace_marker_with_file_content(template_file, content_file, marker):
-    import re, bb
+    import re
 
     tmpl = open(template_file).read()
     content = open(content_file).read().rstrip('\n')
