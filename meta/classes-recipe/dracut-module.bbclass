@@ -11,8 +11,6 @@ inherit dpkg-raw
 
 FILESPATH:append = ":${LAYERDIR_core}/recipes-initramfs/dracut-module/files"
 
-DPKG_ARCH = "all"
-
 DRACUT_MODULE_SETUP = "module-setup.sh"
 SRC_URI:append = "file://${DRACUT_MODULE_SETUP}.tmpl"
 

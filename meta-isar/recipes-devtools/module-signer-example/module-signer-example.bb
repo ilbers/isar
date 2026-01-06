@@ -7,8 +7,6 @@
 
 inherit dpkg-raw
 
-DPKG_ARCH = "all"
-
 PROVIDES = "module-signer"
 DEBIAN_PROVIDES = "module-signer"
 

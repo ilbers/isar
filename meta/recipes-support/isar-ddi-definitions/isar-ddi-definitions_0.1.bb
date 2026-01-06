@@ -6,7 +6,6 @@
 inherit dpkg-raw
 
 DESCRIPTION = "Definitions to generate Discoverable Disk Image"
-DPKG_ARCH = "all"
 
 DEBIAN_DEPENDS = "systemd, systemd-repart, cryptsetup, openssl, erofs-utils"
 

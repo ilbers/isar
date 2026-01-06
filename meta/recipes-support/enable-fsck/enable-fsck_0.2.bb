@@ -16,8 +16,6 @@ SRC_URI = " \
     file://enable-fsck.sh \
     file://postinst"
 
-DPKG_ARCH = "all"
-
 do_install() {
     install -d -m 755 ${D}/usr/share/enable-fsck
     install -m 755 ${WORKDIR}/enable-fsck.sh ${D}/usr/share/enable-fsck/
