@@ -25,5 +25,9 @@ CHANGELOG_V ?= "${PV}+isar-${SRCREV}"
 do_prepare_build() {
     deb_add_changelog
     cd ${WORKDIR}
-    tar cJf ${BPN}_${PV}+isar.orig.tar.xz --exclude=.git --exclude=debian ${P}
+    tar cJf ${BPN}_${PV}+isar.orig.tar.xz \
+        --exclude=.git --exclude=debian \
+        --mtime=@${SOURCE_DATE_EPOCH} --clamp-mtime \
+        --owner=0 --group=0 --numeric-owner \
+        --sort=name ${P}
 }
