@@ -308,7 +308,7 @@ class CrossTest(CIBaseTest):
 class PrebuiltTest(CIBaseTest):
     """
     Tests associated with prebuilt artifacts (containers, debs).
-    :avocado: tags=prebuilt,fast
+    :avocado: tags=prebuilt,full
     """
 
     def test_prebuilt_containers(self):
