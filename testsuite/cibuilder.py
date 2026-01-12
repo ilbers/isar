@@ -362,7 +362,7 @@ class CIBuilder(Test):
                 'BBPATH .= ":${LAYERDIR}"\n'
                 'BBFILES += "${LAYERDIR}/recipes-*/*/*.bbappend"\n'
                 'BBFILE_COLLECTIONS += "tmp"\n'
-                'BBFILE_PATTERN_tmp = "^${LAYERDIR}/"\n'
+                'BBFILE_PATTERN_tmp = "^${LAYERDIR_RE}/"\n'
                 'BBFILE_PRIORITY_tmp = "5"\n'
                 'LAYERVERSION_tmp = "1"\n'
                 'LAYERSERIES_COMPAT_tmp = "v0.6"\n'
