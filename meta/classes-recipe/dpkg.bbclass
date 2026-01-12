@@ -1,7 +1,6 @@
 # This software is a part of ISAR.
 # Copyright (C) 2015-2018 ilbers GmbH
 
-inherit dpkg-base
 inherit dpkg-source
 
 # maximum time (in minutes for the build), override for packages requiring
