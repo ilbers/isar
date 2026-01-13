@@ -5,6 +5,11 @@
 
 inherit dpkg-base
 
+TAR_REPRO_OPTS ?= "--exclude=.git --exclude=debian \
+--mtime=@${SOURCE_DATE_EPOCH} --clamp-mtime \
+--owner=0 --group=0 --numeric-owner \
+--sort=name"
+
 DPKG_SOURCE_EXTRA_ARGS ?= "-I"
 
 DEBIAN_SOURCE ?= "${BPN}"
