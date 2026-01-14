@@ -17,8 +17,11 @@ ROOTFS_FEATURES:remove = "generate-initrd"
 ROOTFS_INSTALL_COMMAND:remove = "rootfs_restore_initrd_tooling"
 
 # additional packages for the SBOM chroot
-SBOM_IMAGE_INSTALL = "python3-debsbom"
-DEPENDS += "python3-debsbom"
+DEPENDS:append:bookworm = " python3-cyclonedx-lib"
+DEPENDS:append:noble = " python3-cyclonedx-lib"
+DEPENDS += "python3-debsbom python3-spdx-tools"
+
+SBOM_IMAGE_INSTALL = "python3-debsbom python3-spdx-tools python3-cyclonedx-lib"
 
 ROOTFSDIR = "${WORKDIR}/rootfs"
 ROOTFS_PACKAGES = "${SBOM_IMAGE_INSTALL}"
