@@ -101,6 +101,11 @@ If your host is bullseye or bookworm, also install the following package.
 apt install python3-distutils
 ```
 
+The python3-distutils is deprecated and was replaced with python3-setuptools. If your apt complains about not finding python3-distutils, try the following instead:
+```
+apt install python3-setuptools
+```
+
 **NOTE:** sbuild version (<=0.78.1) packaged in Debian Buster doesn't support
 `$apt_keep_downloaded_packages` option which is required in Isar for
 populating `${DL_DIR}/deb`. So, host `sbuild` in this case should be manually
