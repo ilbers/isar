@@ -24,6 +24,7 @@ DEBIAN_BUILD_DEPENDS = "dh-python, \
                         python3-debian, \
                         python3-requests, \
                         python3-zstandard, \
+                        python3-license-expression, \
                         "
 
 DEBIAN_DEPENDS = "python3-apt, \${python3:Depends}, \${misc:Depends}"
@@ -34,7 +35,7 @@ SRC_URI = "git://github.com/siemens/debsbom.git;protocol=https;branch=main; \
            file://rules \
            file://0001-Use-old-license-description-in-pyproject.toml.patch \
            "
-SRCREV = "ba63720dfc0dc6dcb01994031e092aaebb62a399"
+SRCREV = "66d8dbba255f26b5ce1d5113f8df559eb1961bd2"
 
 do_prepare_build[cleandirs] += "${S}/debian"
 do_prepare_build() {
