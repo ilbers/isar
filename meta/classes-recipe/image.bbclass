@@ -221,9 +221,11 @@ python() {
 
     imager_install = set()
     imager_build_deps = set()
+    imager_bom = set()
     conversion_install = set()
     for bt in basetypes:
         local_imager_install = set()
+        local_imager_bom = set()
         local_conversion_install = set()
         vardeps = set()
         cmds = []
@@ -251,6 +253,10 @@ python() {
             local_imager_install.add(dep)
         for dep in (d.getVar('IMAGER_BUILD_DEPS:' + bt_clean) or '').split():
             imager_build_deps.add(dep)
+        for dep in (d.getVar('IMAGER_BOM:' + bt_clean) or '').split():
+            imager_bom.add(dep)
+            local_imager_bom.add(dep)
+        vardeps.add('IMAGER_BOM:' + bt_clean)
 
         # construct image command
         image_cmd = localdata.getVar('IMAGE_CMD:' + bt_clean)
@@ -325,11 +331,14 @@ python() {
         bb.build.addtask(task, 'do_image', after, d)
 
         # set per type imager dependencies
+        d.setVar('BOM_image_%s' % bt_clean, d.getVar('IMAGER_BOM'))
+        d.appendVar('BOM_image_%s' % bt_clean, ' ' + ' '.join(sorted(local_imager_bom)))
         d.setVar('INSTALL_image_%s' % bt_clean, d.getVar('IMAGER_INSTALL'))
         d.appendVar('INSTALL_image_%s' % bt_clean, ' ' + ' '.join(sorted(local_imager_install | local_conversion_install)))
         d.appendVarFlag(task, 'vardeps', ' INSTALL_image_%s' % bt_clean)
 
     d.appendVar('IMAGER_INSTALL', ' ' + ' '.join(sorted(imager_install | conversion_install)))
+    d.appendVar('IMAGER_BOM', ' ' + ' '.join(sorted(imager_bom)))
     d.appendVar('IMAGER_BUILD_DEPS', ' ' + ' '.join(sorted(imager_build_deps)))
 }
 
