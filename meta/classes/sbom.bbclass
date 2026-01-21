@@ -15,6 +15,7 @@ SBOM_DISTRO_VERSION ?= "1"
 SBOM_DISTRO_SUMMARY ?= "Linux distribution built with ISAR"
 SBOM_BASE_DISTRO_VENDOR ??= "debian"
 SBOM_DOCUMENT_UUID ?= ""
+SBOM_DEBSBOM_EXTRA_ARGS ?= "--with-licenses"
 
 # SPDX specific user variables
 SBOM_SPDX_NAMESPACE_PREFIX ?= "https://spdx.org/spdxdocs"
@@ -55,7 +56,7 @@ generate_sbom() {
             --base-distro-vendor '${SBOM_BASE_DISTRO_VENDOR}' \
             --cdx-serialnumber '${SBOM_DOCUMENT_UUID}' \
             --spdx-namespace '${SBOM_SPDX_NAMESPACE_PREFIX}'-'${SBOM_DOCUMENT_UUID}' \
-            --timestamp $TIMESTAMP
+            --timestamp $TIMESTAMP ${SBOM_DEBSBOM_EXTRA_ARGS}
 }
 
 do_generate_sbom[dirs] += "${DEPLOY_DIR_SBOM}"
