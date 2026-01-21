@@ -5,6 +5,7 @@
 
 inherit dpkg-raw
 
+MAINTAINER ?= "isar-users <isar-users@googlegroups.com>"
 DESCRIPTION = "Definitions to generate Discoverable Disk Image"
 
 DEBIAN_DEPENDS = "systemd, systemd-repart, cryptsetup, openssl, erofs-utils"
