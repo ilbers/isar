@@ -201,4 +201,29 @@ EOIMAGER
         ${DEPLOY_DIR_IMAGE}/${INITRD_DEPLOY_FILE}.manifest \
         ${WORKDIR}/imager.manifest 2>/dev/null \
         | sort | uniq > "${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.wic.manifest"
+
+    for bomtype in ${SBOM_TYPES}; do
+        merge_wic_sbom $bomtype
+    done
+}
+
+merge_wic_sbom() {
+    BOMTYPE="$1"
+    TIMESTAMP=$(date --iso-8601=s -d @${SOURCE_DATE_EPOCH})
+    sbom_document_uuid="${@d.getVar('SBOM_DOCUMENT_UUID') or generate_document_uuid(d, False)}"
+
+    cat ${IMAGE_FULLNAME}.${bomtype}.json \
+        ${INITRD_DEPLOY_FILE}.${bomtype}.json \
+        ${WORKDIR}/imager.${bomtype}.json 2>/dev/null | \
+    bwrap \
+        --unshare-user \
+        --unshare-pid \
+        --bind ${SBOM_CHROOT} / \
+        -- debsbom -v merge -t $BOMTYPE \
+            --distro-name '${SBOM_DISTRO_NAME}-Image' --distro-supplier '${SBOM_DISTRO_SUPPLIER}' \
+            --distro-version '${SBOM_DISTRO_VERSION}' --base-distro-vendor '${SBOM_BASE_DISTRO_VENDOR}' \
+            --cdx-serialnumber $sbom_document_uuid \
+            --spdx-namespace '${SBOM_SPDX_NAMESPACE_PREFIX}'-$sbom_document_uuid \
+            --timestamp $TIMESTAMP - -o - \
+     > ${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.wic.$bomtype.json
 }
