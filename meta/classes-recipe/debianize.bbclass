@@ -25,7 +25,16 @@ MAINTAINER ??= "Unknown maintainer <unknown@example.com>"
 
 DEBIANIZE_BUILD_DEPENDS ?= "debhelper-compat (= ${DEBIAN_COMPAT}), ${DEBIAN_BUILD_DEPENDS}"
 
+deb_check_maintainer() {
+	if [ -z "${MAINTAINER}" ]; then
+		bbwarn "MAINTAINER is empty. Please set a valid maintainer."
+	elif echo "${MAINTAINER}" | grep -q "@example.com"; then
+		bbwarn "MAINTAINER contains '@example.com'. Please set a valid maintainer."
+	fi
+}
+
 deb_add_changelog() {
+	deb_check_maintainer
 	changelog_v="${CHANGELOG_V}"
 	timestamp="${DEBIAN_CHANGELOG_TIMESTAMP}"
 	if [ -f ${S}/debian/changelog ]; then
@@ -84,6 +93,7 @@ deb_create_control[vardeps] += "DEBIANIZE_BUILD_DEPENDS \
                                 DEBIAN_RULES_REQUIRES_ROOT \
                                 DEBIAN_STANDARDS_VERSION"
 deb_create_control() {
+	deb_check_maintainer
 	# Add Source section
 	cat << EOF > ${S}/debian/control
 Source: ${BPN}
