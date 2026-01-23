@@ -190,7 +190,8 @@ class InstallerTest(CIBaseTest):
 class CrossTest(CIBaseTest):
 
     """
-    Start cross build for the defined set of configurations
+    Start cross build for the defined set of configurations.
+    As this is a fast test, ensure to not depend on custom kernels.
 
     :avocado: tags=cross,fast
     """
@@ -199,12 +200,9 @@ class CrossTest(CIBaseTest):
         targets = [
             'mc:qemuarm-buster:isar-image-ci',
             'mc:qemuarm-bullseye:isar-image-ci',
-            'mc:de0-nano-soc-bullseye:isar-image-base',
-            'mc:stm32mp15x-bullseye:isar-image-base',
             'mc:qemuarm-bookworm:isar-image-ci',
             'mc:qemuarm64-focal:isar-image-base',
             'mc:nanopi-neo-efi-bookworm:isar-image-base',
-            'mc:phyboard-mira-bookworm:isar-image-base',
         ]
 
         self.init()
@@ -272,6 +270,17 @@ class KernelTests(CIBaseTest):
     Tests associated with kernel builds and development.
     :avocado: tags=kernel,full
     """
+
+    def test_kernel_cross(self):
+        """Targets that build a custom kernel"""
+        targets = [
+            'mc:de0-nano-soc-bullseye:isar-image-base',
+            'mc:stm32mp15x-bullseye:isar-image-base',
+            'mc:phyboard-mira-bookworm:isar-image-base',
+        ]
+
+        self.init()
+        self.perform_build_test(targets)
 
     def test_per_kernel(self):
         """Test per-kernel recipe variants for external kernel modules."""
