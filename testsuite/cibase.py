@@ -168,7 +168,7 @@ class CIBaseTest(CIBuilder):
         **kwargs,
     ):
         """
-        Generate signature data for target(s) and check for cachability issues
+        Generate signature data for target(s) and check for cacheability issues
         """
         self.configure(**kwargs)
         self.move_in_build_dir('tmp', 'tmp_before_sstate')
@@ -189,7 +189,7 @@ class CIBaseTest(CIBuilder):
             ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
             for line in output.splitlines():
                 self.log.error(ansi_escape.sub('', line))
-            self.fail("Detected cachability issues")
+            self.fail("Detected cacheability issues")
 
     def perform_sstate_test(self, image_target, package_target, **kwargs):
         def check_executed_tasks(target, expected):
