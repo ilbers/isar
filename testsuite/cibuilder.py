@@ -30,6 +30,18 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../bitbake/lib'))
 import bb
 
 DEF_VM_TO_SEC = 600
+IMAGE_INSTALL_DEFAULT = [
+    'hello-isar',
+    'example-raw',
+    'example-module-${KERNEL_NAME}',
+    'enable-fsck',
+    'isar-exclude-docs',
+    'samefile',
+    'hello',
+    'isar-disable-apt-cache',
+    'cowsay',
+    'example-prebuilt'
+]
 
 isar_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 backup_prefix = '.ci-backup'
@@ -222,6 +234,14 @@ class CIBuilder(Test):
                 f.write('SSTATE_DIR = "%s"\n' % sstate_dir)
             if image_install is not None:
                 f.write('IMAGE_INSTALL = "%s"\n' % image_install)
+            else:
+                if container:
+                    # strip kernel modules from default package install list
+                    _image_install = [p for p in IMAGE_INSTALL_DEFAULT if "-module-" not in p]
+                else:
+                    _image_install = IMAGE_INSTALL_DEFAULT
+                f.write('IMAGE_INSTALL = "%s"\n' % ' '.join(_image_install))
+
             if fail_on_cleanup == '1':
                 f.write('ISAR_FAIL_ON_CLEANUP = "1"\n')
             if installer_image:
