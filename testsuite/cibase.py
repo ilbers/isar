@@ -171,6 +171,7 @@ class CIBaseTest(CIBuilder):
         Generate signature data for target(s) and check for cacheability issues
         """
         self.configure(**kwargs)
+        self.delete_from_build_dir('tmp_before_sstate')
         self.move_in_build_dir('tmp', 'tmp_before_sstate')
         self.bitbake(targets, sig_handler='none')
 
@@ -190,6 +191,9 @@ class CIBaseTest(CIBuilder):
             for line in output.splitlines():
                 self.log.error(ansi_escape.sub('', line))
             self.fail("Detected cacheability issues")
+        else:
+            # on success, cleanup temporary copy (keep on failure to inspect)
+            self.delete_from_build_dir('tmp_before_sstate')
 
     def perform_sstate_test(self, image_target, package_target, **kwargs):
         def check_executed_tasks(target, expected):
