@@ -278,12 +278,11 @@ class CrossTest(CIBaseTest):
             'mc:qemuarm64-bookworm:isar-image-ci',
         ]
 
-        lines = [f"IMAGER_BUILD_DEPS:append = ' test-all-depnocross-native'",
-                 f"IMAGE_INSTALL:append = ' test-all-deponlycross'",
-        ]
+        lines = [f"IMAGER_BUILD_DEPS:append = ' test-all-depnocross-native'"]
 
         self.init()
-        self.perform_build_test(targets, lines=lines)
+        self.perform_build_test(targets, lines=lines,
+                                image_install='test-all-deponlycross')
 
 class PrebuiltTest(CIBaseTest):
     """
