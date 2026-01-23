@@ -308,7 +308,7 @@ class CrossTest(CIBaseTest):
 class PrebuiltTest(CIBaseTest):
     """
     Tests associated with prebuilt artifacts (containers, debs).
-    :avocado: tags=prebuilt,fast
+    :avocado: tags=prebuilt,full
     """
 
     def test_prebuilt_containers(self):
@@ -320,8 +320,23 @@ class PrebuiltTest(CIBaseTest):
         self.init()
         self.perform_build_test(
             targets,
-            bitbake_cmd='do_rootfs_install',
             image_install="prebuilt-docker-img prebuilt-podman-img")
+
+    def test_run_amd64_bookworm_prebuilt_containers(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('amd64', 'bookworm', image='isar-image-ci',
+                      script='test_prebuilt_containers.sh')
+
+    def test_run_arm64_bookworm_prebuilt_containers(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('arm64', 'bookworm', image='isar-image-ci',
+                      script='test_prebuilt_containers.sh')
 
 
 class KernelTests(CIBaseTest):
@@ -1073,22 +1088,6 @@ class VmBootTestFull(CIBaseTest):
             self.vm_start('riscv64', 'trixie')
         except exceptions.TestFail:
             self.cancel('KFAIL')
-
-    def test_amd64_bookworm_prebuilt_containers(self):
-        self.init()
-        self.perform_build_test(
-            ['mc:qemuamd64-bookworm:isar-image-ci'],
-            image_install="prebuilt-docker-img prebuilt-podman-img")
-        self.vm_start('amd64', 'bookworm', image='isar-image-ci',
-                      script='test_prebuilt_containers.sh')
-
-    def test_arm64_bookworm_prebuilt_containers(self):
-        self.init()
-        self.perform_build_test(
-            ['mc:qemuarm64-bookworm:isar-image-ci'],
-            image_install="prebuilt-docker-img prebuilt-podman-img")
-        self.vm_start('arm64', 'bookworm', image='isar-image-ci',
-                      script='test_prebuilt_containers.sh')
 
     def test_amd64_bookworm_iso(self):
         self.init()
