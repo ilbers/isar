@@ -140,6 +140,32 @@ class CIBaseTest(CIBuilder):
         self.delete_from_build_dir('ccache')
         self.unconfigure()
 
+    def perform_sbom_test(self, targets, **kwargs):
+        """
+        Build a rootfs containing a needle package and check if that package
+        is added to the sbom.
+        """
+        import json
+
+        needle_pkg = 'cowsay'
+        self.perform_build_test(
+            targets, image_install=needle_pkg,
+            generate_sbom=True
+        )
+
+        for t in targets:
+            ds, pn, distro, machine = \
+                CIUtils.getVars('DEPLOY_DIR_SBOM', 'PN', 'DISTRO', 'MACHINE',
+                                target=t)
+            for t in ["cdx", "spdx"]:
+                sbom_path = os.path.join(ds, f'{pn}-{distro}-{machine}.{t}.json')
+                self.log.info(f"Check {t} SBOM in {sbom_path}")
+                with open(sbom_path) as f:
+                    sbom = json.load(f)
+                pkg_key = 'components' if t == 'cdx' else 'packages'
+                if not any(c for c in sbom[pkg_key] if c['name'] == needle_pkg):
+                    self.fail(f'{needle_pkg} package not found in SBOM {sbom_path}')
+
     def perform_sstate_populate(self, image_target, **kwargs):
         # Use a different isar root for populating sstate cache
         isar_sstate = f"{isar_root}/isar-sstate"
