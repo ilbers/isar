@@ -1129,7 +1129,7 @@ class SstateTest(CIBaseTest):
     """
     Test builds with artifacts taken from sstate cache
 
-    :avocado: tags=sstate,full
+    :avocado: tags=sstate
     """
 
     def test_sstate_populate(self):
