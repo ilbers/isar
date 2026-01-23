@@ -233,7 +233,8 @@ class CrossTest(CIBaseTest):
         ]
 
         self.init()
-        self.perform_build_test(targets, debsrc_cache=True)
+        # only build a single custom package to speedup test
+        self.perform_build_test(targets, debsrc_cache=True, image_install='cowsay')
 
     def test_cross_trixie(self):
         targets = [
