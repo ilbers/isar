@@ -6,12 +6,22 @@ variables:
 
 .common-build: &common-build
   stage: build
+  variables:
+    RUNNER_AFTER_SCRIPT_TIMEOUT: 15m
   before_script:
     - export http_proxy=$HTTP_PROXY
     - export https_proxy=$HTTPS_PROXY
     - export ftp_proxy=$FTP_PROXY
     - export no_proxy=$NO_PROXY
     - export DISTRO_APT_PREMIRRORS=$DISTRO_APT_PREMIRRORS
+  after_script:
+    - |
+      if [[ -n "${SSTATE_LOCATION}" ]] && [[ -d "sstate-cache" ]]; then
+        echo "=== Upload sstate artifacts to ${SSTATE_LOCATION} ==="
+        ./scripts/isar-sstate --filter '^(?!isar-image-)' upload "sstate-cache" "${SSTATE_LOCATION}"
+        ./scripts/isar-sstate info -v "${SSTATE_LOCATION}"
+      fi
+
   artifacts:
     name: "logs-$CI_JOB_ID"
     paths:
@@ -48,7 +58,7 @@ dev-ci:
     - *use-default-image
     - if: $TESTSUITE == 'dev' || $CI_PIPELINE_SOURCE != 'schedule'
   script:
-    - scripts/ci_build.sh -T dev
+    - scripts/ci_build.sh --sstate 1 -T dev
 
 fast-ci:
   <<: *common-build
@@ -56,7 +66,7 @@ fast-ci:
     - *use-default-image
     - if: $TESTSUITE == 'fast'
   script:
-    - scripts/ci_build.sh -T fast
+    - scripts/ci_build.sh --sstate 1 -T fast
 
 full-ci:
   <<: *common-build
@@ -68,7 +78,7 @@ full-ci:
     - PREVIOUS_SHA="$(cat .CI_COMMIT_SHA || true)"
     - if [ "$CI_COMMIT_SHA" != "$PREVIOUS_SHA" ]; then
           echo "$CI_COMMIT_SHA" > .CI_COMMIT_SHA;
-          scripts/ci_build.sh -T full;
+          scripts/ci_build.sh --sstate 1 -T full;
       fi
   cache:
     key: "$CI_COMMIT_REF_SLUG"
@@ -83,7 +93,7 @@ dev-ci-isar:
     - *use-docker-isar-image
     - if: $TESTSUITE == 'dev'
   script:
-    - scripts/ci_build.sh -T dev
+    - scripts/ci_build.sh --sstate 1 -T dev
 
 fast-ci-isar:
   <<: *docker-isar
@@ -92,7 +102,7 @@ fast-ci-isar:
     - *use-docker-isar-image
     - if: $TESTSUITE == 'fast'
   script:
-    - scripts/ci_build.sh -T fast
+    - scripts/ci_build.sh --sstate 1 -T fast
 
 full-ci-isar:
   <<: *docker-isar
@@ -101,4 +111,18 @@ full-ci-isar:
     - *use-docker-isar-image
     - if: $TESTSUITE == 'full'
   script:
-    - scripts/ci_build.sh -T full
+    - scripts/ci_build.sh --sstate 1 -T full
+
+sstate-cache-info:
+  stage: build
+  when: manual
+  script:
+    - ./scripts/isar-sstate info -v "${SSTATE_LOCATION}"
+
+sstate-cache-clean:
+  stage: build
+  when: manual
+  variables:
+    SSTATE_MAX_AGE: "0d"
+  script:
+    - ./scripts/isar-sstate clean "${SSTATE_LOCATION}" --max-age "${SSTATE_MAX_AGE}"
