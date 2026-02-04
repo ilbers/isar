@@ -1,14 +1,14 @@
 # Support of kas
 
-[kas](https://github.com/siemens/kas) is a tool to setup bitbake based projects.
+[kas](https://github.com/siemens/kas) is a tool to set up BitBake-based projects.
 
-Directory `kas` contains required configuration fragments to setup and build
-Isar with `kas-container` script and Kconfig language.
+The `kas` directory contains the required configuration fragments to set up and build
+Isar using the `kas-container` script and Kconfig language.
 
 ## Requirements
 
-Since kas uses Docker or Podman based containers, users that runs Isar build
-using `kas-container` script should be allowed to run these containers in
+Since kas uses Docker or Podman based containers, users who run an Isar build
+using the `kas-container` script should be allowed to run these containers in
 privileged mode.
 
 ## Configuring Isar build
@@ -17,19 +17,19 @@ privileged mode.
 ./kas/kas-container menu
 ```
 
-This creates `.config.yaml` file in isar root that stores the configuration.
+This creates a `.config.yaml` file in the Isar root directory that stores the
+configuration.
 
-
-## Building Isar after configuration done
+## Building Isar after configuration is done
 
 ```
 ./kas/kas-container build
 ```
 
-This generates `build/conf/` configuration and starts building Isar using
-kas container. Required image will be downloaded if not yet).
+This generates the `build/conf/` configuration and starts building Isar using
+the kas container. The required image will be downloaded if not already present.
 
-To access bulid shell, the following command can be used:
+To access the build shell, the following command can be used:
 
 ```
 ./kas/kas-container shell
