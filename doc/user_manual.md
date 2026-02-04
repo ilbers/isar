@@ -6,6 +6,7 @@ Copyright (C) 2016-2019, ilbers GmbH
 
  - [Introduction](#introduction)
  - [Getting Started](#getting-started)
+ - [Resources](#resources)
  - [Terms and Definitions](#terms-and-definitions)
  - [How Isar Works](#how-isar-works)
  - [General Isar Configuration](#general-isar-configuration)
@@ -323,6 +324,17 @@ docker load -i build/tmp/deploy/images/qemuarm/isar-image-base-debian-buster-arm
 ```
 docker run --rm -ti --volume "$(pwd):/build" isar-image-base-debian-buster-armhf:1.0-r0
 ```
+
+---
+
+## Resources
+
+ - Example repositories:
+    - [Isar-demo](https://github.com/siemens/isar-demo)
+
+ - Recent talks on Isar:
+    - [Easily Generating Debian-Based Embedded Systems, Open Source Summit 2025](https://youtu.be/j5OqhlvZGTE?si=keMCoqY3fxBRMRhW)
+    - [Isar - Building Images with the Power of Debian, DebConf 2023](https://youtu.be/GMz3Gyrj0So?si=rR934Wzb4HbCd6AJ)
 
 ---
 
