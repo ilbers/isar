@@ -120,7 +120,7 @@ dpkg_runbuild() {
         --chroot-setup-commands="mkdir -p ${deb_dir}" \
         --chroot-setup-commands="find ${ext_deb_dir} -maxdepth 1 -name '*.deb' -exec ln -t ${deb_dir}/ -sf {} +" \
         --chroot-setup-commands="apt-get update -o Dir::Etc::SourceList=\"sources.list.d/isar-apt.list\" -o Dir::Etc::SourceParts=\"-\" -o APT::Get::List-Cleanup=\"0\"" \
-        --finished-build-commands="rm -f ${deb_dir}/sbuild-build-depends-main-dummy_*.deb" \
+        --finished-build-commands="rm -f ${deb_dir}/sbuild-build-depends-*-dummy_*.deb" \
         --finished-build-commands="find ${deb_dir} -maxdepth 1 -type f -name '*.deb' -print -exec cp ${CP_FLAGS} -t ${ext_deb_dir}/ {} +" \
         --finished-build-commands="cp /var/log/dpkg.log ${ext_root}/dpkg_partial.log" \
         --build-path="" --build-dir=${WORKDIR} --dist="${DEBDISTRONAME}" ${DSC_FILE}
