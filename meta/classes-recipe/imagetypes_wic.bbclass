@@ -196,4 +196,9 @@ EOIMAGER
     sudo chown -R $(stat -c "%U" ${LAYERDIR_core}) ${LAYERDIR_core} ${LAYERDIR_isar} ${SCRIPTSDIR} || true
     sudo chown -R $(id -u):$(id -g) "${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.wic"*
     rm -rf ${IMAGE_ROOTFS}/../pseudo
+
+    cat ${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.manifest \
+        ${DEPLOY_DIR_IMAGE}/${INITRD_DEPLOY_FILE}.manifest \
+        ${WORKDIR}/imager.manifest 2>/dev/null \
+        | sort | uniq > "${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.wic.manifest"
 }
