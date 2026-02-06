@@ -496,8 +496,9 @@ class InitRdBaseTest(CIBaseTest):
         super().init()
         self.deploy_dir = os.path.join(self.build_dir, 'tmp', 'deploy')
 
-    def deploy_dir_image(self, machine):
-        return os.path.join(self.deploy_dir, 'images', machine)
+    def deploy_dir_image(self, mc, image):
+        multiconfig = f"{mc}:{image}"
+        return CIUtils.getVars('DEPLOY_DIR_IMAGE', target=multiconfig)
 
     def dracut_in_image(self, targets):
         machine = 'qemuamd64'
@@ -526,7 +527,7 @@ class InitRdBaseTest(CIBaseTest):
                                           bb_should_fail=False):
         mc = f'mc:{machine}-{distro.removeprefix("debian-")}'
         initrd_image = f'{initrd}-{distro}-{machine}-initrd.img'
-        initrd_path = os.path.join(self.deploy_dir_image(machine), initrd_image)
+        initrd_path = os.path.join(self.deploy_dir_image(mc, initrd), initrd_image)
 
         # cleansstate if the initrd image was already built/deployed to verify
         # that a new build does result in the image being deployed
