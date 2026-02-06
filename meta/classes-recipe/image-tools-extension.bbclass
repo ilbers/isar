@@ -73,10 +73,32 @@ EOAPT
         schroot -r -c ${session_id} -d / -- \
             dpkg-query -W -f='${source:Package}|${source:Version}|${Package}:${Architecture}|${Version}\n' ${local_bom} > \
         ${WORKDIR}/imager.manifest
+
+        ${@bb.utils.contains('ROOTFS_FEATURES', 'generate-sbom', 'generate_imager_sbom', '', d)}
     fi
 
     schroot -e -c ${session_id}
 
     remove_mounts
     schroot_delete_configs
+}
+
+generate_imager_sbom() {
+    TIMESTAMP=$(date --iso-8601=s -d @${SOURCE_DATE_EPOCH})
+    sbom_document_uuid="${@d.getVar('SBOM_DOCUMENT_UUID') or generate_document_uuid(d, False)}"
+    bwrap \
+        --unshare-user \
+        --unshare-pid \
+        --bind ${SBOM_CHROOT} / \
+        --bind $schroot_dir /mnt/rootfs \
+        --bind ${WORKDIR} /mnt/deploy-dir \
+        -- debsbom -vv generate ${SBOM_DEBSBOM_TYPE_ARGS} \
+            --from-pkglist -r /mnt/rootfs -o /mnt/deploy-dir/imager \
+            --distro-name '${SBOM_DISTRO_NAME}-Imager' --distro-supplier '${SBOM_DISTRO_SUPPLIER}' \
+            --distro-version '${SBOM_DISTRO_VERSION}' --distro-arch '${DISTRO_ARCH}' \
+            --base-distro-vendor '${SBOM_BASE_DISTRO_VENDOR}' \
+            --cdx-serialnumber $sbom_document_uuid \
+            --spdx-namespace '${SBOM_SPDX_NAMESPACE_PREFIX}'-$sbom_document_uuid \
+            --timestamp $TIMESTAMP ${SBOM_DEBSBOM_EXTRA_ARGS} \
+    < ${WORKDIR}/imager.manifest
 }
