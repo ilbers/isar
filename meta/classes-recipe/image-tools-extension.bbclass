@@ -18,6 +18,7 @@ SCHROOT_MOUNTS += "${REPO_ISAR_DIR}/${DISTRO}:/isar-apt"
 
 imager_run() {
     local_install="${@(d.getVar("INSTALL_%s" % d.getVar("BB_CURRENTTASK")) or '').strip()}"
+    local_bom="${@(d.getVar("BOM_%s" % d.getVar("BB_CURRENTTASK")) or '').strip()}"
 
     schroot_create_configs
     insert_mounts
@@ -67,6 +68,12 @@ EOAPT
     fi
 
     schroot -r -c ${session_id} "$@"
+
+    if [ -n "${local_bom}" ]; then
+        schroot -r -c ${session_id} -d / -- \
+            dpkg-query -W -f='${source:Package}|${source:Version}|${Package}:${Architecture}|${Version}\n' ${local_bom} > \
+        ${WORKDIR}/imager.manifest
+    fi
 
     schroot -e -c ${session_id}
 

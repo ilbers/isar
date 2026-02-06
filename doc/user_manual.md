@@ -461,6 +461,7 @@ Some other variables include:
  - `FILESEXTRAPATHS` - The default directories BitBake uses when it processes recipes are initially defined by the FILESPATH variable. You can extend FILESPATH variable by using FILESEXTRAPATHS.
  - `FILESOVERRIDES` - A subset of OVERRIDES used by the build system for creating FILESPATH. The FILESOVERRIDES variable uses overrides to automatically extend the FILESPATH variable.
  - `IMAGER_INSTALL` -  The list of package dependencies for an imager like wic.
+ - `IMAGER_BOM` - The list of packages that should be added to the image BOM (e.g. the bootloader). These packages must also be available in the imager rootfs.
 
 ---
 

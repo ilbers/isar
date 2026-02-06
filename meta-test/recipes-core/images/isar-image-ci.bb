@@ -23,6 +23,7 @@ WKS_FILE:qemuamd64:debian-bullseye ?= "sdimage-efi-btrfs"
 IMAGE_INSTALL:append:qemuamd64:debian-bullseye = " expand-on-first-boot"
 IMAGER_INSTALL:remove:qemuamd64:debian-bullseye ?= "${GRUB_BOOTLOADER_INSTALL}"
 IMAGER_INSTALL:append:qemuamd64:debian-bullseye ?= " ${SYSTEMD_BOOTLOADER_INSTALL} btrfs-progs"
+IMAGER_BOM:wic:qemuamd64:debian-bullseye = "${SYSTEMD_BOOTLOADER_INSTALL}"
 IMAGE_PREINSTALL:append:qemuamd64:debian-bullseye ?= " btrfs-progs"
 # Explicitly remove from wic since it is set in qemuamd64.conf:
 IMAGER_INSTALL:wic:remove:qemuamd64:debian-bullseye ?= "${GRUB_BOOTLOADER_INSTALL}"
