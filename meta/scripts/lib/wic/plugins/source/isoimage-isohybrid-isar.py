@@ -191,7 +191,9 @@ class IsoImagePlugin(SourcePlugin):
             if not image_type:
                 raise WicError("Couldn't find INITRAMFS_FSTYPES, exiting.")
 
-            machine = os.path.basename(initrd_dir)
+            machine = get_bitbake_var("MACHINE")
+            if not machine:
+                raise WicError("Couldn't find MACHINE, exiting.")
 
             pattern = '%s/%s*%s.%s' % (initrd_dir, image_name, machine, image_type)
             pattern = '%s/%s-%s-initrd.%s' % (initrd_dir, image_name, machine, image_type)
