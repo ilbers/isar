@@ -64,7 +64,11 @@ if ! $installer_unattended; then
         # Always exclude the exact device mounted as /
         exclude_list+=("$current_root_dev")
 
-        base_no_part=${current_root_dev%%[0-9]*}
+        if [[ "$current_root_dev" =~ ^(mmcblk|nvme) ]]; then
+            base_no_part="${current_root_dev%p[0-9]*}"
+        else
+            base_no_part="${current_root_dev%%[0-9]*}"
+        fi
         if [ -n "$base_no_part" ]; then
             exclude_list+=("$base_no_part")
         fi
@@ -121,6 +125,9 @@ if ! $installer_unattended; then
         fi
 
         case $device in
+            dm-*)
+                # skip device-mapper device
+                ;;
             loop*)
                 # skip loop device
                 ;;
@@ -131,6 +138,9 @@ if ! $installer_unattended; then
                 ;;
             ram*)
                 # skip ram device
+                ;;
+            zram*)
+                # skip zram device
                 ;;
             *)
                 #skip any excluded devices (root and its slaves)
