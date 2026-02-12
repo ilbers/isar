@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: MIT
 # Class to generate discoverable disk images (DDI)
 
-DEPENDS += "isar-ddi-definitions"
 IMAGER_BUILD_DEPS:ddi += " isar-ddi-definitions"
 IMAGER_INSTALL:ddi += " isar-ddi-definitions"
 
