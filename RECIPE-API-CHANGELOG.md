@@ -985,6 +985,7 @@ specify it relative to ${WORKDIR} in `KERNEL_CONFIG_FRAGMENTS`.
 Changes in next
 ---------------
 
+<<<<<<< HEAD
 ### Prefix DTB file names when deploying
 
 DTB files are now placed in the ${DEPLOY_DIR_IMAGE} with a prefix of
@@ -1008,3 +1009,18 @@ The change "Prefix DTB file names when deploying" was reverted because of API
 incompatibility with downstreams logic, caused changed DTB file names.
 
 DTB file names turned back to original without any prefixes.
+
+### Change DEPLOY_DIR_IMAGE path
+
+Change DEPLOY_DIR_IMAGE from ${DEPLOY_DIR}/images/${MACHINE} to
+${DEPLOY_DIR}/images/${MACHINE}-${DISTRO}-${KERNEL_NAME}. When building
+different distros with the same machine the following error occurs:
+
+do_copy_boot_files: The recipe isar-image-base is trying to install files
+into a shared area when those files already exists. It happens when some
+files have the same names (e.g., dtb files) for different distros.
+
+To prevent this new path is separated also by distro and kernel values.
+
+This change will influence on build artifacts location and should be taken
+into account by downstreams.
