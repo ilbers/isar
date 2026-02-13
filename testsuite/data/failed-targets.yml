@@ -1,10 +1,4 @@
 a: !mux
-  imx6-sabrelite-buster:
-    name: imx6-sabrelite-buster
-  phyboard-mira-bullseye:
-    name: phyboard-mira-bullseye
-  phyboard-mira-bookworm:
-    name: phyboard-mira-bookworm
   starfive-visionfive2-trixie:
     name: starfive-visionfive2-trixie
 b: !mux
