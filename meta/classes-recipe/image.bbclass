@@ -1,5 +1,7 @@
 # This software is a part of Isar.
-# Copyright (C) 2015-2017 ilbers GmbH
+# Copyright (C) 2015-2026 ilbers GmbH
+#
+# SPDX-License-Identifier: MIT
 
 # Make workdir and stamps machine-specific without changing common PN target
 WORKDIR = "${TMPDIR}/work/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}/${PV}-${PR}"
@@ -9,7 +11,6 @@ STAMPCLEAN = "${STAMPS_DIR}/${DISTRO}-${DISTRO_ARCH}/${PN}-${MACHINE}/*-*"
 
 # Sstate also needs to be machine-specific
 SSTATE_MANIFESTS = "${TMPDIR}/sstate-control/${MACHINE}-${DISTRO}-${DISTRO_ARCH}"
-SSTATETASKS += "do_copy_boot_files"
 
 IMAGE_INSTALL ?= ""
 IMAGE_FSTYPES ?= "ext4"
@@ -381,36 +382,20 @@ INITRD_IMG = "${PP_DEPLOY}/${INITRD_DEPLOY_FILE}"
 # only one dtb file supported, pick the first
 DTB_IMG = "${PP_DEPLOY}/${@(d.getVar('DTB_FILES').split() or [''])[0]}"
 
-do_copy_boot_files[cleandirs] += "${DEPLOYDIR}"
-do_copy_boot_files[sstate-inputdirs] = "${DEPLOYDIR}"
-do_copy_boot_files[sstate-outputdirs] = "${DEPLOY_DIR_IMAGE}"
-do_copy_boot_files[network] = "${TASK_USE_SUDO}"
+python() {
+    if d.getVar('DTB_FILES'):
+        d.appendVarFlag("do_copy_boot_files", "depends", "kernel-deploy-${KERNEL_NAME}:do_deploy")
+}
+
+# Associate kernel with image by symlinks
+do_copy_boot_files[dirs] += "${DEPLOY_DIR_IMAGE}"
 do_copy_boot_files() {
-    kernel="$(realpath -q '${IMAGE_ROOTFS}'/vmlinu[xz])"
-    if [ ! -f "$kernel" ]; then
-        kernel="$(realpath -q '${IMAGE_ROOTFS}'/boot/vmlinu[xz])"
-    fi
+    kernel="$(realpath -q '${DEPLOY_DIR_IMAGE}/${KERNEL_NAME}'-vmlinu[xz]*)"
     if [ -f "$kernel" ]; then
-        sudo cat "$kernel" > "${DEPLOYDIR}/${KERNEL_IMAGE}"
+        ln -sfr "$kernel" "${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGE}"
     fi
-
-    for file in ${DTB_FILES}; do
-        dtb="$(find '${IMAGE_ROOTFS}/usr/lib' -type f \
-                    -iwholename '*linux-image-*/'${file} | head -1)"
-
-        if [ -z "$dtb" -o ! -e "$dtb" ]; then
-            die "${file} not found"
-        fi
-
-        cp -f "$dtb" "${DEPLOYDIR}/"
-    done
 }
 addtask copy_boot_files before do_rootfs_postprocess after do_rootfs_install
-
-python do_copy_boot_files_setscene () {
-    sstate_setscene(d)
-}
-addtask do_copy_boot_files_setscene
 
 python do_image_tools() {
     """Virtual task"""
