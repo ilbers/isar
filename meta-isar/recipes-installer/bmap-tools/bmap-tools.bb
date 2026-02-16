@@ -8,6 +8,7 @@ inherit dpkg
 SRC_URI = "apt://${BPN}"
 PN = "bmap-tools"
 CHANGELOG_V="<orig-version>+isar"
+DPKG_ARCH = "all"
 
 SRC_URI += "file://0001-Fix-path-parameter-passing-error-of-set_psplash_pipe.patch;apply=no \
             file://0002-Fix-_psplash_pipe-part-was-skipped-when-_progress_fi.patch;apply=no"
