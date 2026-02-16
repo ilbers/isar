@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: MIT
 
 DESCRIPTION = "systemd service to run target bootstrapper on ${TARGET_BOOTSTRAPPER_TTY_SERVICES}"
+MAINTAINER ?= "isar-users <isar-users@googlegroups.com>"
 
 TARGET_BOOTSTRAPPER_TTY_SERVICES ??= "\
     getty@tty1 \

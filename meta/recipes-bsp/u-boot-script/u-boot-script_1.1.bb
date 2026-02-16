@@ -8,6 +8,7 @@
 inherit dpkg-raw
 
 DESCRIPTION = "Boot script generator for U-Boot"
+MAINTAINER = "isar-users <isar-users@googlegroups.com>"
 
 SRC_URI = " \
     file://update-u-boot-script \

@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: MIT
 
 DESCRIPTION = "Install image to device"
+MAINTAINER = "isar-users <isar-users@googlegroups.com>"
 
 inherit dpkg-raw
 

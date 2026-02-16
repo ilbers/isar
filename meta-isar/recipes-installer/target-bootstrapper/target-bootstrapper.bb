@@ -7,6 +7,7 @@ inherit dpkg-raw
 inherit target-bootstrapper
 
 DESCRIPTION = "Device bootstrapping framework"
+MAINTAINER ?= "isar-users <isar-users@googlegroups.com>"
 
 TARGET_BOOTSTRAPPER_ADDITIONAL_PACKAGES ??= "deploy-image"
 TARGET_BOOTSTRAPPER_TASK_deploy-image[script] ??= "deploy-image-wic.sh"

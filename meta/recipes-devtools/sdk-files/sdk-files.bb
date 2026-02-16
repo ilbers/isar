@@ -4,6 +4,7 @@
 # Copyright (C) 2015-2018 ilbers GmbH
 
 DESCRIPTION = "Isar SDK Root filesystem"
+MAINTAINER = "isar-users <isar-users@googlegroups.com>"
 
 LICENSE = "gpl-2.0"
 LIC_FILES_CHKSUM = "file://${LAYERDIR_core}/licenses/COPYING.GPLv2;md5=751419260aa954499f7abaabaa882bbe"

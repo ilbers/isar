@@ -8,6 +8,7 @@
 inherit dpkg-raw
 
 DESCRIPTION = "This service enables fsck on first boot"
+MAINTAINER = "isar-users <isar-users@googlegroups.com>"
 
 DEBIAN_DEPENDS = "systemd, sed, mount, initramfs-tools"
 
