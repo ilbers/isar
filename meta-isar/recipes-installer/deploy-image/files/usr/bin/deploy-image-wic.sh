@@ -231,13 +231,15 @@ version_ge() {
     fi
 }
 
-if ! $installer_unattended; then
+lockfile="/run/installer.lock"
+progress_pipe="/run/installer.fifo"
+
+exec 9>"$lockfile"
+if flock -n 9; then
     # Get bmap-tools version
     bmap_version=$(bmaptool --version | awk '{ print $NF }')
 
     if version_ge "$bmap_version" "3.6"; then
-        # Create a named pipe for progress communication
-        progress_pipe="/tmp/progress"
         if ! mkfifo "$progress_pipe"; then
             echo "Error: Failed to create named pipe $progress_pipe"
             exit 1
@@ -259,16 +261,35 @@ if ! $installer_unattended; then
 
         gauge_pid=$!
     fi
-fi
 
-if ! bmaptool $quiet_flag copy $bmap_options "$installer_image_uri" "$installer_target_dev"; then
-    kill "$gauge_pid"
-    exit 1
-fi
+    if ! bmaptool $quiet_flag copy $bmap_options "$installer_image_uri" "$installer_target_dev"; then
+        kill "$gauge_pid"
+        exit 1
+    fi
 
-# Attempt to terminate the gauge process if still running.
-# Errors are ignored since the process may already have exited.
-kill "$gauge_pid" 2>/dev/null
+    # Attempt to terminate the gauge process if still running.
+    # Errors are ignored since the process may already have exited.
+    kill "$gauge_pid" 2>/dev/null
+else
+    echo "Installation already running in another console."
+
+    # Wait for running console to create the progress pipe
+    sleep 2
+
+    # Check if progress pipe exists and has content
+    if [ -e "$progress_pipe" ]; then
+        echo "Installation progress..."
+        tail -f "$progress_pipe" | while read line; do
+            printf "\r%s%%" "$line"
+        done
+    else
+        # Periodically check if bmaptool is still running every 5 seconds
+        echo "Waiting for installation to finish..."
+        while pgrep -x "bmaptool" > /dev/null; do
+            sleep 5
+        done
+    fi
+fi
 
 if ! $installer_unattended; then
     dialog --title "Reboot" \
