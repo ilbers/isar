@@ -31,7 +31,7 @@ if len(sys.argv) < 2:
 vars = ["append", "prepend", "remove"]
 vars = vars + ["qemuamd64", "qemuarm", "qemuarm64", "qemui386", "qemumipsel", "qemuriscv64"]
 vars = vars + ["container-amd64", "virtualbox", "vmware"]
-vars = vars + ["bananapi", "de0-nano-soc", "hikey", "imx6-sabrelite", "nanopi-neo", "phyboard-mira", "sifive-fu540", "stm32mp15x"]
+vars = vars + ["bananapi", "de0-nano-soc", "hikey", "nanopi-neo", "phyboard-mira", "sifive-fu540", "stm32mp15x"]
 vars = vars + ["rpi-arm-v7", "rpi-arm-v7l", "rpi-arm", "rpi-arm64-v8", "rpi"]
 vars = vars + ["amd64", "armhf", "arm64", "i386", "mipsel", "riscv64"]
 vars = vars + ["debian-stretch", "debian-buster", "debian-bullseye", "debian-bookworm", "debian-sid", "debian-sid-ports"]

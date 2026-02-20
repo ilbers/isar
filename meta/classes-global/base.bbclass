@@ -376,11 +376,5 @@ def deb_list_beautify(d, varname):
             var_list.append(stripped)
     return ', '.join(var_list)
 
-# Deprecation checking
-python deprecation_checking() {
-    if d.getVar('MACHINE') == 'imx6-sabrelite':
-        bb.warn("Target imx6-sabrelite is deprecated and will be removed soon")
-}
-
 deprecation_checking[vardepsexclude] += "MACHINE"
 do_unpack[prefuncs] += "deprecation_checking"

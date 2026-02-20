@@ -65,10 +65,6 @@ a: !mux
     name: hikey-bullseye
   hikey-bookworm:
     name: hikey-bookworm
-  imx6-sabrelite-buster:
-    name: imx6-sabrelite-buster
-  imx6-sabrelite-bullseye:
-    name: imx6-sabrelite-bullseye
   phyboard-mira-bullseye:
     name: phyboard-mira-bullseye
   phyboard-mira-bookworm:

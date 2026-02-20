@@ -696,7 +696,6 @@ class NoCrossTest(CIBaseTest):
             'mc:qemuamd64-buster:isar-image-ci',
             'mc:qemuamd64-bullseye:isar-initramfs',
             'mc:qemumipsel-bullseye:isar-image-base',
-            'mc:imx6-sabrelite-bullseye:isar-image-base',
             'mc:phyboard-mira-bullseye:isar-image-base',
             'mc:hikey-bullseye:isar-image-base',
             'mc:virtualbox-bullseye:isar-image-base',
