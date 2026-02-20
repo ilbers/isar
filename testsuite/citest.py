@@ -954,11 +954,16 @@ class NoCrossTest(CIBaseTest):
             'mc:qemuarm64-trixie:isar-image-base',
             'mc:qemuarm-trixie:isar-image-base',
             'mc:qemuriscv64-trixie:isar-image-base',
+        ]
+
+        self.init()
+        self.perform_build_test(targets, cross=False)
+
+        targets = [
             'mc:sifive-fu540-trixie:isar-image-base',
             'mc:starfive-visionfive2-trixie:isar-image-base',
         ]
 
-        self.init()
         try:
             self.perform_build_test(targets, cross=False)
         except exceptions.TestFail:
