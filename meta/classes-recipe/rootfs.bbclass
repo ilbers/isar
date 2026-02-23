@@ -671,6 +671,7 @@ rootfs_install_sstate_prepare() {
     # tar --one-file-system will cross bind-mounts to the same filesystem,
     # so we use some mount magic to prevent that
     mkdir -p ${WORKDIR}/mnt/rootfs
+    trap 'rmdir ${WORKDIR}/mnt/rootfs ${WORKDIR}/mnt' EXIT
     sudo mount -o bind,private '${WORKDIR}/rootfs' '${WORKDIR}/mnt/rootfs' -o ro
     lopts="--one-file-system --exclude=var/cache/apt/archives"
     sudo tar -C ${WORKDIR}/mnt -cpSf rootfs.tar $lopts ${SSTATE_TAR_ATTR_FLAGS} rootfs
