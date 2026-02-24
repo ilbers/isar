@@ -446,11 +446,17 @@ class BootimgEFIPlugin(SourcePlugin):
                 if not distro_arch:
                     raise WicError("Couldn't find target architecture")
 
+                distro = get_bitbake_var("DISTRO")
+                if not distro:
+                    raise WicError("Couldn't find target distro")
+
                 if distro_arch == "amd64":
                     grub_target = 'x86_64-efi'
                     grub_image = "bootx64.efi"
-                    grub_modules = "multiboot efi_uga iorw ata "
-                    if get_bitbake_var("DISTRO").startswith("ubuntu") and \
+                    grub_modules = "multiboot iorw ata "
+                    if "sid" not in distro:
+                        grub_modules += "efi_uga "
+                    if distro.startswith("ubuntu") and \
                         os.path.exists('/usr/lib/grub/x86_64-efi/linuxefi.mod'):
                         grub_modules += "linuxefi "
                 elif distro_arch == "i386":
