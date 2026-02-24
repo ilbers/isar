@@ -375,6 +375,3 @@ def deb_list_beautify(d, varname):
         if stripped:
             var_list.append(stripped)
     return ', '.join(var_list)
-
-deprecation_checking[vardepsexclude] += "MACHINE"
-do_unpack[prefuncs] += "deprecation_checking"
