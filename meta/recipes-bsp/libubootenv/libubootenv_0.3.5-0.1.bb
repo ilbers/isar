@@ -20,6 +20,7 @@ SRCREV = "32dcabeea9ed5342a2d1bb254bb4839e2e68ee5e"
 
 DEB_BUILD_OPTIONS += "nocheck"
 
+SRC_URI:append:buster = " file://0001-Use-debhelper-12-for-buster.patch"
 
 CHANGELOG_V ?= "${PV}+isar-${SRCREV}"
 

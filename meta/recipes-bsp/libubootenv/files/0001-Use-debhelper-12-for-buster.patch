@@ -1,0 +1,25 @@
+From 4351a77d97468682a8839ca5007033908521c67d Mon Sep 17 00:00:00 2001
+From: Uladzimir Bely <uladzimir.bely@ilbers.de>
+Date: Mon, 16 Feb 2026 11:30:16 +0300
+Subject: [PATCH] Use debhelper 12 for buster
+
+---
+ debian/control | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/debian/control b/debian/control
+index 1cb6b62..b1f227e 100644
+--- a/debian/control
++++ b/debian/control
+@@ -2,7 +2,7 @@ Source: libubootenv
+ Priority: optional
+ Maintainer: Nobuhiro Iwamatsu <iwamatsu@debian.org>
+ Uploaders: SZ Lin (林上智) <szlin@debian.org>
+-Build-Depends: debhelper-compat (= 13), cmake, zlib1g-dev, libyaml-dev, graphviz, doxygen
++Build-Depends: debhelper-compat (= 12), cmake, zlib1g-dev, libyaml-dev, graphviz, doxygen
+ Standards-Version: 4.6.0.1
+ Section: utils
+ Rules-Requires-Root: no
+-- 
+2.52.0
+
