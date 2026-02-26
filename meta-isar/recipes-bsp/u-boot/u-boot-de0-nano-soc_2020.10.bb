@@ -9,3 +9,11 @@ require u-boot-${PV}.inc
 U_BOOT_TOOLS_PACKAGE = "1"
 
 COMPATIBLE_MACHINE = "^(de0-nano-soc)$"
+
+do_prepare_build:append:buster() {
+	echo =-=-=
+cat << _EOF_ >> ${S}/debian/rules
+override_dh_dwz:
+	dh_dwz || :
+_EOF_
+}
