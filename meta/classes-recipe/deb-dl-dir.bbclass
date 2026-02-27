@@ -153,7 +153,7 @@ deb_dl_dir_export() {
     isar_debs="$(${SCRIPTSDIR}/lockrun.py -r -f '${REPO_ISAR_DIR}/isar.lock' -c \
     "find '${REPO_ISAR_DIR}/${DISTRO}' -name '*.deb' -print")"
 
-    flock "${pc}".lock sudo -Es << 'EOSUDO'
+    flock "${pc}".lock /bin/bash -s << 'EOF'
         set -e
         printenv | grep -q BB_VERBOSE_LOGS && set -x
 
@@ -170,6 +170,5 @@ deb_dl_dir_export() {
             ln -Pf "${p}" "${pc}" 2>/dev/null ||
                 cp -n "${p}" "${pc}"
         done
-        chown -R ${owner} "${pc}"
-EOSUDO
+EOF
 }
