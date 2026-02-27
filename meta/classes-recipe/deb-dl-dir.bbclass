@@ -80,6 +80,7 @@ debsrc_download() {
                 --chdir "/deb-src/${rootfs_distro}/${src}" \
                 -- \
                 apt-get -o APT::Architecture=${DISTRO_ARCH} \
+                        -oDebug::NoLocking=1 \
                         -o Dir="${rootfs}" -y --download-only \
                         --only-source source "${src}=${version}" \
                 || echo "${src} ${version}" >> ${missing}
@@ -121,7 +122,6 @@ deb_dl_dir_import() {
     # let our unprivileged user place downloaded packages in /var/cache/apt/archives/
     sudo -Es << '    EOSUDO'
         mkdir -p "${rootfs}"/var/cache/apt/archives/partial/
-        touch "${rootfs}"/var/cache/apt/archives/lock
         chown -R ${uid}:${gid} "${rootfs}"/var/cache/apt/archives/
     EOSUDO
 

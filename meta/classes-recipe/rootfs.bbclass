@@ -340,18 +340,10 @@ rootfs_install_pkgs_download[progress] = "custom:rootfs_progress.PkgsDownloadPro
 rootfs_install_pkgs_download[isar-apt-lock] = "release-after"
 rootfs_install_pkgs_download[network] = "${TASK_USE_NETWORK}"
 rootfs_install_pkgs_download() {
-    mkdir -p "${WORKDIR}/dpkg"
-
-    # Use our own dpkg lock files rather than those in the rootfs since we are not root
-    # (this is safe as there are no concurrent apt/dpkg operations for that rootfs)
-    touch "${WORKDIR}/dpkg/lock" "${WORKDIR}/dpkg/lock-frontend"
-
     # download packages using apt in a non-privileged namespace
     rootfs_cmd --bind "${ROOTFSDIR}/var/cache/apt/archives" /var/cache/apt/archives \
-               --bind "${WORKDIR}/dpkg/lock" /var/lib/dpkg/lock \
-               --bind "${WORKDIR}/dpkg/lock-frontend" /var/lib/dpkg/lock-frontend \
                ${ROOTFSDIR} \
-               -- /usr/bin/apt-get ${ROOTFS_APT_ARGS} --download-only ${ROOTFS_PACKAGES}
+               -- /usr/bin/apt-get ${ROOTFS_APT_ARGS} -oDebug::NoLocking=1 --download-only ${ROOTFS_PACKAGES}
 }
 
 ROOTFS_INSTALL_COMMAND_BEFORE_EXPORT ??= ""

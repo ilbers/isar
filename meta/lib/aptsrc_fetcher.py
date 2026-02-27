@@ -41,7 +41,7 @@ class AptSrc(FetchMethod):
                         set -e
                         mkdir -p /downloads/{ud.localfile}
                         cd /downloads/{ud.localfile}
-                        apt-get -y --download-only --only-source source {ud.src_package}
+                        apt-get -y -oDebug::NoLocking=1 --download-only --only-source source {ud.src_package}
                         '
                 ''', d)
         except (OSError, FetchError):

@@ -30,7 +30,7 @@ image_install_localepurge_download[weight] = "40"
 image_install_localepurge_download[network] = "${TASK_USE_NETWORK_AND_SUDO}"
 image_install_localepurge_download() {
     sudo -E chroot '${ROOTFSDIR}' \
-        /usr/bin/apt-get ${ROOTFS_APT_ARGS} --download-only localepurge
+        /usr/bin/apt-get ${ROOTFS_APT_ARGS} -oDebug::NoLocking=1 --download-only localepurge
 }
 
 ROOTFS_INSTALL_COMMAND += "image_install_localepurge_install"
