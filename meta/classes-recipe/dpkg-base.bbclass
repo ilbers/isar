@@ -253,13 +253,11 @@ do_deploy_deb[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
 do_deploy_deb[dirs] = "${S}"
 
 python do_devshell() {
-    bb.build.exec_func('dpkg_schroot_create_configs', d)
-
     isar_export_proxies(d)
     isar_export_ccache(d)
     isar_export_build_settings(d)
-    if bb.utils.to_boolean(d.getVar('USE_CCACHE')):
-        bb.build.exec_func('schroot_configure_ccache', d)
+
+    bb.build.exec_func('devshell_chroot_prepare', d)
 
     schroot = d.getVar('SBUILD_CHROOT')
     pkg_arch = d.getVar('PACKAGE_ARCH')
@@ -271,21 +269,39 @@ python do_devshell() {
         -t \"apt-get -y -q -o Debug::pkgProblemResolver=yes --no-install-recommends --allow-downgrades\" \
         debian/control"
 
-    termcmd = "schroot -d / -c {0} -u root -- sh -c ' \
-        cd {1}; \
+    termcmd = "cd {0}; \
         apt-get -y -q update -o Dir::Etc::SourceList=\"sources.list.d/isar-apt.list\" -o Dir::Etc::SourceParts=\"-\" -o APT::Get::List-Cleanup=\"0\"; \
         apt-get -y upgrade; \
-        {2}; \
+        {1}; \
         if [ -n \"$PATH_PREPEND\" ]; then export PATH=$PATH_PREPEND:$PATH; fi; \
-        $SHELL -i \
-    '"
-    oe_terminal(termcmd.format(schroot, pp_pps, install_deps), "Isar devshell", d)
+        $SHELL -i".format(pp_pps, install_deps)
 
-    bb.build.exec_func('schroot_delete_configs', d)
+    if d.getVar('ISAR_CHROOT_MODE') == 'unshare':
+        mounts = d.getVar('SCHROOT_MOUNTS')
+        mounts += ' {}:/home/builder/{}'.format(d.getVar('WORKDIR'), d.getVar('BPN'))
+
+        if bb.utils.to_boolean(d.getVar('USE_CCACHE')):
+            bb.build.exec_func('dpkg_prepare_unshare_ccache', d)
+            mounts += ' {}:/ccache'.format(d.getVar('CCACHE_DIR'))
+
+        termcmd = """{0} \
+sh -c "{1};cp /etc/resolv.conf {2}/etc;chroot {2} sh -c '{3}'"
+""".format(
+        run_privileged_cmd(d),
+        insert_isar_mounts(d, d.getVar('DEVSHELL_UNSHARE_ROOTFS'), mounts),
+        d.getVar('DEVSHELL_UNSHARE_ROOTFS'),
+        termcmd.replace('"', "\\\""))
+    else:
+        termcmd = "schroot -d / -c {0} -u root -- sh -c '{1}'".format(schroot, termcmd)
+    bb.warn(termcmd)
+    oe_terminal(termcmd, "Isar devshell", d)
+
+    bb.build.exec_func('devshell_chroot_finalize', d)
 }
 
 addtask devshell after do_local_isarapt do_prepare_build
 DEVSHELL_STARTDIR ?= "${S}"
+DEVSHELL_UNSHARE_ROOTFS ?= "${WORKDIR}/rootfs-devshell"
 do_devshell[dirs] = "${DEVSHELL_STARTDIR}"
 do_devshell[nostamp] = "1"
 do_devshell[network] = "${TASK_USE_SUDO}"
@@ -299,3 +315,31 @@ addtask devshell_nodeps after do_local_isarapt do_prepare_build
 do_devshell_nodeps[dirs] = "${DEVSHELL_STARTDIR}"
 do_devshell_nodeps[nostamp] = "1"
 do_devshell_nodeps[network] = "${TASK_USE_SUDO}"
+
+devshell_prepare_unshare_chroot() {
+    run_privileged_heredoc <<'EOF'
+        set -e
+        mkdir -p ${DEVSHELL_UNSHARE_ROOTFS}
+        tar -xf ${SBUILD_CHROOT} -C ${DEVSHELL_UNSHARE_ROOTFS}
+EOF
+}
+
+devshell_cleanup_unshare_chroot() {
+    run_privileged rm -rf ${DEVSHELL_UNSHARE_ROOTFS}
+}
+
+python devshell_chroot_prepare() {
+    if d.getVar('ISAR_CHROOT_MODE') == 'unshare':
+        bb.build.exec_func('devshell_prepare_unshare_chroot', d)
+    else:
+        bb.build.exec_func('dpkg_schroot_create_configs', d)
+        if bb.utils.to_boolean(d.getVar('USE_CCACHE')):
+            bb.build.exec_func('schroot_configure_ccache', d)
+}
+
+python devshell_chroot_finalize() {
+    if d.getVar('ISAR_CHROOT_MODE') == 'unshare':
+        bb.build.exec_func('devshell_cleanup_unshare_chroot', d)
+    else:
+        bb.build.exec_func('schroot_delete_configs', d)
+}
