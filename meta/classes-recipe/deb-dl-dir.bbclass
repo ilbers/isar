@@ -110,7 +110,7 @@ dbg_pkgs_download() {
             | grep "${DISTRO_ARCH}" \
             | awk '!/Binary:/ {print $1}' \
             | sort -u
-    done | xargs -r sudo -E chroot ${rootfs} sh -c '/usr/bin/apt-get -y --download-only install "$@"' --
+    done | xargs -r run_in_chroot ${rootfs} sh -c '/usr/bin/apt-get -y --download-only install "$@"' --
 }
 
 deb_dl_dir_import() {
@@ -120,7 +120,7 @@ deb_dl_dir_import() {
     export gid=$(id -g)
 
     # let our unprivileged user place downloaded packages in /var/cache/apt/archives/
-    sudo -Es << '    EOSUDO'
+    run_privileged_heredoc << '    EOSUDO'
         mkdir -p "${rootfs}"/var/cache/apt/archives/partial/
         chown -R ${uid}:${gid} "${rootfs}"/var/cache/apt/archives/
     EOSUDO

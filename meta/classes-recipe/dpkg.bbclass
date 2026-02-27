@@ -129,5 +129,5 @@ dpkg_runbuild() {
     deb_dl_dir_export "${WORKDIR}/rootfs" "${distro}"
 
     # Cleanup apt artifacts
-    sudo rm -rf ${WORKDIR}/rootfs
+    run_privileged rm -rf ${WORKDIR}/rootfs
 }

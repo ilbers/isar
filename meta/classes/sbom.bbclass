@@ -41,7 +41,7 @@ def sbom_doc_uuid(d):
         d.setVar("SBOM_DOCUMENT_UUID", generate_document_uuid(d))
 
 generate_sbom() {
-    sudo mkdir -p ${SBOM_CHROOT}/mnt/rootfs ${SBOM_CHROOT}/mnt/deploy-dir
+    run_privileged mkdir -p ${SBOM_CHROOT}/mnt/rootfs ${SBOM_CHROOT}/mnt/deploy-dir
 
     TIMESTAMP=$(date --iso-8601=s -d @${SOURCE_DATE_EPOCH})
     bwrap \

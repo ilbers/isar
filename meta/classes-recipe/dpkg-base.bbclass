@@ -161,7 +161,7 @@ def isar_export_build_settings(d):
 
 dpkg_schroot_create_configs() {
     schroot_create_configs
-    sudo -s <<'EOSUDO'
+    run_privileged_heredoc <<'EOSUDO'
         sbuild_fstab="${SBUILD_CONF_DIR}/fstab"
         fstab_isarapt="${WORKDIR}/isar-apt/${DISTRO}-${DISTRO_ARCH}/apt/${DISTRO} /isar-apt none rw,bind 0 0"
         grep -qxF "${fstab_isarapt}" ${sbuild_fstab} || echo "${fstab_isarapt}" >> ${sbuild_fstab}

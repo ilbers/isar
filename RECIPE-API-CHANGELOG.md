@@ -972,3 +972,19 @@ we introduce the variables ``MMAPTOPT_NOEXPKEYSIGN`` and ``DISTRO_MM_OPTS``.
 While the former provides an argument to disable the key expiry checking, the
 latter allows users to inject custom options into ``mmdebstrap``. For details,
 see ``man mmdebstrap``. Use with care!
+
+### Execution of privileged commands
+
+When operations require higher privileges than those available to the build user,
+the following helper functions shall be used:
+
+**run_privileged**: Run a command as root while preserving the environment.
+
+**run_privileged_heredoc**: Execute commands provided via stdin in a root shell.
+
+**run_in_chroot**: Run a command within a chroot environment. The first argument
+specifies the rootfs path.
+
+Using these helpers instead of direct `sudo` invocations centralizes platform-specific
+privileged execution logic in `base.bbclass`. Direct use of `sudo` is discouraged
+in downstream layers.
