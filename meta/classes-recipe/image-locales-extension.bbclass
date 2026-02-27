@@ -29,8 +29,12 @@ ROOTFS_INSTALL_COMMAND_BEFORE_EXPORT += "image_install_localepurge_download"
 image_install_localepurge_download[weight] = "40"
 image_install_localepurge_download[network] = "${TASK_USE_NETWORK_AND_SUDO}"
 image_install_localepurge_download() {
-    run_in_chroot '${ROOTFSDIR}' \
+    run_privileged_heredoc <<'EOF'
+    set -e
+    ${@insert_isar_mounts(d, d.getVar('ROOTFSDIR'), d.getVar('ROOTFS_MOUNTS') if d.getVar('ISAR_CHROOT_MODE') == 'unshare' else '')}
+    chroot ${ROOTFSDIR} \
         /usr/bin/apt-get ${ROOTFS_APT_ARGS} -oDebug::NoLocking=1 --download-only localepurge
+EOF
 }
 
 ROOTFS_INSTALL_COMMAND += "image_install_localepurge_install"
@@ -62,6 +66,9 @@ __EOF__
     # Install configuration into image:
     run_privileged_heredoc <<'EOSUDO'
         set -e
+
+        ${@insert_isar_mounts(d, d.getVar('ROOTFSDIR'), '')}
+
         localepurge_state='i'
         if chroot '${ROOTFSDIR}' dpkg -s localepurge 2>/dev/null >&2
         then

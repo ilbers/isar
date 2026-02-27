@@ -141,7 +141,9 @@ root_cleandirs() {
             die "Could not remove $i, because subdir is mounted"
     done
     for i in $ROOT_CLEANDIRS_DIRS; do
-        run_privileged rm -rf --one-file-system "$TMPDIR$i"
+        [ -d "$TMPDIR$i" ] || continue
+        find "$TMPDIR$i" \( ! -user "$(whoami)" -type d -prune \) -exec ${RUN_PRIVILEGED_CMD} rm -rf --one-file-system {} \;
+        rm -rf --one-file-system "$TMPDIR$i"
         mkdir -p "$TMPDIR$i"
     done
 }
@@ -380,7 +382,28 @@ def deb_list_beautify(d, varname):
 # shall be used outside of this class.
 
 def insert_isar_mounts(d, rootfs, mounts):
+    """
+    In unshare mode, all mounts must be created after unsharing the
+    mount namespace. As needs to happen within the unshared session,
+    we implement it as a code generator. Note, that the random and urandom
+    mounts are needed for DDI images.
+    """
     lines = []
+    to_touch = ['/dev/null', '/dev/random', '/dev/urandom']
+    to_mkdir = ['/dev/pts', '/dev/shm']
+    if d.getVar('ISAR_CHROOT_MODE') == 'unshare':
+        lines.append('touch ' + ' '.join(['{}/{}'.format(rootfs, f) for f in to_touch]))
+        lines.append('mkdir -p ' + ' '.join(['{}/{}'.format(rootfs, f) for f in to_mkdir]))
+        lines.append('mount -o bind,private,mode=666 /dev/null {}/dev/null'.format(rootfs))
+        lines.append('mount -t devpts -o noexec,nosuid,uid=5,mode=620,ptmxmode=666 none {}/dev/pts'.format(rootfs))
+        lines.append('( cd {}/dev; ln -sf pts/ptmx . )'.format(rootfs))
+        lines.append('mount -t tmpfs none {}/dev/shm'.format(rootfs))
+        lines.append('mount -o bind /dev/random {}/dev/random'.format(rootfs))
+        lines.append('mount -o bind /dev/urandom {}/dev/urandom'.format(rootfs))
+        lines.append('mount -t proc none {}/proc'.format(rootfs))
+        # we do not unshare the network namespace, so we cannot create a sysfs, hence bind-mount
+        lines.append('mount -o rbind /sys {}/sys'.format(rootfs))
+
     for m in mounts.split():
         host, inner = m.split(':') if ':' in m else (m, m)
         inner_full = os.path.join(rootfs, inner[1:])
@@ -389,7 +412,18 @@ def insert_isar_mounts(d, rootfs, mounts):
     return '\n'.join(lines)
 
 def insert_isar_umounts(d, rootfs, mounts):
+    """
+    In unshare mount we don't unmount the system mounts but just
+    remove the mountpoints.
+    """
     lines = []
+    to_unlink = ['/dev/null', '/dev/random', '/dev/urandom', '/dev/ptmx']
+    to_rmdir = ['/dev/pts', '/dev/shm']
+    if d.getVar('ISAR_CHROOT_MODE') == 'unshare':
+        lines.append('rm -f ' + ' '.join(['{}/{}'.format(rootfs, f) for f in to_unlink]))
+        for d in ['{}/{}'.format(rootfs, _d) for _d in to_rmdir]:
+            lines.append('[ -d {} ] && rmdir {}'.format(d, d))
+
     for m in mounts.split():
         host, inner = m.split(':') if ':' in m else (m, m)
         mp = '{}/{}'.format(rootfs, inner)
@@ -397,11 +431,52 @@ def insert_isar_umounts(d, rootfs, mounts):
         lines.append('[ -d {} ] && rmdir --ignore-fail-on-non-empty {}'.format(mp, mp))
     return '\n'.join(lines)
 
+def get_subid_range(idmap, d):
+    import getpass
+    with open(idmap, 'r') as f:
+        entries = f.readlines()
+    for e in entries:
+        user, base, cnt = e.split(':')
+        if user == os.getuid() or user == getpass.getuser():
+            return int(base), int(cnt)
+    bb.error("No sub-id range specified in %s" % idmap)
+
 def run_privileged_cmd(d):
-    cmd = 'sudo -E'
+    """
+    In unshare mode we need to map the rootfs uid/gid range into the
+    subuid/subgid range of the parent namespace. As we usually only
+    get 65534 ids, we cannot map the whole range, as two ids are already
+    used by the calling environment (root and builder user). Hence, map
+    as much as we can but also map the highest id (nobody / nogroup) as
+    these are used within the rootfs. It would be easier to use
+    mmdebstrap --unshare-helper as command (which is also internally used
+    by sbuild), but this only maps linear ranges, hence it cannot map the
+    nobody / nogroup on the default subid range. By that, we have to avoid
+    the nobody / nogroup when building packages in this case.
+    """
+    if d.getVar('ISAR_CHROOT_MODE') == 'unshare':
+        nobody_id = 65534
+        uid_base, uid_cnt = get_subid_range('/etc/subuid', d)
+        nobody_subid = uid_base + uid_cnt - 1
+        gid_base, gid_cnt = get_subid_range('/etc/subgid', d)
+        nogroup_subid = gid_base + gid_cnt - 1
+        cmd = 'unshare --mount --pid --uts --ipc --user' \
+              ' --kill-child' \
+              ' --setuid 0 --setgid 0 --fork' \
+              f' --map-users  1:{uid_base+1}:{uid_cnt-2}' \
+              f' --map-groups 1:{gid_base+1}:{gid_cnt-2}'
+        if uid_cnt < nobody_id:
+            cmd += f' --map-users  {nobody_id}:{nobody_subid}:1'
+        if gid_cnt < nobody_id:
+            cmd += f' --map-groups {nobody_id}:{nogroup_subid}:1'
+        cmd += " --map-root-user"
+    else:
+        cmd = 'sudo -E'
     bb.debug(1, "privileged cmd: %s" % cmd)
     return cmd
 
+UNSHARE_SUBUID_BASE  := "${@get_subid_range('/etc/subuid', d)[0] if d.getVar('ISAR_CHROOT_MODE') == 'unshare' else '0'}"
+# store in variable to only compute once and make available to fetcher
 RUN_PRIVILEGED_CMD := "${@run_privileged_cmd(d)}"
 
 run_privileged() {
@@ -415,5 +490,10 @@ run_privileged_heredoc() {
 run_in_chroot() {
     rootfs="$1"
     shift
-    ${RUN_PRIVILEGED_CMD} chroot "$rootfs" "$@"
+
+    rootfs=$rootfs run_privileged_heredoc <<'EORIC' "$@"
+        set -e
+        ${@insert_isar_mounts(d, '$rootfs', '')}
+        chroot "$rootfs" "$@"
+EORIC
 }

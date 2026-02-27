@@ -14,7 +14,7 @@ config KAS_INCLUDE_MAIN
 
 config KAS_BUILD_SYSTEM
 	string
-	default "isar"
+	default "isar-rootless"
 
 source "kas/machine/Kconfig"
 source "kas/distro/Kconfig"

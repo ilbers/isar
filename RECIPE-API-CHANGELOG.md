@@ -988,3 +988,24 @@ specifies the rootfs path.
 Using these helpers instead of direct `sudo` invocations centralizes platform-specific
 privileged execution logic in `base.bbclass`. Direct use of `sudo` is discouraged
 in downstream layers.
+
+### Rootless isar execution
+
+Isar is able to run without the need for `sudo` in an environment that
+allows unprivileged users to unshare the kernels `user namespace`. Further,
+a sufficiently large set of sub ids needs to be configured in `/etc/subuid` / `etc/subgid`.
+This range should be `> 65536`, but smaller ranges might work as well, depending on the
+ids used in the rootfs.
+
+A simple check if rootless is supported can be done by running:
+
+```bash
+mmdebstrap --unshare-helper /bin/echo "rootless supported" || echo "rootless not supported"
+```
+
+To enable rootless builds, set the bitbake variable `ISAR_ROOTLESS = "1"`.
+This internally switches the chroot mode from `schroot` to `unshare`.
+
+When using kas, the `build_system` needs to be set to `isar-rootless`, but the final
+interfaces still need to be clarified. Further, kas patches are needed (for details,
+check the kas mailing list).

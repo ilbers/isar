@@ -4,7 +4,7 @@
 header:
   version: 14
 
-build_system: isar
+build_system: isar-rootless
 
 repos:
   isar:

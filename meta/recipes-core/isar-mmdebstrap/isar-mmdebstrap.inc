@@ -183,6 +183,7 @@ do_bootstrap() {
                          umount \$1/$base_apt_tmp && rm ${WORKDIR}/mmtmpdir && \
                          umount $base_apt_tmp && rm -rf --one-file-system $base_apt_tmp"
     else
+        # prepare dl_dir for access from both sides (local and rootfs)
         deb_dl_dir_import "${WORKDIR}/dl_dir" "${BOOTSTRAP_BASE_DISTRO}-${BASE_DISTRO_CODENAME}"
 
         bootstrap_list="${WORKDIR}/sources.list.d/bootstrap.list"
@@ -202,6 +203,7 @@ do_bootstrap() {
                                  -o Dir::State="$1/var/lib/apt" \
                                  -o Dir::Etc="$1/etc/apt" \
                                  -o Dir::Cache="$1/var/cache/apt" \
+                                 ${@'-o APT::Sandbox::User=root' if d.getVar('ISAR_CHROOT_MODE') == 'unshare' else ''} \
                                  -o Apt::Architecture="${BOOTSTRAP_DISTRO_ARCH}" \
                                  ${@get_apt_opts(d, '-o')}'
         extra_essential="$extra_essential && $syncout"
@@ -219,13 +221,14 @@ do_bootstrap() {
 
     # Cleanup mounts if fails
     trap 'exit 1' INT HUP QUIT TERM ALRM USR1
-    trap 'bootstrap_cleanup' EXIT
+    trap ${@'true' if d.getVar('ISAR_CHROOT_MODE') == 'unshare' else 'bootstrap_cleanup'} EXIT
 
     # Create lock file so that it is owned by the user running the build (not root)
     mkdir -p ${DEBDIR}
     touch ${DEB_DL_LOCK}
 
-    run_privileged TMPDIR="${BOOTSTRAP_TMPDIR}" mmdebstrap $bootstrap_args \
+    ${@'' if d.getVar('ISAR_CHROOT_MODE') == 'unshare' else 'run_privileged'} \
+    TMPDIR="${BOOTSTRAP_TMPDIR}" mmdebstrap $bootstrap_args \
                    $arch_param \
                    --mode=unshare \
                    ${MMHOOKS} \
@@ -244,6 +247,7 @@ do_bootstrap() {
                    --customize-hook='sed -i "/en_US.UTF-8 UTF-8/s/^#//g" "$1/etc/locale.gen"' \
                    --customize-hook='chroot "$1" /usr/sbin/locale-gen' \
                    --customize-hook='chroot "$1" /usr/bin/apt-get -y clean' \
+                   ${@'--skip=output/dev' if d.getVar('ISAR_CHROOT_MODE') == 'unshare' else ''} \
                    --skip=cleanup/apt \
                    --skip=download/empty \
                    ${MMOPTS} \
@@ -258,7 +262,8 @@ do_bootstrap() {
 
     if [ "${ISAR_USE_CACHED_BASE_REPO}" != "1" ]; then
         deb_dl_dir_export "${WORKDIR}/dl_dir" "${BOOTSTRAP_BASE_DISTRO}-${BASE_DISTRO_CODENAME}"
-        run_privileged rm -rf --one-file-system "${WORKDIR}/dl_dir"
+        run_privileged find ${WORKDIR}/dl_dir -maxdepth 1 -mindepth 1 -exec rm -rf --one-file-system "{}" \;
+        rmdir ${WORKDIR}/dl_dir
     fi
 }
 addtask bootstrap before do_build after do_generate_keyrings

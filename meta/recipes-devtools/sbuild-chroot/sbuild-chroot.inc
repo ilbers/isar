@@ -66,8 +66,28 @@ ROOTFS_POSTPROCESS_COMMAND:remove = "rootfs_cleanup_base_apt"
 
 DEPLOY_SCHROOT = "${@d.getVar('SCHROOT_' + d.getVar('SBUILD_VARIANT').upper() + '_DIR')}${SBUILD_SCHROOT_SUFFIX}"
 
-do_sbuildchroot_deploy[dirs] = "${DEPLOY_DIR}/schroot-${SBUILD_VARIANT}"
-do_sbuildchroot_deploy() {
+sbuildchroot_deploy_tree() {
     ln -Tfsr "${ROOTFSDIR}" "${DEPLOY_SCHROOT}"
+}
+sbuildchroot_deploy_tar() {
+    lopts="--one-file-system --exclude=var/cache/apt/archives --exclude=isar-apt"
+    # we cannot use pzstd, as this results in a different magic
+    # (zstd skippable frame) which is not detected by sbuild
+    # https://salsa.debian.org/debian/sbuild/-/blob/d975d388a98627a0d7d112791e441c27a6d529df/lib/Sbuild/ChrootUnshare.pm#L608
+    ZSTD="zstd -${SSTATE_ZSTD_CLEVEL} -T${ZSTD_THREADS}"
+    run_privileged \
+        tar -C ${ROOTFSDIR} -cpS $lopts ${ROOTFS_TAR_ATTR_FLAGS} . \
+            | $ZSTD > ${DEPLOY_SCHROOT}.tar.zst
+    # cleanup extracted rootfs
+    run_privileged rm -rf ${ROOTFSDIR}
+}
+
+do_sbuildchroot_deploy[network] = "${TASK_USE_SUDO}"
+do_sbuildchroot_deploy[dirs] += "${DEPLOY_DIR}/schroot-${SBUILD_VARIANT}"
+python do_sbuildchroot_deploy() {
+    if d.getVar('ISAR_CHROOT_MODE') == 'unshare':
+        bb.build.exec_func('sbuildchroot_deploy_tar', d)
+    else:
+        bb.build.exec_func('sbuildchroot_deploy_tree', d)
 }
 addtask sbuildchroot_deploy before do_build after do_rootfs

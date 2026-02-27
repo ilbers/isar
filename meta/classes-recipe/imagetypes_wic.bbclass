@@ -193,8 +193,10 @@ generate_wic_image() {
         fi
 EOIMAGER
 
-    run_privileged chown -R $(stat -c "%U" ${LAYERDIR_core}) ${LAYERDIR_core} ${LAYERDIR_isar} ${SCRIPTSDIR} || true
-    run_privileged chown -R $(id -u):$(id -g) "${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.wic"*
+    if [ "${ISAR_CHROOT_MODE}" = "schroot" ]; then
+        run_privileged chown -R $(stat -c "%U" ${LAYERDIR_core}) ${LAYERDIR_core} ${LAYERDIR_isar} ${SCRIPTSDIR} || true
+        run_privileged chown -R $(id -u):$(id -g) "${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.wic"*
+    fi
     rm -rf ${IMAGE_ROOTFS}/../pseudo
 
     cat ${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.manifest \

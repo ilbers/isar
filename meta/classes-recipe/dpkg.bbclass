@@ -85,7 +85,10 @@ dpkg_runbuild() {
     ext_deb_dir="${ext_root}${deb_dir}"
 
     if [ ${USE_CCACHE} -eq 1 ]; then
-        schroot_configure_ccache
+        ${ISAR_CHROOT_MODE}_configure_ccache
+    fi
+    if [ "${ISAR_CHROOT_MODE}" = "unshare" ]; then
+        sbuild_add_unshare_mounts
     fi
 
     profiles="${@ isar_deb_build_profiles(d)}"
@@ -110,22 +113,26 @@ dpkg_runbuild() {
     DSC_FILE=$(find ${WORKDIR} -maxdepth 1 -name "${DEBIAN_SOURCE}_*.dsc" -print)
 
     sbuild -A -n -c ${SBUILD_CHROOT} --chroot-mode=schroot \
+        --chroot-mode=${ISAR_CHROOT_MODE} \
         --host=${PACKAGE_ARCH} --build=${BUILD_ARCH} ${profiles} \
         --no-run-lintian --no-run-piuparts --no-run-autopkgtest --resolve-alternatives \
         --bd-uninstallable-explainer=apt \
         --no-apt-update --apt-distupgrade \
         --chroot-setup-commands="echo \"Package: *\nPin: release n=${DEBDISTRONAME}\nPin-Priority: 1000\" > /etc/apt/preferences.d/isar-apt" \
-        --chroot-setup-commands="echo \"APT::Get::allow-downgrades 1;\" > /etc/apt/apt.conf.d/50isar-apt" \
+        --chroot-setup-commands="echo \"APT::Get::allow-downgrades 1;${@'\nAPT::Sandbox::User root;' if d.getVar('ISAR_CHROOT_MODE') == 'unshare' else ''}\" > /etc/apt/apt.conf.d/50isar-apt" \
         --chroot-setup-commands="rm -f /var/log/dpkg.log" \
         --chroot-setup-commands="mkdir -p ${deb_dir}" \
         --chroot-setup-commands="find ${ext_deb_dir} -maxdepth 1 -name '*.deb' -exec ln -t ${deb_dir}/ -sf {} +" \
         --chroot-setup-commands="apt-get update -o Dir::Etc::SourceList=\"sources.list.d/isar-apt.list\" -o Dir::Etc::SourceParts=\"-\" -o APT::Get::List-Cleanup=\"0\"" \
         --finished-build-commands="rm -f ${deb_dir}/sbuild-build-depends-*-dummy_*.deb" \
         --finished-build-commands="find ${deb_dir} -maxdepth 1 -type f -name '*.deb' -print -exec cp ${CP_FLAGS} -t ${ext_deb_dir}/ {} +" \
-        --finished-build-commands="cp /var/log/dpkg.log ${ext_root}/dpkg_partial.log" \
+        ${@ '--finished-build-commands="cp /var/log/dpkg.log $ext_root/dpkg_partial.log"' if d.getVar('ISAR_CHROOT_MODE') == 'schroot' else '' } \
         --build-path="" --build-dir=${WORKDIR} --dist="${DEBDISTRONAME}" ${DSC_FILE}
 
-    sbuild_dpkg_log_export "${WORKDIR}/rootfs/dpkg_partial.log"
+    # TODO: port to unshare backend
+    if [ "${ISAR_CHROOT_MODE}" = "schroot" ]; then
+        sbuild_dpkg_log_export "${WORKDIR}/rootfs/dpkg_partial.log"
+    fi
     deb_dl_dir_export "${WORKDIR}/rootfs" "${distro}"
 
     # Cleanup apt artifacts

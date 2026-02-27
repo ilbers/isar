@@ -121,8 +121,13 @@ deb_dl_dir_import() {
 
     # let our unprivileged user place downloaded packages in /var/cache/apt/archives/
     run_privileged_heredoc << '    EOSUDO'
-        mkdir -p "${rootfs}"/var/cache/apt/archives/partial/
-        chown -R ${uid}:${gid} "${rootfs}"/var/cache/apt/archives/
+        if [ "${ISAR_CHROOT_MODE}" = "unshare" ]; then
+            mkdir -p "${rootfs}"/var/cache/apt/archives
+            chmod 777 "${rootfs}"/var/cache/apt/archives
+        else
+            mkdir -p "${rootfs}"/var/cache/apt/archives/partial/
+            chown -R ${uid}:${gid} "${rootfs}"/var/cache/apt/archives/
+        fi
     EOSUDO
 
     # nothing to copy if download directory does not exist just yet

@@ -188,6 +188,7 @@ SUDO_CHROOT = "imager_run -d ${PP_ROOTFS} -u root --"
 python() {
     image_types = (d.getVar('IMAGE_FSTYPES') or '').split()
     conversions = set(d.getVar('IMAGE_CONVERSIONS').split())
+    chroot_mode = d.getVar('ISAR_CHROOT_MODE')
 
     basetypes = {}
     typedeps = {}
@@ -263,7 +264,8 @@ python() {
         if image_cmd:
             localdata.setVar('type', bt)
             cmds.append(localdata.expand(image_cmd))
-            cmds.append(localdata.expand('\tsudo chown $(id -u):$(id -g) ${IMAGE_FILE_HOST}'))
+            if chroot_mode == 'schroot':
+                cmds.append(localdata.expand('\tsudo chown $(id -u):$(id -g) ${IMAGE_FILE_HOST}'))
         else:
             bb.fatal("No IMAGE_CMD for %s" % bt)
         vardeps.add('IMAGE_CMD:' + bt_clean)
@@ -293,7 +295,8 @@ python() {
                     cmd = '\t' + localdata.getVar('CONVERSION_CMD:' + c)
                     if cmd not in cmds:
                         cmds.append(cmd)
-                        cmds.append(localdata.expand('\tsudo chown $(id -u):$(id -g) ${IMAGE_FILE_HOST}.%s' % c))
+                        if chroot_mode == 'schroot':
+                            cmds.append(localdata.expand('\tsudo chown $(id -u):$(id -g) ${IMAGE_FILE_HOST}.%s' % c))
                     vardeps.add('CONVERSION_CMD:' + c)
                     for dep in (localdata.getVar('CONVERSION_DEPS:' + c) or '').split():
                         conversion_install.add(dep)
