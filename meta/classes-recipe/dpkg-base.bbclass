@@ -84,7 +84,7 @@ python() {
 
     # apt-src fetcher
     import aptsrc_fetcher
-    methods.append(aptsrc_fetcher.AptSrc())
+    methods.append(aptsrc_fetcher.AptSrc.create(d))
 
     src_uri = (d.getVar('SRC_URI', False) or "").split()
     for u in src_uri:
