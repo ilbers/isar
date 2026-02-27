@@ -19,6 +19,9 @@ python() {
     package_arch = d.getVar('PACKAGE_ARCH')
     overrides = d.getVar('OVERRIDES').split(':')
 
+    if not distro_arch:
+        bb.fatal("DISTRO_ARCH is not set")
+
     localdata = bb.data.createCopy(d)
     new_overrides = [distro_arch] + [o for o in overrides if not o == package_arch]
     localdata.setVar('OVERRIDES', ':'.join(new_overrides))
