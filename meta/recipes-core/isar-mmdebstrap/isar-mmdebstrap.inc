@@ -110,6 +110,19 @@ def get_apt_auth_opts(d):
                f"--setup-hook='upload \"{workdir}/apt-auth\" /etc/apt/auth.conf.d/isar.conf'"
     return ''
 
+bootstrap_cleanup() {
+    [ -r "${WORKDIR}/mmtmpdir" ] && tmpdir=$(cat "${WORKDIR}/mmtmpdir") \
+                                 && rm "${WORKDIR}/mmtmpdir"
+    [ -d "$tmpdir" ] && mountpoint -q $tmpdir/$base_apt_tmp \
+                     && run_privileged umount $tmpdir/$base_apt_tmp
+    [ -d "$tmpdir" ] && mountpoint -q $tmpdir/base-apt \
+                     && run_privileged umount $tmpdir/base-apt
+    [ -d "$tmpdir" ] && run_privileged rm -rf --one-file-system $tmpdir
+    [ -n "$base_apt_tmp" ] && mountpoint -q $base_apt_tmp \
+                           && run_privileged umount $base_apt_tmp \
+                           && rm -rf --one-file-system $base_apt_tmp
+}
+
 do_bootstrap[vardeps] += " \
     DISTRO_APT_PREMIRRORS \
     ISAR_ENABLE_COMPAT_ARCH \
@@ -206,16 +219,7 @@ do_bootstrap() {
 
     # Cleanup mounts if fails
     trap 'exit 1' INT HUP QUIT TERM ALRM USR1
-    trap '[ -r "${WORKDIR}/mmtmpdir" ] && tmpdir=$(cat "${WORKDIR}/mmtmpdir") \
-                                       && rm "${WORKDIR}/mmtmpdir"; \
-          [ -d "$tmpdir" ] && mountpoint -q $tmpdir/$base_apt_tmp \
-                           && run_privileged umount $tmpdir/$base_apt_tmp; \
-          [ -d "$tmpdir" ] && mountpoint -q $tmpdir/base-apt \
-                           && run_privileged umount $tmpdir/base-apt; \
-          [ -d "$tmpdir" ] && run_privileged rm -rf --one-file-system $tmpdir; \
-          [ -n "$base_apt_tmp" ] && mountpoint -q $base_apt_tmp \
-                                 && run_privileged umount $base_apt_tmp \
-                                 && rm -rf --one-file-system $base_apt_tmp' EXIT
+    trap 'bootstrap_cleanup' EXIT
 
     # Create lock file so that it is owned by the user running the build (not root)
     mkdir -p ${DEBDIR}
