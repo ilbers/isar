@@ -665,11 +665,12 @@ rootfs_install_sstate_prepare() {
     mkdir -p ${WORKDIR}/mnt/rootfs
     trap 'rmdir ${WORKDIR}/mnt/rootfs ${WORKDIR}/mnt' EXIT
 
-    run_privileged mount -o bind,private '${WORKDIR}/rootfs' '${WORKDIR}/mnt/rootfs' -o ro
-    lopts="--one-file-system --exclude=var/cache/apt/archives"
-    run_privileged tar -C ${WORKDIR}/mnt -cpSf rootfs.tar $lopts ${SSTATE_TAR_ATTR_FLAGS} rootfs
-    run_privileged umount ${WORKDIR}/mnt/rootfs
-    run_privileged chown $(id -u):$(id -g) rootfs.tar
+    run_privileged_heredoc <<'EOF' 3> rootfs.tar
+        mount -o bind,private '${ROOTFSDIR}' '${WORKDIR}/mnt/rootfs' -o ro
+        lopts="--one-file-system --exclude=var/cache/apt/archives"
+        tar -C ${WORKDIR}/mnt/rootfs -cpS $lopts ${SSTATE_TAR_ATTR_FLAGS} . >&3
+        umount -q ${WORKDIR}/mnt/rootfs
+EOF
 }
 do_rootfs_install_sstate_prepare[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
 
@@ -678,7 +679,8 @@ rootfs_install_sstate_finalize() {
     # - after building the rootfs, the tar won't be there, but we also don't need to unpack
     # - after restoring from cache, there will be a tar which we unpack and then delete
     if [ -f rootfs.tar ]; then
-        run_privileged tar -C ${WORKDIR} -xpf rootfs.tar ${SSTATE_TAR_ATTR_FLAGS}
+        mkdir -p ${ROOTFSDIR}
+        run_privileged tar -C ${ROOTFSDIR} -xp ${SSTATE_TAR_ATTR_FLAGS} < rootfs.tar
         rm rootfs.tar
     fi
 }
