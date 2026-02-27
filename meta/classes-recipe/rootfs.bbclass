@@ -49,6 +49,16 @@ ROOTFS_PACKAGE_SUFFIX ?= "${PN}-${DISTRO}-${DISTRO_ARCH}"
 # path to deploy stubbed versions of initrd update scripts during do_rootfs_install
 ROOTFS_STUBS_DIR = "/usr/local/isar-sbin"
 
+# list of <outer>:<inner> or <outer> mount entries
+ROOTFS_MOUNTS ??= "${REPO_ISAR_DIR}/${DISTRO}:/isar-apt ${WORKDIR}:/isar-work"
+
+python () {
+    mounts = d.getVar('ROOTFS_MOUNTS', False)
+    if d.getVar('ISAR_USE_CACHED_BASE_REPO') and not '/base-apt' in mounts:
+        base_apt = '{}/base-apt:/base-apt'.format(d.getVar('REPO_BASE_DIR'))
+        mounts.append(' {}'.format(base_apt))
+}
+
 # helper to compute the rootfs distro also under cross building
 def get_rootfs_distro(d):
     host_arch = d.getVar('HOST_ARCH')
@@ -154,50 +164,15 @@ rootfs_do_mounts() {
             mount -t tmpfs -o size=1m,nosuid,nodev none '${ROOTFSDIR}/sys/firmware'
         fi
 
-        # Mount isar-apt if the directory does not exist or if it is empty
-        # This prevents overwriting something that was copied there
-        if [ ! -e '${ROOTFSDIR}/isar-apt' ] || \
-           [ "$(find '${ROOTFSDIR}/isar-apt' -maxdepth 1 -mindepth 1 | wc -l)" = "0" ]
-        then
-            mkdir -p '${ROOTFSDIR}/isar-apt'
-            mountpoint -q '${ROOTFSDIR}/isar-apt' || \
-                mount -o bind,private '${REPO_ISAR_DIR}/${DISTRO}' '${ROOTFSDIR}/isar-apt'
-        fi
-
-        if [ ! -e '$ROOTFSDIR'/isar-work ]; then
-            mkdir -p '${ROOTFSDIR}/isar-work'
-            mountpoint -q '${ROOTFSDIR}/isar-work' || \
-                mount -o bind,private '${WORKDIR}' '${ROOTFSDIR}/isar-work'
-        fi
-
-        # Mount base-apt if 'ISAR_USE_CACHED_BASE_REPO' is set
-        if [ "${@repr(bb.utils.to_boolean(d.getVar('ISAR_USE_CACHED_BASE_REPO')))}" = 'True' ]
-        then
-            mkdir -p '${ROOTFSDIR}/base-apt'
-            mountpoint -q '${ROOTFSDIR}/base-apt' || \
-                mount -o bind,private '${REPO_BASE_DIR}' '${ROOTFSDIR}/base-apt'
-        fi
-
+        ${@insert_isar_mounts(d, d.getVar('ROOTFSDIR'), d.getVar('ROOTFS_MOUNTS'))}
 EOSUDO
 }
 
 rootfs_do_umounts() {
     run_privileged_heredoc <<'EOSUDO'
         set -e
-        if mountpoint -q '${ROOTFSDIR}/isar-apt'; then
-            umount '${ROOTFSDIR}/isar-apt'
-            rmdir --ignore-fail-on-non-empty ${ROOTFSDIR}/isar-apt
-        fi
 
-        if mountpoint -q '${ROOTFSDIR}/base-apt'; then
-            umount '${ROOTFSDIR}/base-apt'
-            rmdir --ignore-fail-on-non-empty ${ROOTFSDIR}/base-apt
-        fi
-
-        if mountpoint -q '${ROOTFSDIR}/isar-work'; then
-            umount '${ROOTFSDIR}/isar-work'
-            rmdir --ignore-fail-on-non-empty ${ROOTFSDIR}/isar-work
-        fi
+        ${@insert_isar_umounts(d, d.getVar('ROOTFSDIR'), d.getVar('ROOTFS_MOUNTS'))}
 
         if mountpoint -q '${ROOTFSDIR}/dev/pts'; then
             umount '${ROOTFSDIR}/dev/pts'
