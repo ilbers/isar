@@ -205,9 +205,11 @@ EOIMAGER
         | sort | uniq > "${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.wic.manifest"
 
     if ${@bb.utils.contains('ROOTFS_FEATURES', 'generate-sbom', 'true', 'false', d)} ; then
+        prepare_sbom_chroot
         for bomtype in ${SBOM_TYPES}; do
             merge_wic_sbom $bomtype
         done
+        cleanup_sbom_chroot
     fi
 }
 
@@ -222,7 +224,7 @@ merge_wic_sbom() {
     bwrap \
         --unshare-user \
         --unshare-pid \
-        --bind ${SBOM_CHROOT} / \
+        --bind ${SBOM_CHROOT_LOCAL} / \
         -- debsbom -v merge -t $BOMTYPE \
             --distro-name '${SBOM_DISTRO_NAME}-Image' --distro-supplier '${SBOM_DISTRO_SUPPLIER}' \
             --distro-version '${SBOM_DISTRO_VERSION}' --base-distro-vendor '${SBOM_BASE_DISTRO_VENDOR}' \

@@ -23,7 +23,8 @@ SBOM_SPDX_NAMESPACE_PREFIX ?= "https://spdx.org/spdxdocs"
 DEPLOY_DIR_SBOM = "${DEPLOY_DIR_IMAGE}"
 
 SBOM_DIR = "${DEPLOY_DIR}/sbom"
-SBOM_CHROOT = "${SBOM_DIR}/sbom-chroot"
+SBOM_CHROOT = "${SBOM_DIR}/sbom-chroot.tar.zst"
+SBOM_CHROOT_LOCAL = "${WORKDIR}/sbom-chroot"
 
 # adapted from the isar-cip-core image_uuid.bbclass
 def generate_document_uuid(d, warn_not_repr=True):
@@ -40,14 +41,24 @@ def sbom_doc_uuid(d):
     if not d.getVar("SBOM_DOCUMENT_UUID"):
         d.setVar("SBOM_DOCUMENT_UUID", generate_document_uuid(d))
 
+prepare_sbom_chroot() {
+    run_privileged_heredoc <<'EOF'
+        set -e
+        mkdir -p ${SBOM_CHROOT_LOCAL}
+        tar -xf ${SBOM_CHROOT} -C ${SBOM_CHROOT_LOCAL}
+EOF
+}
+
 generate_sbom() {
-    run_privileged mkdir -p ${SBOM_CHROOT}/mnt/rootfs ${SBOM_CHROOT}/mnt/deploy-dir
+    run_privileged mkdir -p \
+        ${SBOM_CHROOT_LOCAL}/mnt/rootfs \
+        ${SBOM_CHROOT_LOCAL}/mnt/deploy-dir
 
     TIMESTAMP=$(date --iso-8601=s -d @${SOURCE_DATE_EPOCH})
     bwrap \
         --unshare-user \
         --unshare-pid \
-        --bind ${SBOM_CHROOT} / \
+        --bind ${SBOM_CHROOT_LOCAL} / \
         --bind ${ROOTFSDIR} /mnt/rootfs \
         --bind ${DEPLOY_DIR_SBOM} /mnt/deploy-dir \
         -- debsbom -v generate ${SBOM_DEBSBOM_TYPE_ARGS} -r /mnt/rootfs -o /mnt/deploy-dir/'${PN}-${DISTRO}-${MACHINE}' \
@@ -59,8 +70,17 @@ generate_sbom() {
             --timestamp $TIMESTAMP ${SBOM_DEBSBOM_EXTRA_ARGS}
 }
 
+cleanup_sbom_chroot() {
+    run_privileged rm -rf ${SBOM_CHROOT_LOCAL}
+}
+
 do_generate_sbom[dirs] += "${DEPLOY_DIR_SBOM}"
+do_generate_sbom[network] = "${TASK_USE_SUDO}"
 python do_generate_sbom() {
     sbom_doc_uuid(d)
-    bb.build.exec_func("generate_sbom", d)
+    try:
+        bb.build.exec_func("prepare_sbom_chroot", d)
+        bb.build.exec_func("generate_sbom", d)
+    finally:
+        bb.build.exec_func("cleanup_sbom_chroot", d)
 }
