@@ -620,18 +620,16 @@ python do_generate_initramfs_setscene () {
 
 rootfs_generate_initramfs[progress] = "custom:rootfs_progress.InitrdProgressHandler"
 rootfs_generate_initramfs() {
-    if [ -n "$(sudo find '${ROOTFSDIR}/boot' -type f -name 'vmlinu[xz]*')" ]; then
+    if [ -n "$(find '${ROOTFSDIR}/boot' -type f -name 'vmlinu[xz]*')" ]; then
         for kernel in ${ROOTFSDIR}/boot/vmlinu[xz]-*; do
             export kernel_version=$(basename $kernel | cut -d'-' -f2-)
             mods_total="$(find ${ROOTFSDIR}/usr/lib/modules/$kernel_version -type f -name '*.ko*' | wc -l)"
             echo "Total number of modules: $mods_total"
             echo "Generating initrd for kernel version: $kernel_version"
-            run_in_chroot "${ROOTFSDIR}" sh -ec ' \
-                ${ROOTFS_INITRAMFS_GENERATOR_CMDLINE}; \
-                find /boot -name "initrd.img-$kernel_version*" -exec install --mode 0644 {} /isar-work/initrd.img \; \
-                '
+            run_in_chroot "${ROOTFSDIR}" sh -ec '${ROOTFS_INITRAMFS_GENERATOR_CMDLINE}'
+            find ${ROOTFSDIR}/boot -name "initrd.img-$kernel_version*" -exec cat {} \; \
+                > ${DEPLOYDIR}/${INITRD_DEPLOY_FILE}
         done
-        install --owner $(id -u) --group $(id -g) ${WORKDIR}/initrd.img ${DEPLOYDIR}/${INITRD_DEPLOY_FILE}
     else
         echo "no kernel in this rootfs, do not generate initrd"
     fi
