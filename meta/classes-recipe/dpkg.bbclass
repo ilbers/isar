@@ -109,7 +109,7 @@ dpkg_runbuild() {
 
     DSC_FILE=$(find ${WORKDIR} -maxdepth 1 -name "${DEBIAN_SOURCE}_*.dsc" -print)
 
-    sbuild -A -n -c ${SBUILD_CHROOT} \
+    sbuild -A -n -c ${SBUILD_CHROOT} --chroot-mode=schroot \
         --host=${PACKAGE_ARCH} --build=${BUILD_ARCH} ${profiles} \
         --no-run-lintian --no-run-piuparts --no-run-autopkgtest --resolve-alternatives \
         --bd-uninstallable-explainer=apt \
