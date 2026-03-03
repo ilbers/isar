@@ -9,7 +9,7 @@ SBOM_TYPES ?= "spdx cdx"
 SBOM_DEBSBOM_TYPE_ARGS = "${@"-t " + " -t ".join(d.getVar("SBOM_TYPES").split())}"
 
 # general user variables
-SBOM_DISTRO_SUPPLIER ?= "ISAR"
+SBOM_DISTRO_SUPPLIER ?= "isar-users <isar-users@googlegroups.com>"
 SBOM_DISTRO_NAME ?= "ISAR-Debian-GNU-Linux"
 SBOM_DISTRO_VERSION ?= "1"
 SBOM_DISTRO_SUMMARY ?= "Linux distribution built with ISAR"
