@@ -274,7 +274,7 @@ else
     echo "Installation already running in another console."
 
     # Wait for running console to create the progress pipe
-    sleep 2
+    sleep 5
 
     # Check if progress pipe exists and has content
     if [ -e "$progress_pipe" ]; then

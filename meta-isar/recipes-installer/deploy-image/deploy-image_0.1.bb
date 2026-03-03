@@ -14,7 +14,7 @@ SRC_URI = "file://usr/bin/deploy-image-wic.sh \
 
 DEPENDS:append:bookworm = " bmap-tools"
 DEPENDS:append = " systemd-tmpfs-tmp"
-DEBIAN_DEPENDS = "bmap-tools, pv, dialog, util-linux, parted, fdisk, gdisk, pigz, systemd-tmpfs-tmp, xz-utils, pbzip2, zstd"
+DEBIAN_DEPENDS = "bmap-tools, pv, dialog, util-linux, parted, fdisk, gdisk, pigz, procps, systemd-tmpfs-tmp, xz-utils, pbzip2, zstd"
 do_install[cleandirs] = "${D}/usr/bin/ \
                          ${D}/usr/lib/deploy-image-wic \
                         "
