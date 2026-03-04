@@ -3,6 +3,8 @@
 #
 # SPDX-License-Identifier: MIT
 
+MAINTAINER = "isar-users <isar-users@googlegroups.com>"
+
 require u-boot-${PV}.inc
 
 SRC_URI += " \

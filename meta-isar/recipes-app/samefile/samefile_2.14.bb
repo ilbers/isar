@@ -7,6 +7,7 @@ inherit dpkg
 
 DEBIAN_DEPENDS = "\${misc:Depends}"
 DESCRIPTION = "utility that finds files with identical contents"
+MAINTAINER = "isar-users <isar-users@googlegroups.com>"
 
 # These variables allow more control, read the classes to find the default
 # values, or check bitbake -e

@@ -5,6 +5,8 @@
 
 inherit opensbi
 
+MAINTAINER = "isar-users <isar-users@googlegroups.com>"
+
 SRC_URI += "https://github.com/riscv/opensbi/archive/v${PV}.tar.gz;downloadfilename=opensbi-${PV}.tar.gz"
 SRC_URI[sha256sum] = "d183cb890130983a4f01e75fc03ee4f7ea0e16a7923b8af9c6dff7deb2fedaec"
 

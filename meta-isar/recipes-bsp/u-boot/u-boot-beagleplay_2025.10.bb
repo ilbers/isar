@@ -7,6 +7,8 @@
 
 inherit u-boot
 
+MAINTAINER = "isar-users <isar-users@googlegroups.com>"
+
 TI_FIRMWARE_SRCREV = "0a37dc07b1120127eba73c7196a0b532350b9639"
 
 SRC_URI += " \

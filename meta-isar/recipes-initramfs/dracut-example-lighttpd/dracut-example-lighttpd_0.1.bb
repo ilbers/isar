@@ -10,6 +10,8 @@
 
 inherit dracut-module
 
+MAINTAINER = "isar-users <isar-users@googlegroups.com>"
+
 # Additional install instructions
 DRACUT_INSTALL_CONTENT_FILE_NAME = "install.sh"
 

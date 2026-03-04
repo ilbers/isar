@@ -5,6 +5,8 @@
 
 inherit podman-loader
 
+MAINTAINER = "isar-users <isar-users@googlegroups.com>"
+
 SRC_URI += "\
     docker://quay.io/libpod/alpine;tag=latest \
     "

@@ -5,6 +5,8 @@
 
 inherit optee-os
 
+MAINTAINER = "isar-users <isar-users@googlegroups.com>"
+
 SRC_URI += "https://github.com/OP-TEE/optee_os/archive/${PV}.tar.gz;downloadfilename=optee_os-${PV}.tar.gz"
 SRC_URI[sha256sum] = "2c2c9525b36c96dfad6216520721b8e9663e6cacc61d0108a0c8bffc0ea175f1"
 

@@ -3,6 +3,8 @@
 #
 # SPDX-License-Identifier: MIT
 
+MAINTAINER = "isar-users <isar-users@googlegroups.com>"
+
 require u-boot-${PV}.inc
 
 # Just for testing purposes, distro package would be recent enough

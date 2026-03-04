@@ -5,6 +5,8 @@
 
 inherit dpkg
 
+MAINTAINER = "isar-users <isar-users@googlegroups.com>"
+
 SRC_URI = "apt://${BPN}"
 PN = "bmap-tools"
 CHANGELOG_V="<orig-version>+isar"

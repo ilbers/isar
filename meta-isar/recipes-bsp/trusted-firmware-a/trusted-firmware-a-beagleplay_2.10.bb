@@ -5,6 +5,8 @@
 
 inherit trusted-firmware-a
 
+MAINTAINER = "isar-users <isar-users@googlegroups.com>"
+
 SRC_URI += "https://github.com/ARM-software/arm-trusted-firmware/archive/v${PV}.tar.gz;downloadfilename=arm-trusted-firmware-${PV}.tar.gz"
 SRC_URI[sha256sum] = "2e18b881ada9198173238cca80086c787b1fa3f698944bde1743142823fc511c"
 

@@ -7,6 +7,7 @@ inherit dpkg
 
 DESCRIPTION = "VisionFive2 SDK spl_tool"
 LICENSE = "CPL-1"
+MAINTAINER = "isar-users <isar-users@googlegroups.com>"
 
 SRC_URI = "git://github.com/starfive-tech/Tools.git;branch=master;protocol=https;destsuffix=tools"
 SRCREV = "8c5acc4e5eb7e4ad012463b05a5e3dbbfed1c38d"

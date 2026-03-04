@@ -8,6 +8,8 @@
 
 inherit optee-ftpm
 
+MAINTAINER = "isar-users <isar-users@googlegroups.com>"
+
 SRC_URI += " \
     https://github.com/Microsoft/ms-tpm-20-ref/archive/${SRCREV}.tar.gz \
     https://github.com/wolfSSL/wolfssl/archive/${SRCREV-wolfssl}.tar.gz;name=wolfssl \

@@ -8,6 +8,8 @@
 
 inherit initramfs-hook
 
+MAINTAINER = "isar-users <isar-users@googlegroups.com>"
+
 SRC_URI += "file://local-top"
 
 HOOK_ADD_MODULES = "tee optee"

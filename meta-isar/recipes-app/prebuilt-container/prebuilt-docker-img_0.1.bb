@@ -5,6 +5,8 @@
 
 inherit docker-loader
 
+MAINTAINER = "isar-users <isar-users@googlegroups.com>"
+
 CONTAINER_DELETE_AFTER_LOAD = "1"
 
 SRC_URI += "\

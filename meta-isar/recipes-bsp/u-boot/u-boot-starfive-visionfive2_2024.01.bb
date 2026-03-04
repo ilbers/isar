@@ -5,6 +5,8 @@
 
 inherit u-boot
 
+MAINTAINER = "isar-users <isar-users@googlegroups.com>"
+
 COMPATIBLE_MACHINE = "^(starfive-visionfive2)$"
 
 SRC_URI += "https://ftp.denx.de/pub/u-boot/u-boot-${PV}.tar.bz2 \

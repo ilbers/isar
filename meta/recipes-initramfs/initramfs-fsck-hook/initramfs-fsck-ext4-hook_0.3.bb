@@ -8,6 +8,7 @@ DESCRIPTION = "Recipe to add fsck hook to the initramfs"
 inherit initramfs-hook
 
 SRC_URI += "file://initramfs-fsck-hook-ext4.triggers"
+MAINTAINER = "isar-users <isar-users@googlegroups.com>"
 
 HOOK_COPY_EXECS = "fsck fsck.ext4 logsave"
 

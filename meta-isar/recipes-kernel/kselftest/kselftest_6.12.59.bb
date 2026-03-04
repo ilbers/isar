@@ -8,5 +8,7 @@
 
 inherit linux-kselftest
 
+MAINTAINER = "isar-users <isar-users@googlegroups.com>"
+
 SRC_URI += "https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-${PV}.tar.xz"
 SRC_URI[sha256sum] = "a1d2cd7327f10eec022615c1bb12c06439bd110d2020164be97f698f43ca58be"

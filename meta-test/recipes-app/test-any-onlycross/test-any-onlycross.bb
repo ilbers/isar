@@ -1,7 +1,7 @@
 # Test package using dpkg-raw, which breaks when trying to cross
 # compile
 
-#MAINTAINER = "Your name here <you@domain.com>"
+MAINTAINER = "isar-users <isar-users@googlegroups.com>"
 
 SRC_URI = "file://rules"
 

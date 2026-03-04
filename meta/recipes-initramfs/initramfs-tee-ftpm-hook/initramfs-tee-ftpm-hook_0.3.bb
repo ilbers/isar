@@ -8,6 +8,8 @@
 
 inherit initramfs-hook
 
+MAINTAINER = "isar-users <isar-users@googlegroups.com>"
+
 SRC_URI += "file://local-top"
 
 # Can be disabled with kernel 6.12 and above

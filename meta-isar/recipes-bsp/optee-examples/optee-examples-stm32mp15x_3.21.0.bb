@@ -5,6 +5,7 @@
 inherit dpkg
 
 DESCRIPTION ?= "OP-TEE examples"
+MAINTAINER = "isar-users <isar-users@googlegroups.com>"
 
 FILESEXTRAPATHS:prepend := "${FILE_DIRNAME}/files:"
 

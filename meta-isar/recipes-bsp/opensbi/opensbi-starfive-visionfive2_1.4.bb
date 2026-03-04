@@ -6,6 +6,7 @@
 inherit opensbi
 
 DESCRIPTION = "OpenSBI firmware for StarFive VisionFive 2"
+MAINTAINER = "isar-users <isar-users@googlegroups.com>"
 
 SRC_URI += "https://github.com/riscv-software-src/opensbi/archive/refs/tags/v${PV}.tar.gz;downloadfilename=opensbi-${PV}.tar.gz"
 SRC_URI[sha256sum] = "319b62a4186fbce9b81a0c5f0ec9f003a10c808397a72138bc9745d9b87b1eb1"
