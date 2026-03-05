@@ -13,9 +13,10 @@ INSTALLER_TARGET_IMAGES ??= "${INSTALLER_TARGET_IMAGE}"
 INSTALLER_TARGET_MC ??= "installer-target"
 INSTALLER_TARGET_DISTRO ??= "${DISTRO}"
 INSTALLER_TARGET_MACHINE ??= "${MACHINE}"
-INSTALLER_TARGET_DEPLOY_DIR_IMAGE ??= "${DEPLOY_DIR}/images/${INSTALLER_TARGET_MACHINE}"
+INSTALLER_TARGET_IMAGE ??= "${IMAGE_PN}"
+INSTALLER_TARGET_DEPLOY_DIR_IMAGE ??= "${DEPLOY_DIR}/images/${INSTALLER_TARGET_MACHINE}/${INSTALLER_TARGET_DISTRO}-${INSTALLER_TARGET_IMAGE}"
 
-IMAGE_DATA_FILE ??= "${INSTALLER_TARGET_IMAGE}-${INSTALLER_TARGET_DISTRO}-${INSTALLER_TARGET_MACHINE}"
+IMAGE_DATA_FILE ??= "${INSTALLER_TARGET_MACHINE}"
 IMAGE_DATA_POSTFIX ??= "wic.zst"
 IMAGE_DATA_POSTFIX:buster ??= "wic.xz"
 IMAGE_DATA_POSTFIX:bullseye ??= "wic.xz"
@@ -29,7 +30,7 @@ def get_installer_sources(d, suffix):
     target_machine = d.getVar('INSTALLER_TARGET_MACHINE')
     sources = []
     for image in installer_target_images:
-        image_data = f"{image}-{target_distro}-{target_machine}"
+        image_data = f"{target_machine}"
         sources.append(f"{target_deploy_dir}/{image_data}.{suffix}")
     return sources
 
@@ -41,7 +42,7 @@ def get_installer_destinations(d, suffix):
     target_machine = d.getVar('INSTALLER_TARGET_MACHINE')
     dests = []
     for image in installer_target_images:
-        image_data = f"{image}-{target_distro}-{target_machine}"
+        image_data = f"{target_machine}"
         dests.append(f"/install/{image_data}.{suffix}")
     return dests
 
