@@ -22,6 +22,12 @@ DPKG_HOOKS ?= "${@'--hook-dir='+d.getVar('MM_HOOK_JESSIE') \
 MMHOOKS:focal ?= "${DPKG_HOOKS}"
 MMHOOKS:buster ?= "${DPKG_HOOKS}"
 
+# disable key expiration checking during bootstrapping
+# this also works around the blocking of Sha1 keys when using old repos
+# https://wiki.debian.org/Teams/Apt/Sha1Removal
+MMAPTOPT_NOEXPKEYSIGN = "--aptopt='Apt::Key::gpgvcommand \"/usr/libexec/mmdebstrap/gpgvnoexpkeysig\"'"
+MMOPTS ?= ""
+
 DISTRO_BOOTSTRAP_KEYRING = "${WORKDIR}/distro-keyring.gpg"
 
 def get_distro_have_https_source(d):
@@ -236,6 +242,7 @@ do_bootstrap() {
                    --customize-hook='chroot "$1" /usr/bin/apt-get -y clean' \
                    --skip=cleanup/apt \
                    --skip=download/empty \
+                   ${MMOPTS} \
                    ${@get_apt_opts(d, '--aptopt')} \
                    ${@get_distro_components_argument(d)} \
                    "${@get_distro_suite(d)}" \

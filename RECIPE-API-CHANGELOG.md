@@ -962,3 +962,13 @@ INSTALLER_UNATTENDED_ABORT_ENABLE = "1"
 # Optional: set countdown timeout in seconds (default 5)
 INSTALLER_UNATTENDED_ABORT_TIMEOUT = "5"
 ```
+
+### Working with old and unofficial debian repos
+
+When working with old repos, signing keys might be used which are not considered
+secure by the host apt (which is used during ``mmdebstrap``), either due to the
+keys expiry date or due to insecure signature algorithms. To work around this,
+we introduce the variables ``MMAPTOPT_NOEXPKEYSIGN`` and ``DISTRO_MM_OPTS``.
+While the former provides an argument to disable the key expiry checking, the
+latter allows users to inject custom options into ``mmdebstrap``. For details,
+see ``man mmdebstrap``. Use with care!
