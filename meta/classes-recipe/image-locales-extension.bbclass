@@ -69,6 +69,9 @@ __EOF__
         else
             localepurge_state='p'
             echo 'localepurge was not installed (removing it later)'
+            # track additional packages that will be installed, as these packages might be
+            # in the suggested set of other packages and by that need to be explicitly removed
+            localepurge_pkgs=$(chroot '${ROOTFSDIR}' apt-get ${ROOTFS_APT_ARGS} -s localepurge 2>&1 | sed -n 's/^Inst \([^ ]*\) .*/\1/p')
             chroot '${ROOTFSDIR}' apt-get ${ROOTFS_APT_ARGS} localepurge
         fi
 
@@ -105,7 +108,7 @@ EOSH
         if [ "$localepurge_state" = 'p' ]
         then
             echo removing localepurge...
-            chroot '${ROOTFSDIR}' apt-get autopurge --yes localepurge
+            chroot '${ROOTFSDIR}' apt-get purge --yes $localepurge_pkgs
         fi
 EOSUDO
 }
