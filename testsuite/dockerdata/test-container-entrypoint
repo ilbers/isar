@@ -61,6 +61,10 @@ esac
 
 mkdir /isar
 
+busybox syslogd
+squid
+export http_proxy=http://localhost:3128
+
 # Reuse the existing entrypoint script, exploiting that entry without
 # parameters drops us into a shell, rather then calling kas.
 echo exit | /container-entrypoint

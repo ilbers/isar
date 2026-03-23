@@ -11,10 +11,10 @@ RUN sudo pip3 --proxy=$https_proxy install --break-system-packages \
               avocado-framework==${AVOCADO_VERSION} \
               avocado-framework-plugin-varianter-yaml-to-mux==${AVOCADO_VERSION} && \
     sudo apt-get update && \
-    sudo apt-get install -y -f --no-install-recommends qemu-system ovmf && \
-    sudo apt-get install -y -f --no-install-recommends python3-apt && \
+    sudo apt-get install -y -f --no-install-recommends qemu-system ovmf python3-apt busybox squid && \
     sudo apt-get clean && \
-    sudo rm -rf $(pip3 cache dir) /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    sudo rm -rf $(pip3 cache dir) /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
+    sudo sh -c 'echo "max_filedescriptors 1048576" > /etc/squid/conf.d/docker.conf'
 
 COPY testsuite/dockerdata/test-container-entrypoint /
 
