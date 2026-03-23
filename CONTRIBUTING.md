@@ -77,63 +77,21 @@ Plan merges to `master` so that both fit the two-week window; short extensions s
 
    * Seemingly unaffected boards still build.
 
-   * It's highly suggested to test your patchset before submitting it to the mailing
-     by launching CI tests scripts. The procedure is described below:
+   * It's highly suggested to test your patchset before submitting it to the
+     mailing list by launching CI tests scripts:
 
-    ```
-    git clone https://github.com/siemens/kas
-    cat > kas.yml <<EOF
-    header:
-      version: 14
-    build_system: isar
-    defaults:
-      repos:
-        patches:
-          repo: isar
-    repos:
-      isar:
-        url: "http://github.com:/ilbers/isar"
-        branch: next
-        layers:
-          meta:
-          meta-isar:
-    EOF
-    kas/kas-container shell --command /work/isar/scripts/ci_setup.sh kas.yml
-    ```
+     ```
+     scripts/run-tests -t dev
+     ```
 
-    In kas shell:
+     Perform the above steps over the branch that contain your patches.
 
-    ```
-    cd /work/isar/testsuite
-    avocado run citest.py -t dev --max-parallel-tasks=1
-    ```
+     Be also mindful of community-provided resources such as deb.debian.org or
+     snapshot.debian.org and consider using a caching proxy in your setup to
+     reduce traffic as much as possible.
 
-    Your git-formatpatches may be listed in the `kas.yml` file as illustrated below:
-
-    ```
-    ...
-    repos:
-      isar:
-        url: "http://github.com:/ilbers/isar"
-        branch: next
-	patches:
-          0001:
-            path: /work/0001-my-contribution-to-isar.patch
-        layers:
-          meta:
-          meta-isar:
-    ```
-
-    Perform the above steps from a clean directory for your CI run to be as close as
-    possible to the environment that our project maintainers will be using. That
-    directory would contain: *.patch isar/ kas/ kas.yml
-
-    Be also mindful of community-provided resources such as deb.debian.org or
-    snapshot.debian.org and consider using a caching proxy in your setup to
-    reduce traffic as much as possible.
-
-    Active developers may request from maintainers an account on isar-build.org
-    to analyze CI logs or to launch their own CI builds there.
+     Active developers may request from maintainers an account on isar-build.org
+     to analyze CI logs or to launch their own CI builds there.
 
 4. Structure patches logically, in small increments.
 
