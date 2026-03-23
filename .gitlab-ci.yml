@@ -35,8 +35,8 @@ variables:
     expire_in: 1 week
 
 
-.docker-isar: &docker-isar
-  image: ghcr.io/ilbers/docker-isar:4.8.2
+.test-container: &test-container
+  image: ghcr.io/ilbers/isar/test-container:1
 
 
 .use-default-image:
@@ -45,10 +45,10 @@ variables:
       if: $IMAGE
       when: never
 
-.use-docker-isar-image:
+.use-test-image:
   rules:
-    - &use-docker-isar-image
-      if: $IMAGE != 'docker-isar'
+    - &use-test-image
+      if: $IMAGE != 'test-container'
       when: never
 
 
@@ -87,28 +87,28 @@ full-ci:
 
 
 dev-ci-isar:
-  <<: *docker-isar
+  <<: *test-container
   <<: *common-build
   rules:
-    - *use-docker-isar-image
+    - *use-test-image
     - if: $TESTSUITE == 'dev'
   script:
     - scripts/ci_build.sh --sstate 1 -T dev
 
 fast-ci-isar:
-  <<: *docker-isar
+  <<: *test-container
   <<: *common-build
   rules:
-    - *use-docker-isar-image
+    - *use-test-image
     - if: $TESTSUITE == 'fast'
   script:
     - scripts/ci_build.sh --sstate 1 -T fast
 
 full-ci-isar:
-  <<: *docker-isar
+  <<: *test-container
   <<: *common-build
   rules:
-    - *use-docker-isar-image
+    - *use-test-image
     - if: $TESTSUITE == 'full'
   script:
     - scripts/ci_build.sh --sstate 1 -T full
