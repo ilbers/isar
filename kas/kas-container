@@ -27,9 +27,9 @@
 
 set -e
 
-KAS_CONTAINER_SCRIPT_VERSION="5.1"
+KAS_CONTAINER_SCRIPT_VERSION="5.2"
 KAS_IMAGE_VERSION_DEFAULT="${KAS_CONTAINER_SCRIPT_VERSION}"
-KAS_CONTAINER_IMAGE_DISTRO_DEFAULT="debian-bookworm"
+KAS_CONTAINER_IMAGE_DISTRO_DEFAULT=""
 KAS_CONTAINER_IMAGE_PATH_DEFAULT="ghcr.io/siemens/kas"
 KAS_CONTAINER_IMAGE_NAME_DEFAULT="kas"
 KAS_CONTAINER_SELF_NAME="$(basename "$0")"
@@ -80,6 +80,8 @@ usage()
 		    "container.\n"
 	printf "%b" "--ssh-agent\t\tForward ssh-agent socket to the container.\n"
 	printf "%b" "--aws-dir\t\tDirectory containing AWScli configuration.\n"
+	printf "%b" "\t\t\tAvoid \$HOME/.aws unless you fully trust the " \
+		    "container.\n"
 	printf "%b" "--git-credential-store\tFile path to the git credential " \
 		    "store\n"
 	printf "%b" "--no-proxy-from-env\tDo not inherit proxy settings from " \
