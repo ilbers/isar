@@ -1,9 +1,12 @@
 # Creating image
 
+- Make sure `testsuite/dockerdata/version` is bumped for new images, also
+  after updating `kas/kas-container`.
+
+- Run:
+
 ```
-export version="4.4"
-cd <isar_dir>/testsuite/dockerdata
-sed "s/:<version>/:${version}/" Dockerfile | docker build -t ghcr.io/ilbers/docker-isar:${version} -
+testsuite/dockerdata/build.sh
 ```
 
 # Pushing the image to docker hub
@@ -13,8 +16,7 @@ sed "s/:<version>/:${version}/" Dockerfile | docker build -t ghcr.io/ilbers/dock
 - Use it for uploading docker image:
 
 ```
-export version="4.4"
-docker push ghcr.io/ilbers/docker-isar:${version}
+docker push ghcr.io/ilbers/isar/test-container:$(cat testsuite/dockerdata/version)
 ```
 
 - Make the uploaded package public

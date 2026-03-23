@@ -1,0 +1,95 @@
+#!/bin/sh
+# Alternative entrypoint for the kas-based test-container
+#
+# Copyright (c) Siemens AG, 2026
+# SPDX-License-Identifier: MIT
+
+if [ $# -eq 0 ]; then
+	exec /container-entrypoint
+fi
+
+set -e
+
+# skip "shell [-c]"
+if [ $# -gt 1 ]; then
+	shift 2
+else
+	shift 1
+fi
+
+export args="--max-parallel-tasks=1 --disable-sysinfo"
+for arg in $*; do
+	case "$arg" in
+	--clean)
+		rm -rf /work/build/testsuite
+		;;
+	--debug)
+		export showopt="--show=app,test"
+		;;
+	--shell)
+		export start_shell=1
+		;;
+	--help)
+		cat <<EOF
+Usage: run-tests.sh [params] ...
+
+Supported parameters:
+  --clean		Purge results of previous test runs before starting.
+  --debug		Use '--show=app,test' log settings for avocado.
+  --shell		Drop into shell rather than starting tests.
+  --help		Show this help message.
+
+Any other parameters are passed to "avocado run". Its usage is:
+
+EOF
+		avocado run --help
+		exit 0
+		;;
+	*)
+		args="$args $arg"
+		;;
+	esac
+done
+
+case "$args" in
+*testsuite/citest.py*)
+	;;
+*)
+	args="$args testsuite/citest.py"
+	;;
+esac
+
+mkdir /isar
+
+# Reuse the existing entrypoint script, exploiting that entry without
+# parameters drops us into a shell, rather then calling kas.
+echo exit | /container-entrypoint
+
+gosu builder sh -c '
+set -e
+
+base_dir=/work/build/testsuite
+
+mkdir -p ${base_dir}/overlay/upper
+mkdir -p ${base_dir}/overlay/work
+sudo mount -t overlay overlay -o lowerdir=/repo,upperdir=${base_dir}/overlay/upper,workdir=${base_dir}/overlay/work /isar
+sudo mount -o bind ${base_dir} /isar/build
+
+mkdir -p "${HOME}"/.config/avocado
+cat <<EOF > "${HOME}"/.config/avocado/avocado.conf
+[datadir.paths]
+base_dir = ${base_dir}
+test_dir = ${base_dir}/tests
+data_dir = ${base_dir}/data
+logs_dir = ${base_dir}/job-results
+EOF
+
+cd /isar
+
+if [ "${start_shell}" = 1 ]; then
+	bash
+else
+	set -x
+	avocado ${showopt} run ${args}
+fi
+'
