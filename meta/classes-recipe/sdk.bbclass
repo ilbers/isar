@@ -18,6 +18,7 @@ python sdk_virtclass_handler() {
         # sdkchroot deploy only for sdk image
         bb.build.addtask('deploy_sdkchroot', 'do_build', 'do_rootfs', d)
         bb.build.deltask('copy_boot_files', d)
+        e.data.setVar('IMAGE_FSTYPES', e.data.getVar('SDK_FORMATS'))
     else:
         # add do_populate_sdk only to the non-sdk variant
         # it only exists to preserve the interface...
@@ -52,7 +53,6 @@ ROOTFS_FEATURES:append:class-sdk = " clean-package-cache generate-manifest expor
 ROOTFS_MANIFEST_DEPLOY_DIR:class-sdk = "${DEPLOY_DIR_SDKCHROOT}"
 ROOTFS_DPKGSTATUS_DEPLOY_DIR:class-sdk = "${DEPLOY_DIR_SDKCHROOT}"
 
-IMAGE_FSTYPES:class-sdk = "${SDK_FORMATS}"
 TAR_TRANSFORM:class-sdk = " --transform='s|rootfs|${IMAGE_FULLNAME}|'"
 
 # bitbake dependencies
