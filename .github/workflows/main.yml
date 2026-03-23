@@ -1,0 +1,72 @@
+# Copyright (c) Siemens AG, 2026
+# SPDX-License-Identifier: MIT
+
+name: CI
+
+on: [push]
+
+env:
+  CONTAINER_BASENAME: ${{ vars.CONTAINER_BASENAME || 'ghcr.io/ilbers/isar' }}
+
+jobs:
+  container:
+    name: Refresh test-container
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      packages: write
+      contents: read
+      attestations: write
+      artifact-metadata: write
+    if: github.ref == 'refs/heads/next'
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+
+      - name: Check for pre-existing container version
+        run: |
+          TEST_CONTAINER_VERSION=$(cat testsuite/dockerdata/version)
+          echo "TEST_CONTAINER_VERSION=$TEST_CONTAINER_VERSION" >> $GITHUB_ENV
+          if ! docker manifest inspect ${CONTAINER_BASENAME}/test-container:$TEST_CONTAINER_VERSION >/dev/null 2>&1; then
+              eval $(grep "^KAS_CONTAINER_SCRIPT_VERSION=" kas/kas-container)
+              echo "KAS_VERSION=$KAS_CONTAINER_SCRIPT_VERSION" >> $GITHUB_ENV
+              echo "BUILD_CONTAINER=true" >> $GITHUB_ENV
+          fi
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a  # v4.0.0
+        with:
+          platforms: linux/amd64,linux/arm64
+        if: ${{ env.BUILD_CONTAINER }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd  # v4.0.0
+        if: ${{ env.BUILD_CONTAINER }}
+      - name: Login to ghcr.io
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2  # v4.0.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+        if: ${{ env.BUILD_CONTAINER }}
+
+      - name: Build and deploy container
+        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294  #v7.0.0
+        id: push
+        with:
+          platforms: linux/amd64,linux/arm64
+          file: testsuite/dockerdata/Dockerfile
+          build-args: KAS_VERSION=${{ env.KAS_VERSION }}
+          provenance: false
+          outputs: type=registry
+          tags: |
+            ${{ env.CONTAINER_BASENAME }}/test-container:latest
+            ${{ env.CONTAINER_BASENAME }}/test-container:${{ env.TEST_CONTAINER_VERSION }}
+          annotations: ${{ env.DOCKER_METADATA_OUTPUT_ANNOTATIONS }}
+        if: ${{ env.BUILD_CONTAINER }}
+      - name: Attest container image
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26  # v4.1.0
+        with:
+          subject-name: ${{ env.CONTAINER_BASENAME }}/test-container
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
+        if: ${{ env.BUILD_CONTAINER }}
