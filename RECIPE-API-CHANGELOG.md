@@ -972,3 +972,12 @@ we introduce the variables ``MMAPTOPT_NOEXPKEYSIGN`` and ``DISTRO_MM_OPTS``.
 While the former provides an argument to disable the key expiry checking, the
 latter allows users to inject custom options into ``mmdebstrap``. For details,
 see ``man mmdebstrap``. Use with care!
+
+### Provide additional fragments via KERNEL_CONFIG_FRAGMENTS
+
+Custom kernel builds can now inject config fragments into the build which were
+not provided via individual SRC_URI entries. If a kernel source tree contains a
+fragment, this can be specified via adding `${S}/path/to/fragment.cfg` to
+`KERNEL_CONFIG_FRAGMENTS`. If a fragment was checked out into ${WORKDIR} as
+part of a repository, a tarball, or some other directory structure, just
+specify it relative to ${WORKDIR} in `KERNEL_CONFIG_FRAGMENTS`.

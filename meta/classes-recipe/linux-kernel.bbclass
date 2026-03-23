@@ -83,7 +83,7 @@ TEMPLATE_VARS += "                \
     KERNEL_LIBC_DEV_ARCH          \
     LINUX_VERSION_EXTENSION       \
     KERNEL_NAME_PROVIDED          \
-    KERNEL_CONFIG_FRAGMENTS       \
+    KCONFIG_FRAGMENTS             \
     KCFLAGS                       \
     KAFLAGS                       \
     DISTRIBUTOR                   \
@@ -214,8 +214,10 @@ KERNEL_ARCH ??= "${@get_kernel_arch(d)}"
 # set KERNEL_FILE without depending on package arch used in bitbake.conf
 KERNEL_FILE:forcevariable = "${@ 'vmlinux' if d.getVar('KERNEL_ARCH') in ['mipsel', 'riscv', 'arm64'] else 'vmlinuz'}"
 
+KERNEL_CONFIG_FRAGMENTS ?= ""
+
 def config_fragments(d):
-    fragments = []
+    fragments = d.getVar('KERNEL_CONFIG_FRAGMENTS').split()
     sources = d.getVar("SRC_URI").split()
     for s in sources:
         _, _, local, _, _, parm = bb.fetch.decodeurl(s)
@@ -284,17 +286,21 @@ def get_kernel_config_target(d):
 
     return config_target
 
+KERNEL_CONFIG_FRAGMENTS:append = " \
+    ${@'${S}/debian/isar/version.cfg' if d.getVar('LINUX_VERSION_EXTENSION') else ''}"
+
 def get_kernel_config_fragments(d):
-    src_frags = " ".join(config_fragments(d))
-    out_frags = " ".join(map(lambda frag: 'debian/fragments/' + frag, config_fragments(d)))
+    out_frags = ""
+    S = d.getVar('S') + '/'
+    for frag in config_fragments(d):
+        if frag.startswith(S):
+            out_frags += ' ' + frag[len(S):]
+        else:
+            out_frags += ' debian/fragments/' + frag
+    return out_frags.strip()
 
-    linux_version_extension = d.getVar('LINUX_VERSION_EXTENSION')
-    if linux_version_extension:
-        out_frags += " debian/isar/version.cfg"
-
-    return out_frags
-
-KERNEL_CONFIG_FRAGMENTS = "${@get_kernel_config_fragments(d)}"
+# internal list of config fragments
+KCONFIG_FRAGMENTS = "${@get_kernel_config_fragments(d)}"
 
 dpkg_configure_kernel() {
 	grep -q "KERNEL_CONFIG_TARGET=" ${S}/debian/isar/configure ||
@@ -313,9 +319,12 @@ EOF
 	src_frags="${@ " ".join(config_fragments(d)) }"
 	rm -rf ${S}/debian/fragments
 	for frag in ${src_frags}; do
-		basedir=$(dirname ${frag})
-		mkdir -p ${S}/debian/fragments/${basedir}
-		cp ${WORKDIR}/${frag} ${S}/debian/fragments/${basedir}/
+		# skip frag if it starts with ${S}, thus is part of the sources
+		if [ "${frag#${S}}" = "$frag" ]; then
+			basedir=$(dirname ${frag})
+			mkdir -p ${S}/debian/fragments/${basedir}
+			cp ${WORKDIR}/${frag} ${S}/debian/fragments/${basedir}/
+		fi
 	done
 }
 
