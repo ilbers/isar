@@ -377,10 +377,7 @@ class CrossTest(CIBaseTest):
         ]
 
         self.init()
-        try:
-            self.perform_build_test(targets, cross=False)
-        except exceptions.TestFail:
-            self.cancel('KFAIL')
+        self.perform_build_test(targets, cross=False)
 
     def test_run_amd64_trixie(self):
         """
@@ -1037,20 +1034,14 @@ class NoCrossTest(CIBaseTest):
             'mc:starfive-visionfive2-trixie:isar-image-base',
         ]
 
-        try:
-            self.perform_build_test(targets, cross=False)
-        except exceptions.TestFail:
-            self.cancel('KFAIL')
+        self.perform_build_test(targets, cross=False)
 
     def test_run_arm_trixie(self):
         """
         :avocado: tags=startvm
         """
         self.init()
-        try:
-            self.vm_start('arm', 'trixie')
-        except exceptions.TestFail:
-            self.cancel('KFAIL')
+        self.vm_start('arm', 'trixie')
 
     def test_run_arm64_trixie(self):
         """
