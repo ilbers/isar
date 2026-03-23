@@ -214,9 +214,9 @@ merge_wic_sbom() {
     TIMESTAMP=$(date --iso-8601=s -d @${SOURCE_DATE_EPOCH})
     sbom_document_uuid="${@d.getVar('SBOM_DOCUMENT_UUID') or generate_document_uuid(d, False)}"
 
-    cat ${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.${bomtype}.json \
-        ${DEPLOY_DIR_IMAGE}/${INITRD_DEPLOY_FILE}.${bomtype}.json \
-        ${WORKDIR}/imager.${bomtype}.json 2>/dev/null | \
+    cat ${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.$BOMTYPE.json \
+        ${DEPLOY_DIR_IMAGE}/${INITRD_DEPLOY_FILE}.$BOMTYPE.json \
+        ${WORKDIR}/imager.$BOMTYPE.json 2>/dev/null | \
     bwrap \
         --unshare-user \
         --unshare-pid \
@@ -227,5 +227,5 @@ merge_wic_sbom() {
             --cdx-serialnumber $sbom_document_uuid \
             --spdx-namespace '${SBOM_SPDX_NAMESPACE_PREFIX}'-$sbom_document_uuid \
             --timestamp $TIMESTAMP - -o - \
-     > ${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.wic.$bomtype.json
+     > ${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.wic.$BOMTYPE.json
 }
