@@ -13,7 +13,7 @@ SRC_URI += " \
     https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-${ARCHIVE_VERSION}.tar.xz \
     file://x86_64_defconfig \
     file://ftpm-module.cfg \
-    file://subdir/no-ubifs-fs.cfg \
+    file://subdir \
     file://no-root-nfs.cfg;apply=no"
 
 SRC_URI[sha256sum] = "5f1c4c546660a6a81046fdfa6195306bad2c8d17c0d69876dc100a85ad4613ac"
@@ -23,6 +23,8 @@ S = "${WORKDIR}/linux-${ARCHIVE_VERSION}"
 KERNEL_DEFCONFIG:qemuamd64 = "x86_64_defconfig"
 
 LINUX_VERSION_EXTENSION = "-isar"
+
+KERNEL_CONFIG_FRAGMENTS = "subdir/no-ubifs-fs.cfg"
 
 check_fragments_applied() {
     grep -q "# CONFIG_MTD is not set" ${S}/debian/rules ||
