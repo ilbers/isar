@@ -154,11 +154,11 @@ class CIBaseTest(CIBuilder):
         )
 
         for t in targets:
-            ds, pn, distro, machine = \
-                CIUtils.getVars('DEPLOY_DIR_SBOM', 'PN', 'DISTRO', 'MACHINE',
+            ds, rootfs_name = \
+                CIUtils.getVars('DEPLOY_DIR_SBOM', 'ROOTFS_PACKAGE_SUFFIX',
                                 target=t)
             for t in ["cdx", "spdx"]:
-                sbom_path = os.path.join(ds, f'{pn}-{distro}-{machine}.{t}.json')
+                sbom_path = os.path.join(ds, f'{rootfs_name}.{t}.json')
                 self.log.info(f"Check {t} SBOM in {sbom_path}")
                 with open(sbom_path) as f:
                     sbom = json.load(f)

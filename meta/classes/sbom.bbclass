@@ -50,7 +50,7 @@ generate_sbom() {
         --bind ${SBOM_CHROOT} / \
         --bind ${ROOTFSDIR} /mnt/rootfs \
         --bind ${DEPLOY_DIR_SBOM} /mnt/deploy-dir \
-        -- debsbom -v generate ${SBOM_DEBSBOM_TYPE_ARGS} -r /mnt/rootfs -o /mnt/deploy-dir/'${PN}-${DISTRO}-${MACHINE}' \
+        -- debsbom -v generate ${SBOM_DEBSBOM_TYPE_ARGS} -r /mnt/rootfs -o /mnt/deploy-dir/'${ROOTFS_PACKAGE_SUFFIX}' \
             --distro-name '${SBOM_DISTRO_NAME}' --distro-supplier '${SBOM_DISTRO_SUPPLIER}' \
             --distro-version '${SBOM_DISTRO_VERSION}' --distro-arch '${DISTRO_ARCH}' \
             --base-distro-vendor '${SBOM_BASE_DISTRO_VENDOR}' \
