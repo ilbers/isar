@@ -219,7 +219,7 @@ merge_wic_sbom() {
     INITRAMFS_FULLNAME="${@ d.getVar('INITRD_DEPLOY_FILE').removesuffix('-initrd.img') }"
     sbom_document_uuid="${@d.getVar('SBOM_DOCUMENT_UUID') or generate_document_uuid(d, False)}"
 
-    cat ${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.$BOMTYPE.json \
+    cat ${DEPLOY_DIR_IMAGE}/${ROOTFS_PACKAGE_SUFFIX}.$BOMTYPE.json \
         ${@ '${DEPLOY_DIR_IMAGE}/$INITRAMFS_FULLNAME.$BOMTYPE.json' if d.getVar('IMAGE_INITRD') else '' } \
         ${WORKDIR}/imager.$BOMTYPE.json 2>/dev/null | \
     bwrap \
