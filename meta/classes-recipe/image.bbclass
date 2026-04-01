@@ -18,8 +18,9 @@ IMAGE_ROOTFS ?= "${WORKDIR}/rootfs"
 KERNEL_IMAGE_PKG ??= "${@ ("linux-image-" + d.getVar("KERNEL_NAME")) if d.getVar("KERNEL_NAME") else ""}"
 IMAGE_INSTALL += "${KERNEL_IMAGE_PKG}"
 
-# Name of the image including distro&machine names
-IMAGE_FULLNAME = "${PN}-${DISTRO}-${MACHINE}"
+# Name the image as the machine name only, since the path includes distro name now
+IMAGE_FULLNAME = "${MACHINE}"
+IMAGE_PN = "${PN}"
 
 # Deprecated; this would be set to e.g. "${INITRAMFS_RECIPE}-${DISTRO}-${MACHINE}-initrd.img"
 INITRD_IMAGE ?= ""
@@ -29,7 +30,7 @@ INITRD_IMAGE ?= ""
 IMAGE_INITRD ?= ""
 
 # Name of the deployed initrd image
-INITRD_DEPLOY_FILE = "${@ d.getVar('IMAGE_INITRD') or '${PN}' }-${DISTRO}-${MACHINE}-initrd.img"
+INITRD_DEPLOY_FILE = "initrd.img"
 
 # Make sure dependent initramfs recipe is built
 do_image[depends] += "${@ '${IMAGE_INITRD}:do_build' if '${IMAGE_INITRD}' else '' }"
@@ -52,7 +53,7 @@ python() {
 ROOTFS_FEATURES += "${@ 'generate-initrd' if (d.getVar('INITRD_IMAGE') == '' and d.getVar('IMAGE_INITRD') == '') else ''}"
 
 # This variable is used by wic and start_vm
-KERNEL_IMAGE ?= "${IMAGE_FULLNAME}-${KERNEL_FILE}"
+KERNEL_IMAGE ?= "${KERNEL_FILE}"
 
 # This defines the deployed dtbs for reuse by imagers
 DTB_FILES ?= ""
@@ -108,7 +109,7 @@ ROOTFS_PACKAGES += "${IMAGE_PREINSTALL} ${@isar_multiarch_packages('IMAGE_INSTAL
 ROOTFS_VARDEPS += "IMAGE_INSTALL"
 ROOTFS_MANIFEST_DEPLOY_DIR ?= "${DEPLOY_DIR_IMAGE}"
 ROOTFS_DPKGSTATUS_DEPLOY_DIR ?= "${DEPLOY_DIR_IMAGE}"
-ROOTFS_PACKAGE_SUFFIX ?= "${PN}-${DISTRO}-${MACHINE}"
+ROOTFS_PACKAGE_SUFFIX ?= "${MACHINE}"
 
 CACHE_DEB_SRC = "${@bb.utils.contains('BASE_REPO_FEATURES', 'cache-deb-src', '1', '0', d)}"
 python () {

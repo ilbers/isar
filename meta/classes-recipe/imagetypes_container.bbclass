@@ -9,7 +9,7 @@
 CONTAINER_TYPES = "oci-archive docker-archive docker-daemon containers-storage"
 USING_CONTAINER = "${@bb.utils.contains_any('IMAGE_BASETYPES', d.getVar('CONTAINER_TYPES').split(), '1', '0', d)}"
 
-CONTAINER_IMAGE_NAME ?= "${PN}-${DISTRO}-${DISTRO_ARCH}"
+CONTAINER_IMAGE_NAME ?= "container-${DISTRO_ARCH}"
 CONTAINER_IMAGE_TAG ?= "${PV}-${PR}"
 CONTAINER_IMAGE_CMD ?= "/bin/dash"
 CONTAINER_IMAGE_ENTRYPOINT ?= ""

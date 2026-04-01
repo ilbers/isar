@@ -44,7 +44,7 @@ class CIBaseTest(CIBuilder):
         self.configure(wic_deploy_parts=wic_deploy_parts, **kwargs)
         self.bitbake(targets, **kwargs)
 
-        wic_path = f"{self.build_dir}/tmp/deploy/images/*/*.wic.p1"
+        wic_path = f"{self.build_dir}/tmp/deploy/images/*/*/*.wic.p1"
         partition_files = set(glob.glob(wic_path))
         if wic_deploy_parts and len(partition_files) == 0:
             self.fail("Found raw wic partitions in DEPLOY_DIR")
