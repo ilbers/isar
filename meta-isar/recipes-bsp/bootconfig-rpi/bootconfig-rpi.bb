@@ -1,4 +1,4 @@
-# This software is a part of ISAR.
+# This software is a part of Isar.
 # Copyright (C) 2022 ilbers GmbH
 
 DESCRIPTION = "Boot config for Raspberry PI boards"

@@ -1,6 +1,6 @@
 # Kselftest package
 #
-# This software is a part of ISAR.
+# This software is a part of Isar.
 # Copyright (c) Mentor Graphics, a Siemens business, 2020
 # Copyright (c) Siemens, 2025
 #

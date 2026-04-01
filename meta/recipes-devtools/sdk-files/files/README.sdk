@@ -1,7 +1,7 @@
-ISAR Target SDK
+Isar Target SDK
 ===============
 
-This SDK helps to develop applications for an ISAR target platform in a
+This SDK helps to develop applications for an Isar target platform in a
 crossbuild environment. It contains a cross-toolchain and development packages
 corresponding to the original target.
 

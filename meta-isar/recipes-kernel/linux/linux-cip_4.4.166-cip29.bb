@@ -1,6 +1,6 @@
 # Example recipe for building the CIP 4.4 kernel
 #
-# This software is a part of ISAR.
+# This software is a part of Isar.
 # Copyright (c) Siemens AG, 2024
 #
 # SPDX-License-Identifier: MIT

@@ -1,4 +1,4 @@
-# This software is a part of ISAR.
+# This software is a part of Isar.
 # Copyright (C) 2018 Siemens AG
 #
 # this class is heavily inspired by OEs ./meta/classes/image_types_wic.bbclass

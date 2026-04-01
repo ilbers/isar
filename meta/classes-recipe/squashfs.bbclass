@@ -1,6 +1,6 @@
 # squashfs image rootfs
 #
-# This software is a part of ISAR.
+# This software is a part of Isar.
 # Copyright (C) Siemens AG, 2021-2025
 #
 # SPDX-License-Identifier: MIT

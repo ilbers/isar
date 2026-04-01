@@ -167,7 +167,7 @@ class CIBaseTest(CIBuilder):
                     self.fail(f'{needle_pkg} package not found in SBOM {sbom_path}')
 
     def perform_sstate_populate(self, image_target, **kwargs):
-        # Use a different isar root for populating sstate cache
+        # Use a different Isar root for populating sstate cache
         isar_sstate = f"{isar_root}/isar-sstate"
         os.makedirs(isar_sstate)
         process.run(f"git --work-tree={isar_sstate} checkout HEAD -- .")
@@ -182,7 +182,7 @@ class CIBaseTest(CIBuilder):
         # Populate cache
         self.bitbake(image_target, **kwargs)
 
-        # Remove isar configuration so the the following test creates a new one
+        # Remove Isar configuration so the the following test creates a new one
         self.delete_from_build_dir('conf')
 
     def perform_signature_lint(

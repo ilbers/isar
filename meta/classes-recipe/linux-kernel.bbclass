@@ -1,6 +1,6 @@
 # Custom kernel build
 #
-# This software is a part of ISAR.
+# This software is a part of Isar.
 # Copyright (c) Siemens AG, 2022
 # Copyright (c) Mentor Graphics, a Siemens business, 2022
 #
@@ -12,7 +12,7 @@
 CHANGELOG_V = "${PV}+${PR}"
 DESCRIPTION ?= "Custom kernel"
 MAINTAINER ?= "isar-users <isar-users@googlegroups.com>"
-DISTRIBUTOR ?= "ISAR"
+DISTRIBUTOR ?= "Isar"
 
 # pinned due to known or possible issues with compat 12
 DEBIAN_COMPAT:buster = "10"

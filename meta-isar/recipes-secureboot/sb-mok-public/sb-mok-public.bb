@@ -1,6 +1,6 @@
-# Base image recipe for ISAR
+# Base image recipe for Isar
 #
-# This software is a part of ISAR.
+# This software is a part of Isar.
 # Copyright (C) 2022 Siemens AG
 
 inherit dpkg

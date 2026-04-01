@@ -1,5 +1,5 @@
 #
-# This software is a part of ISAR.
+# This software is a part of Isar.
 # Copyright (c) Siemens AG, 2023-2025
 # Copyright (C) 2025 ilbers GmbH
 #

@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# This software is a part of ISAR.
+# This software is a part of Isar.
 # Copyright (c) Siemens AG, 2020-2023
 #
 # SPDX-License-Identifier: MIT

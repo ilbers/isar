@@ -1,4 +1,4 @@
-# This software is a part of ISAR.
+# This software is a part of Isar.
 #
 # Copyright (C) 2003  Chris Larson
 # Copyright (C) 2015-2025 ilbers GmbH

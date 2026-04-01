@@ -1,4 +1,4 @@
-# This software is a part of ISAR.
+# This software is a part of Isar.
 # Copyright (C) 2024 Siemens AG
 #
 # SPDX-License-Identifier: MIT

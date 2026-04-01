@@ -2,11 +2,11 @@
 # used with initramfs.bbclass or installed directly into a rootfs, depending on
 # the usecase.
 #
-# This software is a part of ISAR.
+# This software is a part of Isar.
 
 inherit initramfs-hook
 
-DESCRIPTION = "Sample initramfs module for ISAR"
+DESCRIPTION = "Sample initramfs module for Isar"
 MAINTAINER = "Your name here <you@domain.com>"
 
 # If the conf-hook enables BUSYBOX=y, busybox is needed:

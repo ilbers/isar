@@ -1,6 +1,6 @@
 #!/bin/sh -efu
 #
-# This software is a part of ISAR,
+# This software is a part of Isar,
 # originating from the RPM Package Manager version 4.14
 #
 # SPDX-License-Identifier: GPL-2.0

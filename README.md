@@ -2,7 +2,7 @@
 [![Build Status](https://ci.isar-build.org/buildStatus/icon?job=isar_next_fast&subject=next-fast)](http://ci.isar-build.org/job/isar_next_fast/)
 [![Build Status](https://ci.isar-build.org/buildStatus/icon?job=isar_next&subject=next-full)](http://ci.isar-build.org/job/isar_next/)
 
-isar - Integration System for Automated Root filesystem generation
+Isar - Integration System for Automated Root filesystem generation
 
 Isar is a set of scripts for building software packages and repeatable
 generation of Debian-based root filesystems with customizations.

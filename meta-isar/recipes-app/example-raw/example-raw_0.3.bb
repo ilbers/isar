@@ -1,9 +1,9 @@
 # Sample application using dpkg-raw, which turns a folder (${D}) of
 # files into a .deb
 #
-# This software is a part of ISAR.
+# This software is a part of Isar.
 
-DESCRIPTION = "Sample application for ISAR"
+DESCRIPTION = "Sample application for Isar"
 MAINTAINER = "Your name here <you@domain.com>"
 DEBIAN_DEPENDS = "adduser, apt (>= 0.4.2)"
 
@@ -17,7 +17,7 @@ inherit dpkg-raw
 do_install() {
 	bbnote "Creating ${PN} binary"
 	echo "#!/bin/sh" > ${WORKDIR}/${PN}
-	echo "echo Hello ISAR! ${PN}_${PV}" >> ${WORKDIR}/${PN}
+	echo "echo Hello Isar! ${PN}_${PV}" >> ${WORKDIR}/${PN}
 
 	# here we violate dh_usrlocal, see files/rules
 	bbnote "Putting ${PN} into package"
@@ -39,7 +39,7 @@ do_install() {
 	install -v -m 644 ${WORKDIR}/${PN}-isar-skel.txt ${D}/etc/skel/
 
 	bbnote "A user-specific HOME entry"
-	echo "hello isar" > ${WORKDIR}/${PN}-isar.txt
+	echo "hello Isar" > ${WORKDIR}/${PN}-isar.txt
 	install -v -d ${D}/var/lib/isar/
 	install -v -m 644 ${WORKDIR}/${PN}-isar.txt ${D}/var/lib/isar/
 }

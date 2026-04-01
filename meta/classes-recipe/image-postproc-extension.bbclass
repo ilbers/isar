@@ -1,4 +1,4 @@
-# This software is a part of ISAR.
+# This software is a part of Isar.
 # Copyright (C) Siemens AG, 2019
 
 update_etc_os_release() {

@@ -1,9 +1,9 @@
 # Sample shared library
 #
-# This software is a part of ISAR.
+# This software is a part of Isar.
 # Copyright (C) 2017-2024 ilbers GmbH
 
-DESCRIPTION = "Sample shared library for ISAR"
+DESCRIPTION = "Sample shared library for Isar"
 
 LICENSE = "gpl-2.0"
 LIC_FILES_CHKSUM = "file://${LAYERDIR_core}/licenses/COPYING.GPLv2;md5=751419260aa954499f7abaabaa882bbe"

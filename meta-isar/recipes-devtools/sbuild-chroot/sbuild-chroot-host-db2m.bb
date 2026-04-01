@@ -1,7 +1,7 @@
 # Root filesystem for packages building
 # Example of SBUILD_FLAVOR usage with docbook-to-man preinstalled
 #
-# This software is a part of ISAR.
+# This software is a part of Isar.
 # Copyright (C) 2023 ilbers GmbH
 
 DESCRIPTION = "Isar sbuild/schroot filesystem for host (docbook-to-man)"

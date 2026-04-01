@@ -1,6 +1,6 @@
 # Copy the target image to the installer image
 #
-# This software is a part of ISAR.
+# This software is a part of Isar.
 # Copyright (C) Siemens AG, 2024
 #
 # SPDX-License-Identifier: MIT

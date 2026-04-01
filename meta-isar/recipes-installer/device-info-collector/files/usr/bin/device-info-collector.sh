@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# This software is a part of ISAR.
+# This software is a part of Isar.
 # Copyright (C) Siemens AG, 2024-2025
 #
 # SPDX-License-Identifier: MIT

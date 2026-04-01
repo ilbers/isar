@@ -1,4 +1,4 @@
-# This software is a part of ISAR.
+# This software is a part of Isar.
 
 DESCRIPTION = "Setup user with non-interactive SSH access"
 MAINTAINER = "Uladzimir Bely <uladzimir.bely@ilbers.de>"

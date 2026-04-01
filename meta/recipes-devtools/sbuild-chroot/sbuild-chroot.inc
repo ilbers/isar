@@ -1,6 +1,6 @@
 # Common part for build chroot filesystem.
 #
-# This software is a part of ISAR.
+# This software is a part of Isar.
 # Copyright (C) 2015-2021 ilbers GmbH
 
 LICENSE = "gpl-2.0"

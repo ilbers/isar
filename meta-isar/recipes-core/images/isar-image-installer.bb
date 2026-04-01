@@ -1,11 +1,11 @@
-# This software is a part of ISAR.
+# This software is a part of Isar.
 # Copyright (C) Siemens AG, 2024
 #
 # SPDX-License-Identifier: MIT
 
 inherit image
 inherit installer-add-rootfs
-DESCRIPTION = "Example of a ISAR based Installer Image"
+DESCRIPTION = "Example of a Isar based Installer Image"
 
 # Use variable to switch easily to another wks
 INSTALLER_WKS_FILE ??= "installer-efi.wks.in"

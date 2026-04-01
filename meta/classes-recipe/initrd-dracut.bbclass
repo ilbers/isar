@@ -1,4 +1,4 @@
-# This software is a part of ISAR.
+# This software is a part of Isar.
 # This class provides the necessary options to
 # customize a dracut based initramfs.
 #

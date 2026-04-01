@@ -1,6 +1,6 @@
 # Isar event handlers.
 #
-# This software is a part of ISAR.
+# This software is a part of Isar.
 # Copyright (C) 2015-2017 ilbers GmbH
 # Copyright (c) Siemens AG, 2018
 

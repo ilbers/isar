@@ -1,9 +1,9 @@
 # Sample application
 #
-# This software is a part of ISAR.
+# This software is a part of Isar.
 # Copyright (C) 2015-2024 ilbers GmbH
 
-DESCRIPTION = "Sample application for ISAR"
+DESCRIPTION = "Sample application for Isar"
 
 LICENSE = "gpl-2.0"
 LIC_FILES_CHKSUM = "file://${LAYERDIR_core}/licenses/COPYING.GPLv2;md5=751419260aa954499f7abaabaa882bbe"

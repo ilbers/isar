@@ -1,6 +1,6 @@
 # Custom U-Boot build
 #
-# This software is a part of ISAR.
+# This software is a part of Isar.
 # Copyright (c) Siemens AG, 2018-2025
 #
 # SPDX-License-Identifier: MIT

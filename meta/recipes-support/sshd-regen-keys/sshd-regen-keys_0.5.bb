@@ -1,4 +1,4 @@
-# This software is a part of ISAR.
+# This software is a part of Isar.
 inherit dpkg-raw
 
 DESCRIPTION = "Systemd service to regenerate sshd keys"

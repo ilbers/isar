@@ -1,6 +1,6 @@
 # CI root filesystem for target installation (without kernel, initrd, ...)
 #
-# This software is a part of ISAR.
+# This software is a part of Isar.
 # Copyright (C) 2025 Siemens
 
 # Bill-of-material

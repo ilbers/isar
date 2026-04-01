@@ -1,4 +1,4 @@
-# This software is a part of ISAR.
+# This software is a part of Isar.
 # Copyright (C) 2025 Siemens
 #
 # SPDX-License-Identifier: MIT
@@ -10,9 +10,9 @@ SBOM_DEBSBOM_TYPE_ARGS = "${@"-t " + " -t ".join(d.getVar("SBOM_TYPES").split())
 
 # general user variables
 SBOM_DISTRO_SUPPLIER ?= "isar-users <isar-users@googlegroups.com>"
-SBOM_DISTRO_NAME ?= "ISAR-Debian-GNU-Linux"
+SBOM_DISTRO_NAME ?= "Isar-Debian-GNU-Linux"
 SBOM_DISTRO_VERSION ?= "1"
-SBOM_DISTRO_SUMMARY ?= "Linux distribution built with ISAR"
+SBOM_DISTRO_SUMMARY ?= "Linux distribution built with Isar"
 SBOM_BASE_DISTRO_VENDOR ??= "debian"
 SBOM_DOCUMENT_UUID ?= ""
 SBOM_DEBSBOM_EXTRA_ARGS ?= "--with-licenses"

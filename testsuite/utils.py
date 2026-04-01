@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# This software is a part of ISAR.
+# This software is a part of Isar.
 # Copyright (C) 2024-2025 ilbers GmbH
 #
 # SPDX-License-Identifier: MIT

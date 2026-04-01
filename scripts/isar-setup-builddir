@@ -110,7 +110,7 @@ fi
 # Ending the first-time run message. Show the no documentation banner.
 if [ ! -z "$SHOWYPDOC" ]; then
     cat <<EOM
-For more information about isar, contact the developers at:
+For more information about Isar, contact the developers at:
     https://groups.google.com/d/forum/isar-users
 
 EOM

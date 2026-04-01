@@ -1,4 +1,4 @@
-# This software is a part of ISAR.
+# This software is a part of Isar.
 # Copyright (c) Siemens AG, 2020
 
 inherit deb-dl-dir
@@ -448,7 +448,7 @@ do_cache_deb_src() {
         sudo mv "${ROOTFSDIR}"/etc/resolv.conf "${ROOTFSDIR}"/etc/resolv.conf.isar
     fi
     rootfs_install_resolvconf
-    # Note: ISAR updates the apt state information(apt-get update) only once during bootstrap and
+    # Note: Isar updates the apt state information(apt-get update) only once during bootstrap and
     # relies on that through out the build. Copy that state information instead of apt-get update
     # which generates a new state from upstream.
     sudo tar -xf "${BOOTSTRAP_SRC}" ./var/lib/apt/lists --one-top-level="${ROOTFSDIR}"
@@ -470,7 +470,7 @@ cache_dbg_pkgs() {
         sudo mv "${ROOTFSDIR}"/etc/resolv.conf "${ROOTFSDIR}"/etc/resolv.conf.isar
     fi
     rootfs_install_resolvconf
-    # Note: ISAR updates the apt state information(apt-get update) only once during bootstrap and
+    # Note: Isar updates the apt state information(apt-get update) only once during bootstrap and
     # relies on that through out the build. Copy that state information instead of apt-get update
     # which generates a new state from upstream.
     sudo tar -xf "${BOOTSTRAP_SRC}" ./var/lib/apt/lists --one-top-level="${ROOTFSDIR}"

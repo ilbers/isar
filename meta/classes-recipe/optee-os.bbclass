@@ -1,6 +1,6 @@
 # Custom OP-TEE OS build
 #
-# This software is a part of ISAR.
+# This software is a part of Isar.
 # Copyright (c) Siemens AG, 2020-2025
 #
 # SPDX-License-Identifier: MIT

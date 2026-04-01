@@ -1,4 +1,4 @@
-# This software is a part of ISAR.
+# This software is a part of Isar.
 inherit dpkg-raw
 
 DESCRIPTION = "Configuration to disable apt cache"

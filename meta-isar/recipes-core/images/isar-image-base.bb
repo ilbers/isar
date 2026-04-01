@@ -1,6 +1,6 @@
-# Base image recipe for ISAR
+# Base image recipe for Isar
 #
-# This software is a part of ISAR.
+# This software is a part of Isar.
 # Copyright (C) 2015-2018 ilbers GmbH
 
 DESCRIPTION = "Isar target filesystem"

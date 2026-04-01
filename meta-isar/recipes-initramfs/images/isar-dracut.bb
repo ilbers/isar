@@ -2,7 +2,7 @@
 #
 #   build/tmp/deploy/images/${MACHINE}/isar-initramfs-${DISTRO}-${MACHINE}-initrd.img
 #
-# This software is a part of ISAR.
+# This software is a part of Isar.
 
 inherit initrd-dracut
 

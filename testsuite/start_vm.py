@@ -162,7 +162,7 @@ def parse_args():
         '-a',
         '--arch',
         choices=arch_names,
-        help='set isar machine architecture.',
+        help='set Isar machine architecture.',
         default='arm',
     )
     parser.add_argument(
@@ -175,7 +175,7 @@ def parse_args():
         '-d',
         '--distro',
         choices=distro_names,
-        help='set isar Debian distribution.',
+        help='set Isar Debian distribution.',
         default='bookworm',
     )
     parser.add_argument(

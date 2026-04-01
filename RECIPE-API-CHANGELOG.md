@@ -156,7 +156,7 @@ partial matching feature for a short time between 0.7 and 0.8. In 0.8 the
 version has to be the exact upsteam match.
 It is probably best to not specify a version if you can.
 
-### `isar-image.bbclass` class will be deprecated in future version of isar
+### `isar-image.bbclass` class will be deprecated in future version of Isar
 
 The content of `isar-image.bbclass` was moved to the `image.bbclass` file.
 Recipes that inherit `isar-image` should be modified to inherit from `image`
@@ -724,7 +724,7 @@ For example, If `KERNEL_NAME` is configured as `foo` for arm64, now
 generated. This will help to have multiple versions of linux-libc-dev packages
 available for respective bsps in apt feeds.
 
-### ISAR APT Repository
+### Isar APT Repository
 
 Optional fields of the isar-apt repo can be controlled by adding to the
 `ISAR_APT_OPT_FIELD` map. Example: `ISAR_APT_OPT_FIELD[Origin]="isar"`.

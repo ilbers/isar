@@ -133,7 +133,7 @@ classes implemented in Isar testsuite (e.g. `./isar/testsuite/*.py`). This is
 a common case for downstream that use `kas` to handle layers they use.
 
 In this case it's important to adjust `PYTHONPATH` variable before running
-avocado so that isar testsuite files could be found:
+avocado so that Isar testsuite files could be found:
 
 ```
 # TESTSUITEDIR="/work/isar/testsuite"

@@ -1,6 +1,6 @@
 # Custom OP-TEE OS build for TA devkit
 #
-# This software is a part of ISAR.
+# This software is a part of Isar.
 # Copyright (c) Siemens AG, 2023
 #
 # SPDX-License-Identifier: MIT

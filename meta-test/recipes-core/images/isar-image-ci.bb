@@ -1,6 +1,6 @@
 # CI root filesystem for target installation
 #
-# This software is a part of ISAR.
+# This software is a part of Isar.
 # Copyright (C) 2023 ilbers GmbH
 
 require recipes-core/images/isar-image-base.bb

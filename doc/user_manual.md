@@ -1,4 +1,4 @@
-# ISAR User Manual
+# Isar User Manual
 
 Copyright (C) 2016-2019, ilbers GmbH
 
@@ -25,7 +25,7 @@ Copyright (C) 2016-2019, ilbers GmbH
  - [Examining and debugging package generation inside their schroot rootfs](#examining-and-debugging-package-generation-inside-their-schroot-rootfs)
  - [Using ccache for custom packages](#using-ccache-for-custom-packages)
  - [Using sstate-cache](#using-sstate-cache)
- - [Create an ISAR SDK root filesystem](#create-an-isar-sdk-root-filesystem)
+ - [Create an Isar SDK root filesystem](#create-an-isar-sdk-root-filesystem)
  - [Create a containerized Isar SDK root filesystem](#create-a-containerized-isar-sdk-root-filesystem)
  - [Creation of local apt repo caching upstream Debian packages](#creation-of-local-apt-repo-caching-upstream-debian-packages)
  - [Add foreign packages from other repositories to the generated image](#add-foreign-packages-from-other-repositories-to-the-generated-image)
@@ -153,7 +153,7 @@ The second line will make sure your proxy settings will not get lost when using 
 
 ### Check out Isar
 
-Clone the isar repository:
+Clone the Isar repository:
 ```
 $ git clone http://github.com/ilbers/isar.git
 ```
@@ -797,12 +797,12 @@ meta-isar/recipes-app/example-raw contains an example
 
 A custom image recipe may be created to assemble packages of your choice into a root file-system image. The `image` class
 implements a `do_rootfs` function to compile and configure the file-system for you. Prebuilt packages may be selected for
-installation by appending them to the `IMAGE_PREINSTALL` variable while packages created by ISAR should be appended to
+installation by appending them to the `IMAGE_PREINSTALL` variable while packages created by Isar should be appended to
 `IMAGE_INSTALL`. A sample image recipe follows.
 
 ### Example
 ```
-DESCRIPTION = "Sample image recipe for ISAR"
+DESCRIPTION = "Sample image recipe for Isar"
 
 LICENSE = "gpl-2.0"
 LIC_FILES_CHKSUM = "file://${LAYERDIR_core}/licenses/COPYING.GPLv2;md5=751419260aa954499f7abaabaa882bbe"
@@ -916,7 +916,7 @@ For large applications that are not cross-compiled, it may be needed to extend t
 
 #### Example
 ```
-DESCRIPTION = "Sample application for ISAR"
+DESCRIPTION = "Sample application for Isar"
 
 LICENSE = "gpl-2.0"
 LIC_FILES_CHKSUM = "file://${LAYERDIR_core}/licenses/COPYING.GPLv2;md5=751419260aa954499f7abaabaa882bbe"
@@ -1001,7 +1001,7 @@ The bbclass for this approach is called `dpkg-raw`.
 
 #### Example
 ```
-DESCRIPTION = "Sample application for ISAR"
+DESCRIPTION = "Sample application for Isar"
 MAINTAINER = "Your name here <you@domain.com>"
 DEBIAN_DEPENDS = "apt"
 
@@ -1041,7 +1041,7 @@ be installed via `IMAGE_INSTALL`. Have a look at `prebuilt-deb`.
 
 ## Build statistics collection
 
-While isar is building the system, build statistics is collected in
+While Isar is building the system, build statistics is collected in
 `tmp/buildstats/<timestamp>` directory. This functionality is implemented in
 `buildstats` class, and is enabled by `USE_BUILDSTATS= "1"` in `local.conf`.
 
@@ -1278,11 +1278,11 @@ To build without using any sstate caching, you can use the bitbake argument
 `--no-setscene`.
 
 
-## Create an ISAR SDK root filesystem
+## Create an Isar SDK root filesystem
 
 ### Motivation
 
-Building applications for targets in ISAR takes a lot of time as they are built under QEMU.
+Building applications for targets in Isar takes a lot of time as they are built under QEMU.
 SDK providing cross build environment will help to solve this problem.
 
 ### Approach
@@ -1346,7 +1346,7 @@ sudo <path-to-isar>/scripts/mount_chroot.sh tmp/deploy/images/qemuarm/isar-image
 
 ```
 
- - chroot to isar SDK rootfs:
+ - chroot to Isar SDK rootfs:
 
 ```
 sudo chroot tmp/deploy/images/qemuarm/isar-image-base-sdk-debian-bullseye-qemuarm
@@ -1429,7 +1429,7 @@ SDK formats to generate.
 Supported formats are:
  - `tar-xz`: (default) is the non-containerized format that results from 
    following the instructions in 
-   "[Create an ISAR SDK root filesystem](#create-an-isar-sdk-root-filesystem)"
+   "[Create an Isar SDK root filesystem](#create-an-isar-sdk-root-filesystem)"
  - `docker-archive`: an archive containing a Docker image that can be imported 
    with 
    [`docker load`](https://docs.docker.com/engine/reference/commandline/load)
@@ -1677,7 +1677,7 @@ remain by default available and may be used again for loading the storage after
 it may have been emptied later on (factory reset).
 
 Source container images may either be fetched as binaries from a registry, see
-above, or built via isar as well.
+above, or built via Isar as well.
 
 ### Example
 

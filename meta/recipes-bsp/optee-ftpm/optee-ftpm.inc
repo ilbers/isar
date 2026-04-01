@@ -1,6 +1,6 @@
 # Transitional include for optee-ftpm.bbclass
 #
-# This software is a part of ISAR.
+# This software is a part of Isar.
 # Copyright (c) Siemens AG, 2025
 #
 # SPDX-License-Identifier: MIT

@@ -1,6 +1,6 @@
 # Root filesystem for packages building
 #
-# This software is a part of ISAR.
+# This software is a part of Isar.
 # Copyright (C) 2015-2021 ilbers GmbH
 
 DESCRIPTION = "Isar sbuild/schroot filesystem for target"
