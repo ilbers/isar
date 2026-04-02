@@ -729,7 +729,7 @@ available for respective bsps in apt feeds.
 Optional fields of the isar-apt repo can be controlled by adding to the
 `ISAR_APT_OPT_FIELD` map. Example: `ISAR_APT_OPT_FIELD[Origin]="isar"`.
 
-Changes in next
+Changes in v1.0
 ---------------
 
 ### Drop unused container image format `oci`
@@ -1058,3 +1058,6 @@ If multiple configurations are intentionally configured to share the
 same TMPDIR in OpenEmbedded, conflicts may occur and are not handled by
 OE. Artifacts with the same name overwrite each other, leading to
 incorrect build results.
+
+Changes in next
+---------------

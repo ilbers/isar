@@ -41,6 +41,8 @@ a: !mux
     name: container-amd64-bullseye
   container-amd64-bookworm:
     name: container-amd64-bookworm
+  container-amd64-trixie:
+    name: container-amd64-trixie
   qemumipsel-bullseye:
     name: qemumipsel-bullseye
   qemumipsel-bookworm:
@@ -53,6 +55,8 @@ a: !mux
     name: bananapi-bullseye
   bananapi-bookworm:
     name: bananapi-bookworm
+  bananapi-trixie:
+    name: bananapi-trixie
   beagleplay-bookworm:
     name: beagleplay-bookworm
   de0-nano-soc-buster:
@@ -61,20 +65,28 @@ a: !mux
     name: de0-nano-soc-bullseye
   de0-nano-soc-bookworm:
     name: de0-nano-soc-bookworm
+  de0-nano-soc-trixie:
+    name: de0-nano-soc-trixie
   hikey-bullseye:
     name: hikey-bullseye
   hikey-bookworm:
     name: hikey-bookworm
+  hikey-trixie:
+    name: hikey-trixie
   phyboard-mira-bullseye:
     name: phyboard-mira-bullseye
   phyboard-mira-bookworm:
     name: phyboard-mira-bookworm
+  phyboard-mira-trixie:
+    name: phyboard-mira-trixie
   nanopi-neo-buster:
     name: nanopi-neo-buster
   nanopi-neo-bullseye:
     name: nanopi-neo-bullseye
   nanopi-neo-bookworm:
     name: nanopi-neo-bookworm
+  nanopi-neo-trixie:
+    name: nanopi-neo-trixie
   nanopi-neo-efi-bookworm:
     name: nanopi-neo-efi-bookworm
   stm32mp15x-bullseye:
@@ -83,6 +95,8 @@ a: !mux
     name: virtualbox-bullseye
   virtualbox-bookworm:
     name: virtualbox-bookworm
+  virtualbox-trixie:
+    name: virtualbox-trixie
   x86-pc-bookworm:
     name: x86-pc-bookworm
   rpi-arm-bullseye:
@@ -101,6 +115,8 @@ a: !mux
     name: rpi-arm64-v8-bullseye
   rpi-arm64-v8-bookworm:
     name: rpi-arm64-v8-bookworm
+  rpi-arm64-v8-efi-bookworm:
+    name: rpi-arm64-v8-efi-bookworm
   sifive-fu540-trixie:
     name: sifive-fu540-trixie
   starfive-visionfive2-trixie:

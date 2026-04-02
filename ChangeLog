@@ -1,5 +1,53 @@
 Release next
 
+Release v1.0
+
+ * Add Debian Trixie support to various machines
+ * Add SBOM generation with debsbom
+ * Add dracut support
+ * Add security policy
+ * Add security advisory on security snapshot timestamp
+ * Add per-kernel recipe variant support
+ * Add make world testsuite
+ * Add nop testsuite
+ * Add test cases for Trixie targets
+ * Add support for negative build tests
+ * Add Discoverable Disk Image support
+ * Add EFI boot support for rpi-arm64-v8
+ * Add 32-bit ARM support for grub-efi
+ * Add and enforce valid maintainer settings in recipes
+ * Significantly speed up build by optimizing image creation workflows
+ * Speed up testsuite execution
+ * Reduce usage of privileged commands
+ * Refactor build artifacts naming and deploy path
+ * Refactor recipes helper include .inc to bbclass
+ * Create separate BOM for external initrd
+ * Remove isar-bootstrap support
+ * Deprecate hybrid-boot WIC plugin
+ * Drop OCI image type
+ * Drop imx6-sabrelite target
+ * Update debsbom to v0.7.1
+ * Update kas to v5.1
+ * Update kselftest to latest LTS version
+ * Switch Debian Buster repo source to archive
+ * Switch Debian Bullseye MIPS sources to archive
+ * Add support to new optee_ftpm repo
+ * Set default compiler for Debian Trixie to GCC 14
+ * Rework isar-installer framework with backend/frontend separation
+ * Improve isar-installer on device handling
+ * Improve debianize process
+ * Improve isar-sstate handling
+ * Improve bootimg-efi-isar customization
+ * Improve multiarch and transitive dependency handling across packages
+ * Improve container build handling
+ * Improve Linux kernel cross-build
+ * Improve reproducible builds and source tarball generation
+ * Improve warnings and errors reporting
+ * Fixes and improvements on initramfs-tee-ftpm-hook
+ * Simplify OpenSBI builds
+ * Improve BeaglePlay board support
+ * Multiple improvements in the testsuite
+
 Release v0.11
 
  * Add Debian Trixie support
