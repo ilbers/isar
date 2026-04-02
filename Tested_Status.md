@@ -4,6 +4,112 @@ Tested Status
 Release next
 ------------
 
+Release v1.0
+-------------
+
+### Host System: debian-stretch-amd64
+
+NOT SUPPORTED
+
+### Host System: debian-buster-amd64
+
+NOT TESTED
+
+### Host System: debian-bullseye-amd64
+
+NOT TESTED
+
+### Host System: debian-bookworm-amd64
+
+| Target System               | Native Build  | Cross Build   |Login prompt ("smoke" test)|SDK Support|Cached repo| Version  |
+|:---------------------------:|:-------------:|:-------------:|:-------------------------:|:---------:|:---------:|:--------:|
+| qemuarm-buster              | UNTESTED      | UNTESTED      | UNTESTED                  | UNTESTED  | UNTESTED  | d718885a |
+| qemuarm-bullseye            | UNTESTED      | UNTESTED      | UNTESTED                  | UNTESTED  | UNTESTED  | d718885a |
+| qemuarm-bookworm            | UNTESTED      | UNTESTED      | UNTESTED                  | UNTESTED  | UNTESTED  | d718885a |
+| qemuarm-trixie              | UNTESTED      | UNTESTED      | UNTESTED                  | UNTESTED  | UNTESTED  | d718885a |
+| qemuarm64-buster            | UNTESTED      | UNTESTED      | UNTESTED                  | UNTESTED  | UNTESTED  | d718885a |
+| qemuarm64-bullseye          | UNTESTED      | UNTESTED      | UNTESTED                  | UNTESTED  | UNTESTED  | d718885a |
+| qemuarm64-bookworm          | UNTESTED      | UNTESTED      | UNTESTED                  | UNTESTED  | UNTESTED  | d718885a |
+| qemuarm64-trixie            | UNTESTED      | UNTESTED      | UNTESTED                  | UNTESTED  | UNTESTED  | d718885a |
+| qemuarm64-sid               | UNTESTED      | UNTESTED      | UNTESTED                  | UNTESTED  | UNTESTED  | d718885a |
+| qemuarm64-focal             | UNTESTED      | UNTESTED      | UNTESTED                  | UNTESTED  | UNTESTED  | d718885a |
+| qemuarm64-jammy             | UNTESTED      | UNTESTED      | UNTESTED                  | UNTESTED  | UNTESTED  | d718885a |
+| qemuarm64-noble             | UNTESTED      | UNTESTED      | UNTESTED                  | UNTESTED  | UNTESTED  | d718885a |
+| qemui386-buster             | UNTESTED      | UNTESTED      | UNTESTED                  | UNTESTED  | UNTESTED  | d718885a |
+| qemui386-bullseye           | UNTESTED      | UNTESTED      | UNTESTED                  | UNTESTED  | UNTESTED  | d718885a |
+| qemui386-bookworm           | UNTESTED      | UNTESTED      | UNTESTED                  | UNTESTED  | UNTESTED  | d718885a |
+| qemuamd64-buster            | UNTESTED      | UNTESTED      | UNTESTED                  | UNTESTED  | UNTESTED  | d718885a |
+| qemuamd64-bullseye          | UNTESTED      | UNTESTED      | UNTESTED                  | UNTESTED  | UNTESTED  | d718885a |
+| qemuamd64-sb-bullseye       | UNTESTED      | UNTESTED      | UNTESTED                  | UNTESTED  | UNTESTED  | d718885a |
+| qemuamd64-bookworm          | UNTESTED      | UNTESTED      | UNTESTED                  | UNTESTED  | UNTESTED  | d718885a |
+| qemuamd64-cip-bookworm      | UNTESTED      | UNTESTED      | UNTESTED                  | UNTESTED  | UNTESTED  | d718885a |
+| qemuamd64-iso-bookworm      | UNTESTED      | UNTESTED      | UNTESTED                  | UNTESTED  | UNTESTED  | d718885a |
+| qemuamd64-trixie            | UNTESTED      | UNTESTED      | UNTESTED                  | UNTESTED  | UNTESTED  | d718885a |
+| qemuamd64-sid               | UNTESTED      | UNTESTED      | UNTESTED                  | UNTESTED  | UNTESTED  | d718885a |
+| qemuamd64-focal             | UNTESTED      | UNTESTED      | UNTESTED                  | UNTESTED  | UNTESTED  | d718885a |
+| qemuamd64-jammy             | UNTESTED      | UNTESTED      | UNTESTED                  | UNTESTED  | UNTESTED  | d718885a |
+| qemuamd64-noble             | UNTESTED      | UNTESTED      | UNTESTED                  | UNTESTED  | UNTESTED  | d718885a |
+| qemumipsel-bullseye         | UNTESTED      | UNTESTED      | UNTESTED                  | UNTESTED  | UNTESTED  | d718885a |
+| qemumipsel-bookworm         | UNTESTED      | UNTESTED      | UNTESTED                  | UNTESTED  | UNTESTED  | d718885a |
+| qemuriscv64-trixie          | UNTESTED      | UNTESTED      | UNTESTED                  | UNTESTED  | UNTESTED  | d718885a |
+| container-amd64-buster      | UNTESTED      | PASSED        | PASSED (Docker)           | UNTESTED  | UNTESTED  | d718885a |
+| container-amd64-bullseye    | UNTESTED      | PASSED        | PASSED (Docker)           | UNTESTED  | UNTESTED  | d718885a |
+| container-amd64-bookworm    | UNTESTED      | PASSED        | PASSED (Docker)           | UNTESTED  | UNTESTED  | d718885a |
+| container-amd64-trixie      | UNTESTED      | PASSED        | PASSED (Docker)           | UNTESTED  | UNTESTED  | d718885a |
+| virtualbox-bullseye         | UNTESTED      | PASSED        | PASSED (Virtualbox)       | UNTESTED  | UNTESTED  | d718885a |
+| virtualbox-bookworm         | UNTESTED      | PASSED        | PASSED (Virtualbox)       | UNTESTED  | UNTESTED  | d718885a |
+| virtualbox-trixie           | UNTESTED      | PASSED        | PASSED (Virtualbox)       | UNTESTED  | UNTESTED  | d718885a |
+| x86-pc-bookworm             | UNTESTED      | UNTESTED      | UNTESTED                  | UNTESTED  | UNTESTED  | d718885a |
+| bananapi-buster             | UNTESTED      | PASSED        | PASSED #3                 | UNTESTED  | UNTESTED  | d718885a |
+| bananapi-bullseye           | UNTESTED      | PASSED        | PASSED #3                 | UNTESTED  | UNTESTED  | d718885a |
+| bananapi-bookworm           | UNTESTED      | PASSED        | PASSED #3                 | UNTESTED  | UNTESTED  | d718885a |
+| bananapi-trixie             | UNTESTED      | PASSED        | PASSED #3                 | UNTESTED  | UNTESTED  | d718885a |
+| beagleplay-bookworm         | UNTESTED      | UNTESTED      | UNTESTED                  | UNTESTED  | UNTESTED  | d718885a |
+| de0-nano-soc-buster         | UNTESTED      | PASSED        | PASSED #4                 | UNTESTED  | UNTESTED  | d718885a |
+| de0-nano-soc-bullseye       | UNTESTED      | PASSED        | PASSED #4                 | UNTESTED  | UNTESTED  | d718885a |
+| de0-nano-soc-bookworm       | UNTESTED      | PASSED        | PASSED #4                 | UNTESTED  | UNTESTED  | d718885a |
+| de0-nano-soc-trixie         | UNTESTED      | PASSED        | PASSED #4                 | UNTESTED  | UNTESTED  | d718885a |
+| hikey-bullseye              | UNTESTED      | UNTESTED      | PASSED #5                 | UNTESTED  | UNTESTED  | d718885a |
+| hikey-bookworm              | UNTESTED      | PASSED        | PASSED #5                 | UNTESTED  | UNTESTED  | d718885a |
+| hikey-trixie                | UNTESTED      | PASSED        | FAILED #5                 | UNTESTED  | UNTESTED  | d718885a |
+| nanopi-neo-buster           | UNTESTED      | PASSED        | PASSED #6                 | UNTESTED  | UNTESTED  | d718885a |
+| nanopi-neo-bullseye         | UNTESTED      | PASSED        | PASSED #6                 | UNTESTED  | UNTESTED  | d718885a |
+| nanopi-neo-bookworm         | UNTESTED      | PASSED        | PASSED #6                 | UNTESTED  | UNTESTED  | d718885a |
+| nanopi-neo-efi-bookworm     | UNTESTED      | PASSED        | PASSED #6                 | UNTESTED  | UNTESTED  | d718885a |
+| nanopi-neo-trixie           | UNTESTED      | PASSED        | PASSED #6                 | UNTESTED  | UNTESTED  | d718885a |
+| phyboard-mira-bullseye      | UNTESTED      | PASSED        | FAILED #7                 | UNTESTED  | UNTESTED  | d718885a |
+| phyboard-mira-bookworm      | UNTESTED      | PASSED        | FAILED #7                 | UNTESTED  | UNTESTED  | d718885a |
+| phyboard-mira-trixie        | UNTESTED      | PASSED        | FAILED #7                 | UNTESTED  | UNTESTED  | d718885a |
+| rpi-arm-bullseye            | UNTESTED      | PASSED        | PASSED #1                 | UNTESTED  | UNTESTED  | d718885a |
+| rpi-arm-bookworm            | UNTESTED      | PASSED        | PASSED #1                 | UNTESTED  | UNTESTED  | d718885a |
+| rpi-arm-v7-bullseye         | UNTESTED      | PASSED        | PASSED #1                 | UNTESTED  | UNTESTED  | d718885a |
+| rpi-arm-v7-bookworm         | UNTESTED      | PASSED        | PASSED #1                 | UNTESTED  | UNTESTED  | d718885a |
+| rpi-arm-v7l-bullseye        | UNTESTED      | PASSED        | PASSED #1                 | UNTESTED  | UNTESTED  | d718885a |
+| rpi-arm-v7l-bookworm        | UNTESTED      | PASSED        | PASSED #1                 | UNTESTED  | UNTESTED  | d718885a |
+| rpi-arm64-v8-bullseye       | UNTESTED      | PASSED        | PASSED #2                 | UNTESTED  | UNTESTED  | d718885a |
+| rpi-arm64-v8-bookworm       | UNTESTED      | PASSED        | PASSED #2                 | UNTESTED  | UNTESTED  | d718885a |
+| rpi-arm64-v8-efi-bookworm   | UNTESTED      | PASSED        | PASSED #2                 | UNTESTED  | UNTESTED  | d718885a |
+| sifive-fu540-trixie         | UNTESTED      | UNTESTED      | UNTESTED                  | UNTESTED  | UNTESTED  | d718885a |
+| starfive-visionfive2-trixie | UNTESTED      | PASSED        | PASSED #8                 | UNTESTED  | UNTESTED  | d718885a |
+| stm32mp15x-bullseye         | UNTESTED      | UNTESTED      | UNTESTED                  | UNTESTED  | UNTESTED  | d718885a |
+
+#1: Tested on RPI3B+
+#2: Tested on RPI4B
+#3: Tested on BPI-A20
+#4: Tested on Terasic Atlas-SoC
+#5: Tested on LeMaker HiKey 2 GB
+#6: Tested on NanoPi Neo LTS 512 MB
+#7: Tested on i.MX6 Quad
+#8: Tested on StarFive VisionFive 2
+
+### Host System: debian-stretch-i386
+
+NOT SUPPORTED
+
+### Host System: debian-buster-i386
+
+NOT TESTED
+
 Release v0.11
 -------------
 
