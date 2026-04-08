@@ -5,6 +5,8 @@
 
 inherit dpkg
 
+MAINTAINER = "isar-users <isar-users@googlegroups.com>"
+
 DEPENDS += "sb-mok-keys"
 DEBIAN_BUILD_DEPENDS .= ",sb-mok-keys"
 DEBIAN_CONFLICTS .= ",sb-mok-keys"

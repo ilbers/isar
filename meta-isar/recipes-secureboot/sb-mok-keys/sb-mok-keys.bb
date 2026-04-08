@@ -5,6 +5,8 @@
 
 inherit dpkg
 
+MAINTAINER = "isar-users <isar-users@googlegroups.com>"
+
 PROVIDES = "secure-boot-secrets"
 DEBIAN_PROVIDES = "secure-boot-secrets"
 
