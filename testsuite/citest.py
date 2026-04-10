@@ -697,7 +697,7 @@ class DtbDeployTest(CIBaseTest):
         ]
 
         self.init()
-        self.perform_build_test(targets)
+        self.perform_build_test(targets, image_install='')
 
     def test_dtb_deploy_images(self):
         """
@@ -709,7 +709,7 @@ class DtbDeployTest(CIBaseTest):
         ]
 
         self.init()
-        self.perform_build_test(targets)
+        self.perform_build_test(targets, image_install='')
 
 
 class NoCrossTest(CIBaseTest):
