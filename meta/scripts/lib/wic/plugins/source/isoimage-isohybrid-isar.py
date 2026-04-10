@@ -196,7 +196,7 @@ class IsoImagePlugin(SourcePlugin):
                 raise WicError("Couldn't find MACHINE, exiting.")
 
             pattern = '%s/%s*%s.%s' % (initrd_dir, image_name, machine, image_type)
-            pattern = '%s/initrd.%s' % (initrd_dir, image_type)
+            pattern = '%s/%s-%s-initrd.%s' % (initrd_dir, image_name, machine, image_type)
             files = glob.glob(pattern)
             if files:
                 initrd = files[0]

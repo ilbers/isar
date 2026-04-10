@@ -50,7 +50,7 @@ def format_qemu_cmdline(
     image_type = image_fstypes.split()[0]
     base = 'ubuntu' if distro in ['jammy', 'focal', 'noble'] else 'debian'
 
-    rootfs_image = f"qemu{arch}.{image_type}"
+    rootfs_image = f"{image}-{base}-{distro}-qemu{arch}.{image_type}"
 
     if image_type == 'ext4':
         kernel_image = deploy_dir_image + '/' + kernel_image
