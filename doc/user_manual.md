@@ -20,6 +20,7 @@ Copyright (C) 2016-2019, ilbers GmbH
  - [Customize and configure image](#customize-and-configure-image)
  - [Create a Custom Image Recipe](#create-a-custom-image-recipe)
  - [Add a Custom Application](#add-a-custom-application)
+ - [Rust in Isar Builds](#rust-in-isar-builds)
  - [Build statistics collection](#build-statistics-collection)
  - [Isar Cross-compilation](#isar-cross-compilation)
  - [Examining and debugging package generation inside their schroot rootfs](#examining-and-debugging-package-generation-inside-their-schroot-rootfs)
@@ -1036,6 +1037,73 @@ from which would be the better way.
 Such single debs can be included if need be. You just need to write a recipe
 that just fetches those debs to its `WORKDIR` and deploys them. They can then
 be installed via `IMAGE_INSTALL`. Have a look at `prebuilt-deb`.
+
+---
+
+## Rust in Isar Builds
+
+This is a collection of recipes and links on how to
+package rust crates.
+
+This document takes most of its input from https://rust-team.pages.debian.net/book
+which contains the practices of the Debian rust team.
+
+### Crates on crates.io
+
+We provide a generator in `scripts/generate_cargo_crate.sh` which
+generates the scaffold for these crates. This follows more or less
+the approach of Debian with https://salsa.debian.org/rust-team/debcargo-conf.
+
+The user steps necessary are the following:
+
+1. Generate the package by calling:
+`scripts/generate_cargo_crate.sh <CRATE_NAME> [CRATE_VERSION]`.
+
+2. Patch to build with the current Debian release, e.g. relax the dependencies
+in `Cargo.toml`
+
+
+### Crates not on crates.io
+
+There is currently no generator and it is recommended to follow the traditional
+packaging approach, see also https://rust-team.pages.debian.net/book/process-workspace.html#general-setup.
+
+A working rules file could look like this:
+```
+#!/usr/bin/make -f
+
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+DPKG_EXPORT_BUILDFLAGS = 1
+include /usr/share/dpkg/default.mk
+include /usr/share/rustc/architecture.mk
+export DEB_HOST_RUST_TYPE
+export PATH:=/usr/share/cargo/bin:$(PATH)
+export CARGO=/usr/share/cargo/bin/cargo
+export CARGO_HOME=$(CURDIR)/debian/cargo_home
+export CARGO_REGISTRY=$(CURDIR)/debian/cargo_registry
+export DEB_CARGO_CRATE=$(DEB_SOURCE)_$(DEB_VERSION_UPSTREAM)
+
+%:
+	dh $@ --buildsystem=cargo
+
+execute_after_dh_auto_clean:
+	$(CARGO) clean
+	rm -rf $(CARGO_HOME)
+	rm -rf $(CARGO_REGISTRY)
+	rm -f debian/cargo-checksum.json
+
+execute_before_dh_auto_configure:
+	$(CARGO) prepare-debian $(CARGO_REGISTRY) --link-from-system
+	rm -f Cargo.lock
+	touch debian/cargo-checksum.json
+
+```
+This example works for a cargo application and cannot be reused by other components
+as the file `debian/cargo-checksum.json` is empty.
+
+An example for the initial cargo crate can be found at `meta-isar/recipes-app/rust-hello-isar/`.
+
+Check which packages are already part of Debian by using the tool `cargo-debstatus`.
 
 ---
 
