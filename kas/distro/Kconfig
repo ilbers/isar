@@ -29,6 +29,9 @@ config CODENAME_BOOKWORM
 config CODENAME_TRIXIE
 	bool
 
+config CODENAME_FORKY
+	bool
+
 config CODENAME_SID
 	bool
 
@@ -60,6 +63,10 @@ config DEBIAN_BOOKWORM
 config DEBIAN_TRIXIE
 	bool "Debian 13 (trixie)"
 	depends on (DISTRO_DEBIAN && CODENAME_TRIXIE) || ANY_MACHINE_DISTRO
+
+config DEBIAN_FORKY
+	bool "Debian 14 (forky)"
+	depends on (DISTRO_DEBIAN && CODENAME_FORKY) || ANY_MACHINE_DISTRO
 
 config DEBIAN_SID
 	bool "Debian Sid (unstable)"
@@ -100,6 +107,7 @@ config KAS_INCLUDE_DISTRO
 	default "kas/distro/debian-bullseye.yaml" if DEBIAN_BULLSEYE
 	default "kas/distro/debian-bookworm.yaml" if DEBIAN_BOOKWORM
 	default "kas/distro/debian-trixie.yaml" if DEBIAN_TRIXIE
+	default "kas/distro/debian-forky.yaml" if DEBIAN_FORKY
 	default "kas/distro/debian-sid.yaml" if DEBIAN_SID
 	default "kas/distro/raspios-bullseye.yaml" if RASPIOS_BULLSEYE
 	default "kas/distro/raspios-bookworm.yaml" if RASPIOS_BOOKWORM

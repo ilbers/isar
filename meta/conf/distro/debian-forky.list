@@ -1,0 +1,8 @@
+deb	http://deb.debian.org/debian forky main contrib non-free-firmware non-free
+deb-src	http://deb.debian.org/debian forky main contrib non-free-firmware non-free
+
+deb	http://deb.debian.org/debian-security forky-security main contrib non-free-firmware non-free
+deb-src	http://deb.debian.org/debian-security forky-security main contrib non-free-firmware non-free
+
+deb	http://deb.debian.org/debian forky-updates main contrib non-free-firmware non-free
+deb-src	http://deb.debian.org/debian forky-updates main contrib non-free-firmware non-free
