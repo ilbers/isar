@@ -176,7 +176,8 @@ endmenu
 
 config KAS_IMAGE_PREINSTALL
 	string "Distro packages"
-	default "fdisk iproute2 iputils-ping isc-dhcp-client"
+	default "fdisk iproute2 iputils-ping isc-dhcp-client" if DEBIAN_BULLSEYE || DEBIAN_BOOKWORM || DEBIAN_TRIXIE || UBUNTU_JAMMY || UBUNTU_NOBLE
+	default "fdisk iproute2 iputils-ping dhcp-client" if DEBIAN_FORKY
 	help
 	  Space-separated list of packages that are provided by the selected distro.
 	  These packages are downloaded from distro mirrors and just unpacked
