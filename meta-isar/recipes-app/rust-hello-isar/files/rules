@@ -1,0 +1,26 @@
+#!/usr/bin/make -f
+
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+DPKG_EXPORT_BUILDFLAGS = 1
+include /usr/share/dpkg/default.mk
+include /usr/share/rustc/architecture.mk
+export DEB_HOST_RUST_TYPE
+export PATH:=/usr/share/cargo/bin:$(PATH)
+export CARGO=/usr/share/cargo/bin/cargo
+export CARGO_HOME=$(CURDIR)/debian/cargo_home
+export CARGO_REGISTRY=$(CURDIR)/debian/cargo_registry
+export DEB_CARGO_CRATE=$(DEB_SOURCE)_$(DEB_VERSION_UPSTREAM)
+
+%:
+	dh $@ --buildsystem=cargo
+
+execute_after_dh_auto_clean:
+	$(CARGO) clean
+	rm -rf $(CARGO_HOME)
+	rm -rf $(CARGO_REGISTRY)
+	rm -f debian/cargo-checksum.json
+
+execute_before_dh_auto_configure:
+	$(CARGO) prepare-debian $(CARGO_REGISTRY) --link-from-system
+	rm -f Cargo.lock
+	touch debian/cargo-checksum.json
