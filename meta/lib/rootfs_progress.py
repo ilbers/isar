@@ -77,7 +77,7 @@ class InitrdProgressHandler(PkgsProgressHandler):
         m = re.search(r'^Total number of modules: ([0-9]+)', line)
         if m:
             # in MODULES=most mode, we install ~half of all modules
-            self._num_pkgs = int(m.group(1)) // 2
+            self._num_pkgs = max(1, int(m.group(1)) // 2)
             self._stage = 'post-prepare'
 
     def process_line(self, line):
