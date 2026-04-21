@@ -56,10 +56,6 @@ def get_mc_depends(d, task):
         deps.append(f"mc:{installer_mc}:{installer_target_mc}:{image}:{task}")
     return " ".join(deps)
 
-def get_image_type(suffix):
-    image_type = suffix.split(".")[0]
-    return f"{image_type}"
-
 python() {
     entries = []
 
@@ -80,5 +76,5 @@ python() {
     d.setVar("ROOTFS_ADDITIONAL_FILES", " ".join(entries))
 }
 
-INSTALLER_TARGET_TASK ??="do_image_${@ get_image_type(d.getVar('IMAGE_DATA_POSTFIX'))}"
+INSTALLER_TARGET_TASK ??="do_build"
 do_rootfs_install[mcdepends] += "${@ get_mc_depends(d, d.getVar('INSTALLER_TARGET_TASK'))}"
