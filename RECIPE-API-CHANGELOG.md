@@ -1001,3 +1001,10 @@ do_copy_boot_files: The recipe isar-image-base is trying to install
 files into a shared area when those files already exists. It happens
 when some files have the same names (e.g., dtb files) for different
 distros.
+
+### Revert prefix DTB file names when deploying
+
+The change "Prefix DTB file names when deploying" was reverted because of API
+incompatibility with downstreams logic, caused changed DTB file names.
+
+DTB file names turned back to original without any prefixes.

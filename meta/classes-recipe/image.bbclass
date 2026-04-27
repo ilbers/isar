@@ -379,8 +379,7 @@ EOF
 KERNEL_IMG = "${PP_DEPLOY}/${KERNEL_IMAGE}"
 INITRD_IMG = "${PP_DEPLOY}/${INITRD_DEPLOY_FILE}"
 # only one dtb file supported, pick the first
-DTB_PREFIX = "${PN}-${DISTRO}."
-DTB_IMG = "${PP_DEPLOY}/${DTB_PREFIX}${@os.path.basename((d.getVar('DTB_FILES').split() or [''])[0])}"
+DTB_IMG = "${PP_DEPLOY}/${@(d.getVar('DTB_FILES').split() or [''])[0]}"
 
 do_copy_boot_files[cleandirs] += "${DEPLOYDIR}"
 do_copy_boot_files[sstate-inputdirs] = "${DEPLOYDIR}"
@@ -403,8 +402,7 @@ do_copy_boot_files() {
             die "${file} not found"
         fi
 
-        dtb_name=$(basename "$dtb")
-        cp -f "$dtb" "${DEPLOYDIR}/${DTB_PREFIX}$dtb_name"
+        cp -f "$dtb" "${DEPLOYDIR}/"
     done
 }
 addtask copy_boot_files before do_rootfs_postprocess after do_rootfs_install
