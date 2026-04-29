@@ -592,13 +592,14 @@ EOSUDO
 
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'populate-systemd-preset', 'image_postprocess_populate_systemd_preset', '', d)}"
 image_postprocess_populate_systemd_preset() {
-    SYSTEMD_INSTALLED=$(sudo chroot '${ROOTFSDIR}' dpkg-query \
-        --showformat='${db:Status-Status}' \
-        --show systemd || echo "" )
+    sudo chroot "${ROOTFSDIR}" /bin/sh <<'EOSH'
+        SYSTEMD_INSTALLED=$(dpkg-query --showformat='${db:Status-Status}' --show systemd 2>/dev/null)
 
-    if (test "$SYSTEMD_INSTALLED" = "installed"); then
-        sudo chroot '${ROOTFSDIR}' systemctl preset-all --preset-mode="enable-only"
-    fi
+        if [ "${SYSTEMD_INSTALLED}" = "installed" ]; then
+            systemctl list-unit-files --state=masked --no-legend | grep -q '^' \
+                || systemctl preset-all --preset-mode="enable-only"
+        fi
+EOSH
 }
 
 do_rootfs_postprocess[vardeps] = "${ROOTFS_POSTPROCESS_COMMAND}"
