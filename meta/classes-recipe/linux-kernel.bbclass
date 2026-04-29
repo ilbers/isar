@@ -3,6 +3,7 @@
 # This software is a part of Isar.
 # Copyright (c) Siemens AG, 2022
 # Copyright (c) Mentor Graphics, a Siemens business, 2022
+# Copyright (C) 2022-2026 ilbers GmbH
 #
 # SPDX-License-Identifier: MIT
 
@@ -340,3 +341,5 @@ do_dpkg_source:prepend() {
 	dpkg_configure_kernel
 	get_localversion_auto
 }
+
+inherit linux-deploy

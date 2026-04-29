@@ -722,8 +722,6 @@ class DtbDeployTest(CIBaseTest):
         self.init()
         try:
             self.perform_build_test(targets, image_install='')
-        except exceptions.TestFail:
-            self.cancel('KFAIL')
         finally:
             self.move_in_build_dir('tmp', 'tmp_dtbdeploy')
 

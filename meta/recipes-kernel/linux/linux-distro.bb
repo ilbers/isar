@@ -2,6 +2,7 @@
 #
 # This software is a part of Isar.
 # Copyright (c) Siemens AG, 2018
+# Copyright (C) 2022-2026 ilbers GmbH
 #
 # SPDX-License-Identifier: MIT
 
@@ -26,3 +27,26 @@ python() {
 }
 
 inherit multiarch
+inherit dpkg
+inherit linux-deploy
+
+MAINTAINER = "isar-users <isar-users@googlegroups.com>"
+
+PN .= "-${KERNEL_NAME}"
+KERNEL_NAME_PROVIDED ?= "${KERNEL_NAME}"
+DEBIAN_BUILD_DEPENDS ?= "${@ ("linux-image-" + d.getVar("KERNEL_NAME")) if d.getVar("KERNEL_NAME") else ""}"
+
+FILESPATH:prepend = "${LAYERDIR_core}/recipes-kernel/linux/files:"
+
+SRC_URI = "file://getkernel.sh \
+           file://rules.tmpl"
+
+TEMPLATE_VARS += "KERNEL_DEB"
+TEMPLATE_FILES = "rules.tmpl"
+
+do_prepare_build[cleandirs] += "${S}/debian"
+do_prepare_build() {
+    deb_debianize
+    cp "${WORKDIR}/getkernel.sh" "${S}/debian/"
+}
+do_deploy_deb[noexec] = "1"

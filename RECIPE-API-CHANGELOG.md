@@ -1085,3 +1085,16 @@ To prevent this new path is separated also by distro and kernel values.
 
 This change will influence on build artifacts location and should be taken
 into account by downstreams.
+
+### Move kernel and DTBs deployment from image recipe to kernel one
+
+To prevent parallel conflicting artifacts deployment from the same kernel
+used by different images, move original deployment logic from
+do_copy_boot_files() task of the image recipe to the kernel recipe. As we have
+two types of kernel (distro and self build), both are affected. With this
+aproach the deployment of any kernel artifacts will be performed only once per
+kernel.
+
+Also allow using different kernels for one machine and distro without
+overwritting by storing kernel artifacts in kernel-{KERNEL_NAME} subdirectory
+of DEPLOY_DIR_IMAGE. Previous image linking names are kept by symlinks.

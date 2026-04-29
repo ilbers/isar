@@ -1,0 +1,11 @@
+#!/usr/bin/make -f
+
+KERNEL_PATH := $(shell ./debian/getkernel.sh)
+DEB_NAME := ${KERNEL_DEB}
+
+binary:
+	cp "$(KERNEL_PATH)" ../$(DEB_NAME)
+	echo "$(DEB_NAME) misc optional" > debian/files
+
+%:
+	true
