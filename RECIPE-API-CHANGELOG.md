@@ -981,23 +981,3 @@ fragment, this can be specified via adding `${S}/path/to/fragment.cfg` to
 `KERNEL_CONFIG_FRAGMENTS`. If a fragment was checked out into ${WORKDIR} as
 part of a repository, a tarball, or some other directory structure, just
 specify it relative to ${WORKDIR} in `KERNEL_CONFIG_FRAGMENTS`.
-
-Changes in next
----------------
-
-### Prefix DTB file names when deploying
-
-DTB files are now placed in the ${DEPLOY_DIR_IMAGE} with a prefix of
-${PN}-${DISTRO}. During wic imaging, the prefix is removed again, so no changes
-to downstream wks files are needed (i.e. `dtb=my-device-tree.dtb` is not
-affected by this change). Custom imaging plugins need to be adapted to this
-change by removing the prefix from the filename. For that, the variable
-DTB_PREFIX is exported as bitbake var into wic environment.
-
-This fixes errors when building different distros with the same machine,
-whereby previously the following error occured:
-
-do_copy_boot_files: The recipe isar-image-base is trying to install
-files into a shared area when those files already exists. It happens
-when some files have the same names (e.g., dtb files) for different
-distros.

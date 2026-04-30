@@ -57,8 +57,7 @@ class BootimgEFIPlugin(SourcePlugin):
         if dtb:
             if ';' in dtb:
                 raise WicError("Only one DTB supported, exiting")
-            dtb_file = "%s%s" % (get_bitbake_var("DTB_PREFIX"), dtb)
-            cp_cmd = "cp %s/%s %s/%s" % (bootimg_dir, dtb_file, hdddir, dtb)
+            cp_cmd = "cp %s/%s %s" % (bootimg_dir, dtb, hdddir)
             exec_cmd(cp_cmd, True)
 
     @classmethod
