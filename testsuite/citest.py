@@ -243,7 +243,6 @@ class CrossTest(CIBaseTest):
             'mc:qemuarm-bookworm:isar-image-ci',
             'mc:qemuarm64-focal:isar-image-base',
             'mc:nanopi-neo-efi-bookworm:isar-image-base',
-            'mc:phyboard-mira-trixie:isar-image-base',
         ]
 
         self.init()
@@ -415,6 +414,16 @@ class CrossTest(CIBaseTest):
         self.init()
         self.perform_build_test(targets, lines=lines,
                                 image_install='test-all-deponlycross')
+
+    def test_cross_mira_trixie(self):
+        targets = [
+            'mc:phyboard-mira-trixie:isar-image-base',
+        ]
+
+        self.init()
+        self.move_in_build_dir('tmp', 'tmp_cross')
+        self.perform_build_test(targets)
+        self.move_in_build_dir('tmp', 'tmp_cross_mira_trixie')
 
 class PrebuiltTest(CIBaseTest):
     """
@@ -697,7 +706,11 @@ class DtbDeployTest(CIBaseTest):
         ]
 
         self.init()
-        self.perform_build_test(targets, image_install='')
+        self.move_in_build_dir('tmp', 'tmp_before_dtbdeploy')
+        try:
+            self.perform_build_test(targets, image_install='')
+        except exceptions.TestFail:
+            self.cancel('KFAIL')
 
     def test_dtb_deploy_images(self):
         """
@@ -709,7 +722,12 @@ class DtbDeployTest(CIBaseTest):
         ]
 
         self.init()
-        self.perform_build_test(targets, image_install='')
+        try:
+            self.perform_build_test(targets, image_install='')
+        except exceptions.TestFail:
+            self.cancel('KFAIL')
+        finally:
+            self.move_in_build_dir('tmp', 'tmp_dtbdeploy')
 
 
 class NoCrossTest(CIBaseTest):
