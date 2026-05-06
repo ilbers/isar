@@ -1,0 +1,16 @@
+Source: test-all-any
+Section: misc
+Priority: optional
+Maintainer: isar-users <isar-users@googlegroups.com>
+Build-Depends: debhelper-compat (= 10),
+Standards-Version: 4.1.3
+
+Package: test-all-any
+Architecture: any
+Description: Architecture specific test package
+ This is an architecture specific test package.
+
+Package: test-all-any-doc
+Architecture: all
+Description: Architecture independent test package
+ This is an architecture independent test package.

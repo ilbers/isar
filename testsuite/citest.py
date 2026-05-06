@@ -426,8 +426,9 @@ class CrossTest(CIBaseTest):
         lines = [f"IMAGER_BUILD_DEPS:append = ' test-all-depnocross-native'"]
 
         self.init()
+        image_install = 'test-all-deponlycross test-all-any-doc'
         self.perform_build_test(targets, lines=lines,
-                                image_install='test-all-deponlycross')
+                                image_install=image_install)
 
     def test_cross_mira_trixie(self):
         targets = [
