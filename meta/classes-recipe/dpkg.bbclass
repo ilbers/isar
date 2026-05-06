@@ -109,8 +109,9 @@ dpkg_runbuild() {
 
     DSC_FILE=$(find ${WORKDIR} -maxdepth 1 -name "${DEBIAN_SOURCE}_*.dsc" -print)
 
-    sbuild -A -n -c ${SBUILD_CHROOT} --chroot-mode=schroot \
+    sbuild -n -c ${SBUILD_CHROOT} --chroot-mode=schroot \
         --host=${PACKAGE_ARCH} --build=${BUILD_ARCH} ${profiles} \
+        ${@'--no-arch-all' if 'cross' in isar_deb_build_profiles(d).split() else '--arch-all'} \
         --no-run-lintian --no-run-piuparts --no-run-autopkgtest --resolve-alternatives \
         --bd-uninstallable-explainer=apt \
         --no-apt-update --apt-distupgrade \

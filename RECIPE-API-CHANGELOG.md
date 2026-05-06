@@ -1070,3 +1070,20 @@ and artifact names are the same as pre-v1.0.
 
 Changes in next
 ---------------
+
+### No building of arch=all packages when cross building
+
+Architecture all packages often cannot be built in cross mode, as the
+dependencies cannot be resolved in the foreign architecture. This especially
+applies to all packages which split their build dependencies into
+`Build-Depends-Arch` and `Build-Depends-Indep`. We already have logic
+in isar to built `DPKG_ARCH = "all"` packages non-cross, but this does not
+work for packages that generate both arch specific and arch all binary packages.
+
+We now explicitly disable building `arch=all` binary packages during cross
+compilation (this only affects packages that produce both architecture-specific
+and `arch=all` binary packages). Recipes for such mixed packages should append
+`-all` to the `arch=all` binary packages listed in `PROVIDES` (e.g.,
+`PROVIDES="foo-doc-archall"` for an `arch=all` binary package `foo-doc`).
+Consumers can then simply reference the package by its original name (e.g.,
+`foo-doc`).

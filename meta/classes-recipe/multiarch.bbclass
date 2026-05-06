@@ -83,6 +83,10 @@ python multiarch_virtclass_handler() {
             for v in val.split():
                 if v.endswith('-compat') or v.endswith('-native'):
                     multiarch_var.append(v)
+                # dispatch -archall (arch=all) to native variant
+                if v.endswith('-archall'):
+                    if suffix == '-native':
+                        multiarch_var.append(v[:-len('-archall')])
                 else:
                     multiarch_var.append(v + suffix)
             d.setVar(var, ' '.join(multiarch_var))
