@@ -1,5 +1,9 @@
 Release next
 
+Release v1.1
+
+ * Restore build artifacts naming and deploy path
+
 Release v1.0
 
  * Add Debian Trixie support to various machines

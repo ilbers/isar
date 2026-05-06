@@ -1059,7 +1059,7 @@ same TMPDIR in OpenEmbedded, conflicts may occur and are not handled by
 OE. Artifacts with the same name overwrite each other, leading to
 incorrect build results.
 
-Changes in next
+Changes in v1.1
 ---------------
 
 ### Revert "Change DEPLOY_DIR_IMAGE path and artifacts naming"
@@ -1067,3 +1067,6 @@ Changes in next
 The DEPLOY_DIR_IMAGE path and artifacts naming changes introduced in
 13cb77dd (included in Isar v1.0) have been reverted. Deployment paths
 and artifact names are the same as pre-v1.0.
+
+Changes in next
+---------------
