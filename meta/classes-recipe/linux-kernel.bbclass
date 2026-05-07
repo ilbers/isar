@@ -240,9 +240,9 @@ def get_additional_build_profiles(d):
 KERNEL_LIBC_DEV_ARCH = "${@ bb.utils.contains('DEB_BUILD_PROFILES', 'pkg.{}.libcdev-arch-all'.format(d.getVar('BPN')), 'all\nMulti-Arch: foreign', 'any', d) }"
 DEB_BUILD_PROFILES += "${@get_additional_build_profiles(d)}"
 
+do_prepare_build[cleandirs] += "${S}/debian"
 do_prepare_build:prepend() {
 	# copy meta-data over to source tree
-	rm -rf ${S}/debian
 	cp -r ${WORKDIR}/debian ${S}/
 
 	# remove templates from the source tree
@@ -308,7 +308,6 @@ dpkg_configure_kernel() {
     KERNEL_CONFIG_TARGET="${@get_kernel_config_target(d)}"
 EOF
 
-	rm -rf ${S}/${KERNEL_BUILD_DIR} && mkdir -p ${S}/${KERNEL_BUILD_DIR}
 	if [ -n "${KERNEL_DEFCONFIG}" ]; then
 		if [ -e "${WORKDIR}/${KERNEL_DEFCONFIG}" ]; then
 			cp ${WORKDIR}/${KERNEL_DEFCONFIG} ${S}/${KERNEL_BUILD_DIR}/.config
@@ -317,7 +316,6 @@ EOF
 
 	# copy config fragments over to the kernel tree
 	src_frags="${@ " ".join(config_fragments(d)) }"
-	rm -rf ${S}/debian/fragments
 	for frag in ${src_frags}; do
 		# skip frag if it starts with ${S}, thus is part of the sources
 		if [ "${frag#${S}}" = "$frag" ]; then
@@ -337,6 +335,7 @@ get_localversion_auto() {
 	fi
 }
 
+do_dpkg_source[cleandirs] += "${S}/${KERNEL_BUILD_DIR} ${S}/debian/fragments"
 do_dpkg_source:prepend() {
 	dpkg_configure_kernel
 	get_localversion_auto
