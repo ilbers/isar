@@ -27,10 +27,10 @@ python do_adjust_git() {
     dl_dir = d.getVar("DL_DIR")
     git_dl = os.path.join(dl_dir, "git")
 
-    if os.path.exists(git_link) and os.path.realpath(git_link) != os.path.realpath(git_dl):
+    if os.path.lexists(git_link) and os.path.realpath(git_link) != os.path.realpath(git_dl):
         os.unlink(git_link)
 
-    if not os.path.exists(git_link):
+    if not os.path.lexists(git_link):
         os.symlink(git_dl, git_link)
 
     for src_uri in (d.getVar("SRC_URI") or "").split():
