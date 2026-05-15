@@ -61,14 +61,23 @@ repo_add_packages() {
     local dir="$1"
     local dbdir="$2"
     local codename="$3"
+    local package
+    local priority
+    local prio_opt
     shift; shift; shift
 
     if [ -n "${GNUPGHOME}" ]; then
         export GNUPGHOME="${GNUPGHOME}"
     fi
-    reprepro -b "${dir}" --dbdir "${dbdir}" -C main \
-        includedeb "${codename}" \
-        "$@"
+    for package in "$@"; do
+        prio_opt=""
+        priority=$(dpkg-deb -f "${package}" Priority 2>/dev/null || true)
+        if [ -z "${priority}" ]; then
+            prio_opt="-P optional"
+        fi
+        reprepro -b "${dir}" --dbdir "${dbdir}" -C main ${prio_opt} \
+            includedeb "${codename}" "${package}"
+    done
 }
 
 repo_del_srcpackage() {
