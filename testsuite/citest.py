@@ -131,6 +131,23 @@ class CompatTest(CIBaseTest):
         self.perform_build_test(targets, compat_arch=True)
 
 
+class RepositoryTest(CIBaseTest):
+    """
+    Test repository functionality.
+    :avocado: tags=repository,fast
+    """
+
+    def test_repository_nopriority(self):
+        """Test that packages without a Priority field can be added to the repo."""
+        targets = [
+            'mc:qemuamd64-bookworm:isar-image-ci',
+        ]
+
+        self.init()
+        self.perform_build_test(targets,
+                                image_install='test-nopriority')
+
+
 class SbuildFlavor(CIBaseTest):
     """
     Test package build with a custom sbuild chroot.
