@@ -227,8 +227,9 @@ Both consist of the following steps:
         `dpkg-deb` to construct a Debian package from a folder of files,
 	without compiling anything
 
-6. Task `do_deploy_deb`: install successfully built packages
-   `${WORKDIR}/*.deb` to deploy directory `${DEPLOY_DIR_DEB}`
+6. Task `do_deploy_deb`: add successfully built packages
+   `${WORKDIR}/*.deb` to the isar-apt repository
+   `${REPO_ISAR_DIR}/${DISTRO}`
 
 ## 3.6 Populate Target Filesystem
 
@@ -237,7 +238,8 @@ variable. Task `do_populate` performs the following:
 
 1. Parse IMAGE_INSTALL variable.
 
-2. Find respective packages in `${DEPLOY_DIR_DEB}`.
+2. Find respective packages in the isar-apt repository
+   (`${REPO_ISAR_DIR}/${DISTRO}`), mounted as `/isar-apt` in the rootfs.
 
 3. Copy them to deb folder in dedicated target filesystem.
 
