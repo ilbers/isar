@@ -50,7 +50,6 @@ debsrc_download() {
 
     if [ $(cat ${avail} | wc -l) -eq 0 ]; then
         bberror "No packages were found in apt cache"
-        debsrc_undo_mounts "${rootfs}"
         return 1
     fi
 
