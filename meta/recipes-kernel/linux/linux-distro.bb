@@ -6,7 +6,8 @@
 # SPDX-License-Identifier: MIT
 
 python() {
-    if ("class-native" or "class-compat") in d.getVar("OVERRIDES").split(":"):
+    overrides = d.getVar("OVERRIDES").split(":")
+    if any(o in overrides for o in ("class-native", "class-compat")):
         return
 
     distro_kernels = d.getVar('DISTRO_KERNELS') or ""
