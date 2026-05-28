@@ -211,9 +211,6 @@ def get_kernel_arch(d):
 
 KERNEL_ARCH ??= "${@get_kernel_arch(d)}"
 
-# set KERNEL_FILE without depending on package arch used in bitbake.conf
-KERNEL_FILE:forcevariable = "${@ 'vmlinux' if d.getVar('KERNEL_ARCH') in ['mipsel', 'riscv', 'arm64'] else 'vmlinuz'}"
-
 KERNEL_CONFIG_FRAGMENTS ?= ""
 
 def config_fragments(d):
