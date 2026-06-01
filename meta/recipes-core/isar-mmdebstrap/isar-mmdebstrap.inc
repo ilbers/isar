@@ -229,7 +229,6 @@ do_bootstrap() {
                    --setup-hook='mkdir -p "$1/var/cache/apt/archives/"' \
                    --setup-hook="$extra_setup" \
                    --setup-hook='upload "${APTPREFS}" /etc/apt/preferences.d/bootstrap' \
-                   --setup-hook='upload "${APTSRCS_INIT}" /etc/apt/sources-list' \
                    --setup-hook='upload "${WORKDIR}/locale" /etc/locale' \
                    --setup-hook='mkdir -p "$1/etc/apt/trusted.gpg.d"' \
                    --setup-hook='sync-in "${WORKDIR}/trusted.gpg.d" /etc/apt/trusted.gpg.d' \
