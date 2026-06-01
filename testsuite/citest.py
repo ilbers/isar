@@ -530,7 +530,10 @@ class InitRdBaseTest(CIBaseTest):
         distro = 'bookworm'
         image = 'isar-image-ci'
         self.init()
-        self.perform_build_test(targets, lines=InitRdBaseTest.DRACUT_CONF)
+        self.perform_build_test(
+            targets,
+            image_install='',
+            lines=InitRdBaseTest.DRACUT_CONF)
 
         for target in targets:
             config = target.split(':')
