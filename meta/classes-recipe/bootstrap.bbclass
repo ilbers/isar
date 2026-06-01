@@ -16,7 +16,6 @@ BOOTSTRAP_FOR_HOST ?= "0"
 
 APTPREFS = "${WORKDIR}/apt-preferences"
 APTSRCS = "${WORKDIR}/apt-sources"
-APTSRCS_INIT = "${WORKDIR}/apt-sources-init"
 DISTRO_BOOTSTRAP_KEYFILES = ""
 THIRD_PARTY_APT_KEYFILES = ""
 DISTRO_BOOTSTRAP_KEYS ?= ""
@@ -222,10 +221,8 @@ python do_apt_config_prepare() {
     aggregate_files(d, apt_preferences_list, apt_preferences_out)
 
     apt_sources_out = d.getVar("APTSRCS")
-    apt_sources_init_out = d.getVar("APTSRCS_INIT")
     apt_sources_list = get_aptsources_list(d)
 
-    aggregate_files(d, apt_sources_list, apt_sources_init_out)
     aggregate_aptsources_list(d, apt_sources_list, apt_sources_out)
 }
 addtask apt_config_prepare before do_bootstrap after do_unpack
