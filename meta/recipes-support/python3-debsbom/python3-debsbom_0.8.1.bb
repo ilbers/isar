@@ -35,7 +35,7 @@ SRC_URI = "git://github.com/siemens/debsbom.git;protocol=https;branch=main; \
            file://rules \
            file://0001-Use-old-license-description-in-pyproject.toml.patch \
            "
-SRCREV = "c80cadb28b15add6f2c0a03c0d5cbf3a252c5f15"
+SRCREV = "a76d4e784f84e73b98d2bbeadd28c602a8c13708"
 
 do_prepare_build[cleandirs] += "${S}/debian"
 do_prepare_build() {
