@@ -10,11 +10,15 @@ SRC_URI = "file://distributions.in"
 
 do_cache_config[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
 do_cache_config[vardeps] += "ISAR_APT_OPT_FIELD"
-do_cache_config[cleandirs] += "${REPO_ISAR_DIR}/${DISTRO}/conf"
 
 # Generate reprepro config for current distro if it doesn't exist. Once it's
 # generated, this task should do nothing.
 do_cache_config() {
+    # this part must be executed while holding the isar.lock, hence do not move
+    # it to cleandirs (these are executed without holding the lock)
+    rm -rf ${REPO_ISAR_DIR}/${DISTRO}/conf
+    mkdir -p ${REPO_ISAR_DIR}/${DISTRO}/conf
+
     repo_create "${REPO_ISAR_DIR}"/"${DISTRO}" \
         "${REPO_ISAR_DB_DIR}"/"${DISTRO}" \
         "${DEBDISTRONAME}" \
