@@ -81,7 +81,7 @@ Plan merges to `master` so that both fit the two-week window; short extensions s
      mailing list by launching CI tests scripts:
 
      ```
-     scripts/run-tests -t dev
+     scripts/run-tests.sh -t dev
      ```
 
      Perform the above steps over the branch that contain your patches.
