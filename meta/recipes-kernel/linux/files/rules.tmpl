@@ -1,0 +1,12 @@
+#!/usr/bin/make -f
+
+KERNEL_PATH := $(shell ./debian/getkernel.sh ${KERNEL_FILE})
+DEB_NAME := ${KERNEL_DEB}
+
+binary:
+	@[ -z "$(KERNEL_PATH)" ] && { echo "Kernel not found!"; exit 1; } || true
+	cp "$(KERNEL_PATH)" ../$(DEB_NAME)
+	echo "$(DEB_NAME) misc optional" > debian/files
+
+%:
+	true
