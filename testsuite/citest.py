@@ -715,6 +715,20 @@ class DtbDeployTest(CIBaseTest):
     :avocado: tags=dtbdeploy,full
     """
 
+    def check_kernel_deploy(self, targets):
+        for t in targets:
+            dd, kernel_name, dtbs = \
+                CIUtils.getVars('DEPLOY_DIR_IMAGE', 'KERNEL_IMAGE',
+                                'DTB_FILES', target=t)
+            self.log.info(f"dd={dd}, kernel_name={kernel_name}, dtbs={dtbs}")
+            kernel_path = f"{dd}/{kernel_name}"
+            if not os.path.exists(kernel_path):
+                self.fail(f"Target {t} failed to deploy kernel image!")
+            for dtb_name in dtbs.split():
+                dtb_path = f"{dd}/{dtb_name}"
+                if not os.path.exists(dtb_path):
+                    self.fail(f"Target {t} failed to deploy {dtb_name}!")
+
     def test_dtb_deploy_distros(self):
         """
         Cover case: Same machine, different distros
@@ -727,6 +741,7 @@ class DtbDeployTest(CIBaseTest):
         self.init()
         self.move_in_build_dir('tmp', 'tmp_before_dtbdeploy')
         self.perform_build_test(targets, image_install='')
+        self.check_kernel_deploy(targets)
 
     def test_dtb_deploy_images(self):
         """
@@ -740,6 +755,7 @@ class DtbDeployTest(CIBaseTest):
         self.init()
         try:
             self.perform_build_test(targets, image_install='')
+            self.check_kernel_deploy(targets)
         finally:
             self.move_in_build_dir('tmp', 'tmp_dtbdeploy')
 
