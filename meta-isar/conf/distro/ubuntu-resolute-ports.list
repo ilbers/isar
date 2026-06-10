@@ -1,0 +1,6 @@
+deb	[arch=armhf,arm64,riscv64] http://ports.ubuntu.com/ubuntu-ports resolute main restricted universe multiverse
+deb-src	[arch=armhf,arm64,riscv64] http://ports.ubuntu.com/ubuntu-ports resolute main restricted universe multiverse
+deb	[arch=armhf,arm64,riscv64] http://ports.ubuntu.com/ubuntu-ports resolute-updates main restricted universe multiverse
+deb-src	[arch=armhf,arm64,riscv64] http://ports.ubuntu.com/ubuntu-ports resolute-updates main restricted universe multiverse
+deb	[arch=armhf,arm64,riscv64] http://ports.ubuntu.com/ubuntu-ports resolute-security main restricted universe multiverse
+deb-src	[arch=armhf,arm64,riscv64] http://ports.ubuntu.com/ubuntu-ports resolute-security main restricted universe multiverse

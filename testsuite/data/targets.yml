@@ -127,16 +127,22 @@ a: !mux
     name: qemuarm64-jammy
   qemuarm64-noble:
     name: qemuarm64-noble
+  qemuarm64-resolute:
+    name: qemuarm64-resolute
   qemuamd64-focal:
     name: qemuamd64-focal
   qemuamd64-jammy:
     name: qemuamd64-jammy
   qemuamd64-noble:
     name: qemuamd64-noble
+  qemuamd64-resolute:
+    name: qemuamd64-resolute
   qemuamd64-sid:
     name: qemuamd64-sid
   qemuarm64-sid:
     name: qemuarm64-sid
+  qemuriscv64-resolute:
+    name: qemuriscv64-resolute
 b: !mux
   base:
     image: isar-image-base

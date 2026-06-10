@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # This software is a part of Isar.
-# Copyright (C) 2022-2025 ilbers GmbH
+# Copyright (C) 2022-2026 ilbers GmbH
 # Copyright (C) 2022-2025 Siemens AG
 #
 # SPDX-License-Identifier: MIT
@@ -262,6 +262,8 @@ class CrossTest(CIBaseTest):
             'mc:qemuarm64-trixie:isar-image-base',
             'mc:qemuarm64-focal:isar-image-base',
             'mc:nanopi-neo-efi-bookworm:isar-image-base',
+            'mc:qemuarm64-resolute:isar-image-base',
+            'mc:qemuamd64-resolute:isar-image-base',
         ]
 
         self.init()
@@ -384,6 +386,42 @@ class CrossTest(CIBaseTest):
         self.init()
         self.vm_start('arm64', 'focal')
 
+    # TODO: broken because of moving to UEFI
+    def test_run_arm64_resolute(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        try:
+            self.vm_start('arm64', 'resolute')
+        except exceptions.TestFail:
+            self.cancel('KFAIL')
+
+    def test_run_amd64_resolute(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('amd64', 'resolute')
+
+    def test_cross_debsrc(self):
+        targets = [
+            'mc:qemuarm64-bookworm:isar-image-ci',
+        ]
+
+        self.init()
+        # only build a single custom package to speedup test
+        self.perform_build_test(targets, debsrc_cache=True, image_install='cowsay')
+
+    def test_cross_trixie(self):
+        targets = [
+            'mc:qemuamd64-trixie:isar-image-base',
+            'mc:qemuarm64-trixie:isar-image-base',
+        ]
+
+        self.init()
+        self.perform_build_test(targets, cross=False)
+
     def test_cross_debsrc(self):
         targets = [
             'mc:qemuarm64-bookworm:isar-image-ci',
@@ -429,6 +467,30 @@ class CrossTest(CIBaseTest):
         image_install = 'test-all-deponlycross test-all-any-doc'
         self.perform_build_test(targets, lines=lines,
                                 image_install=image_install)
+
+    def test_cross_riscv64(self):
+        """
+        :avocado: tags=riscv64
+        """
+        targets = [
+            'mc:qemuriscv64-resolute:isar-image-ci',
+        ]
+
+        self.init()
+        try:
+            self.perform_build_test(targets)
+        except exceptions.TestFail:
+            self.cancel('KFAIL')
+
+    def test_run_riscv64_resolute(self):
+        """
+        :avocado: tags=startvm,riscv64
+        """
+        self.init()
+        try:
+            self.vm_start('riscv64', 'resolute', image='isar-image-ci')
+        except exceptions.TestFail:
+            self.cancel('KFAIL')
 
     def test_cross_mira_trixie(self):
         targets = [

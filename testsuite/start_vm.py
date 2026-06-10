@@ -48,7 +48,7 @@ def format_qemu_cmdline(
     extra_args = ''
 
     image_type = image_fstypes.split()[0]
-    base = 'ubuntu' if distro in ['jammy', 'focal', 'noble'] else 'debian'
+    base = 'ubuntu' if distro in ['jammy', 'focal', 'noble', 'resolute'] else 'debian'
 
     rootfs_image = f"{image}-{base}-{distro}-qemu{arch}.{image_type}"
 
@@ -148,7 +148,7 @@ def start_qemu(arch, build, distro, image, out, pid, enforce_pcbios):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    arch_names = ['arm', 'arm64', 'amd64', 'amd64-sb', 'amd64-cip', 'amd64-iso', 'i386', 'mipsel']
+    arch_names = ['arm', 'arm64', 'amd64', 'amd64-sb', 'amd64-cip', 'amd64-iso', 'i386', 'mipsel', 'riscv64']
     distro_names = [
         'buster',
         'bullseye',
@@ -157,6 +157,7 @@ def parse_args():
         'focal',
         'jammy',
         'noble',
+        'resolute',
     ]
     parser.add_argument(
         '-a',

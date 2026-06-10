@@ -1,0 +1,6 @@
+deb	[arch=amd64,i386] http://archive.ubuntu.com/ubuntu resolute main restricted universe multiverse
+deb-src	[arch=amd64,i386] http://archive.ubuntu.com/ubuntu resolute main restricted universe multiverse
+deb	[arch=amd64,i386] http://archive.ubuntu.com/ubuntu resolute-updates main restricted universe multiverse
+deb-src	[arch=amd64,i386] http://archive.ubuntu.com/ubuntu resolute-updates main restricted universe multiverse
+deb	[arch=amd64,i386] http://archive.ubuntu.com/ubuntu resolute-security main restricted universe multiverse
+deb-src	[arch=amd64,i386] http://archive.ubuntu.com/ubuntu resolute-security main restricted universe multiverse
