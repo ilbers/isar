@@ -363,6 +363,29 @@ rootfs_export_package_cache() {
     deb_dl_dir_export ${ROOTFSDIR} ${ROOTFS_BASE_DISTRO}-${BASE_DISTRO_CODENAME}
 }
 
+ROOTFS_INSTALL_COMMAND += "rootfs_install_pkgs_isar_download"
+rootfs_install_pkgs_isar_download[weight] = "50"
+rootfs_install_pkgs_isar_download[isar-apt-lock] = "acquire-before release-after"
+rootfs_install_pkgs_isar_download() {
+    mkdir -p "${WORKDIR}/dpkg"
+
+    # Use our own dpkg lock files rather than those in the rootfs since we are not root
+    # (this is safe as there are no concurrent apt/dpkg operations for that rootfs)
+    touch "${WORKDIR}/dpkg/lock" "${WORKDIR}/dpkg/lock-frontend"
+
+    # Command apt-get install do not cache packages from local repos
+    # We can obtain non cached package URIs by recalling install command here
+    # No need in export those files to dl_dir, so we can run it right after
+    rootfs_cmd --bind "${ROOTFSDIR}/var/cache/apt/archives" /var/cache/apt/archives \
+               --bind "${WORKDIR}/dpkg/lock" /var/lib/dpkg/lock \
+               --bind "${WORKDIR}/dpkg/lock-frontend" /var/lib/dpkg/lock-frontend \
+               --chdir "/var/cache/apt/archives" \
+               ${ROOTFSDIR} \
+               -- /usr/bin/sh -c "apt-get ${ROOTFS_APT_ARGS} --print-uris ${ROOTFS_PACKAGES} | \
+                                  sed -n \"s|^.*/\\(.*\\)_[^_]*_[^_]*\\.deb'.*|\\1|p\" | \
+                                  xargs -r apt-get download"
+}
+
 ROOTFS_INSTALL_COMMAND += "${@ 'rootfs_install_clean_files' if (d.getVar('ROOTFS_CLEAN_FILES') or '').strip() else ''}"
 rootfs_install_clean_files[weight] = "2"
 rootfs_install_clean_files() {
