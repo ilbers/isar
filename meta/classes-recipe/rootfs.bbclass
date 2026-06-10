@@ -427,13 +427,13 @@ python do_rootfs_install() {
         for cmd in cmds:
             progress_reporter.next_stage()
 
-            if (d.getVarFlag(cmd, 'isar-apt-lock') or "") == "acquire-before":
+            if "acquire-before" in (d.getVarFlag(cmd, 'isar-apt-lock') or ""):
                 lock = bb.utils.lockfile(d.getVar("REPO_ISAR_DIR") + "/isar.lock",
                                          shared=True)
 
             bb.build.exec_func(cmd, d)
 
-            if (d.getVarFlag(cmd, 'isar-apt-lock') or "") == "release-after":
+            if "release-after" in (d.getVarFlag(cmd, 'isar-apt-lock') or ""):
                 bb.utils.unlockfile(lock)
             progress_reporter.finish()
     finally:
