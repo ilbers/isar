@@ -402,7 +402,7 @@ rootfs_install_pkgs_install[progress] = "custom:rootfs_progress.PkgsInstallProgr
 rootfs_install_pkgs_install[network] = "${TASK_USE_SUDO}"
 rootfs_install_pkgs_install() {
     sudo -E chroot "${ROOTFSDIR}" \
-        /usr/bin/apt-get ${ROOTFS_APT_ARGS} ${ROOTFS_PACKAGES}
+        /usr/bin/apt-get ${ROOTFS_APT_ARGS} --no-download ${ROOTFS_PACKAGES}
 }
 
 ROOTFS_INSTALL_COMMAND += "rootfs_restore_initrd_tooling"
