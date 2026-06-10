@@ -80,6 +80,22 @@ MEM_BUFFERS_COLOR = (0.4, 0.4, 0.4, 0.3)
 # Swap color
 MEM_SWAP_COLOR = DISK_TPUT_COLOR
 
+# avg10 CPU pressure color
+CPU_PRESSURE_AVG10_COLOR = (0.0, 0.0, 0.0, 1.0)
+# delta total CPU pressure color
+CPU_PRESSURE_TOTAL_COLOR = CPU_COLOR
+# avg10 IO pressure color
+IO_PRESSURE_AVG10_COLOR = (0.0, 0.0, 0.0, 1.0)
+# delta total IO pressure color
+IO_PRESSURE_TOTAL_COLOR = IO_COLOR
+# avg10 memory pressure color
+MEM_PRESSURE_AVG10_COLOR = (0.0, 0.0, 0.0, 1.0)
+# delta total memory pressure color
+MEM_PRESSURE_TOTAL_COLOR = DISK_TPUT_COLOR
+
+
+
+
 # Process border color.
 PROC_BORDER_COLOR = (0.71, 0.71, 0.71, 1.0)
 # Waiting process color.
@@ -267,7 +283,10 @@ def draw_chart(ctx, color, fill, chart_bounds, data, proc_tree, data_range):
     # avoid divide by zero
     if max_y == 0:
         max_y = 1.0
-    xscale = float (chart_bounds[2]) / (max_x - x_shift)
+    if (max_x - x_shift):
+        xscale = float (chart_bounds[2]) / (max_x - x_shift)
+    else:
+        xscale = float (chart_bounds[2])
     # If data_range is given, scale the chart so that the value range in
     # data_range matches the chart bounds exactly.
     # Otherwise, scale so that the actual data matches the chart bounds.
@@ -336,6 +355,12 @@ def extents(options, xscale, trace):
         if trace.cpu_stats:
             h += 30 + bar_h
         if trace.disk_stats:
+            h += 30 + bar_h
+        if trace.cpu_pressure:
+            h += 30 + bar_h
+        if trace.io_pressure:
+            h += 30 + bar_h
+        if trace.mem_pressure:
             h += 30 + bar_h
         if trace.monitor_disk:
             h += 30 + bar_h
@@ -409,6 +434,108 @@ def render_charts(ctx, options, clip, trace, curr_y, w, h, sec_w):
 
         label = "%dMB/s" % round ((max_sample.tput) / 1024.0)
         draw_text (ctx, label, DISK_TPUT_COLOR, pos_x + shift_x, curr_y + shift_y)
+
+        curr_y = curr_y + 30 + bar_h
+
+    # render CPU pressure chart
+    if trace.cpu_pressure:
+        max_sample_avg = max (trace.cpu_pressure, key = lambda s: s.avg10)
+        max_sample_total = max (trace.cpu_pressure, key = lambda s: s.deltaTotal)
+        draw_legend_line(ctx, "avg10 CPU Pressure (max %d%%)"  % (max_sample_avg.avg10), CPU_PRESSURE_AVG10_COLOR, off_x, curr_y+20, leg_s)
+        draw_legend_box(ctx, "delta total CPU Pressure (max %d)" % (max_sample_total.deltaTotal), CPU_PRESSURE_TOTAL_COLOR, off_x + 240, curr_y+20, leg_s)
+
+        # render delta total cpu
+        chart_rect = (off_x, curr_y+30, w, bar_h)
+        if clip_visible (clip, chart_rect):
+            draw_box_ticks (ctx, chart_rect, sec_w)
+            draw_annotations (ctx, proc_tree, trace.times, chart_rect)
+            draw_chart (ctx, CPU_PRESSURE_TOTAL_COLOR, True, chart_rect, \
+                    [(sample.time, sample.deltaTotal) for sample in trace.cpu_pressure], \
+                    proc_tree, None)
+
+        # render avg10 cpu
+        if clip_visible (clip, chart_rect):
+            draw_chart (ctx, CPU_PRESSURE_AVG10_COLOR, False, chart_rect, \
+                    [(sample.time, sample.avg10) for sample in trace.cpu_pressure], \
+                    proc_tree, None)
+
+        pos_x = off_x + ((max_sample_avg.time - proc_tree.start_time) * w / proc_tree.duration)
+
+        shift_x, shift_y = -20, 20
+        if (pos_x < off_x + 245):
+            shift_x, shift_y = 5, 40
+
+
+        label = "%d%%" % (max_sample_avg.avg10)
+        draw_text (ctx, label, CPU_PRESSURE_AVG10_COLOR, pos_x + shift_x, curr_y + shift_y)
+
+        curr_y = curr_y + 30 + bar_h
+
+    # render I/O pressure chart
+    if trace.io_pressure:
+        max_sample_avg = max (trace.io_pressure, key = lambda s: s.avg10)
+        max_sample_total = max (trace.io_pressure, key = lambda s: s.deltaTotal)
+        draw_legend_line(ctx, "avg10 I/O Pressure (max %d%%)"  % (max_sample_avg.avg10), IO_PRESSURE_AVG10_COLOR, off_x, curr_y+20, leg_s)
+        draw_legend_box(ctx, "delta total I/O Pressure (max %d)" % (max_sample_total.deltaTotal), IO_PRESSURE_TOTAL_COLOR, off_x + 240, curr_y+20, leg_s)
+
+        # render delta total io
+        chart_rect = (off_x, curr_y+30, w, bar_h)
+        if clip_visible (clip, chart_rect):
+            draw_box_ticks (ctx, chart_rect, sec_w)
+            draw_annotations (ctx, proc_tree, trace.times, chart_rect)
+            draw_chart (ctx, IO_PRESSURE_TOTAL_COLOR, True, chart_rect, \
+                    [(sample.time, sample.deltaTotal) for sample in trace.io_pressure], \
+                    proc_tree, None)
+
+        # render avg10 io
+        if clip_visible (clip, chart_rect):
+            draw_chart (ctx, IO_PRESSURE_AVG10_COLOR, False, chart_rect, \
+                    [(sample.time, sample.avg10) for sample in trace.io_pressure], \
+                    proc_tree, None)
+
+        pos_x = off_x + ((max_sample_avg.time - proc_tree.start_time) * w / proc_tree.duration)
+
+        shift_x, shift_y = -20, 20
+        if (pos_x < off_x + 245):
+            shift_x, shift_y = 5, 40
+
+
+        label = "%d%%" % (max_sample_avg.avg10)
+        draw_text (ctx, label, IO_PRESSURE_AVG10_COLOR, pos_x + shift_x, curr_y + shift_y)
+
+        curr_y = curr_y + 30 + bar_h
+
+    # render MEM pressure chart
+    if trace.mem_pressure:
+        max_sample_avg = max (trace.mem_pressure, key = lambda s: s.avg10)
+        max_sample_total = max (trace.mem_pressure, key = lambda s: s.deltaTotal)
+        draw_legend_line(ctx, "avg10 MEM Pressure (max %d%%)"  % (max_sample_avg.avg10), MEM_PRESSURE_AVG10_COLOR, off_x, curr_y+20, leg_s)
+        draw_legend_box(ctx, "delta total MEM Pressure (max %d)" % (max_sample_total.deltaTotal), MEM_PRESSURE_TOTAL_COLOR, off_x + 240, curr_y+20, leg_s)
+
+        # render delta total mem
+        chart_rect = (off_x, curr_y+30, w, bar_h)
+        if clip_visible (clip, chart_rect):
+            draw_box_ticks (ctx, chart_rect, sec_w)
+            draw_annotations (ctx, proc_tree, trace.times, chart_rect)
+            draw_chart (ctx, MEM_PRESSURE_TOTAL_COLOR, True, chart_rect, \
+                    [(sample.time, sample.deltaTotal) for sample in trace.mem_pressure], \
+                    proc_tree, None)
+
+        # render avg10 mem
+        if clip_visible (clip, chart_rect):
+            draw_chart (ctx, MEM_PRESSURE_AVG10_COLOR, False, chart_rect, \
+                    [(sample.time, sample.avg10) for sample in trace.mem_pressure], \
+                    proc_tree, None)
+
+        pos_x = off_x + ((max_sample_avg.time - proc_tree.start_time) * w / proc_tree.duration)
+
+        shift_x, shift_y = -20, 20
+        if (pos_x < off_x + 245):
+            shift_x, shift_y = 5, 40
+
+
+        label = "%d%%" % (max_sample_avg.avg10)
+        draw_text (ctx, label, MEM_PRESSURE_AVG10_COLOR, pos_x + shift_x, curr_y + shift_y)
 
         curr_y = curr_y + 30 + bar_h
 
@@ -493,8 +620,8 @@ def render_charts(ctx, options, clip, trace, curr_y, w, h, sec_w):
 
     return curr_y
 
-def render_processes_chart(ctx, options, trace, curr_y, w, h, sec_w):
-    chart_rect = [off_x, curr_y+header_h, w, h - curr_y - 1 * off_y - header_h  ]
+def render_processes_chart(ctx, options, trace, curr_y, width, h, sec_w):
+    chart_rect = [off_x, curr_y+header_h, width, h - curr_y - 1 * off_y - header_h  ]
 
     draw_legend_box (ctx, "Configure", \
              TASK_COLOR_CONFIGURE, off_x  , curr_y + 45, leg_s)
@@ -519,8 +646,9 @@ def render_processes_chart(ctx, options, trace, curr_y, w, h, sec_w):
     offset = trace.min or min(trace.start.keys())
     for start in sorted(trace.start.keys()):
         for process in sorted(trace.start[start]):
+            elapsed_time = trace.processes[process][1] - start
             if not options.app_options.show_all and \
-                    trace.processes[process][1] - start < options.app_options.mintime:
+                    elapsed_time < options.app_options.mintime:
                 continue
             task = process.split(":")[1]
 
@@ -529,14 +657,23 @@ def render_processes_chart(ctx, options, trace, curr_y, w, h, sec_w):
             #print(s)
 
             x = chart_rect[0] + (start - offset) * sec_w
-            w = ((trace.processes[process][1] - start) * sec_w)
+            w = elapsed_time * sec_w
+
+            def set_alfa(color, alfa):
+                clist = list(color)
+                clist[-1] = alfa
+                return tuple(clist)
 
             #print("proc at %s %s %s %s" % (x, y, w, proc_h))
             col = None
             if task == "do_compile":
                 col = TASK_COLOR_COMPILE
+            elif "do_compile" in task:
+                col = set_alfa(TASK_COLOR_COMPILE, 0.25)
             elif task == "do_configure":
                 col = TASK_COLOR_CONFIGURE
+            elif "do_configure" in task:
+                col = set_alfa(TASK_COLOR_CONFIGURE, 0.25)
             elif task == "do_install":
                 col = TASK_COLOR_INSTALL
             elif task == "do_populate_sysroot":
@@ -554,7 +691,10 @@ def render_processes_chart(ctx, options, trace, curr_y, w, h, sec_w):
                 draw_fill_rect(ctx, col, (x, y, w, proc_h))
             draw_rect(ctx, PROC_BORDER_COLOR, (x, y, w, proc_h))
 
-            draw_label_in_box(ctx, PROC_TEXT_COLOR, process, x, y + proc_h - 4, w, proc_h)
+            # Show elapsed time for each task
+            process = "%ds %s" % (elapsed_time, process)
+            draw_label_in_box(ctx, PROC_TEXT_COLOR, process, x, y + proc_h - 4, w, width)
+
             y = y + proc_h
 
     return curr_y
@@ -695,7 +835,7 @@ def draw_processes_recursively(ctx, proc, proc_tree, y, proc_h, rect, clip) :
         cmdString = proc.cmd
     else:
         cmdString = ''
-    if (OPTIONS.show_pid or OPTIONS.show_all) and ipid is not 0:
+    if (OPTIONS.show_pid or OPTIONS.show_all) and ipid != 0:
         cmdString = cmdString + " [" + str(ipid // 1000) + "]"
     if OPTIONS.show_all:
         if proc.args:
@@ -793,7 +933,7 @@ class CumlSample:
         if self.color is None:
             i = self.next() % HSV_MAX_MOD
             h = 0.0
-            if i is not 0:
+            if i != 0:
                 h = (1.0 * i) / HSV_MAX_MOD
             s = 0.5
             v = 1.0
