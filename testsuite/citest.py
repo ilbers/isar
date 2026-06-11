@@ -473,12 +473,23 @@ class CrossTest(CIBaseTest):
         :avocado: tags=riscv64
         """
         targets = [
+            'mc:qemuriscv64-trixie:isar-image-ci',
             'mc:qemuriscv64-resolute:isar-image-ci',
         ]
 
         self.init()
         try:
             self.perform_build_test(targets)
+        except exceptions.TestFail:
+            self.cancel('KFAIL')
+
+    def test_run_riscv64_trixie(self):
+        """
+        :avocado: tags=startvm,riscv64
+        """
+        self.init()
+        try:
+            self.vm_start('riscv64', 'trixie', image='isar-image-ci')
         except exceptions.TestFail:
             self.cancel('KFAIL')
 
