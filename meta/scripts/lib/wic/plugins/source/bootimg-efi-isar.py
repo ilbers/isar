@@ -450,11 +450,22 @@ class BootimgEFIPlugin(SourcePlugin):
                 if not distro:
                     raise WicError("Couldn't find target distro")
 
+                # Module efi_uga is deprecated
+                efi_uga_list = [
+                    "buster",
+                    "bullseye",
+                    "bookworm",
+                    "trixie",
+                    "focal",
+                    "jammy",
+                    "noble",
+                ]
+
                 if distro_arch == "amd64":
                     grub_target = 'x86_64-efi'
                     grub_image = "bootx64.efi"
                     grub_modules = "multiboot iorw ata "
-                    if "sid" not in distro:
+                    if any(name in distro for name in efi_uga_list):
                         grub_modules += "efi_uga "
                     if distro.startswith("ubuntu") and \
                         os.path.exists('/usr/lib/grub/x86_64-efi/linuxefi.mod'):
@@ -462,7 +473,9 @@ class BootimgEFIPlugin(SourcePlugin):
                 elif distro_arch == "i386":
                     grub_target = 'i386-efi'
                     grub_image = "bootia32.efi"
-                    grub_modules = "multiboot efi_uga iorw ata "
+                    grub_modules = "multiboot iorw ata "
+                    if any(name in distro for name in efi_uga_list):
+                        grub_modules += "efi_uga "
                 elif distro_arch == "arm64":
                     grub_target = 'arm64-efi'
                     grub_image = "bootaa64.efi"
