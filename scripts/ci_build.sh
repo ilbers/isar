@@ -22,6 +22,7 @@ if ! command -v avocado > /dev/null; then
     virtualenv --python python3 /tmp/avocado_venv
     # shellcheck source=/dev/null
     source /tmp/avocado_venv/bin/activate
+    pip install setuptools==81.0.0
     pip install avocado-framework==103.0
     pip install avocado-framework-plugin-varianter-yaml-to-mux==103.0
 fi
