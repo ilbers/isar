@@ -26,6 +26,7 @@ KBUILD_DEPENDS ?= "build-essential:native, \
                    cpio, \
                    dwarves, \
                    flex, \
+                   gawk, \
                    git, \
                    kmod, \
                    linux-image-${KERNEL_NAME_PROVIDED}:${DISTRO_ARCH} <pkg.${BPN}.kbuild !pkg.${BPN}.kernel>, \
