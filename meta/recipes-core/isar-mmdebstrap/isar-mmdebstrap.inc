@@ -232,6 +232,7 @@ do_bootstrap() {
                    --setup-hook='upload "${WORKDIR}/locale" /etc/locale' \
                    --setup-hook='mkdir -p "$1/etc/apt/trusted.gpg.d"' \
                    --setup-hook='sync-in "${WORKDIR}/trusted.gpg.d" /etc/apt/trusted.gpg.d' \
+                   --setup-hook='chown -R root:root "$1/etc/apt/trusted.gpg.d"' \
                    --setup-hook='install -v -m755 "${WORKDIR}/chroot-setup.sh" "$1/chroot-setup.sh"' \
                    --extract-hook="$extra_extract" \
                    --essential-hook="$extra_essential" \
