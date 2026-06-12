@@ -258,6 +258,8 @@ class CrossTest(CIBaseTest):
             'mc:qemuarm-buster:isar-image-ci',
             'mc:qemuarm-bullseye:isar-image-ci',
             'mc:qemuarm-bookworm:isar-image-ci',
+            'mc:qemuamd64-trixie:isar-image-base',
+            'mc:qemuarm64-trixie:isar-image-base',
             'mc:qemuarm64-focal:isar-image-base',
             'mc:nanopi-neo-efi-bookworm:isar-image-base',
         ]
@@ -361,24 +363,6 @@ class CrossTest(CIBaseTest):
             script='test_systemd_unit.sh getty.target 10',
         )
 
-    def test_cross_debsrc(self):
-        targets = [
-            'mc:qemuarm64-bookworm:isar-image-ci',
-        ]
-
-        self.init()
-        # only build a single custom package to speedup test
-        self.perform_build_test(targets, debsrc_cache=True, image_install='cowsay')
-
-    def test_cross_trixie(self):
-        targets = [
-            'mc:qemuamd64-trixie:isar-image-base',
-            'mc:qemuarm64-trixie:isar-image-base',
-        ]
-
-        self.init()
-        self.perform_build_test(targets, cross=False)
-
     def test_run_amd64_trixie(self):
         """
         :avocado: tags=startvm
@@ -392,6 +376,15 @@ class CrossTest(CIBaseTest):
         """
         self.init()
         self.vm_start('arm64', 'trixie')
+
+    def test_cross_debsrc(self):
+        targets = [
+            'mc:qemuarm64-bookworm:isar-image-ci',
+        ]
+
+        self.init()
+        # only build a single custom package to speedup test
+        self.perform_build_test(targets, debsrc_cache=True, image_install='cowsay')
 
     def test_cross_kselftest(self):
         targets = [
@@ -783,6 +776,10 @@ class NoCrossTest(CIBaseTest):
             'mc:qemuamd64-iso-bookworm:isar-image-ci',
             'mc:qemui386-bookworm:isar-image-base',
             'mc:qemumipsel-bookworm:isar-image-ci',
+            'mc:qemuamd64-trixie:isar-image-base',
+            'mc:qemuarm64-trixie:isar-image-base',
+            'mc:qemuarm-trixie:isar-image-base',
+            'mc:qemuriscv64-trixie:isar-image-base',
             'mc:hikey-bookworm:isar-image-base',
             'mc:hikey-trixie:isar-image-base',
             'mc:beagleplay-bookworm:isar-image-base',
@@ -968,6 +965,34 @@ class NoCrossTest(CIBaseTest):
             script='test_kernel_module.sh example_module',
         )
 
+    def test_run_arm_trixie(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('arm', 'trixie')
+
+    def test_run_arm64_trixie(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('arm64', 'trixie')
+
+    def test_run_amd64_trixie(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('amd64', 'trixie')
+
+    def test_run_riscv64_trixie(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('riscv64', 'trixie')
+
     def test_run_amd64_bookworm_iso_base(self):
         """
         :avocado: tags=startvm
@@ -1022,51 +1047,14 @@ class NoCrossTest(CIBaseTest):
         self.init()
         self.perform_build_test(targets, cross=False, debsrc_cache=True)
 
-    def test_nocross_trixie(self):
-        targets = [
-            'mc:qemuamd64-trixie:isar-image-base',
-            'mc:qemuarm64-trixie:isar-image-base',
-            'mc:qemuarm-trixie:isar-image-base',
-            'mc:qemuriscv64-trixie:isar-image-base',
-        ]
-
-        self.init()
-        self.perform_build_test(targets, cross=False)
-
+    def test_nocross_riscv_trixie(self):
         targets = [
             'mc:sifive-fu540-trixie:isar-image-base',
             'mc:starfive-visionfive2-trixie:isar-image-base',
         ]
 
+        self.init()
         self.perform_build_test(targets, cross=False)
-
-    def test_run_arm_trixie(self):
-        """
-        :avocado: tags=startvm
-        """
-        self.init()
-        self.vm_start('arm', 'trixie')
-
-    def test_run_arm64_trixie(self):
-        """
-        :avocado: tags=startvm
-        """
-        self.init()
-        self.vm_start('arm64', 'trixie')
-
-    def test_run_amd64_trixie(self):
-        """
-        :avocado: tags=startvm
-        """
-        self.init()
-        self.vm_start('amd64', 'trixie')
-
-    def test_run_riscv64_trixie(self):
-        """
-        :avocado: tags=startvm
-        """
-        self.init()
-        self.vm_start('riscv64', 'trixie')
 
     def test_nocross_sid(self):
         targets = [
