@@ -1,5 +1,5 @@
 #
-# Imported from openembedded-core
+# Copyright OpenEmbedded Contributors
 #
 # SPDX-License-Identifier: MIT
 #
