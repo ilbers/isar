@@ -5,3 +5,6 @@ set -e
 for tty_service in ${TARGET_BOOTSTRAPPER_TTY_SERVICES}; do
     deb-systemd-helper enable ${tty_service} || true
 done
+
+# Enable the runtime detection service
+deb-systemd-helper enable target-bootstrapper-generate-dropin.service || true

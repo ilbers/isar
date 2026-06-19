@@ -25,6 +25,8 @@ inherit dpkg-raw
 SRC_URI = "\
     file://postinst.tmpl \
     file://target-bootstrapper.override.conf \
+    file://generate-target-bootstrapper-dropin.sh \
+    file://target-bootstrapper-generate-dropin.service \
     "
 
 TEMPLATE_FILES = "postinst.tmpl"
@@ -33,11 +35,19 @@ TEMPLATE_VARS = "TARGET_BOOTSTRAPPER_TTY_SERVICES"
 DEPENDS += " target-bootstrapper"
 DEBIAN_DEPENDS = "target-bootstrapper"
 
-do_install[cleandirs] = "${D}/usr/lib/systemd/system/"
+do_install[cleandirs] = "${D}/usr/lib/systemd/system/ ${D}/usr/libexec"
 do_install() {
     for svc_name in ${TARGET_BOOTSTRAPPER_TTY_SERVICES}
     do
-        mkdir -p ${D}/usr/lib/systemd/system/${svc_name}.service.d/
+        install -d -m 0755 ${D}/usr/lib/systemd/system/${svc_name}.service.d/
         install -m 0644 ${WORKDIR}/target-bootstrapper.override.conf ${D}/usr/lib/systemd/system/${svc_name}.service.d/10-target-bootstrapper.override.conf
     done
+
+    # Install script and service for runtime detection of serial devices
+    install -d -m 0755 ${D}/usr/libexec/${PN}/
+    install -m 0755 ${WORKDIR}/generate-target-bootstrapper-dropin.sh ${D}/usr/libexec/${PN}/
+    install -m 0644 ${WORKDIR}/target-bootstrapper-generate-dropin.service ${D}/usr/lib/systemd/system/
+
+    # Install override template for runtime use by the detection script
+    install -m 0644 ${WORKDIR}/target-bootstrapper.override.conf ${D}/usr/lib/target-bootstrapper.override.conf
 }
