@@ -468,6 +468,8 @@ class GitApplyTree(PatchTree):
         runcmd(["git", "config", "notes.rewriteMode", "ignore"], repo)
         runcmd(["git", "config", "notes.displayRef", notes_ref, notes_ref], repo)
         runcmd(["git", "config", "notes.rewriteRef", notes_ref, notes_ref], repo)
+        runcmd(["git", "config", "user.email", "isar-users@googlegroups.com"], repo)
+        runcmd(["git", "config", "user.name", "Isar"], repo)
         runcmd(["git", "notes", "--ref", notes_ref, "append", "-m", note, ref], repo)
 
     @staticmethod
