@@ -1,0 +1,12 @@
+[Unit]
+Description=Generate target-bootstrapper drop-in for detected serial devices
+Before=serial-getty@.service getty@.service
+After=dev-*.device
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/target-bootstrapper-service/generate-target-bootstrapper-dropin.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
