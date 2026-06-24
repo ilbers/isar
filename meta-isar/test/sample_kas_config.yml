@@ -1,7 +1,7 @@
 header:
-  version: 14
+  version: 23
 
-build_system: isar
+build_system: isar-privileged
 
 distro: debian-bullseye
 machine: qemuarm64
