@@ -2,9 +2,9 @@
 # Copyright (C) 2023-2024 ilbers GmbH
 
 header:
-  version: 14
+  version: 23
 
-build_system: isar
+build_system: isar-privileged
 
 repos:
   isar:
