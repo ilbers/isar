@@ -141,11 +141,17 @@ rootfs_cmd() {
 
     bwrap --unshare-user --unshare-pid ${bwrap_args} \
         --dev-bind /dev /dev --proc /proc --tmpfs /tmp \
+        ${@'--bind "${REPO_ISAR_DIR}/${DISTRO}" /isar-apt' if d.getVar('ISAR_CHROOT_MODE') == 'unshare' else ''} \
         ${bwrap_binds} -- "${@}"
 }
 
 rootfs_do_mounts[weight] = "3"
-rootfs_do_mounts() {
+python rootfs_do_mounts() {
+    if d.getVar('ISAR_CHROOT_MODE') == 'schroot':
+        bb.build.exec_func('rootfs_do_mounts_priv', d)
+}
+
+rootfs_do_mounts_priv() {
     run_privileged_heredoc <<'EOSUDO'
         set -e
         mountpoint -q '${ROOTFSDIR}/dev' || \
@@ -168,7 +174,13 @@ rootfs_do_mounts() {
 EOSUDO
 }
 
-rootfs_do_umounts() {
+python rootfs_do_umounts() {
+    # unconditionally run the unmount code as this ignores missing
+    # mountpoints but also does the cleanup of the directories
+    bb.build.exec_func('rootfs_do_umounts_priv', d)
+}
+
+rootfs_do_umounts_priv() {
     run_privileged_heredoc <<'EOSUDO'
         set -e
 
@@ -215,7 +227,11 @@ ROOTFS_EXTRA_IMPORTED := "${@rootfs_extra_import(d)}"
 
 rootfs_prepare[weight] = "25"
 rootfs_prepare(){
-    run_privileged tar -xf "${BOOTSTRAP_SRC}" -C "${ROOTFSDIR}" --exclude="./dev/console"
+    rm -rf ${ROOTFSDIR}
+    run_privileged_heredoc << 'EOF'
+        mkdir -p ${ROOTFSDIR}
+        tar -xf "${BOOTSTRAP_SRC}" -C "${ROOTFSDIR}" --exclude="./dev/console"
+EOF
 
     # setup chroot
     run_privileged "${ROOTFSDIR}/chroot-setup.sh" "setup" "${ROOTFSDIR}"
@@ -285,10 +301,14 @@ rootfs_install_pkgs_update[weight] = "5"
 rootfs_install_pkgs_update[isar-apt-lock] = "acquire-before"
 rootfs_install_pkgs_update[network] = "${TASK_USE_NETWORK_AND_SUDO}"
 rootfs_install_pkgs_update() {
-    run_in_chroot '${ROOTFSDIR}' /usr/bin/apt-get update \
-        -o Dir::Etc::SourceList="sources.list.d/isar-apt.list" \
-        -o Dir::Etc::SourceParts="-" \
-        -o APT::Get::List-Cleanup="0"
+    run_privileged_heredoc <<'EOF'
+        set -e
+        ${@insert_isar_mounts(d, d.getVar('ROOTFSDIR'), d.getVar('ROOTFS_MOUNTS')) if d.getVar('ISAR_CHROOT_MODE') == 'unshare' else ''}
+        chroot '${ROOTFSDIR}' /usr/bin/apt-get update \
+            -o Dir::Etc::SourceList="sources.list.d/isar-apt.list" \
+            -o Dir::Etc::SourceParts="-" \
+            -o APT::Get::List-Cleanup="0"
+EOF
 }
 
 ROOTFS_INSTALL_COMMAND += "rootfs_install_resolvconf"
@@ -368,8 +388,13 @@ rootfs_install_pkgs_install[weight] = "8000"
 rootfs_install_pkgs_install[progress] = "custom:rootfs_progress.PkgsInstallProgressHandler"
 rootfs_install_pkgs_install[network] = "${TASK_USE_SUDO}"
 rootfs_install_pkgs_install() {
-    run_in_chroot "${ROOTFSDIR}" \
+    run_privileged_heredoc <<'EOF'
+    set -e
+    ${@insert_isar_mounts(d, d.getVar('ROOTFSDIR'), d.getVar('ROOTFS_MOUNTS')) if d.getVar('ISAR_CHROOT_MODE') == 'unshare' else ''}
+    find ${ROOTFSDIR}/isar-apt
+    chroot "${ROOTFSDIR}" \
         /usr/bin/apt-get ${ROOTFS_APT_ARGS} --no-download ${ROOTFS_PACKAGES}
+EOF
 }
 
 ROOTFS_INSTALL_COMMAND += "rootfs_restore_initrd_tooling"
@@ -682,8 +707,10 @@ rootfs_install_sstate_finalize() {
     # - after building the rootfs, the tar won't be there, but we also don't need to unpack
     # - after restoring from cache, there will be a tar which we unpack and then delete
     if [ -f rootfs.tar ]; then
+        run_privileged_heredoc <<'EOF'
         mkdir -p ${ROOTFSDIR}
-        run_privileged tar -C ${ROOTFSDIR} -xp ${SSTATE_TAR_ATTR_FLAGS} < rootfs.tar
+        tar -C ${ROOTFSDIR} -xp ${SSTATE_TAR_ATTR_FLAGS} -f rootfs.tar
+EOF
         rm rootfs.tar
     fi
 }

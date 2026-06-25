@@ -68,7 +68,9 @@ do_containerize() {
     run_privileged rm -rf "${oci_img_dir}_unpacked"
 
     # no root needed anymore
-    run_privileged chown --recursive $(id -u):$(id -g) "${oci_img_dir}"
+    if [ "${ISAR_CHROOT_MODE}" = "schroot" ]; then
+        run_privileged chown --recursive $(id -u):$(id -g) "${oci_img_dir}"
+    fi
 }
 
 convert_container() {

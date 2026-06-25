@@ -168,12 +168,30 @@ dpkg_schroot_create_configs() {
 EOSUDO
 }
 
+dpkg_chroot_prepare() {
+    if [ "${ISAR_CHROOT_MODE}" = "schroot" ]; then
+        dpkg_schroot_create_configs
+    fi
+}
+
+dpkg_chroot_finalize() {
+    if [ "${ISAR_CHROOT_MODE}" = "schroot" ]; then
+        schroot_delete_configs
+    fi
+}
+
+dpkg_prepare_unshare_ccache() {
+    mkdir -p "${CCACHE_DIR}"
+    # sbuild id from https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1110942
+    setfacl -m u:${UNSHARE_SUBUID_BASE}:rwX -m u:${@int(d.getVar('UNSHARE_SUBUID_BASE')) + 999}:rwx "${CCACHE_DIR}"
+}
+
 python do_dpkg_build() {
-    bb.build.exec_func('dpkg_schroot_create_configs', d)
+    bb.build.exec_func('dpkg_chroot_prepare', d)
     try:
         bb.build.exec_func("dpkg_runbuild", d)
     finally:
-        bb.build.exec_func('schroot_delete_configs', d)
+        bb.build.exec_func('dpkg_chroot_finalize', d)
 }
 do_dpkg_build[network] = "${TASK_USE_NETWORK_AND_SUDO}"
 

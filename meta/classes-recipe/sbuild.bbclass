@@ -7,7 +7,8 @@ SCHROOT_MOUNTS ?= ""
 
 inherit crossvars
 
-SBUILD_CHROOT ?= "${DEBDISTRONAME}-${SCHROOT_USER}-${ISAR_BUILD_UUID}-${@os.getpid()}"
+SBUILD_CHROOT:unshare ?= "${SCHROOT_DIR}.tar.zst"
+SBUILD_CHROOT:schroot ?= "${DEBDISTRONAME}-${SCHROOT_USER}-${ISAR_BUILD_UUID}-${@os.getpid()}"
 
 SBUILD_CONF_DIR ?= "${SCHROOT_CONF}/${SBUILD_CHROOT}"
 SCHROOT_CONF_FILE ?= "${SCHROOT_CONF}/chroot.d/${SBUILD_CHROOT}"
@@ -144,6 +145,13 @@ END
 EOSUDO
 }
 
+unshare_configure_ccache() {
+    # ccache must be below /build for file permissions to work properly
+    cat <<'EOF' >> ${SBUILD_CONFIG}
+$path = "/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games";
+EOF
+}
+
 sbuild_dpkg_log_export() {
     export dpkg_partial_log="${1}"
 
@@ -151,4 +159,18 @@ sbuild_dpkg_log_export() {
     set -e
     cat ${dpkg_partial_log} >> ${SCHROOT_DIR}/tmp/dpkg_common.log
     )  9>"${SCHROOT_DIR}/tmp/dpkg_common.log.lock"
+}
+
+# additional mounts managed by sbuild
+sbuild_add_unshare_mounts() {
+    dpkg_prepare_unshare_ccache
+
+    cat <<'EOF' >> ${SBUILD_CONFIG}
+$unshare_bind_mounts = [
+    { directory => '${WORKDIR}/rootfs', mountpoint => '${PP}/rootfs' },
+    { directory => '${WORKDIR}/isar-apt/${DISTRO}-${DISTRO_ARCH}/apt/${DISTRO}', mountpoint => '/isar-apt' },
+    { directory => '${REPO_BASE_DIR}', mountpoint => '/base-apt' },
+    { directory => "${CCACHE_DIR}", mountpoint => "/ccache" }
+];
+EOF
 }

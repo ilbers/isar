@@ -75,6 +75,7 @@ Building `debian-trixie` requires host system >= bookworm.
 Install the following packages:
 ```
 apt install \
+  acl \
   binfmt-support \
   bubblewrap \
   bzip2 \
@@ -89,6 +90,7 @@ apt install \
   qemu-user-static \
   reprepro \
   sudo \
+  uidmap \
   unzip \
   xz-utils \
   git-buildpackage \

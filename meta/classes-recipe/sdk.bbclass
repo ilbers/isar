@@ -74,13 +74,17 @@ rootfs_configure_isar_apt_dir() {
 
 ROOTFS_POSTPROCESS_COMMAND:prepend:class-sdk = "sdkchroot_configscript "
 sdkchroot_configscript () {
-    run_in_chroot ${ROOTFSDIR} /configscript.sh ${DISTRO_ARCH}
+    run_privileged_heredoc <<'EOF'
+        set -e
+        ${@insert_isar_mounts(d, d.getVar('ROOTFSDIR'), d.getVar('ROOTFS_MOUNTS')) if d.getVar('ISAR_CHROOT_MODE') == 'unshare' else ''}
+        cp -rL /etc/resolv.conf '${ROOTFSDIR}/etc'
+        chroot ${ROOTFSDIR} /configscript.sh ${DISTRO_ARCH}
+EOF
 }
 
 ROOTFS_POSTPROCESS_COMMAND:append:class-sdk = " sdkchroot_finalize"
 sdkchroot_finalize() {
-
-    rootfs_do_umounts
+    rootfs_do_umounts_priv
 
     # Remove setup scripts
     run_privileged rm -f ${ROOTFSDIR}/chroot-setup.sh ${ROOTFSDIR}/configscript.sh

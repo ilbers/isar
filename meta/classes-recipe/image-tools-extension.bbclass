@@ -16,7 +16,14 @@ do_image_tools[depends] += " \
 SCHROOT_MOUNTS = "${WORKDIR}:${PP_WORK} ${IMAGE_ROOTFS}:${PP_ROOTFS} ${DEPLOY_DIR_IMAGE}:${PP_DEPLOY}"
 SCHROOT_MOUNTS += "${REPO_ISAR_DIR}/${DISTRO}:/isar-apt"
 
+# only used on unshare
+ROOTFS_IMAGETOOLS ?= "${WORKDIR}/rootfs-imgtools-${BB_CURRENTTASK}"
+
 imager_run() {
+    imager_run_${ISAR_CHROOT_MODE} "$@"
+}
+
+imager_run_schroot() {
     local_install="${@(d.getVar("INSTALL_%s" % d.getVar("BB_CURRENTTASK")) or '').strip()}"
     local_bom="${@(d.getVar("BOM_%s" % d.getVar("BB_CURRENTTASK")) or '').strip()}"
 
@@ -102,4 +109,81 @@ generate_imager_sbom() {
             --spdx-namespace '${SBOM_SPDX_NAMESPACE_PREFIX}'-$sbom_document_uuid \
             --timestamp $TIMESTAMP ${SBOM_DEBSBOM_EXTRA_ARGS} \
     < ${WORKDIR}/imager.manifest
+}
+
+imager_run_unshare() {
+    exec 3<&0
+
+    # ignore everything before '--'. If the remaining list is empty,
+    # assume a here document is passed via stdin
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
+        --) shift 1; break ;;
+        *) shift 1 ;;
+        esac
+    done
+
+    if [ "$#" -eq 0 ]; then
+        set -- "$@" '/bin/bash' '-s'
+    fi
+
+    local_install="${@(d.getVar("INSTALL_%s" % d.getVar("BB_CURRENTTASK")) or '').strip()}"
+
+    run_privileged_heredoc <<'EOF'
+    set -e
+    mkdir -p ${ROOTFS_IMAGETOOLS}
+    tar -xf "${SBUILD_CHROOT}" -C "${ROOTFS_IMAGETOOLS}"
+    mkdir -p ${ROOTFS_IMAGETOOLS}/isar-apt
+    cp -rL /etc/resolv.conf "${ROOTFS_IMAGETOOLS}/etc"
+EOF
+
+    # setting up error handler
+    imager_cleanup() {
+        run_privileged rm -rf ${ROOTFS_IMAGETOOLS}
+    }
+    trap 'exit 1' INT HUP QUIT TERM ALRM USR1
+    trap 'imager_cleanup' EXIT
+
+    if [ -n "${local_install}" ]; then
+        echo "Installing imager deps: ${local_install}"
+
+        distro="${BASE_DISTRO}-${BASE_DISTRO_CODENAME}"
+        if [ ${ISAR_CROSS_COMPILE} -eq 1 ]; then
+            distro="${HOST_BASE_DISTRO}-${BASE_DISTRO_CODENAME}"
+        fi
+
+        E="${@ isar_export_proxies(d)}"
+        deb_dl_dir_import ${ROOTFS_IMAGETOOLS} ${distro}
+        ${SCRIPTSDIR}/lockrun.py -r -f "${REPO_ISAR_DIR}/isar.lock" -s <<'EOAPT'
+        local_install=$local_install ${@run_privileged_cmd(d)} /bin/bash -s <<'EOF'
+            set -e
+            ${@insert_isar_mounts(d, d.getVar('ROOTFS_IMAGETOOLS'), d.getVar('SCHROOT_MOUNTS'))}
+            chroot ${ROOTFS_IMAGETOOLS} apt-get update \
+                -o Dir::Etc::SourceList='sources.list.d/isar-apt.list' \
+                -o Dir::Etc::SourceParts='-' \
+                -o APT::Get::List-Cleanup='0'
+            chroot ${ROOTFS_IMAGETOOLS} apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y \
+                --allow-unauthenticated --allow-downgrades --download-only install \
+                $local_install
+EOF
+EOAPT
+
+        deb_dl_dir_export ${ROOTFS_IMAGETOOLS} ${distro}
+        local_install=$local_install run_privileged_heredoc <<'EOF'
+            set -e
+            ${@insert_isar_mounts(d, d.getVar('ROOTFS_IMAGETOOLS'), d.getVar('SCHROOT_MOUNTS'))}
+            chroot ${ROOTFS_IMAGETOOLS} apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y \
+                --allow-unauthenticated --allow-downgrades install \
+                $local_install
+EOF
+    fi
+
+    run_privileged_heredoc <<'EOF' "$@"
+        set -e
+        mkdir -p ${ROOTFS_IMAGETOOLS}/${SCRIPTSDIR}
+        ${@insert_isar_mounts(d, d.getVar('ROOTFS_IMAGETOOLS'), d.getVar('SCHROOT_MOUNTS'))}
+        chroot ${ROOTFS_IMAGETOOLS} "$@" <&3
+EOF
+
+    run_privileged rm -rf ${ROOTFS_IMAGETOOLS}
 }
