@@ -17,19 +17,19 @@ update_etc_os_release() {
     done
 
     if [ -n "${OS_RELEASE_BUILD_ID}" ]; then
-        sudo sed -i '/^BUILD_ID=.*/d' '${IMAGE_ROOTFS}/etc/os-release'
+        run_privileged sed -i '/^BUILD_ID=.*/d' '${IMAGE_ROOTFS}/etc/os-release'
         echo "BUILD_ID=\"${OS_RELEASE_BUILD_ID}\"" | \
-            sudo tee -a '${IMAGE_ROOTFS}/etc/os-release'
+            run_privileged tee -a '${IMAGE_ROOTFS}/etc/os-release'
     fi
     if [ -n "${OS_RELEASE_VARIANT}" ]; then
-        sudo sed -i '/^VARIANT=.*/d' '${IMAGE_ROOTFS}/etc/os-release'
+        run_privileged sed -i '/^VARIANT=.*/d' '${IMAGE_ROOTFS}/etc/os-release'
         echo "VARIANT=\"${OS_RELEASE_VARIANT}\"" | \
-            sudo tee -a '${IMAGE_ROOTFS}/etc/os-release'
+            run_privileged tee -a '${IMAGE_ROOTFS}/etc/os-release'
     fi
     if [ -n "${OS_RELEASE_VARIANT_VERSION}" ]; then
-        sudo sed -i '/^VARIANT_VERSION=.*/d' '${IMAGE_ROOTFS}/etc/os-release'
+        run_privileged sed -i '/^VARIANT_VERSION=.*/d' '${IMAGE_ROOTFS}/etc/os-release'
         echo "VARIANT_VERSION=\"${OS_RELEASE_VARIANT_VERSION}\"" | \
-            sudo tee -a '${IMAGE_ROOTFS}/etc/os-release'
+            run_privileged tee -a '${IMAGE_ROOTFS}/etc/os-release'
     fi
 }
 
@@ -37,11 +37,11 @@ ROOTFS_POSTPROCESS_COMMAND =+ "image_postprocess_configure"
 image_postprocess_configure() {
     # Configure root filesystem
     if [ -n "${DISTRO_CONFIG_SCRIPT}" ]; then
-        sudo install -m 755 "${WORKDIR}/${DISTRO_CONFIG_SCRIPT}" "${IMAGE_ROOTFS}"
+        run_privileged install -m 755 "${WORKDIR}/${DISTRO_CONFIG_SCRIPT}" "${IMAGE_ROOTFS}"
         TARGET_DISTRO_CONFIG_SCRIPT="$(basename ${DISTRO_CONFIG_SCRIPT})"
-        sudo chroot ${IMAGE_ROOTFS} "/$TARGET_DISTRO_CONFIG_SCRIPT" \
+        run_in_chroot ${IMAGE_ROOTFS} "/$TARGET_DISTRO_CONFIG_SCRIPT" \
                                     "${MACHINE_SERIAL}" "${BAUDRATE_TTY}"
-        sudo rm "${IMAGE_ROOTFS}/$TARGET_DISTRO_CONFIG_SCRIPT"
+        run_privileged rm "${IMAGE_ROOTFS}/$TARGET_DISTRO_CONFIG_SCRIPT"
    fi
 }
 
@@ -58,13 +58,13 @@ image_postprocess_machine_id() {
     # systemd(1) takes care of recreating the machine-id on first boot
     # for systemd < v247, set to empty string, else set to uninitialized
     # (required if initramfs with ro root is used)
-    SYSTEMD_VERSION=$( sudo chroot ${IMAGE_ROOTFS} dpkg-query --showformat='${source:Upstream-Version}' --show systemd || echo "0" )
+    SYSTEMD_VERSION=$( run_in_chroot ${IMAGE_ROOTFS} dpkg-query --showformat='${source:Upstream-Version}' --show systemd || echo "0" )
     MACHINE_ID="uninitialized"
     if dpkg --compare-versions "$SYSTEMD_VERSION" "lt" "247"; then
         MACHINE_ID=""
     fi
-    echo "$MACHINE_ID" | sudo chroot ${IMAGE_ROOTFS} tee /etc/machine-id
-    sudo rm -f '${IMAGE_ROOTFS}/var/lib/dbus/machine-id'
+    echo "$MACHINE_ID" | run_in_chroot ${IMAGE_ROOTFS} tee /etc/machine-id
+    run_privileged rm -f '${IMAGE_ROOTFS}/var/lib/dbus/machine-id'
 }
 
 ROOTFS_POSTPROCESS_COMMAND =+ "image_postprocess_sshd_key_regen"
@@ -82,13 +82,13 @@ image_postprocess_sshd_key_regen() {
 
 ROOTFS_POSTPROCESS_COMMAND =+ "image_postprocess_disable_systemd_firstboot"
 image_postprocess_disable_systemd_firstboot() {
-    SYSTEMD_VERSION=$(sudo chroot '${ROOTFSDIR}' dpkg-query \
+    SYSTEMD_VERSION=$(run_in_chroot '${ROOTFSDIR}' dpkg-query \
         --showformat='${source:Upstream-Version}' \
         --show systemd || echo "0" )
 
     if dpkg --compare-versions "$SYSTEMD_VERSION" "ge" "251"; then
-        sudo chroot '${ROOTFSDIR}' systemctl mask systemd-firstboot
-        if ! cmd_output=$(sudo chroot '${ROOTFSDIR}' systemd-firstboot \
+        run_in_chroot '${ROOTFSDIR}' systemctl mask systemd-firstboot
+        if ! cmd_output=$(run_in_chroot '${ROOTFSDIR}' systemd-firstboot \
                --prompt --welcome=false </dev/null 2>/dev/null); then
             bbwarn "Your image is not configured completely according to systemd-firstboot."
             bbwarn "It prompted: \"${cmd_output}\""

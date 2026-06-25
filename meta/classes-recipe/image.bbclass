@@ -363,7 +363,7 @@ get_build_id() {
 ROOTFS_CONFIGURE_COMMAND += "image_configure_fstab"
 image_configure_fstab[weight] = "2"
 image_configure_fstab() {
-    sudo tee '${IMAGE_ROOTFS}/etc/fstab' << EOF
+    run_privileged tee '${IMAGE_ROOTFS}/etc/fstab' << EOF
 # Begin /etc/fstab
 proc		/proc		proc		nosuid,noexec,nodev	0	0
 sysfs		/sys		sysfs		nosuid,noexec,nodev	0	0
@@ -391,7 +391,7 @@ do_copy_boot_files() {
         kernel="$(realpath -q '${IMAGE_ROOTFS}'/boot/vmlinu[xz])"
     fi
     if [ -f "$kernel" ]; then
-        sudo cat "$kernel" > "${DEPLOYDIR}/${KERNEL_IMAGE}"
+        run_privileged cat "$kernel" > "${DEPLOYDIR}/${KERNEL_IMAGE}"
     fi
 
     for file in ${DTB_FILES}; do
@@ -447,7 +447,7 @@ def apt_list_files(d):
 IMAGE_LISTS = "${@ ' '.join(apt_list_files(d)) }"
 
 do_rootfs_finalize() {
-    sudo -s <<'EOSUDO'
+    run_privileged_heredoc <<'EOSUDO'
         set -e
 
         if [ -e "${ROOTFSDIR}/chroot-setup.sh" ]; then
@@ -473,14 +473,14 @@ EOSUDO
 
     # Sometimes qemu-user-static generates coredumps in chroot, move them
     # to work temporary directory and inform user about it.
-    for f in $(sudo find ${ROOTFSDIR} -type f -name *.core -exec file --mime-type {} \; | grep 'application/x-coredump' | cut -d: -f1); do
-        sudo mv "${f}" "${WORKDIR}/temp/"
+    for f in $(run_privileged find ${ROOTFSDIR} -type f -name *.core -exec file --mime-type {} \; | grep 'application/x-coredump' | cut -d: -f1); do
+        run_privileged mv "${f}" "${WORKDIR}/temp/"
         bbwarn "found core dump in rootfs, check it in ${WORKDIR}/temp/${f##*/}"
     done
 
     # Set same time-stamps to the newly generated file/folders in the
     # rootfs image for the purpose of reproducible builds.
-    sudo find ${ROOTFSDIR} -newermt "$(date -d@${SOURCE_DATE_EPOCH} '+%Y-%m-%d %H:%M:%S')" \
+    run_privileged find ${ROOTFSDIR} -newermt "$(date -d@${SOURCE_DATE_EPOCH} '+%Y-%m-%d %H:%M:%S')" \
         -exec touch '{}' -h -d@${SOURCE_DATE_EPOCH} ';'
 }
 do_rootfs_finalize[network] = "${TASK_USE_SUDO}"
@@ -517,7 +517,7 @@ do_rootfs_quality_check() {
             ;;
 	esac
     done
-    found=$( sudo find ${ROOTFSDIR} -type f -newer $rootfs_install_stamp $args )
+    found=$( run_privileged find ${ROOTFSDIR} -type f -newer $rootfs_install_stamp $args )
     if [ -n "$found" ]; then
         bbwarn "Files changed after package install. The following files seem"
 	bbwarn "to have changed where they probably should not have."

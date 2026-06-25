@@ -34,7 +34,7 @@ def image_create_groups(d: "DataSmart") -> None:
     """
     entries = (d.getVar("GROUPS") or "").split()
     rootfsdir = d.getVar("ROOTFSDIR")
-    chroot = ["sudo", "-E", "chroot", rootfsdir]
+    chroot = run_privileged_cmd(d).split() + ["chroot", rootfsdir]
 
     for entry in entries:
         args = []
@@ -72,7 +72,7 @@ def image_create_users(d: "DataSmart") -> None:
 
     entries = (d.getVar("USERS") or "").split()
     rootfsdir = d.getVar("ROOTFSDIR")
-    chroot = ["sudo", "-E", "chroot", rootfsdir]
+    chroot = run_privileged_cmd(d).split() + ["chroot", rootfsdir]
 
     for entry in entries:
         args = []

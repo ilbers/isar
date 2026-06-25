@@ -209,19 +209,19 @@ do_bootstrap() {
     trap '[ -r "${WORKDIR}/mmtmpdir" ] && tmpdir=$(cat "${WORKDIR}/mmtmpdir") \
                                        && rm "${WORKDIR}/mmtmpdir"; \
           [ -d "$tmpdir" ] && mountpoint -q $tmpdir/$base_apt_tmp \
-                           && sudo umount $tmpdir/$base_apt_tmp; \
+                           && run_privileged umount $tmpdir/$base_apt_tmp; \
           [ -d "$tmpdir" ] && mountpoint -q $tmpdir/base-apt \
-                           && sudo umount $tmpdir/base-apt; \
-          [ -d "$tmpdir" ] && sudo rm -rf --one-file-system $tmpdir; \
+                           && run_privileged umount $tmpdir/base-apt; \
+          [ -d "$tmpdir" ] && run_privileged rm -rf --one-file-system $tmpdir; \
           [ -n "$base_apt_tmp" ] && mountpoint -q $base_apt_tmp \
-                                 && sudo umount $base_apt_tmp \
+                                 && run_privileged umount $base_apt_tmp \
                                  && rm -rf --one-file-system $base_apt_tmp' EXIT
 
     # Create lock file so that it is owned by the user running the build (not root)
     mkdir -p ${DEBDIR}
     touch ${DEB_DL_LOCK}
 
-    sudo TMPDIR="${BOOTSTRAP_TMPDIR}" mmdebstrap $bootstrap_args \
+    run_privileged TMPDIR="${BOOTSTRAP_TMPDIR}" mmdebstrap $bootstrap_args \
                    $arch_param \
                    --mode=unshare \
                    ${MMHOOKS} \
@@ -254,7 +254,7 @@ do_bootstrap() {
 
     if [ "${ISAR_USE_CACHED_BASE_REPO}" != "1" ]; then
         deb_dl_dir_export "${WORKDIR}/dl_dir" "${BOOTSTRAP_BASE_DISTRO}-${BASE_DISTRO_CODENAME}"
-        sudo rm -rf --one-file-system "${WORKDIR}/dl_dir"
+        run_privileged rm -rf --one-file-system "${WORKDIR}/dl_dir"
     fi
 }
 addtask bootstrap before do_build after do_generate_keyrings
