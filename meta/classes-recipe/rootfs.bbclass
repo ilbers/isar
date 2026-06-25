@@ -702,7 +702,7 @@ rootfs_install_sstate_prepare() {
     sudo umount ${WORKDIR}/mnt/rootfs
     sudo chown $(id -u):$(id -g) rootfs.tar
 }
-do_rootfs_install_sstate_prepare[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
+rootfs_install_sstate_prepare[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
 
 rootfs_install_sstate_finalize() {
     # this runs in SSTATE_INSTDIR
