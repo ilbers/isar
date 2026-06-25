@@ -691,6 +691,8 @@ SSTATE_TAR_ATTR_FLAGS ?= "--xattrs --xattrs-include='*'"
 
 # the rootfs is owned by root, so we need some sudoing to pack and unpack
 rootfs_install_sstate_prepare() {
+    [ "${SSTATE_CURRTASK}" = "rootfs_install" ] || return 0
+
     # this runs in SSTATE_BUILDDIR, which will be deleted automatically
     # tar --one-file-system will cross bind-mounts to the same filesystem,
     # so we use some mount magic to prevent that
@@ -705,6 +707,8 @@ rootfs_install_sstate_prepare() {
 rootfs_install_sstate_prepare[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
 
 rootfs_install_sstate_finalize() {
+    [ "${SSTATE_CURRTASK}" = "rootfs_install" ] || return 0
+
     # this runs in SSTATE_INSTDIR
     # - after building the rootfs, the tar won't be there, but we also don't need to unpack
     # - after restoring from cache, there will be a tar which we unpack and then delete
