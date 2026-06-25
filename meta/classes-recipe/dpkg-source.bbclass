@@ -77,7 +77,7 @@ do_fetch_common_source() {
     schroot -r -c ${session_id} -d / -- \
         sh -c '
             cd /work
-            apt-get -y --download-only --only-source -o Acquire::Source-Symlinks="false" source ${DEBIAN_SOURCE}'
+            apt-get -y --download-only --only-source -o Debug::NoLocking=1 -o Acquire::Source-Symlinks="false" source ${DEBIAN_SOURCE}'
 
     schroot -e -c ${session_id}
     remove_mounts
