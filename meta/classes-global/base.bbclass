@@ -379,6 +379,24 @@ def deb_list_beautify(d, varname):
 # Helpers for privileged execution. Only the non-underscore functions
 # shall be used outside of this class.
 
+def insert_isar_mounts(d, rootfs, mounts):
+    lines = []
+    for m in mounts.split():
+        host, inner = m.split(':') if ':' in m else (m, m)
+        inner_full = os.path.join(rootfs, inner[1:])
+        lines.append('mkdir -p {}'.format(inner_full))
+        lines.append('mount -o bind,private {} {}'.format(host, inner_full))
+    return '\n'.join(lines)
+
+def insert_isar_umounts(d, rootfs, mounts):
+    lines = []
+    for m in mounts.split():
+        host, inner = m.split(':') if ':' in m else (m, m)
+        mp = '{}/{}'.format(rootfs, inner)
+        lines.append('mountpoint -q {} && umount {}'.format(mp, mp))
+        lines.append('[ -d {} ] && rmdir --ignore-fail-on-non-empty {}'.format(mp, mp))
+    return '\n'.join(lines)
+
 def run_privileged_cmd(d):
     cmd = 'sudo -E'
     bb.debug(1, "privileged cmd: %s" % cmd)
