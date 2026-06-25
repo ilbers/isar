@@ -246,11 +246,11 @@ do_bootstrap() {
                    ${@get_apt_opts(d, '--aptopt')} \
                    ${@get_distro_components_argument(d)} \
                    "${@get_distro_suite(d)}" \
-                   "${WORKDIR}/rootfs.tar.zst" \
-                   "$bootstrap_list"
+                   - \
+                   "$bootstrap_list" > ${WORKDIR}/rootfs.tar.zst
 
     # Finalize bootstrap by setting the link in deploy
-    sudo ln -Tfsr "${WORKDIR}/rootfs.tar.zst" "${DEPLOY_ISAR_BOOTSTRAP}.tar.zst"
+    ln -Tfsr "${WORKDIR}/rootfs.tar.zst" "${DEPLOY_ISAR_BOOTSTRAP}.tar.zst"
 
     if [ "${ISAR_USE_CACHED_BASE_REPO}" != "1" ]; then
         deb_dl_dir_export "${WORKDIR}/dl_dir" "${BOOTSTRAP_BASE_DISTRO}-${BASE_DISTRO_CODENAME}"
@@ -267,8 +267,7 @@ bootstrap_sstate_prepare() {
     [ "${SSTATE_CURRTASK}" = "bootstrap" ] || return 0
 
     # this runs in SSTATE_BUILDDIR, which will be deleted automatically
-    sudo cp -a "${WORKDIR}/rootfs.tar.zst" ./bootstrap.tar.zst
-    sudo chown $(id -u):$(id -g) bootstrap.tar.zst
+    cp -a "${WORKDIR}/rootfs.tar.zst" ./bootstrap.tar.zst
 }
 
 bootstrap_sstate_finalize() {
@@ -278,8 +277,8 @@ bootstrap_sstate_finalize() {
     # we should restore symlinks after using tar
     if [ -f bootstrap.tar.zst ]; then
         mv bootstrap.tar.zst "${WORKDIR}/rootfs.tar.zst"
-        sudo ln -Tfsr "${WORKDIR}/rootfs.tar.zst" \
-                      "${DEPLOY_ISAR_BOOTSTRAP}.tar.zst"
+        ln -Tfsr "${WORKDIR}/rootfs.tar.zst" \
+                 "${DEPLOY_ISAR_BOOTSTRAP}.tar.zst"
     fi
 }
 
