@@ -1,0 +1,73 @@
+#!/bin/sh
+# isar-clean-builddir - Clean the build/tmp directory
+#
+# This script removes all files from the specified directory, including those
+# owned by other users (which requires elevated privileges).
+#
+# Rootless Mode:
+#   When --rootless is specified, no privileged commands are executed. This
+#   requires that the UID namespace where files were generated matches the
+#   cleanup environment. When running from a container, this script must be
+#   called from within the same container.
+#
+# Part of the Isar API. External tools may call this script for cleanup.
+#
+# Copyright (c) Siemens AG, 2026
+# SPDX-License-Identifier: MIT
+
+DRY_RUN=0
+ROOTLESS=0
+
+usage()
+{
+    EXIT_CODE="$1"
+    SELF="isar-clean-builddir"
+    printf "%b" "Usage: ${SELF} [--rootless] [--dry-run] [dir]\n"
+
+    exit "${EXIT_CODE:-1}"
+}
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+    --dry-run)
+        DRY_RUN=1
+        shift 1
+        ;;
+    -h | --help)
+        usage 0
+        ;;
+    --rootless)
+        ROOTLESS=1
+        shift 1
+        ;;
+    --*)
+        usage 1
+        ;;
+    *)
+        break
+        ;;
+    esac
+done
+
+[ $# -eq 1 ] || usage 1
+if ! [ -d "$1" ]; then
+    echo "error: \"$1\" is not a directory"
+    exit 1
+fi
+
+if [ $ROOTLESS -eq 1 ]; then
+    PRIVILEGED_CMD="unshare --map-auto --map-root-user --keep-caps"
+else
+    PRIVILEGED_CMD="sudo"
+fi
+
+if [ $DRY_RUN -eq 1 ]; then
+    echo "dry-run, not executing"
+    DRY_RUN_PREFIX="/bin/echo"
+fi
+
+# clean all files that do not belong to us
+# shellcheck disable=2086
+find "$1" \( ! -user "$(whoami)" -type d -prune \) -exec $DRY_RUN_PREFIX $PRIVILEGED_CMD rm -rf {} \;
+# clean remaining files
+$DRY_RUN_PREFIX rm -rf "$1"

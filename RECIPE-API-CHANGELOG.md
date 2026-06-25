@@ -1123,3 +1123,8 @@ This internally switches the chroot mode from `schroot` to `unshare`.
 
 When using kas, the `build_system` needs to be set to `isar-rootless`, which currently
 requires a development version of kas (for details, check the kas mailing list).
+
+Note, that the build dir may contain files that were generated within the rootless
+environment and cannot be deleted from the outside by the calling user. To simplify
+the cleanup, we provide the `isar-clean-builddir` script that helps purging
+directories with mixed ownerships (without requiring root privileges).
