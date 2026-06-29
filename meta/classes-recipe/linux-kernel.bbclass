@@ -38,8 +38,12 @@ KERNEL_DEBIAN_DEPENDS ?= "initramfs-tools | linux-initramfs-tool | dracut, \
 
 KERNEL_HEADERS_DEBIAN_DEPENDS ?= ""
 
-KERNEL_LIBC_DEV_ARCH_ALL = "0"
-KERNEL_LIBC_DEV_ARCH_ALL:trixie = "1"
+KERNEL_LIBC_DEV_ARCH_ALL = "1"
+KERNEL_LIBC_DEV_ARCH_ALL:buster = "0"
+KERNEL_LIBC_DEV_ARCH_ALL:bullseye = "0"
+KERNEL_LIBC_DEV_ARCH_ALL:bookworm = "0"
+KERNEL_LIBC_DEV_ARCH_ALL:ubuntu = "0"
+
 KERNEL_LIBC_DEV_DEPLOY ?= "0"
 
 # Settings that may be changed on a per distro, machine or layer basis
