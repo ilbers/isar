@@ -1,5 +1,5 @@
 # This software is a part of Isar.
-# Copyright (C) 2023-2024 ilbers GmbH
+# Copyright (C) 2023-2026 ilbers GmbH
 #
 # SPDX-License-Identifier: MIT
 #
@@ -42,6 +42,9 @@ config CODENAME_JAMMY
 	bool
 
 config CODENAME_NOBLE
+	bool
+
+config CODENAME_RESOLUTE
 	bool
 
 choice
@@ -92,6 +95,10 @@ config UBUNTU_NOBLE
 	bool "Ubuntu 24.04 (Noble)"
 	depends on (DISTRO_UBUNTU && CODENAME_NOBLE) || ANY_MACHINE_DISTRO
 
+config UBUNTU_RESOLUTE
+	bool "Ubuntu 26.04 (Resolute)"
+	depends on (DISTRO_UBUNTU && CODENAME_RESOLUTE) || ANY_MACHINE_DISTRO
+
 endchoice
 
 config ANY_MACHINE_DISTRO
@@ -114,5 +121,6 @@ config KAS_INCLUDE_DISTRO
 	default "kas/distro/ubuntu-focal.yaml" if UBUNTU_FOCAL
 	default "kas/distro/ubuntu-jammy.yaml" if UBUNTU_JAMMY
 	default "kas/distro/ubuntu-noble.yaml" if UBUNTU_NOBLE
+	default "kas/distro/ubuntu-resolute.yaml" if UBUNTU_RESOLUTE
 
 endmenu
