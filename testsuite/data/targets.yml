@@ -15,6 +15,8 @@ a: !mux
     name: qemuarm64-bookworm
   qemuarm64-trixie:
     name: qemuarm64-trixie
+  qemuarm64-forky:
+    name: qemuarm64-forky
   qemui386-buster:
     name: qemui386-buster
   qemui386-bullseye:
@@ -35,6 +37,8 @@ a: !mux
     name: qemuamd64-iso-bookworm
   qemuamd64-trixie:
     name: qemuamd64-trixie
+  qemuamd64-forky:
+    name: qemuamd64-forky
   container-amd64-buster:
     name: container-amd64-buster
   container-amd64-bullseye:

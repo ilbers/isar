@@ -503,6 +503,38 @@ class CrossTest(CIBaseTest):
         except exceptions.TestFail:
             self.cancel('KFAIL')
 
+    def test_cross_forky(self):
+        targets = [
+            'mc:qemuamd64-forky:isar-image-ci',
+            'mc:qemuarm64-forky:isar-image-ci',
+        ]
+
+        self.init()
+        try:
+            self.perform_build_test(targets)
+        except exceptions.TestFail:
+            self.cancel('KFAIL')
+
+    def test_run_amd64_forky(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        try:
+            self.vm_start('amd64', 'forky', image='isar-image-ci')
+        except exceptions.TestFail:
+            self.cancel('KFAIL')
+
+    def test_run_arm64_forky(self):
+        """
+        :avocado: tags=startvm,riscv64
+        """
+        self.init()
+        try:
+            self.vm_start('arm64', 'forky', image='isar-image-ci')
+        except exceptions.TestFail:
+            self.cancel('KFAIL')
+
     def test_cross_mira_trixie(self):
         targets = [
             'mc:phyboard-mira-trixie:isar-image-base',
