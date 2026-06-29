@@ -370,11 +370,28 @@ class IsoImagePlugin(SourcePlugin):
                 if not target_arch:
                     raise WicError("Coludn't find target architecture")
 
+                distro = get_bitbake_var("DISTRO")
+                if not distro:
+                    raise WicError("Couldn't find target distro")
+
+                # Module efi_uga is deprecated
+                efi_uga_list = [
+                    "buster",
+                    "bullseye",
+                    "bookworm",
+                    "trixie",
+                    "focal",
+                    "jammy",
+                    "noble",
+                ]
+
                 if re.match("x86_64", target_arch):
                     grub_target = "x86_64-efi"
                     grub_src_image = "grub-efi-bootx64.efi"
                     grub_dest_image = "bootx64.efi"
-                    grub_modules = "multiboot efi_uga iorw ata "
+                    grub_modules = "multiboot iorw ata "
+                    if any(name in distro for name in efi_uga_list):
+                        grub_modules += "efi_uga "
                     if get_bitbake_var("DISTRO").startswith("ubuntu") and \
                         os.path.exists('/usr/lib/grub/x86_64-efi/linuxefi.mod'):
                         grub_modules += "linuxefi "
@@ -382,7 +399,9 @@ class IsoImagePlugin(SourcePlugin):
                     grub_target = "i386-efi"
                     grub_src_image = "grub-efi-bootia32.efi"
                     grub_dest_image = "bootia32.efi"
-                    grub_modules = "multiboot efi_uga iorw ata "
+                    grub_modules = "multiboot iorw ata "
+                    if any(name in distro for name in efi_uga_list):
+                        grub_modules += "efi_uga "
                 else:
                     raise WicError("grub-efi is incompatible with target %s" %
                                    target_arch)
