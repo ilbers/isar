@@ -602,7 +602,7 @@ class CIBuilder(Test):
             stderr=subprocess.PIPE,
             universal_newlines=True,
         )
-        self.log.info("Started VM with pid %s" % (p1.pid))
+        self.log.info("Starting VM with pid %s" % (p1.pid))
 
         return p1, cmdline, boot_log, need_sb_cleanup
 
@@ -634,8 +634,10 @@ class CIBuilder(Test):
             if p1.poll() is not None:
                 break
 
-        self.log.error("Didn't get login prompt")
-        return 1
+        rc = 1
+        if time.time() > timeout:
+            rc = 2
+        return rc
 
     def vm_parse_output(self, boot_log, multiconfig, skip_modulecheck):
         # the printk of recipes-kernel/example-module
@@ -665,13 +667,10 @@ class CIBuilder(Test):
                 if module_output in data or skip_modulecheck:
                     if resize_output and resize_output not in data:
                         rc = 1
-                        self.log.error("No resize output while expected")
                 else:
                     rc = 2
-                    self.log.error("No example module output while expected")
                 if ordering_cycle in data:
                     rc = 3
-                    self.log.error("Systemd services ordering cycle detected")
         return rc
 
     def vm_dump_dict(self, vm):
@@ -680,16 +679,19 @@ class CIBuilder(Test):
         f.close()
 
     def vm_turn_off(self, vm):
-        pid = self.vm_dict[vm][0]
-        os.kill(pid, signal.SIGKILL)
+        try:
+            pid = self.vm_dict[vm][0]
+            os.kill(pid, signal.SIGKILL)
 
-        if self.vm_dict[vm][3]:
-            start_vm.sb_cleanup()
+            if self.vm_dict[vm][3]:
+                start_vm.sb_cleanup()
 
-        del self.vm_dict[vm]
-        self.vm_dump_dict(vm)
+            del self.vm_dict[vm]
+            self.vm_dump_dict(vm)
 
-        self.log.info("Stopped VM with pid %s" % (pid))
+            self.log.info("Stopped VM with pid %s" % (pid))
+        except ProcessLookupError:
+            self.log.error("Can't stop VM %s" % vm)
 
     def vm_start(
         self,
@@ -758,7 +760,10 @@ class CIBuilder(Test):
             rc = self.vm_wait_boot(p1, timeout)
             if rc != 0:
                 self.vm_turn_off(vm)
-                self.fail("Failed to boot qemu machine")
+                if rc == 2:
+                    self.fail("Didn't get login prompt")
+                else:
+                    self.fail("Failed to boot qemu machine")
 
         if cmd is not None or script is not None:
             self.ssh_user = 'ci'
@@ -794,7 +799,12 @@ class CIBuilder(Test):
             if rc != 0:
                 if not keep:
                     self.vm_turn_off(vm)
-                self.fail("Failed to parse output")
+                if rc == 1:
+                    self.fail("No resize output while expected")
+                elif rc == 2:
+                    self.fail("No example module output while expected")
+                else:
+                    self.fail("Failed to parse output")
 
         if not keep:
             self.vm_turn_off(vm)
