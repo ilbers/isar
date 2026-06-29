@@ -58,6 +58,6 @@ inherit initramfs-hook
 # initramfs-tools.
 # -----------------------------------------------------------------------------
 
-HOOK_ADD_MODULES:append:qemuarm:debian-trixie = "virtio-blk"
-HOOK_ADD_MODULES:append:bananapi:debian-trixie = "sunxi_mmc"
-HOOK_ADD_MODULES:append:nanopi-neo:debian-trixie = "sunxi_mmc"
+MISSING_DRIVER ?= ""
+
+HOOK_ADD_MODULES:append = "${MISSING_DRIVER}"
