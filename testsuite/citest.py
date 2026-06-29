@@ -377,6 +377,13 @@ class CrossTest(CIBaseTest):
         self.init()
         self.vm_start('arm64', 'trixie')
 
+    def test_run_arm64_focal(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('arm64', 'focal')
+
     def test_cross_debsrc(self):
         targets = [
             'mc:qemuarm64-bookworm:isar-image-ci',
@@ -800,6 +807,13 @@ class NoCrossTest(CIBaseTest):
         self.init()
         self.vm_start('arm', 'bullseye')
 
+    def test_run_arm64_bullseye(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('arm64', 'bullseye')
+
     def test_run_arm_buster_base(self):
         """
         :avocado: tags=startvm
@@ -871,6 +885,13 @@ class NoCrossTest(CIBaseTest):
         self.init()
         self.vm_start('i386', 'buster')
 
+    def test_run_i386_bullseye(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('i386', 'bullseye')
+
     def test_run_amd64_buster_base(self):
         """
         :avocado: tags=startvm
@@ -933,6 +954,13 @@ class NoCrossTest(CIBaseTest):
         self.init()
         self.vm_start('i386', 'bookworm')
 
+    def test_run_mipsel_bullseye(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('mipsel', 'bullseye')
+
     def test_run_mipsel_bookworm_base(self):
         """
         :avocado: tags=startvm
@@ -992,6 +1020,34 @@ class NoCrossTest(CIBaseTest):
         """
         self.init()
         self.vm_start('riscv64', 'trixie')
+
+    def test_run_arm64_noble(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('arm64', 'noble')
+
+    def test_run_amd64_noble(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('amd64', 'noble')
+
+    def test_run_amd64_jammy(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('amd64', 'jammy')
+
+    def test_run_arm64_jammy(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('arm64', 'jammy')
 
     def test_run_amd64_bookworm_iso_base(self):
         """
@@ -1065,6 +1121,26 @@ class NoCrossTest(CIBaseTest):
         self.init()
         try:
             self.perform_build_test(targets, cross=False)
+        except exceptions.TestFail:
+            self.cancel('KFAIL')
+
+    def test_run_amd64_sid(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        try:
+            self.vm_start('amd64', 'sid')
+        except exceptions.TestFail:
+            self.cancel('KFAIL')
+
+    def test_run_arm64_sid(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        try:
+            self.vm_start('arm64', 'sid')
         except exceptions.TestFail:
             self.cancel('KFAIL')
 
