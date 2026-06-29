@@ -458,8 +458,8 @@ python do_rootfs_install() {
 
             if "release-after" in (d.getVarFlag(cmd, 'isar-apt-lock') or ""):
                 bb.utils.unlockfile(lock)
-            progress_reporter.finish()
     finally:
+        progress_reporter.finish()
         bb.build.exec_func('rootfs_do_umounts', d)
 }
 addtask rootfs_install before do_rootfs_postprocess after do_unpack
