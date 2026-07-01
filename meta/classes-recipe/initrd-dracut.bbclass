@@ -48,9 +48,9 @@ def extend_dracut_cmdline(d):
     if config_path:
         cmdline.append(f"--conf {config_path}")
     if extra_drivers:
-        cmdline.append(f"--add-drivers {extra_drivers}")
+        cmdline.append(f'--add-drivers "{extra_drivers}"')
     if extra_modules:
-        cmdline.append(f"--add {extra_modules}")
+        cmdline.append(f'--add "{extra_modules}"')
     return ' '.join(cmdline)
 
 ROOTFS_INITRAMFS_GENERATOR_CMDLINE:append = " ${@ extend_dracut_cmdline(d)}"
