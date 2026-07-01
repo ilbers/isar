@@ -216,17 +216,6 @@ Both consist of the following steps:
    schroot rootfs, execute the actual build function `dpkg_runbuild`, and
    finally unmount again (`dpkg_undo_mounts`).
 
-   5.1. the `dpkg_runbuild` function of `dpkg.bbclass` runs `build.sh` in the
-        schroot rootfs. That performs the following:
-
-        1. Go to `/home/build/${PN}`
-
-        2. Run dpkg-buildpackage
-
-   5.2. the `dpkg_runbuild` function of `dpkg-raw.bbclass` basically runs
-        `dpkg-deb` to construct a Debian package from a folder of files,
-	without compiling anything
-
 6. Task `do_deploy_deb`: add successfully built packages
    `${WORKDIR}/*.deb` to the isar-apt repository
    `${REPO_ISAR_DIR}/${DISTRO}`
