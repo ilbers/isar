@@ -162,6 +162,15 @@ config KAS_INCLUDE_ISAR_CROSS_COMPILE
 	default "kas/opt/crosscompile.yaml"
 
 
+config ISAR_OFFLINE_BUILD
+	bool "Enable offline building"
+
+config KAS_INCLUDE_ISAR_OFFLINE_BUILD
+	string
+	default "kas/opt/offline.yaml"
+	depends on ISAR_OFFLINE_BUILD
+
+
 config USE_CCACHE
 	bool "Use ccache during build"
 	default y
