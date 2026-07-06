@@ -467,6 +467,9 @@ do_rootfs_finalize() {
             done
         fi
 
+        # Clear /dev on schroot as mmdebstrap --skip=output/dev (unshare) does not deploy it
+        find ${ROOTFSDIR}/dev -mindepth 1 -maxdepth 1 -exec rm -rf {} \;
+
         rm -f "${ROOTFSDIR}/run/blkid/blkid.tab"
         rm -f "${ROOTFSDIR}/run/blkid/blkid.tab.old"
 EOSUDO
