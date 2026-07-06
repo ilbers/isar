@@ -470,8 +470,10 @@ do_rootfs_finalize() {
         # Clear /dev on schroot as mmdebstrap --skip=output/dev (unshare) does not deploy it
         find ${ROOTFSDIR}/dev -mindepth 1 -maxdepth 1 -exec rm -rf {} \;
 
-        rm -f "${ROOTFSDIR}/run/blkid/blkid.tab"
-        rm -f "${ROOTFSDIR}/run/blkid/blkid.tab.old"
+        # according to FHS, /run is a tmpfs. Clear it to not leak build system data
+        # skip deleting /run/lock as /var/lock is a symlink to it according to Debian policy 9.1.4
+        find ${ROOTFSDIR}/run/lock -mindepth 1 -maxdepth 1 -exec rm -rf {} \;
+        find ${ROOTFSDIR}/run -mindepth 1 -maxdepth 1 ! -name lock -exec rm -rf {} \;
 EOSUDO
 
     # Sometimes qemu-user-static generates coredumps in chroot, move them
