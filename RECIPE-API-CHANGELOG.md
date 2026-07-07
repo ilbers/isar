@@ -1128,3 +1128,12 @@ Note, that the build dir may contain files that were generated within the rootle
 environment and cannot be deleted from the outside by the calling user. To simplify
 the cleanup, we provide the `isar-clean-builddir` script that helps purging
 directories with mixed ownerships (without requiring root privileges).
+
+### Add Hyper-V machine support
+
+A new machine `hyper-v` has been introduced for building images
+targeting Microsoft Hyper-V virtual machines on amd64.
+
+The machine produces a `.vhdx` disk image using the WIC image type
+and GRUB as the bootloader. It supports Debian bullseye, bookworm
+and trixie.
