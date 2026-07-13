@@ -1,4 +1,10 @@
-SSTATE_VERSION = "10"
+#
+# Copyright OpenEmbedded Contributors
+#
+# SPDX-License-Identifier: MIT
+#
+
+SSTATE_VERSION = "12"
 
 SSTATE_ZSTD_CLEVEL ??= "8"
 
@@ -49,8 +55,6 @@ PV[vardepvalue] = "${PV}"
 SSTATE_EXTRAPATH[vardepvalue] = ""
 SSTATE_EXTRAPATHWILDCARD[vardepvalue] = ""
 
-# For multilib rpm the allarch packagegroup files can overwrite (in theory they're identical)
-SSTATE_ALLOW_OVERLAP_FILES = "${DEPLOY_DIR}/licenses/"
 # Avoid docbook/sgml catalog warnings for now
 SSTATE_ALLOW_OVERLAP_FILES += "${STAGING_ETCDIR_NATIVE}/sgml ${STAGING_DATADIR_NATIVE}/sgml"
 # sdk-provides-dummy-nativesdk and nativesdk-buildtools-perl-dummy overlap for different SDKMACHINE
@@ -79,14 +83,15 @@ SSTATE_HASHEQUIV_FILEMAP ?= " \
 
 BB_HASHFILENAME = "False ${SSTATE_PKGSPEC} ${SSTATE_SWSPEC}"
 
+SSTATE_ARCHS_TUNEPKG ??= "${TUNE_PKGARCH}"
 SSTATE_ARCHS = " \
     ${BUILD_ARCH} \
     ${BUILD_ARCH}_${ORIGNATIVELSBSTRING} \
     ${BUILD_ARCH}_${SDK_ARCH}_${SDK_OS} \
     ${SDK_ARCH}_${SDK_OS} \
-    ${SDK_ARCH}_${PACKAGE_ARCH} \
+    ${SDK_ARCH}_${SDK_ARCH}-${SDKPKGSUFFIX} \
     allarch \
-    ${PACKAGE_ARCH} \
+    ${SSTATE_ARCHS_TUNEPKG} \
     ${PACKAGE_EXTRA_ARCHS} \
     ${MACHINE_ARCH}"
 SSTATE_ARCHS[vardepsexclude] = "ORIGNATIVELSBSTRING"
@@ -262,7 +267,7 @@ def sstate_install(ss, d):
     overlap_allowed = (d.getVar("SSTATE_ALLOW_OVERLAP_FILES") or "").split()
     match = []
     for f in sharedfiles:
-        if os.path.exists(f) and not os.path.islink(f):
+        if os.path.exists(f):
             f = os.path.normpath(f)
             realmatch = True
             for w in overlap_allowed:
@@ -272,36 +277,18 @@ def sstate_install(ss, d):
                     break
             if realmatch:
                 match.append(f)
-                sstate_search_cmd = "grep -rlF '%s' %s --exclude=master.list | sed -e 's:^.*/::'" % (f, d.expand("${SSTATE_MANIFESTS}"))
+                sstate_search_cmd = "grep -rlF '%s' %s --exclude=index-* | sed -e 's:^.*/::'" % (f, d.expand("${SSTATE_MANIFESTS}"))
                 search_output = subprocess.Popen(sstate_search_cmd, shell=True, stdout=subprocess.PIPE).communicate()[0]
                 if search_output:
                     match.append("  (matched in %s)" % search_output.decode('utf-8').rstrip())
                 else:
                     match.append("  (not matched to any task)")
     if match:
-        bb.error("The recipe %s is trying to install files into a shared " \
-          "area when those files already exist. Those files and their manifest " \
-          "location are:\n  %s\nPlease verify which recipe should provide the " \
-          "above files.\n\nThe build has stopped, as continuing in this scenario WILL " \
-          "break things - if not now, possibly in the future (we've seen builds fail " \
-          "several months later). If the system knew how to recover from this " \
-          "automatically it would, however there are several different scenarios " \
-          "which can result in this and we don't know which one this is. It may be " \
-          "you have switched providers of something like virtual/kernel (e.g. from " \
-          "linux-yocto to linux-yocto-dev), in that case you need to execute the " \
-          "clean task for both recipes and it will resolve this error. It may be " \
-          "you changed DISTRO_FEATURES from systemd to udev or vice versa. Cleaning " \
-          "those recipes should again resolve this error, however switching " \
-          "DISTRO_FEATURES on an existing build directory is not supported - you " \
-          "should really clean out tmp and rebuild (reusing sstate should be safe). " \
-          "It could be the overlapping files detected are harmless in which case " \
-          "adding them to SSTATE_ALLOW_OVERLAP_FILES may be the correct solution. It could " \
-          "also be your build is including two different conflicting versions of " \
-          "things (e.g. bluez 4 and bluez 5 and the correct solution for that would " \
-          "be to resolve the conflict. If in doubt, please ask on the mailing list, " \
-          "sharing the error and filelist above." % \
+        bb.fatal("Recipe %s is trying to install files into a shared " \
+          "area when those files already exist. The files and the manifests listing " \
+          "them are:\n  %s\n"
+          "Please adjust the recipes so only one recipe provides a given file. " % \
           (d.getVar('PN'), "\n  ".join(match)))
-        bb.fatal("If the above message is too much, the simpler version is you're advised to wipe out tmp and rebuild (reusing sstate is fine). That will likely fix things in most (but not all) cases.")
 
     if ss['fixmedir'] and os.path.exists(ss['fixmedir'] + "/fixmepath.cmd"):
         sharedfiles.append(ss['fixmedir'] + "/fixmepath.cmd")
@@ -349,7 +336,7 @@ def sstate_install(ss, d):
     for lock in locks:
         bb.utils.unlockfile(lock)
 
-sstate_install[vardepsexclude] += "SSTATE_ALLOW_OVERLAP_FILES STATE_MANMACH SSTATE_MANFILEPREFIX"
+sstate_install[vardepsexclude] += "SSTATE_ALLOW_OVERLAP_FILES SSTATE_MANMACH SSTATE_MANFILEPREFIX"
 sstate_install[vardeps] += "${SSTATEPOSTINSTFUNCS}"
 
 def sstate_installpkg(ss, d):
@@ -359,8 +346,9 @@ def sstate_installpkg(ss, d):
     d.setVar("SSTATE_CURRTASK", ss['task'])
     sstatefetch = d.getVar('SSTATE_PKGNAME')
     sstatepkg = d.getVar('SSTATE_PKG')
+    verify_sig = bb.utils.to_boolean(d.getVar("SSTATE_VERIFY_SIG"), False)
 
-    if not os.path.exists(sstatepkg):
+    if not os.path.exists(sstatepkg) or (verify_sig and not os.path.exists(sstatepkg + '.sig')):
         pstaging_fetch(sstatefetch, d)
 
     if not os.path.isfile(sstatepkg):
@@ -371,7 +359,7 @@ def sstate_installpkg(ss, d):
 
     d.setVar('SSTATE_INSTDIR', sstateinst)
 
-    if bb.utils.to_boolean(d.getVar("SSTATE_VERIFY_SIG"), False):
+    if verify_sig:
         if not os.path.isfile(sstatepkg + '.sig'):
             bb.warn("No signature file for sstate package %s, skipping acceleration..." % sstatepkg)
             return False
@@ -715,9 +703,7 @@ def sstate_package(ss, d):
     if d.getVar('SSTATE_SKIP_CREATION') == '1':
         return
 
-    sstate_create_package = ['sstate_report_unihash', 'sstate_create_package']
-    if d.getVar('SSTATE_SIG_KEY'):
-        sstate_create_package.append('sstate_sign_package')
+    sstate_create_package = ['sstate_report_unihash', 'sstate_create_and_sign_package']
 
     for f in (d.getVar('SSTATECREATEFUNCS') or '').split() + \
              sstate_create_package + \
@@ -762,7 +748,6 @@ def pstaging_fetch(sstatefetch, d):
     localdata.setVar('FILESPATH', dldir)
     localdata.setVar('DL_DIR', dldir)
     localdata.setVar('PREMIRRORS', mirrors)
-    localdata.setVar('SRCPV', d.getVar('SRCPV'))
 
     # if BB_NO_NETWORK is set but we also have SSTATE_MIRROR_ALLOW_NETWORK,
     # we'll want to allow network access for the current set of fetches.
@@ -778,6 +763,7 @@ def pstaging_fetch(sstatefetch, d):
         uris += ['file://{0}.sig;downloadfilename={0}.sig'.format(sstatefetch)]
 
     for srcuri in uris:
+        localdata.delVar('SRC_URI')
         localdata.setVar('SRC_URI', srcuri)
         try:
             fetcher = bb.fetch2.Fetch([srcuri], localdata, cache=False)
@@ -786,9 +772,6 @@ def pstaging_fetch(sstatefetch, d):
 
         except bb.fetch2.BBFetchException:
             pass
-
-pstaging_fetch[vardepsexclude] += "SRCPV"
-
 
 def sstate_setscene(d):
     shared_state = sstate_state_fromvars(d)
@@ -825,21 +808,100 @@ python sstate_task_postfunc () {
 }
 sstate_task_postfunc[dirs] = "${WORKDIR}"
 
+# Create a sstate package
+# If enabled, sign the package.
+# Package and signature are created in a sub-directory
+# and renamed in place once created.
+python sstate_create_and_sign_package () {
+    from pathlib import Path
 
-#
+    # Best effort touch
+    def touch(file):
+        try:
+            file.touch()
+        except:
+            pass
+
+    def update_file(src, dst, force=False):
+        if dst.is_symlink() and not dst.exists():
+            force=True
+        try:
+            # This relies on that src is a temporary file that can be renamed
+            # or left as is.
+            if force:
+                src.rename(dst)
+            else:
+                os.link(src, dst)
+            return True
+        except:
+            pass
+
+        if dst.exists():
+            touch(dst)
+
+        return False
+
+    sign_pkg = (
+        bb.utils.to_boolean(d.getVar("SSTATE_VERIFY_SIG")) and
+        bool(d.getVar("SSTATE_SIG_KEY"))
+    )
+
+    sstate_pkg = Path(d.getVar("SSTATE_PKG"))
+    sstate_pkg_sig = Path(str(sstate_pkg) + ".sig")
+    if sign_pkg:
+        if sstate_pkg.exists() and sstate_pkg_sig.exists():
+            touch(sstate_pkg)
+            touch(sstate_pkg_sig)
+            return
+    else:
+        if sstate_pkg.exists():
+            touch(sstate_pkg)
+            return
+
+    # Create the required sstate directory if it is not present.
+    if not sstate_pkg.parent.is_dir():
+        with bb.utils.umask(0o002):
+            bb.utils.mkdirhier(str(sstate_pkg.parent))
+
+    if sign_pkg:
+        from tempfile import TemporaryDirectory
+        with TemporaryDirectory(dir=sstate_pkg.parent) as tmp_dir:
+            tmp_pkg = Path(tmp_dir) / sstate_pkg.name
+            d.setVar("TMP_SSTATE_PKG", str(tmp_pkg))
+            bb.build.exec_func('sstate_archive_package', d)
+
+            from oe.gpg_sign import get_signer
+            signer = get_signer(d, 'local')
+            signer.detach_sign(str(tmp_pkg), d.getVar('SSTATE_SIG_KEY'), None,
+                                d.getVar('SSTATE_SIG_PASSPHRASE'), armor=False)
+
+            tmp_pkg_sig = Path(tmp_dir) / sstate_pkg_sig.name
+            if not update_file(tmp_pkg_sig, sstate_pkg_sig):
+                # If the created signature file could not be copied into place,
+                # then we should not use the sstate package either.
+                return
+
+            # If the .sig file was updated, then the sstate package must also
+            # be updated.
+            update_file(tmp_pkg, sstate_pkg, force=True)
+    else:
+        from tempfile import NamedTemporaryFile
+        with NamedTemporaryFile(prefix=sstate_pkg.name, dir=sstate_pkg.parent) as tmp_pkg_fd:
+            tmp_pkg = tmp_pkg_fd.name
+            d.setVar("TMP_SSTATE_PKG", str(tmp_pkg))
+            bb.build.exec_func('sstate_archive_package',d)
+            update_file(tmp_pkg, sstate_pkg)
+            # update_file() may have renamed tmp_pkg, which must exist when the
+            # NamedTemporaryFile() context handler ends.
+            touch(Path(tmp_pkg))
+
+}
+
 # Shell function to generate a sstate package from a directory
 # set as SSTATE_BUILDDIR. Will be run from within SSTATE_BUILDDIR.
-#
-sstate_create_package () {
-	# Exit early if it already exists
-	if [ -e ${SSTATE_PKG} ]; then
-		touch ${SSTATE_PKG} 2>/dev/null || true
-		return
-	fi
-
-	mkdir --mode=0775 -p `dirname ${SSTATE_PKG}`
-	TFILE=`mktemp ${SSTATE_PKG}.XXXXXXXX`
-
+# The calling function handles moving the sstate package into the final
+# destination.
+sstate_archive_package () {
 	OPT="-cS"
 	ZSTD="zstd -${SSTATE_ZSTD_CLEVEL} -T${ZSTD_THREADS}"
 	# Use pzstd if available
@@ -850,42 +912,18 @@ sstate_create_package () {
 	# Need to handle empty directories
 	if [ "$(ls -A)" ]; then
 		set +e
-		tar -I "$ZSTD" $OPT -f $TFILE *
+		tar -I "$ZSTD" $OPT -f ${TMP_SSTATE_PKG} *
 		ret=$?
 		if [ $ret -ne 0 ] && [ $ret -ne 1 ]; then
 			exit 1
 		fi
 		set -e
 	else
-		tar -I "$ZSTD" $OPT --file=$TFILE --files-from=/dev/null
+		tar -I "$ZSTD" $OPT --file=${TMP_SSTATE_PKG} --files-from=/dev/null
 	fi
-	chmod 0664 $TFILE
-	# Skip if it was already created by some other process
-	if [ -h ${SSTATE_PKG} ] && [ ! -e ${SSTATE_PKG} ]; then
-		# There is a symbolic link, but it links to nothing.
-		# Forcefully replace it with the new file.
-		ln -f $TFILE ${SSTATE_PKG} || true
-	elif [ ! -e ${SSTATE_PKG} ]; then
-		# Move into place using ln to attempt an atomic op.
-		# Abort if it already exists
-		ln $TFILE ${SSTATE_PKG} || true
-	else
-		touch ${SSTATE_PKG} 2>/dev/null || true
-	fi
-	rm $TFILE
+	chmod 0664 ${TMP_SSTATE_PKG}
 }
 
-python sstate_sign_package () {
-    from oe.gpg_sign import get_signer
-
-
-    signer = get_signer(d, 'local')
-    sstate_pkg = d.getVar('SSTATE_PKG')
-    if os.path.exists(sstate_pkg + '.sig'):
-        os.unlink(sstate_pkg + '.sig')
-    signer.detach_sign(sstate_pkg, d.getVar('SSTATE_SIG_KEY', False), None,
-                       d.getVar('SSTATE_SIG_PASSPHRASE'), armor=False)
-}
 
 python sstate_report_unihash() {
     report_unihash = getattr(bb.parse.siggen, 'report_unihash', None)
@@ -918,6 +956,8 @@ sstate_unpack_package () {
 BB_HASHCHECK_FUNCTION = "sstate_checkhashes"
 
 def sstate_checkhashes(sq_data, d, siginfo=False, currentcount=0, summary=True, **kwargs):
+    import itertools
+
     found = set()
     missed = set()
 
@@ -950,6 +990,7 @@ def sstate_checkhashes(sq_data, d, siginfo=False, currentcount=0, summary=True, 
         sstatefile = d.expand("${SSTATE_DIR}/" + getsstatefile(tid, siginfo, d))
 
         if os.path.exists(sstatefile):
+            oe.utils.touch(sstatefile)
             found.add(tid)
             bb.debug(2, "SState: Found valid sstate file %s" % sstatefile)
         else:
@@ -977,15 +1018,19 @@ def sstate_checkhashes(sq_data, d, siginfo=False, currentcount=0, summary=True, 
             localdata.delVar('BB_NO_NETWORK')
 
         from bb.fetch2 import FetchConnectionCache
-        def checkstatus_init(thread_worker):
-            thread_worker.connection_cache = FetchConnectionCache()
+        def checkstatus_init():
+            while not connection_cache_pool.full():
+                connection_cache_pool.put(FetchConnectionCache())
 
-        def checkstatus_end(thread_worker):
-            thread_worker.connection_cache.close_connections()
+        def checkstatus_end():
+            while not connection_cache_pool.empty():
+                connection_cache = connection_cache_pool.get()
+                connection_cache.close_connections()
 
-        def checkstatus(thread_worker, arg):
+        def checkstatus(arg):
             (tid, sstatefile) = arg
 
+            connection_cache = connection_cache_pool.get()
             localdata2 = bb.data.createCopy(localdata)
             srcuri = "file://" + sstatefile
             localdata2.setVar('SRC_URI', srcuri)
@@ -995,7 +1040,7 @@ def sstate_checkhashes(sq_data, d, siginfo=False, currentcount=0, summary=True, 
 
             try:
                 fetcher = bb.fetch2.Fetch(srcuri.split(), localdata2,
-                            connection_cache=thread_worker.connection_cache)
+                            connection_cache=connection_cache)
                 fetcher.checkstatus()
                 bb.debug(2, "SState: Successful fetch test for %s" % srcuri)
                 found.add(tid)
@@ -1005,8 +1050,11 @@ def sstate_checkhashes(sq_data, d, siginfo=False, currentcount=0, summary=True, 
             except Exception as e:
                 bb.error("SState: cannot test %s: %s\n%s" % (srcuri, repr(e), traceback.format_exc()))
 
+            connection_cache_pool.put(connection_cache)
+
             if progress:
-                bb.event.fire(bb.event.ProcessProgress(msg, len(tasklist) - thread_worker.tasks.qsize()), d)
+                bb.event.fire(bb.event.ProcessProgress(msg, next(cnt_tasks_done)), d)
+            bb.event.check_for_interrupts(d)
 
         tasklist = []
         for tid in missed:
@@ -1016,6 +1064,8 @@ def sstate_checkhashes(sq_data, d, siginfo=False, currentcount=0, summary=True, 
         if tasklist:
             nproc = min(int(d.getVar("BB_NUMBER_THREADS")), len(tasklist))
 
+            ## thread-safe counter
+            cnt_tasks_done = itertools.count(start = 1)
             progress = len(tasklist) >= 100
             if progress:
                 msg = "Checking sstate mirror object availability"
@@ -1025,13 +1075,13 @@ def sstate_checkhashes(sq_data, d, siginfo=False, currentcount=0, summary=True, 
             fetcherenv = bb.fetch2.get_fetcher_environment(d)
             with bb.utils.environment(**fetcherenv):
                 bb.event.enable_threadlock()
-                pool = oe.utils.ThreadedPool(nproc, len(tasklist),
-                        worker_init=checkstatus_init, worker_end=checkstatus_end,
-                        name="sstate_checkhashes-")
-                for t in tasklist:
-                    pool.add_task(checkstatus, t)
-                pool.start()
-                pool.wait_completion()
+                import concurrent.futures
+                from queue import Queue
+                connection_cache_pool = Queue(nproc)
+                checkstatus_init()
+                with concurrent.futures.ThreadPoolExecutor(max_workers=nproc) as executor:
+                    executor.map(checkstatus, tasklist.copy())
+                checkstatus_end()
                 bb.event.disable_threadlock()
 
             if progress:
@@ -1065,7 +1115,7 @@ def sstate_checkhashes(sq_data, d, siginfo=False, currentcount=0, summary=True, 
         bb.parse.siggen.checkhashes(sq_data, missed, found, d)
 
     return found
-setscene_depvalid[vardepsexclude] = "SSTATE_EXCLUDEDEPS_SYSROOT"
+setscene_depvalid[vardepsexclude] = "SSTATE_EXCLUDEDEPS_SYSROOT _SSTATE_EXCLUDEDEPS_SYSROOT"
 
 BB_SETSCENE_DEPVALID = "setscene_depvalid"
 
@@ -1084,7 +1134,7 @@ def setscene_depvalid(task, taskdependees, notneeded, d, log=None):
 
     logit("Considering setscene task: %s" % (str(taskdependees[task])), log)
 
-    directtasks = ["do_populate_lic", "do_deploy_source_date_epoch", "do_shared_workdir", "do_stash_locale", "do_gcc_stash_builddir", "do_create_spdx"]
+    directtasks = ["do_populate_lic", "do_deploy_source_date_epoch", "do_shared_workdir", "do_stash_locale", "do_gcc_stash_builddir", "do_create_spdx", "do_deploy_archives"]
 
     def isNativeCross(x):
         return x.endswith("-native") or "-cross-" in x or "-crosssdk" in x or x.endswith("-cross")
@@ -1118,11 +1168,6 @@ def setscene_depvalid(task, taskdependees, notneeded, d, log=None):
             continue
         # Native/Cross packages don't exist and are noexec anyway
         if isNativeCross(taskdependees[dep][0]) and taskdependees[dep][1] in ['do_package_write_deb', 'do_package_write_ipk', 'do_package_write_rpm', 'do_packagedata', 'do_package', 'do_package_qa']:
-            continue
-
-        # This is due to the [depends] in useradd.bbclass complicating matters
-        # The logic *is* reversed here due to the way hard setscene dependencies are injected
-        if (taskdependees[task][1] == 'do_package' or taskdependees[task][1] == 'do_populate_sysroot') and taskdependees[dep][0].endswith(('shadow-native', 'shadow-sysroot', 'base-passwd', 'pseudo-native')) and taskdependees[dep][1] == 'do_populate_sysroot':
             continue
 
         # Consider sysroot depending on sysroot tasks
@@ -1187,16 +1232,7 @@ python sstate_eventhandler() {
         if not os.path.exists(siginfo):
             bb.siggen.dump_this_task(siginfo, d)
         else:
-            try:
-                os.utime(siginfo, None)
-            except PermissionError:
-                pass
-            except OSError as e:
-                # Handle read-only file systems gracefully
-                import errno
-                if e.errno != errno.EROFS:
-                    raise e
-
+            oe.utils.touch(siginfo)
 }
 
 SSTATE_PRUNE_OBSOLETEWORKDIR ?= "1"
@@ -1278,6 +1314,7 @@ python sstate_eventhandler_reachablestamps() {
                 lines.remove(r)
                 removed = removed + 1
                 bb.event.fire(bb.event.ProcessProgress(msg, removed), d)
+                bb.event.check_for_interrupts(d)
 
             bb.event.fire(bb.event.ProcessFinished(msg), d)
 
@@ -1347,6 +1384,7 @@ python sstate_eventhandler_stalesstate() {
                     bb.utils.remove(stamp)
                 removed = removed + 1
                 bb.event.fire(bb.event.ProcessProgress(msg, removed), d)
+                bb.event.check_for_interrupts(d)
 
             bb.event.fire(bb.event.ProcessFinished(msg), d)
 }
