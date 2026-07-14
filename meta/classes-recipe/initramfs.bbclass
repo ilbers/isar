@@ -44,4 +44,42 @@ python do_validate_rootfs_packages () {
                 bb.error(f"{pkg} is incompatible with the selected generator '{initrd_generator}'")
 }
 addtask do_validate_rootfs_packages before do_rootfs_install
+
+SSTATETASKS += "do_generate_initramfs"
+do_generate_initramfs[cleandirs] += "${DEPLOYDIR}"
+do_generate_initramfs[network] = "${TASK_USE_SUDO}"
+do_generate_initramfs[sstate-inputdirs] = "${DEPLOYDIR}"
+do_generate_initramfs[sstate-outputdirs] = "${DEPLOY_DIR_IMAGE}"
+python do_generate_initramfs() {
+    bb.build.exec_func('rootfs_do_mounts', d)
+    bb.build.exec_func('rootfs_do_qemu', d)
+
+    progress_reporter = bb.progress.ProgressHandler(d)
+    d.rootfs_progress = progress_reporter
+
+    try:
+        bb.build.exec_func('rootfs_generate_initramfs', d)
+        bb.build.exec_func('rootfs_purge_initramfs', d)
+    finally:
+        bb.build.exec_func('rootfs_do_umounts', d)
+}
+
+python do_generate_initramfs_setscene () {
+    sstate_setscene(d)
+}
+
+# When generating an external initrd, remove it from the rootfs to ensure
+# identical artifacts when using the sstate cache. The remaining rootfs
+# is not used for booting.
+rootfs_purge_initramfs[weight] = "1"
+rootfs_purge_initramfs() {
+    sudo find ${ROOTFSDIR}/boot -name "initrd.img-*" -delete
+}
+
+# If an external initrd shall be used, run it as a task
+# instead of as part of the rootfs install.
+addtask do_generate_initramfs before do_rootfs_postprocess after do_rootfs_install
+addtask do_generate_initramfs_setscene
+ROOTFS_INSTALL_COMMAND:remove = "rootfs_generate_initramfs"
+
 inherit rootfs

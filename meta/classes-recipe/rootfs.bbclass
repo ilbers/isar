@@ -415,6 +415,9 @@ rootfs_clear_initrd_symlinks() {
 }
 
 do_rootfs_install[root_cleandirs] = "${ROOTFSDIR}"
+do_rootfs_install[cleandirs] += "${DEPLOYDIR}"
+do_rootfs_install[sstate-inputdirs] = "${DEPLOYDIR}"
+do_rootfs_install[sstate-outputdirs] = "${DEPLOY_DIR_IMAGE}"
 do_rootfs_install[vardeps] += "${ROOTFS_CONFIGURE_COMMAND} ${ROOTFS_INSTALL_COMMAND} ${ROOTFS_VARDEPS}"
 do_rootfs_install[vardepsexclude] += "IMAGE_ROOTFS"
 do_rootfs_install[depends] = "bootstrap-${@'target' if d.getVar('ROOTFS_ARCH') == d.getVar('DISTRO_ARCH') else 'host'}:do_build"
@@ -621,28 +624,8 @@ python do_rootfs_postprocess() {
 }
 addtask rootfs_postprocess before do_rootfs after do_unpack
 
-SSTATETASKS += "do_generate_initramfs"
-do_generate_initramfs[network] = "${TASK_USE_SUDO}"
-do_generate_initramfs[cleandirs] += "${DEPLOYDIR}"
-do_generate_initramfs[sstate-inputdirs] = "${DEPLOYDIR}"
-do_generate_initramfs[sstate-outputdirs] = "${DEPLOY_DIR_IMAGE}"
-python do_generate_initramfs() {
-    bb.build.exec_func('rootfs_do_mounts', d)
-    bb.build.exec_func('rootfs_do_qemu', d)
-
-    progress_reporter = bb.progress.ProgressHandler(d)
-    d.rootfs_progress = progress_reporter
-
-    try:
-        bb.build.exec_func('rootfs_generate_initramfs', d)
-    finally:
-        bb.build.exec_func('rootfs_do_umounts', d)
-}
-
-python do_generate_initramfs_setscene () {
-    sstate_setscene(d)
-}
-
+ROOTFS_INSTALL_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'generate-initrd', 'rootfs_generate_initramfs', '', d)}"
+rootfs_generate_initramfs[weight] = "1000"
 rootfs_generate_initramfs[progress] = "custom:rootfs_progress.InitrdProgressHandler"
 rootfs_generate_initramfs() {
     if [ -n "$(find '${ROOTFSDIR}/boot' -type f -name 'vmlinu[xz]*')" ]; then
@@ -659,12 +642,6 @@ rootfs_generate_initramfs() {
     else
         echo "no kernel in this rootfs, do not generate initrd"
     fi
-}
-
-python() {
-    if 'generate-initrd' in d.getVar('ROOTFS_FEATURES', True).split():
-        bb.build.addtask('do_generate_initramfs', 'do_rootfs', 'do_rootfs_postprocess', d)
-        bb.build.addtask('do_generate_initramfs_setscene', None, None, d)
 }
 
 python do_rootfs() {

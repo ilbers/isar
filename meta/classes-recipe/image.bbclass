@@ -491,7 +491,7 @@ EOSUDO
         -exec touch '{}' -h -d@${SOURCE_DATE_EPOCH} ';'
 }
 do_rootfs_finalize[network] = "${TASK_USE_SUDO}"
-addtask rootfs_finalize before do_rootfs after do_rootfs_postprocess do_generate_initramfs
+addtask rootfs_finalize before do_rootfs after do_rootfs_postprocess
 
 ROOTFS_QA_FIND_ARGS ?= ""
 
