@@ -66,7 +66,8 @@ ui_countdown_allow_attended_switch() {
 # ui_select_image_menu <install_data_dir>
 #
 # Uses sys_list_installable_entries backend API and returns selected
-# relative image path on stdout.
+# relative image path on stdout. If only one image is available, it is
+# automatically selected without showing a dialog.
 #--------------------------------------------------------------------------
 ui_select_image_menu() {
     local install_data_dir="$1"
@@ -83,6 +84,13 @@ ui_select_image_menu() {
         return 1
     fi
 
+    # If only one image is available, select it automatically
+    if [ "${#list[@]}" -eq 2 ]; then  # list has pairs: path and description
+        echo "${list[0]}"
+        return 0
+    fi
+
+    # Multiple images available, show selection dialog
     selected=$(dialog --no-tags \
         --menu "Select image to be installed" 12 70 6 \
         "${list[@]}" --output-fd 1) || return 2
