@@ -8,6 +8,8 @@ inherit sbom
 ROOTFS_ARCH ?= "${DISTRO_ARCH}"
 ROOTFS_DISTRO ?= "${DISTRO}"
 
+DEPLOYDIR = "${WORKDIR}/deploy"
+
 # This variable is intended to be set if dracut is
 # the default initramfs generator and it is not
 # possible to derive the value in another way
