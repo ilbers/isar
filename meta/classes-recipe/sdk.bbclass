@@ -69,12 +69,12 @@ ROOTFS_POSTPROCESS_COMMAND:remove = "${@'rootfs_cleanup_isar_apt' if bb.utils.to
 ROOTFS_CONFIGURE_COMMAND:append:class-sdk = " ${@'rootfs_configure_isar_apt_dir' if bb.utils.to_boolean(d.getVar('SDK_INCLUDE_ISAR_APT')) else ''}"
 rootfs_configure_isar_apt_dir() {
     # Copy isar-apt instead of mounting:
-    sudo cp -Trpfx --reflink=auto ${REPO_ISAR_DIR}/${DISTRO} ${ROOTFSDIR}/isar-apt
+    run_privileged cp -Trpfx --reflink=auto ${REPO_ISAR_DIR}/${DISTRO} ${ROOTFSDIR}/isar-apt
 }
 
 ROOTFS_POSTPROCESS_COMMAND:prepend:class-sdk = "sdkchroot_configscript "
 sdkchroot_configscript () {
-    sudo chroot ${ROOTFSDIR} /configscript.sh ${DISTRO_ARCH}
+    run_in_chroot ${ROOTFSDIR} /configscript.sh ${DISTRO_ARCH}
 }
 
 ROOTFS_POSTPROCESS_COMMAND:append:class-sdk = " sdkchroot_finalize"
@@ -83,7 +83,7 @@ sdkchroot_finalize() {
     rootfs_do_umounts
 
     # Remove setup scripts
-    sudo rm -f ${ROOTFSDIR}/chroot-setup.sh ${ROOTFSDIR}/configscript.sh
+    run_privileged rm -f ${ROOTFSDIR}/chroot-setup.sh ${ROOTFSDIR}/configscript.sh
 
     # Make all links relative
     for link in $(find ${ROOTFSDIR}/ -type l); do
@@ -95,16 +95,16 @@ sdkchroot_finalize() {
             new_target=$(realpath --no-symlinks -m --relative-to=$basedir ${ROOTFSDIR}${target})
 
             # remove first to allow rewriting directory links
-            sudo rm $link
-            sudo ln -s $new_target $link
+            run_privileged rm $link
+            run_privileged ln -s $new_target $link
         fi
     done
 
     # Set up sysroot wrapper
     for tool_pattern in "gcc-[0-9]*" "g++-[0-9]*" "cpp-[0-9]*" "ld.bfd" "ld.gold"; do
         for tool in $(find ${ROOTFSDIR}/usr/bin -type f -name "*-linux-gnu*-${tool_pattern}"); do
-            sudo mv "${tool}" "${tool}.bin"
-            sudo ln -sf gcc-sysroot-wrapper.sh ${tool}
+            run_privileged mv "${tool}" "${tool}.bin"
+            run_privileged ln -sf gcc-sysroot-wrapper.sh ${tool}
         done
     done
 }

@@ -20,7 +20,7 @@ SCHROOT_LOCKFILE = "/tmp/schroot.lock"
 schroot_create_configs() {
     mkdir -p "${TMPDIR}/schroot-overlay"
     echo "Creating ${SCHROOT_CONF_FILE}"
-    sudo -s <<'EOSUDO'
+    run_privileged_heredoc <<'EOSUDO'
         set -e
 
         cat << EOF > "${SCHROOT_CONF_FILE}"
@@ -61,7 +61,7 @@ EOSUDO
 schroot_delete_configs() {
     (flock -x 9
     set -e
-    sudo -s <<'EOSUDO'
+    run_privileged_heredoc <<'EOSUDO'
         set -e
         if [ -d "${SBUILD_CONF_DIR}" ]; then
             echo "Removing ${SBUILD_CONF_DIR}"
@@ -103,7 +103,7 @@ sbuild_export() {
 }
 
 insert_mounts() {
-    sudo -s <<'EOSUDO'
+    run_privileged_heredoc <<'EOSUDO'
         set -e
         for mp in ${SCHROOT_MOUNTS}; do
             FSTAB_LINE="${mp%%:*} ${mp#*:} none rw,bind,private 0 0"
@@ -114,7 +114,7 @@ EOSUDO
 }
 
 remove_mounts() {
-    sudo -s <<'EOSUDO'
+    run_privileged_heredoc <<'EOSUDO'
         set -e
         for mp in ${SCHROOT_MOUNTS}; do
             FSTAB_LINE="${mp%%:*} ${mp#*:} none rw,bind,private 0 0"
@@ -125,7 +125,7 @@ EOSUDO
 
 schroot_configure_ccache() {
     mkdir -p "${CCACHE_DIR}"
-    sudo -s <<'EOSUDO'
+    run_privileged_heredoc <<'EOSUDO'
         set -e
 
         sbuild_fstab="${SBUILD_CONF_DIR}/fstab"

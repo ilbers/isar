@@ -193,8 +193,8 @@ generate_wic_image() {
         fi
 EOIMAGER
 
-    sudo chown -R $(stat -c "%U" ${LAYERDIR_core}) ${LAYERDIR_core} ${LAYERDIR_isar} ${SCRIPTSDIR} || true
-    sudo chown -R $(id -u):$(id -g) "${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.wic"*
+    run_privileged chown -R $(stat -c "%U" ${LAYERDIR_core}) ${LAYERDIR_core} ${LAYERDIR_isar} ${SCRIPTSDIR} || true
+    run_privileged chown -R $(id -u):$(id -g) "${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.wic"*
     rm -rf ${IMAGE_ROOTFS}/../pseudo
 
     cat ${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.manifest \

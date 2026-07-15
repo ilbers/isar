@@ -37,38 +37,38 @@ do_containerize() {
 
     # prepare OCI container image skeleton
     bbdebug 1 "prepare OCI container image skeleton"
-    sudo rm -rf "${oci_img_dir}" "${oci_img_dir}_unpacked"
-    sudo umoci init --layout "${oci_img_dir}"
-    sudo umoci new --image "${oci_img_dir}:${empty_tag}"
+    run_privileged rm -rf "${oci_img_dir}" "${oci_img_dir}_unpacked"
+    run_privileged umoci init --layout "${oci_img_dir}"
+    run_privileged umoci new --image "${oci_img_dir}:${empty_tag}"
     if [ -n "${cmd}" ]; then
-        sudo umoci config --image "${oci_img_dir}:${empty_tag}" \
+        run_privileged umoci config --image "${oci_img_dir}:${empty_tag}" \
             --config.cmd="${cmd}"
     fi
     if [ -n "${entrypoint}" ]; then
-        sudo umoci config --image "${oci_img_dir}:${empty_tag}" \
+        run_privileged umoci config --image "${oci_img_dir}:${empty_tag}" \
             --config.entrypoint="${entrypoint}"
     fi
     if [ -n "${path}" ]; then
-        sudo umoci config --image "${oci_img_dir}:${empty_tag}" \
+        run_privileged umoci config --image "${oci_img_dir}:${empty_tag}" \
             --config.env="PATH=${path}"
     fi
-    sudo umoci unpack --image "${oci_img_dir}:${empty_tag}" \
+    run_privileged umoci unpack --image "${oci_img_dir}:${empty_tag}" \
         "${oci_img_dir}_unpacked"
 
     # add root filesystem as the flesh of the skeleton
-    sudo cp --reflink=auto -a "${rootfs}"/* "${oci_img_dir}_unpacked/rootfs/"
+    run_privileged cp --reflink=auto -a "${rootfs}"/* "${oci_img_dir}_unpacked/rootfs/"
     # clean-up temporary files
-    sudo find "${oci_img_dir}_unpacked/rootfs/tmp" -mindepth 1 -delete
+    run_privileged find "${oci_img_dir}_unpacked/rootfs/tmp" -mindepth 1 -delete
 
     # pack container image
     bbdebug 1 "pack container image"
-    sudo umoci repack --image "${oci_img_dir}:${tag}" \
+    run_privileged umoci repack --image "${oci_img_dir}:${tag}" \
         "${oci_img_dir}_unpacked"
-    sudo umoci remove --image "${oci_img_dir}:${empty_tag}"
-    sudo rm -rf "${oci_img_dir}_unpacked"
+    run_privileged umoci remove --image "${oci_img_dir}:${empty_tag}"
+    run_privileged rm -rf "${oci_img_dir}_unpacked"
 
     # no root needed anymore
-    sudo chown --recursive $(id -u):$(id -g) "${oci_img_dir}"
+    run_privileged chown --recursive $(id -u):$(id -g) "${oci_img_dir}"
 }
 
 convert_container() {

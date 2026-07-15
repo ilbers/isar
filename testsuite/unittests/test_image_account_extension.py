@@ -54,9 +54,8 @@ class TestImageAccountExtensionImageCreateUsers(
             image_create_users(d)
 
         run_mock.assert_called_once_with(
+            run_privileged_cmd(d).split() +
             [
-                'sudo',
-                '-E',
                 'chroot',
                 rootfs.path(),
                 '/usr/sbin/useradd',
@@ -136,9 +135,8 @@ class TestImageAccountExtensionImageCreateGroups(
             image_create_groups(d)
 
         run_mock.assert_called_once_with(
+            run_privileged_cmd(d).split() +
             [
-                'sudo',
-                '-E',
                 'chroot',
                 rootfs.path(),
                 '/usr/sbin/groupadd',
@@ -164,9 +162,8 @@ class TestImageAccountExtensionImageCreateGroups(
             image_create_groups(d)
 
         run_mock.assert_called_once_with(
+            run_privileged_cmd(d).split() +
             [
-                'sudo',
-                '-E',
                 'chroot',
                 rootfs.path(),
                 '/usr/sbin/groupmod',

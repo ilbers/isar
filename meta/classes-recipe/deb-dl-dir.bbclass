@@ -97,7 +97,7 @@ debsrc_download() {
 dbg_pkgs_download() {
     export rootfs="$1"
 
-    apt-ftparchive --md5=no --sha1=no --sha256=no --sha512=no \
+    dbg_pkgs=$(apt-ftparchive --md5=no --sha1=no --sha256=no --sha512=no \
                    -a "${DISTRO_ARCH}" packages \
                    "${rootfs}/var/cache/apt/archives" \
     | awk '/^Package:/ {print $2}' \
@@ -109,7 +109,9 @@ dbg_pkgs_download() {
             | grep "${DISTRO_ARCH}" \
             | awk '!/Binary:/ {print $1}' \
             | sort -u
-    done | xargs -r sudo -E chroot ${rootfs} sh -c '/usr/bin/apt-get -y --download-only install "$@"' --
+    done)
+
+    [ -z "${dbg_pkgs}" ] || run_in_chroot ${rootfs} sh -c '/usr/bin/apt-get -y --download-only install $@' -- ${dbg_pkgs}
 }
 
 deb_dl_dir_import() {
@@ -119,7 +121,7 @@ deb_dl_dir_import() {
     export gid=$(id -g)
 
     # let our unprivileged user place downloaded packages in /var/cache/apt/archives/
-    sudo -Es << '    EOSUDO'
+    run_privileged_heredoc << '    EOSUDO'
         mkdir -p "${rootfs}"/var/cache/apt/archives/partial/
         chown -R ${uid}:${gid} "${rootfs}"/var/cache/apt/archives/
     EOSUDO

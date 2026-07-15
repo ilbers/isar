@@ -141,7 +141,7 @@ root_cleandirs() {
             die "Could not remove $i, because subdir is mounted"
     done
     for i in $ROOT_CLEANDIRS_DIRS; do
-        sudo rm -rf --one-file-system "$TMPDIR$i"
+        run_privileged rm -rf --one-file-system "$TMPDIR$i"
         mkdir -p "$TMPDIR$i"
     done
 }
@@ -375,3 +375,27 @@ def deb_list_beautify(d, varname):
         if stripped:
             var_list.append(stripped)
     return ', '.join(var_list)
+
+# Helpers for privileged execution. Only the non-underscore functions
+# shall be used outside of this class.
+
+def run_privileged_cmd(d):
+    cmd = 'sudo -E'
+    bb.debug(1, "privileged cmd: %s" % cmd)
+    return cmd
+
+RUN_PRIVILEGED_CMD := "${@run_privileged_cmd(d)}"
+
+run_privileged() {
+    ${RUN_PRIVILEGED_CMD} "$@"
+}
+
+run_privileged_heredoc() {
+    ${RUN_PRIVILEGED_CMD} /bin/bash -s "$@"
+}
+
+run_in_chroot() {
+    rootfs="$1"
+    shift
+    ${RUN_PRIVILEGED_CMD} chroot "$rootfs" "$@"
+}
