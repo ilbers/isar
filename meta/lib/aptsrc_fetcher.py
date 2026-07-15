@@ -9,6 +9,10 @@ from bb.fetch2 import logger
 from bb.fetch2 import runfetchcmd
 
 class AptSrc(FetchMethod):
+    @classmethod
+    def create(cls, d):
+        return AptSrcSchroot()
+
     def supports(self, ud, d):
         return ud.type in ['apt']
 
@@ -20,6 +24,11 @@ class AptSrc(FetchMethod):
         codename = d.getVar('BASE_DISTRO_CODENAME')
         ud.localfile='deb-src/' + base_distro + '-' + codename + '/' + ud.host
 
+    def clean(self, ud, d):
+        bb.utils.remove(ud.localpath, recurse=True)
+
+
+class AptSrcSchroot(AptSrc):
     def download(self, ud, d):
         bb.utils.exec_flat_python_func('isar_export_proxies', d)
         bb.build.exec_func('schroot_create_configs', d)
@@ -83,6 +92,3 @@ class AptSrc(FetchMethod):
         finally:
             runfetchcmd(f'schroot -q -f -e -c {session_id}', d)
             bb.build.exec_func('schroot_delete_configs', d)
-
-    def clean(self, ud, d):
-        bb.utils.remove(ud.localpath, recurse=True)
