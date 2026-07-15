@@ -34,25 +34,43 @@ flow_run_attended() {
 	local selected_image
 	local selected_target
 	local target_device_size
+	local installable_images=()
+	local installable_image
 
 	# In attended mode, prefer to ask the user for the image selection.
 	# Only use installer_image_uri when it was explicitly configured.
 
 	if [ -z "$installer_image_uri" ] || [ ! -f "$installdata/$installer_image_uri" ]; then
-		selected_image=$(ui_select_image_menu "$installdata")
-		case $? in
+		while IFS= read -r installable_image; do
+			[ -n "$installable_image" ] || continue
+			installable_images+=("$installable_image")
+		done < <(sys_list_installable_entries "$installdata")
+
+		case "${#installable_images[@]}" in
 			0)
-				installer_image_uri="$selected_image"
-				;;
-			1)
 				ui_show_error "Could not find an image to install. Installation aborted."
 				return 1
 				;;
-			2)
-				return 2
+			1)
+				installer_image_uri="${installable_images[0]}"
 				;;
 			*)
-				return 1
+				selected_image=$(ui_select_image_menu "$installdata")
+				case $? in
+					0)
+						installer_image_uri="$selected_image"
+						;;
+					1)
+						ui_show_error "Could not find an image to install. Installation aborted."
+						return 1
+						;;
+					2)
+						return 2
+						;;
+					*)
+						return 1
+						;;
+				esac
 				;;
 		esac
 	fi
