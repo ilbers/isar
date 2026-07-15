@@ -54,7 +54,8 @@ imager_run() {
             apt-get update \
                 -o Dir::Etc::SourceList='sources.list.d/isar-apt.list' \
                 -o Dir::Etc::SourceParts='-' \
-                -o APT::Get::List-Cleanup='0'
+                -o APT::Get::List-Cleanup='0' \
+                -o Debug::NoLocking=1
             apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y \
                 --allow-unauthenticated --allow-downgrades --download-only install \
                 ${local_install}"
