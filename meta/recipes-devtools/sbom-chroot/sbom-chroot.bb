@@ -27,7 +27,16 @@ ROOTFSDIR = "${WORKDIR}/rootfs"
 ROOTFS_PACKAGES = "${SBOM_IMAGE_INSTALL}"
 
 do_sbomchroot_deploy[dirs] = "${SBOM_DIR}"
+do_sbomchroot_deploy[network] = "${TASK_USE_SUDO}"
 do_sbomchroot_deploy() {
-    ln -Tfsr "${ROOTFSDIR}" "${SBOM_CHROOT}"
+    # deploy with empty var to make it smaller
+    lopts="--one-file-system --exclude=var/*"
+    ZSTD="zstd -${SSTATE_ZSTD_CLEVEL} -T${ZSTD_THREADS}"
+
+    run_privileged \
+        tar -C ${ROOTFSDIR} -cpS $lopts ${ROOTFS_TAR_ATTR_FLAGS} . \
+            | $ZSTD > ${SBOM_CHROOT}
+    # cleanup extracted rootfs
+    run_privileged rm -rf ${ROOTFSDIR}
 }
 addtask do_sbomchroot_deploy before do_build after do_rootfs

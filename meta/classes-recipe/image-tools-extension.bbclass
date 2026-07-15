@@ -82,7 +82,7 @@ EOAPT
             dpkg-query -W -f='${source:Package}|${source:Version}|${Package}:${Architecture}|${Version}\n' ${local_bom} > \
         ${WORKDIR}/imager.manifest
 
-        ${@bb.utils.contains('ROOTFS_FEATURES', 'generate-sbom', 'generate_imager_sbom', '', d)}
+        ${@bb.utils.contains('ROOTFS_FEATURES', 'generate-sbom', 'generate_imager_sbom $schroot_dir', '', d)}
     fi
 
     schroot -e -c ${session_id}
@@ -91,14 +91,18 @@ EOAPT
     schroot_delete_configs
 }
 
-generate_imager_sbom() {
+generate_imager_sbom_in_chroot() {
+    run_privileged mkdir -p \
+        ${SBOM_CHROOT_LOCAL}/mnt/rootfs \
+        ${SBOM_CHROOT_LOCAL}/mnt/deploy-dir
+
     TIMESTAMP=$(date --iso-8601=s -d @${SOURCE_DATE_EPOCH})
     sbom_document_uuid="${@d.getVar('SBOM_DOCUMENT_UUID') or generate_document_uuid(d, False)}"
     bwrap \
         --unshare-user \
         --unshare-pid \
-        --bind ${SBOM_CHROOT} / \
-        --bind $schroot_dir /mnt/rootfs \
+        --bind ${SBOM_CHROOT_LOCAL} / \
+        --bind $1 /mnt/rootfs \
         --bind ${WORKDIR} /mnt/deploy-dir \
         -- debsbom -vv generate ${SBOM_DEBSBOM_TYPE_ARGS} \
             --from-pkglist -r /mnt/rootfs -o /mnt/deploy-dir/imager \
@@ -128,6 +132,7 @@ imager_run_unshare() {
     fi
 
     local_install="${@(d.getVar("INSTALL_%s" % d.getVar("BB_CURRENTTASK")) or '').strip()}"
+    local_bom="${@(d.getVar("BOM_%s" % d.getVar("BB_CURRENTTASK")) or '').strip()}"
 
     run_privileged_heredoc <<'EOF'
     set -e
@@ -185,5 +190,19 @@ EOF
         chroot ${ROOTFS_IMAGETOOLS} "$@" <&3
 EOF
 
+    if [ -n "${local_bom}" ]; then
+        run_in_chroot ${ROOTFS_IMAGETOOLS} \
+            dpkg-query -W -f='${source:Package}|${source:Version}|${Package}:${Architecture}|${Version}\n' ${local_bom} > \
+            ${WORKDIR}/imager.manifest
+
+        ${@bb.utils.contains('ROOTFS_FEATURES', 'generate-sbom', 'generate_imager_sbom {}'.format(d.getVar('ROOTFS_IMAGETOOLS')), '', d)}
+    fi
+
     run_privileged rm -rf ${ROOTFS_IMAGETOOLS}
+}
+
+generate_imager_sbom() {
+    prepare_sbom_chroot
+    trap 'cleanup_sbom_chroot' EXIT
+    generate_imager_sbom_in_chroot "$1"
 }
