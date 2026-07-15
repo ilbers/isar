@@ -15,4 +15,9 @@ TEST_CONTAINER_VERSION=$(cat ${ISAR_DIR}/testsuite/dockerdata/version)
 export KAS_CONTAINER_IMAGE_DISTRO="container:$TEST_CONTAINER_VERSION"
 export KAS_CONTAINER_IMAGE=${CONTAINER_BASENAME:-ghcr.io/ilbers/isar}/test
 
-${ISAR_DIR}/kas/kas-container --isar --repo-ro shell -c "$*"
+ISAR_FLAG="--isar"
+case "$*" in
+    *"-p rootless=1"*) ISAR_FLAG="--isar-rootless" ;;
+esac
+
+${ISAR_DIR}/kas/kas-container ${ISAR_FLAG} --repo-ro shell -c "$*"
