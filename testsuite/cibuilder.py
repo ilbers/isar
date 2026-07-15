@@ -128,6 +128,7 @@ class CIBuilder(Test):
         customizations=None,
         generate_sbom=False,
         lines=None,
+        rootless=False,
         **kwargs,
     ):
         # write configuration file and set bitbake_args
@@ -139,6 +140,9 @@ class CIBuilder(Test):
 
         if not sstate:
             sstate = bool(int(self.params.get('sstate', default=0)))
+
+        if not rootless:
+            rootless = bool(int(self.params.get('rootless', default=0)))
 
         # set those to "" to not set dir value but use system default
         if dl_dir is None:
@@ -178,6 +182,7 @@ class CIBuilder(Test):
             f"  installer_image = {installer_image}\n"
             f"  customizations = {customizations}\n"
             f"  generate_sbom = {generate_sbom}\n"
+            f"  rootless = {rootless}\n"
             f"  lines = {strlines}\n"
             f"==================================================="
         )
@@ -279,6 +284,8 @@ class CIBuilder(Test):
                 )
             if generate_sbom is False:
                 f.write('ROOTFS_FEATURES:remove = "generate-sbom"\n')
+            if rootless:
+                f.write('ISAR_ROOTLESS = "1"\n')
             if lines is not None:
                 f.writelines((line + '\n' if not line.endswith('\n') else line) for line in lines)
 
