@@ -52,10 +52,7 @@ do_dpkg_build[depends] += "${BPN}:do_deploy_source"
 
 SCHROOT_MOUNTS = "${WORKDIR}:/work ${REPO_ISAR_DIR}/${DISTRO}:/isar-apt"
 
-do_fetch_common_source[depends] += "${SCHROOT_DEP} ${BPN}:do_deploy_source"
-do_fetch_common_source[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
-do_fetch_common_source[network] = "${TASK_USE_SUDO}"
-do_fetch_common_source() {
+fetch_common_source_schroot() {
     schroot_create_configs
     insert_mounts
 
@@ -82,6 +79,39 @@ do_fetch_common_source() {
     schroot -e -c ${session_id}
     remove_mounts
     schroot_delete_configs
+}
+
+UNSHARE_DPKG_SOURCE_CHROOT = "${WORKDIR}/dpkg-source-chroot"
+fetch_common_source_unshare() {
+    run_privileged_heredoc <<'EOF'
+        set -e
+        mkdir -p ${UNSHARE_DPKG_SOURCE_CHROOT}
+        tar -xf "${SBUILD_CHROOT}" -C ${UNSHARE_DPKG_SOURCE_CHROOT}
+
+        ${@insert_isar_mounts(d, d.getVar('UNSHARE_DPKG_SOURCE_CHROOT'), d.getVar('SCHROOT_MOUNTS'))}
+        chroot ${UNSHARE_DPKG_SOURCE_CHROOT} /bin/bash -s <<'EOAPT'
+            set -e
+            apt-get update \
+                -o Dir::Etc::SourceList="sources.list.d/isar-apt.list" \
+                -o Dir::Etc::SourceParts="-" \
+                -o APT::Get::List-Cleanup="0"
+
+            cd /work
+            apt-get -y --download-only --only-source \
+                -o Debug::NoLocking=1 -o Acquire::Source-Symlinks="false"  \
+                source ${DEBIAN_SOURCE}
+EOAPT
+EOF
+
+    # run cleanup in separate session to ensure nothing is mounted
+    run_privileged rm -rf ${UNSHARE_DPKG_SOURCE_CHROOT}
+}
+
+do_fetch_common_source[depends] += "${SCHROOT_DEP} ${BPN}:do_deploy_source"
+do_fetch_common_source[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
+do_fetch_common_source[network] = "${TASK_USE_SUDO}"
+do_fetch_common_source() {
+    fetch_common_source_${ISAR_CHROOT_MODE}
 }
 addtask fetch_common_source
 
