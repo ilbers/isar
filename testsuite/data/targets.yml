@@ -107,18 +107,26 @@ a: !mux
     name: rpi-arm-bullseye
   rpi-arm-bookworm:
     name: rpi-arm-bookworm
+  rpi-arm-trixie:
+    name: rpi-arm-trixie
   rpi-arm-v7-bullseye:
     name: rpi-arm-v7-bullseye
   rpi-arm-v7-bookworm:
     name: rpi-arm-v7-bookworm
+  rpi-arm-v7-trixie:
+    name: rpi-arm-v7-trixie
   rpi-arm-v7l-bullseye:
     name: rpi-arm-v7l-bullseye
   rpi-arm-v7l-bookworm:
     name: rpi-arm-v7l-bookworm
+  rpi-arm-v7l-trixie:
+    name: rpi-arm-v7l-trixie
   rpi-arm64-v8-bullseye:
     name: rpi-arm64-v8-bullseye
   rpi-arm64-v8-bookworm:
     name: rpi-arm64-v8-bookworm
+  rpi-arm64-v8-trixie:
+    name: rpi-arm64-v8-trixie
   rpi-arm64-v8-efi-bookworm:
     name: rpi-arm64-v8-efi-bookworm
   sifive-fu540-trixie:

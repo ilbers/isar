@@ -1,0 +1,9 @@
+deb	http://deb.debian.org/debian trixie main contrib non-free
+deb-src	http://deb.debian.org/debian trixie main contrib non-free
+deb	http://deb.debian.org/debian-security trixie-security/updates main contrib non-free
+deb-src	http://deb.debian.org/debian-security trixie-security/updates main contrib non-free
+deb	http://deb.debian.org/debian trixie-updates main contrib non-free
+deb-src	http://deb.debian.org/debian trixie-updates main contrib non-free
+
+deb http://archive.raspberrypi.org/debian trixie main
+deb-src http://archive.raspberrypi.org/debian trixie main

@@ -83,6 +83,10 @@ config RASPIOS_BOOKWORM
 	bool "Raspberry Pi OS Debian 12 (bookworm)"
 	depends on (DISTRO_RASPIOS && CODENAME_BOOKWORM) || ANY_MACHINE_DISTRO
 
+config RASPIOS_TRIXIE
+	bool "Raspberry Pi OS Debian 13 (trixie)"
+	depends on (DISTRO_RASPIOS && CODENAME_TRIXIE) || ANY_MACHINE_DISTRO
+
 config UBUNTU_FOCAL
 	bool "Ubuntu 20.04 (Focal)"
 	depends on (DISTRO_UBUNTU && CODENAME_FOCAL) || ANY_MACHINE_DISTRO
@@ -118,6 +122,7 @@ config KAS_INCLUDE_DISTRO
 	default "kas/distro/debian-sid.yaml" if DEBIAN_SID
 	default "kas/distro/raspios-bullseye.yaml" if RASPIOS_BULLSEYE
 	default "kas/distro/raspios-bookworm.yaml" if RASPIOS_BOOKWORM
+    default "kas/distro/raspios-trixie.yaml" if RASPIOS_TRIXIE
 	default "kas/distro/ubuntu-focal.yaml" if UBUNTU_FOCAL
 	default "kas/distro/ubuntu-jammy.yaml" if UBUNTU_JAMMY
 	default "kas/distro/ubuntu-noble.yaml" if UBUNTU_NOBLE
