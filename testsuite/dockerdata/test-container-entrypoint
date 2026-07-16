@@ -17,6 +17,8 @@ else
 	shift 1
 fi
 
+clean_rootless_files=0
+
 export args="--max-parallel-tasks=1 --disable-sysinfo"
 for arg in $*; do
 	case "$arg" in
@@ -29,15 +31,19 @@ for arg in $*; do
 	--shell)
 		export start_shell=1
 		;;
+	--clean-rootless-files)
+		clean_rootless_files=1
+		;;
 	--help)
 		cat <<EOF
 Usage: run-tests.sh [params] ...
 
 Supported parameters:
-  --clean		Purge results of previous test runs before starting.
-  --debug		Use '--show=app,test' log settings for avocado.
-  --shell		Drop into shell rather than starting tests.
-  --help		Show this help message.
+  --clean					Purge results of previous test runs before starting.
+  --debug					Use '--show=app,test' log settings for avocado.
+  --shell					Drop into shell rather than starting tests.
+  --clean-rootless-files	Clean up files created by rootless builds with unshare after the tests finish.
+  --help					Show this help message.
 
 Any other parameters are passed to "avocado run". Its usage is:
 
@@ -59,6 +65,15 @@ case "$args" in
 	;;
 esac
 
+case "$args" in
+	*"-p rootless=1"*)
+		;;
+	*)
+		clean_rootless_files=0
+		;;
+esac
+export clean_rootless_files
+
 mkdir /isar
 
 busybox syslogd
@@ -71,6 +86,21 @@ echo exit | /container-entrypoint
 
 gosu builder sh -c '
 set -e
+
+cleanup_rootless_files()
+{
+	rc=$?
+
+	if [ "${clean_rootless_files}" = 1 ]; then
+		find build \
+			\( ! -user "$(whoami)" -type d -prune \) \
+			-exec ./scripts/isar-clean-builddir --rootless {} \;
+	fi
+
+	exit ${rc}
+}
+
+trap cleanup_rootless_files EXIT
 
 base_dir=/work/build/testsuite
 
