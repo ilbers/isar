@@ -73,7 +73,7 @@ python do_generate_initramfs_setscene () {
 # is not used for booting.
 rootfs_purge_initramfs[weight] = "1"
 rootfs_purge_initramfs() {
-    sudo find ${ROOTFSDIR}/boot -name "initrd.img-*" -delete
+    run_privileged find ${ROOTFSDIR}/boot -name "initrd.img-*" -delete
 }
 
 # If an external initrd shall be used, run it as a task
