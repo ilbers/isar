@@ -50,16 +50,18 @@ EOF
 }
 
 generate_sbom() {
-    run_privileged mkdir -p \
-        ${SBOM_CHROOT_LOCAL}/mnt/rootfs \
-        ${SBOM_CHROOT_LOCAL}/mnt/deploy-dir
+    run_privileged_heredoc <<'EOF'
+        mkdir -p ${SBOM_CHROOT_LOCAL}/mnt/rootfs \
+                 ${SBOM_CHROOT_LOCAL}/mnt/deploy-dir
+        tar -xf ${WORKDIR}/${ROOTFS_APT_STATE} --zstd \
+            -C ${SBOM_CHROOT_LOCAL}/mnt/rootfs
+EOF
 
     TIMESTAMP=$(date --iso-8601=s -d @${SOURCE_DATE_EPOCH})
     bwrap \
         --unshare-user \
         --unshare-pid \
         --bind ${SBOM_CHROOT_LOCAL} / \
-        --bind ${ROOTFSDIR} /mnt/rootfs \
         --bind ${DEPLOY_DIR_SBOM} /mnt/deploy-dir \
         -- debsbom -v generate ${SBOM_DEBSBOM_TYPE_ARGS} -r /mnt/rootfs -o /mnt/deploy-dir/'${ROOTFS_PACKAGE_SUFFIX}' \
             --distro-name '${SBOM_DISTRO_NAME}' --distro-supplier '${SBOM_DISTRO_SUPPLIER}' \

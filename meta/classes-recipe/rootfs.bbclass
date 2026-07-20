@@ -42,6 +42,8 @@ ROOTFS_FEATURES:remove:bullseye = "generate-sbom"
 ROOTFS_FEATURES:remove:jammy = "generate-sbom"
 ROOTFS_FEATURES:remove:focal = "generate-sbom"
 
+# Capture all information needed for sbom generation
+ROOTFS_APT_STATE = "apt-state.tar.zst"
 ROOTFS_APT_ARGS="install --yes -o Debug::pkgProblemResolver=yes"
 
 ROOTFS_CLEAN_FILES="/etc/hostname /etc/resolv.conf"
@@ -414,6 +416,19 @@ rootfs_clear_initrd_symlinks() {
     run_privileged rm -f ${ROOTFSDIR}/initrd.img.old
 }
 
+ROOTFS_INSTALL_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'generate-sbom', 'rootfs_capture_apt_state', '', d)}"
+rootfs_capture_apt_state() {
+    ( cd ${ROOTFSDIR} && find usr/share/doc -name copyright -print0 ) | \
+    tar -cf ${WORKDIR}/${ROOTFS_APT_STATE} --zstd -C ${ROOTFSDIR} \
+        --exclude=var/lib/apt/lists/partial \
+        --exclude=var/lib/apt/lists/lock \
+        --exclude=var/lib/apt/lists/auxfiles \
+        --null -T - \
+        var/lib/apt/lists \
+        var/lib/apt/extended_states \
+        var/lib/dpkg/status
+}
+
 do_rootfs_install[root_cleandirs] = "${ROOTFSDIR}"
 do_rootfs_install[cleandirs] += "${DEPLOYDIR}"
 do_rootfs_install[sstate-inputdirs] = "${DEPLOYDIR}"
@@ -674,6 +689,9 @@ rootfs_install_sstate_prepare() {
         tar -C ${WORKDIR}/mnt/rootfs -cpSf rootfs.tar $lopts ${SSTATE_TAR_ATTR_FLAGS} .
         umount -q ${WORKDIR}/mnt/rootfs
 EOF
+    if [ -f ${WORKDIR}/${ROOTFS_APT_STATE} ]; then
+        cp ${WORKDIR}/${ROOTFS_APT_STATE} .
+    fi
     ${@ 'sudo chown $(id -u):$(id -g) rootfs.tar' if d.getVar('ISAR_CHROOT_MODE') == 'schroot' else '' }
 }
 rootfs_install_sstate_prepare[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
@@ -690,6 +708,9 @@ rootfs_install_sstate_finalize() {
         tar -C ${ROOTFSDIR} -xp ${SSTATE_TAR_ATTR_FLAGS} -f rootfs.tar
 EOF
         rm rootfs.tar
+    fi
+    if [ -f ${ROOTFS_APT_STATE} ]; then
+        mv ${ROOTFS_APT_STATE} ${WORKDIR}/${ROOTFS_APT_STATE}
     fi
 }
 
