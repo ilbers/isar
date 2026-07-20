@@ -23,7 +23,7 @@ SBOM_SPDX_NAMESPACE_PREFIX ?= "https://spdx.org/spdxdocs"
 DEPLOY_DIR_SBOM = "${DEPLOY_DIR_IMAGE}"
 
 SBOM_DIR = "${DEPLOY_DIR}/sbom"
-SBOM_CHROOT = "${SBOM_DIR}/sbom-chroot.tar.zst"
+SBOM_CHROOT = "${SBOM_DIR}/${HOST_DISTRO}-${HOST_ARCH}_${DISTRO}-${DISTRO_ARCH}.tar.zst"
 SBOM_CHROOT_LOCAL = "${WORKDIR}/sbom-chroot"
 
 # adapted from the isar-cip-core image_uuid.bbclass
