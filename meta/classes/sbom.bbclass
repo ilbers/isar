@@ -22,9 +22,9 @@ SBOM_SPDX_NAMESPACE_PREFIX ?= "https://spdx.org/spdxdocs"
 
 DEPLOY_DIR_SBOM = "${DEPLOY_DIR_IMAGE}"
 
-SBOM_DIR = "${DEPLOY_DIR}/sbom"
+SBOM_DIR = "${DEPLOY_DIR}/chroot-sbom"
 SBOM_CHROOT = "${SBOM_DIR}/${HOST_DISTRO}-${HOST_ARCH}_${DISTRO}-${DISTRO_ARCH}.tar.zst"
-SBOM_CHROOT_LOCAL = "${WORKDIR}/sbom-chroot"
+SBOM_CHROOT_LOCAL = "${WORKDIR}/chroot-sbom"
 
 # adapted from the isar-cip-core image_uuid.bbclass
 def generate_document_uuid(d, warn_not_repr=True):
