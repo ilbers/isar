@@ -519,9 +519,6 @@ cache_dbg_pkgs() {
     fi
 }
 
-# The sbom generator needs the apt-cache, hence run before cleaning it
-ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'generate-sbom', 'do_generate_sbom', '', d)}"
-
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'clean-package-cache', 'rootfs_postprocess_clean_package_cache', '', d)}"
 rootfs_postprocess_clean_package_cache() {
     run_in_chroot '${ROOTFSDIR}' \
@@ -615,6 +612,7 @@ EOSH
 
 do_rootfs_postprocess[vardeps] = "${ROOTFS_POSTPROCESS_COMMAND}"
 do_rootfs_postprocess[network] = "${TASK_USE_SUDO}"
+do_rootfs_postprocess[depends] = "base-apt:do_cache isar-apt:do_cache_config"
 python do_rootfs_postprocess() {
     # Take care that its correctly mounted:
     bb.build.exec_func('rootfs_do_mounts', d)
@@ -664,8 +662,6 @@ python do_rootfs() {
     pass
 }
 addtask rootfs before do_build
-
-do_rootfs_postprocess[depends] = "base-apt:do_cache isar-apt:do_cache_config ${@bb.utils.contains('ROOTFS_FEATURES', 'generate-sbom', 'sbom-chroot:do_sbomchroot_deploy', '', d)}"
 
 SSTATETASKS += "do_rootfs_install"
 SSTATECREATEFUNCS += "rootfs_install_sstate_prepare"

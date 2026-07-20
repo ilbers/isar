@@ -78,6 +78,7 @@ cleanup_sbom_chroot() {
 
 do_generate_sbom[dirs] += "${DEPLOY_DIR_SBOM}"
 do_generate_sbom[network] = "${TASK_USE_SUDO}"
+do_generate_sbom[depends] += "sbom-chroot:do_sbomchroot_deploy"
 python do_generate_sbom() {
     sbom_doc_uuid(d)
     try:
@@ -85,4 +86,11 @@ python do_generate_sbom() {
         bb.build.exec_func("generate_sbom", d)
     finally:
         bb.build.exec_func("cleanup_sbom_chroot", d)
+}
+
+# The sbom generator uses the apt state captured during do_rootfs_install,
+# so it can run as a standalone task afterwards
+python() {
+    if 'generate-sbom' in d.getVar('ROOTFS_FEATURES').split():
+        bb.build.addtask('do_generate_sbom', 'do_rootfs', 'do_rootfs_install', d)
 }
