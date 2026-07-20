@@ -143,6 +143,7 @@ check_for_wic_warnings() {
     fi
 }
 
+do_image_wic[depends] += "${@bb.utils.contains('ROOTFS_FEATURES', 'generate-sbom', 'sbom-chroot:do_sbomchroot_deploy', '', d)}"
 do_image_wic[file-checksums] += "${WKS_FILE_CHECKSUM}"
 IMAGE_CMD:wic() {
     generate_wic_image
