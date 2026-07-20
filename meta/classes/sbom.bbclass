@@ -21,6 +21,7 @@ SBOM_DEBSBOM_EXTRA_ARGS ?= "--with-licenses"
 SBOM_SPDX_NAMESPACE_PREFIX ?= "https://spdx.org/spdxdocs"
 
 DEPLOY_DIR_SBOM = "${DEPLOY_DIR_IMAGE}"
+SBOM_LOCAL_DEPLOYDIR = "${WORKDIR}/chroot-sbom-deploy"
 
 SBOM_DIR = "${DEPLOY_DIR}/chroot-sbom"
 SBOM_CHROOT = "${SBOM_DIR}/${HOST_DISTRO}-${HOST_ARCH}_${DISTRO}-${DISTRO_ARCH}.tar.zst"
@@ -62,7 +63,7 @@ EOF
         --unshare-user \
         --unshare-pid \
         --bind ${SBOM_CHROOT_LOCAL} / \
-        --bind ${DEPLOY_DIR_SBOM} /mnt/deploy-dir \
+        --bind ${SBOM_LOCAL_DEPLOYDIR} /mnt/deploy-dir \
         -- debsbom -v generate ${SBOM_DEBSBOM_TYPE_ARGS} -r /mnt/rootfs -o /mnt/deploy-dir/'${ROOTFS_PACKAGE_SUFFIX}' \
             --distro-name '${SBOM_DISTRO_NAME}' --distro-supplier '${SBOM_DISTRO_SUPPLIER}' \
             --distro-version '${SBOM_DISTRO_VERSION}' --distro-arch '${DISTRO_ARCH}' \
@@ -76,7 +77,10 @@ cleanup_sbom_chroot() {
     run_privileged rm -rf ${SBOM_CHROOT_LOCAL}
 }
 
-do_generate_sbom[dirs] += "${DEPLOY_DIR_SBOM}"
+SSTATETASKS += "do_generate_sbom"
+do_generate_sbom[cleandirs] += "${SBOM_LOCAL_DEPLOYDIR}"
+do_generate_sbom[sstate-inputdirs] = "${SBOM_LOCAL_DEPLOYDIR}"
+do_generate_sbom[sstate-outputdirs] = "${DEPLOY_DIR_SBOM}"
 do_generate_sbom[network] = "${TASK_USE_SUDO}"
 do_generate_sbom[depends] += "sbom-chroot:do_sbomchroot_deploy"
 python do_generate_sbom() {
@@ -88,9 +92,14 @@ python do_generate_sbom() {
         bb.build.exec_func("cleanup_sbom_chroot", d)
 }
 
+python do_generate_sbom_setscene() {
+    sstate_setscene(d)
+}
+
 # The sbom generator uses the apt state captured during do_rootfs_install,
 # so it can run as a standalone task afterwards
 python() {
     if 'generate-sbom' in d.getVar('ROOTFS_FEATURES').split():
         bb.build.addtask('do_generate_sbom', 'do_rootfs', 'do_rootfs_install', d)
+        bb.build.addtask('do_generate_sbom_setscene', None, None, d)
 }
