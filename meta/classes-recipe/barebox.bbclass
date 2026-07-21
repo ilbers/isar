@@ -47,12 +47,12 @@ BAREBOX_BASE_BIN ?= "barebox"
 
 do_deploy[dirs] = "${DEPLOY_DIR_IMAGE}"
 do_deploy() {
-    dpkg --fsys-tarfile ${WORKDIR}/${PN}_${CHANGELOG_V}_${DISTRO_ARCH}.deb | \
+    dpkg --fsys-tarfile ${DEPLOYDIR}/${PN}_${CHANGELOG_V}_${DISTRO_ARCH}.deb | \
         tar xOf - ./usr/lib/barebox/barebox.bin \
         > "${DEPLOY_DIR_IMAGE}/${BAREBOX_BASE_BIN}.img"
     ln -sf ${BAREBOX_BASE_BIN}.img ${DEPLOY_DIR_IMAGE}/barebox.bin
 
-    dpkg --fsys-tarfile ${WORKDIR}/${PN}_${CHANGELOG_V}_${DISTRO_ARCH}.deb | \
+    dpkg --fsys-tarfile ${DEPLOYDIR}/${PN}_${CHANGELOG_V}_${DISTRO_ARCH}.deb | \
         tar xOf - ./usr/lib/barebox/barebox.config \
         > "${DEPLOY_DIR_IMAGE}/${BAREBOX_BASE_BIN}.config"
     ln -sf ${BAREBOX_BASE_BIN}.config ${DEPLOY_DIR_IMAGE}/barebox.config

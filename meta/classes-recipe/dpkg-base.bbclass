@@ -12,6 +12,8 @@ inherit repository
 inherit deb-dl-dir
 inherit essential
 
+DEPLOYDIR = "${WORKDIR}/deploy"
+
 DEPENDS ?= ""
 RPROVIDES ?= "${PROVIDES}"
 
@@ -186,6 +188,10 @@ dpkg_prepare_unshare_ccache() {
     setfacl -m u:${UNSHARE_SUBUID_BASE}:rwX -m u:${@int(d.getVar('UNSHARE_SUBUID_BASE')) + 999}:rwx "${CCACHE_DIR}"
 }
 
+dpkg_collect_debs() {
+    find ${WORKDIR} -maxdepth 1 -name "*.deb" -exec mv {} ${DEPLOYDIR} \;
+}
+
 python do_dpkg_build() {
     bb.build.exec_func('dpkg_chroot_prepare', d)
     try:
@@ -193,45 +199,26 @@ python do_dpkg_build() {
     finally:
         bb.build.exec_func('dpkg_chroot_finalize', d)
 }
+do_dpkg_build[cleandirs] = "${DEPLOYDIR}"
+do_dpkg_build[sstate-plaindirs] = "${DEPLOYDIR}"
 do_dpkg_build[network] = "${TASK_USE_NETWORK_AND_SUDO}"
+do_dpkg_build[depends] = "${SCHROOT_DEP}"
+do_dpkg_build[postfuncs] += "dpkg_collect_debs"
 
 addtask dpkg_build
 
 SSTATETASKS += "do_dpkg_build"
-SSTATECREATEFUNCS += "dpkg_build_sstate_prepare"
-SSTATEPOSTINSTFUNCS += "dpkg_build_sstate_finalize"
-
-dpkg_build_sstate_prepare() {
-    [ "${SSTATE_CURRTASK}" = "dpkg_build" ] || return 0
-
-    # this runs in SSTATE_BUILDDIR, which will be deleted automatically
-    if [ -n "$(find ${WORKDIR} -maxdepth 1 -name '*.deb' -print -quit)" ]; then
-        cp -f ${WORKDIR}/*.deb -t .
-    fi
-}
-
-dpkg_build_sstate_finalize() {
-    [ "${SSTATE_CURRTASK}" = "dpkg_build" ] || return 0
-
-    # this runs in SSTATE_INSTDIR
-    if [ -n "$(find . -maxdepth 1 -name '*.deb' -print -quit)" ]; then
-        mv -f ./*.deb -t ${WORKDIR}/
-    fi
-}
 
 python do_dpkg_build_setscene() {
     sstate_setscene(d)
 }
 
 addtask dpkg_build_setscene
-do_dpkg_build_setscene[dirs] += "${S}/.."
-
-do_dpkg_build[depends] = "${SCHROOT_DEP}"
 
 CLEANFUNCS += "deb_clean"
 
 deb_clean() {
-    DEBS=$( find ${WORKDIR} -maxdepth 1 -name "*.deb" || [ ! -d ${S} ] )
+    DEBS=$( find ${DEPLOYDIR} -maxdepth 1 -name "*.deb" || [ ! -d ${S} ] )
     if [ -n "${DEBS}" ]; then
         for d in ${DEBS}; do
             repo_del_package "${REPO_ISAR_DIR}"/"${DISTRO}" \
@@ -246,7 +233,7 @@ do_clean[network] = "${TASK_USE_SUDO}"
 do_deploy_deb() {
     deb_clean
     repo_add_packages "${REPO_ISAR_DIR}"/"${DISTRO}" \
-        "${REPO_ISAR_DB_DIR}"/"${DISTRO}" "${DEBDISTRONAME}" ${WORKDIR}/*.deb
+        "${REPO_ISAR_DB_DIR}"/"${DISTRO}" "${DEBDISTRONAME}" ${DEPLOYDIR}/*.deb
 }
 
 addtask deploy_deb after do_dpkg_build before do_build
