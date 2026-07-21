@@ -226,8 +226,3 @@ python do_apt_config_prepare() {
     aggregate_aptsources_list(d, apt_sources_list, apt_sources_out)
 }
 addtask apt_config_prepare before do_bootstrap after do_unpack
-
-CLEANFUNCS = "clean_deploy"
-clean_deploy() {
-    rm -f "${DEPLOY_ISAR_BOOTSTRAP}"
-}

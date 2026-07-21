@@ -7,7 +7,7 @@
 
 Description = "Minimal target Debian root file system"
 
-DEPLOY_ISAR_BOOTSTRAP = "${DEPLOY_DIR_BOOTSTRAP}/${DISTRO}-${DISTRO_ARCH}"
+DEPLOY_ISAR_BOOTSTRAP = "${DISTRO}-${DISTRO_ARCH}"
 MMOPTS ?= "${DISTRO_MM_OPTS}"
 
 PROVIDES += "bootstrap-target"

@@ -13,6 +13,7 @@ DISTRO_BOOTSTRAP_BASE_PACKAGES += "locales apt"
 DISTRO_BOOTSTRAP_BASE_PACKAGES:append:https-support = " ca-certificates"
 
 BOOTSTRAP_TMPDIR = "${WORKDIR}/tempdir"
+DEPLOYDIR = "${WORKDIR}/deploy"
 
 # Fix for /var/lib/apt/available while maybe-jessie-or-older hook do not work
 MM_HOOK_JESSIE = "/usr/share/mmdebstrap/hooks/jessie-or-older"
@@ -129,7 +130,10 @@ do_bootstrap[vardeps] += " \
     ${DISTRO_VARS_PREFIX}DISTRO_APT_SOURCES \
     bootstrap_cleanup \
     "
-do_bootstrap[dirs] = "${DEPLOY_DIR_BOOTSTRAP} ${BOOTSTRAP_TMPDIR} ${WORKDIR}/trusted.gpg.d ${WORKDIR}/sources.list.d"
+do_bootstrap[cleandirs] = "${DEPLOYDIR}"
+do_bootstrap[sstate-inputdirs] = "${DEPLOYDIR}"
+do_bootstrap[sstate-outputdirs] = "${DEPLOY_DIR_BOOTSTRAP}"
+do_bootstrap[dirs] = "${BOOTSTRAP_TMPDIR} ${WORKDIR}/trusted.gpg.d ${WORKDIR}/sources.list.d"
 do_bootstrap[depends] = "base-apt:do_cache isar-apt:do_cache_config"
 do_bootstrap[network] = "${TASK_USE_NETWORK_AND_SUDO}"
 
@@ -259,10 +263,7 @@ do_bootstrap() {
                    ${@get_distro_components_argument(d)} \
                    "${@get_distro_suite(d)}" \
                    - \
-                   "$bootstrap_list" > ${WORKDIR}/rootfs.tar.zst
-
-    # Finalize bootstrap by setting the link in deploy
-    ln -Tfsr "${WORKDIR}/rootfs.tar.zst" "${DEPLOY_ISAR_BOOTSTRAP}.tar.zst"
+                   "$bootstrap_list" > ${DEPLOYDIR}/${DEPLOY_ISAR_BOOTSTRAP}.tar.zst
 
     if [ "${ISAR_USE_CACHED_BASE_REPO}" != "1" ]; then
         deb_dl_dir_export "${WORKDIR}/dl_dir" "${BOOTSTRAP_BASE_DISTRO}-${BASE_DISTRO_CODENAME}"
@@ -273,31 +274,8 @@ do_bootstrap() {
 addtask bootstrap before do_build after do_generate_keyrings
 
 SSTATETASKS += "do_bootstrap"
-SSTATECREATEFUNCS += "bootstrap_sstate_prepare"
-SSTATEPOSTINSTFUNCS += "bootstrap_sstate_finalize"
-
-bootstrap_sstate_prepare() {
-    [ "${SSTATE_CURRTASK}" = "bootstrap" ] || return 0
-
-    # this runs in SSTATE_BUILDDIR, which will be deleted automatically
-    cp -a "${WORKDIR}/rootfs.tar.zst" ./bootstrap.tar.zst
-}
-
-bootstrap_sstate_finalize() {
-    [ "${SSTATE_CURRTASK}" = "bootstrap" ] || return 0
-
-    # this runs in SSTATE_INSTDIR
-    # we should restore symlinks after using tar
-    if [ -f bootstrap.tar.zst ]; then
-        mv bootstrap.tar.zst "${WORKDIR}/rootfs.tar.zst"
-        ln -Tfsr "${WORKDIR}/rootfs.tar.zst" \
-                 "${DEPLOY_ISAR_BOOTSTRAP}.tar.zst"
-    fi
-}
 
 python do_bootstrap_setscene() {
     sstate_setscene(d)
 }
-
 addtask do_bootstrap_setscene
-do_bootstrap_setscene[dirs] = "${DEPLOY_DIR_BOOTSTRAP}"

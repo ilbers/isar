@@ -7,7 +7,7 @@
 
 Description = "Minimal host Debian root file system"
 
-DEPLOY_ISAR_BOOTSTRAP = "${DEPLOY_DIR_BOOTSTRAP}/${HOST_DISTRO}-host_${DISTRO}-${DISTRO_ARCH}"
+DEPLOY_ISAR_BOOTSTRAP = "${HOST_DISTRO}-host_${DISTRO}-${DISTRO_ARCH}"
 
 PROVIDES += "bootstrap-host"
 
