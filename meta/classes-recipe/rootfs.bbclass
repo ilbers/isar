@@ -30,8 +30,11 @@ ROOTFS_BASE_DISTRO ?= "${BASE_DISTRO}"
 # Features of the rootfs creation:
 # available features are:
 # 'clean-package-cache' - delete package cache from rootfs
+# 'clean-debconf-cache' - delete debconf cache files
+# 'clean-pycache' - delete python bytecode cache files
 # 'generate-manifest' - generate a package manifest of the rootfs into ${ROOTFS_MANIFEST_DEPLOY_DIR}
 # 'generate-sbom' - generate a SBOM of the rootfs into ${DEPLOY_DIR_SBOM}
+# 'generate-initrd' - generate an initrd for the rootfs
 # 'export-dpkg-status' - exports /var/lib/dpkg/status file to ${ROOTFS_DPKGSTATUS_DEPLOY_DIR}
 # 'clean-log-files' - delete log files that are not owned by packages
 # 'populate-systemd-preset' - enable systemd units according to systemd presets
