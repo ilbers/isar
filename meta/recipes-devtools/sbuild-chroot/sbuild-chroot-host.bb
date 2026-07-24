@@ -15,6 +15,6 @@ ROOTFS_BASE_DISTRO = "${HOST_BASE_DISTRO}"
 
 SBUILD_CHROOT_PREINSTALL ?= " \
     ${SBUILD_CHROOT_PREINSTALL_COMMON} \
-    crossbuild-essential-${DISTRO_ARCH} \
+    ${@ 'libc6-dev:${DISTRO_ARCH} crossbuild-essential-${DISTRO_ARCH}' if bb.utils.to_boolean(d.getVar('ISAR_CROSS_COMPILE')) else ''} \
     apt-utils \
     "

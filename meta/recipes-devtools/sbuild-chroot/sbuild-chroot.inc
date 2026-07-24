@@ -20,8 +20,11 @@ SBUILD_CHROOT_PREINSTALL_EXTRA ??= ""
 python() {
     distro_gcc = d.getVar('DISTRO_GCC')
     distro_arch = d.getVar('DISTRO_ARCH')
+    rootfs_arch = d.getVar('ROOTFS_ARCH')
+    cross = bb.utils.to_boolean(d.getVar('ISAR_CROSS_COMPILE'))
+    install_distro_arch_tooling = cross or rootfs_arch == distro_arch
 
-    if d.getVar('DISTRO_GCC'):
+    if distro_gcc and install_distro_arch_tooling:
         d.appendVar('SBUILD_CHROOT_PREINSTALL_COMMON',
                     f" libgcc-{distro_gcc}-dev:{distro_arch}")
         d.appendVar('SBUILD_CHROOT_PREINSTALL_COMMON',
@@ -29,11 +32,13 @@ python() {
 
     if bb.utils.to_boolean(d.getVar('ISAR_ENABLE_COMPAT_ARCH')):
         compat_arch = d.getVar('COMPAT_DISTRO_ARCH')
-        d.appendVar('SBUILD_CHROOT_COMPAT_PREINSTALL',
-                    f" libc6-dev:{compat_arch}")
-        d.appendVar('SBUILD_CHROOT_COMPAT_PREINSTALL',
-                    f" crossbuild-essential-{compat_arch}")
-        if d.getVar('DISTRO_GCC'):
+        if install_distro_arch_tooling:
+            d.appendVar('SBUILD_CHROOT_COMPAT_PREINSTALL',
+                        f" libc6-dev:{compat_arch}")
+            d.appendVar('SBUILD_CHROOT_COMPAT_PREINSTALL',
+                        f" crossbuild-essential-{compat_arch}")
+
+        if distro_gcc and install_distro_arch_tooling:
             d.appendVar('SBUILD_CHROOT_COMPAT_PREINSTALL',
                         f" libgcc-{distro_gcc}-dev:{compat_arch}")
             d.appendVar('SBUILD_CHROOT_COMPAT_PREINSTALL',
@@ -43,7 +48,6 @@ python() {
 SBUILD_CHROOT_PREINSTALL_COMMON = " \
     ${SBUILD_CHROOT_COMPAT_PREINSTALL} \
     ${SBUILD_CHROOT_PREINSTALL_EXTRA} \
-    libc6-dev:${DISTRO_ARCH} \
     fakeroot \
     build-essential \
     debhelper \
