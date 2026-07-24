@@ -231,7 +231,10 @@ class InstallerTest(CIBaseTest):
                                 installer_image="isar-image-ci",
                                 installer_machine="qemuamd64",
                                 installer_distro="debian-bookworm",
-                                installer_device="/dev/sda")
+                                installer_device="/dev/sda",
+                                lines=[
+                                    "BBMULTICONFIG:append = ' qemuamd64-bookworm'",
+                                ])
 
     def test_installer_run(self):
         self.init()

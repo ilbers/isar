@@ -50,6 +50,7 @@ class ReproBuild(CIBuilder):
         # Build
         self.log.info("Started Build " + image_name)
         self.configure(
+            targets=target,
             source_date_epoch=source_date_epoch, use_apt_snapshot=True
         )
         self.bitbake(target)

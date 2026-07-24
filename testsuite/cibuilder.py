@@ -104,8 +104,21 @@ class CIBuilder(Test):
         if not hasattr(self, 'build_dir'):
             self.error("Broken test implementation: need to call init().")
 
+    @staticmethod
+    def _extract_multiconfigs(targets):
+        if isinstance(targets, str):
+            targets = [targets]
+        mc_names = set()
+        for target in targets:
+            if target.startswith('mc:'):
+                parts = target.split(':')
+                if len(parts) >= 2:
+                    mc_names.add(parts[1])
+        return mc_names
+
     def configure(
         self,
+        targets=None,
         compat_arch=True,
         cross=True,
         debsrc_cache=False,
@@ -196,6 +209,10 @@ class CIBuilder(Test):
 
         # write ci_build.conf
         with open(self.build_dir + '/conf/ci_build.conf', 'w') as f:
+            if targets:
+                mc_names = self._extract_multiconfigs(targets)
+                if mc_names:
+                    f.write('BBMULTICONFIG = "%s"\n\n' % ' '.join(sorted(mc_names)))
             if compat_arch:
                 f.write(
                     'ISAR_ENABLE_COMPAT_ARCH:amd64 = "1"\n'

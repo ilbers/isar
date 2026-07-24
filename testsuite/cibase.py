@@ -15,7 +15,7 @@ from avocado.utils import process
 
 class CIBaseTest(CIBuilder):
     def perform_build_test(self, targets, should_fail=False, **kwargs):
-        self.configure(**kwargs)
+        self.configure(targets=targets, **kwargs)
 
         if bool(int(self.params.get('depgraph', default=0))):
             self.generate_dependency_graph(targets, reconfigure=False, **kwargs)
@@ -31,7 +31,7 @@ class CIBaseTest(CIBuilder):
                                   **kwargs):
         """Debug helper to better understand test task graphs."""
         if reconfigure:
-            self.configure(**kwargs)
+            self.configure(targets=targets, **kwargs)
 
         self.log.info("Generating dependency graph...")
 
@@ -41,7 +41,7 @@ class CIBaseTest(CIBuilder):
         self.move_in_build_dir('pn-buildlist', f"pn-buildlist-{self.name}")
 
     def perform_wic_partition_test(self, targets, wic_deploy_parts, **kwargs):
-        self.configure(wic_deploy_parts=wic_deploy_parts, **kwargs)
+        self.configure(targets=targets, wic_deploy_parts=wic_deploy_parts, **kwargs)
         self.bitbake(targets, **kwargs)
 
         wic_path = f"{self.build_dir}/tmp/deploy/images/*/*.wic.p1"
@@ -57,6 +57,7 @@ class CIBaseTest(CIBuilder):
         gpg_priv_key = os.path.join(keys_dir, 'test_priv.key')
 
         self.configure(
+            targets=targets,
             gpg_pub_key=gpg_pub_key if signed else None,
             sstate_dir='',
             **kwargs,
@@ -76,6 +77,7 @@ class CIBaseTest(CIBuilder):
             repro_type = 'signed' if signed else 'unsigned'
             self.move_in_build_dir('tmp', f"tmp_middle_repro_{repro_type}")
             self.configure(
+                targets=targets,
                 gpg_pub_key=gpg_pub_key if signed else None,
                 offline=True,
                 sstate_dir='',
@@ -89,7 +91,7 @@ class CIBaseTest(CIBuilder):
 
             if not signed:
                 # Try to build with changed configuration with no cleanup
-                self.configure(**kwargs)
+                self.configure(targets=targets, **kwargs)
                 self.bitbake(targets, **kwargs)
 
         finally:
@@ -109,7 +111,7 @@ class CIBaseTest(CIBuilder):
                             count += int(content[field])
             return count
 
-        self.configure(ccache=True, sstate_dir='', **kwargs)
+        self.configure(targets=targets, ccache=True, sstate_dir='', **kwargs)
 
         # Field that stores direct ccache hits
         direct_cache_hit = 22
@@ -173,7 +175,7 @@ class CIBaseTest(CIBuilder):
         process.run(f"git --work-tree={isar_sstate} checkout HEAD -- .")
 
         self.init('../build-sstate', isar_dir=isar_sstate)
-        self.configure(sstate=True, sstate_dir='', **kwargs)
+        self.configure(targets=image_target, sstate=True, sstate_dir='', **kwargs)
 
         # Cleanup sstate and tmp before test
         self.delete_from_build_dir('sstate-cache')
@@ -196,7 +198,7 @@ class CIBaseTest(CIBuilder):
         """
         Generate signature data for target(s) and check for cacheability issues
         """
-        self.configure(**kwargs)
+        self.configure(targets=targets, **kwargs)
         self.delete_from_build_dir('tmp_before_sstate')
         self.move_in_build_dir('tmp', 'tmp_before_sstate')
         self.bitbake(targets, sig_handler='none')
@@ -246,7 +248,7 @@ class CIBaseTest(CIBuilder):
                     return False
             return True
 
-        self.configure(sstate=True, sstate_dir='', **kwargs)
+        self.configure(targets=[image_target, package_target], sstate=True, sstate_dir='', **kwargs)
 
         deploy_dir = f"{self.build_dir}/tmp/deploy"
 
@@ -380,7 +382,7 @@ class CIBaseTest(CIBuilder):
                        sfiles[target][fname]  = CIUtils.get_tar_content(fname)
             return sfiles
 
-        self.configure(**kwargs)
+        self.configure(targets=targets, **kwargs)
 
         tmp_layer_dir = self.create_tmp_layer()
         try:
