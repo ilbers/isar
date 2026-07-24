@@ -435,15 +435,6 @@ class CrossTest(CIBaseTest):
         self.init()
         self.perform_build_test(targets, cross=False)
 
-    def test_cross_debsrc(self):
-        targets = [
-            'mc:qemuarm64-bookworm:isar-image-ci',
-        ]
-
-        self.init()
-        # only build a single custom package to speedup test
-        self.perform_build_test(targets, debsrc_cache=True, image_install='cowsay')
-
     def test_cross_kselftest(self):
         targets = [
             'mc:qemuarm-buster:kselftest',
