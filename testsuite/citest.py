@@ -75,6 +75,10 @@ class DevTest(CIBaseTest):
         self.init()
         self.perform_build_test(targets, image_install='example-raw')
 
+    def test_dev_run_arm_bookworm(self):
+        self.init()
+        self.vm_start('arm', 'bookworm', skip_modulecheck=True)
+
     def test_dev_apps(self):
         targets = [
             'mc:qemuamd64-bookworm:isar-image-ci',
@@ -83,6 +87,10 @@ class DevTest(CIBaseTest):
 
         self.init()
         self.perform_build_test(targets)
+
+    def test_dev_run_arm64_bookworm(self):
+        self.init()
+        self.vm_start('arm64', 'bookworm')
 
     def test_dev_rebuild(self):
         self.init()
@@ -102,14 +110,6 @@ class DevTest(CIBaseTest):
     def test_dev_run_amd64_bookworm(self):
         self.init()
         self.vm_start('amd64', 'bookworm', image='isar-image-ci')
-
-    def test_dev_run_arm64_bookworm(self):
-        self.init()
-        self.vm_start('arm64', 'bookworm')
-
-    def test_dev_run_arm_bookworm(self):
-        self.init()
-        self.vm_start('arm', 'bookworm', skip_modulecheck=True)
 
 
 class CompatTest(CIBaseTest):
