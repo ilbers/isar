@@ -38,6 +38,7 @@ ROOTFS_BASE_DISTRO ?= "${BASE_DISTRO}"
 # 'export-dpkg-status' - exports /var/lib/dpkg/status file to ${ROOTFS_DPKGSTATUS_DEPLOY_DIR}
 # 'clean-log-files' - delete log files that are not owned by packages
 # 'populate-systemd-preset' - enable systemd units according to systemd presets
+# 'clean-apt-credentials' - remove apt auth credentials written by ISAR_APT_CREDS
 
 # only supported from bookworm / jammy on
 ROOTFS_FEATURES:remove:buster = "generate-sbom"
@@ -544,6 +545,11 @@ ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'clean-de
 rootfs_postprocess_clean_debconf_cache() {
     # Delete debconf cache files
     run_privileged rm -rf "${ROOTFSDIR}/var/cache/debconf/"*
+}
+
+ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'clean-apt-credentials', 'rootfs_postprocess_clean_apt_credentials', '', d)}"
+rootfs_postprocess_clean_apt_credentials() {
+    run_privileged rm -f "${ROOTFSDIR}/etc/apt/auth.conf.d/isar.conf"
 }
 
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'clean-pycache', 'rootfs_postprocess_clean_pycache', '', d)}"

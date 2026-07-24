@@ -1137,3 +1137,21 @@ targeting Microsoft Hyper-V virtual machines on amd64.
 The machine produces a `.vhdx` disk image using the WIC image type
 and GRUB as the bootloader. It supports Debian bullseye, bookworm
 and trixie.
+
+### Automatic cleanup of APT authentication credentials
+
+A new rootfs feature `clean-apt-credentials` has been added to
+`rootfs.bbclass`. When enabled, it removes
+`/etc/apt/auth.conf.d/isar.conf` from the rootfs during
+`do_rootfs_postprocess`, ensuring that APT authentication
+credentials set via `ISAR_APT_CREDS` are not shipped in the
+final image or SDK sysroot.
+
+The feature is enabled by default in `image.bbclass` and
+`sdk.bbclass` via `ROOTFS_FEATURES`.
+
+To opt out, remove the feature explicitly:
+
+```
+ROOTFS_FEATURES:remove = "clean-apt-credentials"
+```

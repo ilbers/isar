@@ -102,6 +102,7 @@ ROOTFS_FEATURES += "\
     clean-debconf-cache \
     populate-systemd-preset \
     generate-sbom \
+    clean-apt-credentials \
     "
 ROOTFS_PACKAGES += "${IMAGE_PREINSTALL} ${@isar_multiarch_packages('IMAGE_INSTALL', d)}"
 ROOTFS_VARDEPS += "IMAGE_INSTALL"
