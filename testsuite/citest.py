@@ -262,7 +262,6 @@ class CrossTest(CIBaseTest):
             'mc:qemuarm64-trixie:isar-image-base',
             'mc:qemuarm64-focal:isar-image-base',
             'mc:nanopi-neo-efi-bookworm:isar-image-base',
-            'mc:qemuarm64-resolute:isar-image-base',
             'mc:qemuamd64-resolute:isar-image-base',
         ]
 
@@ -386,6 +385,24 @@ class CrossTest(CIBaseTest):
         self.init()
         self.vm_start('arm64', 'focal')
 
+    def test_run_amd64_resolute(self):
+        """
+        :avocado: tags=startvm
+        """
+        self.init()
+        self.vm_start('amd64', 'resolute')
+
+    def test_cross_arm64_resolute(self):
+        targets = [
+            'mc:qemuarm64-resolute:isar-image-base',
+        ]
+
+        self.init()
+        try:
+            self.perform_build_test(targets)
+        except exceptions.TestFail:
+            self.cancel('KFAIL')
+
     # TODO: broken because of moving to UEFI
     def test_run_arm64_resolute(self):
         """
@@ -396,13 +413,6 @@ class CrossTest(CIBaseTest):
             self.vm_start('arm64', 'resolute')
         except exceptions.TestFail:
             self.cancel('KFAIL')
-
-    def test_run_amd64_resolute(self):
-        """
-        :avocado: tags=startvm
-        """
-        self.init()
-        self.vm_start('amd64', 'resolute')
 
     def test_cross_debsrc(self):
         targets = [
