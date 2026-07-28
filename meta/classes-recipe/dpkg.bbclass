@@ -15,6 +15,12 @@ DPKG_PREBUILD_ENV_FILE="${WORKDIR}/dpkg_prebuild.env"
 # Note: must not have any logical influence on the generated package
 SBUILD_PASSTHROUGH_ADDITIONS ?= ""
 
+# Debian Policy §4.9 forbids network access during build. However, this can only
+# be enforced on unshare backend. For schroot backend, network access was still possible,
+# resulting in builds needing it. To override this, the variable DPKG_BUILD_ENABLE_NETWORK
+# can be set to "1" in the recipe.
+DPKG_BUILD_ENABLE_NETWORK ??= "0"
+
 def expand_sbuild_pt_additions(d):
     cmds = ''
     for var in d.getVar('SBUILD_PASSTHROUGH_ADDITIONS').split():
@@ -112,10 +118,19 @@ dpkg_runbuild() {
 
     DSC_FILE=$(find ${WORKDIR} -maxdepth 1 -name "${DEBIAN_SOURCE}_*.dsc" -print)
 
+    # networking is automatically enabled on older versions of sbuild
+    sbuild_network_option=""
+    sbuild_version="$(dpkg-query --showformat='${source:Upstream-Version}' --show sbuild)"
+    if [ "${DPKG_BUILD_ENABLE_NETWORK}" = "1" ] && \
+        dpkg --compare-versions "$sbuild_version" ge "0.89"; then
+        sbuild_network_option="--enable-network"
+    fi
+
     sbuild -n -c ${SBUILD_CHROOT} \
         --chroot-mode=${ISAR_CHROOT_MODE} \
         --host=${PACKAGE_ARCH} --build=${BUILD_ARCH} ${profiles} \
         ${@'--no-arch-all' if 'cross' in isar_deb_build_profiles(d).split() else '--arch-all'} \
+        ${sbuild_network_option} \
         --no-run-lintian --no-run-piuparts --no-run-autopkgtest --resolve-alternatives \
         --bd-uninstallable-explainer=apt \
         --no-apt-update --apt-distupgrade \

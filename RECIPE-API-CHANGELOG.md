@@ -1129,6 +1129,15 @@ environment and cannot be deleted from the outside by the calling user. To simpl
 the cleanup, we provide the `isar-clean-builddir` script that helps purging
 directories with mixed ownerships (without requiring root privileges).
 
+### Network access during package builds (on rootless)
+
+In accordance with Debian Policy §4.9, sbuild disables network access while running
+`dpkg-buildpackage`. For technical reasons, this is only enforced on the unshare
+backend (and on sbuild versions > 0.89). The schroot backend retains its existing
+network access. Recipes that still require network access during the build can set
+`DPKG_BUILD_ENABLE_NETWORK = "1"` to explicitly enable it when using an sbuild
+version newer than 0.89.
+
 ### Add Hyper-V machine support
 
 A new machine `hyper-v` has been introduced for building images
