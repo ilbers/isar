@@ -19,6 +19,16 @@ SCHROOT_MOUNTS += "${REPO_ISAR_DIR}/${DISTRO}:/isar-apt"
 # only used on unshare
 ROOTFS_IMAGETOOLS ?= "${WORKDIR}/rootfs-imgtools-${BB_CURRENTTASK}"
 
+# mirror the handling of ROOTFS_MOUNTS in rootfs.bbclass, only used on unshare
+IMAGER_UNSHARE_MOUNTS ?= "${SCHROOT_MOUNTS}"
+
+python () {
+    if bb.utils.to_boolean(d.getVar('ISAR_USE_CACHED_BASE_REPO')) \
+       and ':/base-apt' not in d.getVar('IMAGER_UNSHARE_MOUNTS', False):
+        d.appendVar('IMAGER_UNSHARE_MOUNTS',
+                    ' {}:/base-apt'.format(d.getVar('REPO_BASE_DIR')))
+}
+
 imager_run() {
     imager_run_${ISAR_CHROOT_MODE} "$@"
 }
@@ -162,7 +172,7 @@ EOF
         ${SCRIPTSDIR}/lockrun.py -r -f "${REPO_ISAR_DIR}/isar.lock" -s <<'EOAPT'
         local_install=$local_install ${@run_privileged_cmd(d)} /bin/bash -s <<'EOF'
             set -e
-            ${@insert_isar_mounts(d, d.getVar('ROOTFS_IMAGETOOLS'), d.getVar('SCHROOT_MOUNTS'))}
+            ${@insert_isar_mounts(d, d.getVar('ROOTFS_IMAGETOOLS'), d.getVar('IMAGER_UNSHARE_MOUNTS'))}
             chroot ${ROOTFS_IMAGETOOLS} apt-get update \
                 -o Dir::Etc::SourceList='sources.list.d/isar-apt.list' \
                 -o Dir::Etc::SourceParts='-' \
@@ -176,7 +186,7 @@ EOAPT
         deb_dl_dir_export ${ROOTFS_IMAGETOOLS} ${distro}
         local_install=$local_install run_privileged_heredoc <<'EOF'
             set -e
-            ${@insert_isar_mounts(d, d.getVar('ROOTFS_IMAGETOOLS'), d.getVar('SCHROOT_MOUNTS'))}
+            ${@insert_isar_mounts(d, d.getVar('ROOTFS_IMAGETOOLS'), d.getVar('IMAGER_UNSHARE_MOUNTS'))}
             chroot ${ROOTFS_IMAGETOOLS} apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y \
                 --allow-unauthenticated --allow-downgrades install \
                 $local_install
@@ -186,7 +196,7 @@ EOF
     run_privileged_heredoc <<'EOF' "$@"
         set -e
         mkdir -p ${ROOTFS_IMAGETOOLS}/${SCRIPTSDIR}
-        ${@insert_isar_mounts(d, d.getVar('ROOTFS_IMAGETOOLS'), d.getVar('SCHROOT_MOUNTS'))}
+        ${@insert_isar_mounts(d, d.getVar('ROOTFS_IMAGETOOLS'), d.getVar('IMAGER_UNSHARE_MOUNTS'))}
         chroot ${ROOTFS_IMAGETOOLS} "$@" <&3
 EOF
 
