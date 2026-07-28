@@ -169,8 +169,9 @@ EOF
 
         E="${@ isar_export_proxies(d)}"
         deb_dl_dir_import ${ROOTFS_IMAGETOOLS} ${distro}
+        local_install=$local_install \
         ${SCRIPTSDIR}/lockrun.py -r -f "${REPO_ISAR_DIR}/isar.lock" -s <<'EOAPT'
-        local_install=$local_install ${@run_privileged_cmd(d)} /bin/bash -s <<'EOF'
+        ${@run_privileged_cmd(d)} /bin/bash -s <<'EOF'
             set -e
             ${@insert_isar_mounts(d, d.getVar('ROOTFS_IMAGETOOLS'), d.getVar('IMAGER_UNSHARE_MOUNTS'))}
             chroot ${ROOTFS_IMAGETOOLS} apt-get update \
