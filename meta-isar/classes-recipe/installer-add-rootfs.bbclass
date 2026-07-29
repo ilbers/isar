@@ -58,6 +58,7 @@ def get_mc_depends(d, task):
 
 python() {
     entries = []
+    image_data_postfix = d.getVar("IMAGE_DATA_POSTFIX") or ""
 
     def add_entries(postfix, suffix):
         sources = get_installer_sources(d, suffix)
@@ -70,8 +71,9 @@ python() {
             d.setVarFlag(var, "source", src)
             d.setVarFlag(var, "destination", dst)
 
-    add_entries("", d.getVar("IMAGE_DATA_POSTFIX"))
-    add_entries("-bmap", "wic.bmap")
+    add_entries("", image_data_postfix)
+    if image_data_postfix.startswith("wic"):
+        add_entries("-bmap", "wic.bmap")
 
     d.setVar("ROOTFS_ADDITIONAL_FILES", " ".join(entries))
 }
