@@ -108,6 +108,8 @@ class AptSrcUnshare(AptSrc):
     mkdir -p {rootfsdir}
     tar -xf {sbuild_chroot} -C {rootfsdir}
     cp /etc/resolv.conf {os.path.join(rootfsdir, 'etc/resolv.conf')}
+    rm -f {rootfsdir}/etc/apt/sources.list.d/isar-apt.list \
+          {rootfsdir}/etc/apt/preferences.d/isar-apt
 EOF
         ''', d)
         logger.info(f'rootfs extracted to: {rootfsdir}')
