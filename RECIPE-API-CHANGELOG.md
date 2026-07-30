@@ -1083,7 +1083,7 @@ work for packages that generate both arch specific and arch all binary packages.
 We now explicitly disable building `arch=all` binary packages during cross
 compilation (this only affects packages that produce both architecture-specific
 and `arch=all` binary packages). Recipes for such mixed packages should append
-`-all` to the `arch=all` binary packages listed in `PROVIDES` (e.g.,
+`-archall` to the `arch=all` binary packages listed in `PROVIDES` (e.g.,
 `PROVIDES="foo-doc-archall"` for an `arch=all` binary package `foo-doc`).
 Consumers can then simply reference the package by its original name (e.g.,
 `foo-doc`).
