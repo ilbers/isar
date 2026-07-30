@@ -472,6 +472,19 @@ class CrossTest(CIBaseTest):
         self.perform_build_test(targets, lines=lines,
                                 image_install=image_install)
 
+    def test_native_dependencies(self):
+        targets = [
+            'mc:qemuamd64-trixie:isar-image-ci',
+        ]
+
+        self.init()
+        image_install = 'test-all-depnative'
+        self.perform_build_test(
+            targets,
+            image_install=image_install,
+            bitbake_extra_args=["-c", "rootfs_install"]
+        )
+
     def test_cross_riscv64(self):
         """
         :avocado: tags=riscv64
