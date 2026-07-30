@@ -184,7 +184,7 @@ sys_discover_target_devices() {
             # Accept only active or clean md arrays, reject degraded/inactive RAID sets.
             if [ -f "/sys/block/$device/md/array_state" ]; then
                 state=$(cat /sys/block/$device/md/array_state | tr -d '\n' | tr -d ' ')
-                if [ "$state" != "active" ] && [ "$state" != "clean" ]; then
+                if [ "$state" != "active" ] && [ "$state" != "clean" ] && [ "$state" != "read-auto" ]; then
                     echo "Skipping RAID device $device: state='$state'" >&2
                     continue
                 fi
