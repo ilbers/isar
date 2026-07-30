@@ -16,7 +16,11 @@ python() {
         if not pn_multiarch_target(pn):
             all_provides = (d.getVar('PROVIDES') or '').split()
             for p in all_provides:
-                if not pn_multiarch_target(p):
+                if p.endswith('-archall'):
+                    # arch=all provider: expose bare name for the native-equivalent
+                    if provides == 'native':
+                        d.appendVar('PROVIDES', ' ' + p[:-len('-archall')])
+                elif not pn_multiarch_target(p):
                     d.appendVar('PROVIDES', f' {p}-{provides}')
             d.appendVar('PROVIDES', f' {pn}-{provides}')
 
