@@ -208,7 +208,7 @@ do_dpkg_build[cleandirs] = "${DEPLOYDIR}"
 do_dpkg_build[sstate-inputdirs] = "${DEPLOYDIR}"
 do_dpkg_build[sstate-outputdirs] = "${DEPLOY_DIR_DEB}"
 do_dpkg_build[network] = "${TASK_USE_NETWORK_AND_SUDO}"
-do_dpkg_build[depends] = "${SCHROOT_DEP}"
+do_dpkg_build[depends] = "${SCHROOT_DEP} base-apt:do_cache isar-apt:do_cache_config"
 do_dpkg_build[postfuncs] += "dpkg_collect_debs"
 
 addtask dpkg_build
