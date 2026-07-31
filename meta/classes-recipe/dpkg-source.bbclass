@@ -110,6 +110,7 @@ EOF
 do_fetch_common_source[depends] += "${SCHROOT_DEP} ${BPN}:do_deploy_source"
 do_fetch_common_source[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
 do_fetch_common_source[network] = "${TASK_USE_SUDO}"
+do_fetch_common_source[depends] += "base-apt:do_cache isar-apt:do_cache_config"
 do_fetch_common_source() {
     fetch_common_source_${ISAR_CHROOT_MODE}
 }
