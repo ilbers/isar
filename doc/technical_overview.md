@@ -217,7 +217,7 @@ Both consist of the following steps:
    finally unmount again (`dpkg_undo_mounts`).
 
 6. Task `do_deploy_deb`: add successfully built packages
-   `${DEPLOYDIR}/*.deb` to the isar-apt repository
+   `${DEPLOY_DIR_DEB}/*.deb` to the isar-apt repository
    `${REPO_ISAR_DIR}/${DISTRO}`
 
 ## 3.6 Populate Target Filesystem

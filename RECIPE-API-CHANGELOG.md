@@ -1138,6 +1138,14 @@ network access. Recipes that still require network access during the build can s
 `DPKG_BUILD_ENABLE_NETWORK = "1"` to explicitly enable it when using an sbuild
 version newer than 0.89.
 
+### Built debs are deployed to `DEPLOY_DIR_DEB`
+
+The debs produced by `do_dpkg_build` are now exported into a shared, sstate-tracked
+deploy directory `DEPLOY_DIR_DEB` instead of being deployed to the `WORKDIR`.
+
+Recipes that accessed the built debs through `${WORKDIR}/*.deb` (e.g. to unpack an
+artifact in a `do_deploy` task) must now reference `${DEPLOY_DIR_DEB}/*.deb` instead.
+
 ### Add Hyper-V machine support
 
 A new machine `hyper-v` has been introduced for building images

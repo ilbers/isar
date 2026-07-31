@@ -12,7 +12,12 @@ inherit repository
 inherit deb-dl-dir
 inherit essential
 
+# Local (WORKDIR-internal) dir where do_dpkg_build collects the built debs.
+# Its content is exported into the shared, sstate-tracked DEPLOY_DIR_DEB so
+# that consumers (do_deploy_deb) always find the artifacts, independent of the
+# WORKDIR lifecycle.
 DEPLOYDIR = "${WORKDIR}/deploy"
+DEPLOY_DIR_DEB = "${DEPLOY_DIR}/isar-deb/${DISTRO}-${DISTRO_ARCH}/${PN}"
 
 DEPENDS ?= ""
 RPROVIDES ?= "${PROVIDES}"
@@ -200,7 +205,8 @@ python do_dpkg_build() {
         bb.build.exec_func('dpkg_chroot_finalize', d)
 }
 do_dpkg_build[cleandirs] = "${DEPLOYDIR}"
-do_dpkg_build[sstate-plaindirs] = "${DEPLOYDIR}"
+do_dpkg_build[sstate-inputdirs] = "${DEPLOYDIR}"
+do_dpkg_build[sstate-outputdirs] = "${DEPLOY_DIR_DEB}"
 do_dpkg_build[network] = "${TASK_USE_NETWORK_AND_SUDO}"
 do_dpkg_build[depends] = "${SCHROOT_DEP}"
 do_dpkg_build[postfuncs] += "dpkg_collect_debs"
@@ -218,7 +224,7 @@ addtask dpkg_build_setscene
 CLEANFUNCS += "deb_clean"
 
 deb_clean() {
-    DEBS=$( find ${DEPLOYDIR} -maxdepth 1 -name "*.deb" || [ ! -d ${S} ] )
+    DEBS=$( find ${DEPLOY_DIR_DEB} -maxdepth 1 -name "*.deb" || [ ! -d ${S} ] )
     if [ -n "${DEBS}" ]; then
         for d in ${DEBS}; do
             repo_del_package "${REPO_ISAR_DIR}"/"${DISTRO}" \
@@ -232,8 +238,11 @@ do_clean[network] = "${TASK_USE_SUDO}"
 
 do_deploy_deb() {
     deb_clean
-    repo_add_packages "${REPO_ISAR_DIR}"/"${DISTRO}" \
-        "${REPO_ISAR_DB_DIR}"/"${DISTRO}" "${DEBDISTRONAME}" ${DEPLOYDIR}/*.deb
+    debs=$(find ${DEPLOY_DIR_DEB} -maxdepth 1 -name '*.deb')
+    if [ -n "${debs}" ]; then
+        repo_add_packages "${REPO_ISAR_DIR}"/"${DISTRO}" \
+            "${REPO_ISAR_DB_DIR}"/"${DISTRO}" "${DEBDISTRONAME}" ${debs}
+    fi
 }
 
 addtask deploy_deb after do_dpkg_build before do_build
@@ -241,7 +250,7 @@ do_deploy_deb[deptask] = "do_deploy_deb"
 do_deploy_deb[rdeptask] = "do_deploy_deb"
 do_deploy_deb[depends] += "isar-apt:do_cache_config"
 do_deploy_deb[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
-do_deploy_deb[dirs] = "${S}"
+do_deploy_deb[dirs] = "${S} ${DEPLOY_DIR_DEB}"
 
 python do_devshell() {
     isar_export_proxies(d)
