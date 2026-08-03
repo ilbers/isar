@@ -29,7 +29,10 @@ class CIBaseTest(CIBuilder):
                                   should_fail=False,
                                   reconfigure=True,
                                   **kwargs):
-        """Debug helper to better understand test task graphs."""
+        """
+        Debug helper to better understand test task graphs.
+        Returns a path pair (buildlist, task-depends.dot)
+        """
         if reconfigure:
             self.configure(targets=targets, **kwargs)
 
@@ -37,8 +40,14 @@ class CIBaseTest(CIBuilder):
 
         self.bitbake(targets, should_fail=should_fail,
                      bitbake_extra_args=["-g"], **kwargs)
-        self.move_in_build_dir('task-depends.dot', f"task-depends-{self.name}.dot")
-        self.move_in_build_dir('pn-buildlist', f"pn-buildlist-{self.name}")
+        # self.name may contain path separators and colons
+        name = re.sub(r'[^\w.-]', '_', str(self.name))
+        self.move_in_build_dir('task-depends.dot', f"task-depends-{name}.dot")
+        self.move_in_build_dir('pn-buildlist', f"pn-buildlist-{name}")
+        return (
+            f"{self.build_dir}/pn-buildlist-{name}",
+            f"{self.build_dir}/task-depends-{name}.dot"
+        )
 
     def perform_wic_partition_test(self, targets, wic_deploy_parts, **kwargs):
         self.configure(targets=targets, wic_deploy_parts=wic_deploy_parts, **kwargs)
