@@ -629,6 +629,42 @@ class KernelTests(CIBaseTest):
         self.init()
         self.perform_build_test(targets, image_install=' '.join(modules), lines=lines)
 
+    def test_libc_dev_deploy(self):
+        """Test that the linux-libc-dev packages are deployed (parse only)."""
+        targets = [
+            'mc:hikey-bookworm:isar-image-ci',
+            'mc:hikey-trixie:isar-image-ci'
+        ]
+        lines = [
+            "KERNEL_LIBC_DEV_DEPLOY = '1'",
+        ]
+        self.init()
+        buildlist, _ = self.generate_dependency_graph(targets, lines=lines)
+
+        with open(buildlist, 'r') as f:
+            built = set(line.strip() for line in f if line.strip())
+
+        # trixie produces arch=all linux-libc-dev packages, which are built by
+        # the dedicated -libctarget variant.
+        self.assertIn(
+            'mc:hikey-trixie:linux-mainline-libctarget', built,
+            "trixie: linux-mainline-libctarget (linux-libc-dev is not built)")
+
+        # bookworm produces an arch-specific linux-libc-dev, built by the base
+        # recipe itself; no -libctarget variant is needed.
+        self.assertIn(
+            'mc:hikey-bookworm:linux-mainline', built,
+            "bookworm: linux-mainline (linux-libc-dev is not built)")
+        self.assertNotIn(
+            'mc:hikey-bookworm:linux-mainline-libctarget', built,
+            "bookworm: unexpected -libctarget variant is built")
+
+        # The unrelated cip kernel must not be pulled in as libc-dev provider.
+        for target in built:
+            self.assertNotIn(
+                'linux-cip', target,
+                f"unexpected linux-cip provider pulled in: {target}")
+
 
 class InitRdBaseTest(CIBaseTest):
     """
