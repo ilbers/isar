@@ -16,7 +16,11 @@ KERNEL_PKG_KERN_KBUILD_CROSS=${KERNEL_PKG_KERN_KBUILD}-${DISTRO_ARCH}-cross
 # Force creating debian package with valid host arch for -native build
 # Use a cross build to comply with arch specific kernel defconfigs
 # The scripts and tools are always created for host arch
-if echo "${DEB_BUILD_PROFILES}" | grep -q -e "cross" -e "kbuild"
+# The -libctarget variant builds the arch=all linux-libc-dev natively on the
+# host, but still needs the target cross-compiler to configure/prepare the
+# target kernel tree for the header generation.
+if echo "${DEB_BUILD_PROFILES}" | grep -q -e "cross" -e "kbuild" || \
+   echo "${DEB_BUILD_PROFILES}" | grep -qw "pkg.${BPN}.libc"
 then
     CROSS_COMPILE=$(dpkg-architecture -f -A ${DISTRO_ARCH} -q DEB_TARGET_GNU_TYPE)-
 fi

@@ -52,6 +52,15 @@ do_install() {
         fi
     fi
 
+    # The dedicated -libctarget variant builds only the linux-libc-dev packages
+    # (pkg.${BPN}.libc profile), without the kernel or kbuild profiles. Handle it
+    # here, as the "kernel" branch below is not taken in that case. Match the
+    # exact profile token so that "libcdev-arch-all" and "nolibcdev" do not
+    # trigger this.
+    if echo "${DEB_BUILD_PROFILES}" | grep -qw "pkg.${BPN}.libc"; then
+        libc_headers
+    fi
+
     if echo "${DEB_BUILD_PROFILES}" | grep -q "kernel"; then
         if echo "${DEB_BUILD_PROFILES}" | grep -q "cross"; then
             # Install cross kernel scripts and tools

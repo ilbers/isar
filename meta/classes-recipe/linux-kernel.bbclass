@@ -100,6 +100,7 @@ TEMPLATE_VARS += "                \
 
 inherit dpkg
 inherit kbuildtarget
+inherit libctarget
 
 # Add custom cflags to the kernel build
 KCFLAGS ?= "-fdebug-prefix-map=${CURDIR}=."
@@ -126,6 +127,14 @@ BUILD_PROFILES = "pkg.${BPN}.kernel pkg.${BPN}.kbuild"
 
 # We only offer the -kbuildtarget variant when actually cross compiling
 BBCLASSEXTEND:append:cross-profile = " kbuildtarget"
+
+# The arch=all linux-libc-dev packages cannot be built in the cross variant of
+# the base recipe: sbuild is invoked with --no-arch-all there, so no arch=all
+# binary packages are produced. In that situation, build them via a dedicated,
+# native -libctarget variant. This condition is true only when libc-dev deployment
+# is requested and the resulting package is arch=all.
+KERNEL_LIBC_DEV_NEEDS_LIBC_VARIANT = "${@ '1' if bb.utils.to_boolean(d.getVar('KERNEL_LIBC_DEV_DEPLOY')) and bb.utils.to_boolean(d.getVar('KERNEL_LIBC_DEV_ARCH_ALL')) else '0'}"
+BBCLASSEXTEND:append:cross-profile = "${@ ' libctarget' if bb.utils.to_boolean(d.getVar('KERNEL_LIBC_DEV_NEEDS_LIBC_VARIANT')) else ''}"
 
 # When cross-profile is active:
 # Build kernel (including config) cross packages (linux-libc-dev-*-cross)
@@ -155,7 +164,28 @@ RECIPE_PROVIDES:remove:class-kbuildtarget = " \
 # Using DEPENDS instead of RDEPENDS to ensure creation of kernel including
 # pregenerated kernel config before target specific linux-kbuild package build
 DEPENDS:class-kbuildtarget = "${BPN}"
+# PACKAGE_ARCH stays at DISTRO_ARCH here, so this flag lets crossvars.bbclass
+# pick the target chroot: the kbuild scripts/tools shipped by this variant
+# must be target binaries. (The host binaries go into the separate
+# linux-kbuild-*-<arch>-cross package built under pkg.${BPN}.cross.)
 ISAR_CROSS_COMPILE:class-kbuildtarget = "0"
+
+# The -libctarget variant builds only the (arch=all) linux-libc-dev packages.
+# As these are arch=all packages, they are built natively for the host architecture
+# (like -native). Setting PACKAGE_ARCH to HOST_ARCH makes crossvars.bbclass select
+# the host chroot and a native (non-cross) build, so sbuild is invoked with
+# --arch-all and produces the arch=all packages. The base cross recipe depends on it
+# (see below) to get the packages built.
+BUILD_PROFILES:class-libctarget = "pkg.${BPN}.libc"
+RECIPE_PROVIDES:class-libctarget = " \
+    linux-libc-dev \
+    linux-libc-dev-${DISTRO_ARCH}-cross"
+PACKAGE_ARCH:class-libctarget = "${HOST_ARCH}"
+# Unlike -kbuildtarget above, this flag does not select the chroot here:
+# It is only needed to keep the cross-profile override off this variant, which
+# would otherwise clobber BUILD_PROFILES and apply the base recipe's
+# "DEPENDS += ${BPN}-libctarget" to -libctarget itself, creating a dependency loop.
+ISAR_CROSS_COMPILE:class-libctarget = "0"
 
 # Make bitbake know we will be producing linux-image and linux-headers packages
 # Also make it know about other packages from control
@@ -170,10 +200,12 @@ RECIPE_PROVIDES = " \
 # Provide linux-libc-dev packages unless nolibcdev profile used
 OVERRIDES:append = ":${@ bb.utils.contains('DEB_BUILD_PROFILES', 'pkg.{}.nolibcdev'.format(d.getVar('BPN')), '', 'libcdev', d)}"
 
-RECIPE_PROVIDES:append:libcdev = " \
-    linux-libc-dev"
-RECIPE_PROVIDES:append:libcdev:cross-profile = " \
-    linux-libc-dev-${DISTRO_ARCH}-cross"
+# The base recipe provides the linux-libc-dev packages, except when they are
+# arch=all and we are cross building: in that case they are built and provided
+# by the dedicated -libctarget variant instead (see class-libctarget above), so
+# the base recipe must not advertise them (it cannot build them here).
+RECIPE_PROVIDES:append:libcdev = "${@ '' if bb.utils.to_boolean(d.getVar('KERNEL_LIBC_DEV_NEEDS_LIBC_VARIANT')) else ' linux-libc-dev'}"
+RECIPE_PROVIDES:append:libcdev:cross-profile = "${@ '' if bb.utils.to_boolean(d.getVar('KERNEL_LIBC_DEV_NEEDS_LIBC_VARIANT')) else ' linux-libc-dev-${DISTRO_ARCH}-cross'}"
 
 # When cross-profile is active:
 # kbuild package is provided by -native or -kbuildtarget variant. Also headers
@@ -182,6 +214,10 @@ RECIPE_PROVIDES:append:libcdev:cross-profile = " \
 RECIPE_PROVIDES:remove:cross-profile = " \
     linux-headers-${KERNEL_NAME_PROVIDED} \
     linux-kbuild-${KERNEL_NAME_PROVIDED}"
+
+# The arch=all linux-libc-dev packages are built by the -libctarget variant.
+# Depend on it from the base cross recipe (linux-image-<arch>) so it is built.
+DEPENDS:append:cross-profile = "${@ ' ${BPN}-libctarget' if bb.utils.to_boolean(d.getVar('KERNEL_LIBC_DEV_NEEDS_LIBC_VARIANT')) else ''}"
 
 # As the multiarch class will not append -compat to -pseudo-native, we end up
 # with two providers of it. Remove the wrong one.
