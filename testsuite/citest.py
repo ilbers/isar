@@ -558,9 +558,7 @@ class CrossTest(CIBaseTest):
         ]
 
         self.init()
-        self.move_in_build_dir('tmp', 'tmp_cross')
         self.perform_build_test(targets)
-        self.move_in_build_dir('tmp', 'tmp_cross_mira_trixie')
 
 class PrebuiltTest(CIBaseTest):
     """
