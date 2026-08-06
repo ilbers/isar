@@ -605,8 +605,7 @@ image_postprocess_populate_systemd_preset() {
         SYSTEMD_INSTALLED=$(dpkg-query --showformat='${db:Status-Status}' --show systemd 2>/dev/null)
 
         if [ "${SYSTEMD_INSTALLED}" = "installed" ]; then
-            systemctl list-unit-files --state=masked --no-legend | grep -q '^' \
-                || systemctl preset-all --preset-mode="enable-only"
+            systemctl preset-all --preset-mode="enable-only"
         fi
 EOSH
 }
