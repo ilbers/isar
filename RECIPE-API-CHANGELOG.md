@@ -1146,6 +1146,35 @@ deploy directory `DEPLOY_DIR_DEB` instead of being deployed to the `WORKDIR`.
 Recipes that accessed the built debs through `${WORKDIR}/*.deb` (e.g. to unpack an
 artifact in a `do_deploy` task) must now reference `${DEPLOY_DIR_DEB}/*.deb` instead.
 
+### Debian source packages are deployed to `DEPLOY_DIR_SRC`
+
+The source packages produced by `do_dpkg_source` are now exported into a shared,
+sstate-tracked deploy dir `DEPLOY_DIR_SRC` instead of being deployed to the `WORKDIR`.
+
+Recipes that access the source packages through `${WORKDIR}/*.tar.{gz,xz}` must now
+reference the local copy in `${DEPLOY_DIR_SRC}` instead.
+
+### Architecture specific source packages
+
+Setting `DPKG_ARCH = "<arch>"` makes the source package architecture-specific,
+unlike `all` or `any`. Because Debian source packages are identified by name and
+version, package providers must ensure that a source package with the same name
+and version does not contain different content for different architectures. This
+was never allowed, but Isar now enforces it.
+
+In this case, you can use the following pattern to make the package architecture specific,
+while still maintaining backward compatibility:
+
+```
+inherit dpkg-raw
+PROVIDES := "${BPN}"
+DEBIAN_PROVIDES := "${BPN}"
+PN .= "-${DISTRO_ARCH}"
+DPKG_ARCH ?= "${DISTRO_ARCH}"
+```
+
+Firmware packages are an exception because they are built for only one architecture.
+
 ### Add Hyper-V machine support
 
 A new machine `hyper-v` has been introduced for building images

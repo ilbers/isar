@@ -13,7 +13,12 @@ TAR_REPRO_OPTS ?= "--exclude=.git --exclude=debian \
 DPKG_SOURCE_EXTRA_ARGS ?= "-I"
 
 DEBIAN_SOURCE ?= "${BPN}"
+SRCPKG_DIR = "${WORKDIR}/deploy-srcpkg"
+DEPLOY_DIR_SRC = "${DEPLOY_DIR}/isar-source/${DISTRO}/${BPN}"
 
+do_dpkg_source[cleandirs] = "${SRCPKG_DIR}"
+do_dpkg_source[sstate-inputdirs] = "${SRCPKG_DIR}"
+do_dpkg_source[sstate-outputdirs] = "${DEPLOY_DIR_SRC}"
 do_dpkg_source() {
     # Create a .dsc file from source directory to use it with sbuild
     DEB_SOURCE_NAME=$(dpkg-parsechangelog --show-field Source --file ${WORKDIR}/${PPS}/debian/changelog)
@@ -22,8 +27,18 @@ do_dpkg_source() {
     fi
     find ${WORKDIR} -maxdepth 1 -name "${DEBIAN_SOURCE}_*.dsc" -delete
     sh -c "cd ${WORKDIR}; dpkg-source ${DPKG_SOURCE_EXTRA_ARGS} -b ${PPS}"
+    # move packages to deploy directory
+    find ${WORKDIR} -maxdepth 1 \( -name "${DEBIAN_SOURCE}_*.tar.*" -o -name "${DEBIAN_SOURCE}_*.dsc" \) -exec mv {} ${SRCPKG_DIR}/ \;
 }
 addtask dpkg_source after do_prepare_build
+
+SSTATETASKS += "do_dpkg_source"
+
+python do_dpkg_source_setscene() {
+    sstate_setscene(d)
+}
+
+addtask dpkg_source_setscene
 
 CLEANFUNCS += "deb_clean_source"
 
@@ -34,11 +49,11 @@ deb_clean_source() {
 
 do_deploy_source[depends] += "isar-apt:do_cache_config"
 do_deploy_source[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
-do_deploy_source[dirs] = "${S}"
+do_deploy_source[dirs] = "${S} ${DEPLOY_DIR_SRC}"
 do_deploy_source() {
     repo_del_srcpackage "${REPO_ISAR_DIR}"/"${DISTRO}" \
         "${REPO_ISAR_DB_DIR}"/"${DISTRO}" "${DEBDISTRONAME}" "${DEBIAN_SOURCE}"
-    DSC_FILE=$(find ${WORKDIR} -maxdepth 1 -name "${DEBIAN_SOURCE}_*.dsc")
+    DSC_FILE=$(find ${DEPLOY_DIR_SRC} -maxdepth 1 -name "${DEBIAN_SOURCE}_*.dsc")
     if [ -n "${DSC_FILE}" ]; then
         repo_add_srcpackage "${REPO_ISAR_DIR}"/"${DISTRO}" \
             "${REPO_ISAR_DB_DIR}"/"${DISTRO}" \

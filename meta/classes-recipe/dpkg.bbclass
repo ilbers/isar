@@ -116,7 +116,7 @@ dpkg_runbuild() {
     echo '$apt_keep_downloaded_packages = 1;' >> ${SBUILD_CONFIG}
     echo '$stalled_pkg_timeout = ${DPKG_BUILD_TIMEOUT};' >> ${SBUILD_CONFIG}
 
-    DSC_FILE=$(find ${WORKDIR} -maxdepth 1 -name "${DEBIAN_SOURCE}_*.dsc" -print)
+    DSC_FILE=$(find ${DEPLOY_DIR_SRC} -maxdepth 1 -name "${DEBIAN_SOURCE}_*.dsc" -print)
 
     # networking is automatically enabled on older versions of sbuild
     sbuild_network_option=""
