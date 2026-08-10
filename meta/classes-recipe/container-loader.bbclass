@@ -10,6 +10,11 @@ SRC_URI += " \
     file://container-loader.service.tmpl \
     file://container-loader.sh.tmpl"
 
+# make the source package architecture dependent to avoid
+# package collisions on multiconf / multiarch builds
+PROVIDES := "${BPN}"
+DEBIAN_PROVIDES := "${BPN}"
+PN .= "-${DISTRO_ARCH}"
 DPKG_ARCH ?= "${DISTRO_ARCH}"
 DEBIAN_MULTI_ARCH ?= "allowed"
 
