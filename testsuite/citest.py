@@ -485,6 +485,13 @@ class CrossTest(CIBaseTest):
             bitbake_extra_args=["-c", "rootfs_install"]
         )
 
+    def test_package_with_epoch(self):
+        self.init()
+        self.perform_build_test(
+            ['mc:qemuamd64-trixie:isar-image-base'],
+            image_install='test-with-epoch',
+            bitbake_extra_args=["-c", "rootfs_install"])
+
     def test_cross_riscv64(self):
         """
         :avocado: tags=riscv64
