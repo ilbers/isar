@@ -369,8 +369,9 @@ rootfs_install_pkgs_isar_download() {
                --chdir "/var/cache/apt/archives" \
                ${ROOTFSDIR} \
                -- /usr/bin/sh -c 'apt-get ${ROOTFS_APT_ARGS} --print-uris ${ROOTFS_PACKAGES} | \
-                                  sed -n "s|^.file:\(/[^'\'']*/\)[^'\'']*\.deb. \([^ ]*\.deb\) .*|\1\2|p" | \
-                                  while read -r path; do cp -n "$path" ./ ; done'
+                                  sed -n "s|^.file:\(/[^'\'']*\.deb\). \([^ ]*\.deb\).*|\1 \2|p" | \
+                                  sed ":a; s|^\([^ ]*\)%|\1\\\\x|; ta" | \
+                                  while read -r path name; do cp -n "$(/usr/bin/printf "%b" "$path")" "$name" ; done'
 }
 
 ROOTFS_INSTALL_COMMAND += "${@ 'rootfs_install_clean_files' if (d.getVar('ROOTFS_CLEAN_FILES') or '').strip() else ''}"
