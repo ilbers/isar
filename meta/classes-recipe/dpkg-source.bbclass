@@ -49,6 +49,8 @@ do_deploy_source() {
 addtask deploy_source after do_dpkg_source
 
 do_dpkg_build[depends] += "${BPN}:do_deploy_source"
+# ensure that the source package is deployed into isar-apt
+do_deploy_deb[rdepends] += "${BPN}:do_deploy_source"
 
 SCHROOT_MOUNTS = "${WORKDIR}:/work ${REPO_ISAR_DIR}/${DISTRO}:/isar-apt"
 
