@@ -933,7 +933,6 @@ class NoCrossTest(CIBaseTest):
             'mc:qemui386-bullseye:isar-image-base',
             'mc:qemuamd64-buster:isar-image-ci',
             'mc:qemuamd64-bullseye:isar-initramfs',
-            'mc:qemumipsel-bullseye:isar-image-base',
             'mc:phyboard-mira-bullseye:isar-image-base',
             'mc:hikey-bullseye:isar-image-base',
             'mc:virtualbox-bullseye:isar-image-base',
@@ -1121,13 +1120,6 @@ class NoCrossTest(CIBaseTest):
         self.init()
         self.vm_start('i386', 'bookworm')
 
-    def test_run_mipsel_bullseye(self):
-        """
-        :avocado: tags=startvm
-        """
-        self.init()
-        self.vm_start('mipsel', 'bullseye')
-
     def test_run_mipsel_bookworm_base(self):
         """
         :avocado: tags=startvm
@@ -1232,6 +1224,29 @@ class NoCrossTest(CIBaseTest):
         self.init()
         self.vm_start('amd64-iso', 'bookworm', image='isar-image-ci',
                       script='test_system_running.sh 30')
+
+    def test_nocross_mipsel_bullseye(self):
+        """
+        On bullseye mipsel, the pam + adduser combination does not
+        work in unprivileged namespaces.
+        """
+        if bool(int(self.params.get('rootless', default=0))):
+            self.cancel('mipsel bullseye not supported in rootless mode')
+
+        self.init()
+        self.perform_build_test(
+            ['mc:qemumipsel-bullseye:isar-image-base'],
+            cross=False)
+
+    def test_run_mipsel_bullseye(self):
+        """
+        :avocado: tags=startvm
+        """
+        if bool(int(self.params.get('rootless', default=0))):
+            self.cancel('mipsel bullseye not supported in rootless mode')
+
+        self.init()
+        self.vm_start('mipsel', 'bullseye')
 
     def test_nocross_debsrc(self):
         targets = [
