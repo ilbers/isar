@@ -73,7 +73,11 @@ class DevTest(CIBaseTest):
         ]
 
         self.init()
-        self.perform_build_test(targets, image_install='example-raw')
+        self.perform_build_test(
+            targets,
+            image_install='example-raw',
+            lines=['SDK_FORMATS = "tar.zst"'],
+        )
 
     def test_dev_run_arm_bookworm(self):
         self.init()
