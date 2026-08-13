@@ -202,7 +202,7 @@ class ReproTest(CIBaseTest):
 
         self.init()
         try:
-            self.perform_repro_test(targets, cross=False)
+            self.perform_repro_test(targets)
         finally:
             self.move_in_build_dir('tmp', 'tmp_repro_unsigned')
 
@@ -437,7 +437,7 @@ class CrossTest(CIBaseTest):
         ]
 
         self.init()
-        self.perform_build_test(targets, cross=False)
+        self.perform_build_test(targets)
 
     def test_cross_kselftest(self):
         targets = [
