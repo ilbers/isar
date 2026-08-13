@@ -71,8 +71,6 @@ IMAGE_CMD:ova() {
         exit 0
     fi
     rm -f '${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.ova'
-    rm -f '${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.ovf'
-    rm -f '${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.mf'
 
     export PRIMARY_MAC=$(macgen)
     export LAST_CHANGE=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
@@ -95,6 +93,9 @@ IMAGE_CMD:ova() {
             tar -uvf ${PP_DEPLOY}/${IMAGE_FULLNAME}.ova -C ${PP_DEPLOY} ${IMAGE_FULLNAME}.mf
         fi
         tar -uvf ${PP_DEPLOY}/${IMAGE_FULLNAME}.ova -C ${PP_DEPLOY} ${VIRTUAL_MACHINE_IMAGE_FILE}
+        rm -f '${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.mf'
+        rm -f '${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.ovf'
+        rm -f '${DEPLOY_DIR_IMAGE}/${VIRTUAL_MACHINE_IMAGE_FILE}'
 EOIMAGER
 }
 IMAGE_CMD:ova[depends] = "${PN}:do_transform_template"
