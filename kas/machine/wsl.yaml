@@ -1,0 +1,7 @@
+# This software is a part of Isar.
+# Copyright (c) Siemens AG, 2026
+
+header:
+  version: 14
+
+machine: wsl

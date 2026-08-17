@@ -161,6 +161,10 @@ a: !mux
     name: qemuarm64-sid
   qemuriscv64-resolute:
     name: qemuriscv64-resolute
+  wsl-bookworm:
+    name: wsl-bookworm
+  wsl-trixie:
+    name: wsl-trixie
 b: !mux
   base:
     image: isar-image-base

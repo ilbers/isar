@@ -155,8 +155,9 @@ CONF_VERSION = "1"
 IMAGE_INSTALL = "hello-isar example-raw example-module-${KERNEL_NAME} enable-fsck isar-exclude-docs samefile hello isar-disable-apt-cache cowsay example-prebuilt"
 
 #
-# Container machines don't need example module and enable-fsck.
+# Container and WSL machines don't need example module and enable-fsck.
 IMAGE_INSTALL:remove:container-amd64 = "example-module-${KERNEL_NAME} enable-fsck"
+IMAGE_INSTALL:remove:wsl = "example-module-${KERNEL_NAME} enable-fsck"
 
 #
 # Machines with secure boot should use signed modules.

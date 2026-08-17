@@ -1352,6 +1352,24 @@ class ContainerImageTest(CIBaseTest):
         self.perform_build_test(targets, container=True)
 
 
+class WSLImageTest(CIBaseTest):
+
+    """
+    Test WSL images creation
+
+    :avocado: tags=wslbuild,full,wsl
+    """
+
+    def test_wsl_image(self):
+        targets = [
+            'mc:wsl-bookworm:isar-image-base',
+            'mc:wsl-trixie:isar-image-base',
+        ]
+
+        self.init()
+        self.perform_build_test(targets, image_install='')
+
+
 class ContainerSdkTest(CIBaseTest):
 
     """

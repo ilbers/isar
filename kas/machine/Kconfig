@@ -253,6 +253,13 @@ config MACHINE_HYPER_V
 	select CODENAME_TRIXIE
 	select ARCH_AMD64
 
+config MACHINE_WSL
+	bool "wsl"
+	select DISTRO_DEBIAN
+	select CODENAME_BOOKWORM
+	select CODENAME_TRIXIE
+	select ARCH_AMD64
+
 config MACHINE_X86_PC
 	bool "x86 PC"
 	select DISTRO_DEBIAN
@@ -297,6 +304,7 @@ config KAS_INCLUDE_MACHINE
 	default "kas/machine/virtualbox.yaml" if MACHINE_VIRTUALBOX
 	default "kas/machine/vmware.yaml" if MACHINE_VMWARE
 	default "kas/machine/hyper-v-amd64.yaml" if MACHINE_HYPER_V
+	default "kas/machine/wsl.yaml" if MACHINE_WSL
 	default "kas/machine/x86-pc.yaml" if MACHINE_X86_PC
 
 endmenu

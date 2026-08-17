@@ -514,6 +514,7 @@ Currently, the following image types are provided:
  - `ubi` - image for use on mtd nand partitions employing UBI
  - `ubifs` - raw UBI filesystem image, normally used together with UBI partitions
  - `ova` - Open Virtual Appliance: image for use on VirtualBox or VMware
+ - `wsl` - tar file for Windows Subsystem for Linux
  - `squashfs` - raw squashfs filesystem image
  - `fit` - FIT image as used by U-Boot
  - `oci-archive`, `docker-archive`, `docker-daemon`, `containers-storage` - see [generating container images](#generate-container-image-with-root-filesystem)
