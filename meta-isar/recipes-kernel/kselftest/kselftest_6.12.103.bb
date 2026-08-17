@@ -11,4 +11,4 @@ inherit linux-kselftest
 MAINTAINER = "isar-users <isar-users@googlegroups.com>"
 
 SRC_URI += "https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-${PV}.tar.xz"
-SRC_URI[sha256sum] = "e35ac999f40a6874493d8d60f33f1150d7a89ae5841c428da82257fbcd070aed"
+SRC_URI[sha256sum] = "f143aaade8877ba5616e788b4482576db28481bcf557ef537f4fcc3938fc3176"
