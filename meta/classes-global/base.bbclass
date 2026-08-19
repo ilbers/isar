@@ -402,6 +402,10 @@ def insert_isar_mounts(d, rootfs, mounts):
         lines.append('mount -o bind /dev/random {}/dev/random'.format(rootfs))
         lines.append('mount -o bind /dev/urandom {}/dev/urandom'.format(rootfs))
         lines.append('mount -t proc none {}/proc'.format(rootfs))
+        lines.append('ln -sfn /proc/self/fd {}/dev/fd'.format(rootfs))
+        lines.append('ln -sfn /proc/self/fd/0 {}/dev/stdin'.format(rootfs))
+        lines.append('ln -sfn /proc/self/fd/1 {}/dev/stdout'.format(rootfs))
+        lines.append('ln -sfn /proc/self/fd/2 {}/dev/stderr'.format(rootfs))
         # we do not unshare the network namespace, so we cannot create a sysfs, hence bind-mount
         lines.append('mount -o rbind /sys {}/sys'.format(rootfs))
 
@@ -418,7 +422,8 @@ def insert_isar_umounts(d, rootfs, mounts):
     remove the mountpoints.
     """
     lines = []
-    to_unlink = ['/dev/null', '/dev/random', '/dev/urandom', '/dev/ptmx']
+    to_unlink = ['/dev/null', '/dev/random', '/dev/urandom', '/dev/ptmx',
+                 '/dev/stdin', '/dev/stdout', '/dev/stderr', '/dev/fd']
     to_rmdir = ['/dev/pts', '/dev/shm']
     if d.getVar('ISAR_CHROOT_MODE') == 'unshare':
         lines.append('rm -f ' + ' '.join(['{}/{}'.format(rootfs, f) for f in to_unlink]))
