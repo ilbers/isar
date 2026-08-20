@@ -643,7 +643,7 @@ SSTATETASKS += "do_rootfs_install"
 SSTATECREATEFUNCS += "rootfs_install_sstate_prepare"
 SSTATEPOSTINSTFUNCS += "rootfs_install_sstate_finalize"
 
-SSTATE_TAR_ATTR_FLAGS ?= "--xattrs --xattrs-include='*'"
+SSTATE_TAR_ATTR_FLAGS ?= "--xattrs --xattrs-include='*' --pax-option=delete=atime,delete=ctime"
 
 # the rootfs is owned by root, so we need some sudoing to pack and unpack
 rootfs_install_sstate_prepare() {
@@ -657,8 +657,8 @@ rootfs_install_sstate_prepare() {
 
     run_privileged_heredoc <<'EOF'
         mount -o bind,private '${ROOTFSDIR}' '${WORKDIR}/mnt/rootfs' -o ro
-        lopts="--one-file-system"
-        tar -C ${WORKDIR}/mnt/rootfs -cpSf rootfs.tar $lopts ${SSTATE_TAR_ATTR_FLAGS} .
+        lopts="--one-file-system --sort=name"
+        tar -C ${WORKDIR}/mnt/rootfs -cpf rootfs.tar $lopts ${SSTATE_TAR_ATTR_FLAGS} .
         umount -q ${WORKDIR}/mnt/rootfs
 EOF
     if [ -f ${WORKDIR}/${ROOTFS_APT_STATE} ]; then
