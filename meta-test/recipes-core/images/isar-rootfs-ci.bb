@@ -7,7 +7,7 @@
 ROOTFS_MANIFEST_DEPLOY_DIR = "${DEPLOY_DIR_IMAGE}"
 
 ROOTFSDIR = "${WORKDIR}/rootfs"
-ROOTFS_FEATURES = "generate-sbom"
+ROOTFS_FEATURES += "generate-sbom"
 
 inherit multiarch
 inherit rootfs

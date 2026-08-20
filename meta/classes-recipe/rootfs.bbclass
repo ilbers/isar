@@ -41,6 +41,15 @@ ROOTFS_BASE_DISTRO ?= "${BASE_DISTRO}"
 # 'populate-systemd-preset' - enable systemd units according to systemd presets
 # 'clean-apt-credentials' - remove apt auth credentials written by ISAR_APT_CREDS
 
+# convenience variable to enable all features needed for a reproducible rootfs build
+ROOTFS_FEATURES_REPRODUCIBLE = " \
+    clean-package-cache \
+    clean-log-files \
+    clean-debconf-cache \
+    clean-pycache \
+"
+ROOTFS_FEATURES += "${ROOTFS_FEATURES_REPRODUCIBLE}"
+
 # only supported from bookworm / jammy on
 ROOTFS_FEATURES:remove:buster = "generate-sbom"
 ROOTFS_FEATURES:remove:bullseye = "generate-sbom"

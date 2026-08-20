@@ -26,8 +26,7 @@ SBOM_DISTRO_NAME:append = "-Initramfs"
 DEPENDS += "${INITRAMFS_INSTALL}"
 
 ROOTFSDIR = "${INITRAMFS_ROOTFS}"
-ROOTFS_FEATURES = "generate-manifest generate-sbom"
-ROOTFS_FEATURES += "generate-initrd"
+ROOTFS_FEATURES += "generate-manifest generate-sbom generate-initrd"
 ROOTFS_PACKAGES = "${INITRAMFS_GENERATOR_PKG} ${INITRAMFS_PREINSTALL} ${INITRAMFS_INSTALL}"
 
 # validate whether there are incompatible packages in the installation list
