@@ -1201,3 +1201,9 @@ To opt out, remove the feature explicitly:
 ```
 ROOTFS_FEATURES:remove = "clean-apt-credentials"
 ```
+
+### do_rootfs_postprocess is folded into do_rootfs_install
+
+All `ROOTFS_POSTPROCESS_COMMAND` steps are now executed within the `do_rootfs_install`
+task to avoid idempotency issues on partial rebuilds. Task that previously had a
+dependency to `do_rootfs_postprocess` shall now be changed to run after `do_rootfs_install`.

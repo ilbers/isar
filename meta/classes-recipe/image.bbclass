@@ -408,7 +408,7 @@ do_copy_boot_files() {
         cp -f "$dtb" "${DEPLOYDIR}/"
     done
 }
-addtask copy_boot_files before do_rootfs_postprocess after do_rootfs_install
+addtask copy_boot_files before do_rootfs do_generate_initramfs after do_rootfs_install
 
 python do_copy_boot_files_setscene () {
     sstate_setscene(d)
@@ -492,7 +492,7 @@ EOSUDO
         -exec touch '{}' -h -d@${SOURCE_DATE_EPOCH} ';'
 }
 do_rootfs_finalize[network] = "${TASK_USE_SUDO}"
-addtask rootfs_finalize before do_rootfs after do_rootfs_postprocess
+addtask rootfs_finalize before do_rootfs after do_rootfs_install
 
 ROOTFS_QA_FIND_ARGS ?= ""
 

@@ -14,14 +14,11 @@ python() {
     for entry in (d.getVar("GROUPS") or "").split():
         group_entry = "GROUP_{}".format(entry)
         d.appendVarFlag("image_postprocess_accounts", "vardeps", " {}".format(group_entry))
-        d.appendVarFlag("do_rootfs_install", "vardeps", " {}".format(group_entry))
 
     for entry in (d.getVar("USERS") or "").split():
         user_entry = "USER_{}".format(entry)
         d.appendVarFlag("image_postprocess_accounts", "vardeps", " {}".format(user_entry))
-        d.appendVarFlag("do_rootfs_install", "vardeps", " {}".format(user_entry))
 }
-do_rootfs_install[vardeps] += "GROUPS USERS"
 
 def image_create_groups(d: "DataSmart") -> None:
     """Creates the groups defined in the ``GROUPS`` bitbake variable.

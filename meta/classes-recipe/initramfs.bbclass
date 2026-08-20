@@ -78,7 +78,7 @@ rootfs_purge_initramfs() {
 
 # If an external initrd shall be used, run it as a task
 # instead of as part of the rootfs install.
-addtask do_generate_initramfs before do_rootfs_postprocess after do_rootfs_install
+addtask do_generate_initramfs before do_rootfs after do_rootfs_install
 addtask do_generate_initramfs_setscene
 ROOTFS_INSTALL_COMMAND:remove = "rootfs_generate_initramfs"
 

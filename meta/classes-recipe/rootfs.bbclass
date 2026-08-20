@@ -430,19 +430,21 @@ do_rootfs_install[root_cleandirs] = "${ROOTFSDIR}"
 do_rootfs_install[cleandirs] += "${DEPLOYDIR}"
 do_rootfs_install[sstate-inputdirs] = "${DEPLOYDIR}"
 do_rootfs_install[sstate-outputdirs] = "${DEPLOY_DIR_IMAGE}"
-do_rootfs_install[vardeps] += "${ROOTFS_CONFIGURE_COMMAND} ${ROOTFS_INSTALL_COMMAND} ${ROOTFS_VARDEPS}"
+do_rootfs_install[vardeps] += "${ROOTFS_CONFIGURE_COMMAND} ${ROOTFS_INSTALL_COMMAND} ${ROOTFS_POSTPROCESS_COMMAND} ${ROOTFS_VARDEPS}"
 do_rootfs_install[vardepsexclude] += "IMAGE_ROOTFS"
 do_rootfs_install[depends] = "bootstrap-${@'target' if d.getVar('ROOTFS_ARCH') == d.getVar('DISTRO_ARCH') else 'host'}:do_build"
+do_rootfs_install[depends] += "base-apt:do_cache isar-apt:do_cache_config"
 do_rootfs_install[deptask] = "do_deploy_deb"
 do_rootfs_install[rdeptask] = "do_deploy_deb"
 do_rootfs_install[network] = "${TASK_USE_SUDO}"
 python do_rootfs_install() {
     configure_cmds = (d.getVar("ROOTFS_CONFIGURE_COMMAND") or "").split()
     install_cmds = (d.getVar("ROOTFS_INSTALL_COMMAND") or "").split()
+    postprocess_cmds = (d.getVar("ROOTFS_POSTPROCESS_COMMAND") or "").split()
 
     # Mount after configure commands, so that they have time to copy
     # 'isar-apt' (sdkchroot):
-    cmds = ['rootfs_prepare'] + configure_cmds + ['rootfs_do_mounts'] + install_cmds
+    cmds = ['rootfs_prepare'] + configure_cmds + ['rootfs_do_mounts'] + install_cmds + postprocess_cmds
 
     # NOTE: The weights specify how long each task takes in seconds and are used
     # by the MultiStageProgressReporter to render a progress bar for this task.
@@ -470,7 +472,7 @@ python do_rootfs_install() {
         progress_reporter.finish()
         bb.build.exec_func('rootfs_do_umounts', d)
 }
-addtask rootfs_install before do_rootfs_postprocess after do_unpack
+addtask rootfs_install before do_rootfs after do_unpack
 
 do_cache_deb_src[network] = "${TASK_USE_SUDO}"
 do_cache_deb_src() {
@@ -611,33 +613,6 @@ image_postprocess_populate_systemd_preset() {
 EOSH
 }
 
-do_rootfs_postprocess[vardeps] = "${ROOTFS_POSTPROCESS_COMMAND}"
-do_rootfs_postprocess[network] = "${TASK_USE_SUDO}"
-do_rootfs_postprocess[depends] = "base-apt:do_cache isar-apt:do_cache_config"
-python do_rootfs_postprocess() {
-    # Take care that its correctly mounted:
-    bb.build.exec_func('rootfs_do_mounts', d)
-    # Take care that qemu-*-static is available, since it could have been
-    # removed on a previous execution of this task:
-    bb.build.exec_func('rootfs_do_qemu', d)
-
-    progress_reporter = bb.progress.ProgressHandler(d)
-    progress_reporter.update(0)
-
-    cmds = d.getVar("ROOTFS_POSTPROCESS_COMMAND")
-    if cmds is None or not cmds.strip():
-        return
-    cmds = cmds.split()
-
-    try:
-        for i, cmd in enumerate(cmds):
-            bb.build.exec_func(cmd, d)
-            progress_reporter.update(int(i / len(cmds) * 100))
-    finally:
-        bb.build.exec_func('rootfs_do_umounts', d)
-}
-addtask rootfs_postprocess before do_rootfs after do_unpack
-
 ROOTFS_INSTALL_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'generate-initrd', 'rootfs_generate_initramfs', '', d)}"
 rootfs_generate_initramfs[weight] = "1000"
 rootfs_generate_initramfs[progress] = "custom:rootfs_progress.InitrdProgressHandler"
@@ -682,7 +657,7 @@ rootfs_install_sstate_prepare() {
 
     run_privileged_heredoc <<'EOF'
         mount -o bind,private '${ROOTFSDIR}' '${WORKDIR}/mnt/rootfs' -o ro
-        lopts="--one-file-system --exclude=var/cache/apt/archives"
+        lopts="--one-file-system"
         tar -C ${WORKDIR}/mnt/rootfs -cpSf rootfs.tar $lopts ${SSTATE_TAR_ATTR_FLAGS} .
         umount -q ${WORKDIR}/mnt/rootfs
 EOF
@@ -715,3 +690,8 @@ python do_rootfs_install_setscene() {
     sstate_setscene(d)
 }
 addtask do_rootfs_install_setscene
+
+python do_rootfs_postprocess() {
+    bb.warn("task do_rootfs_postprocess was folded into do_rootfs_install, please order your task after do_rootfs_install instead")
+}
+addtask do_rootfs_postprocess after do_rootfs_install
