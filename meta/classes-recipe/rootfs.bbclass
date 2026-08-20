@@ -31,6 +31,7 @@ ROOTFS_BASE_DISTRO ?= "${BASE_DISTRO}"
 # available features are:
 # 'clean-package-cache' - delete package cache from rootfs
 # 'clean-debconf-cache' - delete debconf cache files
+# 'clean-apt-lists' - delete apt lists files (after execution, apt-get update needs to be run again)
 # 'clean-pycache' - delete python bytecode cache files
 # 'generate-manifest' - generate a package manifest of the rootfs into ${ROOTFS_MANIFEST_DEPLOY_DIR}
 # 'generate-sbom' - generate a SBOM of the rootfs into ${DEPLOY_DIR_SBOM}
@@ -522,9 +523,14 @@ ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'clean-pa
 rootfs_postprocess_clean_package_cache() {
     run_in_chroot '${ROOTFSDIR}' \
         /usr/bin/apt-get clean
-    run_privileged rm -rf "${ROOTFSDIR}/var/lib/apt/lists/"*
     # remove apt-cache folder itself (required in case rootfs is provided by sstate cache)
-    run_privileged rm -rf "${ROOTFSDIR}/var/cache/apt/archives"
+    run_privileged find "${ROOTFSDIR}/var/cache/apt" -type f \
+        \( -name '*.deb' -o -name '*.bin' \) -delete
+}
+
+ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'clean-apt-lists', 'rootfs_postprocess_clean_apt_lists', '', d)}"
+rootfs_postprocess_clean_apt_lists() {
+    run_privileged find "${ROOTFSDIR}/var/lib/apt/lists" -type f -delete
 }
 
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'clean-log-files', 'rootfs_postprocess_clean_log_files', '', d)}"

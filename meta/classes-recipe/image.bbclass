@@ -95,6 +95,7 @@ inherit essential
 ROOTFSDIR = "${IMAGE_ROOTFS}"
 ROOTFS_FEATURES += "\
     clean-package-cache \
+    clean-apt-lists \
     clean-pycache \
     generate-manifest \
     export-dpkg-status \
