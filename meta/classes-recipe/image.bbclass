@@ -487,10 +487,8 @@ EOSUDO
         bbwarn "found core dump in rootfs, check it in ${WORKDIR}/temp/${f##*/}"
     done
 
-    # Set same time-stamps to the newly generated file/folders in the
-    # rootfs image for the purpose of reproducible builds.
-    run_privileged find ${ROOTFSDIR} -newermt "$(date -d@${SOURCE_DATE_EPOCH} '+%Y-%m-%d %H:%M:%S')" \
-        -exec touch '{}' -h -d@${SOURCE_DATE_EPOCH} ';'
+    # Final pass to set timestamps of files in rootfs to SOURCE_DATE_EPOCH for reproducible builds
+    rootfs_set_timestamps
 }
 do_rootfs_finalize[network] = "${TASK_USE_SUDO}"
 addtask rootfs_finalize before do_rootfs after do_rootfs_install

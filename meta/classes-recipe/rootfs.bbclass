@@ -438,6 +438,7 @@ do_rootfs_install[depends] += "base-apt:do_cache isar-apt:do_cache_config"
 do_rootfs_install[deptask] = "do_deploy_deb"
 do_rootfs_install[rdeptask] = "do_deploy_deb"
 do_rootfs_install[network] = "${TASK_USE_SUDO}"
+do_rootfs_install[postfuncs] += "rootfs_set_timestamps"
 python do_rootfs_install() {
     configure_cmds = (d.getVar("ROOTFS_CONFIGURE_COMMAND") or "").split()
     install_cmds = (d.getVar("ROOTFS_INSTALL_COMMAND") or "").split()
@@ -617,6 +618,13 @@ image_postprocess_populate_systemd_preset() {
             systemctl preset-all --preset-mode="enable-only"
         fi
 EOSH
+}
+
+# Set same time-stamps to the newly generated file/folders in the rootfs image for the purpose of reproducible builds.
+# This has to be done after unmounting
+rootfs_set_timestamps() {
+    run_privileged find ${ROOTFSDIR} -newermt "$(date -d@${SOURCE_DATE_EPOCH} '+%Y-%m-%d %H:%M:%S')" \
+        -exec touch '{}' -h -d@${SOURCE_DATE_EPOCH} ';'
 }
 
 ROOTFS_INSTALL_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'generate-initrd', 'rootfs_generate_initramfs', '', d)}"
