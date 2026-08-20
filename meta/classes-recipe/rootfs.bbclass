@@ -426,7 +426,8 @@ rootfs_clear_initrd_symlinks() {
 ROOTFS_INSTALL_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'generate-sbom', 'rootfs_capture_apt_state', '', d)}"
 rootfs_capture_apt_state() {
     ( cd ${ROOTFSDIR} && find usr/share/doc -name copyright -print0 ) | \
-    tar -cf ${WORKDIR}/${ROOTFS_APT_STATE} --zstd -C ${ROOTFSDIR} \
+    tar -cf ${WORKDIR}/${ROOTFS_APT_STATE} --zstd --sort=name \
+        --mtime=@${SOURCE_DATE_EPOCH} -C ${ROOTFSDIR} \
         --exclude=var/lib/apt/lists/partial \
         --exclude=var/lib/apt/lists/lock \
         --exclude=var/lib/apt/lists/auxfiles \
