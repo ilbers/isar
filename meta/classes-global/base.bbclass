@@ -470,15 +470,19 @@ def run_privileged_cmd(d):
         nobody_subid = uid_base + uid_cnt - 1
         gid_base, gid_cnt = get_subid_range('/etc/subgid', d)
         nogroup_subid = gid_base + gid_cnt - 1
+        # nobody/nogroup need a dedicated block at the top of the range. As part
+        # of the linear range they are lost whenever that range covers the outer
+        # id of --map-root-user, because unshare then punches out a hole and
+        # drops the highest id of the range.
+        uid_linear_cnt = min(uid_cnt - 2, nobody_id - 1)
+        gid_linear_cnt = min(gid_cnt - 2, nobody_id - 1)
         cmd = 'unshare --mount --pid --uts --ipc --user' \
               ' --kill-child' \
               ' --setuid 0 --setgid 0 --fork' \
-              f' --map-users  1:{uid_base+1}:{uid_cnt-2}' \
-              f' --map-groups 1:{gid_base+1}:{gid_cnt-2}'
-        if uid_cnt < nobody_id:
-            cmd += f' --map-users  {nobody_id}:{nobody_subid}:1'
-        if gid_cnt < nobody_id:
-            cmd += f' --map-groups {nobody_id}:{nogroup_subid}:1'
+              f' --map-users  1:{uid_base+1}:{uid_linear_cnt}' \
+              f' --map-groups 1:{gid_base+1}:{gid_linear_cnt}' \
+              f' --map-users  {nobody_id}:{nobody_subid}:1' \
+              f' --map-groups {nobody_id}:{nogroup_subid}:1'
         cmd += " --map-root-user"
     else:
         cmd = 'sudo -E'
