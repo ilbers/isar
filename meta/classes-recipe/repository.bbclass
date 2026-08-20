@@ -10,6 +10,20 @@ def repo_expand_opt_fields(d, var):
         return ''
     return '\n'.join('{}: {}'.format(k, v) for k, v in f.items())
 
+# use a fixed but arbitrary date for the Release file to make it reproducible
+ISAR_APT_RELEASE_DATE = "3600"
+repo_set_release_date() {
+    local dir="$1"
+    local codename="$2"
+    local release="${dir}/dists/${codename}/Release"
+
+    [ "${dir}" = "${REPO_ISAR_DIR}/${DISTRO}" ] || return 0
+    [ -f "${release}" ] || return 0
+
+    sed -i -e "s/^Date: .*/Date: $(LC_ALL=C date -u -R -d @${ISAR_APT_RELEASE_DATE})/" \
+        "${release}"
+}
+
 repo_create() {
     local dir="$1"
     local dbdir="$2"
@@ -40,6 +54,7 @@ repo_create() {
     fi
     if [ ! -d "${dbdir}" ]; then
         reprepro -b "${dir}" --dbdir "${dbdir}" export "${codename}"
+        repo_set_release_date "${dir}" "${codename}"
     fi
 }
 
@@ -55,6 +70,7 @@ repo_add_srcpackage() {
     reprepro -b "${dir}" --dbdir "${dbdir}" -C main -S - -P source \
         includedsc "${codename}" \
         "$@"
+    repo_set_release_date "${dir}" "${codename}"
 }
 
 repo_add_packages() {
@@ -77,6 +93,7 @@ repo_add_packages() {
         fi
         reprepro -b "${dir}" --dbdir "${dbdir}" -C main ${prio_opt} \
             includedeb "${codename}" "${package}"
+        repo_set_release_date "${dir}" "${codename}"
     done
 }
 
@@ -92,6 +109,7 @@ repo_del_srcpackage() {
     reprepro -b "${dir}" --dbdir "${dbdir}" -A source \
         remove "${codename}" \
         "${packagename}"
+    repo_set_release_date "${dir}" "${codename}"
 }
 
 repo_del_package() {
@@ -108,6 +126,7 @@ repo_del_package() {
     reprepro -b "${dir}" --dbdir "${dbdir}" -C main \
         removefilter "${codename}" \
         'Package (= '${p}'), Architecture (= '${a}'), $PackageType (= deb)'
+    repo_set_release_date "${dir}" "${codename}"
 }
 
 repo_contains_package() {
