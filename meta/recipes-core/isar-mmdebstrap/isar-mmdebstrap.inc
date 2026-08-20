@@ -255,6 +255,8 @@ do_bootstrap() {
                    --customize-hook='sed -i "/en_US.UTF-8 UTF-8/s/^#//g" "$1/etc/locale.gen"' \
                    --customize-hook='chroot "$1" /usr/sbin/locale-gen' \
                    --customize-hook='chroot "$1" /usr/bin/apt-get -y clean' \
+                   --customize-hook='echo nameserver 127.0.0.1 > "$1"/etc/resolv.conf' \
+                   --customize-hook='echo isar > "$1"/etc/hostname' \
                    ${@'--skip=output/dev' if d.getVar('ISAR_CHROOT_MODE') == 'unshare' else ''} \
                    --skip=cleanup/apt \
                    --skip=download/empty \
