@@ -1,0 +1,55 @@
+#!/bin/sh
+# Copyright (C) 2026 Siemens AG
+# SPDX-License-Identifier: MIT
+#
+# Helper script to check if the current environment supports unprivileged
+# rootless builds with unshare.
+# Returns 0 if supported, otherwise returns 1 and prints an error message to stderr.
+
+verbose=0
+if [ "$1" = "-v" ]; then
+	verbose=1
+fi
+
+if ! run_privileged_cmd=$( \
+	BB_ENV_PASSTHROUGH_ADDITIONS="${BB_ENV_PASSTHROUGH_ADDITIONS} ISAR_ROOTLESS" \
+	ISAR_ROOTLESS=1 bitbake-getvar -q --value RUN_PRIVILEGED_CMD); then
+	echo "error: cannot determine RUN_PRIVILEGED_CMD from BitBake" >&2
+	exit 1
+fi
+
+[ "$verbose" = 0 ] || echo "RUN_PRIVILEGED_CMD: $run_privileged_cmd" >&2
+
+if ! ${run_privileged_cmd} /bin/sh <<'EOF'
+	failed=0
+
+	fail() {
+		echo "error: $1" >&2
+		echo "       likely cause: $2" >&2
+		failed=1
+	}
+
+	mountpoint=$(mktemp -d)
+	if [ -n "$mountpoint" ]; then
+		if ! mount -t proc proc "$mountpoint"; then
+			fail "cannot mount procfs in the user namespace" \
+				"procfs is over-mounted by the container runtime, or the host security policy blocks procfs mounts"
+		else
+			umount "$mountpoint"
+		fi
+		rmdir "$mountpoint"
+	fi
+
+	if ! setpriv --reuid=nobody --regid=nogroup --clear-groups /usr/bin/true; then
+		fail "cannot execute as nobody:nogroup in the user namespace" \
+			"the subuid / subgid ID range is too small or incomplete"
+	fi
+
+	exit "$failed"
+EOF
+then
+	echo "error: unprivileged rootless builds are not supported; see the checks above" >&2
+	exit 1
+fi
+
+echo "unprivileged rootless builds are supported"
