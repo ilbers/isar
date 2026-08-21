@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import shutil
+
 from cibuilder import CIBuilder
 from utils import CIUtils
 from avocado.utils import process
@@ -68,8 +70,13 @@ class ReproBuild(CIBuilder):
         self.log.info(
             "Compare artifacts image1: " + image1 + ", image2: " + image2
         )
+
+        compare_cmd = "diff -q"
+        if shutil.which('diffoscope'):
+            compare_cmd = \
+                f"diffoscope --text {self.build_dir}/diffoscope-output.txt"
         result = process.run(
-            f"diffoscope --text {self.build_dir}/diffoscope-output.txt"
+            f"{compare_cmd}"
             f" {self.build_dir}/{image1} {self.build_dir}/{image2}",
             ignore_status=True,
         )
