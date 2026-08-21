@@ -58,7 +58,7 @@ EOF
 done
 
 case "$args" in
-*testsuite/citest.py*)
+*testsuite/*.py*)
 	;;
 *)
 	args="$args testsuite/citest.py"
