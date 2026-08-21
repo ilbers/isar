@@ -51,9 +51,13 @@ class ReproBuild(CIBuilder):
 
         # Build
         self.log.info("Started Build " + image_name)
+        image_fstype = '.'.join(image_name.split('.')[1:])
         self.configure(
             targets=target,
-            source_date_epoch=source_date_epoch, use_apt_snapshot=True
+            source_date_epoch=source_date_epoch, use_apt_snapshot=True,
+            lines=[
+                f'IMAGE_FSTYPES = "{image_fstype}"',
+            ]
         )
         self.bitbake(target)
 
