@@ -140,9 +140,15 @@ To run images built for QEMU, you also need to install the related package:
 apt install qemu
 ```
 
-### Setup Sudo
+Isar has two execution modes: privileged (default), and rootless. The mode
+only determines how Isar obtains the privileges needed during a build; it does
+not affect the generated artifacts. The following sections describe their
+respective host requirements and setup.
 
-Isar requires `sudo` rights without password to work with `chroot`. To add them, use the following steps:
+### Privileged Builds
+
+Privileged execution requires `sudo` rights without password to work with `chroot`.
+To add them, use the following steps:
 ```
  # visudo
 ```
@@ -153,6 +159,27 @@ In the editor, allow the current user to run sudo without a password, e.g.:
 ```
 Replace `<user>` with your username. Use the tab character between the username and parameters.
 The second line will make sure your proxy settings will not get lost when using `sudo`. Include it if you are in the unfortunate position to having to deal with that.
+
+### Rootless Builds
+
+As an alternative to the privileged `schroot` backend, Isar can build using unprivileged user namespaces.
+To verify that the current host and user support rootless builds, run the
+following command after [initializing the build directory](#initialize-the-build-directory):
+
+```
+$ scripts/isar-check-rootless
+```
+
+Enable rootless builds in `conf/local.conf`:
+
+```
+ISAR_ROOTLESS = "1"
+```
+
+Files produced inside a rootless namespace can have ownership that the calling
+user cannot remove directly. Use `scripts/isar-clean-builddir --rootless <dir>`
+to clean a build directory with mixed ownership. When using a container, run
+the cleanup script from the same container environment that created the files.
 
 ### Check out Isar
 
