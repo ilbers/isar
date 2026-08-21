@@ -57,6 +57,7 @@ class ReproBuild(CIBuilder):
             source_date_epoch=source_date_epoch, use_apt_snapshot=True,
             lines=[
                 f'IMAGE_FSTYPES = "{image_fstype}"',
+                'IMAGE_PREINSTALL += "python3"',
             ]
         )
         self.bitbake(target)
