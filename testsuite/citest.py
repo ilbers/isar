@@ -640,6 +640,10 @@ class KernelTests(CIBaseTest):
 
     def test_libc_dev_deploy(self):
         """Test that the linux-libc-dev packages are deployed (parse only)."""
+        def kernel_recipe(target):
+            kernel_name = CIUtils.getVars('KERNEL_NAME', target=target)
+            return f'linux-{kernel_name}'
+
         targets = [
             'mc:hikey-bookworm:isar-image-ci',
             'mc:hikey-trixie:isar-image-ci'
@@ -650,23 +654,28 @@ class KernelTests(CIBaseTest):
         self.init()
         buildlist, _ = self.generate_dependency_graph(targets, lines=lines)
 
+        bookworm_kernel = kernel_recipe('mc:hikey-bookworm:isar-image-ci')
+        trixie_kernel = kernel_recipe('mc:hikey-trixie:isar-image-ci')
+
         with open(buildlist, 'r') as f:
             built = set(line.strip() for line in f if line.strip())
 
         # trixie produces arch=all linux-libc-dev packages, which are built by
         # the dedicated -libctarget variant.
         self.assertIn(
-            'mc:hikey-trixie:linux-mainline-libctarget', built,
-            "trixie: linux-mainline-libctarget (linux-libc-dev is not built)")
+            f'mc:hikey-trixie:{trixie_kernel}-libctarget', built,
+            f"trixie: {trixie_kernel}-libctarget "
+            "(linux-libc-dev is not built)")
 
         # bookworm produces an arch-specific linux-libc-dev, built by the base
         # recipe itself; no -libctarget variant is needed.
         self.assertIn(
-            'mc:hikey-bookworm:linux-mainline', built,
-            "bookworm: linux-mainline (linux-libc-dev is not built)")
+            f'mc:hikey-bookworm:{bookworm_kernel}', built,
+            f"bookworm: {bookworm_kernel} (linux-libc-dev is not built)")
         self.assertNotIn(
-            'mc:hikey-bookworm:linux-mainline-libctarget', built,
-            "bookworm: unexpected -libctarget variant is built")
+            f'mc:hikey-bookworm:{bookworm_kernel}-libctarget', built,
+            f"bookworm: unexpected {bookworm_kernel}-libctarget "
+            "variant is built")
 
         # The unrelated cip kernel must not be pulled in as libc-dev provider.
         for target in built:
