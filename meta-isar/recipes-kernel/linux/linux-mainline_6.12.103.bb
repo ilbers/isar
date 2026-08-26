@@ -11,7 +11,6 @@ ARCHIVE_VERSION = "${@ d.getVar('PV')[:-2] if d.getVar('PV').endswith('.0') else
 
 SRC_URI += " \
     https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-${ARCHIVE_VERSION}.tar.xz \
-    file://x86_64_defconfig \
     file://ftpm-module.cfg \
     file://subdir \
     file://no-root-nfs.cfg;apply=no"
@@ -20,7 +19,8 @@ SRC_URI[sha256sum] = "f143aaade8877ba5616e788b4482576db28481bcf557ef537f4fcc3938
 
 S = "${WORKDIR}/linux-${ARCHIVE_VERSION}"
 
-KERNEL_DEFCONFIG:qemuamd64 = "x86_64_defconfig"
+SRC_URI:append:amd64 = " file://${KERNEL_DEFCONFIG}"
+KERNEL_DEFCONFIG:amd64 = "x86_64_defconfig"
 
 LINUX_VERSION_EXTENSION = "-isar"
 

@@ -9,8 +9,9 @@ inherit linux-kernel
 
 SRC_URI += " \
     git://git.kernel.org/pub/scm/linux/kernel/git/cip/linux-cip.git;protocol=https;branch=linux-4.4.y-cip;destsuffix=${P} \
-    file://x86_64_defconfig"
+"
 
 SRCREV = "af3adf9f9c633ac0e1d68487d7fad22285dda8a3"
 
-KERNEL_DEFCONFIG:qemuamd64-cip = "x86_64_defconfig"
+SRC_URI:append:amd64 = " file://${KERNEL_DEFCONFIG}"
+KERNEL_DEFCONFIG:amd64 = "x86_64_defconfig"
