@@ -32,6 +32,10 @@ $ avocado run ../testsuite/citest.py -t single --max-parallel-tasks=1 -p machine
 $ avocado run ../testsuite/citest.py -t single --max-parallel-tasks=1 -p machine=qemuamd64 -p distro=bullseye -p depgraph=1
 ```
 
+To generate a kas configuration for manual debugging, add `-p kasconfig=1`.
+The configuration is written when the test starts to
+`{build_dir}/kas-{testname}.yaml`.
+
 ## Fast build test
 
 ```

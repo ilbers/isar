@@ -20,6 +20,9 @@ class CIBaseTest(CIBuilder):
         if bool(int(self.params.get('depgraph', default=0))):
             self.generate_dependency_graph(targets, reconfigure=False, **kwargs)
 
+        if bool(int(self.params.get('kasconfig', default=0))):
+            self.generate_kas_config(targets, **kwargs)
+
         self.log.info("Starting build...")
 
         self.bitbake(targets, should_fail=should_fail, **kwargs)
@@ -48,6 +51,69 @@ class CIBaseTest(CIBuilder):
             f"{self.build_dir}/pn-buildlist-{name}",
             f"{self.build_dir}/task-depends-{name}.dot"
         )
+
+    def generate_kas_config(self, targets, **kwargs):
+        """
+        Debug helper to generate a kas config file for the current test.
+        """
+        import yaml
+
+        def get_config(path):
+            skiptoken = ('#', 'include', 'ISAR_ROOTLESS', 'BBMULTICONFIG', 'DL_DIR',
+                         'SSTATE_DIR', 'BB_HASHSERVE_DB_DIR')
+            conf = open(path, 'r').readlines()
+            conf = [l.strip('\n') for l in conf if not l.startswith(skiptoken) and l.strip()]
+            return conf
+
+        testname = re.sub(r'[^\w.-]', '_', str(self.name))
+        config_filename = f"{self.build_dir}/kas-{testname}.yaml"
+        self.log.info("Generating kas config...")
+
+        build_system = 'isar-rootless' \
+            if bool(int(self.params.get('rootless', default=0))) \
+            else 'isar-privileged'
+
+        local_conf = get_config(f"{self.build_dir}/conf/local.conf")
+        ci_conf = get_config(f"{self.build_dir}/conf/ci_build.conf")
+
+        # parse distro and machine from local.conf
+        assignment = r'\s*(?:\?\??)?=\s*"([^"]+)"'
+        local_conf_text = '\n'.join(local_conf)
+        distro = re.search(r'DISTRO' + assignment, local_conf_text).group(1)
+        machine = re.search(r'MACHINE' + assignment, local_conf_text).group(1)
+        local_conf = [l for l in local_conf if not l.startswith(('DISTRO', 'MACHINE'))]
+
+        class LiteralStr(str):
+            pass
+
+        def literal_str_representer(dumper, data):
+            return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='|')
+
+        yaml.add_representer(LiteralStr, literal_str_representer)
+
+        cfg = {
+            'header': {'version': 23},
+            'build_system': build_system,
+            'repos': {
+                'isar': {
+                    'layers': {
+                        'meta': {},
+                        'meta-isar': {},
+                        'meta-test': {},
+                    }
+                }
+            },
+            'target': targets,
+            'distro': distro,
+            'machine': machine,
+            'local_conf_header': {
+                '10-local': LiteralStr('\n'.join(local_conf)),
+                '20-ci': LiteralStr('\n'.join(ci_conf)),
+            }
+        }
+
+        with open(config_filename, 'w') as f:
+            yaml.dump(cfg, f)
 
     def perform_wic_partition_test(self, targets, wic_deploy_parts, **kwargs):
         self.configure(targets=targets, wic_deploy_parts=wic_deploy_parts, **kwargs)
