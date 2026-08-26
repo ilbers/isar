@@ -5,6 +5,8 @@
 #
 # SPDX-License-Identifier: MIT
 
+PN .= "-${DISTRO_ARCH}"
+
 inherit linux-kernel
 
 SRC_URI += " \

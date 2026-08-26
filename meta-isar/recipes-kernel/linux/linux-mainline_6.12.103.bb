@@ -5,4 +5,6 @@
 #
 # SPDX-License-Identifier: MIT
 
+PN .= "-${DISTRO_ARCH}"
+
 require recipes-kernel/linux/linux-mainline.inc

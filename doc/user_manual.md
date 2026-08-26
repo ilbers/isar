@@ -656,10 +656,21 @@ For example, in your machine configuration:
 
 ```bitbake
 KERNEL_NAME = "armmp"
-KERNEL_NAMES = "armmp mainline"
+KERNEL_NAMES = "armmp mainline-arm64"
 ```
 
 When `KERNEL_NAMES` is set, recipes inheriting the `per-kernel` class will generate variants for each listed kernel. Installation of each must be explicitly handled in the image.
+
+Kernel source packages contain architecture-specific content. Therefore, builds
+for multiple architectures must publish source packages with distinct names.
+For a kernel built for only one target, the name may remain unchanged.
+
+Generic kernel recipes can append `${DISTRO_ARCH}` to `PN`, to provide the
+kernel for all architectures.
+
+```
+PN .= "-${DISTRO_ARCH}"
+```
 
 ---
 

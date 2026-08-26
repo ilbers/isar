@@ -1175,6 +1175,10 @@ DPKG_ARCH ?= "${DISTRO_ARCH}"
 
 Firmware packages are an exception because they are built for only one architecture.
 
+**Note**: This rule also applies to kernel packages. Set `KERNEL_NAME` to an
+architecture- or machine-specific name, as appropriate. If the kernel is built
+in different modes (such as prod or debug), encode the mode in the name too.
+
 ### Add Hyper-V machine support
 
 A new machine `hyper-v` has been introduced for building images

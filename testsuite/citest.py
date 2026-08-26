@@ -627,7 +627,7 @@ class KernelTests(CIBaseTest):
         """Test per-kernel recipe variants for external kernel modules."""
 
         targets = ['mc:qemuarm64-bookworm:isar-image-ci']
-        kernel_names = self.params.get('kernel_names', default='mainline')
+        kernel_names = self.params.get('kernel_names', default='mainline-arm64')
         kernel_names = [k.strip() for k in kernel_names.split(',') if k.strip()]
         modules = [f"example-module-{k}" for k in kernel_names]
         modules.append('example-module-${KERNEL_NAME}')
