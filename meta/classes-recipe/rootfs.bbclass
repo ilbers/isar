@@ -152,8 +152,9 @@ rootfs_cmd() {
     fi
     shift  # remove "--", command and its arguments follows
 
+    # bin, lib and lib64 are only real directories on unmerged-usr rootfs
     for ro_d in bin etc lib lib64 sys usr var; do
-        [ -d ${bwrap_rootfs}/${ro_d} ] || continue
+        [ -d ${bwrap_rootfs}/${ro_d} ] && [ ! -L ${bwrap_rootfs}/${ro_d} ] || continue
         bwrap_args="${bwrap_args} --ro-bind ${bwrap_rootfs}/${ro_d} /${ro_d}"
     done
 
