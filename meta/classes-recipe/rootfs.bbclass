@@ -72,7 +72,8 @@ ROOTFS_MOUNTS ??= "${REPO_ISAR_DIR}/${DISTRO}:/isar-apt ${WORKDIR}:/isar-work"
 
 python () {
     mounts = d.getVar('ROOTFS_MOUNTS', False)
-    if bb.utils.to_boolean(d.getVar('ISAR_USE_CACHED_BASE_REPO')) and not ':/base-apt' in mounts:
+    if (bb.utils.to_boolean(d.getVar('ISAR_USE_CACHED_BASE_REPO')) or
+        bb.utils.to_boolean(d.getVar('ISAR_PREFETCH_BASE_APT'))) and not ':/base-apt' in mounts:
         base_apt = '{}:/base-apt'.format(d.getVar('REPO_BASE_DIR'))
         d.setVar('ROOTFS_MOUNTS', '{} {}'.format(mounts, base_apt))
 }
