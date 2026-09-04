@@ -16,6 +16,7 @@ BOOTSTRAP_FOR_HOST ?= "0"
 
 APTPREFS = "${WORKDIR}/apt-preferences"
 APTSRCS = "${WORKDIR}/apt-sources"
+APTSRCS_INIT = "${WORKDIR}/apt-sources-init"
 DISTRO_BOOTSTRAP_KEYFILES = ""
 THIRD_PARTY_APT_KEYFILES = ""
 DISTRO_BOOTSTRAP_KEYS ?= ""
@@ -223,8 +224,51 @@ python do_apt_config_prepare() {
     aggregate_files(d, apt_preferences_list, apt_preferences_out)
 
     apt_sources_out = d.getVar("APTSRCS")
+    apt_sources_init_out = d.getVar("APTSRCS_INIT")
     apt_sources_list = get_aptsources_list(d)
 
+    aggregate_files(d, apt_sources_list, apt_sources_init_out)
     aggregate_aptsources_list(d, apt_sources_list, apt_sources_out)
 }
 addtask apt_config_prepare before do_bootstrap after do_unpack
+
+inherit debrepo
+
+debrepo_bootstrap_prepare() {
+    [ "${ISAR_PREFETCH_BASE_APT}" != "1" ] && return
+    [ "${ISAR_USE_CACHED_BASE_REPO}" = "1" ] && return
+
+    debrepo_args=""
+    if [ "${BASE_DISTRO}" != "debian" ]; then
+        if [ "${BASE_DISTRO}" != "raspbian" ] && [ "${BASE_DISTRO}" != "raspios" ] || [ "${BOOTSTRAP_FOR_HOST}" = "0" ]; then
+            debrepo_args="$debrepo_args --keydir=${WORKDIR}"
+        fi
+    else
+        if [ "${BASE_DISTRO_CODENAME}" = "sid" ]; then
+            debrepo_args="$debrepo_args --keydir=${WORKDIR}"
+        fi
+    fi
+    if [ "${ISAR_ENABLE_COMPAT_ARCH}" = "1" ]; then
+        debrepo_args="$debrepo_args --compatarch=${COMPAT_DISTRO_ARCH}"
+    fi
+
+    if [ "${BOOTSTRAP_FOR_HOST}" = "1" ]; then
+        debrepo_args="$debrepo_args --crossarch=${DISTRO_ARCH}"
+    fi
+
+    if [ -n "${GNUPGHOME}" ]; then
+        export GNUPGHOME="${GNUPGHOME}"
+    fi
+
+    ${SCRIPTSDIR}/deb-repo --init \
+        --workdir="${DEBREPO_WORKDIR}" \
+        --aptsrcsfile="${APTSRCS_INIT}" \
+        --repodir="${REPO_BASE_DIR}" \
+        --repodbdir="${REPO_BASE_DB_DIR}" \
+        --mirror="${@get_distro_source(d)}" \
+        --arch="${BOOTSTRAP_DISTRO_ARCH}" \
+        --distro="${BOOTSTRAP_BASE_DISTRO}" \
+        --codename="${BASE_DISTRO_CODENAME}" \
+        ${debrepo_args} \
+        ${DISTRO_BOOTSTRAP_BASE_PACKAGES}
+}

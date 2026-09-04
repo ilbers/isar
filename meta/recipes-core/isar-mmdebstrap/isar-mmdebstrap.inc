@@ -147,6 +147,8 @@ do_bootstrap() {
         fi
     fi
     bootstrap_args="--verbose --variant=minbase --include=${@','.join(d.getVar('DISTRO_BOOTSTRAP_BASE_PACKAGES').split())}"
+    debrepo_bootstrap_prepare
+
     if [ -f "${DISTRO_BOOTSTRAP_KEYRING}" ]; then
         bootstrap_args="$bootstrap_args --keyring=${DISTRO_BOOTSTRAP_KEYRING}"
         cp "${DISTRO_BOOTSTRAP_KEYRING}" "${WORKDIR}/trusted.gpg.d/"
