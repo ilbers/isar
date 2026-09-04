@@ -89,6 +89,8 @@ import shutil
 import subprocess
 import pickle
 import urllib.parse
+import urllib.request
+import gzip
 
 import apt_pkg
 import apt.progress.base
@@ -96,8 +98,38 @@ import apt.progress.base
 
 REPREPRO_TIMEOUT = 1200
 
+def parse_aptsources_list_line(source_list_line):
+    import re
+
+    s = source_list_line.strip()
+
+    if not s or s.startswith("#"):
+        return None
+
+    type, s = re.split(r"\s+", s, maxsplit=1)
+    if type not in ["deb", "deb-src"]:
+        return None
+
+    options = ""
+    options_match = re.match(r"\[\s*(\S+=\S+(?=\s))*\s*(\S+=\S+)\s*\]\s+", s)
+    if options_match:
+        options = options_match.group(0).strip()
+        s = s[options_match.end():]
+
+    source, s = re.split(r"\s+", s, maxsplit=1)
+
+    if s.startswith("/"):
+        suite = ""
+    else:
+        suite, s = re.split(r"\s+", s, maxsplit=1)
+
+    components = " ".join(s.split())
+
+    return [type, options, source, suite, components]
 
 class DebRepo(object):
+    BOOTSTRAP_LIST = "/etc/apt/sources.list.d/bootstrap.list"
+
     class DebRepoCtx(object):
         def __init__(self, workdir):
             self.distro = "debian"
@@ -181,9 +213,9 @@ class DebRepo(object):
         with open(f"{self.workdir}/var/lib/dpkg/status", "w"):
             pass
 
-        os.makedirs(f"{self.workdir}/etc/apt/sources.list.d", exist_ok=True)
+        srcfile = f"{self.workdir}{self.BOOTSTRAP_LIST}"
+        os.makedirs(os.path.dirname(srcfile), exist_ok=True)
 
-        srcfile = f"{self.workdir}/etc/apt/sources.list.d/bootstrap.list"
         if aptsrcsfile and os.path.exists(aptsrcsfile):
             shutil.copy(aptsrcsfile, srcfile)
         else:
@@ -201,13 +233,60 @@ class DebRepo(object):
     def create_repo_dist(self):
         conf_dir = f"{self.ctx.repodir}/{self.ctx.distro}/conf"
         os.makedirs(conf_dir, exist_ok=True)
-        if not os.path.exists(f"{conf_dir}/distributions"):
-            with open(f"{conf_dir}/distributions", "w") as f:
-                f.write(f"Codename: {self.ctx.codename}\n")
-                f.write(
-                    "Architectures: "
-                    "i386 armhf arm64 amd64 mipsel riscv64 source\n")
-                f.write("Components: main\n")
+        override_fname = "override"
+        self.create_override(f"{conf_dir}/{override_fname}")
+        with open(f"{conf_dir}/distributions", "w") as f:
+            f.write(f"Codename: {self.ctx.codename}\n")
+            f.write(
+                "Architectures: "
+                "i386 armhf arm64 amd64 mipsel riscv64 source\n")
+            f.write("Components: main\n")
+            f.write(f"DebOverride: {override_fname}\n")
+
+    def create_override(self, override_file):
+        deb_override_name = f"override.{self.ctx.codename}.main"
+        deb_override_file = f"{self.workdir}/tmp/{deb_override_name}"
+        if (not os.path.exists(deb_override_file) or
+            os.path.getsize(deb_override_file) < 1):
+            # Extract source URL
+            srcfile = f"{self.workdir}{self.BOOTSTRAP_LIST}"
+            with open(srcfile, "r") as f:
+                for line in f:
+                    entry = parse_aptsources_list_line(line)
+                    if entry:
+                        source_url = entry[2]
+                        # Download override file
+                        self.fetch_file(f"{source_url}/indices/{deb_override_name}")
+                        if (os.path.exists(deb_override_file) and
+                            os.path.getsize(deb_override_file) > 1):
+                            break
+                        # Download packet override file
+                        self.fetch_file(f"{source_url}/indices/{deb_override_name}.gz")
+                        # Unpack override file
+                        with gzip.open(f"{deb_override_file}.gz", "r") as f_in, open(deb_override_file, "wb") as f_out:
+                            for line in f_in:
+                                f_out.write(line)
+                        break
+
+        with open(override_file, "w") as f_out:
+            # Unpack deb override file
+            with open(deb_override_file, "r") as f:
+                # Convert deb override to reprepro override
+                for line in f:
+                    fields = line.strip().split()
+
+                    if len(fields) < 3:
+                        continue
+
+                    package = fields[0]
+                    priority = fields[1]
+                    section = fields[2]
+
+                    f_out.write(f"{package} Priority {priority}\n")
+                    f_out.write(f"{package} Section {section}\n")
+
+            if f_out.tell() < 1:
+                print("WARNING: override file is empty!")
 
     def apt_config(self, init, crossbuild):
         if not init and self.ctx.compatarch:
