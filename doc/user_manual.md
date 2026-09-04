@@ -86,6 +86,7 @@ apt install \
   gettext-base \
   git \
   python3 \
+  python3-apt \
   quilt \
   qemu-user-static \
   reprepro \
