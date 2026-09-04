@@ -213,3 +213,15 @@ config KAS_INCLUDE_USE_DRACUT
 	string
 	default "kas/opt/dracut.yaml"
 	depends on USE_DRACUT
+
+config PREFETCH_BASE_APT
+	bool "Prefetch base-apt repo"
+	default y
+	help
+	  This makse Isar always take packages from base-apt repository where they
+	  are prefetched by deb-repo script before requested.
+
+config KAS_INCLUDE_PREFETCH_BASE_APT
+	string
+	default "kas/opt/prefetch-base-apt.yaml"
+	depends on PREFETCH_BASE_APT
