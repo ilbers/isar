@@ -117,6 +117,12 @@ dpkg_runbuild() {
     echo '$stalled_pkg_timeout = ${DPKG_BUILD_TIMEOUT};' >> ${SBUILD_CONFIG}
 
     DSC_FILE=$(find ${DEPLOY_DIR_SRC} -maxdepth 1 -name "${DEBIAN_SOURCE}_*.dsc" -print)
+    debrepo_parse_dscfile "${DSC_FILE}"
+
+    locked_update_cmd=":"
+    if [ "${ISAR_PREFETCH_BASE_APT}" = "1" ]; then
+        locked_update_cmd="flock -x /base-apt/repo.lock -c 'apt-get -y update'"
+    fi
 
     # networking is automatically enabled on older versions of sbuild
     sbuild_network_option=""
@@ -139,9 +145,11 @@ dpkg_runbuild() {
         --chroot-setup-commands="rm -f /var/log/dpkg.log" \
         --chroot-setup-commands="mkdir -p ${deb_dir}" \
         --chroot-setup-commands="find ${ext_deb_dir} -maxdepth 1 -name '*.deb' -exec ln -t ${deb_dir}/ -sf {} +" \
+        --chroot-setup-commands="${locked_update_cmd}" \
         --chroot-setup-commands="apt-get update -o Dir::Etc::SourceList=\"sources.list.d/isar-apt.list\" -o Dir::Etc::SourceParts=\"-\" -o APT::Get::List-Cleanup=\"0\"" \
         --finished-build-commands="rm -f ${deb_dir}/sbuild-build-depends-*-dummy_*.deb" \
         --finished-build-commands="find ${deb_dir} -maxdepth 1 -type f -name '*.deb' -print -exec cp ${CP_FLAGS} -t ${ext_deb_dir}/ {} +" \
+        --finished-build-commands="mkdir -p ${ext_root}" \
         ${@ '--finished-build-commands="cp /var/log/dpkg.log $ext_root/dpkg_partial.log"' if d.getVar('ISAR_CHROOT_MODE') == 'schroot' else '' } \
         --build-path="" --build-dir=${WORKDIR} --dist="${DEBDISTRONAME}" ${DSC_FILE}
 

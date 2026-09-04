@@ -2,7 +2,7 @@
 # Copyright (c) Siemens AG, 2020
 
 inherit deb-dl-dir
-
+inherit debrepo
 inherit sbom
 
 ROOTFS_ARCH ?= "${DISTRO_ARCH}"
@@ -355,6 +355,9 @@ rootfs_install_pkgs_download[progress] = "custom:rootfs_progress.PkgsDownloadPro
 rootfs_install_pkgs_download[isar-apt-lock] = "release-after"
 rootfs_install_pkgs_download[network] = "${TASK_USE_NETWORK}"
 rootfs_install_pkgs_download() {
+    debrepo_add_packages --isarapt "${DEBREPO_WORKDIR}" "${ROOTFS_PACKAGES}"
+    debrepo_update_apt_source_list "${ROOTFSDIR}" "base-apt"
+
     # download packages using apt in a non-privileged namespace
     rootfs_cmd --bind "${ROOTFSDIR}/var/cache/apt/archives" /var/cache/apt/archives \
                ${ROOTFSDIR} \

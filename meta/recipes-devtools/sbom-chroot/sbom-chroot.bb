@@ -26,6 +26,8 @@ SBOM_IMAGE_INSTALL = "python3-debsbom python3-spdx-tools python3-cyclonedx-lib"
 ROOTFSDIR = "${WORKDIR}/rootfs"
 ROOTFS_PACKAGES = "${SBOM_IMAGE_INSTALL}"
 
+DEBREPO_WORKDIR = "${@ '${DEBREPO_HOST_DIR}' if d.getVar("DISTRO_ARCH") != d.getVar("HOST_ARCH") else '${DEBREPO_TARGET_DIR}'}"
+
 do_sbomchroot_deploy[dirs] = "${SBOM_DIR}"
 do_sbomchroot_deploy[network] = "${TASK_USE_SUDO}"
 do_sbomchroot_deploy() {

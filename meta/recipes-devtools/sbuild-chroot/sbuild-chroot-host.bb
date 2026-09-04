@@ -18,3 +18,5 @@ SBUILD_CHROOT_PREINSTALL ?= " \
     ${@ 'libc6-dev:${DISTRO_ARCH} crossbuild-essential-${DISTRO_ARCH}' if bb.utils.to_boolean(d.getVar('ISAR_CROSS_COMPILE')) else ''} \
     apt-utils \
     "
+
+DEBREPO_WORKDIR = "${DEBREPO_HOST_DIR}"

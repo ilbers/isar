@@ -30,6 +30,7 @@ python __anonymous() {
         schroot_dir = d.getVar('SCHROOT_HOST_DIR', False)
         sbuild_dep = "sbuild-chroot-host" + flavor_suffix + ":do_build"
         sdk_toolchain = "crossbuild-essential-" + distro_arch
+        d.setVar('DEBREPO_WORKDIR', d.getVar('DEBREPO_HOST_DIR'))
     else:
         d.setVar('BUILD_ARCH', distro_arch)
         schroot_dir = d.getVar('SCHROOT_TARGET_DIR', False)

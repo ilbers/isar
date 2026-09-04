@@ -11,6 +11,7 @@ inherit terminal
 inherit repository
 inherit deb-dl-dir
 inherit essential
+inherit debrepo
 
 # Local (WORKDIR-internal) dir where do_dpkg_build collects the built debs.
 # Its content is exported into the shared, sstate-tracked DEPLOY_DIR_DEB so
