@@ -27,6 +27,47 @@ debsrc_source_version_filter() {
     | sort -u
 }
 
+debsrc_fill_base_apt() {
+    export rootfs="$1"
+    export rootfs_distro="$2"
+    mkdir -p "${DEBSRCDIR}"/"${rootfs_distro}"
+
+    ( flock 9
+    set -e
+    printenv | grep -q BB_VERBOSE_LOGS && set -x
+
+    # We need temporary files for our lists of source packages
+    # trap exit of this sub-shell to remove them (this script may exit abruptly
+    # since "set -e" is used)
+    avail=$(mktemp)
+    wanted=$(mktemp)
+    trap "rm -f ${avail} ${wanted}" EXIT
+
+    # List all packages known to apt
+    rootfs_cmd \
+        --bind "${DEBSRCDIR}" "/deb-src" \
+        --bind "${rootfs}" "${rootfs}" \
+        -- \
+        apt-cache dumpavail \
+        | debsrc_source_version_filter > ${avail}
+
+    # Use apt-ftparchive to scan all .deb files found in the download directory
+    # and get the <source> <version> pairs that we wish to download
+    apt-ftparchive --md5=no --sha1=no --sha256=no --sha512=no \
+                   -a "${DISTRO_ARCH}" packages \
+                   "${REPO_BASE_DIR}" \
+    | debsrc_source_version_filter > ${wanted}
+
+    # We now have two sorted lists: source packages we want and those known to
+    # apt. We will only consider source packages that may be found in both.
+    comm -12 ${wanted} ${avail} \
+    | while read src version; do
+        debrepo_add_packages --srcmode "${DEBREPO_TARGET_DIR}" "${src}=${version}"
+    done
+
+    ) 9>"${DEBSRCDIR}/${rootfs_distro}.lock"
+}
+
 debsrc_download() {
     export rootfs="$1"
     export rootfs_distro="$2"

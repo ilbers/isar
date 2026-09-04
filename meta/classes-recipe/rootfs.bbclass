@@ -504,6 +504,13 @@ do_cache_deb_src() {
     run_privileged tar -xf "${BOOTSTRAP_SRC}" ./var/lib/apt/lists --one-top-level="${ROOTFSDIR}"
 
     deb_dl_dir_import ${ROOTFSDIR} ${ROOTFS_BASE_DISTRO}-${BASE_DISTRO_CODENAME}
+
+    debsrc_fill_base_apt ${ROOTFSDIR} ${ROOTFS_BASE_DISTRO}-${BASE_DISTRO_CODENAME}
+
+    rootfs_do_mounts_priv
+    debrepo_update_apt_source_list "${ROOTFSDIR}" "base-apt"
+    rootfs_do_umounts_priv
+
     debsrc_download ${ROOTFSDIR} ${ROOTFS_BASE_DISTRO}-${BASE_DISTRO_CODENAME}
 
     run_privileged rm -f "${ROOTFSDIR}"/etc/resolv.conf
