@@ -49,6 +49,7 @@ OVA_FIRMWARE ?= "efi"
 OVA_ACPI ?= "true"
 OVA_3D_ACCEL ?= "false"
 OVA_SHA_ALG = "1"
+OVA_GRAPHICS_CONTROLLER ?= "VMSVGA"
 
 # Generate random MAC addresses just as VirtualBox does, the format is
 # their assigned prefix for the first 3 bytes followed by 3 random bytes.
@@ -59,7 +60,7 @@ macgen() {
 }
 
 OVA_VARS = "OVA_NAME OVA_MEMORY OVA_NUMBER_OF_CPU OVA_VRAM \
-            OVA_FIRMWARE OVA_ACPI OVA_3D_ACCEL \
+            OVA_FIRMWARE OVA_ACPI OVA_3D_ACCEL OVA_GRAPHICS_CONTROLLER \
             OVA_SHA_ALG VIRTUAL_MACHINE_IMAGE_FILE VMDK_SUBFORMAT"
 
 IMAGE_TEMPLATE_FILES:ova = "${OVF_TEMPLATE_FILE}"
