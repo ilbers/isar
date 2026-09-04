@@ -174,6 +174,10 @@ class CIBuilder(Test):
         fail_on_cleanup = os.getenv('ISAR_FAIL_ON_CLEANUP')
 
         strlines = None if lines is None else '\\n'.join(lines)
+
+        # get prefetch base apt mode from environment
+        prefetch_base_apt = os.getenv('ISAR_PREFETCH_BASE_APT')
+
         self.log.info(
             f"===================================================\n"
             f"Configuring build_dir {self.build_dir}\n"
@@ -197,6 +201,7 @@ class CIBuilder(Test):
             f"  generate_sbom = {generate_sbom}\n"
             f"  rootless = {rootless}\n"
             f"  lines = {strlines}\n"
+            f"  prefetch_base_apt = {prefetch_base_apt}\n"
             f"==================================================="
         )
 
@@ -305,6 +310,8 @@ class CIBuilder(Test):
                 f.write('ISAR_ROOTLESS = "1"\n')
             if lines is not None:
                 f.writelines((line + '\n' if not line.endswith('\n') else line) for line in lines)
+            if prefetch_base_apt == "0":
+                f.write('ISAR_PREFETCH_BASE_APT = "0"\n')
 
         # include ci_build.conf in local.conf
         with open(self.build_dir + '/conf/local.conf', 'r+') as f:
