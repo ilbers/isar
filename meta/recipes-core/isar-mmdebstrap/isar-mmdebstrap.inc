@@ -276,7 +276,8 @@ do_bootstrap() {
                    - \
                    "$bootstrap_list" > ${DEPLOYDIR}/${DEPLOY_ISAR_BOOTSTRAP}.tar.zst
 
-    if [ "${ISAR_USE_CACHED_BASE_REPO}" != "1" ]; then
+    if [ "${ISAR_USE_CACHED_BASE_REPO}" != "1" ] && \
+       [ "${ISAR_PREFETCH_BASE_APT}" != "1" ]; then
         deb_dl_dir_export "${WORKDIR}/dl_dir" "${BOOTSTRAP_BASE_DISTRO}-${BASE_DISTRO_CODENAME}"
         run_privileged find ${WORKDIR}/dl_dir -maxdepth 1 -mindepth 1 -exec rm -rf --one-file-system "{}" \;
         rmdir ${WORKDIR}/dl_dir
