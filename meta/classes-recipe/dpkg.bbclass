@@ -21,6 +21,8 @@ SBUILD_PASSTHROUGH_ADDITIONS ?= ""
 # can be set to "1" in the recipe.
 DPKG_BUILD_ENABLE_NETWORK ??= "0"
 
+SBUILD_TMPDIR ?= "${WORKDIR}/tmpdir"
+
 def expand_sbuild_pt_additions(d):
     cmds = ''
     for var in d.getVar('SBUILD_PASSTHROUGH_ADDITIONS').split():
@@ -41,6 +43,7 @@ CP_FLAGS:sid ?= "-L --update=none --no-preserve=owner"
 
 # Build package from sources using build script
 dpkg_runbuild[root_cleandirs] += "${WORKDIR}/rootfs"
+dpkg_runbuild[cleandirs] += "${SBUILD_TMPDIR}"
 dpkg_runbuild[vardepsexclude] += "${SBUILD_PASSTHROUGH_ADDITIONS}"
 dpkg_runbuild() {
     E="${@ isar_export_proxies(d)}"
@@ -126,6 +129,7 @@ dpkg_runbuild() {
         sbuild_network_option="--enable-network"
     fi
 
+    TMPDIR=${SBUILD_TMPDIR} \
     sbuild -n -c ${SBUILD_CHROOT} \
         --chroot-mode=${ISAR_CHROOT_MODE} \
         --host=${PACKAGE_ARCH} --build=${BUILD_ARCH} ${profiles} \
