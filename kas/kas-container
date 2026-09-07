@@ -27,7 +27,7 @@
 
 set -e
 
-KAS_CONTAINER_SCRIPT_VERSION="5.4"
+KAS_CONTAINER_SCRIPT_VERSION="5.5"
 KAS_IMAGE_VERSION_DEFAULT="${KAS_CONTAINER_SCRIPT_VERSION}"
 KAS_CONTAINER_IMAGE_DISTRO_DEFAULT=""
 KAS_CONTAINER_IMAGE_PATH_DEFAULT="ghcr.io/siemens/kas"
@@ -70,6 +70,8 @@ usage()
 	            "To force the use\n"
 	printf "%b" "\t\t\tof run0 over sudo, set KAS_SUDO_CMD=run0.\n"
 	printf "%b" "--isar-rootless\t\tRun an Isar build in rootless mode.\n"
+	printf "%b" "--kvm\t\tPass /dev/kvm into the container (for runqemu/testimage KVM\n" \
+			"acceleration) and grant the build user access to it."
 	printf "%b" "--runtime-args\t\tAdditional arguments to pass to the " \
 			"container runtime.\n"
 	printf "%b" "\t\t\tfor running the build.\n"
@@ -242,6 +244,7 @@ setup_kas_dirs()
 	KAS_REPO_REF_DIR="$(check_and_expand KAS_REPO_REF_DIR required)"
 	DL_DIR="$(check_and_expand DL_DIR createrec)"
 	SSTATE_DIR="$(check_and_expand SSTATE_DIR createrec)"
+	BB_HASHSERVE_DB_DIR="$(check_and_expand BB_HASHSERVE_DB_DIR createrec)"
 	KAS_BUILDTOOLS_DIR="$(check_and_expand KAS_BUILDTOOLS_DIR createrec)"
 }
 
@@ -343,13 +346,17 @@ while [ $# -gt 0 ]; do
 		BUILD_SYSTEM="isar-rootless"
 		shift 1
 		;;
+	--kvm)
+		KAS_KVM="1"
+		shift 1
+		;;
 	--runtime-args | --docker-args)
-		[ $# -gt 0 ] || usage
-		KAS_EXTRA_RUNTIME_ARGS=" $2"
+		[ $# -gt 1 ] || usage
+		KAS_EXTRA_RUNTIME_ARGS="${KAS_EXTRA_RUNTIME_ARGS} $2"
 		shift 2
 		;;
 	--ssh-dir)
-		[ $# -gt 2 ] || usage
+		[ $# -gt 1 ] || usage
 		KAS_SSH_DIR="$2"
 		shift 2
 		;;
@@ -361,18 +368,18 @@ while [ $# -gt 0 ]; do
 		shift 1
 		;;
 	--aws-dir)
-		[ $# -gt 2 ] || usage
+		[ $# -gt 1 ] || usage
 		KAS_AWS_DIR="$2"
 		shift 2
 		;;
 	--git-credential-store)
-		[ $# -gt 2 ] || usage
+		[ $# -gt 1 ] || usage
 		KAS_GIT_CREDENTIAL_STORE="$2"
 		shift 2
 		;;
 
 	--git-credential-socket)
-		[ $# -gt 2 ] || usage
+		[ $# -gt 1 ] || usage
 		KAS_GIT_CREDENTIAL_SOCKET="$2"
 		shift 2
 		;;
@@ -515,7 +522,7 @@ if [ "${KAS_CMD}" = "menu" ]; then
 
 	# When using the menu plugin, we need to track the KAS_REPO_DIR outside
 	# of the container to later allow a simple `kas-container build`. For
-	# that, we tell the kas menu plugin via an env-var about the location
+	# that, we tell the kas menu command via an env-var about the location
 	# on the host. This data is then added to the .config.yaml where it can
 	# be evaluated by the next invocation of kas-container.
 
@@ -632,6 +639,7 @@ forward_dir KAS_BUILD_DIR "/build" "rw"
 forward_dir DL_DIR "/downloads" "rw"
 forward_dir KAS_REPO_REF_DIR "/repo-ref" "rw"
 forward_dir SSTATE_DIR "/sstate" "rw"
+forward_dir BB_HASHSERVE_DB_DIR "/bb-hashserve-db" "rw"
 forward_dir KAS_BUILDTOOLS_DIR "/buildtools" "rw"
 
 if git_com_dir=$(git -C "${KAS_REPO_DIR}" rev-parse --git-common-dir 2>/dev/null) \
@@ -687,6 +695,14 @@ if [ -n "${AWS_WEB_IDENTITY_TOKEN_FILE}" ] ; then
 	set -- "$@" -v "$(realpath -e "${AWS_WEB_IDENTITY_TOKEN_FILE}")":/var/kas/userdata/.aws/web_identity_token:ro \
 		-e AWS_WEB_IDENTITY_TOKEN_FILE="${AWS_CONFIG_FILE:-/var/kas/userdata/.aws/web_identity_token}" \
 		-e AWS_ROLE_ARN="${AWS_ROLE_ARN}"
+fi
+
+if [ -n "${KAS_KVM}" ]; then
+	if [ -c /dev/kvm ]; then
+		set -- "$@" --device=/dev/kvm
+	else
+		warning "--kvm given but /dev/kvm not present on host; skipping"
+	fi
 fi
 
 KAS_GIT_CREDENTIAL_HELPER_DEFAULT=""
@@ -753,7 +769,8 @@ fi
 for var in TERM KAS_DISTRO KAS_MACHINE KAS_TARGET KAS_TASK KAS_CLONE_DEPTH \
            KAS_PREMIRRORS DISTRO_APT_PREMIRRORS BB_NUMBER_THREADS PARALLEL_MAKE \
            GIT_CREDENTIAL_USEHTTPPATH \
-           TZ; do
+           BB_HASHSERVE BB_HASHSERVE_UPSTREAM \
+           NO_COLOR TZ; do
 	if [ -n "$(eval echo \$${var})" ]; then
 		set -- "$@" -e "${var}=$(eval echo \"\$${var}\")"
 	fi

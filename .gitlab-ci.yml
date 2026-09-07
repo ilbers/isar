@@ -1,5 +1,5 @@
 default:
-  image: ghcr.io/siemens/kas/kas-isar:5.4
+  image: ghcr.io/siemens/kas/kas-isar:5.5
 
 variables:
   GIT_STRATEGY: clone
