@@ -59,7 +59,7 @@ do_generate_keyrings[cleandirs] = "${WORKDIR}/trusted.gpg.d"
 do_generate_keyrings[dirs] = "${DEBDIR}"
 do_generate_keyrings[vardeps] += "DISTRO_BOOTSTRAP_KEYS THIRD_PARTY_APT_KEYS"
 do_generate_keyrings() {
-    export GNUPGHOME="$(mktemp -td gpghomeXXXXXXXXXX)"
+    export GNUPGHOME="$(mktemp -d ${BOOTSTRAP_TMPDIR}/gpghomeXXXXXXXXXX)"
     if [ -n "${@d.getVar("THIRD_PARTY_APT_KEYFILES") or ""}" ]; then
         for keyfile in ${@d.getVar("THIRD_PARTY_APT_KEYFILES")}; do
            gpg --no-autostart --keyring "gnupg-ring:${DISTRO_BOOTSTRAP_KEYRING}" \
