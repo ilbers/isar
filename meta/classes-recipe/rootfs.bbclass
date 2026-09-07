@@ -46,8 +46,11 @@ ROOTFS_FEATURES_REPRODUCIBLE = " \
     clean-package-cache \
     clean-log-files \
     clean-debconf-cache \
-    clean-pycache \
 "
+ROOTFS_FEATURES_REPRODUCIBLE:append:buster = " clean-pycache"
+ROOTFS_FEATURES_REPRODUCIBLE:append:bullseye = " clean-pycache"
+ROOTFS_FEATURES_REPRODUCIBLE:append:focal = " clean-pycache"
+
 ROOTFS_FEATURES += "${ROOTFS_FEATURES_REPRODUCIBLE}"
 
 # only supported from bookworm / jammy on
