@@ -258,7 +258,7 @@ do_bootstrap() {
                    --customize-hook='echo nameserver 127.0.0.1 > "$1"/etc/resolv.conf' \
                    --customize-hook='echo isar > "$1"/etc/hostname' \
                    ${@'--skip=output/dev' if d.getVar('ISAR_CHROOT_MODE') == 'unshare' else ''} \
-                   --skip=cleanup/apt \
+                   --skip=cleanup/apt/lists \
                    --skip=download/empty \
                    ${MMOPTS} \
                    ${@get_apt_opts(d, '--aptopt')} \
