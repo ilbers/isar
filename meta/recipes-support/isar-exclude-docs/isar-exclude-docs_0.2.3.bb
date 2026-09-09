@@ -9,8 +9,8 @@ DEBIAN_SECTION = "utils"
 SRC_URI = "file://${BPN} \
 	   file://postinst"
 
-do_install[cleandirs] += "${D}/etc/dpkg/dpkg.conf.d/"
+do_install[cleandirs] += "${D}/etc/dpkg/dpkg.cfg.d/"
 
 do_install() {
-    install -v -m 644 "${WORKDIR}/${BPN}" "${D}/etc/dpkg/dpkg.conf.d/99${BPN}"
+    install -v -m 644 "${WORKDIR}/${BPN}" "${D}/etc/dpkg/dpkg.cfg.d/99${BPN}"
 }
