@@ -81,6 +81,7 @@ sdkchroot_configscript () {
         chroot ${ROOTFSDIR} /configscript.sh ${DISTRO_ARCH}
 EOF
 }
+ROOTFS_POSTPROCESS_COMMAND:prepend:class-sdk = "${@'' if bb.utils.to_boolean(d.getVar('SDK_INCLUDE_ISAR_APT')) else 'rootfs_cleanup_isar_apt'} "
 
 ROOTFS_POSTPROCESS_COMMAND:append:class-sdk = " sdkchroot_finalize"
 sdkchroot_finalize() {
