@@ -231,14 +231,22 @@ addtask dpkg_build_setscene
 
 CLEANFUNCS += "deb_clean"
 
+# Architectures under which this recipe's binary packages end up in the repo:
+# the concrete build arch (PACKAGE_ARCH resolves DPKG_ARCH=any), plus "all"
+# when this is the build that also produces the arch-independent packages.
+def deb_clean_archs(d):
+    dpkg_arch = d.getVar('DPKG_ARCH') or 'any'
+    package_arch = d.getVar('PACKAGE_ARCH')
+    host_arch = d.getVar('HOST_ARCH')
+    archs = [package_arch if dpkg_arch == 'any' else dpkg_arch]
+    if package_arch == host_arch and 'all' not in archs:
+        archs.append('all')
+    return ' '.join(a for a in archs if a)
+
 deb_clean() {
-    DEBS=$( find ${DEPLOY_DIR_DEB} -maxdepth 1 -name "*.deb" || [ ! -d ${S} ] )
-    if [ -n "${DEBS}" ]; then
-        for d in ${DEBS}; do
-            repo_del_package "${REPO_ISAR_DIR}"/"${DISTRO}" \
-                "${REPO_ISAR_DB_DIR}"/"${DISTRO}" "${DEBDISTRONAME}" "${d}"
-        done
-    fi
+    repo_del_by_source "${REPO_ISAR_DIR}"/"${DISTRO}" \
+        "${REPO_ISAR_DB_DIR}"/"${DISTRO}" "${DEBDISTRONAME}" \
+        "${BPN}" ${@deb_clean_archs(d)}
 }
 # the clean function modifies isar-apt. Do not add DEPLOY_DIR_DEB_LOCK here:
 # CLEANFUNCS also runs sstate_cleanall(), which takes that lock itself, and

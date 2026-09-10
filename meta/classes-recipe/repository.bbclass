@@ -129,6 +129,28 @@ repo_del_package() {
     repo_set_release_date "${dir}" "${codename}"
 }
 
+repo_del_by_source() {
+    local dir="$1"
+    local dbdir="$2"
+    local codename="$3"
+    local source="$4"
+    shift 4
+
+    if [ -n "${GNUPGHOME}" ]; then
+        export GNUPGHOME="${GNUPGHOME}"
+    fi
+    local arch_filter=""
+    local arch
+    for arch in "$@"; do
+        [ -n "${arch_filter}" ] && arch_filter="${arch_filter}|"
+        arch_filter="${arch_filter}Architecture (= ${arch})"
+    done
+    reprepro -b "${dir}" --dbdir "${dbdir}" -C main \
+        removefilter "${codename}" \
+        '$Source (= '"${source}"'), ('"${arch_filter}"'), $PackageType (= deb)'
+    repo_set_release_date "${dir}" "${codename}"
+}
+
 repo_contains_package() {
     local dir="$1"
     local dbdir="$2"
