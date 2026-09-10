@@ -15,10 +15,18 @@ DPKG_SOURCE_EXTRA_ARGS ?= "-I"
 DEBIAN_SOURCE ?= "${BPN}"
 SRCPKG_DIR = "${WORKDIR}/deploy-srcpkg"
 DEPLOY_DIR_SRC = "${DEPLOY_DIR}/isar-source/${DISTRO}/${BPN}"
+# DEPLOY_DIR_SRC is not qualified by DISTRO_ARCH or MACHINE, so all multiconfigs
+# sharing DISTRO run do_dpkg_source and do_deploy_source of the same recipe on
+# it, concurrently. Serialize the sstate clean/install of do_dpkg_source against
+# do_deploy_source, so that the latter never sees a partially populated
+# directory. Keep the lock next to, not inside, DEPLOY_DIR_SRC so that
+# sstate_clean_manifest() cannot sweep it away.
+DEPLOY_DIR_SRC_LOCK = "${DEPLOY_DIR}/isar-source/${DISTRO}/${BPN}.lock"
 
 do_dpkg_source[cleandirs] = "${SRCPKG_DIR}"
 do_dpkg_source[sstate-inputdirs] = "${SRCPKG_DIR}"
 do_dpkg_source[sstate-outputdirs] = "${DEPLOY_DIR_SRC}"
+do_dpkg_source[sstate-lockfile] = "${DEPLOY_DIR_SRC_LOCK}"
 do_dpkg_source() {
     # Create a .dsc file from source directory to use it with sbuild
     DEB_SOURCE_NAME=$(dpkg-parsechangelog --show-field Source --file ${WORKDIR}/${PPS}/debian/changelog)
@@ -42,24 +50,35 @@ addtask dpkg_source_setscene
 
 CLEANFUNCS += "deb_clean_source"
 
+# Do not guard this with DEPLOY_DIR_SRC_LOCK: it runs from CLEANFUNCS, which also
+# runs sstate_cleanall() taking that lock itself, and flock() would deadlock on
+# the nested acquisition.
 deb_clean_source() {
     repo_del_srcpackage "${REPO_ISAR_DIR}"/"${DISTRO}" \
         "${REPO_ISAR_DB_DIR}"/"${DISTRO}" "${DEBDISTRONAME}" "${DEBIAN_SOURCE}"
 }
 
 do_deploy_source[depends] += "isar-apt:do_cache_config"
-do_deploy_source[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
+do_deploy_source[lockfiles] = "${REPO_ISAR_DIR}/isar.lock ${DEPLOY_DIR_SRC_LOCK}"
 do_deploy_source[dirs] = "${S} ${DEPLOY_DIR_SRC}"
 do_deploy_source() {
+    # Scan DEPLOY_DIR_SRC first. An empty directory means another multiconfig is
+    # rebuilding this recipe: DEPLOY_DIR_SRC is transiently empty between
+    # sstate_clean() and sstate_install() of its do_dpkg_source. Removing the
+    # source from isar-apt and adding nothing back would drop it. Skipping is
+    # safe: that multiconfig runs its own do_deploy_source once the rebuild
+    # completed.
+    DSC_FILE=$(find ${DEPLOY_DIR_SRC} -maxdepth 1 -name "${DEBIAN_SOURCE}_*.dsc")
+    if [ -z "${DSC_FILE}" ]; then
+        bbnote "${DEPLOY_DIR_SRC} is empty, leaving isar-apt untouched"
+        return
+    fi
     repo_del_srcpackage "${REPO_ISAR_DIR}"/"${DISTRO}" \
         "${REPO_ISAR_DB_DIR}"/"${DISTRO}" "${DEBDISTRONAME}" "${DEBIAN_SOURCE}"
-    DSC_FILE=$(find ${DEPLOY_DIR_SRC} -maxdepth 1 -name "${DEBIAN_SOURCE}_*.dsc")
-    if [ -n "${DSC_FILE}" ]; then
-        repo_add_srcpackage "${REPO_ISAR_DIR}"/"${DISTRO}" \
-            "${REPO_ISAR_DB_DIR}"/"${DISTRO}" \
-            "${DEBDISTRONAME}" \
-            "${DSC_FILE}"
-    fi
+    repo_add_srcpackage "${REPO_ISAR_DIR}"/"${DISTRO}" \
+        "${REPO_ISAR_DB_DIR}"/"${DISTRO}" \
+        "${DEBDISTRONAME}" \
+        "${DSC_FILE}"
 }
 addtask deploy_source after do_dpkg_source
 
