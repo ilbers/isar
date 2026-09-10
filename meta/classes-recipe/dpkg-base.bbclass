@@ -18,6 +18,13 @@ inherit essential
 # WORKDIR lifecycle.
 DEPLOYDIR = "${WORKDIR}/deploy"
 DEPLOY_DIR_DEB = "${DEPLOY_DIR}/isar-deb/${DISTRO}-${DISTRO_ARCH}/${PN}"
+# DEPLOY_DIR_DEB is not qualified by MACHINE, so all multiconfigs sharing
+# DISTRO and DISTRO_ARCH run do_dpkg_build and do_deploy_deb of the same recipe
+# on it, concurrently. Serialize the sstate clean/install of do_dpkg_build
+# against do_deploy_deb, so that the latter never sees a partially populated
+# directory. Keep the lock next to, not inside, DEPLOY_DIR_DEB so that
+# sstate_clean_manifest() cannot sweep it away.
+DEPLOY_DIR_DEB_LOCK = "${DEPLOY_DIR}/isar-deb/${DISTRO}-${DISTRO_ARCH}/${PN}.lock"
 
 DEPENDS ?= ""
 RPROVIDES ?= "${PROVIDES}"
@@ -207,6 +214,7 @@ python do_dpkg_build() {
 do_dpkg_build[cleandirs] = "${DEPLOYDIR}"
 do_dpkg_build[sstate-inputdirs] = "${DEPLOYDIR}"
 do_dpkg_build[sstate-outputdirs] = "${DEPLOY_DIR_DEB}"
+do_dpkg_build[sstate-lockfile] = "${DEPLOY_DIR_DEB_LOCK}"
 do_dpkg_build[network] = "${TASK_USE_NETWORK_AND_SUDO}"
 do_dpkg_build[depends] = "${SCHROOT_DEP} base-apt:do_cache isar-apt:do_cache_config"
 do_dpkg_build[postfuncs] += "dpkg_collect_debs"
@@ -232,7 +240,9 @@ deb_clean() {
         done
     fi
 }
-# the clean function modifies isar-apt
+# the clean function modifies isar-apt. Do not add DEPLOY_DIR_DEB_LOCK here:
+# CLEANFUNCS also runs sstate_cleanall(), which takes that lock itself, and
+# flock() would deadlock on the nested acquisition.
 do_clean[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
 do_clean[network] = "${TASK_USE_SUDO}"
 
@@ -249,7 +259,7 @@ addtask deploy_deb after do_dpkg_build before do_build
 do_deploy_deb[deptask] = "do_deploy_deb"
 do_deploy_deb[rdeptask] = "do_deploy_deb"
 do_deploy_deb[depends] += "isar-apt:do_cache_config"
-do_deploy_deb[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
+do_deploy_deb[lockfiles] = "${REPO_ISAR_DIR}/isar.lock ${DEPLOY_DIR_DEB_LOCK}"
 do_deploy_deb[dirs] = "${S} ${DEPLOY_DIR_DEB}"
 
 python do_devshell() {
