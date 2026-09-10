@@ -255,12 +255,21 @@ do_clean[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
 do_clean[network] = "${TASK_USE_SUDO}"
 
 do_deploy_deb() {
-    deb_clean
+    # Removal is by source name and architecture (deb_clean), so a single scan
+    # of DEPLOY_DIR_DEB is only needed for the addition below.
     debs=$(find ${DEPLOY_DIR_DEB} -maxdepth 1 -name '*.deb')
-    if [ -n "${debs}" ]; then
-        repo_add_packages "${REPO_ISAR_DIR}"/"${DISTRO}" \
-            "${REPO_ISAR_DB_DIR}"/"${DISTRO}" "${DEBDISTRONAME}" ${debs}
+    if [ -z "${debs}" ]; then
+        # DEPLOY_DIR_DEB is shared by all multiconfigs with the same DISTRO and
+        # DISTRO_ARCH. It is transiently empty while do_dpkg_build of another
+        # multiconfig rebuilds this recipe, between sstate_clean() in its
+        # prefunc and sstate_install() in its postfunc. Skipping is safe: that
+        # multiconfig runs its own do_deploy_deb once the rebuild completed.
+        bbnote "${DEPLOY_DIR_DEB} is empty, leaving isar-apt untouched"
+        return
     fi
+    deb_clean
+    repo_add_packages "${REPO_ISAR_DIR}"/"${DISTRO}" \
+        "${REPO_ISAR_DB_DIR}"/"${DISTRO}" "${DEBDISTRONAME}" ${debs}
 }
 
 addtask deploy_deb after do_dpkg_build before do_build
