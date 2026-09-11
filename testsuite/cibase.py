@@ -116,15 +116,21 @@ class CIBaseTest(CIBuilder):
             yaml.dump(cfg, f)
 
     def perform_wic_partition_test(self, targets, wic_deploy_parts, **kwargs):
-        self.configure(targets=targets, wic_deploy_parts=wic_deploy_parts, **kwargs)
+        lines = kwargs.get('lines', [])
+        lines += [
+            'IMAGE_FSTYPES = "wic"',
+            'IMAGER_INSTALL:wic = "${GRUB_BOOTLOADER_INSTALL}"',
+        ]
+        self.configure(targets=targets, wic_deploy_parts=wic_deploy_parts,
+                       lines=lines, **kwargs)
         self.bitbake(targets, **kwargs)
 
         wic_path = f"{self.build_dir}/tmp/deploy/images/*/*.wic.p1"
         partition_files = set(glob.glob(wic_path))
         if wic_deploy_parts and len(partition_files) == 0:
-            self.fail("Found raw wic partitions in DEPLOY_DIR")
-        if not wic_deploy_parts and len(partition_files) != 0:
             self.fail("Did not find raw wic partitions in DEPLOY_DIR")
+        if not wic_deploy_parts and len(partition_files) != 0:
+            self.fail("Found raw wic partitions in DEPLOY_DIR")
 
     def perform_repro_test(self, targets, signed=False, **kwargs):
         keys_dir = os.path.dirname(__file__) + '/keys/base-apt'
