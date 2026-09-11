@@ -432,7 +432,7 @@ def insert_isar_umounts(d, rootfs, mounts):
 
     for m in mounts.split():
         host, inner = m.split(':') if ':' in m else (m, m)
-        mp = '{}/{}'.format(rootfs, inner)
+        mp = '{}/{}'.format(rootfs, inner[1:])
         lines.append('mountpoint -q {} && umount {}'.format(mp, mp))
         lines.append('[ -d {} ] && rmdir --ignore-fail-on-non-empty {}'.format(mp, mp))
     return '\n'.join(lines)
