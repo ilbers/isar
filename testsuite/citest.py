@@ -49,7 +49,7 @@ class EnvTest(CIBaseTest):
 
     def test_build(self):
         targets = [
-            'mc:qemuamd64-bookworm:prebuilt-deb',
+            'mc:qemuamd64-trixie:prebuilt-deb',
         ]
 
         self.init()
@@ -66,10 +66,10 @@ class DevTest(CIBaseTest):
 
     def test_dev(self):
         targets = [
-            'mc:qemuamd64-bookworm:isar-image-ci',
-            'mc:qemuarm-bookworm:isar-image-base',
-            'mc:qemuarm-bookworm:isar-image-base:do_populate_sdk',
-            'mc:qemuarm64-bookworm:isar-image-base',
+            'mc:qemuamd64-trixie:isar-image-ci',
+            'mc:qemuarm-trixie:isar-image-base',
+            'mc:qemuarm-trixie:isar-image-base:do_populate_sdk',
+            'mc:qemuarm64-trixie:isar-image-base',
         ]
 
         self.init()
@@ -79,22 +79,22 @@ class DevTest(CIBaseTest):
             lines=['SDK_FORMATS = "tar.zst"'],
         )
 
-    def test_dev_run_arm_bookworm(self):
+    def test_dev_run_arm_trixie(self):
         self.init()
-        self.vm_start('arm', 'bookworm', skip_modulecheck=True)
+        self.vm_start('arm', 'trixie', skip_modulecheck=True)
 
     def test_dev_apps(self):
         targets = [
-            'mc:qemuamd64-bookworm:isar-image-ci',
-            'mc:qemuarm64-bookworm:isar-image-base',
+            'mc:qemuamd64-trixie:isar-image-ci',
+            'mc:qemuarm64-trixie:isar-image-base',
         ]
 
         self.init()
         self.perform_build_test(targets)
 
-    def test_dev_run_arm64_bookworm(self):
+    def test_dev_run_arm64_trixie(self):
         self.init()
-        self.vm_start('arm64', 'bookworm')
+        self.vm_start('arm64', 'trixie')
 
     def test_dev_rebuild(self):
         self.init()
@@ -107,13 +107,13 @@ class DevTest(CIBaseTest):
             file.write('do_fetch:append() {\n\n}')
 
         try:
-            self.perform_build_test('mc:qemuamd64-bookworm:isar-image-ci')
+            self.perform_build_test('mc:qemuamd64-trixie:isar-image-ci')
         finally:
             self.restorefile(dpkgbase_file)
 
-    def test_dev_run_amd64_bookworm(self):
+    def test_dev_run_amd64_trixie(self):
         self.init()
-        self.vm_start('amd64', 'bookworm', image='isar-image-ci')
+        self.vm_start('amd64', 'trixie', image='isar-image-ci')
 
 
 class CompatTest(CIBaseTest):
@@ -144,7 +144,7 @@ class RepositoryTest(CIBaseTest):
     def test_repository_nopriority(self):
         """Test that packages without a Priority field can be added to the repo."""
         targets = [
-            'mc:qemuamd64-bookworm:isar-image-ci',
+            'mc:qemuamd64-trixie:isar-image-ci',
         ]
 
         self.init()
@@ -216,7 +216,7 @@ class CcacheTest(CIBaseTest):
     """
 
     def test_ccache_rebuild(self):
-        targets = ['mc:qemuamd64-bullseye:hello-isar']
+        targets = ['mc:qemuamd64-trixie:hello-isar']
         self.init()
         self.perform_ccache_test(targets)
 
@@ -448,8 +448,8 @@ class CrossTest(CIBaseTest):
             'mc:qemuarm-bookworm:kselftest',
             'mc:qemuarm64-bookworm:kselftest',
             'mc:qemuarm64-focal:kselftest',
-            'mc:nanopi-neo-efi-bookworm:kselftest',
-            'mc:phyboard-mira-bookworm:kselftest',
+            'mc:nanopi-neo-efi-trixie:kselftest',
+            'mc:phyboard-mira-trixie:kselftest',
         ]
 
         self.init()
@@ -459,6 +459,7 @@ class CrossTest(CIBaseTest):
         targets = [
             'mc:rpi-arm-v7-bullseye:isar-image-base',
             'mc:rpi-arm64-v8-efi-bookworm:isar-image-base',
+            'mc:rpi-arm64-v8-efi-trixie:isar-image-base',
         ]
 
         self.init()
@@ -466,7 +467,7 @@ class CrossTest(CIBaseTest):
 
     def test_cross_dependencies(self):
         targets = [
-            'mc:qemuarm64-bookworm:isar-image-ci',
+            'mc:qemuarm64-trixie:isar-image-ci',
         ]
 
         lines = [f"IMAGER_BUILD_DEPS:append = ' test-all-depnocross-native'"]
@@ -579,29 +580,32 @@ class PrebuiltTest(CIBaseTest):
 
     def test_prebuilt_containers(self):
         targets = [
-            'mc:qemuamd64-bookworm:isar-image-ci',
-            'mc:qemuarm64-bookworm:isar-image-ci',
+            'mc:qemuamd64-trixie:isar-image-ci',
+            'mc:qemuarm64-trixie:isar-image-ci',
         ]
 
         self.init()
         self.perform_build_test(
             targets,
-            image_install="prebuilt-docker-img prebuilt-podman-img")
+            image_install="prebuilt-docker-img prebuilt-podman-img",
+            # for container execution in non-host namespace, we need nftables
+            lines=['IMAGE_PREINSTALL += "nftables"']
+        )
 
-    def test_run_amd64_bookworm_prebuilt_containers(self):
+    def test_run_amd64_trixie_prebuilt_containers(self):
         """
         :avocado: tags=startvm
         """
         self.init()
-        self.vm_start('amd64', 'bookworm', image='isar-image-ci',
+        self.vm_start('amd64', 'trixie', image='isar-image-ci',
                       script='test_prebuilt_containers.sh')
 
-    def test_run_arm64_bookworm_prebuilt_containers(self):
+    def test_run_arm64_trixie_prebuilt_containers(self):
         """
         :avocado: tags=startvm
         """
         self.init()
-        self.vm_start('arm64', 'bookworm', image='isar-image-ci',
+        self.vm_start('arm64', 'trixie', image='isar-image-ci',
                       script='test_prebuilt_containers.sh')
 
 
@@ -626,7 +630,7 @@ class KernelTests(CIBaseTest):
     def test_per_kernel(self):
         """Test per-kernel recipe variants for external kernel modules."""
 
-        targets = ['mc:qemuarm64-bookworm:isar-image-ci']
+        targets = ['mc:qemuarm64-trixie:isar-image-ci']
         kernel_names = self.params.get('kernel_names', default='mainline-arm64')
         kernel_names = [k.strip() for k in kernel_names.split(',') if k.strip()]
         modules = [f"example-module-{k}" for k in kernel_names]
@@ -703,7 +707,7 @@ class InitRdBaseTest(CIBaseTest):
 
     def dracut_in_image(self, targets):
         machine = 'qemuamd64'
-        distro = 'bookworm'
+        distro = 'trixie'
         image = 'isar-image-ci'
         self.init()
         self.perform_build_test(
@@ -725,7 +729,7 @@ class InitRdBaseTest(CIBaseTest):
             )
 
     def build_image_with_dependent_initrd(self, image, initrd,
-                                          distro="debian-bookworm",
+                                          distro="debian-trixie",
                                           machine="qemuamd64",
                                           lines='',
                                           bb_should_fail=False):
@@ -763,25 +767,25 @@ class InitRdTest(InitRdBaseTest):
 
     def test_dracut_in_image(self):
         """Test switch to dracut in an image recipe."""
-        self.dracut_in_image(['mc:qemuamd64-bookworm:isar-image-ci'])
+        self.dracut_in_image(['mc:qemuamd64-trixie:isar-image-ci'])
 
     def test_dracut_build_initrd(self):
         """ Test build of an initrd image that uses dracut."""
         self.init()
-        self.perform_build_test(['mc:qemuamd64-bookworm:isar-dracut'])
+        self.perform_build_test(['mc:qemuamd64-trixie:isar-dracut'])
 
     def test_dracut_build_failure(self):
         """ Check if the build fails if dracut fails to generate an initrd."""
         lines = InitRdBaseTest.DRACUT_CONF
         lines.append("ROOTFS_INITRAMFS_GENERATOR_CMDLINE:append = ' --unknown-option'")
         self.init()
-        self.perform_build_test('mc:qemuamd64-bookworm:isar-image-ci',
+        self.perform_build_test('mc:qemuamd64-trixie:isar-image-ci',
                                 should_fail=True, lines=lines)
 
     def test_var_initrd_image(self):
         """ Check if deprecated INITRD_IMAGE variable may be used. """
         initrd = 'isar-initramfs'
-        distro = 'debian-bookworm'
+        distro = 'debian-trixie'
         machine = 'qemuamd64'
 
         lines = [
@@ -811,7 +815,7 @@ class InitRdTest(InitRdBaseTest):
         # by specifying an invalid recipe name: bitbake should fail.
         lines = [
             "IMAGE_INITRD = 'not-a-valid-initrd-recipe'",
-            f"INITRD_IMAGE = '{initrd}-debian-bookworm-qemuamd64-initrd.img'"
+            f"INITRD_IMAGE = '{initrd}-debian-trixie-qemuamd64-initrd.img'"
         ]
         self.build_image_with_dependent_initrd('isar-image-ci', initrd, lines=lines,
                                                bb_should_fail=True)
@@ -860,7 +864,7 @@ class WicTest(CIBaseTest):
     """
 
     def test_wic_nodeploy_partitions(self):
-        targets = ['mc:qemuarm64-bookworm:isar-image-ci']
+        targets = ['mc:qemuarm64-trixie:isar-image-ci']
 
         self.init()
         self.move_in_build_dir('tmp', 'tmp_before_wic')
@@ -871,7 +875,7 @@ class WicTest(CIBaseTest):
         )
 
     def test_wic_deploy_partitions(self):
-        targets = ['mc:qemuarm64-bookworm:isar-image-ci']
+        targets = ['mc:qemuarm64-trixie:isar-image-ci']
 
         self.init()
         # reuse artifacts
@@ -895,8 +899,8 @@ class DtbDeployTest(CIBaseTest):
         Cover case: Same machine, different distros
         """
         targets = [
-            'mc:phyboard-mira-bullseye:isar-image-base',
             'mc:phyboard-mira-bookworm:isar-image-base',
+            'mc:phyboard-mira-trixie:isar-image-base',
         ]
 
         self.init()
@@ -912,7 +916,7 @@ class DtbDeployTest(CIBaseTest):
         """
         targets = [
             'mc:phyboard-mira-bookworm:isar-image-base',
-            'mc:phyboard-mira-bookworm:isar-image-ci',
+            'mc:phyboard-mira-trixie:isar-image-ci',
         ]
 
         self.init()
@@ -1530,8 +1534,8 @@ class SourceTest(CIBaseTest):
 
     def test_source(self):
         targets = [
-            'mc:qemuamd64-bookworm:libhello',
-            'mc:qemuarm64-bookworm:libhello',
+            'mc:qemuamd64-trixie:libhello',
+            'mc:qemuarm64-trixie:libhello',
         ]
 
         self.init()
