@@ -248,7 +248,8 @@ do_bootstrap() {
                    --setup-hook='mkdir -p "$1/etc/apt/trusted.gpg.d"' \
                    --setup-hook='sync-in "${WORKDIR}/trusted.gpg.d" /etc/apt/trusted.gpg.d' \
                    --setup-hook='chown -R root:root "$1/etc/apt/trusted.gpg.d"' \
-                   --setup-hook='install -v -m755 "${WORKDIR}/chroot-setup.sh" "$1/chroot-setup.sh"' \
+                   --setup-hook='upload "${WORKDIR}/chroot-setup.sh" "/chroot-setup.sh"' \
+                   --setup-hook='chmod a+rx "$1/chroot-setup.sh"' \
                    --extract-hook="$extra_extract" \
                    --essential-hook="$extra_essential" \
                    --customize-hook="$extra_customize" \
