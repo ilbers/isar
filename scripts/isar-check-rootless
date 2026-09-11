@@ -20,6 +20,35 @@ fi
 
 [ "$verbose" = 0 ] || echo "RUN_PRIVILEGED_CMD: $run_privileged_cmd" >&2
 
+if ! tmpdir=$( \
+	BB_ENV_PASSTHROUGH_ADDITIONS="${BB_ENV_PASSTHROUGH_ADDITIONS} ISAR_ROOTLESS" \
+	ISAR_ROOTLESS=1 bitbake-getvar -q --value TMPDIR); then
+	echo "error: cannot determine TMPDIR from BitBake" >&2
+	exit 1
+fi
+
+[ "$verbose" = 0 ] || echo "TMPDIR: $tmpdir" >&2
+
+failed=0
+fail() {
+	echo "error: $1" >&2
+	echo "       likely cause: $2" >&2
+	failed=1
+}
+
+# mmdebstrap in unshare mode populates a temporary directory below TMPDIR as a
+# subordinate user. That user can only reach it if every ancestor of TMPDIR is
+# world-searchable (see mmdebstrap(1), TMPDIR).
+dir=$tmpdir
+while [ "$dir" != "/" ]; do
+	if [ -e "$dir" ] && \
+	   [ -z "$(find "$dir" -maxdepth 0 -perm -0001 2>/dev/null)" ]; then
+		fail "'$dir' is not world-searchable" \
+			"a restrictive parent directory (e.g. with 0700) prevents the unshared user from reaching TMPDIR"
+	fi
+	dir=$(dirname "$dir")
+done
+
 if ! ${run_privileged_cmd} /bin/sh <<'EOF'
 	failed=0
 
@@ -48,6 +77,10 @@ if ! ${run_privileged_cmd} /bin/sh <<'EOF'
 	exit "$failed"
 EOF
 then
+	failed=1
+fi
+
+if [ "$failed" != 0 ]; then
 	echo "error: unprivileged rootless builds are not supported; see the checks above" >&2
 	exit 1
 fi
