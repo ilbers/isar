@@ -241,6 +241,12 @@ rootfs_do_qemu() {
 BOOTSTRAP_SRC = "${DEPLOY_DIR_BOOTSTRAP}/${ROOTFS_DISTRO}-host_${DISTRO}-${DISTRO_ARCH}.tar.zst"
 BOOTSTRAP_SRC:${ROOTFS_ARCH} = "${DEPLOY_DIR_BOOTSTRAP}/${ROOTFS_DISTRO}-${ROOTFS_ARCH}.tar.zst"
 
+# Matches do_bootstrap[sstate-lockfile]: a shared read lock held only around the
+# untar below excludes a concurrent do_bootstrap of another multiconfig swapping
+# this tarball out mid-extraction.
+BOOTSTRAP_SRC_LOCK = "${DEPLOY_DIR}/bootstrap.${ROOTFS_DISTRO}-host_${DISTRO}-${DISTRO_ARCH}.lock"
+BOOTSTRAP_SRC_LOCK:${ROOTFS_ARCH} = "${DEPLOY_DIR}/bootstrap.${ROOTFS_DISTRO}-${ROOTFS_ARCH}.lock"
+
 def rootfs_extra_import(d):
     bb.utils._context["rootfs_progress"] = __import__("rootfs_progress")
     return ""
@@ -250,10 +256,13 @@ ROOTFS_EXTRA_IMPORTED := "${@rootfs_extra_import(d)}"
 rootfs_prepare[weight] = "25"
 rootfs_prepare(){
     rm -rf ${ROOTFSDIR}
-    run_privileged_heredoc << 'EOF'
+    (
+        flock -s 9
+        run_privileged_heredoc << 'EOF'
         mkdir -p ${ROOTFSDIR}
         tar -xf "${BOOTSTRAP_SRC}" -C "${ROOTFSDIR}" --exclude="./dev/console"
 EOF
+    ) 9<> "${BOOTSTRAP_SRC_LOCK}"
 
     # setup chroot
     run_privileged "${ROOTFSDIR}/chroot-setup.sh" "setup" "${ROOTFSDIR}"

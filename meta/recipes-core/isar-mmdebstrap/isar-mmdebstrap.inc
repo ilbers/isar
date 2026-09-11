@@ -136,6 +136,10 @@ do_bootstrap[sstate-outputdirs] = "${DEPLOY_DIR_BOOTSTRAP}"
 do_bootstrap[dirs] = "${BOOTSTRAP_TMPDIR} ${WORKDIR}/trusted.gpg.d ${WORKDIR}/sources.list.d"
 do_bootstrap[depends] = "base-apt:do_cache isar-apt:do_cache_config"
 do_bootstrap[network] = "${TASK_USE_NETWORK_AND_SUDO}"
+# DEPLOY_DIR_BOOTSTRAP is shared by all multiconfigs. Keep the lock next
+# to, not inside, DEPLOY_DIR_BOOTSTRAP so sstate_clean_manifest() cannot sweep it.
+DEPLOY_DIR_BOOTSTRAP_LOCK = "${DEPLOY_DIR}/bootstrap.${DEPLOY_ISAR_BOOTSTRAP}.lock"
+do_bootstrap[sstate-lockfile] = "${DEPLOY_DIR_BOOTSTRAP_LOCK}"
 
 DEB_DL_LOCK ?= "${DEBDIR}/${BOOTSTRAP_BASE_DISTRO}-${BASE_DISTRO_CODENAME}.lock"
 
