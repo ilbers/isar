@@ -21,84 +21,108 @@ def get_locale_gen(d, sep='\n'):
                                for i in locale_gen.split('\\n')
                                if i.strip())))
 
-def get_nopurge(d):
+def get_locale_dirs(d):
+    # Directory names below /usr/share/locale that shall be kept, derived from
+    # the language and language_territory parts of LOCALE_GEN.
     locale_gen = d.getVar("LOCALE_GEN") or ""
-    return '\n'.join(sorted(set(i.strip()
-                                for j in locale_gen.split('\\n')
-                                if j.strip()
-                                for i in (j.split()[0].split("_")[0],
-                                          j.split()[0].split(".")[0],
-                                          j.split()[0]))))
+    return sorted(set(i
+                      for j in locale_gen.split('\\n')
+                      if j.strip()
+                      for i in (j.split()[0].split("_")[0],
+                                j.split()[0].split(".")[0])))
 
-ROOTFS_INSTALL_COMMAND_BEFORE_EXPORT += "image_install_localepurge_download"
-image_install_localepurge_download[weight] = "40"
-image_install_localepurge_download[network] = "${TASK_USE_NETWORK_AND_SUDO}"
-image_install_localepurge_download() {
-    run_privileged_heredoc <<'EOF'
-    set -e
-    ${@insert_isar_mounts(d, d.getVar('ROOTFSDIR'), d.getVar('ROOTFS_MOUNTS') if d.getVar('ISAR_CHROOT_MODE') == 'unshare' else '')}
-    chroot ${ROOTFSDIR} \
-        /usr/bin/apt-get ${ROOTFS_APT_ARGS} -o Debug::NoLocking=1 --download-only localepurge
-EOF
+def get_locale_path_include(d):
+    lines = []
+    for name in get_locale_dirs(d):
+        lines.append("path-include=/usr/share/locale/%s" % name)
+        lines.append("path-include=/usr/share/locale/%s/*" % name)
+    return "\n".join(lines)
+
+# Configure dpkg to only unpack the requested locales, so unneeded locale files
+# are never installed. This runs before any package is installed into the image.
+# Locale files that the bootstrap already installed are cleaned up here as well.
+ROOTFS_CONFIGURE_COMMAND += "image_configure_locale_filter"
+image_configure_locale_filter[weight] = "5"
+image_configure_locale_filter() {
+    cat<<__EOF__ > ${WORKDIR}/locale.dpkg-filter
+path-exclude=/usr/share/locale/*
+path-include=/usr/share/locale/locale.alias
+${@get_locale_path_include(d)}
+__EOF__
+
+    run_privileged_heredoc <<'EOSUDO'
+        set -e
+
+        mkdir -p '${ROOTFSDIR}/etc/dpkg/dpkg.cfg.d'
+        cat '${WORKDIR}/locale.dpkg-filter' \
+            > '${ROOTFSDIR}/etc/dpkg/dpkg.cfg.d/50isar-locales'
+
+        # Drop locale files the bootstrap installed that are not requested.
+        if [ -d '${ROOTFSDIR}/usr/share/locale' ]; then
+            keep=' locale.alias ${@' '.join(get_locale_dirs(d))} '
+            for entry in '${ROOTFSDIR}'/usr/share/locale/*; do
+                [ -e "$entry" ] || continue
+                name=$(basename "$entry")
+                case "$keep" in
+                    *" $name "*) ;;
+                    *) rm -rf "$entry" ;;
+                esac
+            done
+        fi
+EOSUDO
 }
 
-ROOTFS_INSTALL_COMMAND += "image_install_localepurge_install"
-image_install_localepurge_install[weight] = "700"
-image_install_localepurge_install[network] = "${TASK_USE_NETWORK_AND_SUDO}"
-image_install_localepurge_install() {
-
-    # Generate locale and localepurge configuration:
-    cat<<__EOF__ > ${WORKDIR}/locale.gen
-${@get_locale_gen(d)}
-__EOF__
+# Preseed the debconf selection and generate the requested locales up front,
+# before any package is installed, so package maintainer scripts find working
+# locales.
+ROOTFS_CONFIGURE_COMMAND += "image_configure_locale_debconf"
+image_configure_locale_debconf[weight] = "5"
+image_configure_locale_debconf() {
     cat<<__EOF__ > ${WORKDIR}/locale.debconf
 locales     locales/locales_to_be_generated    multiselect ${@get_locale_gen(d, ', ')}
 locales     locales/default_environment_locale select      ${LOCALE_DEFAULT}
 __EOF__
+    cat<<__EOF__ > ${WORKDIR}/locale.gen
+${@get_locale_gen(d)}
+__EOF__
     cat<<__EOF__ > ${WORKDIR}/locale.default
 LANG=${LOCALE_DEFAULT}
 __EOF__
-    cat<<__EOF__ > ${WORKDIR}/locale.nopurge
-#USE_DPKG
-MANDELETE
-DONTBOTHERNEWLOCALE
-#SHOWFREEDSPACE
-#QUICKNDIRTYCALC
-#VERBOSE
-${@get_nopurge(d)}
-__EOF__
 
-    # Install configuration into image:
     run_privileged_heredoc <<'EOSUDO'
         set -e
 
         ${@insert_isar_mounts(d, d.getVar('ROOTFSDIR'), '')}
 
-        localepurge_state='i'
-        if chroot '${ROOTFSDIR}' dpkg -s localepurge 2>/dev/null >&2
-        then
-            echo 'localepurge was installed (leaving it installed later)'
-        else
-            localepurge_state='p'
-            echo 'localepurge was not installed (removing it later)'
-            # track additional packages that will be installed, as these packages might be
-            # in the suggested set of other packages and by that need to be explicitly removed
-            localepurge_pkgs=$(chroot '${ROOTFSDIR}' apt-get ${ROOTFS_APT_ARGS} -s localepurge 2>&1 | sed -n 's/^Inst \([^ ]*\) .*/\1/p')
-            chroot '${ROOTFSDIR}' apt-get ${ROOTFS_APT_ARGS} localepurge
-        fi
-
-        cat '${WORKDIR}/locale.gen' >> '${ROOTFSDIR}/etc/locale.gen'
         cat '${WORKDIR}/locale.default' > '${ROOTFSDIR}/etc/default/locale'
-        cat '${WORKDIR}/locale.nopurge' > '${ROOTFSDIR}/etc/locale.nopurge'
         cat '${WORKDIR}/locale.debconf' > '${ROOTFSDIR}/tmp/locale.debconf'
 
-        # Enter image and trigger locales config and localepurge:
+        # Enable the requested locales by uncommenting them in /etc/locale.gen
+        while read -r locale; do
+            [ -n "$locale" ] || continue
+            sed -i "/$locale/s/^# *//" '${ROOTFSDIR}/etc/locale.gen'
+        done < '${WORKDIR}/locale.gen'
+
         chroot '${ROOTFSDIR}' /bin/sh <<'EOSH'
             set -e
 
-            echo 'running locale debconf-set-selections'
             debconf-set-selections /tmp/locale.debconf
-            rm -f '/tmp/locale.debconf'
+            rm -f /tmp/locale.debconf
+EOSH
+EOSUDO
+}
+
+# The systemd locale.conf symlink can only be created once systemd is installed.
+ROOTFS_INSTALL_COMMAND += "image_configure_locales"
+image_configure_locales[weight] = "100"
+image_configure_locales() {
+    run_privileged_heredoc <<'EOSUDO'
+        set -e
+
+        ${@insert_isar_mounts(d, d.getVar('ROOTFSDIR'), '')}
+
+        chroot '${ROOTFSDIR}' /bin/sh <<'EOSH'
+            set -e
 
             SYSTEMD_VERSION=$(dpkg-query \
                 --showformat='${source:Upstream-Version}' \
@@ -112,15 +136,6 @@ __EOF__
 
             echo 'reconfigure locales'
             dpkg-reconfigure -f noninteractive locales
-
-            echo 'running localepurge'
-            localepurge
 EOSH
-
-        if [ "$localepurge_state" = 'p' ]
-        then
-            echo removing localepurge...
-            chroot '${ROOTFSDIR}' apt-get purge --yes $localepurge_pkgs
-        fi
 EOSUDO
 }
