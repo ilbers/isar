@@ -9,6 +9,11 @@
 LOCALE_GEN ?= "en_US.UTF-8 UTF-8\n\
                en_US ISO-8859-1\n"
 LOCALE_DEFAULT ?= "en_US.UTF-8"
+# set locale used during package installation, which is visible to
+# maintainer scripts (e.g. used in console-setup)
+export LANG = "${LOCALE_DEFAULT}"
+export LANGUAGE = "${LOCALE_DEFAULT}"
+export LC_ALL = "${LOCALE_DEFAULT}"
 
 def get_locale_gen(d, sep='\n'):
     locale_gen = d.getVar("LOCALE_GEN") or ""
