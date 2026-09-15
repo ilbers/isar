@@ -93,10 +93,9 @@ def get_rootfs_distro(d):
 export E = "${@ isar_export_proxies(d)}"
 export DEBIAN_FRONTEND = "noninteractive"
 # To avoid Perl locale warnings:
-LOCALE_DEFAULT ??= "C"
-export LANG = "${LOCALE_DEFAULT}"
-export LANGUAGE = "${LOCALE_DEFAULT}"
-export LC_ALL = "${LOCALE_DEFAULT}"
+export LANG ??= "C"
+export LANGUAGE ??= "C"
+export LC_ALL ??= "C"
 
 # Execute a command against a rootfs and with isar-apt bind-mounted.
 # Additional mounts may be specified using --bind <source> <target> and a
