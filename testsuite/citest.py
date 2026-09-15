@@ -116,6 +116,47 @@ class DevTest(CIBaseTest):
         self.vm_start('amd64', 'trixie', image='isar-image-ci')
 
 
+class LocaleTest(CIBaseTest):
+
+    """
+    Test locale generation
+
+    :avocado: tags=locale,fast
+    """
+
+    def test_locale(self):
+        """
+        :avocado: tags=startvm
+        """
+        targets = [
+            'mc:qemuamd64-trixie:isar-image-ci',
+        ]
+
+        self.init()
+        self.perform_build_test(
+            targets,
+            image_install='',
+            lines=[
+                'IMAGE_PREINSTALL += "console-setup"',
+                'LOCALE_GEN = "en_US.UTF-8 UTF-8\\nde_DE.UTF-8 UTF-8"',
+                'LOCALE_DEFAULT = "de_DE.UTF-8"',
+            ],
+        )
+        # de_DE.UTF-8 must be generated, while the non-UTF-8 en_US locale
+        # (listed as the bare "en_US" by locale -a) must not be. Force LC_ALL=C
+        # so locale(1) does not warn about the SSH-forwarded client locale.
+        self.vm_start(
+            'amd64',
+            'trixie',
+            image='isar-image-ci',
+            cmd=(
+                "export LC_ALL=C; "
+                "locale -a | grep -qi 'de_DE' && "
+                "! locale -a | grep -qx 'en_US'"
+            ),
+        )
+
+
 class CompatTest(CIBaseTest):
     """
     Test compilation of recipes for compat architecture.
