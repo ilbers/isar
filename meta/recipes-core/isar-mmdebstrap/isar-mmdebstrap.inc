@@ -257,7 +257,7 @@ do_bootstrap() {
                    --extract-hook="$extra_extract" \
                    --essential-hook="$extra_essential" \
                    --customize-hook="$extra_customize" \
-                   --customize-hook='sed -i "/en_US.UTF-8 UTF-8/s/^#//g" "$1/etc/locale.gen"' \
+                   --customize-hook='sed -i "/en_US.UTF-8 UTF-8/s/^# *//g" "$1/etc/locale.gen"' \
                    --customize-hook='chroot "$1" /usr/sbin/locale-gen' \
                    --customize-hook='chroot "$1" /usr/bin/apt-get -y clean' \
                    --customize-hook='echo nameserver 127.0.0.1 > "$1"/etc/resolv.conf' \
