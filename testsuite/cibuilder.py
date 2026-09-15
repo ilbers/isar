@@ -154,6 +154,8 @@ class CIBuilder(Test):
         if not sstate:
             sstate = bool(int(self.params.get('sstate', default=0)))
 
+        rootless = True
+
         if not rootless:
             rootless = bool(int(self.params.get('rootless', default=0)))
 
