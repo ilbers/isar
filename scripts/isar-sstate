@@ -592,6 +592,26 @@ def apply_filters(items, pn_filter=None, arch=None):
     return items
 
 
+def load_sigdata(target, path):
+    sig_file = target.download(path)
+    try:
+        with bb.compress.zstd.open(sig_file, "rt", encoding="utf-8", num_threads=1) as f:
+            sigdata = json.load(f, object_hook=bb.siggen.SetDecoder)
+        bb.siggen.handle_renames(sigdata)
+        return sigdata
+    except:
+        # invalid file or format, ignore to continue processing
+        return None
+    finally:
+        target.release(sig_file)
+
+
+def get_distro(target, path):
+    # only tasks that depend on DISTRO carry it in their signature
+    sigdata = load_sigdata(target, path)
+    return sigdata['varvals'].get('DISTRO') if sigdata else None
+
+
 def arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -883,13 +903,8 @@ def sstate_lint(target, verbose, sources_dir, build_dir, exit_code, pedantic, li
         if any(fnmatchcase(sig.task, pattern) for pattern in ADDITIONAL_IGNORED_TASKS):
             continue
 
-        sig_file = target.download(sig.path)
-        try:
-            with bb.compress.zstd.open(sig_file, "rt", encoding="utf-8", num_threads=1) as f:
-                sigdata = json.load(f, object_hook=bb.siggen.SetDecoder)
-            bb.siggen.handle_renames(sigdata)
-        except:
-            # invalid file or format... never mind
+        sigdata = load_sigdata(target, sig.path)
+        if sigdata is None:
             continue
 
         pn_issues = []
@@ -937,7 +952,6 @@ def sstate_lint(target, verbose, sources_dir, build_dir, exit_code, pedantic, li
         if len(pn_issues) > 0:
             print(f"\033[1;33m==== issues found in {sig.arch}:{sig.pn}:{sig.task} ({sig.hash[:8]}) ====\033[0m")
             print('\n'.join(pn_issues))
-        target.release(sig_file)
 
     sum_hits = hits_srcdir + hits_builddir
     if sum_hits == 0:
