@@ -22,7 +22,7 @@ sstate cache:
     `SSTATE_DIR`. To share them, you need to explicitly upload them to
     the shared location, which is what isar-sstate is for.
 
-isar-sstate implements five commands (upload, clean, info, analyze, lint),
+isar-sstate implements six commands (upload, clean, info, show, analyze, lint),
 and supports three remote backends (filesystem, http/webdav, AWS S3).
 
 ## Commands
@@ -53,6 +53,11 @@ than `max_age`.
 
 The `info` command scans the remote cache and displays some basic statistics.
 The argument `--verbose` increases the amount of information displayed.
+
+### show
+
+The `show` command lists all individual artifacts for a recipe (`PN`)
+in the remote cache, grouped by architecture, task name, `DISTRO`, and hash.
 
 ### analyze
 
@@ -592,6 +597,15 @@ def apply_filters(items, pn_filter=None, arch=None):
     return items
 
 
+def format_size(size_bytes):
+    size = float(size_bytes)
+    for unit in ['B', 'KB', 'MB', 'GB']:
+        if size < 1024.0:
+            return f"{size:.0f} {unit}" if unit == 'B' else f"{size:.2f} {unit}"
+        size /= 1024.0
+    return f"{size:.2f} TB"
+
+
 def load_sigdata(target, path):
     sig_file = target.download(path)
     try:
@@ -616,11 +630,11 @@ def arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         'command', type=str, metavar='command',
-        choices='info upload clean analyze lint'.split(),
-        help="command to execute (info, upload, clean, analyze, lint)")
+        choices='info upload clean show analyze lint'.split(),
+        help="command to execute (info, upload, clean, show, analyze, lint)")
     parser.add_argument(
         'source', type=str, nargs='?',
-        help="local sstate dir (for uploads or analysis)")
+        help="local sstate dir (for uploads or analysis), or PN (for show)")
     parser.add_argument(
         'target', type=str,
         help="remote sstate location (a file://, http://, or s3:// URI)")
@@ -660,6 +674,9 @@ def arguments():
     args = parser.parse_args()
     if args.command in 'upload analyze'.split() and args.source is None:
         print(f"ERROR: '{args.command}' needs a source and target")
+        sys.exit(1)
+    elif args.command == 'show' and args.source is None:
+        print(f"ERROR: '{args.command}' needs a PN and target")
         sys.exit(1)
     elif args.command in 'info clean'.split() and args.source is not None:
         print(f"ERROR: '{args.command}' must not have a source (only a target)")
@@ -798,6 +815,52 @@ def sstate_info(target, verbose, filter, arch, **kwargs):
     print("Other cache entries:")
     for pn in others:
         print(f"  - {pn}")
+    return 0
+
+
+def sstate_show(source, target, verbose, filter, arch, **kwargs):
+    pn = source
+    if not target.exists():
+        print(f"WARNING: cannot access target {target}. No info to show.")
+        return 0
+
+    print(f"INFO: scanning {target}")
+    all_files = target.list_all()
+    suffixes = ['tgz', 'tar.zst']
+    if verbose:
+        suffixes += ['tgz.siginfo', 'tar.zst.siginfo']
+    artifacts = [f for f in all_files if f.pn == pn and f.suffix in suffixes]
+    artifacts = apply_filters(artifacts, filter, arch)
+
+    # DISTRO is not part of the artifact name, it has to come from the siginfo
+    distro = {f.hash: get_distro(target, f.path) or 'unknown' for f in all_files
+              if f.pn == pn and f.suffix.endswith('.siginfo')}
+
+    archs = sorted(set([f.arch for f in artifacts]))
+    for a in archs:
+        print(f"{a}:")
+        arch_entries = [f for f in artifacts if f.arch == a]
+        tasks = sorted(set([f.task for f in arch_entries]))
+        for t in tasks:
+            print(f"  {t}:")
+            task_entries = [f for f in arch_entries if f.task == t]
+            distros = sorted(set(distro.get(f.hash, 'unknown') for f in task_entries))
+            for d in distros:
+                print(f"    {d}:")
+                distro_entries = [f for f in task_entries if distro.get(f.hash, 'unknown') == d]
+                # a hash covers both the archive and its siginfo, use the newest of them
+                hash_age = {}
+                for f in distro_entries:
+                    hash_age[f.hash] = min(hash_age.get(f.hash, f.age), f.age)
+                for h in sorted(hash_age, key=lambda x: (hash_age[x], x)):
+                    print(f"      - {h}")
+                    hash_entries = [f for f in distro_entries if f.hash == h]
+                    for f in sorted(hash_entries, key=lambda x: x.suffix):
+                        age_str = str(datetime.timedelta(seconds=f.age))
+                        size_str = format_size(f.size)
+                        if verbose:
+                            print(f"        {f.path}")
+                        print(f"          {age_str:>20}\t{size_str:>10}\t{f.suffix}")
     return 0
 
 
