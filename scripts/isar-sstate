@@ -22,7 +22,7 @@ sstate cache:
     `SSTATE_DIR`. To share them, you need to explicitly upload them to
     the shared location, which is what isar-sstate is for.
 
-isar-sstate implements six commands (upload, clean, info, show, analyze, lint),
+isar-sstate implements seven commands (upload, clean, info, show, delta, analyze, lint),
 and supports three remote backends (filesystem, http/webdav, AWS S3).
 
 ## Commands
@@ -58,6 +58,13 @@ The argument `--verbose` increases the amount of information displayed.
 
 The `show` command lists all individual artifacts for a recipe (`PN`)
 in the remote cache, grouped by architecture, task name, `DISTRO`, and hash.
+
+### delta
+
+The `delta` command compares the signature of a specified hash against
+all other signatures in the cache matching the same architecture,
+recipe (`PN`), and task. Artifacts built for a different `DISTRO` are
+skipped, unless `--verbose` is given.
 
 ### analyze
 
@@ -630,11 +637,11 @@ def arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         'command', type=str, metavar='command',
-        choices='info upload clean show analyze lint'.split(),
-        help="command to execute (info, upload, clean, show, analyze, lint)")
+        choices='info upload clean show delta analyze lint'.split(),
+        help="command to execute (info, upload, clean, show, delta, analyze, lint)")
     parser.add_argument(
         'source', type=str, nargs='?',
-        help="local sstate dir (for uploads or analysis), or PN (for show)")
+        help="local sstate dir (for uploads or analysis), PN (for show), or hash (for delta)")
     parser.add_argument(
         'target', type=str,
         help="remote sstate location (a file://, http://, or s3:// URI)")
@@ -677,6 +684,9 @@ def arguments():
         sys.exit(1)
     elif args.command == 'show' and args.source is None:
         print(f"ERROR: '{args.command}' needs a PN and target")
+        sys.exit(1)
+    elif args.command == 'delta' and args.source is None:
+        print(f"ERROR: '{args.command}' needs a hash and target")
         sys.exit(1)
     elif args.command in 'info clean'.split() and args.source is not None:
         print(f"ERROR: '{args.command}' must not have a source (only a target)")
@@ -864,6 +874,64 @@ def sstate_show(source, target, verbose, filter, arch, **kwargs):
     return 0
 
 
+def sstate_delta(hash, target, verbose, filter, arch, **kwargs):
+    if not target.exists():
+        print(f"WARNING: {target} does not exist. Nothing to analyze.")
+        return 0
+
+    target.enable_cache()
+    sigs = {s.hash: s for s in target.list_all() if s.suffix.endswith('.siginfo')}
+
+    matches = [s for s in sigs.values() if s.hash.startswith(hash)]
+    if len(matches) == 0:
+        print(f"ERROR: hash '{hash}' not found in {target}")
+        return 1
+    if len(set(s.hash for s in matches)) > 1:
+        print(f"ERROR: hash prefix '{hash}' is ambiguous")
+        return 1
+    ref_sig = matches[0]
+
+    print(f"\033[1;33m==== checking item {ref_sig.arch}:{ref_sig.pn}:{ref_sig.task} ({ref_sig.hash[:8]}) ====\033[0m")
+    other_matches = apply_filters([
+        s for s in sigs.values()
+        if s.arch == ref_sig.arch and s.pn == ref_sig.pn and s.task == ref_sig.task and s.hash != ref_sig.hash
+    ], filter, arch)
+
+    ref_distro = None if verbose else get_distro(target, ref_sig.path)
+    if ref_distro:
+        other_matches = [s for s in other_matches
+                         if get_distro(target, s.path) in (ref_distro, None)]
+
+    if len(other_matches) == 0:
+        print(" -> found no other matches for comparison")
+        return 0
+    print(f" -> found {len(other_matches)} potential matches")
+
+    def recursecb(key, hash_a, hash_b):
+        recout = []
+        if hash_a not in sigs or hash_b not in sigs:
+            recout.append(f"could not find signatures for job {key}")
+            return recout
+        out = compare_sigfiles(target.download(sigs[hash_a].path),
+                               target.download(sigs[hash_b].path), recursecb, color=True)
+        for change in out:
+            recout.extend(['    ' + line for line in change.splitlines()])
+        return recout
+
+    ref_file = target.download(ref_sig.path)
+    for t in sorted(other_matches, key=lambda x: (x.age, x.hash)):
+        age_str = str(datetime.timedelta(seconds=t.age))
+        print(f"\033[0;33m**** comparing to {t.hash[:8]} (age: {age_str}) ****\033[0m")
+        try:
+            out = compare_sigfiles(target.download(t.path), ref_file, recursecb, color=True)
+        except:
+            out = ["Failed to compare signatures."]
+        # shorten hashes from 64 to 8 characters for better readability
+        out = [re.sub(r'([0-9a-f]{8})[0-9a-f]{56}', r'\1', line) for line in out]
+        print('\n'.join(out))
+    return 0
+
+
 def sstate_analyze(source, target, filter, arch, **kwargs):
     if not os.path.isdir(source):
         print(f"WARNING: source {source} does not exist. Nothing to analyze.")
@@ -1042,6 +1110,8 @@ def main():
         return 1
 
     args.target = target
+    if args.command == 'delta':
+        args.hash = args.source
     return globals()[f'sstate_{args.command}'](**vars(args))
 
 
