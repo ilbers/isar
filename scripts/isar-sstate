@@ -805,7 +805,9 @@ def sstate_info(target, verbose, filter, arch, **kwargs):
 
     key_task = {'deb': ['dpkg_build', 'dpkg_source'],
                 'rootfs': ['rootfs_install'],
-                'bootstrap': ['bootstrap']}
+                'bootstrap': ['bootstrap'],
+                'apt': ['cache', 'cache_config'],
+                }
     recipes = {k: [] for k in key_task.keys()}
     others = []
     for pn in set([f.pn for f in all_files]):
