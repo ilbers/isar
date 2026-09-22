@@ -803,14 +803,14 @@ def sstate_info(target, verbose, filter, arch, **kwargs):
     archs = list(set([f.arch for f in all_files]))
     print(f"INFO: found the following archs: {archs}")
 
-    key_task = {'deb': 'dpkg_build',
-                'rootfs': 'rootfs_install',
-                'bootstrap': 'bootstrap'}
+    key_task = {'deb': ['dpkg_build', 'dpkg_source'],
+                'rootfs': ['rootfs_install'],
+                'bootstrap': ['bootstrap']}
     recipes = {k: [] for k in key_task.keys()}
     others = []
     for pn in set([f.pn for f in all_files]):
         tasks = set([f.task for f in all_files if f.pn == pn])
-        ks = [k for k, v in key_task.items() if v in tasks]
+        ks = [k for k, v in key_task.items() if any(t in tasks for t in v)]
         if len(ks) == 1:
             recipes[ks[0]].append(pn)
         elif len(ks) == 0:
@@ -820,7 +820,7 @@ def sstate_info(target, verbose, filter, arch, **kwargs):
     for k, entries in recipes.items():
         print(f"Cache entries for {k}:")
         for pn in entries:
-            artifacts = [f for f in all_files if f.pn == pn and f.task == key_task[k] and f.suffix in ['tgz', 'tar.zst']]
+            artifacts = [f for f in all_files if f.pn == pn and f.task in key_task[k] and f.suffix in ['tgz', 'tar.zst']]
             print(f"  - {pn}: {len(artifacts)} entries")
     print("Other cache entries:")
     for pn in others:
