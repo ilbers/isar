@@ -63,7 +63,7 @@ image_postprocess_machine_id() {
     if dpkg --compare-versions "$SYSTEMD_VERSION" "lt" "247"; then
         MACHINE_ID=""
     fi
-    echo "$MACHINE_ID" | run_in_chroot ${IMAGE_ROOTFS} tee /etc/machine-id
+    run_in_chroot ${IMAGE_ROOTFS} sh -c "echo $MACHINE_ID | tee /etc/machine-id"
     run_privileged rm -f '${IMAGE_ROOTFS}/var/lib/dbus/machine-id'
 }
 
