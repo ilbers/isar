@@ -551,6 +551,12 @@ rootfs_postprocess_clean_package_cache() {
         \( -name '*.deb' -o -name '*.bin' \) -delete
 }
 
+# always clean the isar-apt as it is not reproducible and anyways unconditionally updated
+ROOTFS_POSTPROCESS_COMMAND += "rootfs_postprocess_clean_isar_apt_lists"
+rootfs_postprocess_clean_isar_apt_lists() {
+    run_privileged find "${ROOTFSDIR}/var/lib/apt/lists" -type f -name '_isar-apt*' -delete
+}
+
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'clean-apt-lists', 'rootfs_postprocess_clean_apt_lists', '', d)}"
 rootfs_postprocess_clean_apt_lists() {
     run_privileged find "${ROOTFSDIR}/var/lib/apt/lists" -type f -delete
