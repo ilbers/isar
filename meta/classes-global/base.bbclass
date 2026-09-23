@@ -399,6 +399,10 @@ def insert_isar_mounts(d, rootfs, mounts):
         lines.append('mount -t devpts -o noexec,nosuid,uid=5,mode=620,ptmxmode=666 none {}/dev/pts'.format(rootfs))
         lines.append('( cd {}/dev; ln -sf pts/ptmx . )'.format(rootfs))
         lines.append('mount -t tmpfs none {}/dev/shm'.format(rootfs))
+        # required by systemd file-system hierarchy
+        lines.append('mount -t tmpfs -o mode=0755 tmpfs {}/run'.format(rootfs))
+        # required by Debian policy 9.1.4
+        lines.append('mkdir {}/run/lock'.format(rootfs))
         lines.append('mount -o bind /dev/random {}/dev/random'.format(rootfs))
         lines.append('mount -o bind /dev/urandom {}/dev/urandom'.format(rootfs))
         lines.append('mount -t proc none {}/proc'.format(rootfs))
