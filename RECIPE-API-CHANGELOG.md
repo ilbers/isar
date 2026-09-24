@@ -1222,3 +1222,6 @@ recipe, we provide the `IMAGE_ROOTFS_FEATURES`.
 The `isar-exclude-docs` package provided mechanisms to remove documentation from
 the rootfs. This has been replaced by the `exclude-docs` rootfs feature. The
 `isar-exclude-docs` package should no longer be used.
+
+When enabled, the package changelogs are now removed as well (copyright is still
+kept for legal reasons).
