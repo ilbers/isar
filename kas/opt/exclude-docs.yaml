@@ -5,5 +5,5 @@ header:
   version: 14
 
 local_conf_header:
-  package-isar-exclude-docs: |
-    IMAGE_INSTALL:append = " isar-exclude-docs"
+  image-exclude-docs: |
+    IMAGE_ROOTFS_FEATURES += "exclude-docs"

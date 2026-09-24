@@ -109,7 +109,6 @@ PKGS=" \
   hello-isar \
   hello \
   isar-disable-apt-cache \
-  isar-exclude-docs \
   kselftest \
   samefile \
   sshd-regen-keys \
