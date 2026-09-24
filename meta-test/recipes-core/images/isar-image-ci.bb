@@ -5,6 +5,8 @@
 
 require recipes-core/images/isar-image-base.bb
 
+ROOTFS_FEATURES += "exclude-docs"
+
 FILESEXTRAPATHS:append = ":${LAYERDIR_isar}/recipes-core/images:"
 
 # Avoid ISAR_RELEASE_CMD warning in image.bbclass
