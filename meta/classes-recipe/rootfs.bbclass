@@ -41,6 +41,7 @@ ROOTFS_BASE_DISTRO ?= "${BASE_DISTRO}"
 # 'clean-log-files' - delete log files that are not owned by packages
 # 'populate-systemd-preset' - enable systemd units according to systemd presets
 # 'clean-apt-credentials' - remove apt auth credentials written by ISAR_APT_CREDS
+# 'clean-dpkg-config' - remove ISAR-specific dpkg configuration files from the rootfs
 
 # convenience variable to enable all features needed for a reproducible rootfs build
 ROOTFS_FEATURES_REPRODUCIBLE = " \
@@ -587,6 +588,11 @@ rootfs_postprocess_clean_debconf_cache() {
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'clean-apt-credentials', 'rootfs_postprocess_clean_apt_credentials', '', d)}"
 rootfs_postprocess_clean_apt_credentials() {
     run_privileged rm -f "${ROOTFSDIR}/etc/apt/auth.conf.d/isar.conf"
+}
+
+ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'clean-dpkg-config', 'rootfs_postprocess_clean_dpkg_config', '', d)}"
+rootfs_postprocess_clean_dpkg_config() {
+    run_privileged find "${ROOTFSDIR}/etc/dpkg/dpkg.cfg.d" -type f -name '*isar*.cfg' -delete
 }
 
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'clean-pycache', 'rootfs_postprocess_clean_pycache', '', d)}"
