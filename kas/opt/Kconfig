@@ -213,3 +213,12 @@ config KAS_INCLUDE_USE_DRACUT
 	string
 	default "kas/opt/dracut.yaml"
 	depends on USE_DRACUT
+
+config IMAGE_EXCLUDE_DOCS
+	bool "Exclude docs from the image"
+	default y
+
+config KAS_INCLUDE_IMAGE_EXCLUDE_DOCS
+	string
+	default "kas/opt/exclude-docs.yaml"
+	depends on IMAGE_EXCLUDE_DOCS

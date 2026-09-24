@@ -89,17 +89,6 @@ config KAS_INCLUDE_PACKAGE_HELLO_ISAR
         default "kas/package/pkg_hello-isar.yaml"
         depends on PACKAGE_HELLO_ISAR
 
-
-config PACKAGE_ISAR_EXCLUDE_DOCS
-        bool "isar-exclude-docs"
-        default y
-
-config KAS_INCLUDE_PACKAGE_ISAR_EXCLUDE_DOCS
-        string
-        default "kas/package/pkg_isar-exclude-docs.yaml"
-        depends on PACKAGE_ISAR_EXCLUDE_DOCS
-
-
 config PACKAGE_ISAR_DISABLE_APT_CACHE
         bool "isar-disable-apt-cache"
         default y
