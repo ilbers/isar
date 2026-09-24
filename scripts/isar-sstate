@@ -1043,8 +1043,6 @@ def sstate_lint(target, verbose, sources_dir, build_dir, exit_code, pedantic, li
 
         pn_issues = []
         for name, val in sigdata['varvals'].items():
-            if not name[0].isupper():
-                continue
             if sigdata['basehash_ignore_vars'] and name in sigdata['basehash_ignore_vars'] or \
                sigdata['taskhash_ignore_tasks'] and name in sigdata['taskhash_ignore_tasks'] or \
                name in ADDITIONAL_IGNORED_VARNAMES:
