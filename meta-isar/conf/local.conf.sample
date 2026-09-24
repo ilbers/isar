@@ -152,7 +152,7 @@ CONF_VERSION = "1"
 
 #
 # The default list of extra packages to be installed.
-IMAGE_INSTALL = "hello-isar example-raw example-module-${KERNEL_NAME} enable-fsck isar-exclude-docs samefile hello isar-disable-apt-cache cowsay example-prebuilt"
+IMAGE_INSTALL = "hello-isar example-raw example-module-${KERNEL_NAME} enable-fsck samefile hello isar-disable-apt-cache cowsay example-prebuilt"
 
 #
 # Container and WSL machines don't need example module and enable-fsck.
@@ -163,6 +163,10 @@ IMAGE_INSTALL:remove:wsl = "example-module-${KERNEL_NAME} enable-fsck"
 # Machines with secure boot should use signed modules.
 IMAGE_INSTALL:remove:qemuamd64-sb = "example-module-${KERNEL_NAME}"
 IMAGE_INSTALL:append:qemuamd64-sb = " example-module-signed-${KERNEL_NAME}"
+
+#
+# Exclude documentation files from the image
+IMAGE_ROOTFS_FEATURES += "exclude-docs"
 
 #
 # Uncomment this to disable cross-compilation support

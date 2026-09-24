@@ -1216,3 +1216,9 @@ dependency to `do_rootfs_postprocess` shall now be changed to run after `do_root
 
 To easily select rootfs features from a local conf that should only apply to the image
 recipe, we provide the `IMAGE_ROOTFS_FEATURES`.
+
+### Replace isar-exclude-docs with rootfs feature exclude-docs
+
+The `isar-exclude-docs` package provided mechanisms to remove documentation from
+the rootfs. This has been replaced by the `exclude-docs` rootfs feature. The
+`isar-exclude-docs` package should no longer be used.
