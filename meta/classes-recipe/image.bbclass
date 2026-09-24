@@ -93,6 +93,7 @@ inherit multiarch
 inherit essential
 
 ROOTFSDIR = "${IMAGE_ROOTFS}"
+IMAGE_ROOTFS_FEATURES ?= ""
 ROOTFS_FEATURES += "\
     clean-apt-lists \
     generate-manifest \
@@ -101,6 +102,7 @@ ROOTFS_FEATURES += "\
     generate-sbom \
     clean-apt-credentials \
     clean-dpkg-config \
+    ${IMAGE_ROOTFS_FEATURES} \
     "
 ROOTFS_PACKAGES += "${IMAGE_PREINSTALL} ${@isar_multiarch_packages('IMAGE_INSTALL', d)}"
 ROOTFS_VARDEPS += "IMAGE_INSTALL"

@@ -1211,3 +1211,8 @@ ROOTFS_FEATURES:remove = "clean-apt-credentials"
 All `ROOTFS_POSTPROCESS_COMMAND` steps are now executed within the `do_rootfs_install`
 task to avoid idempotency issues on partial rebuilds. Task that previously had a
 dependency to `do_rootfs_postprocess` shall now be changed to run after `do_rootfs_install`.
+
+### Add IMAGE_ROOTFS_FEATURES variable to control rootfs features of the image
+
+To easily select rootfs features from a local conf that should only apply to the image
+recipe, we provide the `IMAGE_ROOTFS_FEATURES`.
