@@ -13,5 +13,6 @@ inherit multiarch
 inherit rootfs
 
 # behave similar to image class, so we can reuse the testing infrastructure
+ROOTFS_FEATURES += "exclude-docs"
 DEPENDS += "${IMAGE_INSTALL}"
 ROOTFS_PACKAGES += "${IMAGE_PREINSTALL} ${@isar_multiarch_packages('IMAGE_INSTALL', d)}"

@@ -35,7 +35,6 @@ IMAGE_INSTALL_DEFAULT = [
     'example-raw',
     'example-module-${KERNEL_NAME}',
     'enable-fsck',
-    'isar-exclude-docs',
     'samefile',
     'hello',
     'isar-disable-apt-cache',
