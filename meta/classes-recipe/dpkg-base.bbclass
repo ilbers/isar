@@ -105,7 +105,7 @@ python() {
         if u.startswith("apt://"):
             d.appendVarFlag('do_fetch', 'depends', d.getVar('SCHROOT_DEP'))
 
-            d.appendVarFlag('do_unpack', 'cleandirs', d.getVar('S'))
+            d.appendVarFlag('do_unpack', 'cleandirs', '${S}')
             d.setVarFlag('do_unpack', 'network', d.getVar('TASK_USE_SUDO'))
             break
 
