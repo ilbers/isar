@@ -42,6 +42,7 @@ ROOTFS_BASE_DISTRO ?= "${BASE_DISTRO}"
 # 'populate-systemd-preset' - enable systemd units according to systemd presets
 # 'clean-apt-credentials' - remove apt auth credentials written by ISAR_APT_CREDS
 # 'clean-dpkg-config' - remove ISAR-specific dpkg configuration files from the rootfs
+# 'exclude-docs' - exclude most documentation files from the rootfs
 
 # convenience variable to enable all features needed for a reproducible rootfs build
 ROOTFS_FEATURES_REPRODUCIBLE = " \
@@ -311,6 +312,37 @@ rootfs_configure_apt() {
         echo 'APT::Install-Recommends "0";'
         echo 'APT::Install-Suggests "0";'
     } > '${ROOTFSDIR}/etc/apt/apt.conf.d/50isar'
+EOSUDO
+}
+
+rootfs_exclude_docs_drop() {
+    if [ -d '${ROOTFSDIR}/usr/share/man' ]; then
+        find '${ROOTFSDIR}/usr/share/man/' -mindepth 1 ! -type d -delete
+        find '${ROOTFSDIR}/usr/share/man/' -depth -mindepth 1 -type d -empty -delete
+    fi
+    if [ -d '${ROOTFSDIR}/usr/share/doc' ]; then
+        find '${ROOTFSDIR}/usr/share/doc/' -mindepth 1 ! -type d ! -name "copyright" ! -name "changelog.*" -delete
+        find '${ROOTFSDIR}/usr/share/doc/' -depth -mindepth 1 -type d -empty -delete
+    fi
+}
+
+ROOTFS_CONFIGURE_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'exclude-docs', 'rootfs_configure_exclude_docs_filter', '', d)}"
+rootfs_configure_exclude_docs_filter() {
+    run_privileged_heredoc <<'EOSUDO'
+    set -e
+    mkdir -p '${ROOTFSDIR}/etc/dpkg/dpkg.cfg.d'
+    cat > '${ROOTFSDIR}/etc/dpkg/dpkg.cfg.d/55isar-exclude-docs' << 'EOF'
+path-exclude=/usr/share/man/*
+path-exclude=/usr/share/doc/*
+path-include=/usr/share/doc/*/copyright
+path-include=/usr/share/doc/*/changelog.*
+EOF
+
+EOSUDO
+    # drop docs from bootstrap
+    run_privileged_heredoc <<'EOSUDO'
+    set -e
+    ${rootfs_exclude_docs_drop}
 EOSUDO
 }
 
@@ -593,6 +625,14 @@ rootfs_postprocess_clean_apt_credentials() {
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'clean-dpkg-config', 'rootfs_postprocess_clean_dpkg_config', '', d)}"
 rootfs_postprocess_clean_dpkg_config() {
     run_privileged find "${ROOTFSDIR}/etc/dpkg/dpkg.cfg.d" -type f -name '*isar*.cfg' -delete
+}
+
+ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'exclude-docs', 'rootfs_postprocess_exclude_docs', '', d)}"
+rootfs_postprocess_exclude_docs() {
+    run_privileged_heredoc <<'EOSUDO'
+    set -e
+    ${rootfs_exclude_docs_drop}
+EOSUDO
 }
 
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'clean-pycache', 'rootfs_postprocess_clean_pycache', '', d)}"

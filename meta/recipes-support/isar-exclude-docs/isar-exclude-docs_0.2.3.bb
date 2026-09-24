@@ -14,3 +14,7 @@ do_install[cleandirs] += "${D}/etc/dpkg/dpkg.cfg.d/"
 do_install() {
     install -v -m 644 "${WORKDIR}/${BPN}" "${D}/etc/dpkg/dpkg.cfg.d/99${BPN}"
 }
+
+do_prepare_build() {
+    bbwarn "This package is deprecated. Use the corresponding exclude-docs rootfs feature instead."
+}
