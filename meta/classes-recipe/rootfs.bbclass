@@ -321,7 +321,7 @@ rootfs_exclude_docs_drop() {
         find '${ROOTFSDIR}/usr/share/man/' -depth -mindepth 1 -type d -empty -delete
     fi
     if [ -d '${ROOTFSDIR}/usr/share/doc' ]; then
-        find '${ROOTFSDIR}/usr/share/doc/' -mindepth 1 ! -type d ! -name "copyright" ! -name "changelog.*" -delete
+        find '${ROOTFSDIR}/usr/share/doc/' -mindepth 1 ! -type d ! -name "copyright" -delete
         find '${ROOTFSDIR}/usr/share/doc/' -depth -mindepth 1 -type d -empty -delete
     fi
 }
@@ -335,7 +335,6 @@ rootfs_configure_exclude_docs_filter() {
 path-exclude=/usr/share/man/*
 path-exclude=/usr/share/doc/*
 path-include=/usr/share/doc/*/copyright
-path-include=/usr/share/doc/*/changelog.*
 EOF
 
 EOSUDO
