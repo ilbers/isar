@@ -25,7 +25,6 @@ python () {
 
 ROOTFS_PACKAGES ?= ""
 ROOTFS_VARDEPS ?= ""
-ROOTFS_INITRAMFS_GENERATOR_CMD = "${@ d.getVar('ROOTFS_INITRAMFS_GENERATOR_CMDLINE').split()[0]}"
 ROOTFS_INITRAMFS_GENERATOR_CMDLINE = "update-initramfs -u -v -k $kernel_version"
 ROOTFS_BASE_DISTRO ?= "${BASE_DISTRO}"
 
@@ -71,6 +70,8 @@ ROOTFS_PACKAGE_SUFFIX ?= "${PN}-${DISTRO}-${DISTRO_ARCH}"
 
 # path to deploy stubbed versions of initrd update scripts during do_rootfs_install
 ROOTFS_STUBS_DIR = "/usr/local/isar-sbin"
+ROOTFS_INITRD_STUBS = "update-initramfs"
+ROOTFS_INITRD_STUBS += "${@ ' dracut' if bb.utils.to_boolean(d.getVar('ROOTFS_USE_DRACUT')) else '' }"
 
 # list of <outer>:<inner> or <outer> mount entries
 ROOTFS_MOUNTS ??= "${REPO_ISAR_DIR}/${DISTRO}:/isar-apt ${WORKDIR}:/isar-work"
@@ -320,7 +321,9 @@ rootfs_disable_initrd_generation() {
     set -e
 
     mkdir -p "${ROOTFSDIR}${ROOTFS_STUBS_DIR}"
-    ln -s /usr/bin/true ${ROOTFSDIR}${ROOTFS_STUBS_DIR}/${ROOTFS_INITRAMFS_GENERATOR_CMD}
+    for stub in ${ROOTFS_INITRD_STUBS}; do
+        ln -s /usr/bin/true ${ROOTFSDIR}${ROOTFS_STUBS_DIR}/$stub
+    done
 
     mkdir -p '${ROOTFSDIR}/etc/apt/apt.conf.d'
     echo 'DPkg::Path ${ROOTFS_STUBS_DIR}:/usr/sbin:/usr/bin:/sbin:/bin;' \
