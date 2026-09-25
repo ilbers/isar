@@ -1,0 +1,65 @@
+#!/usr/bin/env python3
+# This software is a part of Isar.
+# Copyright (C) 2026 Siemens AG
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+# glob patterns relative to the sysroot, including multiarch directories
+LIB_DIRS = ["lib", "lib/*", "usr/lib", "usr/lib/*"]
+
+
+def find_sysroot(binary):
+    for parent in binary.parents:
+        if (parent / "usr/lib").is_dir():
+            return parent
+    return Path("/")
+
+
+def find_library(name, search_dirs, sysroot):
+    for directory in search_dirs:
+        for path in sysroot.glob(f"{directory.strip('/')}/{name}"):
+            return "/" + str(path.relative_to(sysroot))
+    return None
+
+
+def read_dynamic_section(path):
+    return subprocess.check_output(["readelf", "-d", path], text=True)
+
+
+def get_needed(dynamic):
+    runpaths = re.findall(r'\((?:RUNPATH|RPATH)\).*?\[(.*?)\]', dynamic)
+    search_dirs = [d for paths in runpaths for d in paths.split(":")]
+    needed = re.findall(r'\(NEEDED\).*?\[(.*?)\]', dynamic)
+    return search_dirs + LIB_DIRS, needed
+
+
+binary = Path(sys.argv[-1]).absolute()
+try:
+    dynamic = read_dynamic_section(binary)
+except subprocess.SubprocessError:
+    sys.exit(1)
+
+sysroot = find_sysroot(binary)
+resolved = {}
+pending = [get_needed(dynamic)]
+
+# ldd reports the whole dependency tree, so resolve it transitively
+while pending:
+    search_dirs, needed = pending.pop()
+    for library in needed:
+        if library in resolved:
+            continue
+        path = find_library(library, search_dirs, sysroot)
+        resolved[library] = path
+        if path:
+            try:
+                pending.append(get_needed(
+                    read_dynamic_section(sysroot / path.strip("/"))))
+            except subprocess.SubprocessError:
+                pass
+
+for library, path in resolved.items():
+    print(f"\t{library} => {path} (0x0000000000000000)" if path
+          else f"\t{library} => not found")

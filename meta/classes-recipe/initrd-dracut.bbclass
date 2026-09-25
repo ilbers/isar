@@ -56,8 +56,44 @@ def extend_dracut_cmdline(d):
 ROOTFS_INITRAMFS_GENERATOR_CMDLINE = "dracut --force --kver $kernel_version -L 5 --reproducible"
 ROOTFS_INITRAMFS_GENERATOR_CMDLINE:append = " ${@ extend_dracut_cmdline(d)}"
 
+# Cross-assemble the initramfs, requires preparation of dracut module definitions
+def dracut_cross_default(d):
+    return bb.utils.to_boolean(d.getVar('ISAR_CROSS_COMPILE')) \
+        and bb.utils.to_boolean(d.getVar('ROOTFS_USE_DRACUT')) \
+        and d.getVar('ROOTFS_ARCH') != d.getVar('HOST_ARCH')
+
+ROOTFS_DRACUT_CROSS ??= "${@ '1' if dracut_cross_default(d) else '0' }"
+ROOTFS_DRACUT_CROSS:bookworm = "0"
+OVERRIDES:append = "${@':dracut-cross' if bb.utils.to_boolean(d.getVar('ROOTFS_DRACUT_CROSS')) else ''}"
+
+ROOTFS_INSTALL_DEPENDS:append:dracut-cross = " ${@bb.utils.contains('ROOTFS_INSTALL_COMMAND', 'rootfs_generate_initramfs', '${HOST_TOOLING_DEP}', '', d)}"
+ROOTFS_INITRAMFS_GENERATOR_CMDLINE:append:dracut-cross = " --sysroot /mnt/rootfs"
+DRACUT_MOUNTS = ""
+DRACUT_MOUNTS:append:dracut-cross = " ${ROOTFSDIR}:/mnt/rootfs"
+DRACUT_ROOTFS = "${ROOTFSDIR}"
+DRACUT_ROOTFS:dracut-cross = "${WORKDIR}/host-tooling"
+DRACUT_ENV = "DRACUT_ARCH=${QEMU_ARCH}"
+DRACUT_ENV:append:dracut-cross = " \
+    DRACUT_INSTALL=/usr/lib/dracut/dracut-install \
+    DRACUT_LDD=/usr/libexec/dracut-cross-ldd \
+"
+
 run_initrd_generator() {
     mods_total="$(find ${ROOTFSDIR}/usr/lib/dracut/modules.d/ -maxdepth 1 -type d | wc -l)"
     echo "Total number of modules: $mods_total (dracut)"
-    run_in_chroot "${ROOTFSDIR}" sh -c "${ROOTFS_INITRAMFS_GENERATOR_CMDLINE}"
+    if [ "${ROOTFS_DRACUT_CROSS}" = "1" ]; then
+        mkdir -p ${DRACUT_ROOTFS}
+        run_privileged tar -xf ${HOST_TOOLING_CHROOT} -C ${DRACUT_ROOTFS}
+        trap 'run_privileged rm -rf ${DRACUT_ROOTFS}' EXIT
+    fi
+    run_privileged_heredoc <<'EOF'
+        trap '${@ insert_isar_umounts(d, d.getVar('DRACUT_ROOTFS'), d.getVar('DRACUT_MOUNTS')) }' EXIT
+        ${@ insert_isar_mounts(d, d.getVar('DRACUT_ROOTFS'), d.getVar('DRACUT_MOUNTS')) }
+        export ${DRACUT_ENV}
+        chroot ${DRACUT_ROOTFS} ${ROOTFS_INITRAMFS_GENERATOR_CMDLINE}
+EOF
 }
+
+HOST_TOOLING_DEP ??= ""
+inherit_defer ${@'host-tooling' if bb.utils.to_boolean(d.getVar('ROOTFS_DRACUT_CROSS')) else ''}
+do_generate_initramfs[depends] += "${HOST_TOOLING_DEP}"
