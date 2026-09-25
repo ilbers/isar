@@ -83,8 +83,9 @@ class InitrdProgressHandler(PkgsProgressHandler):
     def process_line(self, line):
         if (
             line.startswith("Adding module")
-            or line.startswith("dracut-install: cp")
+            or line.startswith("dracut-install: cp")  # dracut-install output (Ubuntu)
             or line.startswith("dracut-install: Failed to find module")
+            or "Including module:" in line  # dracut output (debian)
         ):
             self._pkg += 1
         elif line.startswith('(excluding'):
