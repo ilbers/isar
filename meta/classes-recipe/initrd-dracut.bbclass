@@ -53,7 +53,7 @@ def extend_dracut_cmdline(d):
         cmdline.append(f'--add "{extra_modules}"')
     return ' '.join(cmdline)
 
-ROOTFS_INITRAMFS_GENERATOR_CMDLINE = "dracut --force --kver $kernel_version -L 5"
+ROOTFS_INITRAMFS_GENERATOR_CMDLINE = "dracut --force --kver $kernel_version -L 5 --reproducible"
 ROOTFS_INITRAMFS_GENERATOR_CMDLINE:append = " ${@ extend_dracut_cmdline(d)}"
 
 run_initrd_generator() {
