@@ -79,7 +79,7 @@ do_generate_sbom[cleandirs] += "${SBOM_LOCAL_DEPLOYDIR}"
 do_generate_sbom[sstate-inputdirs] = "${SBOM_LOCAL_DEPLOYDIR}"
 do_generate_sbom[sstate-outputdirs] = "${DEPLOY_DIR_SBOM}"
 do_generate_sbom[network] = "${TASK_USE_SUDO}"
-do_generate_sbom[depends] += "sbom-chroot:do_sbomchroot_deploy"
+do_generate_sbom[depends] += "sbom-chroot:do_build"
 python do_generate_sbom() {
     sbom_doc_uuid(d)
     try:
