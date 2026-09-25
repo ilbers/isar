@@ -31,7 +31,7 @@ cmdline() {
 
 install() {
     for executable in ${DRACUT_REQUIRED_BINARIES}; do
-        if exec_path=$(command -v $executable 2>/dev/null); then
+        if exec_path=$(find_binary "$executable"); then
             inst_binary "$exec_path"
         else
             echo "(ERROR): Unable to copy $executable" >&2
