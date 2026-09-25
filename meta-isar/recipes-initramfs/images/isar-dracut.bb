@@ -4,7 +4,9 @@
 #
 # This software is a part of Isar.
 
-inherit initrd-dracut
+INITRAMFS_USE_DRACUT = "1"
+
+inherit initramfs
 
 # Debian packages that should be installed into the system for building the
 # initramfs.  E.g. the cryptsetup package which contains initramfs scripts for

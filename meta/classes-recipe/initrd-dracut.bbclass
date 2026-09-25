@@ -53,6 +53,11 @@ def extend_dracut_cmdline(d):
         cmdline.append(f'--add "{extra_modules}"')
     return ' '.join(cmdline)
 
+ROOTFS_INITRAMFS_GENERATOR_CMDLINE = "dracut --force --kver $kernel_version"
 ROOTFS_INITRAMFS_GENERATOR_CMDLINE:append = " ${@ extend_dracut_cmdline(d)}"
 
-inherit initramfs
+run_initrd_generator() {
+    mods_total="$(find ${ROOTFSDIR}/usr/lib/modules/$kernel_version -type f -name '*.ko*' | wc -l)"
+    echo "Total number of modules: $mods_total (dracut)"
+    run_in_chroot "${ROOTFSDIR}" sh -c "${ROOTFS_INITRAMFS_GENERATOR_CMDLINE}"
+}

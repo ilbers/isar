@@ -13,18 +13,20 @@ DEPLOYDIR = "${WORKDIR}/deploy"
 # This variable is intended to be set if dracut is
 # the default initramfs generator and it is not
 # possible to derive the value in another way
-ROOTFS_USE_DRACUT ??= ""
+ROOTFS_USE_DRACUT ??= "${@ '1' if 'dracut' in (d.getVar('ROOTFS_PACKAGES') or '').split() else '0' }"
 
-def initramfs_generator_cmdline(d):
-    rootfs_packages =  d.getVar('ROOTFS_PACKAGES') or ''
-    if 'dracut' in rootfs_packages or bb.utils.to_boolean(d.getVar('ROOTFS_USE_DRACUT')):
-        return "dracut --force --kver \"$kernel_version\""
-    return "update-initramfs -u -v -k \"$kernel_version\""
+# In case no initrd is generated, force dracut off to not let bitbake hashes
+# depend on the dracut config which anyways is not used.
+python () {
+    rootfs_features = d.getVar('ROOTFS_FEATURES') or ''
+    if 'generate-initrd' not in rootfs_features.split():
+        d.setVar('ROOTFS_USE_DRACUT', '0')
+}
 
 ROOTFS_PACKAGES ?= ""
 ROOTFS_VARDEPS ?= ""
 ROOTFS_INITRAMFS_GENERATOR_CMD = "${@ d.getVar('ROOTFS_INITRAMFS_GENERATOR_CMDLINE').split()[0]}"
-ROOTFS_INITRAMFS_GENERATOR_CMDLINE = "${@ initramfs_generator_cmdline(d)}"
+ROOTFS_INITRAMFS_GENERATOR_CMDLINE = "update-initramfs -u -v -k $kernel_version"
 ROOTFS_BASE_DISTRO ?= "${BASE_DISTRO}"
 
 # Features of the rootfs creation:
@@ -655,6 +657,14 @@ rootfs_set_timestamps() {
         -exec touch '{}' -h -d@${SOURCE_DATE_EPOCH} ';'
 }
 
+run_initrd_generator() {
+    mods_total="$(find ${ROOTFSDIR}/usr/lib/modules/$kernel_version -type f -name '*.ko*' | wc -l)"
+    echo "Total number of modules: $mods_total (mkinitramfs)"
+    run_in_chroot "${ROOTFSDIR}" sh -ec '${ROOTFS_INITRAMFS_GENERATOR_CMDLINE}'
+}
+
+inherit_defer ${@'initrd-dracut' if bb.utils.to_boolean(d.getVar('ROOTFS_USE_DRACUT')) else ''}
+
 ROOTFS_INSTALL_COMMAND += "${@bb.utils.contains('ROOTFS_FEATURES', 'generate-initrd', 'rootfs_generate_initramfs', '', d)}"
 rootfs_generate_initramfs[weight] = "1000"
 rootfs_generate_initramfs[progress] = "custom:rootfs_progress.InitrdProgressHandler"
@@ -662,10 +672,8 @@ rootfs_generate_initramfs() {
     if [ -n "$(find '${ROOTFSDIR}/boot' -type f -name 'vmlinu[xz]*')" ]; then
         for kernel in ${ROOTFSDIR}/boot/vmlinu[xz]-*; do
             export kernel_version=$(basename $kernel | cut -d'-' -f2-)
-            mods_total="$(find ${ROOTFSDIR}/usr/lib/modules/$kernel_version -type f -name '*.ko*' | wc -l)"
-            echo "Total number of modules: $mods_total"
             echo "Generating initrd for kernel version: $kernel_version"
-            run_in_chroot "${ROOTFSDIR}" sh -ec '${ROOTFS_INITRAMFS_GENERATOR_CMDLINE}'
+            run_initrd_generator
             # on dracut, the initrd is not world-readable
             run_privileged find ${ROOTFSDIR}/boot -name "initrd.img-$kernel_version*" -exec cat {} \; \
                 > ${DEPLOYDIR}/${INITRD_DEPLOY_FILE}

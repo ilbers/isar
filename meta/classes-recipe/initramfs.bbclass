@@ -10,6 +10,7 @@ INITRAMFS_PREINSTALL ?= ""
 INITRAMFS_ROOTFS ?= "${WORKDIR}/rootfs"
 INITRAMFS_IMAGE_NAME = "${INITRAMFS_FULLNAME}-initrd.img"
 INITRAMFS_GENERATOR_PKG ??= "initramfs-tools"
+INITRAMFS_USE_DRACUT ??= "0"
 INITRD_DEPLOY_FILE = "${INITRAMFS_IMAGE_NAME}"
 
 # Install proper kernel
@@ -28,6 +29,7 @@ DEPENDS += "${INITRAMFS_INSTALL}"
 ROOTFSDIR = "${INITRAMFS_ROOTFS}"
 ROOTFS_FEATURES += "generate-manifest generate-sbom generate-initrd"
 ROOTFS_PACKAGES = "${INITRAMFS_GENERATOR_PKG} ${INITRAMFS_PREINSTALL} ${INITRAMFS_INSTALL}"
+ROOTFS_USE_DRACUT ?= "${INITRAMFS_USE_DRACUT}"
 
 # validate whether there are incompatible packages in the installation list
 python do_validate_rootfs_packages () {
