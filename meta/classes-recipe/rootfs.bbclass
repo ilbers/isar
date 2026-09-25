@@ -451,6 +451,8 @@ rootfs_capture_apt_state() {
         var/lib/dpkg/status
 }
 
+ROOTFS_INSTALL_DEPENDS ?= ""
+
 do_rootfs_install[root_cleandirs] = "${ROOTFSDIR}"
 do_rootfs_install[cleandirs] += "${DEPLOYDIR}"
 do_rootfs_install[sstate-inputdirs] = "${DEPLOYDIR}"
@@ -458,7 +460,7 @@ do_rootfs_install[sstate-outputdirs] = "${DEPLOY_DIR_IMAGE}"
 do_rootfs_install[vardeps] += "${ROOTFS_CONFIGURE_COMMAND} ${ROOTFS_INSTALL_COMMAND} ${ROOTFS_POSTPROCESS_COMMAND} ${ROOTFS_VARDEPS}"
 do_rootfs_install[vardepsexclude] += "IMAGE_ROOTFS"
 do_rootfs_install[depends] = "bootstrap-${@'target' if d.getVar('ROOTFS_ARCH') == d.getVar('DISTRO_ARCH') else 'host'}:do_build"
-do_rootfs_install[depends] += "base-apt:do_cache isar-apt:do_cache_config"
+do_rootfs_install[depends] += "base-apt:do_cache isar-apt:do_cache_config ${ROOTFS_INSTALL_DEPENDS}"
 do_rootfs_install[deptask] = "do_deploy_deb"
 do_rootfs_install[rdeptask] = "do_deploy_deb"
 do_rootfs_install[network] = "${TASK_USE_SUDO}"
