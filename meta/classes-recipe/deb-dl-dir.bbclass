@@ -115,8 +115,8 @@ dbg_pkgs_download() {
 }
 
 deb_dl_dir_import() {
-    export pc="${DEBDIR}/${2}"
-    export rootfs="${1}"
+    export pc=${DEBDIR}/$2
+    export rootfs=$1
     export uid=$(id -u)
     export gid=$(id -g)
 
@@ -151,8 +151,8 @@ deb_dl_dir_import() {
 }
 
 deb_dl_dir_export() {
-    export pc="${DEBDIR}/${2}"
-    export rootfs="${1}"
+    export pc=${DEBDIR}/$2
+    export rootfs=$1
     export owner=$(id -u):$(id -g)
     mkdir -p "${pc}"
 

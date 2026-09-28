@@ -122,7 +122,7 @@ repo_del_package() {
         export GNUPGHOME="${GNUPGHOME}"
     fi
     set -- $( dpkg-deb --show --showformat '${Package} ${Architecture}' "${file}" )
-    local p="${1}" a="${2}"
+    local p=$1 a=$2
     reprepro -b "${dir}" --dbdir "${dbdir}" -C main \
         removefilter "${codename}" \
         'Package (= '${p}'), Architecture (= '${a}'), $PackageType (= deb)'
@@ -169,15 +169,15 @@ repo_contains_package() {
     package=$(reprepro -b ${dir} --dbdir ${dbdir} \
                        --list-format '${$fullfilename}\n' \
                        listfilter ${codename} '
-                           Package (= '${2}'),
-                           Version (= '${4}'),
-                           Architecture (= '${6}'),
+                           Package (= '$2'),
+                           Version (= '$4'),
+                           Architecture (= '$6'),
                            $PackageType (= deb)')
 
     # we only need the first match (should there be more). Use shell builtins to avoid
     # spawning an additional process (e.g. "head")
     set -- ${package}
-    package="${1}"
+    package=$1
 
     # package found in the database?
     if [ -n "$package" ]; then

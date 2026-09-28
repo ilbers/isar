@@ -6,7 +6,7 @@
 . ${S}/debian/isar/common
 
 get_kernel_arch() {
-    case "${1}" in
+    case "$1" in
         amd64|i386) echo "x86";;
         arm64) echo "arm64";;
         armhf) echo "arm";;
@@ -255,7 +255,7 @@ install_headers() {
 
 install_kbuild() {
     kernel_kbuild_dir=usr/lib/linux-kbuild-${krel}
-    destdir=${1}/${kernel_kbuild_dir}
+    destdir=$1/${kernel_kbuild_dir}
     src_kbuild_files=$(mktemp)
     obj_kbuild_files=$(mktemp)
 
