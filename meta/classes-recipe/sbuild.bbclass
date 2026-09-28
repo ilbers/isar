@@ -82,7 +82,7 @@ sbuild_add_env_filter() {
         echo "];" >> ${SBUILD_CONFIG}
     fi
 
-    FILTER=${1}
+    FILTER=$1
 
     sed -i -e "/'\^${FILTER}\\$/d" \
         -e "/^\$environment_filter =.*/a '^${FILTER}\$'," ${SBUILD_CONFIG}
@@ -96,7 +96,7 @@ sbuild_export() {
         echo "};" >> ${SBUILD_CONFIG}
     fi
 
-    VAR=${1}; shift
+    VAR=$1; shift
     VAR_LINE="'${VAR}' => '${@}',"
 
     sed -i -e "/^'${VAR}' =>/d" ${SBUILD_CONFIG} \
@@ -155,7 +155,7 @@ EOF
 }
 
 sbuild_dpkg_log_export() {
-    export dpkg_partial_log="${1}"
+    export dpkg_partial_log=$1
 
     ( flock 9
     set -e

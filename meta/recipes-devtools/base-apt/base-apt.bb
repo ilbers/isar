@@ -13,7 +13,7 @@ KEYFILES ?= ""
 BASE_REPO_FEATURES ?= ""
 
 populate_base_apt() {
-    base_distro="${1}"
+    base_distro=$1
 
     find "${DEBDIR}"/"${base_distro}-${BASE_DISTRO_CODENAME}" -name '*\.deb' | while read package; do
         # NOTE: due to packages stored by reprepro are not modified, we can
