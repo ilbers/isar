@@ -190,7 +190,9 @@ class RepositoryTest(CIBaseTest):
 
         self.init()
         self.perform_build_test(targets,
-                                image_install='test-nopriority')
+                                image_install='test-nopriority',
+                                bitbake_cmd='do_rootfs_install',
+                                )
 
 
 class SbuildFlavor(CIBaseTest):
