@@ -115,6 +115,19 @@ class CIBaseTest(CIBuilder):
         with open(config_filename, 'w') as f:
             yaml.dump(cfg, f)
 
+    def isar_apt_packages(self, distro):
+        """Names of the binary packages currently registered in isar-apt."""
+        self.check_init()
+        pattern = os.path.join(self.build_dir, 'tmp', 'deploy', 'isar-apt',
+                               distro, '**', 'Packages')
+        packages = set()
+        for index in glob.glob(pattern, recursive=True):
+            with open(index) as f:
+                for line in f:
+                    if line.startswith('Package:'):
+                        packages.add(line.split(':', 1)[1].strip())
+        return packages
+
     def perform_wic_partition_test(self, targets, wic_deploy_parts, **kwargs):
         lines = kwargs.get('lines', [])
         lines += [

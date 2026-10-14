@@ -1,0 +1,18 @@
+Source: test-variants
+Section: misc
+Priority: optional
+Maintainer: isar-users <isar-users@googlegroups.com>
+Build-Depends: debhelper-compat (= 10),
+Standards-Version: 4.1.3
+
+Package: test-variants
+Architecture: any
+Build-Profiles: <pkg.test-variants.base>
+Description: Binary package of the base recipe
+ Built by the base recipe only.
+
+Package: test-variants-extra
+Architecture: any
+Build-Profiles: <pkg.test-variants.extra>
+Description: Binary package of the -kbuildtarget variant
+ Built by the -kbuildtarget variant only.

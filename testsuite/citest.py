@@ -194,6 +194,26 @@ class RepositoryTest(CIBaseTest):
                                 bitbake_cmd='do_rootfs_install',
                                 )
 
+    def test_repository_shared_source(self):
+        """
+        Test that recipe variants sharing a source package and an
+        architecture keep each other's binary packages in isar-apt.
+        """
+        targets = [
+            'mc:qemuamd64-trixie:test-variants',
+            'mc:qemuamd64-trixie:test-variants-kbuildtarget',
+        ]
+
+        self.init()
+        self.delete_from_build_dir('tmp')
+        self.perform_build_test(targets)
+
+        distro = CIUtils.getVars('DISTRO', target=targets[0])
+        packages = self.isar_apt_packages(distro)
+        for package in ('test-variants', 'test-variants-extra'):
+            self.assertIn(package, packages,
+                          f"{package} is missing from isar-apt")
+
 
 class SbuildFlavor(CIBaseTest):
     """
