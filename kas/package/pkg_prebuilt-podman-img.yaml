@@ -2,7 +2,7 @@
 # Copyright (c) Siemens AG, 2024
 
 header:
-  version: 14
+  version: 23
 
 local_conf_header:
   package-prebuilt-podman-img: |

@@ -2,7 +2,7 @@
 # Copyright (C) 2023 ilbers GmbH
 
 header:
-  version: 14
+  version: 23
 
 local_conf_header:
   mirror-debian: |

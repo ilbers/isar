@@ -2,6 +2,6 @@
 # Copyright (c) Siemens AG, 2026
 
 header:
-  version: 14
+  version: 23
 
 machine: wsl

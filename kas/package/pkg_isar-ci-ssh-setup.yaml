@@ -2,7 +2,7 @@
 # Copyright (C) 2024 ilbers GmbH
 
 header:
-  version: 14
+  version: 23
 
 local_conf_header:
   package-isar-ci-ssh-setup: |

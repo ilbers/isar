@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MIT
 
 header:
-  version: 14
+  version: 23
 
 local_conf_header:
   target_bootstrapper-add-device-info-collector: |

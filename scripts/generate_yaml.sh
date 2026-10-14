@@ -18,7 +18,7 @@ HEADER="\
 # Copyright (C) $(date +%Y) ilbers GmbH
 
 header:
-  version: 14"
+  version: 23"
 
 update_yaml() {
   yaml=${1}
