@@ -229,24 +229,18 @@ python do_dpkg_build_setscene() {
 
 addtask dpkg_build_setscene
 
-CLEANFUNCS += "deb_clean"
+# Prepend, so that deb_clean() runs before sstate_cleanall(): the latter calls
+# sstate_clean() of do_dpkg_build, which empties DEPLOY_DIR_DEB.
+CLEANFUNCS =+ "deb_clean"
 
-# Architectures under which this recipe's binary packages end up in the repo:
-# the concrete build arch (PACKAGE_ARCH resolves DPKG_ARCH=any), plus "all"
-# when this is the build that also produces the arch-independent packages.
-def deb_clean_archs(d):
-    dpkg_arch = d.getVar('DPKG_ARCH') or 'any'
-    package_arch = d.getVar('PACKAGE_ARCH')
-    host_arch = d.getVar('HOST_ARCH')
-    archs = [package_arch if dpkg_arch == 'any' else dpkg_arch]
-    if package_arch == host_arch and 'all' not in archs:
-        archs.append('all')
-    return ' '.join(a for a in archs if a)
-
+# Remove by .deb file, so that only the binary packages of this very recipe are
+# dropped (instead of its variants)
 deb_clean() {
-    repo_del_by_source "${REPO_ISAR_DIR}"/"${DISTRO}" \
-        "${REPO_ISAR_DB_DIR}"/"${DISTRO}" "${DEBDISTRONAME}" \
-        "${BPN}" ${@deb_clean_archs(d)}
+    [ -d "${DEPLOY_DIR_DEB}" ] || return 0
+    for deb in $(find ${DEPLOY_DIR_DEB} -maxdepth 1 -name '*.deb'); do
+        repo_del_package "${REPO_ISAR_DIR}"/"${DISTRO}" \
+            "${REPO_ISAR_DB_DIR}"/"${DISTRO}" "${DEBDISTRONAME}" "${deb}"
+    done
 }
 # the clean function modifies isar-apt. Do not add DEPLOY_DIR_DEB_LOCK here:
 # CLEANFUNCS also runs sstate_cleanall(), which takes that lock itself, and
@@ -255,8 +249,9 @@ do_clean[lockfiles] = "${REPO_ISAR_DIR}/isar.lock"
 do_clean[network] = "${TASK_USE_SUDO}"
 
 do_deploy_deb() {
-    # Removal is by source name and architecture (deb_clean), so a single scan
-    # of DEPLOY_DIR_DEB is only needed for the addition below.
+    # Scan DEPLOY_DIR_DEB once: the same list drives both the removal of the
+    # previous revisions of this recipe's own binary packages and the addition
+    # of the new ones.
     debs=$(find ${DEPLOY_DIR_DEB} -maxdepth 1 -name '*.deb')
     if [ -z "${debs}" ]; then
         # DEPLOY_DIR_DEB is shared by all multiconfigs with the same DISTRO and
@@ -267,7 +262,10 @@ do_deploy_deb() {
         bbnote "${DEPLOY_DIR_DEB} is empty, leaving isar-apt untouched"
         return
     fi
-    deb_clean
+    for deb in ${debs}; do
+        repo_del_package "${REPO_ISAR_DIR}"/"${DISTRO}" \
+            "${REPO_ISAR_DB_DIR}"/"${DISTRO}" "${DEBDISTRONAME}" "${deb}"
+    done
     repo_add_packages "${REPO_ISAR_DIR}"/"${DISTRO}" \
         "${REPO_ISAR_DB_DIR}"/"${DISTRO}" "${DEBDISTRONAME}" ${debs}
 }
