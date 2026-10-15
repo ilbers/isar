@@ -446,21 +446,14 @@ class CrossTest(CIBaseTest):
         ]
 
         self.init()
-        try:
-            self.perform_build_test(targets)
-        except exceptions.TestFail:
-            self.cancel('KFAIL')
+        self.perform_build_test(targets)
 
-    # TODO: broken because of moving to UEFI
     def test_run_arm64_resolute(self):
         """
         :avocado: tags=startvm
         """
         self.init()
-        try:
-            self.vm_start('arm64', 'resolute')
-        except exceptions.TestFail:
-            self.cancel('KFAIL')
+        self.vm_start('arm64', 'resolute')
 
     def test_cross_debsrc(self):
         targets = [
@@ -548,10 +541,7 @@ class CrossTest(CIBaseTest):
         ]
 
         self.init()
-        try:
-            self.perform_build_test(targets)
-        except exceptions.TestFail:
-            self.cancel('KFAIL')
+        self.perform_build_test(targets)
 
     def test_run_riscv64_trixie(self):
         """
@@ -568,10 +558,7 @@ class CrossTest(CIBaseTest):
         :avocado: tags=startvm,riscv64
         """
         self.init()
-        try:
-            self.vm_start('riscv64', 'resolute', image='isar-image-ci')
-        except exceptions.TestFail:
-            self.cancel('KFAIL')
+        self.vm_start('riscv64', 'resolute', image='isar-image-ci')
 
     def test_cross_forky(self):
         targets = [
