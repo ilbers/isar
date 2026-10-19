@@ -15,11 +15,16 @@ check() {
 # Module dependency requirements.
 depends() {
     echo "${DRACUT_MODULE_DEPENDENCIES}"
+    # rd.driver.pre is evaluated by the kernel-modules module
+    [ -z "${DRACUT_FORCE_DRIVERS}" ] || echo "kernel-modules"
     # ISAR_DRACUT_DEPENDS
     return 0
 
 }
 installkernel() {
+    if [ -n "${DRACUT_FORCE_DRIVERS}" ]; then
+        hostonly='' instmods -c ${DRACUT_FORCE_DRIVERS} || return 1
+    fi
     # ISAR_DRACUT_KERNELINSTALL
     return 0
 }
@@ -37,6 +42,11 @@ install() {
             echo "(ERROR): Unable to copy $executable" >&2
             exit 1
         fi
+    done
+    for driver in ${DRACUT_FORCE_DRIVERS}; do
+        mkdir -p "$initdir/etc/cmdline.d"
+        echo "rd.driver.pre=$driver" >> \
+            "$initdir/etc/cmdline.d/20-force-drivers-${DRACUT_MODULE_NAME}.conf"
     done
     # ISAR_DRACUT_INSTALL
 }

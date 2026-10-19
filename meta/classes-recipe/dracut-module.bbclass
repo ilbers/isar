@@ -22,6 +22,9 @@ DRACUT_MODULE_PATH = "${D}/usr/lib/dracut/modules.d/${DRACUT_MODULE_NO}${DRACUT_
 
 DRACUT_REQUIRED_BINARIES ??= ""
 DRACUT_MODULE_DEPENDENCIES ??= ""
+# Kernel drivers installed regardless of hostonly and loaded early via
+# rd.driver.pre (same semantics as dracut's force_drivers)
+DRACUT_FORCE_DRIVERS ??= ""
 DRACUT_CHECK_CONTENT_FILE_NAME ??= ""
 DRACUT_DEPENDS_CONTENT_FILE_NAME ??= ""
 DRACUT_CMDLINE_CONTENT_FILE_NAME ??= ""
@@ -71,7 +74,18 @@ TEMPLATE_FILES:append = " \
 TEMPLATE_VARS:append = " \
     DRACUT_REQUIRED_BINARIES \
     DRACUT_MODULE_DEPENDENCIES \
+    DRACUT_FORCE_DRIVERS \
+    DRACUT_MODULE_NAME \
     "
+
+python do_validate_dracut_force_drivers() {
+    import re
+    for drv in (d.getVar('DRACUT_FORCE_DRIVERS') or '').split():
+        if not re.fullmatch(r'[A-Za-z0-9_-]+', drv):
+            bb.fatal(f"Invalid driver name '{drv}' in DRACUT_FORCE_DRIVERS")
+}
+addtask validate_dracut_force_drivers before do_transform_template after do_patch
+
 python do_add_additional_dracut_configuration() {
     workdir = os.path.normpath(d.getVar('WORKDIR'))
     module_setup = d.getVar('DRACUT_MODULE_SETUP')

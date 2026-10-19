@@ -1877,6 +1877,11 @@ It is controlled by following variables:
 
 - `DRACUT_REQUIRED_BINARIES` defines the binaries required by the module.
 - `DRACUT_MODULE_DEPENDENCIES` defines dependencies to other dracut modules.
+- `DRACUT_FORCE_DRIVERS` defines kernel drivers which are installed into the
+initrd regardless of hostonly mode and loaded early via `rd.driver.pre`,
+like dracut's `force_drivers` option. It adds a dependency to the dracut
+module `kernel-modules`. A machine can set it with
+`DRACUT_FORCE_DRIVERS:pn-<recipe> = "lpc_ich iTCO_wdt"`.
 - `DRACUT_MODULE_NO` defines the module number which prefixes the module name
 to determine the execution order. The default is `50`.
 - `DRACUT_MODULE_NAME` defines the name of the module which is used to install the
