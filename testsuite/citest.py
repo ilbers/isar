@@ -518,6 +518,18 @@ class CrossTest(CIBaseTest):
         self.init()
         self.perform_build_test(targets)
 
+    def test_cross_kselftest_forky(self):
+        targets = [
+            'mc:qemuarm64-forky:kselftest',
+            'mc:qemuamd64-forky:kselftest',
+        ]
+
+        self.init()
+        try:
+            self.perform_build_test(targets)
+        except exceptions.TestFail:
+            self.cancel('KFAIL')
+
     def test_cross_rpi(self):
         targets = [
             'mc:rpi-arm-v7-bullseye:isar-image-base',
