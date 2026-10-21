@@ -16,6 +16,13 @@ ROOTFS_ADDITIONAL_FILES ??= ""
 
 
 python rootfs_add_files() {
+    import shlex
+
+    cmd = shlex.split(d.getVar('RUN_PRIVILEGED_CMD'))
+    copy_args = ['-a']
+    if d.getVar('ISAR_CHROOT_MODE') == 'unshare':
+        copy_args.append('--no-preserve=ownership')
+
     postprocess_additional_files = d.getVar('ROOTFS_ADDITIONAL_FILES').split()
     rootfsdir = d.getVar("ROOTFSDIR")
 
@@ -24,18 +31,18 @@ python rootfs_add_files() {
         destination = d.getVarFlag(additional_file_entry, "destination") or ""
         source = d.getVarFlag(additional_file_entry, "source") or ""
         if os.path.exists(f"{rootfsdir}/{destination}"):
-            bb.process.run(["/usr/bin/rm", "-f", f"{rootfsdir}/{destination}"])
+            bb.process.run(cmd + ["/usr/bin/rm", "-f", f"{rootfsdir}/{destination}"])
 
         dest_dir = os.path.dirname(destination)
-        bb.process.run(["sudo", "-E", "/usr/bin/mkdir", "-p", f"{rootfsdir}/{dest_dir}" ])
+        bb.process.run(cmd + ["/usr/bin/mkdir", "-p", f"{rootfsdir}/{dest_dir}"])
         # empty source creates only an empty destination file
         if not source:
-            bb.process.run(["sudo", "-E", "/usr/bin/touch", f"{rootfsdir}/{destination}" ])
+            bb.process.run(cmd + ["/usr/bin/touch", f"{rootfsdir}/{destination}"])
             return
 
         if not os.path.exists(f"{source}"):
             bb.error(f"{source} does not exists and cannot be copied to the rootfs!")
         # no recursive copy only single files
-        bb.process.run(["sudo", "-E", "/usr/bin/cp", "-a",  f"{source}", f"{rootfsdir}/{destination}" ])
+        bb.process.run(cmd + ["/usr/bin/cp"] + copy_args + [source, f"{rootfsdir}/{destination}"])
 }
 ROOTFS_INSTALL_COMMAND += "rootfs_add_files"
