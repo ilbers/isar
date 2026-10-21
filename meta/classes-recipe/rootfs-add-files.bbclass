@@ -24,7 +24,7 @@ python rootfs_add_files() {
         destination = d.getVarFlag(additional_file_entry, "destination") or ""
         source = d.getVarFlag(additional_file_entry, "source") or ""
         if os.path.exists(f"{rootfsdir}/{destination}"):
-            bb.process.run([ "/usr/bin/rm", "-f", f"{destination}"])
+            bb.process.run(["/usr/bin/rm", "-f", f"{rootfsdir}/{destination}"])
 
         dest_dir = os.path.dirname(destination)
         bb.process.run(["sudo", "-E", "/usr/bin/mkdir", "-p", f"{rootfsdir}/{dest_dir}" ])
