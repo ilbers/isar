@@ -165,7 +165,7 @@ do_bootstrap() {
             line="[trusted=yes] ${line}"
         fi
         echo "deb ${line}" >  "${WORKDIR}/sources.list.d/base-apt.list"
-        line="copy://$base_apt_tmp/${BASE_DISTRO} ${BASE_DISTRO_CODENAME} main"
+        line="copy://$base_apt_tmp/${BOOTSTRAP_BASE_DISTRO} ${BASE_DISTRO_CODENAME} main"
         if [ -z "${BASE_REPO_KEY}" ]; then
             line="[trusted=yes] ${line}"
         fi
