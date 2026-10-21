@@ -20,7 +20,7 @@ DEBIAN_BUILD_DEPENDS ?= " \
     libpopt-dev, \
     libcap-dev, \
     libmount-dev, \
-    libfuse-dev, \
+    ${@ 'libfuse3-dev' if d.getVar('BASE_DISTRO_CODENAME') in ['forky'] else 'libfuse-dev'}, \
     libmnl-dev, \
     pkg-config, \
     clang:native, \
