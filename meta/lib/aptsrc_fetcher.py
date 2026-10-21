@@ -23,7 +23,9 @@ class AptSrc(FetchMethod):
         ud.src_package = ud.url[len('apt://'):]
         ud.host = ud.host.replace('=', '_')
 
-        base_distro = d.getVar('BASE_DISTRO')
+        # The sources are fetched from inside SBUILD_CHROOT, so they have to be
+        # cached below the base distro of that chroot, not below BASE_DISTRO.
+        base_distro = d.getVar('SCHROOT_BASE_DISTRO')
         codename = d.getVar('BASE_DISTRO_CODENAME')
         ud.localfile='deb-src/' + base_distro + '-' + codename + '/' + ud.host
 
