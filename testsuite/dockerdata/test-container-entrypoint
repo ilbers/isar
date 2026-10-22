@@ -121,7 +121,7 @@ EOF
 cd /isar
 
 if [ "${start_shell}" = 1 ]; then
-	bash
+	HISTFILE=/work/.isar_test_shell_history bash
 else
 	set -x
 	avocado ${showopt} run ${args}

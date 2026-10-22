@@ -3,4 +3,5 @@
 __pycache__
 .config.yaml*
 .kas_shell_history
+.isar_test_shell_history
 build*
