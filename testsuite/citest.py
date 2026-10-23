@@ -1575,6 +1575,42 @@ class SstateTest(CIBaseTest):
         self.perform_sstate_test(image_target, package_target)
 
 
+class RootfsSstateTest(CIBaseTest):
+    """
+    Test for correct behavior of sstate for rootfs.
+    Contains 3 steps:
+     - Step 1: build isar-image-base without any package.
+     - Step 2: build isar-image-base with hello-isar package only.
+     - Step 3: build again isar-image-base without any package.
+
+    :avocado: tags=sstate,fast
+    """
+
+    def test_rootfs_sstate(self):
+        import glob
+
+        image = 'isar-image-base'
+        arch = 'amd64'
+        distro = 'trixie'
+
+        self.init()
+
+        image_target = f'mc:qemu{arch}-{distro}:{image}'
+        hello_bin_file = f'{self.build_dir}/tmp/work/*-{distro}-{arch}/{image}-qemu{arch}/*/rootfs/usr/bin/hello-isar'
+
+        self.perform_build_test(image_target, image_install='', sstate=True)
+        if glob.glob(hello_bin_file):
+            self.fail("Step 1: hello-isar shouldn't be on rootfs")
+
+        self.perform_build_test(image_target, image_install='hello-isar', sstate=True)
+        if not glob.glob(hello_bin_file):
+            self.fail("Step 2: hello-isar should be on rootfs")
+
+        self.perform_build_test(image_target, image_install='', sstate=True)
+        if glob.glob(hello_bin_file):
+            self.fail("Step 3: hello-isar shouldn't be on rootfs")
+
+
 class SingleTest(CIBaseTest):
 
     """
