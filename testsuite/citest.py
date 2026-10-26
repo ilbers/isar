@@ -8,7 +8,7 @@
 
 from avocado import skipUnless
 from avocado.core import exceptions
-from avocado.utils import path
+from avocado.utils import path, process
 from cibase import CIBaseTest
 from utils import CIUtils
 
@@ -54,6 +54,23 @@ class EnvTest(CIBaseTest):
 
         self.init()
         self.perform_build_test(targets)
+
+
+class UnittestTest(CIBaseTest):
+    """Run the Python unit tests.
+
+    :avocado: tags=unittest,fast
+    """
+
+    def test_unittest(self):
+        test = self.params.get('test', default='')
+        if test:
+            process.run(
+                f'python3 -m unittest {test}',
+                env={'PYTHONPATH': 'testsuite/unittests'},
+            )
+        else:
+            process.run('python3 -m unittest discover -s testsuite/unittests')
 
 
 class DevTest(CIBaseTest):
