@@ -118,11 +118,16 @@ class TestImageAccountExtensionImageCreateUsers(
         )
 
         with patch.object(process, 'run') as run_mock:
+            run_mock.return_value = (encrypted_password, '')
             image_create_users(d)
 
         password_data = f"{test_user}:{encrypted_password}".encode()
 
-        assert run_mock.call_count == 2
+        assert run_mock.call_count == 3
+        run_mock.assert_any_call([
+            'openssl', 'passwd', '-6', '--salt', 'eb2e2a12cccc88a',
+            cleartext_password,
+        ])
         assert run_mock.call_args[0][1] == password_data
 
 
