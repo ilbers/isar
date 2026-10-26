@@ -18,8 +18,16 @@ from bb import process
 from bb.data_smart import DataSmart
 
 file_name = 'meta/classes-recipe/image-account-extension.bbclass'
+
+
+def run_privileged_cmd(d):
+    return 'sudo -E'
+
+
 image_create_users = load_function(file_name, 'image_create_users')
+image_create_users.__globals__['run_privileged_cmd'] = run_privileged_cmd
 image_create_groups = load_function(file_name, 'image_create_groups')
+image_create_groups.__globals__['run_privileged_cmd'] = run_privileged_cmd
 
 
 class TestImageAccountExtensionCommon(unittest.TestCase):
