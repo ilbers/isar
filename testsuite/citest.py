@@ -301,6 +301,7 @@ class InstallerTest(CIBaseTest):
                                 installer_device="/dev/sda",
                                 lines=[
                                     "BBMULTICONFIG:append = ' qemuamd64-bookworm'",
+                                    "IMAGE_INSTALL:append = ' test-rootfs-add-files'",
                                 ])
 
     def test_installer_run(self):
