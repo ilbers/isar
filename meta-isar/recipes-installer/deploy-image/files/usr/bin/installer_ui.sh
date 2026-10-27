@@ -210,6 +210,20 @@ ui_progress_gauge() {
 }
 
 #--------------------------------------------------------------------------
+# ui_reencrypt_volume_gauge <device> <index> <count>
+#
+# Shows a gauge for one encrypted volume, fed with percentages on stdin
+# (see sys_luks_reencrypt_volume).
+#--------------------------------------------------------------------------
+ui_reencrypt_volume_gauge() {
+    local device="$1"
+    local index="$2"
+    local count="$3"
+
+    ui_progress_gauge "Securing volume $index/$count ($device) with a new encryption key.\nDo not power off."
+}
+
+#--------------------------------------------------------------------------
 # ui_stop_progress_gauge
 #
 # Best-effort termination of the active progress gauge process.
