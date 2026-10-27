@@ -278,7 +278,9 @@ sys_bmap_options_for_image() {
 #
 # Performs the actual bmaptool copy, serializing concurrent installer
 # consoles via flock. When UI hook functions are available, this API
-# uses them to present a progress gauge in attended mode.
+# uses them to present a progress gauge in attended mode. Consoles that
+# do not get the lock wait for its holder and report its result, which is
+# kept in /run/installer.result.
 #
 # Optional UI hooks (if defined):
 #   ui_start_progress_gauge <pipe_path>
@@ -289,6 +291,7 @@ sys_install_image_with_lock() {
     local target_device="$2"
     local lockfile="/run/installer.lock"
     local progress_pipe="/run/installer.fifo"
+    local result_file="/run/installer.result"
     local bmap_options
     local bmap_version
     local quiet_flag=""
@@ -297,6 +300,7 @@ sys_install_image_with_lock() {
 
     exec 9>"$lockfile"
     if flock -n 9; then
+        rm -f "$result_file"
         bmap_version=$(bmaptool --version | awk '{ print $NF }')
 
         if sys_version_ge "$bmap_version" "3.6"; then
@@ -323,27 +327,20 @@ sys_install_image_with_lock() {
             if declare -F ui_stop_progress_gauge >/dev/null; then
                 ui_stop_progress_gauge
             fi
+            echo failed > "$result_file"
             return 1
         fi
 
         if declare -F ui_stop_progress_gauge >/dev/null; then
             ui_stop_progress_gauge
         fi
-    else
-        echo "Installation already running in another console."
-        sleep 5
 
-        if [ -e "$progress_pipe" ]; then
-            echo "Installation progress..."
-            tail -f "$progress_pipe" | while read -r line; do
-                printf "\r%s%%" "$line"
-            done
-        else
-            echo "Waiting for installation to finish..."
-            while pgrep -x "bmaptool" >/dev/null; do
-                sleep 5
-            done
-        fi
+        echo ok > "$result_file"
+    else
+        echo "Installation already running in another console. Waiting for it to finish..."
+        flock 9
+        # The other console owns the result; only report success if it did.
+        [ "$(cat "$result_file" 2>/dev/null)" = ok ] || return 1
     fi
 
     return 0
