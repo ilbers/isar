@@ -776,6 +776,7 @@ rootfs_install_sstate_finalize() {
     # - after restoring from cache, there will be a tar which we unpack and then delete
     if [ -f rootfs.tar ]; then
         run_privileged_heredoc <<'EOF'
+        rm -rf ${ROOTFSDIR}
         mkdir -p ${ROOTFSDIR}
         tar -C ${ROOTFSDIR} -xp ${SSTATE_TAR_ATTR_FLAGS} -f rootfs.tar
 EOF
