@@ -186,6 +186,30 @@ ui_start_progress_gauge() {
 }
 
 #--------------------------------------------------------------------------
+# ui_progress_gauge <message>
+#
+# Reads integer percentages (0-100), one per line, from stdin.
+# No dialog is opened until the first percentage arrives.
+# If dialog exits early, drain the remaining input so the operation is
+# not interrupted by SIGPIPE. Callers must check the producer's status
+# using PIPESTATUS[0]; a completed gauge does not imply operation success.
+# Returns dialog's status after all progress input has been consumed.
+#--------------------------------------------------------------------------
+ui_progress_gauge() {
+    local message="$1"
+    local status=0
+    local percent
+
+    IFS= read -r percent || return 0
+    dialog --gauge "$message" 10 70 "$percent" || status=$?
+    if [ "$status" -ne 0 ]; then
+        echo "Warning: progress dialog failed; waiting for the operation to finish." >&2
+    fi
+    cat >/dev/null
+    return "$status"
+}
+
+#--------------------------------------------------------------------------
 # ui_stop_progress_gauge
 #
 # Best-effort termination of the active progress gauge process.
