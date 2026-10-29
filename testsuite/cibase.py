@@ -268,7 +268,7 @@ class CIBaseTest(CIBuilder):
         os.makedirs(isar_sstate)
         process.run(f"git --work-tree={isar_sstate} checkout HEAD -- .")
 
-        self.init('../build-sstate', isar_dir=isar_sstate)
+        self.init('../build/build-sstate', isar_dir=isar_sstate)
         self.configure(targets=image_target, sstate=True, sstate_dir='', **kwargs)
 
         # Cleanup sstate and tmp before test

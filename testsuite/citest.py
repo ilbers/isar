@@ -1589,7 +1589,7 @@ class SstateTest(CIBaseTest):
         image_target = 'mc:qemuamd64-bullseye:isar-image-base'
         package_target = 'mc:qemuamd64-bullseye:hello'
 
-        self.init('build-sstate')
+        self.init('build/build-sstate')
         self.perform_sstate_test(image_target, package_target)
 
 
