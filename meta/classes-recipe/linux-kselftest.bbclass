@@ -20,7 +20,7 @@ DEBIAN_BUILD_DEPENDS ?= " \
     libpopt-dev, \
     libcap-dev, \
     libmount-dev, \
-    libfuse-dev, \
+    ${@ 'libfuse-dev' if d.getVar('BASE_DISTRO_CODENAME') in ['buster', 'bullseye', 'bookworm', 'trixie'] else 'libfuse3-dev'}, \
     libmnl-dev, \
     pkg-config, \
     clang:native, \
