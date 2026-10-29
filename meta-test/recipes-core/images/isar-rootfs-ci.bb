@@ -4,7 +4,7 @@
 # Copyright (C) 2025 Siemens
 
 # Bill-of-material
-ROOTFS_MANIFEST_DEPLOY_DIR = "${DEPLOY_DIR_IMAGE}"
+ROOTFS_MANIFEST_DEPLOY_DIR = "${DEPLOYDIR}"
 
 ROOTFSDIR = "${WORKDIR}/rootfs"
 ROOTFS_FEATURES += "generate-sbom"
