@@ -1580,17 +1580,25 @@ class SstateTest(CIBaseTest):
     :avocado: tags=sstate
     """
 
+    IMAGE_INITRD_LINES = ["IMAGE_INITRD = 'isar-initramfs'"]
+
     def test_sstate_populate(self):
         image_target = 'mc:qemuamd64-bullseye:isar-image-base'
 
-        self.perform_sstate_populate(image_target)
+        self.perform_sstate_populate(
+            image_target, lines=self.IMAGE_INITRD_LINES
+        )
 
     def test_sstate(self):
         image_target = 'mc:qemuamd64-bullseye:isar-image-base'
         package_target = 'mc:qemuamd64-bullseye:hello'
 
         self.init('build/build-sstate')
-        self.perform_sstate_test(image_target, package_target)
+        self.perform_sstate_test(
+            image_target,
+            package_target,
+            lines=self.IMAGE_INITRD_LINES,
+        )
 
 
 class RootfsSstateTest(CIBaseTest):
