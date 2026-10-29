@@ -9,10 +9,10 @@ BBPATH = "${TOPDIR}"
 BBFILES ?= ""
 
 BBLAYERS ?= " \
-  ${TOPDIR}/../meta \
-  ${TOPDIR}/../meta-isar \
-  ${TOPDIR}/../meta-test \
+  ${TOPDIR}/##ISARROOT_RELATIVE##/meta \
+  ${TOPDIR}/##ISARROOT_RELATIVE##/meta-isar \
+  ${TOPDIR}/##ISARROOT_RELATIVE##/meta-test \
   "
 BBLAYERS_NON_REMOVABLE ?= " \
-  ${TOPDIR}/../meta \
+  ${TOPDIR}/##ISARROOT_RELATIVE##/meta \
   "
