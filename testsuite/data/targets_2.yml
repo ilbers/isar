@@ -1,0 +1,100 @@
+a: !mux
+  hikey-bullseye:
+    name: hikey-bullseye
+  hikey-bookworm:
+    name: hikey-bookworm
+  hikey-trixie:
+    name: hikey-trixie
+  hyper-v-amd64-bullseye:
+    name: hyper-v-amd64-bullseye
+  hyper-v-amd64-bookworm:
+    name: hyper-v-amd64-bookworm
+  hyper-v-amd64-trixie:
+    name: hyper-v-amd64-trixie
+  phyboard-mira-bullseye:
+    name: phyboard-mira-bullseye
+  phyboard-mira-bookworm:
+    name: phyboard-mira-bookworm
+  phyboard-mira-trixie:
+    name: phyboard-mira-trixie
+  nanopi-neo-buster:
+    name: nanopi-neo-buster
+  nanopi-neo-bullseye:
+    name: nanopi-neo-bullseye
+  nanopi-neo-bookworm:
+    name: nanopi-neo-bookworm
+  nanopi-neo-trixie:
+    name: nanopi-neo-trixie
+  nanopi-neo-efi-bookworm:
+    name: nanopi-neo-efi-bookworm
+  stm32mp15x-bullseye:
+    name: stm32mp15x-bullseye
+  virtualbox-bullseye:
+    name: virtualbox-bullseye
+  virtualbox-bookworm:
+    name: virtualbox-bookworm
+  virtualbox-trixie:
+    name: virtualbox-trixie
+  x86-pc-bookworm:
+    name: x86-pc-bookworm
+  rpi-arm-bullseye:
+    name: rpi-arm-bullseye
+  rpi-arm-bookworm:
+    name: rpi-arm-bookworm
+  rpi-arm-trixie:
+    name: rpi-arm-trixie
+  rpi-arm-v7-bullseye:
+    name: rpi-arm-v7-bullseye
+  rpi-arm-v7-bookworm:
+    name: rpi-arm-v7-bookworm
+  rpi-arm-v7-trixie:
+    name: rpi-arm-v7-trixie
+  rpi-arm-v7l-bullseye:
+    name: rpi-arm-v7l-bullseye
+  rpi-arm-v7l-bookworm:
+    name: rpi-arm-v7l-bookworm
+  rpi-arm-v7l-trixie:
+    name: rpi-arm-v7l-trixie
+  rpi-arm64-v8-bullseye:
+    name: rpi-arm64-v8-bullseye
+  rpi-arm64-v8-bookworm:
+    name: rpi-arm64-v8-bookworm
+  rpi-arm64-v8-trixie:
+    name: rpi-arm64-v8-trixie
+  rpi-arm64-v8-efi-bookworm:
+    name: rpi-arm64-v8-efi-bookworm
+  sifive-fu540-trixie:
+    name: sifive-fu540-trixie
+  starfive-visionfive2-trixie:
+    name: starfive-visionfive2-trixie
+  qemuarm64-focal:
+    name: qemuarm64-focal
+  qemuarm64-jammy:
+    name: qemuarm64-jammy
+  qemuarm64-noble:
+    name: qemuarm64-noble
+  qemuarm64-resolute:
+    name: qemuarm64-resolute
+  qemuamd64-focal:
+    name: qemuamd64-focal
+  qemuamd64-jammy:
+    name: qemuamd64-jammy
+  qemuamd64-noble:
+    name: qemuamd64-noble
+  qemuamd64-resolute:
+    name: qemuamd64-resolute
+  qemuamd64-sid:
+    name: qemuamd64-sid
+  qemuarm64-sid:
+    name: qemuarm64-sid
+  qemuriscv64-resolute:
+    name: qemuriscv64-resolute
+  wsl-bookworm:
+    name: wsl-bookworm
+  wsl-trixie:
+    name: wsl-trixie
+b: !mux
+  base:
+    image: isar-image-base
+  ci:
+    image: isar-image-ci
