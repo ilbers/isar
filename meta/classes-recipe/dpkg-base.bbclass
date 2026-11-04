@@ -49,7 +49,7 @@ python do_adjust_git() {
 
     for src_uri in (d.getVar("SRC_URI") or "").split():
         try:
-            fetcher = bb.fetch2.Fetch([src_uri], d)
+            fetcher = bb.fetch.Fetch([src_uri], d)
             ud = fetcher.ud[src_uri]
             if ud.type != 'git':
                 continue
@@ -83,7 +83,7 @@ python do_adjust_git() {
                 bb.note(' '.join(cmd))
                 if subprocess.call(cmd) != 0:
                     bb.fatal("git alternates adjustment failed")
-        except bb.fetch2.BBFetchException as e:
+        except bb.fetch.BBFetchException as e:
             bb.fatal(str(e))
 }
 
@@ -94,7 +94,7 @@ inherit patch
 addtask patch after do_adjust_git
 
 python() {
-    from bb.fetch2 import methods
+    from bb.fetch import methods
 
     # apt-src fetcher
     import aptsrc_fetcher

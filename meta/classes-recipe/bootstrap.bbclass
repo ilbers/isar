@@ -45,12 +45,12 @@ python () {
             distro_bootstrap_keys += own_pub_key.split()
 
     for key in distro_bootstrap_keys:
-        fetcher = bb.fetch2.Fetch([key], d)
+        fetcher = bb.fetch.Fetch([key], d)
         filename = os.path.relpath(fetcher.localpath(key), topdir)
         d.appendVar("DISTRO_BOOTSTRAP_KEYFILES", " ${TOPDIR}/%s" % filename)
 
     for key in third_party_apt_keys:
-        fetcher = bb.fetch2.Fetch([key], d)
+        fetcher = bb.fetch.Fetch([key], d)
         filename = os.path.relpath(fetcher.localpath(key), topdir)
         d.appendVar("THIRD_PARTY_APT_KEYFILES", " ${TOPDIR}/%s" % filename)
 

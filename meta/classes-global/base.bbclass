@@ -161,7 +161,7 @@ python() {
                 needsrcrev = True
 
     if needsrcrev:
-        d.setVar("SRCPV", "${@bb.fetch2.get_srcrev(d)}")
+        d.setVar("SRCPV", "${@bb.fetch.get_srcrev(d)}")
 
     for e in d.keys():
         flags = d.getVarFlags(e)
@@ -244,9 +244,9 @@ python do_fetch() {
         return
 
     try:
-        fetcher = bb.fetch2.Fetch(src_uri, d)
+        fetcher = bb.fetch.Fetch(src_uri, d)
         fetcher.download()
-    except bb.fetch2.BBFetchException as e:
+    except bb.fetch.BBFetchException as e:
         bb.fatal(str(e))
 }
 
@@ -263,9 +263,9 @@ python do_unpack() {
     rootdir = d.getVar('WORKDIR')
 
     try:
-        fetcher = bb.fetch2.Fetch(src_uri, d)
+        fetcher = bb.fetch.Fetch(src_uri, d)
         fetcher.unpack(rootdir)
-    except bb.fetch2.BBFetchException as e:
+    except bb.fetch.BBFetchException as e:
         bb.fatal(str(e))
 }
 
@@ -314,9 +314,9 @@ python do_cleanall() {
         return
 
     try:
-        fetcher = bb.fetch2.Fetch(src_uri, d)
+        fetcher = bb.fetch.Fetch(src_uri, d)
         fetcher.clean()
-    except bb.fetch2.BBFetchException as e:
+    except bb.fetch.BBFetchException as e:
         bb.fatal(str(e))
 }
 

@@ -3,10 +3,10 @@
 #
 # SPDX-License-Identifier: MIT
 
-from bb.fetch2 import FetchError
-from bb.fetch2 import FetchMethod
-from bb.fetch2 import logger
-from bb.fetch2 import runfetchcmd
+from bb.fetch import FetchError
+from bb.fetch import FetchMethod
+from bb.fetch import logger
+from bb.fetch import runfetchcmd
 import os
 
 class AptSrc(FetchMethod):

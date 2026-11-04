@@ -81,7 +81,7 @@ python do_cache() {
 
     for key in d.getVar('BASE_REPO_KEY').split():
         d.appendVar("SRC_URI", " %s" % key)
-        fetcher = bb.fetch2.Fetch([key], d)
+        fetcher = bb.fetch.Fetch([key], d)
         filename = fetcher.localpath(key)
         d.appendVar("KEYFILES", " %s" % filename)
 

@@ -7,12 +7,12 @@ import oe.path
 import os
 import tempfile
 import json
-from   bb.fetch2 import FetchMethod
-from   bb.fetch2 import logger
-from   bb.fetch2 import MissingChecksumEvent
-from   bb.fetch2 import NoChecksumError
-from   bb.fetch2 import ChecksumError
-from   bb.fetch2 import runfetchcmd
+from   bb.fetch import FetchMethod
+from   bb.fetch import logger
+from   bb.fetch import MissingChecksumEvent
+from   bb.fetch import NoChecksumError
+from   bb.fetch import ChecksumError
+from   bb.fetch import runfetchcmd
 
 class Container(FetchMethod):
     def supports(self, ud, d):

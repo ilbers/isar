@@ -75,7 +75,7 @@ dpkg_runbuild() {
         [ "${var}" = "DEB_BUILD_OPTIONS" ] && continue
 
         # Don't warn environment variables exported to the bitbake fetcher
-        case " ${@" ".join(bb.fetch2.FETCH_EXPORT_VARS)} " in
+        case " ${@" ".join(bb.fetch.FETCH_EXPORT_VARS)} " in
             *" ${var} "*) continue;;
         esac
 
