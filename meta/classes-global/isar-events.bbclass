@@ -62,24 +62,25 @@ python build_completed() {
 
     basepath = tmpdir + '/work/'
 
-    for line in reversed(list(open('/proc/mounts'))):
-        if basepath not in line:
-            continue
-        msg_line = f"{line.split()[1]} left mounted"
-        # If bitbake is started manually, bb.warn and bb.error go to stdout;
-        # with bb.error, bitbake additionally fails the build. Under CI,
-        # bb.warn and bb.error currently go to a file.
-        if fail_on_cleanup:
-            bb.error(msg_line)
-        else:
-            msg_line += ', unmounting...'
-            bb.warn(msg_line)
-            try:
-                subprocess.run(
-                    f"sudo umount {line.split()[1]}", shell=True, check=True
-                )
-            except subprocess.CalledProcessError as e:
-                bb.error(str(e))
+    with open('/proc/mounts') as mounts:
+        for line in reversed(mounts.readlines()):
+            if basepath not in line:
+                continue
+            msg_line = f"{line.split()[1]} left mounted"
+            # If bitbake is started manually, bb.warn and bb.error go to stdout;
+            # with bb.error, bitbake additionally fails the build. Under CI,
+            # bb.warn and bb.error currently go to a file.
+            if fail_on_cleanup:
+                bb.error(msg_line)
+            else:
+                msg_line += ', unmounting...'
+                bb.warn(msg_line)
+                try:
+                    subprocess.run(
+                        f"sudo umount {line.split()[1]}", shell=True, check=True
+                    )
+                except subprocess.CalledProcessError as e:
+                    bb.error(str(e))
 
     # Cleanup build UUID, the next bitbake run will generate new one
     bb.utils.exec_flat_python_func('clear_build_uuid', d)
