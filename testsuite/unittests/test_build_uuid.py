@@ -18,6 +18,7 @@ sys.path.extend([
 ])
 
 import bb
+import bb.build
 import bb.data
 import bb.utils
 from bb.parse import handle
@@ -58,6 +59,23 @@ class TestBuildUUID(unittest.TestCase):
         self.assertEqual(calculate_build_uuid(other_config), build_uuid)
         clear_build_uuid(self.data)
         self.assertNotEqual(calculate_build_uuid(self.data), build_uuid)
+
+    def test_completion_resets_only_default_multiconfig(self):
+        data = handle(
+            str(root / 'meta/classes-global/isar-events.bbclass'), self.data
+        )
+        data.setVar('TMPDIR', self.persistent_dir)
+        data.setVar('T', os.path.join(self.persistent_dir, 'temp'))
+        for multiconfig, resets_uuid in [
+            ('', True), ('default', True), ('other', False)
+        ]:
+            with self.subTest(multiconfig=multiconfig):
+                build_uuid = calculate_build_uuid(data)
+                data.setVar('BB_CURRENT_MC', multiconfig)
+                bb.build.exec_func('build_completed', data)
+                self.assertEqual(
+                    calculate_build_uuid(data) != build_uuid, resets_uuid
+                )
 
     def test_concurrent_workers_share_uuid(self):
         context = multiprocessing.get_context('fork')

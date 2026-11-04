@@ -52,13 +52,10 @@ python build_completed() {
     if not tmpdir:
         return
 
-    # bitbake calls cleanup for every multiconfig listed in BBMULTICONFIG plus
-    # one for the entire build. E.g., if BBMULTICONFIG="mc1 mc2 mc3", we call
-    # "bitbake mc1 mc2", the following cleanups would be called:
-    # "c1 c2 c3 cdefault".
-    # Skip running cleanup for additional multiconfigs
+    # Run cleanup only for the default multiconfig, which is empty on
+    # newer BitBake.
     mc = d.getVar('BB_CURRENT_MC')
-    if mc != 'default':
+    if mc not in ('', 'default'):
         return
 
     fail_on_cleanup = bb.utils.to_boolean(d.getVar('ISAR_FAIL_ON_CLEANUP'))
