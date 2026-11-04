@@ -85,7 +85,7 @@ python build_completed() {
                 bb.error(str(e))
 
     # Cleanup build UUID, the next bitbake run will generate new one
-    bb.persist_data.persist('BB_ISAR_UUID_DATA', d).clear()
+    bb.utils.exec_flat_python_func('clear_build_uuid', d)
 }
 
 build_completed[eventmask] = "bb.event.BuildCompleted"

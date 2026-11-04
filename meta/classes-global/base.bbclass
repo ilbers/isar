@@ -341,12 +341,25 @@ def base_set_filespath(path, d):
 def calculate_build_uuid(d):
     import uuid
 
-    uuid_data = bb.persist_data.persist('BB_ISAR_UUID_DATA', d)
-    if "uuid" not in uuid_data or not uuid_data["uuid"]:
-        # Generate new UUID
-        uuid_data["uuid"] = str(uuid.uuid4())
+    uuid_file = os.path.join(d.getVar('PERSISTENT_DIR'), 'isar-build-uuid')
+    with bb.utils.fileslocked([uuid_file + '.lock']):
+        try:
+            with open(uuid_file) as file:
+                build_uuid = file.read().strip()
+        except FileNotFoundError:
+            build_uuid = ''
 
-    return uuid_data["uuid"]
+        if not build_uuid:
+            build_uuid = str(uuid.uuid4())
+            with open(uuid_file, 'w') as file:
+                file.write(build_uuid + '\n')
+
+        return build_uuid
+
+def clear_build_uuid(d):
+    uuid_file = os.path.join(d.getVar('PERSISTENT_DIR'), 'isar-build-uuid')
+    with bb.utils.fileslocked([uuid_file + '.lock']):
+        bb.utils.remove(uuid_file)
 
 # Unique ID for this build, used to avoid name clashes on external mountpoints
 # When running parallel builds in different PID namespaces
