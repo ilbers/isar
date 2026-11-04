@@ -187,6 +187,8 @@ SUDO_CHROOT = "imager_run -d ${PP_ROOTFS} -u root --"
 # hook up IMAGE_CMD_*
 python() {
     image_types = (d.getVar('IMAGE_FSTYPES') or '').split()
+    requested_types = set(image_types)
+    intermediate_files = set()
     conversions = set(d.getVar('IMAGE_CONVERSIONS').split())
     chroot_mode = d.getVar('ISAR_CHROOT_MODE')
 
@@ -285,8 +287,10 @@ python() {
 
         # add conversions
         conversion_depends = set()
-        rm_images = set()
         def create_conversions(t):
+            localdata.setVar('type', t)
+            if t not in requested_types:
+                intermediate_files.add(localdata.getVar('IMAGE_FILE_HOST'))
             for c in sorted(conversions):
                 if t.endswith('.' + c):
                     t = t[:-len(c) - 1]
@@ -301,19 +305,8 @@ python() {
                     for dep in (localdata.getVar('CONVERSION_DEPS:' + c) or '').split():
                         conversion_install.add(dep)
                         local_conversion_install.add(dep)
-                    # remove temporary image files
-                    if t not in image_types:
-                        rm_images.add(localdata.expand('${IMAGE_FILE_HOST}'))
-
         for t in basetypes[bt]:
             create_conversions(t)
-
-        if bt not in image_types:
-            localdata.setVar('type', t)
-            rm_images.add(localdata.expand('${IMAGE_FILE_HOST}'))
-
-        for image in rm_images:
-            cmds.append('\trm ' + image)
 
         # image type dependencies
         after = 'do_image_tools'
@@ -340,6 +333,7 @@ python() {
         d.appendVar('INSTALL_image_%s' % bt_clean, ' ' + ' '.join(sorted(local_imager_install | local_conversion_install)))
         d.appendVarFlag(task, 'vardeps', ' INSTALL_image_%s' % bt_clean)
 
+    d.setVar('IMAGE_INTERMEDIATE_FILES', ' '.join(sorted(intermediate_files)))
     d.appendVar('IMAGER_INSTALL', ' ' + ' '.join(sorted(imager_install | conversion_install)))
     d.appendVar('IMAGER_BOM', ' ' + ' '.join(sorted(imager_bom)))
     d.appendVar('IMAGER_BUILD_DEPS', ' ' + ' '.join(sorted(imager_build_deps)))
@@ -429,6 +423,12 @@ python do_image() {
     """Virtual task"""
     pass
 }
+python cleanup_image_intermediates() {
+    for image in (d.getVar('IMAGE_INTERMEDIATE_FILES') or '').split():
+        bb.utils.remove(image)
+}
+do_image[postfuncs] += "cleanup_image_intermediates"
+do_image[vardeps] += "IMAGE_INTERMEDIATE_FILES"
 addtask image before do_build after do_image_tools
 
 python do_deploy() {
