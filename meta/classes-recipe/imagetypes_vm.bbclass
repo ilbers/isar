@@ -8,8 +8,12 @@ FILESEXTRAPATHS:prepend = "${LAYERDIR_core}/recipes-core/images:"
 OVF_TEMPLATE_FILE ?= "virtualbox/vm-img-virtualbox.ovf.tmpl"
 IMAGE_SRC_URI:ova = "file://${OVF_TEMPLATE_FILE}"
 
-IMAGE_TYPEDEP:ova = "wic"
+IMAGE_TYPEDEP:ova = "${@'vmdk' if d.getVar('VIRTUAL_MACHINE_IMAGE_TYPE') == 'vmdk' else 'wic'}"
 IMAGER_INSTALL:ova += "qemu-utils gawk uuid-runtime"
+
+IMAGE_TYPEDEP:vmdk = "wic"
+IMAGER_INSTALL:vmdk += "qemu-utils"
+IMAGE_CMD:vmdk = "${convert_wic}"
 
 # virtual machine disk settings
 SOURCE_IMAGE_FILE ?= "${IMAGE_FULLNAME}.wic"
@@ -19,8 +23,15 @@ SOURCE_IMAGE_FILE ?= "${IMAGE_FULLNAME}.wic"
 VMDK_SUBFORMAT ?= "monolithicSparse"
 
 VIRTUAL_MACHINE_IMAGE_TYPE ?= "vmdk"
-VIRTUAL_MACHINE_IMAGE_FILE = "${IMAGE_FULLNAME}-disk001.${VIRTUAL_MACHINE_IMAGE_TYPE}"
+VIRTUAL_MACHINE_IMAGE_FILE = "${@get_ova_disk_file(d)}"
+VIRTUAL_MACHINE_IMAGE_TYPE:vmdk = "vmdk"
 VIRTUAL_MACHINE_DISK = "${PP_DEPLOY}/${VIRTUAL_MACHINE_IMAGE_FILE}"
+
+def get_ova_disk_file(d):
+    if d.getVar("VIRTUAL_MACHINE_IMAGE_TYPE") == "vmdk":
+        return "%s.vmdk" % d.getVar("IMAGE_FULLNAME")
+    return "%s-disk001.%s" % (
+        d.getVar("IMAGE_FULLNAME"), d.getVar("VIRTUAL_MACHINE_IMAGE_TYPE"))
 
 def set_convert_options(d):
    format = d.getVar("VIRTUAL_MACHINE_IMAGE_TYPE")
@@ -66,7 +77,7 @@ OVA_VARS = "OVA_NAME OVA_MEMORY OVA_NUMBER_OF_CPU OVA_VRAM \
 IMAGE_TEMPLATE_FILES:ova = "${OVF_TEMPLATE_FILE}"
 IMAGE_TEMPLATE_VARS:ova = "${OVA_VARS}"
 
-do_image_ova[prefuncs] += "convert_wic"
+do_image_ova[prefuncs] += "${@'convert_wic' if d.getVar('VIRTUAL_MACHINE_IMAGE_TYPE') != 'vmdk' else ''}"
 IMAGE_CMD:ova() {
     if [ ! ${VIRTUAL_MACHINE_IMAGE_TYPE} = "vmdk" ]; then
         exit 0
@@ -96,7 +107,6 @@ IMAGE_CMD:ova() {
         tar -uvf ${PP_DEPLOY}/${IMAGE_FULLNAME}.ova -C ${PP_DEPLOY} ${VIRTUAL_MACHINE_IMAGE_FILE}
         rm -f '${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.mf'
         rm -f '${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.ovf'
-        rm -f '${DEPLOY_DIR_IMAGE}/${VIRTUAL_MACHINE_IMAGE_FILE}'
 EOIMAGER
 }
 IMAGE_CMD:ova[depends] = "${PN}:do_transform_template"

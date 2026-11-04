@@ -540,6 +540,7 @@ Currently, the following image types are provided:
  - `wic` - full disk image with user-specified partitions created and populated using the wic tool
  - `ubi` - image for use on mtd nand partitions employing UBI
  - `ubifs` - raw UBI filesystem image, normally used together with UBI partitions
+ - `vmdk` - virtual machine disk image
  - `ova` - Open Virtual Appliance: image for use on VirtualBox or VMware
  - `wsl` - tar file for Windows Subsystem for Linux
  - `squashfs` - raw squashfs filesystem image
