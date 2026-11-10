@@ -65,14 +65,16 @@ case "$args" in
 	;;
 esac
 
+block_sudo=0
 case "$args" in
 	*"-p rootless=1"*)
+		block_sudo=1
 		;;
 	*)
 		clean_rootless_files=0
 		;;
 esac
-export clean_rootless_files
+export clean_rootless_files block_sudo
 
 mkdir /isar
 
@@ -108,6 +110,19 @@ mkdir -p ${base_dir}/overlay/upper
 mkdir -p ${base_dir}/overlay/work
 sudo mount -t overlay overlay -o lowerdir=/repo,upperdir=${base_dir}/overlay/upper,workdir=${base_dir}/overlay/work /isar
 sudo mount -o bind ${base_dir} /isar/build
+
+if [ "${block_sudo}" = 1 ]; then
+	blocker=$(mktemp)
+	cat <<EOF > "${blocker}"
+#!/bin/sh
+echo "ERROR: sudo is blocked in rootless test runs: sudo \$*" >&2
+exit 1
+EOF
+	sudo install -m 755 -o root -g root "${blocker}" /usr/bin/sudo.blocked
+	rm -f "${blocker}"
+	# rename, as the running sudo binary cannot be overwritten in place
+	sudo mv -f /usr/bin/sudo.blocked /usr/bin/sudo
+fi
 
 mkdir -p "${HOME}"/.config/avocado
 cat <<EOF > "${HOME}"/.config/avocado/avocado.conf
