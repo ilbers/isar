@@ -12,7 +12,7 @@ MAINTAINER = "isar-users <isar-users@googlegroups.com>"
 TI_FIRMWARE_SRCREV = "0a37dc07b1120127eba73c7196a0b532350b9639"
 
 SRC_URI += " \
-    https://ftp.denx.de/pub/u-boot/u-boot-${PV}.tar.bz2 \
+    https://git.u-boot-project.org/u-boot/u-boot/-/releases/v${PV}/downloads/u-boot-${PV}.tar.bz2 \
     https://github.com/TexasInstruments/ti-linux-firmware/raw/${TI_FIRMWARE_SRCREV}/ti-sysfw/ti-fs-firmware-am62x-gp.bin;downloadfilename=ti-fs-firmware-am62x-gp.bin;name=sysfw \
     https://github.com/TexasInstruments/ti-linux-firmware/raw/${TI_FIRMWARE_SRCREV}/ti-sysfw/ti-fs-stub-firmware-am62x-gp.bin;downloadfilename=ti-fs-stub-firmware-am62x-gp.bin;name=sysfw-stub \
     https://github.com/TexasInstruments/ti-linux-firmware/raw/${TI_FIRMWARE_SRCREV}/ti-dm/am62xx/ipc_echo_testb_mcu1_0_release_strip.xer5f;downloadfilename=ipc_echo_testb_mcu1_0_release_strip.xer5f;name=dm \
