@@ -5,7 +5,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-DESCRIPTION ?= "Custom kernel module ${PN}"
+DESCRIPTION ?= "Custom kernel module ${BPN}"
 MAINTAINER ?= "isar-users <isar-users@googlegroups.com>"
 
 KERNEL_NAME ?= ""
@@ -66,7 +66,7 @@ TEMPLATE_VARS += " \
     SIGNATURE_CERTFILE \
     SIGNATURE_HASHFN \
     SIGNATURE_SIGNWITH \
-    PN \
+    BPN \
     DEBIAN_COMPAT \
     DEBIAN_STANDARDS_VERSION"
 

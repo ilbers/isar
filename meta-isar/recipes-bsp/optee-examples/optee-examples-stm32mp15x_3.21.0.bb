@@ -53,51 +53,51 @@ do_prepare_build() {
 
     # acipher.install
     echo "acipher/ta/a734eed9-d6a1-4244-aa50-7c99719e7b7b.ta /usr/lib/optee-os/${OPTEE_NAME}/ta" > \
-        ${S}/debian/${PN}-acipher-ta.install
+        ${S}/debian/${BPN}-acipher-ta.install
     echo "acipher/ta/a734eed9-d6a1-4244-aa50-7c99719e7b7b.stripped.elf /usr/lib/optee-os/${OPTEE_NAME}/ta" >> \
-        ${S}/debian/${PN}-acipher-ta.install
+        ${S}/debian/${BPN}-acipher-ta.install
     echo "acipher/host/optee_example_acipher /usr/lib/optee-os/${OPTEE_NAME}/ca" > \
-        ${S}/debian/${PN}-acipher-host.install
+        ${S}/debian/${BPN}-acipher-host.install
 
     # aes.install
     echo "aes/ta/5dbac793-f574-4871-8ad3-04331ec17f24.ta /usr/lib/optee-os/${OPTEE_NAME}/ta" > \
-        ${S}/debian/${PN}-aes-ta.install
+        ${S}/debian/${BPN}-aes-ta.install
     echo "aes/ta/5dbac793-f574-4871-8ad3-04331ec17f24.stripped.elf /usr/lib/optee-os/${OPTEE_NAME}/ta" >> \
-        ${S}/debian/${PN}-aes-ta.install
+        ${S}/debian/${BPN}-aes-ta.install
     echo "aes/host/optee_example_aes /usr/lib/optee-os/${OPTEE_NAME}/ca" > \
-        ${S}/debian/${PN}-aes-host.install
+        ${S}/debian/${BPN}-aes-host.install
 
     # hello-world.install
     echo "hello_world/ta/8aaaf200-2450-11e4-abe2-0002a5d5c51b.ta /usr/lib/optee-os/${OPTEE_NAME}/ta" > \
-        ${S}/debian/${PN}-hello-world-ta.install
+        ${S}/debian/${BPN}-hello-world-ta.install
     echo "hello_world/ta/8aaaf200-2450-11e4-abe2-0002a5d5c51b.stripped.elf /usr/lib/optee-os/${OPTEE_NAME}/ta" >> \
-        ${S}/debian/${PN}-hello-world-ta.install
+        ${S}/debian/${BPN}-hello-world-ta.install
     echo "hello_world/host/optee_example_hello_world /usr/lib/optee-os/${OPTEE_NAME}/ca" > \
-        ${S}/debian/${PN}-hello-world-host.install
+        ${S}/debian/${BPN}-hello-world-host.install
 
     # hotp.install
     echo "hotp/ta/484d4143-2d53-4841-3120-4a6f636b6542.ta /usr/lib/optee-os/${OPTEE_NAME}/ta" > \
-        ${S}/debian/${PN}-hotp-ta.install
+        ${S}/debian/${BPN}-hotp-ta.install
     echo "hotp/ta/484d4143-2d53-4841-3120-4a6f636b6542.stripped.elf /usr/lib/optee-os/${OPTEE_NAME}/ta" >> \
-        ${S}/debian/${PN}-hotp-ta.install
+        ${S}/debian/${BPN}-hotp-ta.install
     echo "hotp/host/optee_example_hotp /usr/lib/optee-os/${OPTEE_NAME}/ca" > \
-        ${S}/debian/${PN}-hotp-host.install
+        ${S}/debian/${BPN}-hotp-host.install
 
     # random.install
     echo "random/ta/b6c53aba-9669-4668-a7f2-205629d00f86.ta /usr/lib/optee-os/${OPTEE_NAME}/ta" > \
-        ${S}/debian/${PN}-random-ta.install
+        ${S}/debian/${BPN}-random-ta.install
     echo "random/ta/b6c53aba-9669-4668-a7f2-205629d00f86.stripped.elf /usr/lib/optee-os/${OPTEE_NAME}/ta" >> \
-        ${S}/debian/${PN}-random-ta.install
+        ${S}/debian/${BPN}-random-ta.install
     echo "random/host/optee_example_random /usr/lib/optee-os/${OPTEE_NAME}/ca" > \
-        ${S}/debian/${PN}-random-host.install
+        ${S}/debian/${BPN}-random-host.install
 
     # secure-storage.install
     echo "secure_storage/ta/f4e750bb-1437-4fbf-8785-8d3580c34994.ta /usr/lib/optee-os/${OPTEE_NAME}/ta" > \
-        ${S}/debian/${PN}-secure-storage-ta.install
+        ${S}/debian/${BPN}-secure-storage-ta.install
     echo "secure_storage/ta/f4e750bb-1437-4fbf-8785-8d3580c34994.stripped.elf /usr/lib/optee-os/${OPTEE_NAME}/ta" >> \
-        ${S}/debian/${PN}-secure-storage-ta.install
+        ${S}/debian/${BPN}-secure-storage-ta.install
     echo "secure_storage/host/optee_example_secure_storage /usr/lib/optee-os/${OPTEE_NAME}/ca" > \
-        ${S}/debian/${PN}-secure-storage-host.install
+        ${S}/debian/${BPN}-secure-storage-host.install
 }
 
 COMPATIBLE_MACHINE = "^(stm32mp15x)$"

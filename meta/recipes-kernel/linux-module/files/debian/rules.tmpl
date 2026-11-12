@@ -62,7 +62,7 @@ ifneq ($(filter pkg.signwith,$(DEB_BUILD_PROFILES)),)
 endif
 
 override_dh_auto_install:
-	$(MAKE) -C $(KDIR) M=${MODULE_DIR} INSTALL_MOD_PATH=$(PWD)/debian/${PN} modules_install
+	$(MAKE) -C $(KDIR) M=${MODULE_DIR} INSTALL_MOD_PATH=$(PWD)/debian/${BPN} modules_install
 
 %:
 	CFLAGS= LDFLAGS= dh $@

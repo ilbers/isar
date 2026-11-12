@@ -6,7 +6,7 @@ Build-Depends: debhelper-compat (= ${DEBIAN_COMPAT}), ${DEBIAN_BUILD_DEPENDS}
 Maintainer: Isar project <isar-users@googlegroups.com>
 Rules-Requires-Root: no
 
-Package: ${PN}-acipher-ta
+Package: ${BPN}-acipher-ta
 Architecture: ${DISTRO_ARCH}
 Description: OP-TEE Trusted Application example - acipher
  Generates an RSA key pair of specified size and encrypts a supplied string with
@@ -14,7 +14,7 @@ Description: OP-TEE Trusted Application example - acipher
  .
  UUID: a734eed9-d6a1-4244-aa50-7c99719e7b7b
 
-Package: ${PN}-acipher-host
+Package: ${BPN}-acipher-host
 Architecture: ${DISTRO_ARCH}
 Depends: libteec1, tee-supplicant,
          ${misc:Depends}
@@ -24,7 +24,7 @@ Description: OP-TEE Trusted Application example - acipher (host application)
  .
  UUID: a734eed9-d6a1-4244-aa50-7c99719e7b7b
 
-Package: ${PN}-aes-ta
+Package: ${BPN}-aes-ta
 Architecture: ${DISTRO_ARCH}
 Description: OP-TEE Trusted Application example - aes
  Runs an AES encryption and decryption from a TA using the GlobalPlatform TEE
@@ -33,7 +33,7 @@ Description: OP-TEE Trusted Application example - aes
  .
  UUID: 5dbac793-f574-4871-8ad3-04331ec17f24
 
-Package: ${PN}-aes-host
+Package: ${BPN}-aes-host
 Architecture: ${DISTRO_ARCH}
 Depends: libteec1, tee-supplicant,
          ${misc:Depends}
@@ -44,7 +44,7 @@ Description: OP-TEE Trusted Application example - aes (host application)
  .
  UUID: 5dbac793-f574-4871-8ad3-04331ec17f24
 
-Package: ${PN}-hello-world-ta
+Package: ${BPN}-hello-world-ta
 Architecture: ${DISTRO_ARCH}
 Description: OP-TEE Trusted Application example - hello_world
  This is a very simple Trusted Application to answer a hello command and
@@ -52,7 +52,7 @@ Description: OP-TEE Trusted Application example - hello_world
  .
  UUID: 8aaaf200-2450-11e4-abe2-0002a5d5c51b
 
-Package: ${PN}-hello-world-host
+Package: ${BPN}-hello-world-host
 Architecture: ${DISTRO_ARCH}
 Depends: libteec1, tee-supplicant,
          ${misc:Depends}
@@ -62,14 +62,14 @@ Description: OP-TEE Trusted Application example - hello_world (host application)
  .
  UUID: 8aaaf200-2450-11e4-abe2-0002a5d5c51b
 
-Package: ${PN}-hotp-ta
+Package: ${BPN}-hotp-ta
 Architecture: ${DISTRO_ARCH}
 Description: OP-TEE Trusted Application example - hotp
  HMAC based One Time Password in OP-TEE.
  .
  UUID: 484d4143-2d53-4841-3120-4a6f636b6542
 
-Package: ${PN}-hotp-host
+Package: ${BPN}-hotp-host
 Architecture: ${DISTRO_ARCH}
 Depends: libteec1, tee-supplicant,
          ${misc:Depends}
@@ -78,14 +78,14 @@ Description: OP-TEE Trusted Application example - hotp (host application)
  .
  UUID: 484d4143-2d53-4841-3120-4a6f636b6542
 
-Package: ${PN}-random-ta
+Package: ${BPN}-random-ta
 Architecture: ${DISTRO_ARCH}
 Description: OP-TEE Trusted Application example - random
  Generates a random UUID using capabilities of TEE API (TEE_GenerateRandom()).
  .
  UUID: b6c53aba-9669-4668-a7f2-205629d00f86
 
-Package: ${PN}-random-host
+Package: ${BPN}-random-host
 Architecture: ${DISTRO_ARCH}
 Depends: libteec1, tee-supplicant,
          ${misc:Depends}
@@ -94,7 +94,7 @@ Description: OP-TEE Trusted Application example - random (host application)
  .
  UUID: b6c53aba-9669-4668-a7f2-205629d00f86
 
-Package: ${PN}-secure-storage-ta
+Package: ${BPN}-secure-storage-ta
 Architecture: ${DISTRO_ARCH}
 Description: OP-TEE Trusted Application example - secure_storage
  A Trusted Application to read/write raw data into the OP-TEE secure storage
@@ -102,7 +102,7 @@ Description: OP-TEE Trusted Application example - secure_storage
  .
  UUID: f4e750bb-1437-4fbf-8785-8d3580c34994
 
-Package: ${PN}-secure-storage-host
+Package: ${BPN}-secure-storage-host
 Architecture: ${DISTRO_ARCH}
 Depends: libteec1, tee-supplicant,
          ${misc:Depends}
