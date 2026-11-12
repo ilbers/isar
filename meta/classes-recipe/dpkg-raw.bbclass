@@ -9,6 +9,7 @@ inherit dpkg
 # adding excluded files, e.g. *.so to a package.
 DPKG_SOURCE_EXTRA_ARGS = ""
 
+S = "${WORKDIR}/${BPN}-${PV}"
 D = "${S}/image"
 
 # Default to creating a binary-indep package
@@ -27,7 +28,7 @@ do_prepare_build[cleandirs] += "${S}/debian"
 do_prepare_build() {
 	cd ${D}
 	find . -maxdepth 1 ! -name .. -and ! -name . -and ! -name debian | \
-		sed 's:^./::' | sort > ${S}/debian/${PN}.install
+		sed 's:^./::' | sort > ${S}/debian/${BPN}.install
 
 	deb_debianize
 
