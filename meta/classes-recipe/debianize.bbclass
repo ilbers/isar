@@ -206,10 +206,10 @@ deb_debianize() {
 	for f in ${dh_installdeb_handled} \
 			 ${dh_installsystemd_handled} \
 			 ${dh_installsystemduser_handled} \
-	         ${dh_installtmpfiles_handled}
+			 ${dh_installtmpfiles_handled}
 	do
-		if [ -f ${WORKDIR}/${PN}${f} ]; then
-			install -v -m 644 ${WORKDIR}/${PN}${f} ${S}/debian/
+		if [ -f ${WORKDIR}/${BPN}${f} ]; then
+			install -v -m 644 ${WORKDIR}/${BPN}${f} ${S}/debian/
 		fi
 	done
 }
