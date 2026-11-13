@@ -10,9 +10,6 @@ BASE_DISTRO = "ubuntu"
 
 HOST_BASE_DISTRO = "${BASE_DISTRO}"
 
-DISTRO_APT_SOURCES:arm64 ?= "conf/distro/${BASE_DISTRO}-${BASE_DISTRO_CODENAME}-ports.list"
-HOST_DISTRO_APT_SOURCES:arm64 ?= "conf/distro/${HOST_DISTRO}.list conf/distro/${HOST_DISTRO}-ports.list"
-
 DISTRO_APT_SOURCES:riscv64 ?= "conf/distro/${BASE_DISTRO}-${BASE_DISTRO_CODENAME}-ports.list"
 HOST_DISTRO_APT_SOURCES:riscv64 ?= "conf/distro/${HOST_DISTRO}.list conf/distro/${HOST_DISTRO}-ports.list"
 
