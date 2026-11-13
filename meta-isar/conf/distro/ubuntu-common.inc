@@ -42,6 +42,11 @@ SYSTEMD_BOOTLOADER_INSTALL:focal = "systemd:${DISTRO_ARCH}"
 SYSTEMD_BOOTLOADER_INSTALL:jammy = "systemd:${DISTRO_ARCH}"
 
 # snapshot mirror for reproducible builds
-DISTRO_APT_SNAPSHOT_PREMIRROR ??= "(http|https)://archive.ubuntu.com/(.*) https://snapshot.ubuntu.com/\2/${ISAR_APT_SNAPSHOT_DATE_INTERNAL}\n"
+# note, that the ports snapshot currently does not provide a proper snapshot mirror
+# we keep it anyways to let the build fail instead of silently using a non-snapshot mirror
+DISTRO_APT_SNAPSHOT_PREMIRROR ??= " \
+    (http|https)://archive.ubuntu.com/(.*) https://snapshot.ubuntu.com/\2/${ISAR_APT_SNAPSHOT_DATE_INTERNAL}\n \
+    (http|https)://ports.ubuntu.com/(.*) https://snapshot.ports.ubuntu.com/\2/${ISAR_APT_SNAPSHOT_DATE_INTERNAL}\n \
+"
 
 SBOM_BASE_DISTRO_VENDOR ?= "ubuntu"
