@@ -665,6 +665,49 @@ class CrossTest(CIBaseTest):
         self.init()
         self.perform_build_test(targets)
 
+
+class UbuntuTest(CIBaseTest):
+    """
+    Tests bootstrapping of Ubuntu distributions
+    :avocado: tags=ubuntu,full
+    """
+
+    @staticmethod
+    def bootstrap_targets():
+        recipe = ['isar-mmdebstrap-target', 'isar-mmdebstrap-host']
+        # focal is EOL, so we skip it
+        distro = ['jammy', 'noble', 'resolute']
+        archs = ['amd64', 'arm64', 'armhf', 'riscv64']
+        machines = {'armhf': 'qemuarm'}
+        available = set(CIUtils.get_targets())
+        return [
+            f'mc:{mc}:{r}'
+            for d in distro
+            for a in archs
+            for r in recipe
+            if (mc := f"{machines.get(a, 'qemu' + a)}-{d}") in available
+        ]
+
+    @staticmethod
+    def snapshot_supported(target):
+        machine, distro = target.split(':')[1].rsplit('-', 1)
+        if distro in ('jammy', 'noble'):
+            return machine == 'qemuamd64'
+        return machine in ('qemuamd64', 'qemuarm64')
+
+    def test_ubuntu_bootstrap_mirror(self):
+        self.init()
+        self.perform_build_test(self.bootstrap_targets())
+
+    def test_ubuntu_bootstrap_snapshot(self):
+        self.init()
+        targets = self.bootstrap_targets()
+
+        targets = [t for t in targets if self.snapshot_supported(t)]
+        self.perform_build_test(targets,
+                                use_apt_snapshot=True)
+
+
 class PrebuiltTest(CIBaseTest):
     """
     Tests associated with prebuilt artifacts (containers, debs).
