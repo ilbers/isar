@@ -237,6 +237,8 @@ CLEANFUNCS =+ "deb_clean"
 # dropped (instead of its variants)
 deb_clean() {
     [ -d "${DEPLOY_DIR_DEB}" ] || return 0
+    # isar-apt may not exist (yet), e.g. after removing the tmp directory
+    [ -f "${REPO_ISAR_DIR}/${DISTRO}/conf/distributions" ] || return 0
     for deb in $(find ${DEPLOY_DIR_DEB} -maxdepth 1 -name '*.deb'); do
         repo_del_package "${REPO_ISAR_DIR}"/"${DISTRO}" \
             "${REPO_ISAR_DB_DIR}"/"${DISTRO}" "${DEBDISTRONAME}" "${deb}"

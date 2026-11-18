@@ -54,6 +54,8 @@ CLEANFUNCS += "deb_clean_source"
 # runs sstate_cleanall() taking that lock itself, and flock() would deadlock on
 # the nested acquisition.
 deb_clean_source() {
+    # isar-apt may not exist (yet), e.g. after removing the tmp directory
+    [ -f "${REPO_ISAR_DIR}/${DISTRO}/conf/distributions" ] || return 0
     repo_del_srcpackage "${REPO_ISAR_DIR}"/"${DISTRO}" \
         "${REPO_ISAR_DB_DIR}"/"${DISTRO}" "${DEBDISTRONAME}" "${DEBIAN_SOURCE}"
 }
