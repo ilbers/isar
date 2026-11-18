@@ -1,0 +1,37 @@
+From 9c5e59f304c49059398977ebd8e322ffa128b28a Mon Sep 17 00:00:00 2001
+From: Etienne Carriere <etienne.carriere@linaro.org>
+Date: Wed, 7 Dec 2022 16:29:59 +0100
+Subject: [PATCH 069/117] tee: optee: don't fail probe because of optee-rng
+
+Fixes optee-rng driver bind sequence in optee driver to print a warning
+message but not report an error status when a optee-rng service driver
+fails to be bound as the optee driver itself is still fully functional.
+
+[Backport of commit 476a3d58dfeb ("tee: optee: don't fail probe because
+ of optee-rng")
+
+Signed-off-by: Etienne Carriere <etienne.carriere@linaro.org>
+Reviewed-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Reviewed-by: Jens Wiklander <jens.wiklander@linaro.org>
+Signed-off-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Change-Id: I54e9a734316c963f5b93382fe2f0d3b4efa7c2ae
+---
+ drivers/tee/optee/core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
+index 9240277579..604fd1414f 100644
+--- a/drivers/tee/optee/core.c
++++ b/drivers/tee/optee/core.c
+@@ -834,7 +834,7 @@ static int optee_probe(struct udevice *dev)
+ 		 */
+ 		ret = device_bind_driver(dev, "optee-rng", "optee-rng", NULL);
+ 		if (ret)
+-			return ret;
++			dev_warn(dev, "ftpm_tee failed to bind: %d\n", ret);
+ 	}
+ 
+ 	return 0;
+-- 
+2.39.2
+

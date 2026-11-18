@@ -1,0 +1,37 @@
+From 0d9168bf5d464528daa8b0a36c5217843e21d650 Mon Sep 17 00:00:00 2001
+From: Yann Gautier <yann.gautier@foss.st.com>
+Date: Wed, 2 Nov 2022 14:53:48 +0100
+Subject: [PATCH 053/117] ARM: dts: stm32: add sdmmc cd-gpios for
+ STM32MP135F-DK
+
+On STM32MP135F-DK, the SD card detect GPIO is GPIOH4.
+Backport of the Linux patch:
+https://lore.kernel.org/linux-arm-kernel/20220921160334.3227138-1-yann.gautier@foss.st.com/
+
+[Backport of commit 3068bb60c6f7 ("ARM: dts: stm32: add sdmmc cd-gpios for STM32MP135F-DK")]
+
+Signed-off-by: Yann Gautier <yann.gautier@foss.st.com>
+Signed-off-by: Alexandre Torgue <alexandre.torgue@foss.st.com>
+Reviewed-by: Patrice Chotard <patrice.chotard@foss.st.com>
+Reviewed-by: Patrick Delaunay <patrick.delaunay@foss.st.com>
+Change-Id: I992b3ec68f9e7f99f0e4de4c90e57b52c4df7d53
+---
+ arch/arm/dts/stm32mp135f-dk.dts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/dts/stm32mp135f-dk.dts b/arch/arm/dts/stm32mp135f-dk.dts
+index e6b8ffd332..52f86596ce 100644
+--- a/arch/arm/dts/stm32mp135f-dk.dts
++++ b/arch/arm/dts/stm32mp135f-dk.dts
+@@ -82,7 +82,7 @@
+ 	pinctrl-0 = <&sdmmc1_b4_pins_a &sdmmc1_clk_pins_a>;
+ 	pinctrl-1 = <&sdmmc1_b4_od_pins_a &sdmmc1_clk_pins_a>;
+ 	pinctrl-2 = <&sdmmc1_b4_sleep_pins_a>;
+-	broken-cd;
++	cd-gpios = <&gpioh 4 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+ 	disable-wp;
+ 	st,neg-edge;
+ 	bus-width = <4>;
+-- 
+2.39.2
+

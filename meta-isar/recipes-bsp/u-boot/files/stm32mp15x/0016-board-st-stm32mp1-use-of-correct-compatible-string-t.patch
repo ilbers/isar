@@ -1,0 +1,39 @@
+From 0e8b629a921d962ab02e726dbd1f3d2205612aae Mon Sep 17 00:00:00 2001
+From: Christophe Kerello <christophe.kerello@foss.st.com>
+Date: Mon, 12 Sep 2022 17:40:50 +0200
+Subject: [PATCH 016/117] board: st: stm32mp1: use of correct compatible string
+ to add partitions
+
+Current compatible string used to update SPI NAND and SPI NOR devices
+can lead to a wrong partitions update (for example, SPI NAND partitions
+added to SPI NOR node in the device tree). To avoid this wrong behavior,
+use jedec,spi-nor compatible string for SPI NOR devices and spi-nand
+compatible string for SPI NAND devices.
+
+[Backport of commit 89f3745152ab ("board: st: stm32mp1: use of correct compatible string to add partitions")]
+Signed-off-by: Christophe Kerello <christophe.kerello@foss.st.com>
+Signed-off-by: Patrick Delaunay <patrick.delaunay@foss.st.com>
+Reviewed-by: Patrice Chotard <patrice.chotard@foss.st.com>
+Change-Id: Ie91ed17082d9741d1dd9afe1f1d297ff7bcb6f69
+---
+ board/st/stm32mp1/stm32mp1.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/board/st/stm32mp1/stm32mp1.c b/board/st/stm32mp1/stm32mp1.c
+index 8c162b42a5..7dc26f850f 100644
+--- a/board/st/stm32mp1/stm32mp1.c
++++ b/board/st/stm32mp1/stm32mp1.c
+@@ -898,8 +898,8 @@ int mmc_get_env_dev(void)
+ int ft_board_setup(void *blob, struct bd_info *bd)
+ {
+ 	static const struct node_info nodes[] = {
+-		{ "st,stm32f469-qspi",		MTD_DEV_TYPE_NOR,  },
+-		{ "st,stm32f469-qspi",		MTD_DEV_TYPE_SPINAND},
++		{ "jedec,spi-nor",		MTD_DEV_TYPE_NOR,  },
++		{ "spi-nand",			MTD_DEV_TYPE_SPINAND},
+ 		{ "st,stm32mp15-fmc2",		MTD_DEV_TYPE_NAND, },
+ 		{ "st,stm32mp1-fmc2-nfc",	MTD_DEV_TYPE_NAND, },
+ 	};
+-- 
+2.39.2
+

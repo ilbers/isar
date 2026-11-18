@@ -1,0 +1,35 @@
+From 70b703cfeb0f201698fcb71f5e23abf91f77f2a8 Mon Sep 17 00:00:00 2001
+From: Patrick Delaunay <patrick.delaunay@foss.st.com>
+Date: Mon, 10 Oct 2022 10:56:14 +0200
+Subject: [PATCH 042/117] ARM: dts: stm32: update SCMI dedicated file
+
+The PWR regulators don't need be removed as they are already deactivated.
+This patches is a alignment with the accepted patch in Linux device tree
+in commit a34b42f8690c ("ARM: dts: stm32: fix pwr regulators references
+to use scmi").
+
+[Backport of commit 637a370251d3 ("ARM: dts: stm32: update SCMI dedicated file")]
+
+Fixes: 69ef98b209e7 ("ARM: dts: stm32mp15: alignment with v5.19")
+Signed-off-by: Patrick Delaunay <patrick.delaunay@foss.st.com>
+Reviewed-by: Patrice Chotard <patrice.chotard@foss.st.com>
+Change-Id: I172a7fb33d85edd7765bb1c3d61862c324047c29
+---
+ arch/arm/dts/stm32mp15-scmi.dtsi | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/arch/arm/dts/stm32mp15-scmi.dtsi b/arch/arm/dts/stm32mp15-scmi.dtsi
+index 37d4547b3e..543f24c2f4 100644
+--- a/arch/arm/dts/stm32mp15-scmi.dtsi
++++ b/arch/arm/dts/stm32mp15-scmi.dtsi
+@@ -103,7 +103,3 @@
+ /delete-node/ &clk_lse;
+ /delete-node/ &clk_lsi;
+ /delete-node/ &clk_csi;
+-/delete-node/ &reg11;
+-/delete-node/ &reg18;
+-/delete-node/ &usb33;
+-/delete-node/ &pwr_regulators;
+-- 
+2.39.2
+

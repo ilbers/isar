@@ -13,7 +13,8 @@ SRC_URI += " \
     https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-${ARCHIVE_VERSION}.tar.xz \
     file://ftpm-module.cfg \
     file://subdir \
-    file://no-root-nfs.cfg;apply=no"
+    file://no-root-nfs.cfg;apply=no \
+    file://0001-ARM-dts-stm32-add-stm32mp157d-dk1-board-support.patch"
 
 SRC_URI[sha256sum] = "f143aaade8877ba5616e788b4482576db28481bcf557ef537f4fcc3938fc3176"
 

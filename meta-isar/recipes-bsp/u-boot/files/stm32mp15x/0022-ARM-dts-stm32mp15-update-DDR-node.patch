@@ -1,0 +1,112 @@
+From fe451bd4a4c3c827b48ea55ff7e865e075b4c8ff Mon Sep 17 00:00:00 2001
+From: Patrick Delaunay <patrick.delaunay@foss.st.com>
+Date: Wed, 21 Sep 2022 09:37:13 +0200
+Subject: [PATCH 022/117] ARM: dts: stm32mp15: update DDR node
+
+Remove the unnecessary nodes for TFABOOT and keep the mandatory part
+in SOC dtsi, only the DDRCTRL and DDRPHY addresses.
+This patch allows to manage the DDR configuration setting in U-Boot
+device tree only if it is needed, when CONFIG_SPL is defined.
+
+With TFABOOT, the DDR configuration is done in TF-A BL2 and the DDR size
+is dynamically computed in U-Boot since commit d72e7bbe7c28 ("ram:
+stm32mp1: compute DDR size from DDRCTL registers").
+
+[Backport of commit 9f7c58dc0dea ("ARM: dts: stm32mp15: update DDR node")]
+Signed-off-by: Patrick Delaunay <patrick.delaunay@foss.st.com>
+Reviewed-by: Patrice Chotard <patrice.chotard@foss.st.com>
+Change-Id: Id7d228115e1279043edd408b148df124acb5194c
+---
+ arch/arm/dts/stm32mp15-ddr.dtsi               | 16 ++++++++++++++++
+ arch/arm/dts/stm32mp15-u-boot.dtsi            | 14 --------------
+ arch/arm/dts/stm32mp157a-dk1-scmi-u-boot.dtsi |  1 -
+ arch/arm/dts/stm32mp157c-ed1-scmi-u-boot.dtsi |  1 -
+ 4 files changed, 16 insertions(+), 16 deletions(-)
+
+diff --git a/arch/arm/dts/stm32mp15-ddr.dtsi b/arch/arm/dts/stm32mp15-ddr.dtsi
+index 0aac9131a6..d02f79dac6 100644
+--- a/arch/arm/dts/stm32mp15-ddr.dtsi
++++ b/arch/arm/dts/stm32mp15-ddr.dtsi
+@@ -4,7 +4,22 @@
+  */
+ #include <linux/stringify.h>
+ 
++#ifdef CONFIG_SPL
+ &ddr {
++	clocks = <&rcc AXIDCG>,
++		 <&rcc DDRC1>,
++		 <&rcc DDRC2>,
++		 <&rcc DDRPHYC>,
++		 <&rcc DDRCAPB>,
++		 <&rcc DDRPHYCAPB>;
++
++	clock-names = "axidcg",
++		      "ddrc1",
++		      "ddrc2",
++		      "ddrphyc",
++		      "ddrcapb",
++		      "ddrphycapb";
++
+ 	config-DDR_MEM_COMPATIBLE {
+ 		u-boot,dm-pre-reloc;
+ 
+@@ -119,6 +134,7 @@
+ 		status = "okay";
+ 	};
+ };
++#endif
+ 
+ #undef DDR_MEM_COMPATIBLE
+ #undef DDR_MEM_NAME
+diff --git a/arch/arm/dts/stm32mp15-u-boot.dtsi b/arch/arm/dts/stm32mp15-u-boot.dtsi
+index d9d04743ac..d5c87d29d8 100644
+--- a/arch/arm/dts/stm32mp15-u-boot.dtsi
++++ b/arch/arm/dts/stm32mp15-u-boot.dtsi
+@@ -53,20 +53,6 @@
+ 			reg = <0x5a003000 0x550
+ 			       0x5a004000 0x234>;
+ 
+-			clocks = <&rcc AXIDCG>,
+-				 <&rcc DDRC1>,
+-				 <&rcc DDRC2>,
+-				 <&rcc DDRPHYC>,
+-				 <&rcc DDRCAPB>,
+-				 <&rcc DDRPHYCAPB>;
+-
+-			clock-names = "axidcg",
+-				      "ddrc1",
+-				      "ddrc2",
+-				      "ddrphyc",
+-				      "ddrcapb",
+-				      "ddrphycapb";
+-
+ 			status = "okay";
+ 		};
+ 	};
+diff --git a/arch/arm/dts/stm32mp157a-dk1-scmi-u-boot.dtsi b/arch/arm/dts/stm32mp157a-dk1-scmi-u-boot.dtsi
+index 2db045e7ce..1209dfe009 100644
+--- a/arch/arm/dts/stm32mp157a-dk1-scmi-u-boot.dtsi
++++ b/arch/arm/dts/stm32mp157a-dk1-scmi-u-boot.dtsi
+@@ -5,7 +5,6 @@
+ 
+ #include <dt-bindings/clock/stm32mp1-clksrc.h>
+ #include "stm32mp15-scmi-u-boot.dtsi"
+-#include "stm32mp15-ddr3-1x4Gb-1066-binG.dtsi"
+ 
+ / {
+ 	aliases {
+diff --git a/arch/arm/dts/stm32mp157c-ed1-scmi-u-boot.dtsi b/arch/arm/dts/stm32mp157c-ed1-scmi-u-boot.dtsi
+index 54662f7e29..c265745ff1 100644
+--- a/arch/arm/dts/stm32mp157c-ed1-scmi-u-boot.dtsi
++++ b/arch/arm/dts/stm32mp157c-ed1-scmi-u-boot.dtsi
+@@ -5,7 +5,6 @@
+ 
+ #include <dt-bindings/clock/stm32mp1-clksrc.h>
+ #include "stm32mp15-scmi-u-boot.dtsi"
+-#include "stm32mp15-ddr3-2x4Gb-1066-binG.dtsi"
+ 
+ / {
+ 	aliases {
+-- 
+2.39.2
+

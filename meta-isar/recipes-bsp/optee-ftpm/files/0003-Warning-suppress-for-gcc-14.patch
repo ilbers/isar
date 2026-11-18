@@ -1,0 +1,39 @@
+From 1554c6c223d32cf1f5dd534e03e98b3ff82006a5 Mon Sep 17 00:00:00 2001
+From: Aliaksei Karpovich <aliaksei.karpovich@promwad.com>
+Date: Mon, 9 Nov 2026 15:29:24 +0100
+Subject: [PATCH] Warning suppress for gcc 14
+
+---
+ Samples/ARM32-FirmwareTPM/optee_ta/fTPM/lib/wolf/sub.mk | 2 +-
+ Samples/ARM32-FirmwareTPM/optee_ta/fTPM/sub.mk          | 2 ++
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/Samples/ARM32-FirmwareTPM/optee_ta/fTPM/lib/wolf/sub.mk b/Samples/ARM32-FirmwareTPM/optee_ta/fTPM/lib/wolf/sub.mk
+index 0a43f46..262ed0c 100644
+--- a/Samples/ARM32-FirmwareTPM/optee_ta/fTPM/lib/wolf/sub.mk
++++ b/Samples/ARM32-FirmwareTPM/optee_ta/fTPM/lib/wolf/sub.mk
+@@ -16,7 +16,7 @@ WOLF_SSL_FLAGS =	-DSINGLE_THREADED	\
+ # creating a new fork of each submodule repo. To avoid spurious warnings these warnings are disabled here globally.
+ #
+ 
+-WOLF_WARNING_SUPPRESS = -Wno-unused-function
++WOLF_WARNING_SUPPRESS = -Wno-unused-function -Wno-implicit-function-declaration
+ 
+ cflags-y += $(WOLF_SSL_FLAGS) $(WOLF_WARNING_SUPPRESS)
+ 
+diff --git a/Samples/ARM32-FirmwareTPM/optee_ta/fTPM/sub.mk b/Samples/ARM32-FirmwareTPM/optee_ta/fTPM/sub.mk
+index 2d9ba24..ce225d7 100644
+--- a/Samples/ARM32-FirmwareTPM/optee_ta/fTPM/sub.mk
++++ b/Samples/ARM32-FirmwareTPM/optee_ta/fTPM/sub.mk
+@@ -14,6 +14,8 @@ cflags-y +=	-DTHIRTY_TWO_BIT				\
+ 		-fstack-protector				\
+ 		-Wstack-protector
+ 
++cflags-y +=	-Wno-implicit-function-declaration
++
+ ifeq ($(CFG_TA_MEASURED_BOOT),y)
+ cflags-y += -DEVENT_LOG_SIZE=$(CFG_TA_EVENT_LOG_SIZE)
+ cflags-y += -DMEASURED_BOOT
+-- 
+2.53.0
+

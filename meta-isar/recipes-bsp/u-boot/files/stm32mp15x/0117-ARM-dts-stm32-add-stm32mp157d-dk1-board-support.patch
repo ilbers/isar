@@ -1,0 +1,103 @@
+From b4ba6aefe532646cd0035af7b4bffe40d6d31061 Mon Sep 17 00:00:00 2001
+From: Patrick Delaunay <patrick.delaunay@foss.st.com>
+Date: Fri, 7 Oct 2022 14:39:33 +0200
+Subject: [PATCH 117/117] ARM: dts: stm32: add stm32mp157d-dk1 board support
+
+This commit adds stm32mp157d-dk1 board support. This board embeds a
+STM32MP157D SOC. This SOC contains the same level of feature than a
+STM32MP157A SOC but A7 clock frequency can reach 800MHz.
+
+Signed-off-by: Patrick Delaunay <patrick.delaunay@foss.st.com>
+Signed-off-by: Aliaksei Karpovich <akarpovich@ilbers.de>
+Change-Id: I1fd620847d2bbb9c3d8d461259f2cbd1a8aa6907
+Reviewed-on: https://gerrit.st.com/c/mpu/oe/st/u-boot/+/270210
+---
+ arch/arm/dts/Makefile                    |  1 +
+ arch/arm/dts/stm32mp157d-dk1-u-boot.dtsi |  6 +++++
+ arch/arm/dts/stm32mp157d-dk1.dts         | 30 ++++++++++++++++++++++++
+ doc/board/st/stm32mp1.rst                |  2 ++
+ 4 files changed, 39 insertions(+)
+ create mode 100644 arch/arm/dts/stm32mp157d-dk1-u-boot.dtsi
+ create mode 100644 arch/arm/dts/stm32mp157d-dk1.dts
+
+diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
+index f1e5f59b52..17fd978b07 100644
+--- a/arch/arm/dts/Makefile
++++ b/arch/arm/dts/Makefile
+@@ -1193,5 +1193,6 @@ dtb-$(CONFIG_STM32MP15x) += \
+ 	stm32mp157c-ed1.dtb \
+ 	stm32mp157c-ev1.dtb \
+ 	stm32mp157c-odyssey.dtb \
++	stm32mp157d-dk1.dtb \
+ 	stm32mp15xx-dhcom-drc02.dtb \
+ 	stm32mp15xx-dhcom-pdk2.dtb \
+diff --git a/arch/arm/dts/stm32mp157d-dk1-u-boot.dtsi b/arch/arm/dts/stm32mp157d-dk1-u-boot.dtsi
+new file mode 100644
+index 0000000000..41f36278b6
+--- /dev/null
++++ b/arch/arm/dts/stm32mp157d-dk1-u-boot.dtsi
+@@ -0,0 +1,6 @@
++// SPDX-License-Identifier: GPL-2.0-or-later OR BSD-3-Clause
++/*
++ * Copyright : STMicroelectronics 2022
++ */
++
++#include "stm32mp157a-dk1-u-boot.dtsi"
+diff --git a/arch/arm/dts/stm32mp157d-dk1.dts b/arch/arm/dts/stm32mp157d-dk1.dts
+new file mode 100644
+index 0000000000..ad917a6e18
+--- /dev/null
++++ b/arch/arm/dts/stm32mp157d-dk1.dts
+@@ -0,0 +1,30 @@
++// SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-3-Clause)
++/*
++ * Copyright (C) STMicroelectronics 2022 - All Rights Reserved
++ * Author: Alexandre Torgue <alexandre.torgue@foss.st.com> for STMicroelectronics.
++ */
++
++/dts-v1/;
++
++#include "stm32mp157.dtsi"
++#include "stm32mp15xd.dtsi"
++#include "stm32mp15-pinctrl.dtsi"
++#include "stm32mp15xxac-pinctrl.dtsi"
++#include "stm32mp15xx-dkx.dtsi"
++#include "stm32mp157a-dk1-scmi.dtsi"
++
++/ {
++	model = "STMicroelectronics STM32MP157D-DK1 Discovery Board";
++	compatible = "st,stm32mp157d-dk1", "st,stm32mp157";
++
++	aliases {
++		ethernet0 = &ethernet0;
++		serial0 = &uart4;
++		serial1 = &usart3;
++		serial2 = &uart7;
++	};
++
++	chosen {
++		stdout-path = "serial0:115200n8";
++	};
++};
+diff --git a/doc/board/st/stm32mp1.rst b/doc/board/st/stm32mp1.rst
+index 85b35be9ca..11e15de821 100644
+--- a/doc/board/st/stm32mp1.rst
++++ b/doc/board/st/stm32mp1.rst
+@@ -75,5 +75,6 @@ Currently the following STMIcroelectronics boards are supported:
+  + stm32mp157c-dk2.dts
+  + stm32mp157c-ed1.dts
+  + stm32mp157c-ev1.dts
++ + stm32mp157d-dk1.dts
+ 
+ These board with SCMI support are only managed with stm32mp15_defconfig,
+@@ -191,6 +192,7 @@ The supported device trees for STM32MP15x (stm32mp15_trusted_defconfig and stm32
+ + dk1: Discovery board
+ 
+    + stm32mp157a-dk1
++   + stm32mp157d-dk1
+ 
+ + dk2: Discovery board = dk1 with a BT/WiFI combo and a DSI panel
+ 
+-- 
+2.39.2
+

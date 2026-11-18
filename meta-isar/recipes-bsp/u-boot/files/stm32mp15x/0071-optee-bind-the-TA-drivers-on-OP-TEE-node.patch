@@ -1,0 +1,68 @@
+From 6f8c1e8732a95edc08090fce4b33e11cb6be8dbb Mon Sep 17 00:00:00 2001
+From: Patrick Delaunay <patrick.delaunay@foss.st.com>
+Date: Thu, 15 Dec 2022 09:54:52 +0100
+Subject: [PATCH 071/117] optee: bind the TA drivers on OP-TEE node
+
+In U-Boot driver model the devices can be referenced by
+phandle in the U-Boot configuration nodes.
+
+Without a valid node provided during the bind, the driver
+associated to OP-TEE TA can't be referenced.
+
+For example to force the sequence number with alias
+(.flags = DM_UC_FLAG_SEQ_ALIAS)
+
+ 	aliases {
+		rng0 = &optee;
+ 	};
+
+or other configuration:
+
+board-sysinfo {
+   compatible = "vendor,sysinfo-board";
+   ramdom = <&optee>;
+}
+
+With this patch all drivers bound from OP-TEE service
+discovery are now associated are associated to OP-TEE
+node, allowing to identify by phandle the driver
+provided by the TA for one UCLASS without modifying
+device tree.
+
+[Backport of commit 59dacc319030 ("optee: bind the TA drivers on
+ OP-TEE node")]
+
+Signed-off-by: Patrick Delaunay <patrick.delaunay@foss.st.com>
+Reviewed-by: Patrice Chotard <patrice.chotard@foss.st.com>
+Change-Id: Id817640551f8c4b56cdf7a73995b18d7293b14fa
+---
+ drivers/tee/optee/core.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
+index b21031d7d8..a813a84a4f 100644
+--- a/drivers/tee/optee/core.c
++++ b/drivers/tee/optee/core.c
+@@ -92,7 +92,8 @@ static int bind_service_list(struct udevice *dev, struct tee_shm *service_list,
+ 		if (!service)
+ 			continue;
+ 
+-		ret = device_bind_driver(dev, service->driver_name, service->driver_name, NULL);
++		ret = device_bind_driver_to_node(dev, service->driver_name, service->driver_name,
++						 dev_ofnode(dev), NULL);
+ 		if (ret) {
+ 			dev_warn(dev, "%s was not bound: %d, ignored\n", service->driver_name, ret);
+ 			continue;
+@@ -846,7 +847,8 @@ static int optee_probe(struct udevice *dev)
+ 		 * Discovery of TAs on the TEE bus is not supported in U-Boot:
+ 		 * only bind the drivers associated to the supported OP-TEE TA
+ 		 */
+-		ret = device_bind_driver(dev, "optee-rng", "optee-rng", NULL);
++		ret = device_bind_driver_to_node(dev, "optee-rng", "optee-rng",
++						 dev_ofnode(dev), NULL);
+ 		if (ret)
+ 			dev_warn(dev, "ftpm_tee failed to bind: %d\n", ret);
+ 	}
+-- 
+2.39.2
+

@@ -1,0 +1,36 @@
+From 8f28ec404b44e551b2c27d0f26dfd55276507e16 Mon Sep 17 00:00:00 2001
+From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Date: Thu, 19 Jan 2023 11:21:37 +0200
+Subject: [PATCH 092/117] tee: optee: fix uuid comparisons on service discovery
+
+When comparing UUIDs for discovered services we only compare up to the
+ptr size instead of the entire UUID
+
+[Backport of commit eda976d36a37 ("tee: optee: fix uuid comparisons on
+ service discovery")]
+
+Fixes: 94ccfb78a4d61 ("drivers: tee: optee: discover OP-TEE services")
+Signed-off-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Reviewed-by: Etienne Carriere <etienne.carriere@linaro.org>
+Reviewed-by: Jens Wiklander <jens.wiklander@linaro.org>
+Change-Id: I13167d5cbd0f13a771499e0468a00a1873e0ed5c
+---
+ drivers/tee/optee/core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
+index 88e23d252b..9a9b697e91 100644
+--- a/drivers/tee/optee/core.c
++++ b/drivers/tee/optee/core.c
+@@ -73,7 +73,7 @@ static struct optee_service *find_service_driver(const struct tee_optee_ta_uuid
+ 
+ 	for (idx = 0; idx < service_cnt; idx++, service++) {
+ 		tee_optee_ta_uuid_to_octets(loc_uuid, &service->uuid);
+-		if (!memcmp(uuid, loc_uuid, sizeof(uuid)))
++		if (!memcmp(uuid, loc_uuid, sizeof(*uuid)))
+ 			return service;
+ 	}
+ 
+-- 
+2.39.2
+

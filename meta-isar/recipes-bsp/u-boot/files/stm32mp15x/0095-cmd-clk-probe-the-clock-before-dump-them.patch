@@ -1,0 +1,80 @@
+From 3b6d6fdc7e5decb52f533c7049938ba1dd8d278d Mon Sep 17 00:00:00 2001
+From: Patrick Delaunay <patrick.delaunay@foss.st.com>
+Date: Tue, 13 Dec 2022 14:57:10 +0100
+Subject: [PATCH 095/117] cmd: clk: probe the clock before dump them
+
+The clock UCLASS need to be probed to allow availability of the
+private data (struct clk *), get in show_clks() with dev_get_clk_ptr()
+before use them.
+
+Without this patch the clock dump can cause crash because all the
+private data are not available before calling the API clk_get_rate().
+
+It is the case for the SCMI clocks, priv->channel is needed for
+scmi_clk_get_rate() and it is initialized only in scmi_clk_probe().
+This issue causes a crash for "clk dump" command on STM32MP135F-DK board
+for SCMI clock not yet probed.
+
+[Backport of commit c40251c120fa ("cmd: clk: probe the clock before dump
+ them")]
+
+Fixes: 1a725e229096 ("clk: fix clock tree dump to properly dump out every registered clock")
+Signed-off-by: Patrick Delaunay <patrick.delaunay@foss.st.com>
+Reviewed-by: Sean Anderson <seanga2@gmail.com>
+Link: https://lore.kernel.org/r/20221213145708.v2.1.Ia0bc6b272f1e2e3f37873c61d79138c2663c4055@changeid
+Change-Id: I1a9c695a185950bbbc9436856aeac65ea5e7b1fc
+Reviewed-on: https://gerrit.st.com/c/mpu/oe/st/u-boot/+/292111
+ACI: CIBUILD <MDG-smet-aci-builds@list.st.com>
+---
+ cmd/clk.c | 15 +++++----------
+ 1 file changed, 5 insertions(+), 10 deletions(-)
+
+diff --git a/cmd/clk.c b/cmd/clk.c
+index a483fd8981..ff7c7649a1 100644
+--- a/cmd/clk.c
++++ b/cmd/clk.c
+@@ -22,7 +22,7 @@ static void show_clks(struct udevice *dev, int depth, int last_flag)
+ 	u32 rate;
+ 
+ 	clkp = dev_get_clk_ptr(dev);
+-	if (device_get_uclass_id(dev) == UCLASS_CLK && clkp) {
++	if (clkp) {
+ 		parent = clk_get_parent(clkp);
+ 		if (!IS_ERR(parent) && depth == -1)
+ 			return;
+@@ -49,10 +49,11 @@ static void show_clks(struct udevice *dev, int depth, int last_flag)
+ 		printf("%s\n", dev->name);
+ 	}
+ 
+-	list_for_each_entry(child, &dev->child_head, sibling_node) {
++	device_foreach_child_probe(child, dev) {
++		if (device_get_uclass_id(child) != UCLASS_CLK)
++			continue;
+ 		if (child == dev)
+ 			continue;
+-
+ 		is_last = list_is_last(&child->sibling_node, &dev->child_head);
+ 		show_clks(child, depth, (last_flag << 1) | is_last);
+ 	}
+@@ -61,17 +62,11 @@ static void show_clks(struct udevice *dev, int depth, int last_flag)
+ int __weak soc_clk_dump(void)
+ {
+ 	struct udevice *dev;
+-	struct uclass *uc;
+-	int ret;
+-
+-	ret = uclass_get(UCLASS_CLK, &uc);
+-	if (ret)
+-		return ret;
+ 
+ 	printf(" Rate               Usecnt      Name\n");
+ 	printf("------------------------------------------\n");
+ 
+-	uclass_foreach_dev(dev, uc)
++	uclass_foreach_dev_probe(UCLASS_CLK, dev)
+ 		show_clks(dev, -1, 0);
+ 
+ 	return 0;
+-- 
+2.39.2
+

@@ -1,0 +1,80 @@
+From 8b1eaf148b358bb4cb515f856b889e69977af657 Mon Sep 17 00:00:00 2001
+From: Patrick Delaunay <patrick.delaunay@foss.st.com>
+Date: Thu, 15 Sep 2022 18:11:38 +0200
+Subject: [PATCH 017/117] arm: stm32mp: add defines for BSEC_LOCK status in
+ stm32key command
+
+Add defines for value used in stm32key for BSEC permanent lock status
+and error.
+
+This patch is a preliminary step to support more lock status in BSEC
+driver.
+
+[Backport of commit c6327ba40f59 ("arm: stm32mp: add defines for BSEC_LOCK status in stm32key command")]
+Signed-off-by: Patrick Delaunay <patrick.delaunay@foss.st.com>
+Reviewed-by: Patrice Chotard <patrice.chotard@foss.st.com>
+Change-Id: I69c1504bdbb53f1a937a2338105637a41f92ada8
+---
+ arch/arm/mach-stm32mp/cmd_stm32key.c | 15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
+
+diff --git a/arch/arm/mach-stm32mp/cmd_stm32key.c b/arch/arm/mach-stm32mp/cmd_stm32key.c
+index 68f28922d1..1899d91ecb 100644
+--- a/arch/arm/mach-stm32mp/cmd_stm32key.c
++++ b/arch/arm/mach-stm32mp/cmd_stm32key.c
+@@ -19,6 +19,9 @@
+ #define STM32_OTP_HASH_KEY_START	24
+ #define STM32_OTP_HASH_KEY_SIZE		8
+ 
++#define BSEC_LOCK_ERROR			(-1)
++#define BSEC_LOCK_PERM			BIT(0)
++
+ static int get_misc_dev(struct udevice **dev)
+ {
+ 	int ret;
+@@ -60,14 +63,14 @@ static int read_hash_otp(bool print, bool *locked, bool *closed)
+ 			val = ~0x0;
+ 		ret = misc_read(dev, STM32_BSEC_LOCK(word), &lock, 4);
+ 		if (ret != 4)
+-			lock = -1;
++			lock = BSEC_LOCK_ERROR;
+ 		if (print)
+-			printf("OTP HASH %i: %x lock : %d\n", word, val, lock);
++			printf("OTP HASH %i: %x lock : %x\n", word, val, lock);
+ 		if (val == ~0x0)
+ 			nb_invalid++;
+ 		else if (val == 0x0)
+ 			nb_zero++;
+-		if (lock == 1)
++		if (lock & BSEC_LOCK_PERM)
+ 			nb_lock++;
+ 	}
+ 
+@@ -77,13 +80,13 @@ static int read_hash_otp(bool print, bool *locked, bool *closed)
+ 		val = 0x0;
+ 	ret = misc_read(dev, STM32_BSEC_LOCK(word), &lock, 4);
+ 	if (ret != 4)
+-		lock = -1;
++		lock = BSEC_LOCK_ERROR;
+ 
+ 	status = (val & STM32_OTP_CLOSE_MASK) == STM32_OTP_CLOSE_MASK;
+ 	if (closed)
+ 		*closed = status;
+ 	if (print)
+-		printf("OTP %d: closed status: %d lock : %d\n", word, status, lock);
++		printf("OTP %d: closed status: %d lock : %x\n", word, status, lock);
+ 
+ 	status = (nb_lock == STM32_OTP_HASH_KEY_SIZE);
+ 	if (locked)
+@@ -128,7 +131,7 @@ static int fuse_hash_value(u32 addr, bool print)
+ 			return ret;
+ 		}
+ 		/* on success, lock the OTP for HASH key */
+-		val = 1;
++		val = BSEC_LOCK_PERM;
+ 		ret = misc_write(dev, STM32_BSEC_LOCK(word), &val, 4);
+ 		if (ret != 4) {
+ 			log_err("Lock OTP %i failed\n", word);
+-- 
+2.39.2
+

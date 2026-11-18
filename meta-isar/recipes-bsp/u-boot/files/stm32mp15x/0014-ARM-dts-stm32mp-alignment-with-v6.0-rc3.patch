@@ -1,0 +1,265 @@
+From be743405e7debb793ab4d269f1e70835dfa9d75c Mon Sep 17 00:00:00 2001
+From: Patrick Delaunay <patrick.delaunay@foss.st.com>
+Date: Wed, 7 Sep 2022 13:42:23 +0200
+Subject: [PATCH 014/117] ARM: dts: stm32mp: alignment with v6.0-rc3
+
+Device tree alignment with Linux kernel v6.0-rc3:
+- ARM: dts: stm32: add support for USB2514B onboard hub on stm32mp15xx-dkx
+- ARM: dts: stm32: Add alternate pinmux for RCC pin
+- ARM: dts: stm32: Add alternate pinmux for DCMI pins
+- ARM: dts: stm32: Add alternate pinmux for SPI2 pins
+- ARM: dts: stm32: Fix SPI2 pinmux pin comments on stm32mp15
+- ARM: dts: stm32: add optee reserved memory on stm32mp135f-dk
+- ARM: dts: stm32: enable optee firmware and SCMI support on STM32MP13
+- ARM: dts: stm32: remove the IPCC "wakeup" IRQ on stm32mp151
+
+[Backport of commit 152498d580ad ("ARM: dts: stm32mp: alignment with v6.0-rc3")]
+Signed-off-by: Patrick Delaunay <patrick.delaunay@foss.st.com>
+Reviewed-by: Patrice Chotard <patrice.chotard@foss.st.com>
+Change-Id: I38f76ef5708717d9d2311937d86fbb07f41da344
+---
+ arch/arm/dts/stm32mp13-u-boot.dtsi  | 10 +++--
+ arch/arm/dts/stm32mp131.dtsi        | 28 ++++++-------
+ arch/arm/dts/stm32mp135f-dk.dts     |  4 +-
+ arch/arm/dts/stm32mp15-pinctrl.dtsi | 64 ++++++++++++++++++++++++++---
+ arch/arm/dts/stm32mp151.dtsi        |  7 ++--
+ arch/arm/dts/stm32mp15xx-dkx.dtsi   |  8 ++++
+ 6 files changed, 91 insertions(+), 30 deletions(-)
+
+diff --git a/arch/arm/dts/stm32mp13-u-boot.dtsi b/arch/arm/dts/stm32mp13-u-boot.dtsi
+index 01552adb7c..47a43649bb 100644
+--- a/arch/arm/dts/stm32mp13-u-boot.dtsi
++++ b/arch/arm/dts/stm32mp13-u-boot.dtsi
+@@ -17,6 +17,12 @@
+ 		pinctrl0 = &pinctrl;
+ 	};
+ 
++	firmware {
++		optee {
++			u-boot,dm-pre-reloc;
++		};
++	};
++
+ 	/* need PSCI for sysreset during board_f */
+ 	psci {
+ 		u-boot,dm-pre-proper;
+@@ -82,10 +88,6 @@
+ 	u-boot,dm-pre-reloc;
+ };
+ 
+-&optee {
+-	u-boot,dm-pre-reloc;
+-};
+-
+ &pinctrl {
+ 	u-boot,dm-pre-reloc;
+ };
+diff --git a/arch/arm/dts/stm32mp131.dtsi b/arch/arm/dts/stm32mp131.dtsi
+index 84e16bb2f2..a1c6d0d00b 100644
+--- a/arch/arm/dts/stm32mp131.dtsi
++++ b/arch/arm/dts/stm32mp131.dtsi
+@@ -27,21 +27,8 @@
+ 		interrupt-parent = <&intc>;
+ 	};
+ 
+-	scmi_sram: sram@2ffff000 {
+-		compatible = "mmio-sram";
+-		reg = <0x2ffff000 0x1000>;
+-		#address-cells = <1>;
+-		#size-cells = <1>;
+-		ranges = <0 0x2ffff000 0x1000>;
+-
+-		scmi_shm: scmi_shm@0 {
+-			compatible = "arm,scmi-shmem";
+-			reg = <0 0x80>;
+-		};
+-	};
+-
+ 	firmware {
+-		optee: optee {
++		optee {
+ 			method = "smc";
+ 			compatible = "linaro,optee-tz";
+ 		};
+@@ -151,6 +138,19 @@
+ 		interrupt-parent = <&intc>;
+ 		ranges;
+ 
++		scmi_sram: sram@2ffff000 {
++			compatible = "mmio-sram";
++			reg = <0x2ffff000 0x1000>;
++			#address-cells = <1>;
++			#size-cells = <1>;
++			ranges = <0 0x2ffff000 0x1000>;
++
++			scmi_shm: scmi-sram@0 {
++				compatible = "arm,scmi-shmem";
++				reg = <0 0x80>;
++			};
++		};
++
+ 		uart4: serial@40010000 {
+ 			compatible = "st,stm32h7-uart";
+ 			reg = <0x40010000 0x400>;
+diff --git a/arch/arm/dts/stm32mp135f-dk.dts b/arch/arm/dts/stm32mp135f-dk.dts
+index f436ffab99..e6b8ffd332 100644
+--- a/arch/arm/dts/stm32mp135f-dk.dts
++++ b/arch/arm/dts/stm32mp135f-dk.dts
+@@ -31,8 +31,8 @@
+ 		#size-cells = <1>;
+ 		ranges;
+ 
+-		optee@de000000 {
+-			reg = <0xde000000 0x2000000>;
++		optee@dd000000 {
++			reg = <0xdd000000 0x3000000>;
+ 			no-map;
+ 		};
+ 	};
+diff --git a/arch/arm/dts/stm32mp15-pinctrl.dtsi b/arch/arm/dts/stm32mp15-pinctrl.dtsi
+index d3ed10335d..2cc9341d43 100644
+--- a/arch/arm/dts/stm32mp15-pinctrl.dtsi
++++ b/arch/arm/dts/stm32mp15-pinctrl.dtsi
+@@ -151,6 +151,43 @@
+ 		};
+ 	};
+ 
++	dcmi_pins_c: dcmi-2 {
++		pins {
++			pinmux = <STM32_PINMUX('A', 4,  AF13)>,/* DCMI_HSYNC */
++				 <STM32_PINMUX('B', 7,  AF13)>,/* DCMI_VSYNC */
++				 <STM32_PINMUX('A', 6,  AF13)>,/* DCMI_PIXCLK */
++				 <STM32_PINMUX('A', 9,  AF13)>,/* DCMI_D0 */
++				 <STM32_PINMUX('H', 10, AF13)>,/* DCMI_D1 */
++				 <STM32_PINMUX('E', 0, AF13)>,/* DCMI_D2 */
++				 <STM32_PINMUX('E', 1, AF13)>,/* DCMI_D3 */
++				 <STM32_PINMUX('H', 14, AF13)>,/* DCMI_D4 */
++				 <STM32_PINMUX('I', 4,  AF13)>,/* DCMI_D5 */
++				 <STM32_PINMUX('I', 6,  AF13)>,/* DCMI_D6 */
++				 <STM32_PINMUX('E', 6,  AF13)>,/* DCMI_D7 */
++				 <STM32_PINMUX('I', 1,  AF13)>,/* DCMI_D8 */
++				 <STM32_PINMUX('H', 7,  AF13)>;/* DCMI_D9 */
++			bias-pull-up;
++		};
++	};
++
++	dcmi_sleep_pins_c: dcmi-sleep-2 {
++		pins {
++			pinmux = <STM32_PINMUX('A', 4,  ANALOG)>,/* DCMI_HSYNC */
++				 <STM32_PINMUX('B', 7,  ANALOG)>,/* DCMI_VSYNC */
++				 <STM32_PINMUX('A', 6,  ANALOG)>,/* DCMI_PIXCLK */
++				 <STM32_PINMUX('A', 9,  ANALOG)>,/* DCMI_D0 */
++				 <STM32_PINMUX('H', 10, ANALOG)>,/* DCMI_D1 */
++				 <STM32_PINMUX('E', 0, ANALOG)>,/* DCMI_D2 */
++				 <STM32_PINMUX('E', 1, ANALOG)>,/* DCMI_D3 */
++				 <STM32_PINMUX('H', 14, ANALOG)>,/* DCMI_D4 */
++				 <STM32_PINMUX('I', 4,  ANALOG)>,/* DCMI_D5 */
++				 <STM32_PINMUX('I', 6,  ANALOG)>,/* DCMI_D6 */
++				 <STM32_PINMUX('E', 6,  ANALOG)>,/* DCMI_D7 */
++				 <STM32_PINMUX('I', 1,  ANALOG)>,/* DCMI_D8 */
++				 <STM32_PINMUX('H', 7,  ANALOG)>;/* DCMI_D9 */
++		};
++	};
++
+ 	ethernet0_rgmii_pins_a: rgmii-0 {
+ 		pins1 {
+ 			pinmux = <STM32_PINMUX('G', 5, AF11)>, /* ETH_RGMII_CLK125 */
+@@ -923,6 +960,21 @@
+ 		};
+ 	};
+ 
++	mco1_pins_a: mco1-0 {
++		pins {
++			pinmux = <STM32_PINMUX('A', 13, AF2)>; /* MCO1 */
++			bias-disable;
++			drive-push-pull;
++			slew-rate = <1>;
++		};
++	};
++
++	mco1_sleep_pins_a: mco1-sleep-0 {
++		pins {
++			pinmux = <STM32_PINMUX('A', 13, ANALOG)>; /* MCO1 */
++		};
++	};
++
+ 	mco2_pins_a: mco2-0 {
+ 		pins {
+ 			pinmux = <STM32_PINMUX('G', 2, AF1)>; /* MCO2 */
+@@ -1814,30 +1866,30 @@
+ 
+ 	spi2_pins_a: spi2-0 {
+ 		pins1 {
+-			pinmux = <STM32_PINMUX('B', 10, AF5)>, /* SPI1_SCK */
+-				 <STM32_PINMUX('I', 3, AF5)>; /* SPI1_MOSI */
++			pinmux = <STM32_PINMUX('B', 10, AF5)>, /* SPI2_SCK */
++				 <STM32_PINMUX('I', 3, AF5)>; /* SPI2_MOSI */
+ 			bias-disable;
+ 			drive-push-pull;
+ 			slew-rate = <1>;
+ 		};
+ 
+ 		pins2 {
+-			pinmux = <STM32_PINMUX('I', 2, AF5)>; /* SPI1_MISO */
++			pinmux = <STM32_PINMUX('I', 2, AF5)>; /* SPI2_MISO */
+ 			bias-disable;
+ 		};
+ 	};
+ 
+ 	spi2_pins_b: spi2-1 {
+ 		pins1 {
+-			pinmux = <STM32_PINMUX('I', 1, AF5)>, /* SPI1_SCK */
+-				 <STM32_PINMUX('I', 3, AF5)>; /* SPI1_MOSI */
++			pinmux = <STM32_PINMUX('I', 1, AF5)>, /* SPI2_SCK */
++				 <STM32_PINMUX('I', 3, AF5)>; /* SPI2_MOSI */
+ 			bias-disable;
+ 			drive-push-pull;
+ 			slew-rate = <1>;
+ 		};
+ 
+ 		pins2 {
+-			pinmux = <STM32_PINMUX('I', 2, AF5)>; /* SPI1_MISO */
++			pinmux = <STM32_PINMUX('I', 2, AF5)>; /* SPI2_MISO */
+ 			bias-disable;
+ 		};
+ 	};
+diff --git a/arch/arm/dts/stm32mp151.dtsi b/arch/arm/dts/stm32mp151.dtsi
+index 767a06ef68..f0fb022fc6 100644
+--- a/arch/arm/dts/stm32mp151.dtsi
++++ b/arch/arm/dts/stm32mp151.dtsi
+@@ -1143,10 +1143,9 @@
+ 			reg = <0x4c001000 0x400>;
+ 			st,proc-id = <0>;
+ 			interrupts-extended =
+-				<&intc GIC_SPI 100 IRQ_TYPE_LEVEL_HIGH>,
+-				<&intc GIC_SPI 101 IRQ_TYPE_LEVEL_HIGH>,
+-				<&exti 61 1>;
+-			interrupt-names = "rx", "tx", "wakeup";
++				<&exti 61 1>,
++				<&intc GIC_SPI 101 IRQ_TYPE_LEVEL_HIGH>;
++			interrupt-names = "rx", "tx";
+ 			clocks = <&rcc IPCC>;
+ 			wakeup-source;
+ 			status = "disabled";
+diff --git a/arch/arm/dts/stm32mp15xx-dkx.dtsi b/arch/arm/dts/stm32mp15xx-dkx.dtsi
+index 3d36cac9ed..5a045d7156 100644
+--- a/arch/arm/dts/stm32mp15xx-dkx.dtsi
++++ b/arch/arm/dts/stm32mp15xx-dkx.dtsi
+@@ -685,6 +685,14 @@
+ &usbh_ehci {
+ 	phys = <&usbphyc_port0>;
+ 	status = "okay";
++	#address-cells = <1>;
++	#size-cells = <0>;
++	/* onboard HUB */
++	hub@1 {
++		compatible = "usb424,2514";
++		reg = <1>;
++		vdd-supply = <&v3v3>;
++	};
+ };
+ 
+ &usbotg_hs {
+-- 
+2.39.2
+

@@ -1,0 +1,878 @@
+From ac826ce0ed6dc66c2e3087540b0d17e6b3c03444 Mon Sep 17 00:00:00 2001
+From: Patrick Delaunay <patrick.delaunay@foss.st.com>
+Date: Fri, 7 Oct 2022 11:13:24 +0200
+Subject: [PATCH 112/117] ARM: dts: stm32: include <board>-scmi.dtsi in each
+ <board>.dts
+
+Now that double inclusion is avoided, <board>-scmi.dtsi include can be
+safely added in <board>.dts, to add SCMI support on STM32MP15 boards.
+
+As the STMicroelectronics board now support SCMI by default, this patch
+also move the U-Boot add-on files <board>-scmi-u-boot.dts to
+<board>-u-boot.dtsi and update the associated documentation.
+
+Signed-off-by: Patrick Delaunay <patrick.delaunay@foss.st.com>
+Signed-off-by: Aliaksei Karpovich <akarpovich@ilbers.de>
+Change-Id: I3675cbaef85beba02ff53292745d73f970addcbf
+Reviewed-on: https://gerrit.st.com/c/mpu/oe/st/u-boot/+/270206
+---
+ arch/arm/dts/stm32mp15-scmi-u-boot.dtsi       |  20 +-
+ arch/arm/dts/stm32mp157a-dk1-scmi-u-boot.dtsi |  55 -----
+ arch/arm/dts/stm32mp157a-dk1-scmi.dtsi        |   3 -
+ arch/arm/dts/stm32mp157a-dk1-u-boot.dtsi      | 162 +--------------
+ arch/arm/dts/stm32mp157a-dk1.dts              |   1 +
+ arch/arm/dts/stm32mp157c-dk2-scmi-u-boot.dtsi |   6 -
+ arch/arm/dts/stm32mp157c-dk2-scmi.dtsi        |   3 -
+ arch/arm/dts/stm32mp157c-dk2-u-boot.dtsi      |   4 +-
+ arch/arm/dts/stm32mp157c-dk2.dts              |   1 +
+ arch/arm/dts/stm32mp157c-ed1-scmi-u-boot.dtsi |  45 -----
+ arch/arm/dts/stm32mp157c-ed1-scmi.dtsi        |   3 -
+ arch/arm/dts/stm32mp157c-ed1-u-boot.dtsi      | 189 +-----------------
+ arch/arm/dts/stm32mp157c-ed1.dts              |   1 +
+ arch/arm/dts/stm32mp157c-ev1-scmi-u-boot.dtsi |  17 --
+ arch/arm/dts/stm32mp157c-ev1-scmi.dtsi        |   4 -
+ arch/arm/dts/stm32mp157c-ev1-u-boot.dtsi      |  40 +---
+ arch/arm/dts/stm32mp157c-ev1.dts              |   1 +
+ doc/board/st/stm32mp1.rst                     |  26 +--
+ 18 files changed, 37 insertions(+), 544 deletions(-)
+ delete mode 100644 arch/arm/dts/stm32mp157a-dk1-scmi-u-boot.dtsi
+ delete mode 100644 arch/arm/dts/stm32mp157c-dk2-scmi-u-boot.dtsi
+ delete mode 100644 arch/arm/dts/stm32mp157c-ed1-scmi-u-boot.dtsi
+ delete mode 100644 arch/arm/dts/stm32mp157c-ev1-scmi-u-boot.dtsi
+
+diff --git a/arch/arm/dts/stm32mp15-scmi-u-boot.dtsi b/arch/arm/dts/stm32mp15-scmi-u-boot.dtsi
+index 314fc39a05..3f50eda62a 100644
+--- a/arch/arm/dts/stm32mp15-scmi-u-boot.dtsi
++++ b/arch/arm/dts/stm32mp15-scmi-u-boot.dtsi
+@@ -25,6 +25,17 @@
+ 		multiple-images;
+ 	};
+ 
++	firmware {
++		optee {
++			u-boot,dm-pre-reloc;
++		};
++	};
++
++	/* need PSCI for sysreset during board_f */
++	psci {
++		u-boot,dm-pre-proper;
++	};
++
+ 	soc {
+ 		u-boot,dm-pre-reloc;
+ 
+@@ -39,11 +50,6 @@
+ 			status = "okay";
+ 		};
+ 	};
+-
+-	/* need PSCI for sysreset during board_f */
+-	psci {
+-		u-boot,dm-pre-proper;
+-	};
+ };
+ 
+ &bsec {
+@@ -98,10 +104,6 @@
+ 	u-boot,dm-pre-reloc;
+ };
+ 
+-&optee {
+-	u-boot,dm-pre-proper;
+-};
+-
+ &iwdg2 {
+ 	u-boot,dm-pre-reloc;
+ };
+diff --git a/arch/arm/dts/stm32mp157a-dk1-scmi-u-boot.dtsi b/arch/arm/dts/stm32mp157a-dk1-scmi-u-boot.dtsi
+deleted file mode 100644
+index 92fdf09872..0000000000
+--- a/arch/arm/dts/stm32mp157a-dk1-scmi-u-boot.dtsi
++++ /dev/null
+@@ -1,55 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-or-later OR BSD-3-Clause
+-/*
+- * Copyright : STMicroelectronics 2022
+- */
+-
+-#include "stm32mp15-scmi-u-boot.dtsi"
+-
+-/ {
+-	aliases {
+-		i2c3 = &i2c4;
+-		usb0 = &usbotg_hs;
+-	};
+-
+-	config {
+-		u-boot,boot-led = "heartbeat";
+-		u-boot,error-led = "error";
+-		u-boot,mmc-env-partition = "u-boot-env";
+-		st,adc_usb_pd = <&adc1 18>, <&adc1 19>;
+-		st,fastboot-gpios = <&gpioa 13 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+-		st,stm32prog-gpios = <&gpioa 14 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+-	};
+-
+-	led {
+-		red {
+-			label = "error";
+-			gpios = <&gpioa 13 GPIO_ACTIVE_LOW>;
+-			default-state = "off";
+-			status = "okay";
+-		};
+-	};
+-};
+-
+-&adc {
+-	status = "okay";
+-};
+-
+-&uart4 {
+-	u-boot,dm-pre-reloc;
+-};
+-
+-&uart4_pins_a {
+-	u-boot,dm-pre-reloc;
+-	pins1 {
+-		u-boot,dm-pre-reloc;
+-	};
+-	pins2 {
+-		u-boot,dm-pre-reloc;
+-		/* pull-up on rx to avoid floating level */
+-		bias-pull-up;
+-	};
+-};
+-
+-&usbotg_hs {
+-	u-boot,force-b-session-valid;
+-};
+diff --git a/arch/arm/dts/stm32mp157a-dk1-scmi.dtsi b/arch/arm/dts/stm32mp157a-dk1-scmi.dtsi
+index ea8daa1053..673b736cc6 100644
+--- a/arch/arm/dts/stm32mp157a-dk1-scmi.dtsi
++++ b/arch/arm/dts/stm32mp157a-dk1-scmi.dtsi
+@@ -7,9 +7,6 @@
+ #include "stm32mp15-scmi.dtsi"
+ 
+ / {
+-	model = "STMicroelectronics STM32MP157A-DK1 SCMI Discovery Board";
+-	compatible = "st,stm32mp157a-dk1-scmi", "st,stm32mp157a-dk1", "st,stm32mp157";
+-
+ 	reserved-memory {
+ 		optee@de000000 {
+ 			reg = <0xde000000 0x2000000>;
+diff --git a/arch/arm/dts/stm32mp157a-dk1-u-boot.dtsi b/arch/arm/dts/stm32mp157a-dk1-u-boot.dtsi
+index 49be22378c..8916cda1ad 100644
+--- a/arch/arm/dts/stm32mp157a-dk1-u-boot.dtsi
++++ b/arch/arm/dts/stm32mp157a-dk1-u-boot.dtsi
+@@ -1,52 +1,25 @@
+-// SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause
++// SPDX-License-Identifier: GPL-2.0-or-later OR BSD-3-Clause
+ /*
+- * Copyright : STMicroelectronics 2018
++ * Copyright : STMicroelectronics 2022
+  */
+ 
+-#include <dt-bindings/clock/stm32mp1-clksrc.h>
+-#include "stm32mp15-u-boot.dtsi"
+-#include "stm32mp15-ddr3-1x4Gb-1066-binG.dtsi"
++#include "stm32mp15-scmi-u-boot.dtsi"
+ 
+ / {
+ 	aliases {
+ 		i2c3 = &i2c4;
+ 		usb0 = &usbotg_hs;
+ 	};
++
+ 	config {
+ 		u-boot,boot-led = "heartbeat";
+ 		u-boot,error-led = "error";
+-		u-boot,mmc-env-partition = "fip";
++		u-boot,mmc-env-partition = "u-boot-env";
+ 		st,adc_usb_pd = <&adc1 18>, <&adc1 19>;
+ 		st,fastboot-gpios = <&gpioa 13 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+ 		st,stm32prog-gpios = <&gpioa 14 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+ 	};
+ 
+-#if defined(CONFIG_STM32MP15x_STM32IMAGE) || defined(CONFIG_SPL)
+-	config {
+-		u-boot,mmc-env-partition = "ssbl";
+-	};
+-#endif
+-
+-#ifdef CONFIG_STM32MP15x_STM32IMAGE
+-	/* only needed for boot with TF-A, witout FIP support */
+-	firmware {
+-		optee {
+-			compatible = "linaro,optee-tz";
+-			method = "smc";
+-		};
+-	};
+-
+-	reserved-memory {
+-		u-boot,dm-spl;
+-
+-		optee@de000000 {
+-			reg = <0xde000000 0x02000000>;
+-			no-map;
+-			u-boot,dm-spl;
+-		};
+-	};
+-#endif
+-
+ 	led {
+ 		led-red {
+ 			label = "error";
+@@ -61,131 +34,6 @@
+ 	status = "okay";
+ };
+ 
+-&clk_hse {
+-	st,digbypass;
+-};
+-
+-&i2c4 {
+-	u-boot,dm-pre-reloc;
+-};
+-
+-&i2c4_pins_a {
+-	u-boot,dm-pre-reloc;
+-	pins {
+-		u-boot,dm-pre-reloc;
+-	};
+-};
+-
+-&pmic {
+-	u-boot,dm-pre-reloc;
+-};
+-
+-&rcc {
+-	st,clksrc = <
+-		CLK_MPU_PLL1P
+-		CLK_AXI_PLL2P
+-		CLK_MCU_PLL3P
+-		CLK_PLL12_HSE
+-		CLK_PLL3_HSE
+-		CLK_PLL4_HSE
+-		CLK_RTC_LSE
+-		CLK_MCO1_DISABLED
+-		CLK_MCO2_DISABLED
+-	>;
+-
+-	st,clkdiv = <
+-		1 /*MPU*/
+-		0 /*AXI*/
+-		0 /*MCU*/
+-		1 /*APB1*/
+-		1 /*APB2*/
+-		1 /*APB3*/
+-		1 /*APB4*/
+-		2 /*APB5*/
+-		23 /*RTC*/
+-		0 /*MCO1*/
+-		0 /*MCO2*/
+-	>;
+-
+-	st,pkcs = <
+-		CLK_CKPER_HSE
+-		CLK_FMC_ACLK
+-		CLK_QSPI_ACLK
+-		CLK_ETH_DISABLED
+-		CLK_SDMMC12_PLL4P
+-		CLK_DSI_DSIPLL
+-		CLK_STGEN_HSE
+-		CLK_USBPHY_HSE
+-		CLK_SPI2S1_PLL3Q
+-		CLK_SPI2S23_PLL3Q
+-		CLK_SPI45_HSI
+-		CLK_SPI6_HSI
+-		CLK_I2C46_HSI
+-		CLK_SDMMC3_PLL4P
+-		CLK_USBO_USBPHY
+-		CLK_ADC_CKPER
+-		CLK_CEC_LSE
+-		CLK_I2C12_HSI
+-		CLK_I2C35_HSI
+-		CLK_UART1_HSI
+-		CLK_UART24_HSI
+-		CLK_UART35_HSI
+-		CLK_UART6_HSI
+-		CLK_UART78_HSI
+-		CLK_SPDIF_PLL4P
+-		CLK_FDCAN_PLL4R
+-		CLK_SAI1_PLL3Q
+-		CLK_SAI2_PLL3Q
+-		CLK_SAI3_PLL3Q
+-		CLK_SAI4_PLL3Q
+-		CLK_RNG1_LSI
+-		CLK_RNG2_LSI
+-		CLK_LPTIM1_PCLK1
+-		CLK_LPTIM23_PCLK3
+-		CLK_LPTIM45_LSE
+-	>;
+-
+-	/* VCO = 1066.0 MHz => P = 266 (AXI), Q = 533 (GPU), R = 533 (DDR) */
+-	pll2: st,pll@1 {
+-		compatible = "st,stm32mp1-pll";
+-		reg = <1>;
+-		cfg = < 2 65 1 0 0 PQR(1,1,1) >;
+-		frac = < 0x1400 >;
+-		u-boot,dm-pre-reloc;
+-	};
+-
+-	/* VCO = 417.8 MHz => P = 209, Q = 24, R = 11 */
+-	pll3: st,pll@2 {
+-		compatible = "st,stm32mp1-pll";
+-		reg = <2>;
+-		cfg = < 1 33 1 16 36 PQR(1,1,1) >;
+-		frac = < 0x1a04 >;
+-		u-boot,dm-pre-reloc;
+-	};
+-
+-	/* VCO = 594.0 MHz => P = 99, Q = 74, R = 74 */
+-	pll4: st,pll@3 {
+-		compatible = "st,stm32mp1-pll";
+-		reg = <3>;
+-		cfg = < 3 98 5 7 7 PQR(1,1,1) >;
+-		u-boot,dm-pre-reloc;
+-	};
+-};
+-
+-&sdmmc1 {
+-	u-boot,dm-spl;
+-};
+-
+-&sdmmc1_b4_pins_a {
+-	u-boot,dm-spl;
+-	pins1 {
+-		u-boot,dm-spl;
+-	};
+-	pins2 {
+-		u-boot,dm-spl;
+-	};
+-};
+-
+ &uart4 {
+ 	u-boot,dm-pre-reloc;
+ };
+diff --git a/arch/arm/dts/stm32mp157a-dk1.dts b/arch/arm/dts/stm32mp157a-dk1.dts
+index 4c8be9c8eb..59c37383f3 100644
+--- a/arch/arm/dts/stm32mp157a-dk1.dts
++++ b/arch/arm/dts/stm32mp157a-dk1.dts
+@@ -10,6 +10,7 @@
+ #include "stm32mp15-pinctrl.dtsi"
+ #include "stm32mp15xxac-pinctrl.dtsi"
+ #include "stm32mp15xx-dkx.dtsi"
++#include "stm32mp157a-dk1-scmi.dtsi"
+ 
+ / {
+ 	model = "STMicroelectronics STM32MP157A-DK1 Discovery Board";
+diff --git a/arch/arm/dts/stm32mp157c-dk2-scmi-u-boot.dtsi b/arch/arm/dts/stm32mp157c-dk2-scmi-u-boot.dtsi
+deleted file mode 100644
+index 5a8fc15ab2..0000000000
+--- a/arch/arm/dts/stm32mp157c-dk2-scmi-u-boot.dtsi
++++ /dev/null
+@@ -1,6 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-or-later OR BSD-3-Clause
+-/*
+- * Copyright : STMicroelectronics 2022
+- */
+-
+-#include "stm32mp157a-dk1-scmi-u-boot.dtsi"
+diff --git a/arch/arm/dts/stm32mp157c-dk2-scmi.dtsi b/arch/arm/dts/stm32mp157c-dk2-scmi.dtsi
+index 84a27ad0d0..6069c50671 100644
+--- a/arch/arm/dts/stm32mp157c-dk2-scmi.dtsi
++++ b/arch/arm/dts/stm32mp157c-dk2-scmi.dtsi
+@@ -7,9 +7,6 @@
+ #include "stm32mp15-scmi.dtsi"
+ 
+ / {
+-	model = "STMicroelectronics STM32MP157C-DK2 SCMI Discovery Board";
+-	compatible = "st,stm32mp157c-dk2-scmi", "st,stm32mp157c-dk2", "st,stm32mp157";
+-
+ 	reserved-memory {
+ 		optee@de000000 {
+ 			reg = <0xde000000 0x2000000>;
+diff --git a/arch/arm/dts/stm32mp157c-dk2-u-boot.dtsi b/arch/arm/dts/stm32mp157c-dk2-u-boot.dtsi
+index 06ef3a4095..41f36278b6 100644
+--- a/arch/arm/dts/stm32mp157c-dk2-u-boot.dtsi
++++ b/arch/arm/dts/stm32mp157c-dk2-u-boot.dtsi
+@@ -1,6 +1,6 @@
+-// SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause
++// SPDX-License-Identifier: GPL-2.0-or-later OR BSD-3-Clause
+ /*
+- * Copyright : STMicroelectronics 2018
++ * Copyright : STMicroelectronics 2022
+  */
+ 
+ #include "stm32mp157a-dk1-u-boot.dtsi"
+diff --git a/arch/arm/dts/stm32mp157c-dk2.dts b/arch/arm/dts/stm32mp157c-dk2.dts
+index 2bc92ef3ae..496a801d49 100644
+--- a/arch/arm/dts/stm32mp157c-dk2.dts
++++ b/arch/arm/dts/stm32mp157c-dk2.dts
+@@ -11,6 +11,7 @@
+ #include "stm32mp15-pinctrl.dtsi"
+ #include "stm32mp15xxac-pinctrl.dtsi"
+ #include "stm32mp15xx-dkx.dtsi"
++#include "stm32mp157c-dk2-scmi.dtsi"
+ 
+ / {
+ 	model = "STMicroelectronics STM32MP157C-DK2 Discovery Board";
+diff --git a/arch/arm/dts/stm32mp157c-ed1-scmi-u-boot.dtsi b/arch/arm/dts/stm32mp157c-ed1-scmi-u-boot.dtsi
+deleted file mode 100644
+index 63948ef493..0000000000
+--- a/arch/arm/dts/stm32mp157c-ed1-scmi-u-boot.dtsi
++++ /dev/null
+@@ -1,45 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-or-later OR BSD-3-Clause
+-/*
+- * Copyright : STMicroelectronics 2022
+- */
+-
+-#include "stm32mp15-scmi-u-boot.dtsi"
+-
+-/ {
+-	aliases {
+-		i2c3 = &i2c4;
+-	};
+-
+-	config {
+-		u-boot,boot-led = "heartbeat";
+-		u-boot,error-led = "error";
+-		u-boot,mmc-env-partition = "u-boot-env";
+-		st,fastboot-gpios = <&gpioa 13 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+-		st,stm32prog-gpios = <&gpioa 14 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+-	};
+-
+-	led {
+-		red {
+-			label = "error";
+-			gpios = <&gpioa 13 GPIO_ACTIVE_LOW>;
+-			default-state = "off";
+-			status = "okay";
+-		};
+-	};
+-};
+-
+-&uart4 {
+-	u-boot,dm-pre-reloc;
+-};
+-
+-&uart4_pins_a {
+-	u-boot,dm-pre-reloc;
+-	pins1 {
+-		u-boot,dm-pre-reloc;
+-	};
+-	pins2 {
+-		u-boot,dm-pre-reloc;
+-		/* pull-up on rx to avoid floating level */
+-		bias-pull-up;
+-	};
+-};
+diff --git a/arch/arm/dts/stm32mp157c-ed1-scmi.dtsi b/arch/arm/dts/stm32mp157c-ed1-scmi.dtsi
+index e69fd28ab1..44c817bdf9 100644
+--- a/arch/arm/dts/stm32mp157c-ed1-scmi.dtsi
++++ b/arch/arm/dts/stm32mp157c-ed1-scmi.dtsi
+@@ -7,9 +7,6 @@
+ #include "stm32mp15-scmi.dtsi"
+ 
+ / {
+-	model = "STMicroelectronics STM32MP157C-ED1 SCMI eval daughter";
+-	compatible = "st,stm32mp157c-ed1-scmi", "st,stm32mp157c-ed1", "st,stm32mp157";
+-
+ 	reserved-memory {
+ 		optee@fe000000 {
+ 			reg = <0xfe000000 0x2000000>;
+diff --git a/arch/arm/dts/stm32mp157c-ed1-u-boot.dtsi b/arch/arm/dts/stm32mp157c-ed1-u-boot.dtsi
+index a1457916d2..b181944354 100644
+--- a/arch/arm/dts/stm32mp157c-ed1-u-boot.dtsi
++++ b/arch/arm/dts/stm32mp157c-ed1-u-boot.dtsi
+@@ -1,11 +1,9 @@
+-// SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause
++// SPDX-License-Identifier: GPL-2.0-or-later OR BSD-3-Clause
+ /*
+- * Copyright : STMicroelectronics 2018
++ * Copyright : STMicroelectronics 2022
+  */
+ 
+-#include <dt-bindings/clock/stm32mp1-clksrc.h>
+-#include "stm32mp15-u-boot.dtsi"
+-#include "stm32mp15-ddr3-2x4Gb-1066-binG.dtsi"
++#include "stm32mp15-scmi-u-boot.dtsi"
+ 
+ / {
+ 	aliases {
+@@ -15,34 +13,11 @@
+ 	config {
+ 		u-boot,boot-led = "heartbeat";
+ 		u-boot,error-led = "error";
+-		u-boot,mmc-env-partition = "fip";
++		u-boot,mmc-env-partition = "u-boot-env";
+ 		st,fastboot-gpios = <&gpioa 13 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+ 		st,stm32prog-gpios = <&gpioa 14 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+ 	};
+ 
+-#if defined(CONFIG_STM32MP15x_STM32IMAGE) || defined(CONFIG_SPL)
+-	config {
+-		u-boot,mmc-env-partition = "ssbl";
+-	};
+-#endif
+-
+-#ifdef CONFIG_STM32MP15x_STM32IMAGE
+-	/* only needed for boot with TF-A, witout FIP support */
+-	firmware {
+-		optee {
+-			compatible = "linaro,optee-tz";
+-			method = "smc";
+-		};
+-	};
+-
+-	reserved-memory {
+-		optee@fe000000 {
+-			reg = <0xfe000000 0x02000000>;
+-			no-map;
+-		};
+-	};
+-#endif
+-
+ 	led {
+ 		led-red {
+ 			label = "error";
+@@ -53,162 +28,6 @@
+ 	};
+ };
+ 
+-&clk_hse {
+-	st,digbypass;
+-};
+-
+-&i2c4 {
+-	u-boot,dm-pre-reloc;
+-};
+-
+-&i2c4_pins_a {
+-	u-boot,dm-pre-reloc;
+-	pins {
+-		u-boot,dm-pre-reloc;
+-	};
+-};
+-
+-&pmic {
+-	u-boot,dm-pre-reloc;
+-};
+-
+-&rcc {
+-	st,clksrc = <
+-		CLK_MPU_PLL1P
+-		CLK_AXI_PLL2P
+-		CLK_MCU_PLL3P
+-		CLK_PLL12_HSE
+-		CLK_PLL3_HSE
+-		CLK_PLL4_HSE
+-		CLK_RTC_LSE
+-		CLK_MCO1_DISABLED
+-		CLK_MCO2_DISABLED
+-	>;
+-
+-	st,clkdiv = <
+-		1 /*MPU*/
+-		0 /*AXI*/
+-		0 /*MCU*/
+-		1 /*APB1*/
+-		1 /*APB2*/
+-		1 /*APB3*/
+-		1 /*APB4*/
+-		2 /*APB5*/
+-		23 /*RTC*/
+-		0 /*MCO1*/
+-		0 /*MCO2*/
+-	>;
+-
+-	st,pkcs = <
+-		CLK_CKPER_HSE
+-		CLK_FMC_ACLK
+-		CLK_QSPI_ACLK
+-		CLK_ETH_DISABLED
+-		CLK_SDMMC12_PLL4P
+-		CLK_DSI_DSIPLL
+-		CLK_STGEN_HSE
+-		CLK_USBPHY_HSE
+-		CLK_SPI2S1_PLL3Q
+-		CLK_SPI2S23_PLL3Q
+-		CLK_SPI45_HSI
+-		CLK_SPI6_HSI
+-		CLK_I2C46_HSI
+-		CLK_SDMMC3_PLL4P
+-		CLK_USBO_USBPHY
+-		CLK_ADC_CKPER
+-		CLK_CEC_LSE
+-		CLK_I2C12_HSI
+-		CLK_I2C35_HSI
+-		CLK_UART1_HSI
+-		CLK_UART24_HSI
+-		CLK_UART35_HSI
+-		CLK_UART6_HSI
+-		CLK_UART78_HSI
+-		CLK_SPDIF_PLL4P
+-		CLK_FDCAN_PLL4R
+-		CLK_SAI1_PLL3Q
+-		CLK_SAI2_PLL3Q
+-		CLK_SAI3_PLL3Q
+-		CLK_SAI4_PLL3Q
+-		CLK_RNG1_LSI
+-		CLK_RNG2_LSI
+-		CLK_LPTIM1_PCLK1
+-		CLK_LPTIM23_PCLK3
+-		CLK_LPTIM45_LSE
+-	>;
+-
+-	/* VCO = 1066.0 MHz => P = 266 (AXI), Q = 533 (GPU), R = 533 (DDR) */
+-	pll2: st,pll@1 {
+-		compatible = "st,stm32mp1-pll";
+-		reg = <1>;
+-		cfg = < 2 65 1 0 0 PQR(1,1,1) >;
+-		frac = < 0x1400 >;
+-		u-boot,dm-pre-reloc;
+-	};
+-
+-	/* VCO = 417.8 MHz => P = 209, Q = 24, R = 11 */
+-	pll3: st,pll@2 {
+-		compatible = "st,stm32mp1-pll";
+-		reg = <2>;
+-		cfg = < 1 33 1 16 36 PQR(1,1,1) >;
+-		frac = < 0x1a04 >;
+-		u-boot,dm-pre-reloc;
+-	};
+-
+-	/* VCO = 594.0 MHz => P = 99, Q = 74, R = 74 */
+-	pll4: st,pll@3 {
+-		compatible = "st,stm32mp1-pll";
+-		reg = <3>;
+-		cfg = < 3 98 5 7 7 PQR(1,1,1) >;
+-		u-boot,dm-pre-reloc;
+-	};
+-};
+-
+-&sdmmc1 {
+-	u-boot,dm-spl;
+-};
+-
+-&sdmmc1_b4_pins_a {
+-	u-boot,dm-spl;
+-	pins1 {
+-		u-boot,dm-spl;
+-	};
+-	pins2 {
+-		u-boot,dm-spl;
+-	};
+-};
+-
+-&sdmmc1_dir_pins_a {
+-	u-boot,dm-spl;
+-	pins1 {
+-		u-boot,dm-spl;
+-	};
+-	pins2 {
+-		u-boot,dm-spl;
+-	};
+-};
+-
+-&sdmmc2 {
+-	u-boot,dm-spl;
+-};
+-
+-&sdmmc2_b4_pins_a {
+-	u-boot,dm-spl;
+-	pins1 {
+-		u-boot,dm-spl;
+-	};
+-	pins2 {
+-		u-boot,dm-spl;
+-	};
+-};
+-
+-&sdmmc2_d47_pins_a {
+-	u-boot,dm-spl;
+-	pins {
+-		u-boot,dm-spl;
+-	};
+-};
+-
+ &uart4 {
+ 	u-boot,dm-pre-reloc;
+ };
+diff --git a/arch/arm/dts/stm32mp157c-ed1.dts b/arch/arm/dts/stm32mp157c-ed1.dts
+index 4ea8b69339..dbb4077a03 100644
+--- a/arch/arm/dts/stm32mp157c-ed1.dts
++++ b/arch/arm/dts/stm32mp157c-ed1.dts
+@@ -9,6 +9,7 @@
+ #include "stm32mp15xc.dtsi"
+ #include "stm32mp15-pinctrl.dtsi"
+ #include "stm32mp15xxaa-pinctrl.dtsi"
++#include "stm32mp157c-ed1-scmi.dtsi"
+ #include <dt-bindings/gpio/gpio.h>
+ #include <dt-bindings/mfd/st,stpmic1.h>
+ 
+diff --git a/arch/arm/dts/stm32mp157c-ev1-scmi-u-boot.dtsi b/arch/arm/dts/stm32mp157c-ev1-scmi-u-boot.dtsi
+deleted file mode 100644
+index 71a94f9130..0000000000
+--- a/arch/arm/dts/stm32mp157c-ev1-scmi-u-boot.dtsi
++++ /dev/null
+@@ -1,17 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-or-later OR BSD-3-Clause
+-/*
+- * Copyright : STMicroelectronics 2022
+- */
+-
+-#include "stm32mp157c-ed1-scmi-u-boot.dtsi"
+-
+-/ {
+-	aliases {
+-		gpio26 = &stmfx_pinctrl;
+-		i2c1 = &i2c2;
+-		i2c4 = &i2c5;
+-		pinctrl2 = &stmfx_pinctrl;
+-		spi0 = &qspi;
+-		usb0 = &usbotg_hs;
+-	};
+-};
+diff --git a/arch/arm/dts/stm32mp157c-ev1-scmi.dtsi b/arch/arm/dts/stm32mp157c-ev1-scmi.dtsi
+index b96aa309dd..6cd714b9f4 100644
+--- a/arch/arm/dts/stm32mp157c-ev1-scmi.dtsi
++++ b/arch/arm/dts/stm32mp157c-ev1-scmi.dtsi
+@@ -5,10 +5,6 @@
+  */
+ 
+ / {
+-	model = "STMicroelectronics STM32MP157C-EV1 SCMI eval daughter on eval mother";
+-	compatible = "st,stm32mp157c-ev1-scmi", "st,stm32mp157c-ev1", "st,stm32mp157c-ed1",
+-		     "st,stm32mp157";
+-
+ 	reserved-memory {
+ 		optee@fe000000 {
+ 			reg = <0xfe000000 0x2000000>;
+diff --git a/arch/arm/dts/stm32mp157c-ev1-u-boot.dtsi b/arch/arm/dts/stm32mp157c-ev1-u-boot.dtsi
+index ec60486f41..29402b0f5a 100644
+--- a/arch/arm/dts/stm32mp157c-ev1-u-boot.dtsi
++++ b/arch/arm/dts/stm32mp157c-ev1-u-boot.dtsi
+@@ -1,6 +1,6 @@
+-// SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause
++// SPDX-License-Identifier: GPL-2.0-or-later OR BSD-3-Clause
+ /*
+- * Copyright : STMicroelectronics 2018
++ * Copyright : STMicroelectronics 2022
+  */
+ 
+ #include "stm32mp157c-ed1-u-boot.dtsi"
+@@ -15,39 +15,3 @@
+ 		usb0 = &usbotg_hs;
+ 	};
+ };
+-
+-&flash0 {
+-	u-boot,dm-spl;
+-};
+-
+-&qspi {
+-	u-boot,dm-spl;
+-};
+-
+-&qspi_clk_pins_a {
+-	u-boot,dm-spl;
+-	pins {
+-		u-boot,dm-spl;
+-	};
+-};
+-
+-&qspi_bk1_pins_a {
+-	u-boot,dm-spl;
+-	pins1 {
+-		u-boot,dm-spl;
+-	};
+-	pins2 {
+-		u-boot,dm-spl;
+-	};
+-};
+-
+-&qspi_bk2_pins_a {
+-	u-boot,dm-spl;
+-	pins1 {
+-		u-boot,dm-spl;
+-	};
+-	pins2 {
+-		u-boot,dm-spl;
+-	};
+-};
+-
+diff --git a/arch/arm/dts/stm32mp157c-ev1.dts b/arch/arm/dts/stm32mp157c-ev1.dts
+index 97260da29b..e540baa504 100644
+--- a/arch/arm/dts/stm32mp157c-ev1.dts
++++ b/arch/arm/dts/stm32mp157c-ev1.dts
+@@ -6,6 +6,7 @@
+ /dts-v1/;
+ 
+ #include "stm32mp157c-ed1.dts"
++#include "stm32mp157c-ev1-scmi.dtsi"
+ #include <dt-bindings/gpio/gpio.h>
+ #include <dt-bindings/input/input.h>
+ 
+diff --git a/doc/board/st/stm32mp1.rst b/doc/board/st/stm32mp1.rst
+index c0b1daa041..7c695cfaf3 100644
+--- a/doc/board/st/stm32mp1.rst
++++ b/doc/board/st/stm32mp1.rst
+@@ -69,23 +69,21 @@ a Cortex-A frequency option:
+  - D : Cortex-A7 @ 800 MHz
+  - F : Secure Boot + HW Crypto + Cortex-A7 @ 800 MHz
+ 
+-Currently the following boards are supported:
++Currently the following STMIcroelectronics boards are supported:
+ 
+  + stm32mp157a-dk1.dts
+  + stm32mp157c-dk2.dts
+  + stm32mp157c-ed1.dts
+  + stm32mp157c-ev1.dts
+- + stm32mp15xx-dhcor-avenger96.dts
+ 
+-The SCMI variant of each board is supported by a specific "scmi" device tree:
+- + stm32mp157a-dk1-scmi.dts
+- + stm32mp157c-dk2-scmi.dts
+- + stm32mp157c-ed1-scmi.dts
+- + stm32mp157c-ev1-scmi.dts
++These board with SCMI support are only managed with stm32mp15_defconfig,
++when the resources are secured with RCC_TZCR.TZEN=1 in OP-TEE. The access to
++these reset and clock resources are provided by OP-TEE and the associated SCMI
++services.
+ 
+-SCMI variant is used only with stm32mp15_defconfig, when the resources are
+-secured with RCC_TZCR.TZEN=1 in OP-TEE. The access to these reset and clock
+-resources are provided by OP-TEE and the associated SCMI services.
++Currently the following customer boards are supported:
++
++ + stm32mp15xx-dhcor-avenger96.dts
+ 
+ STM32MP13x
+ ``````````
+@@ -146,7 +144,7 @@ TF-A_ (BL2) initialize the DDR and loads the next stage binaries from a FIP file
+      the secure monitor to access to secure resources.
+    + HW_CONFIG: The hardware configuration file = the U-Boot device tree
+ 
+-The scmi variant of each device tree is only support with OP-TEE as secure
++The SCMI variant of each device tree is only support with OP-TEE as secure
+ monitor, with stm32mp15_defconfig.
+ 
+ The **Basic** boot chain with SPL (for STM32MP15x)
+@@ -261,12 +259,6 @@ Build Procedure
+ 
+   a) trusted boot with FIP on STM32MP15x ev1::
+ 
+-     # export KBUILD_OUTPUT=stm32mp15
+-     # make stm32mp15_defconfig
+-     # make DEVICE_TREE=stm32mp157c-ev1-scmi all
+-
+-    or without SCMI support
+-
+      # export KBUILD_OUTPUT=stm32mp15
+      # make stm32mp15_defconfig
+      # make DEVICE_TREE=stm32mp157c-ev1 all
+-- 
+2.39.2
+

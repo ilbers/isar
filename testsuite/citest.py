@@ -525,7 +525,7 @@ class CrossTest(CIBaseTest):
             'mc:qemuarm-buster:kselftest',
             'mc:qemuarm-bullseye:kselftest',
             'mc:de0-nano-soc-bullseye:kselftest',
-            'mc:stm32mp15x-bullseye:kselftest',
+            'mc:stm32mp15x-trixie:kselftest',
             'mc:qemuarm-bookworm:kselftest',
             'mc:qemuarm64-bookworm:kselftest',
             'mc:qemuarm64-focal:kselftest',
@@ -713,7 +713,7 @@ class KernelTests(CIBaseTest):
         targets = [
             'mc:de0-nano-soc-bullseye:isar-image-base',
             'mc:de0-nano-soc-trixie:isar-image-base',
-            'mc:stm32mp15x-bullseye:isar-image-base',
+            'mc:stm32mp15x-trixie:isar-image-base',
             'mc:phyboard-mira-bookworm:isar-image-base',
         ]
 
@@ -1357,7 +1357,7 @@ class NoCrossTest(CIBaseTest):
     def test_nocross_debsrc(self):
         targets = [
             'mc:qemuarm-bookworm:isar-image-ci',
-            'mc:stm32mp15x-bullseye:isar-image-base',
+            'mc:stm32mp15x-trixie:isar-image-base',
             'mc:de0-nano-soc-bookworm:isar-image-base',
         ]
 

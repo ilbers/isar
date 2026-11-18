@@ -99,8 +99,8 @@ a: !mux
     name: nanopi-neo-trixie
   nanopi-neo-efi-bookworm:
     name: nanopi-neo-efi-bookworm
-  stm32mp15x-bullseye:
-    name: stm32mp15x-bullseye
+  stm32mp15x-trixie:
+    name: stm32mp15x-trixie
   virtualbox-bullseye:
     name: virtualbox-bullseye
   virtualbox-bookworm:

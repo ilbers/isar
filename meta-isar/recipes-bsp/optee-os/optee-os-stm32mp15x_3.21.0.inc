@@ -1,5 +1,6 @@
 #
 # Copyright (c) Siemens AG, 2020-2023
+# Copyright (c) 2023-2026 ilbers GmbH
 #
 # SPDX-License-Identifier: MIT
 
@@ -10,11 +11,11 @@ S = "${WORKDIR}/optee_os-${PV}"
 
 DEBIAN_BUILD_DEPENDS += ", device-tree-compiler, python3-cryptography:native"
 
-OPTEE_PLATFORM = "stm32mp1"
+OPTEE_PLATFORM = "stm32mp1-157A_DK1"
 OPTEE_EXTRA_BUILDARGS = " \
     TEE_IMPL_VERSION=${PV} \
-    ARCH=arm CFG_EMBED_DTB_SOURCE_FILE=stm32mp157c-ev1.dts \
+    ARCH=arm CFG_EMBED_DTB_SOURCE_FILE=stm32mp157a-dk1.dts \
     CFG_TEE_CORE_LOG_LEVEL=2"
-OPTEE_BINARIES = "tee-header_v2.stm32 tee-pageable_v2.stm32 tee-pager_v2.stm32"
+OPTEE_BINARIES = "tee-header_v2.bin tee-pageable_v2.bin tee-pager_v2.bin"
 
 COMPATIBLE_MACHINE = "^(stm32mp15x)$"

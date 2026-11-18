@@ -1,4 +1,5 @@
 # Copyright (c) Siemens AG, 2023
+# Copyright (c) 2026 ilbers GmbH
 #
 # Authors:
 #  Su Bao Cheng <baocheng.su@siemens.com>
@@ -15,7 +16,11 @@ SRC_URI += " \
     https://github.com/wolfSSL/wolfssl/archive/${SRCREV-wolfssl}.tar.gz;name=wolfssl \
     file://0001-add-enum-to-ta-flags.patch \
     file://0001-Fix-parallel-build-of-optee_ta.patch \
-    "
+"
+
+SRC_URI:append:trixie = " \
+    file://0003-Warning-suppress-for-gcc-14.patch \
+"
 
 SRCREV = "f74c0d9686625c02b0fdd5b2bbe792a22aa96cb6"
 SRCREV-wolfssl = "3b3c175af0e993ffaae251871421e206cc41963f"

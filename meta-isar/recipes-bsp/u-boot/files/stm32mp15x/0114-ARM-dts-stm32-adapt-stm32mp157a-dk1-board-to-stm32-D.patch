@@ -1,0 +1,32 @@
+From 1b571739597e723aab593d3b0678422a4a38a901 Mon Sep 17 00:00:00 2001
+From: Patrick Delaunay <patrick.delaunay@foss.st.com>
+Date: Fri, 7 Oct 2022 14:27:02 +0200
+Subject: [PATCH 114/117] ARM: dts: stm32: adapt stm32mp157a-dk1 board to stm32
+ DT diversity
+
+To handle STM32MP15 SOCs diversity, some updates have to been done.
+This commit mainly adapts stm32mp157a-dk1 board to include the
+correct SOC version.
+
+Signed-off-by: Patrick Delaunay <patrick.delaunay@foss.st.com>
+Change-Id: If87b1308a90d445cf00764c2a907f4c029b5a1c9
+Reviewed-on: https://gerrit.st.com/c/mpu/oe/st/u-boot/+/270208
+---
+ arch/arm/dts/stm32mp157a-dk1.dts | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm/dts/stm32mp157a-dk1.dts b/arch/arm/dts/stm32mp157a-dk1.dts
+index 59c37383f3..8a8de1cbed 100644
+--- a/arch/arm/dts/stm32mp157a-dk1.dts
++++ b/arch/arm/dts/stm32mp157a-dk1.dts
+@@ -7,6 +7,7 @@
+ /dts-v1/;
+ 
+ #include "stm32mp157.dtsi"
++#include "stm32mp15xa.dtsi"
+ #include "stm32mp15-pinctrl.dtsi"
+ #include "stm32mp15xxac-pinctrl.dtsi"
+ #include "stm32mp15xx-dkx.dtsi"
+-- 
+2.39.2
+

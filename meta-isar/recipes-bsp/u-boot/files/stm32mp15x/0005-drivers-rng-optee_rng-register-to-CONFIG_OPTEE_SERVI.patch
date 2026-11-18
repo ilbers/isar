@@ -1,0 +1,69 @@
+From 7293566ef985a74b7eb0e6c7d4f6b082b2c9fd79 Mon Sep 17 00:00:00 2001
+From: Etienne Carriere <etienne.carriere@linaro.org>
+Date: Tue, 26 Jul 2022 16:21:43 +0200
+Subject: [PATCH 005/117] drivers: rng: optee_rng: register to
+ CONFIG_OPTEE_SERVICE_DISCOVERY
+
+Changes optee_rng driver to register itself has a OP-TEE service so
+that a device is bound for the driver when OP-TEE enumerates the
+PTA RNG service.
+
+[Backport of commit 57fb86a97d75 ("drivers: rng: optee_rng: register to CONFIG_OPTEE_SERVICE_DISCOVERY")]
+
+Cc: Sughosh Ganu <sughosh.ganu@linaro.org>
+Cc: Patrick Delaunay <patrick.delaunay@foss.st.com>
+Signed-off-by: Etienne Carriere <etienne.carriere@linaro.org>
+Reviewed-by: Patrick Delaunay <patrick.delaunay@foss.st.com>
+Change-Id: I78467fd5dc22e4943b42ee98b11c1bbd680d074e
+---
+ drivers/rng/Kconfig     | 1 +
+ drivers/rng/optee_rng.c | 7 ++++++-
+ 2 files changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/rng/Kconfig b/drivers/rng/Kconfig
+index 16143681da..5dcf68176a 100644
+--- a/drivers/rng/Kconfig
++++ b/drivers/rng/Kconfig
+@@ -41,6 +41,7 @@ config RNG_NPCM
+ config RNG_OPTEE
+ 	bool "OP-TEE based Random Number Generator support"
+ 	depends on DM_RNG && OPTEE
++	default y if OPTEE_SERVICE_DISCOVERY
+ 	help
+ 	  This driver provides support for the OP-TEE based Random Number
+ 	  Generator on ARM SoCs where hardware entropy sources are not
+diff --git a/drivers/rng/optee_rng.c b/drivers/rng/optee_rng.c
+index aa8ce864d3..410dfc053f 100644
+--- a/drivers/rng/optee_rng.c
++++ b/drivers/rng/optee_rng.c
+@@ -11,6 +11,9 @@
+ #include <dm/device.h>
+ #include <dm/device_compat.h>
+ #include <linux/sizes.h>
++#include <tee/optee_service.h>
++
++#define DRIVER_NAME	"optee-rng"
+ 
+ #define TEE_ERROR_HEALTH_TEST_FAIL	0x00000001
+ 
+@@ -35,6 +38,8 @@
+ #define TA_HWRNG_UUID { 0xab7a617c, 0xb8e7, 0x4d8f, \
+ 			{ 0x83, 0x01, 0xd0, 0x9b, 0x61, 0x03, 0x6b, 0x64 } }
+ 
++OPTEE_SERVICE_DRIVER(optee_rng, TA_HWRNG_UUID, DRIVER_NAME);
++
+ /** open_session_ta_hwrng() - Open session with hwrng Trusted App
+  *
+  * @dev:		device
+@@ -177,7 +182,7 @@ static const struct dm_rng_ops optee_rng_ops = {
+ };
+ 
+ U_BOOT_DRIVER(optee_rng) = {
+-	.name = "optee-rng",
++	.name = DRIVER_NAME,
+ 	.id = UCLASS_RNG,
+ 	.ops = &optee_rng_ops,
+ 	.probe = optee_rng_probe,
+-- 
+2.39.2
+

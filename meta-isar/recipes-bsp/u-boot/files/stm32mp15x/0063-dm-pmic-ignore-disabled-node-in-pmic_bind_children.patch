@@ -1,0 +1,41 @@
+From 67062a1a5467312c01d51957a3cc62631f8b5f51 Mon Sep 17 00:00:00 2001
+From: Patrick Delaunay <patrick.delaunay@foss.st.com>
+Date: Wed, 26 Oct 2022 15:05:10 +0200
+Subject: [PATCH 063/117] dm: pmic: ignore disabled node in pmic_bind_children
+
+Ignore the disabled children node in pmic_bind_children() so the
+disabled regulators in device tree are not registered.
+
+This patch is based on the dm_scan_fdt_node() code - only the
+activated nodes are bound -  and it solves possible issue when a
+deactivated regulator is bound, error for duplicated regulator name
+for example.
+
+[Backport of commit 30257f4699e0 ("dm: pmic: ignore disabled
+ node in pmic_bind_children")]
+
+Signed-off-by: Patrick Delaunay <patrick.delaunay@foss.st.com>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+Change-Id: I8e4ec033a389c434c6ab892a5b2f7ee64a8ce0bf
+---
+ drivers/power/pmic/pmic-uclass.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/drivers/power/pmic/pmic-uclass.c b/drivers/power/pmic/pmic-uclass.c
+index 5dcf6d8079..0e2f5e1f41 100644
+--- a/drivers/power/pmic/pmic-uclass.c
++++ b/drivers/power/pmic/pmic-uclass.c
+@@ -39,6 +39,10 @@ int pmic_bind_children(struct udevice *pmic, ofnode parent,
+ 		node_name = ofnode_get_name(node);
+ 
+ 		debug("* Found child node: '%s'\n", node_name);
++		if (!ofnode_is_enabled(node)) {
++			debug("  - ignoring disabled device\n");
++			continue;
++		}
+ 
+ 		child = NULL;
+ 		for (info = child_info; info->prefix && info->driver; info++) {
+-- 
+2.39.2
+

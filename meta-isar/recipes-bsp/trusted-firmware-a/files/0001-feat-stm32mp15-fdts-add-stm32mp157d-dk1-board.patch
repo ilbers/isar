@@ -1,0 +1,55 @@
+From df393282a458dec817a0f5c9d6c6f399d2cc0382 Mon Sep 17 00:00:00 2001
+From: Yann Gautier <yann.gautier@st.com>
+Date: Fri, 21 Oct 2022 11:38:10 +0200
+Subject: [PATCH] feat(stm32mp15-fdts): add stm32mp157d-dk1 board
+
+This commit adds stm32mp157d-dk1 board support. This board embeds a
+STM32MP157D SOC. This SOC contains the same level of feature than a
+STM32MP157A SOC but A7 clock frequency can reach 800MHz.
+
+Signed-off-by: Alexandre Torgue <alexandre.torgue@foss.st.com>
+Signed-off-by: Amelie Delaunay <amelie.delaunay@foss.st.com>
+Signed-off-by: Yann Gautier <yann.gautier@foss.st.com>
+Change-Id: I05137af3ec475c49ee6f99b9a23f23130ea5892a
+---
+ fdts/stm32mp157d-dk1.dts | 28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
+ create mode 100644 fdts/stm32mp157d-dk1.dts
+
+diff --git a/fdts/stm32mp157d-dk1.dts b/fdts/stm32mp157d-dk1.dts
+new file mode 100644
+index 000000000..2b7dde544
+--- /dev/null
++++ b/fdts/stm32mp157d-dk1.dts
+@@ -0,0 +1,28 @@
++// SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-3-Clause)
++/*
++ * Copyright (C) STMicroelectronics 2022 - All Rights Reserved
++ * Author: Alexandre Torgue <alexandre.torgue@foss.st.com> for STMicroelectronics.
++ */
++
++/dts-v1/;
++
++#include "stm32mp157.dtsi"
++#include "stm32mp15xd.dtsi"
++#include "stm32mp15-pinctrl.dtsi"
++#include "stm32mp15xxac-pinctrl.dtsi"
++#include "stm32mp15xx-dkx.dtsi"
++
++/ {
++	model = "STMicroelectronics STM32MP157D-DK1 Discovery Board";
++	compatible = "st,stm32mp157d-dk1", "st,stm32mp157";
++
++	aliases {
++		serial0 = &uart4;
++		serial1 = &usart3;
++		serial2 = &uart7;
++	};
++
++	chosen {
++		stdout-path = "serial0:115200n8";
++	};
++};
+-- 
+2.39.2
+

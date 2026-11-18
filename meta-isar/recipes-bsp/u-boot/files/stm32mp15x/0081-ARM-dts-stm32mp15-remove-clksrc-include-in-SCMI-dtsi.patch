@@ -1,0 +1,50 @@
+From fc0d71a5af1a796355026a5fbc090bbb564fdabb Mon Sep 17 00:00:00 2001
+From: Patrick Delaunay <patrick.delaunay@foss.st.com>
+Date: Wed, 14 Dec 2022 16:24:59 +0100
+Subject: [PATCH 081/117] ARM: dts: stm32mp15: remove clksrc include in SCMI
+ dtsi file
+
+The include file stm32mp1-clksrc.h is not necessary for the SCMI STM32MP15
+dtsi files as the clock tree is not defined in the U-Boot SCMI device tree;
+these SCMI device tree only support TFABOOT with stm32mp15_defconfig,
+SPL with the basic boot defconfig is not supported.
+
+[Backport of commit d1d56638c4e8 ("ARM: dts: stm32mp15: remove clksrc
+ include in SCMI dtsi file")]
+
+Signed-off-by: Patrick Delaunay <patrick.delaunay@foss.st.com>
+Reviewed-by: Patrice Chotard <patrice.chotard@foss.st.com>
+Change-Id: Ib96329f23b27691d7a9c091a6a88be2658143ddc
+Reviewed-on: https://gerrit.st.com/c/mpu/oe/st/u-boot/+/270203
+---
+ arch/arm/dts/stm32mp157a-dk1-scmi-u-boot.dtsi | 1 -
+ arch/arm/dts/stm32mp157c-ed1-scmi-u-boot.dtsi | 1 -
+ 2 files changed, 2 deletions(-)
+
+diff --git a/arch/arm/dts/stm32mp157a-dk1-scmi-u-boot.dtsi b/arch/arm/dts/stm32mp157a-dk1-scmi-u-boot.dtsi
+index 1209dfe009..92fdf09872 100644
+--- a/arch/arm/dts/stm32mp157a-dk1-scmi-u-boot.dtsi
++++ b/arch/arm/dts/stm32mp157a-dk1-scmi-u-boot.dtsi
+@@ -3,7 +3,6 @@
+  * Copyright : STMicroelectronics 2022
+  */
+ 
+-#include <dt-bindings/clock/stm32mp1-clksrc.h>
+ #include "stm32mp15-scmi-u-boot.dtsi"
+ 
+ / {
+diff --git a/arch/arm/dts/stm32mp157c-ed1-scmi-u-boot.dtsi b/arch/arm/dts/stm32mp157c-ed1-scmi-u-boot.dtsi
+index c265745ff1..63948ef493 100644
+--- a/arch/arm/dts/stm32mp157c-ed1-scmi-u-boot.dtsi
++++ b/arch/arm/dts/stm32mp157c-ed1-scmi-u-boot.dtsi
+@@ -3,7 +3,6 @@
+  * Copyright : STMicroelectronics 2022
+  */
+ 
+-#include <dt-bindings/clock/stm32mp1-clksrc.h>
+ #include "stm32mp15-scmi-u-boot.dtsi"
+ 
+ / {
+-- 
+2.39.2
+

@@ -1,0 +1,90 @@
+From 7a539c911deefe3706181c6ae2d0cf39cba2d649 Mon Sep 17 00:00:00 2001
+From: Patrick Delaunay <patrick.delaunay@foss.st.com>
+Date: Fri, 7 Oct 2022 14:25:58 +0200
+Subject: [PATCH 113/117] ARM: dts: stm32: fullfill diversity with OPP for
+ STM32M15x SOCs
+
+This commit creates new files to manage security features and supported OPP
+on STM32MP15x SOCs. On STM32MP15xY, "Y" gives information:
+-Y = A means no cryp IP and no secure boot + A7-CPU@650MHz.
+-Y = C means cryp IP + optee + secure boot + A7-CPU@650MHz.
+-Y = D means no cryp IP and no secure boot + A7-CPU@800MHz.
+-Y = F means cryp IP + optee + secure boot + A7-CPU@800MHz.
+
+Signed-off-by: Patrick Delaunay <patrick.delaunay@foss.st.com>
+Change-Id: Iaf515146d37b983d08fa4969afd48f2d6e2606f3
+Reviewed-on: https://gerrit.st.com/c/mpu/oe/st/u-boot/+/270207
+---
+ arch/arm/dts/stm32mp15xa.dtsi |  5 +++++
+ arch/arm/dts/stm32mp15xc.dtsi |  2 ++
+ arch/arm/dts/stm32mp15xd.dtsi |  5 +++++
+ arch/arm/dts/stm32mp15xf.dtsi | 20 ++++++++++++++++++++
+ 4 files changed, 32 insertions(+)
+ create mode 100644 arch/arm/dts/stm32mp15xa.dtsi
+ create mode 100644 arch/arm/dts/stm32mp15xd.dtsi
+ create mode 100644 arch/arm/dts/stm32mp15xf.dtsi
+
+diff --git a/arch/arm/dts/stm32mp15xa.dtsi b/arch/arm/dts/stm32mp15xa.dtsi
+new file mode 100644
+index 0000000000..cc6456e71b
+--- /dev/null
++++ b/arch/arm/dts/stm32mp15xa.dtsi
+@@ -0,0 +1,5 @@
++// SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-3-Clause)
++/*
++ * Copyright (C) STMicroelectronics 2022 - All Rights Reserved
++ * Author: Alexandre Torgue <alexandre.torgue@foss.st.com> for STMicroelectronics.
++ */
+diff --git a/arch/arm/dts/stm32mp15xc.dtsi b/arch/arm/dts/stm32mp15xc.dtsi
+index b06a55a2fa..f729b0d1bd 100644
+--- a/arch/arm/dts/stm32mp15xc.dtsi
++++ b/arch/arm/dts/stm32mp15xc.dtsi
+@@ -4,6 +4,8 @@
+  * Author: Alexandre Torgue <alexandre.torgue@st.com> for STMicroelectronics.
+  */
+ 
++#include "stm32mp15xa.dtsi"
++
+ / {
+ 	soc {
+ 		cryp1: cryp@54001000 {
+diff --git a/arch/arm/dts/stm32mp15xd.dtsi b/arch/arm/dts/stm32mp15xd.dtsi
+new file mode 100644
+index 0000000000..cc6456e71b
+--- /dev/null
++++ b/arch/arm/dts/stm32mp15xd.dtsi
+@@ -0,0 +1,5 @@
++// SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-3-Clause)
++/*
++ * Copyright (C) STMicroelectronics 2022 - All Rights Reserved
++ * Author: Alexandre Torgue <alexandre.torgue@foss.st.com> for STMicroelectronics.
++ */
+diff --git a/arch/arm/dts/stm32mp15xf.dtsi b/arch/arm/dts/stm32mp15xf.dtsi
+new file mode 100644
+index 0000000000..ae4a14af6c
+--- /dev/null
++++ b/arch/arm/dts/stm32mp15xf.dtsi
+@@ -0,0 +1,20 @@
++// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
++/*
++ * Copyright (C) STMicroelectronics 2019 - All Rights Reserved
++ * Author: Alexandre Torgue <alexandre.torgue@st.com> for STMicroelectronics.
++ */
++
++#include "stm32mp15xd.dtsi"
++
++/ {
++	soc {
++		cryp1: cryp@54001000 {
++			compatible = "st,stm32mp1-cryp";
++			reg = <0x54001000 0x400>;
++			interrupts = <GIC_SPI 79 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&rcc CRYP1>;
++			resets = <&rcc CRYP1_R>;
++			status = "disabled";
++		};
++	};
++};
+-- 
+2.39.2
+

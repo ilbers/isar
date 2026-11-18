@@ -1,0 +1,43 @@
+From 5c7db126ee416e30469729d37ab0df4536cd6919 Mon Sep 17 00:00:00 2001
+From: Patrick Delaunay <patrick.delaunay@foss.st.com>
+Date: Fri, 6 Jan 2023 13:20:14 +0100
+Subject: [PATCH 084/117] stm32mp: cosmetic: Update of bsec driver
+
+Remove unnecessary return in stm32mp_bsec_write_lock and replace tab
+by space for plat_auto opts.
+
+[Backport of commit 27bad4e7fcb1 ("stm32mp: cosmetic: Update of bsec
+ driver")]
+
+Signed-off-by: Patrick Delaunay <patrick.delaunay@foss.st.com>
+Reviewed-by: Patrice Chotard <patrice.chotard@foss.st.com>
+Change-Id: Ic26b0ca7844f97c9e2b87c6e403985205a05bc0f
+---
+ arch/arm/mach-stm32mp/bsec.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/arch/arm/mach-stm32mp/bsec.c b/arch/arm/mach-stm32mp/bsec.c
+index c00130b08b..51ccff9aa5 100644
+--- a/arch/arm/mach-stm32mp/bsec.c
++++ b/arch/arm/mach-stm32mp/bsec.c
+@@ -468,8 +468,6 @@ static int stm32mp_bsec_write_lock(struct udevice *dev, u32 val, u32 otp)
+ 	plat = dev_get_plat(dev);
+ 
+ 	return bsec_permanent_lock_otp(dev, plat->base, otp);
+-
+-	return -EINVAL;
+ }
+ 
+ static int stm32mp_bsec_read(struct udevice *dev, int offset,
+@@ -608,7 +606,7 @@ U_BOOT_DRIVER(stm32mp_bsec) = {
+ 	.id = UCLASS_MISC,
+ 	.of_match = stm32mp_bsec_ids,
+ 	.of_to_plat = stm32mp_bsec_of_to_plat,
+-	.plat_auto	= sizeof(struct stm32mp_bsec_plat),
++	.plat_auto = sizeof(struct stm32mp_bsec_plat),
+ 	.ops = &stm32mp_bsec_ops,
+ 	.probe = stm32mp_bsec_probe,
+ };
+-- 
+2.39.2
+

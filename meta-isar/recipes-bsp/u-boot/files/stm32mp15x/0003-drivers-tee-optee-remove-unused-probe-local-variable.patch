@@ -1,0 +1,42 @@
+From b16145419fbde7ce36a51dfddde11ab4b0bd22a5 Mon Sep 17 00:00:00 2001
+From: Etienne Carriere <etienne.carriere@linaro.org>
+Date: Tue, 26 Jul 2022 16:21:41 +0200
+Subject: [PATCH 003/117] drivers: tee: optee: remove unused probe local
+ variable
+
+Removes local variable child in optee_probe() that is not used.
+
+[Backport of commit fd0d7a6c88fe ("drivers: tee: optee: remove unused probe local variable")]
+
+Cc: Patrick Delaunay <patrick.delaunay@foss.st.com>
+Reviewed-by: Patrick Delaunay <patrick.delaunay@foss.st.com>
+Signed-off-by: Etienne Carriere <etienne.carriere@linaro.org>
+Change-Id: I0c086249928f0857c63ffb56b7868668f23dbd65
+---
+ drivers/tee/optee/core.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
+index a89d62aaf0..c1f5fc4c7a 100644
+--- a/drivers/tee/optee/core.c
++++ b/drivers/tee/optee/core.c
+@@ -642,7 +642,6 @@ static int optee_probe(struct udevice *dev)
+ {
+ 	struct optee_pdata *pdata = dev_get_plat(dev);
+ 	u32 sec_caps;
+-	struct udevice *child;
+ 	int ret;
+ 
+ 	if (!is_optee_api(pdata->invoke_fn)) {
+@@ -673,7 +672,7 @@ static int optee_probe(struct udevice *dev)
+ 	 * only bind the drivers associated to the supported OP-TEE TA
+ 	 */
+ 	if (IS_ENABLED(CONFIG_RNG_OPTEE)) {
+-		ret = device_bind_driver(dev, "optee-rng", "optee-rng", &child);
++		ret = device_bind_driver(dev, "optee-rng", "optee-rng", NULL);
+ 		if (ret)
+ 			return ret;
+ 	}
+-- 
+2.39.2
+

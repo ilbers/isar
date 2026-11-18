@@ -1,0 +1,90 @@
+From 523dbda922eaace7724b765035e3358735151eb5 Mon Sep 17 00:00:00 2001
+From: Yann Gautier <yann.gautier@st.com>
+Date: Fri, 21 Oct 2022 11:22:37 +0200
+Subject: [PATCH] feat(stm32mp15-fdts): fulfill diversity for STM32M15x SOCs
+
+This commit creates new files to manage security features and supported OPP
+on STM32MP15x SOCs. On STM32MP15xY, "Y" gives information:
+ -Y = A means no cryp IP and no secure boot + A7-CPU@650MHz.
+ -Y = C means cryp IP + optee + secure boot + A7-CPU@650MHz.
+ -Y = D means no cryp IP and no secure boot + A7-CPU@800MHz.
+ -Y = F means cryp IP + optee + secure boot + A7-CPU@800MHz.
+
+Signed-off-by: Alexandre Torgue <alexandre.torgue@foss.st.com>
+Signed-off-by: Amelie Delaunay <amelie.delaunay@foss.st.com>
+Signed-off-by: Yann Gautier <yann.gautier@foss.st.com>
+Change-Id: Ic9fa8f714ba8d8095664c55dbcadfae49e9e2f4f
+---
+ fdts/stm32mp15xa.dtsi |  5 +++++
+ fdts/stm32mp15xc.dtsi |  2 ++
+ fdts/stm32mp15xd.dtsi |  5 +++++
+ fdts/stm32mp15xf.dtsi | 20 ++++++++++++++++++++
+ 4 files changed, 32 insertions(+)
+ create mode 100644 fdts/stm32mp15xa.dtsi
+ create mode 100644 fdts/stm32mp15xd.dtsi
+ create mode 100644 fdts/stm32mp15xf.dtsi
+
+diff --git a/fdts/stm32mp15xa.dtsi b/fdts/stm32mp15xa.dtsi
+new file mode 100644
+index 000000000..cc6456e71
+--- /dev/null
++++ b/fdts/stm32mp15xa.dtsi
+@@ -0,0 +1,5 @@
++// SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-3-Clause)
++/*
++ * Copyright (C) STMicroelectronics 2022 - All Rights Reserved
++ * Author: Alexandre Torgue <alexandre.torgue@foss.st.com> for STMicroelectronics.
++ */
+diff --git a/fdts/stm32mp15xc.dtsi b/fdts/stm32mp15xc.dtsi
+index b06a55a2f..f729b0d1b 100644
+--- a/fdts/stm32mp15xc.dtsi
++++ b/fdts/stm32mp15xc.dtsi
+@@ -4,6 +4,8 @@
+  * Author: Alexandre Torgue <alexandre.torgue@st.com> for STMicroelectronics.
+  */
+ 
++#include "stm32mp15xa.dtsi"
++
+ / {
+ 	soc {
+ 		cryp1: cryp@54001000 {
+diff --git a/fdts/stm32mp15xd.dtsi b/fdts/stm32mp15xd.dtsi
+new file mode 100644
+index 000000000..cc6456e71
+--- /dev/null
++++ b/fdts/stm32mp15xd.dtsi
+@@ -0,0 +1,5 @@
++// SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-3-Clause)
++/*
++ * Copyright (C) STMicroelectronics 2022 - All Rights Reserved
++ * Author: Alexandre Torgue <alexandre.torgue@foss.st.com> for STMicroelectronics.
++ */
+diff --git a/fdts/stm32mp15xf.dtsi b/fdts/stm32mp15xf.dtsi
+new file mode 100644
+index 000000000..ae4a14af6
+--- /dev/null
++++ b/fdts/stm32mp15xf.dtsi
+@@ -0,0 +1,20 @@
++// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
++/*
++ * Copyright (C) STMicroelectronics 2019 - All Rights Reserved
++ * Author: Alexandre Torgue <alexandre.torgue@st.com> for STMicroelectronics.
++ */
++
++#include "stm32mp15xd.dtsi"
++
++/ {
++	soc {
++		cryp1: cryp@54001000 {
++			compatible = "st,stm32mp1-cryp";
++			reg = <0x54001000 0x400>;
++			interrupts = <GIC_SPI 79 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&rcc CRYP1>;
++			resets = <&rcc CRYP1_R>;
++			status = "disabled";
++		};
++	};
++};
+-- 
+2.39.2
+

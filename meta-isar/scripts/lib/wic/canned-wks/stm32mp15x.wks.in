@@ -1,15 +1,13 @@
 #
-# Copyright (c) Siemens AG, 2020
+# Copyright (c) Siemens AG, 2020-2023
+# Copyright (c) 2021-2026 ilbers GmbH
 #
 # SPDX-License-Identifier: MIT
 
-part fsbl1 --part-name fsbl1 --source rawcopy --sourceparams "file=/usr/lib/trusted-firmware-a/${MACHINE}/tf-a-stm32mp157c-ev1.stm32" --fstype=ext4 --fsoptions "noauto" --part-type 0x8301 --fixed-size 256K
-part fsbl2 --part-name fsbl2 --source rawcopy --sourceparams "file=/usr/lib/trusted-firmware-a/${MACHINE}/tf-a-stm32mp157c-ev1.stm32" --fstype=ext4 --fsoptions "noauto" --part-type 0x8301 --fixed-size 256K
-part ssbl --part-name ssbl --source rawcopy --sourceparams "file=/usr/lib/u-boot/${MACHINE}/u-boot.stm32" --fstype=ext4 --fsoptions "noauto" --part-type 0x8301 --fixed-size 2048K
+part fsbl1 --source rawcopy --fstype=ext4 --part-name=fsbl1 --sourceparams "file=/usr/lib/trusted-firmware-a/${MACHINE}/tf-a-stm32mp157d-dk1.stm32" --ondisk mmcblk0 --part-type 0x8301 --fixed-size 256K --align 17
+part fsbl2 --source rawcopy --fstype=ext4 --part-name=fsbl2 --sourceparams "file=/usr/lib/trusted-firmware-a/${MACHINE}/tf-a-stm32mp157d-dk1.stm32" --ondisk mmcblk0 --part-type 0x8301 --fixed-size 256K
 
-part teeh --part-name teeh --source rawcopy --sourceparams "file=/usr/lib/optee-os/${MACHINE}/tee-header_v2.stm32" --fstype=ext4 --fsoptions "noauto" --part-type 0x8301 --fixed-size 256K
-part teed --part-name teed --source rawcopy --sourceparams "file=/usr/lib/optee-os/${MACHINE}/tee-pageable_v2.stm32" --fstype=ext4 --fsoptions "noauto" --part-type 0x8301 --fixed-size 1024K
-part teex --part-name teex --source rawcopy --sourceparams "file=/usr/lib/optee-os/${MACHINE}/tee-pager_v2.stm32" --fstype=ext4 --fsoptions "noauto" --part-type 0x8301 --fixed-size 256K
+part fip --source rawcopy --fstype=ext4 --part-name=fip --sourceparams="file=/usr/lib/trusted-firmware-a/${MACHINE}/fip.bin" --ondisk mmcblk0 --part-type 0xFFFF --fixed-size 4096K
 
 part / --source rootfs-u-boot --fstype ext4 --mkfs-extraopts "-T default" --label root --align 1024 --active --use-uuid
 

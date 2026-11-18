@@ -1,0 +1,120 @@
+From feb9e69f9e90ca08379384f624b97539ba423eee Mon Sep 17 00:00:00 2001
+From: Olivier Moysan <olivier.moysan@foss.st.com>
+Date: Wed, 2 Nov 2022 15:10:32 +0100
+Subject: [PATCH 108/117] ARM: dts: stm32: reordering nodes in stm32mp151.dtsi
+ file
+
+- move nodeName 'i2sx: audio-controller@aaaaaaaa' above
+nodeName 'spix: spi@aaaaaaaa'
+(ascii sorting)
+
+Signed-off-by: Olivier Moysan <olivier.moysan@foss.st.com>
+Signed-off-by: Patrick Delaunay <patrick.delaunay@foss.st.com>
+Reviewed-on: https://gerrit.st.com/c/mpu/oe/st/linux-stm32/+/278993
+Change-Id: Iecce8f8b7219e76b1b10e424c82a89b90c8a221f
+Reviewed-on: https://gerrit.st.com/c/mpu/oe/st/u-boot/+/283881
+ACI: CITOOLS <MDG-smet-aci-reviews@list.st.com>
+ACI: CIBUILD <MDG-smet-aci-builds@list.st.com>
+Domain-Review: Arnaud POULIQUEN <arnaud.pouliquen@st.com>
+---
+ arch/arm/dts/stm32mp151.dtsi | 54 ++++++++++++++++++------------------
+ 1 file changed, 27 insertions(+), 27 deletions(-)
+
+diff --git a/arch/arm/dts/stm32mp151.dtsi b/arch/arm/dts/stm32mp151.dtsi
+index 029adaf9da..3fdd249b43 100644
+--- a/arch/arm/dts/stm32mp151.dtsi
++++ b/arch/arm/dts/stm32mp151.dtsi
+@@ -422,6 +422,17 @@
+ 			};
+ 		};
+ 
++		i2s2: audio-controller@4000b000 {
++			compatible = "st,stm32h7-i2s";
++			#sound-dai-cells = <0>;
++			reg = <0x4000b000 0x400>;
++			interrupts = <GIC_SPI 36 IRQ_TYPE_LEVEL_HIGH>;
++			dmas = <&dmamux1 39 0x400 0x01>,
++			       <&dmamux1 40 0x400 0x01>;
++			dma-names = "rx", "tx";
++			status = "disabled";
++		};
++
+ 		spi2: spi@4000b000 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+@@ -436,13 +447,13 @@
+ 			status = "disabled";
+ 		};
+ 
+-		i2s2: audio-controller@4000b000 {
++		i2s3: audio-controller@4000c000 {
+ 			compatible = "st,stm32h7-i2s";
+ 			#sound-dai-cells = <0>;
+-			reg = <0x4000b000 0x400>;
+-			interrupts = <GIC_SPI 36 IRQ_TYPE_LEVEL_HIGH>;
+-			dmas = <&dmamux1 39 0x400 0x01>,
+-			       <&dmamux1 40 0x400 0x01>;
++			reg = <0x4000c000 0x400>;
++			interrupts = <GIC_SPI 51 IRQ_TYPE_LEVEL_HIGH>;
++			dmas = <&dmamux1 61 0x400 0x01>,
++			       <&dmamux1 62 0x400 0x01>;
+ 			dma-names = "rx", "tx";
+ 			status = "disabled";
+ 		};
+@@ -461,17 +472,6 @@
+ 			status = "disabled";
+ 		};
+ 
+-		i2s3: audio-controller@4000c000 {
+-			compatible = "st,stm32h7-i2s";
+-			#sound-dai-cells = <0>;
+-			reg = <0x4000c000 0x400>;
+-			interrupts = <GIC_SPI 51 IRQ_TYPE_LEVEL_HIGH>;
+-			dmas = <&dmamux1 61 0x400 0x01>,
+-			       <&dmamux1 62 0x400 0x01>;
+-			dma-names = "rx", "tx";
+-			status = "disabled";
+-		};
+-
+ 		spdifrx: audio-controller@4000d000 {
+ 			compatible = "st,stm32h7-spdifrx";
+ 			#sound-dai-cells = <0>;
+@@ -748,6 +748,17 @@
+ 			status = "disabled";
+ 		};
+ 
++		i2s1: audio-controller@44004000 {
++			compatible = "st,stm32h7-i2s";
++			#sound-dai-cells = <0>;
++			reg = <0x44004000 0x400>;
++			interrupts = <GIC_SPI 35 IRQ_TYPE_LEVEL_HIGH>;
++			dmas = <&dmamux1 37 0x400 0x01>,
++			       <&dmamux1 38 0x400 0x01>;
++			dma-names = "rx", "tx";
++			status = "disabled";
++		};
++
+ 		spi1: spi@44004000 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+@@ -762,17 +773,6 @@
+ 			status = "disabled";
+ 		};
+ 
+-		i2s1: audio-controller@44004000 {
+-			compatible = "st,stm32h7-i2s";
+-			#sound-dai-cells = <0>;
+-			reg = <0x44004000 0x400>;
+-			interrupts = <GIC_SPI 35 IRQ_TYPE_LEVEL_HIGH>;
+-			dmas = <&dmamux1 37 0x400 0x01>,
+-			       <&dmamux1 38 0x400 0x01>;
+-			dma-names = "rx", "tx";
+-			status = "disabled";
+-		};
+-
+ 		spi4: spi@44005000 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+-- 
+2.39.2
+
