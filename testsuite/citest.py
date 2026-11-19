@@ -649,7 +649,7 @@ class CrossTest(CIBaseTest):
 
     def test_run_arm64_forky(self):
         """
-        :avocado: tags=startvm,riscv64
+        :avocado: tags=startvm
         """
         self.init()
         try:
