@@ -13,7 +13,7 @@ SBUILD_CHROOT:schroot ?= "${DEBDISTRONAME}-${SCHROOT_USER}-${ISAR_BUILD_UUID}-${
 SBUILD_CONF_DIR ?= "${SCHROOT_CONF}/${SBUILD_CHROOT}"
 SCHROOT_CONF_FILE ?= "${SCHROOT_CONF}/chroot.d/${SBUILD_CHROOT}"
 
-SBUILD_CONFIG="${WORKDIR}/sbuild.conf"
+SBUILD_CONFIG = "${WORKDIR}/sbuild.conf"
 
 # Lockfile available for all the users
 SCHROOT_LOCKFILE = "/tmp/schroot.lock"

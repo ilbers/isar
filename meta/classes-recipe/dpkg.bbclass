@@ -9,7 +9,7 @@ inherit dpkg-source
 DPKG_BUILD_TIMEOUT ?= "150"
 dpkg_runbuild[vardepsexclude] += "${DPKG_BUILD_TIMEOUT}"
 
-DPKG_PREBUILD_ENV_FILE="${WORKDIR}/dpkg_prebuild.env"
+DPKG_PREBUILD_ENV_FILE = "${WORKDIR}/dpkg_prebuild.env"
 
 # bitbake variables that should be passed into sbuild env
 # Note: must not have any logical influence on the generated package

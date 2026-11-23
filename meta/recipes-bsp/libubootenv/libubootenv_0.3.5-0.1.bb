@@ -7,7 +7,7 @@
 
 DESCRIPTION = "Standalone library & tools for accessing the U-Boot environment"
 MAINTAINER = "isar-users <isar-users@googlegroups.com>"
-HOMEPAGE= "https://github.com/sbabic/libubootenv"
+HOMEPAGE = "https://github.com/sbabic/libubootenv"
 LICENSE = "GPL-2.0"
 LIC_FILES_CHKSUM = "file://${LAYERDIR_isar}/licenses/COPYING.GPLv2;md5=751419260aa954499f7abaabaa882bbe"
 

@@ -9,7 +9,7 @@ MAINTAINER = "isar-users <isar-users@googlegroups.com>"
 
 SRC_URI = "apt://${BPN}"
 PN = "bmap-tools"
-CHANGELOG_V="<orig-version>+isar"
+CHANGELOG_V = "<orig-version>+isar"
 DPKG_ARCH = "all"
 
 SRC_URI += "file://0001-Fix-path-parameter-passing-error-of-set_psplash_pipe.patch;apply=no \

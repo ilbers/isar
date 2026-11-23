@@ -64,9 +64,9 @@ ROOTFS_FEATURES:remove:focal = "generate-sbom"
 
 # Capture all information needed for sbom generation
 ROOTFS_APT_STATE = "apt-state.tar.zst"
-ROOTFS_APT_ARGS="install --yes -o Debug::pkgProblemResolver=yes"
+ROOTFS_APT_ARGS = "install --yes -o Debug::pkgProblemResolver=yes"
 
-ROOTFS_CLEAN_FILES="/etc/hostname /etc/resolv.conf"
+ROOTFS_CLEAN_FILES = "/etc/hostname /etc/resolv.conf"
 
 ROOTFS_PACKAGE_SUFFIX ?= "${PN}-${DISTRO}-${DISTRO_ARCH}"
 

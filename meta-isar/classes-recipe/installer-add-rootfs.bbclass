@@ -78,5 +78,5 @@ python() {
     d.setVar("ROOTFS_ADDITIONAL_FILES", " ".join(entries))
 }
 
-INSTALLER_TARGET_TASK ??="do_build"
+INSTALLER_TARGET_TASK ??= "do_build"
 do_rootfs_install[mcdepends] += "${@ get_mc_depends(d, d.getVar('INSTALLER_TARGET_TASK'))}"

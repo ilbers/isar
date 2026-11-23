@@ -23,4 +23,4 @@ SRCREV = "b48d15629667377f544e71c7310b80a71d00d9dd"
 inherit dpkg
 
 # Example of using alternative sbuild chroot
-SBUILD_FLAVOR="db2m"
+SBUILD_FLAVOR = "db2m"
