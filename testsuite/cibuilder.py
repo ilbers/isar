@@ -455,7 +455,7 @@ class CIBuilder(Test):
         )
 
         proc = subprocess.run(
-            f"cat {src} | {cmd_prefix} install -m {mode} /dev/stdin {dest}",
+            f"head -c1 {src} >/dev/null && cat {src} | {cmd_prefix} install -m {mode} /dev/stdin {dest}",
             shell=True,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
