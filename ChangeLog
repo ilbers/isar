@@ -1,5 +1,35 @@
 Release next
 
+Release v1.2
+
+ * Add support for fully rootless builds
+ * Switch default kas build system to isar-rootless
+ * Add helper scripts to check rootless build support and clean build artifacts
+ * Add Debian 14 (Forky) support
+ * Add Ubuntu 26.04 (Resolute Raccoon) support
+ * Add Debian Trixie support to Raspberry Pi targets
+ * Add Hyper-V virtual machine support
+ * Add WSL image generation for Windows Subsystem for Linux
+ * Add cross-compile support to dracut initramfs 
+ * Rework SBOM generation to improve reliability, parallelism, and sstate caching
+ * Refactor isar-installer into separate flow, UI and backend modules
+ * Multiple improvements on isar-installer
+ * Improve multiarch and arch all dependency handling
+ * Fix kernel package naming to prevent incorrect reuse across architectures
+ * Fix kernel builds and linux-libc-dev dependency propagation
+ * Multiple improvements on sstate artifacts reproducibility
+ * Fix data races in sstate tasks, multiconfig and isar-apt
+ * Update kas to v5.5
+ * Update debsbom to v0.10.2
+ * Update OE libraries, wic, sstate and pybootchartgui to v5.0.3
+ * Update linux-mainline and kselftest to 6.12.103
+ * Switch Debian Bullseye repo source to archive
+ * Switch U-Boot source to git mirror
+ * Multiple fixes and improvements in the testsuite
+ * Modernize testsuite targets to use Debian Trixie
+ * Extend testsuite coverage with new regression tests
+ * Speedup testsuite execution
+
 Release v1.1
 
  * Restore build artifacts naming and deploy path

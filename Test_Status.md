@@ -4,6 +4,108 @@ Tested Status
 Release next
 ------------
 
+Release v1.2
+-------------
+
+### Host System: debian-trixie-amd64
+
+| Target System               | Native Build  | Cross Build   |Login prompt ("smoke" test)|SDK Support|Cached repo| Version  |
+|:---------------------------:|:-------------:|:-------------:|:-------------------------:|:---------:|:---------:|:--------:|
+| qemuarm-buster              | UNTESTED      | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 26accff7 |
+| qemuarm-bullseye            | UNTESTED      | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 26accff7 |
+| qemuarm-bookworm            | UNTESTED      | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 26accff7 |
+| qemuarm-trixie              | UNTESTED      | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 26accff7 |
+| qemuarm64-buster            | UNTESTED      | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 26accff7 |
+| qemuarm64-bullseye          | UNTESTED      | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 26accff7 |
+| qemuarm64-bookworm          | UNTESTED      | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 26accff7 |
+| qemuarm64-trixie            | UNTESTED      | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 26accff7 |
+| qemuarm64-forky             | UNTESTED      | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 26accff7 |
+| qemuarm64-sid               | UNTESTED      | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 26accff7 |
+| qemuarm64-focal             | UNTESTED      | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 26accff7 |
+| qemuarm64-jammy             | UNTESTED      | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 26accff7 |
+| qemuarm64-noble             | UNTESTED      | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 26accff7 |
+| qemuarm64-resolute          | UNTESTED      | PASSED        | FAILED                    | UNTESTED  | UNTESTED  | 26accff7 |
+| qemui386-buster             | UNTESTED      | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 26accff7 |
+| qemui386-bullseye           | UNTESTED      | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 26accff7 |
+| qemui386-bookworm           | UNTESTED      | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 26accff7 |
+| qemuamd64-buster            | UNTESTED      | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 26accff7 |
+| qemuamd64-bullseye          | UNTESTED      | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 26accff7 |
+| qemuamd64-sb-bullseye       | UNTESTED      | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 26accff7 |
+| qemuamd64-bookworm          | UNTESTED      | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 26accff7 |
+| qemuamd64-cip-bookworm      | UNTESTED      | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 26accff7 |
+| qemuamd64-iso-bookworm      | UNTESTED      | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 26accff7 |
+| qemuamd64-trixie            | UNTESTED      | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 26accff7 |
+| qemuamd64-forky             | UNTESTED      | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 26accff7 |
+| qemuamd64-sid               | UNTESTED      | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 26accff7 |
+| qemuamd64-focal             | UNTESTED      | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 26accff7 |
+| qemuamd64-jammy             | UNTESTED      | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 26accff7 |
+| qemuamd64-noble             | UNTESTED      | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 26accff7 |
+| qemuamd64-resolute          | UNTESTED      | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 26accff7 |
+| qemumipsel-bullseye         | UNTESTED      | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 26accff7 |
+| qemumipsel-bookworm         | UNTESTED      | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 26accff7 |
+| qemuriscv64-trixie          | UNTESTED      | PASSED        | PASSED                    | UNTESTED  | UNTESTED  | 26accff7 |
+| qemuriscv64-resolute        | UNTESTED      | PASSED        | FAILED                    | UNTESTED  | UNTESTED  | 26accff7 |
+| container-amd64-buster      | UNTESTED      | PASSED        | PASSED (Docker)           | UNTESTED  | UNTESTED  | 26accff7 |
+| container-amd64-bullseye    | UNTESTED      | PASSED        | PASSED (Docker)           | UNTESTED  | UNTESTED  | 26accff7 |
+| container-amd64-bookworm    | UNTESTED      | PASSED        | PASSED (Docker)           | UNTESTED  | UNTESTED  | 26accff7 |
+| container-amd64-trixie      | UNTESTED      | PASSED        | PASSED (Docker)           | UNTESTED  | UNTESTED  | 26accff7 |
+| virtualbox-bullseye         | UNTESTED      | PASSED        | PASSED (Virtualbox)       | UNTESTED  | UNTESTED  | 26accff7 |
+| virtualbox-bookworm         | UNTESTED      | PASSED        | PASSED (Virtualbox)       | UNTESTED  | UNTESTED  | 26accff7 |
+| virtualbox-trixie           | UNTESTED      | PASSED        | PASSED (Virtualbox)       | UNTESTED  | UNTESTED  | 26accff7 |
+| hyper-v-amd64-bullseye      | UNTESTED      | PASSED        | UNTESTED                  | UNTESTED  | UNTESTED  | 26accff7 |
+| hyper-v-amd64-bookworm      | UNTESTED      | PASSED        | UNTESTED                  | UNTESTED  | UNTESTED  | 26accff7 |
+| hyper-v-amd64-trixie        | UNTESTED      | PASSED        | UNTESTED                  | UNTESTED  | UNTESTED  | 26accff7 |
+| wsl-bookworm                | UNTESTED      | PASSED        | UNTESTED                  | UNTESTED  | UNTESTED  | 26accff7 |
+| wsl-trixie                  | UNTESTED      | PASSED        | UNTESTED                  | UNTESTED  | UNTESTED  | 26accff7 |
+| x86-pc-bookworm             | UNTESTED      | PASSED        | UNTESTED                  | UNTESTED  | UNTESTED  | 26accff7 |
+| bananapi-buster             | UNTESTED      | PASSED        | PASSED #3                 | UNTESTED  | UNTESTED  | 26accff7 |
+| bananapi-bullseye           | UNTESTED      | PASSED        | PASSED #3                 | UNTESTED  | UNTESTED  | 26accff7 |
+| bananapi-bookworm           | UNTESTED      | PASSED        | PASSED #3                 | UNTESTED  | UNTESTED  | 26accff7 |
+| bananapi-trixie             | UNTESTED      | PASSED        | PASSED #3                 | UNTESTED  | UNTESTED  | 26accff7 |
+| beagleplay-bookworm         | UNTESTED      | PASSED        | UNTESTED                  | UNTESTED  | UNTESTED  | 26accff7 |
+| de0-nano-soc-buster         | UNTESTED      | PASSED        | PASSED #4                 | UNTESTED  | UNTESTED  | 26accff7 |
+| de0-nano-soc-bullseye       | UNTESTED      | PASSED        | PASSED #4                 | UNTESTED  | UNTESTED  | 26accff7 |
+| de0-nano-soc-bookworm       | UNTESTED      | PASSED        | PASSED #4                 | UNTESTED  | UNTESTED  | 26accff7 |
+| de0-nano-soc-trixie         | UNTESTED      | PASSED        | PASSED #4                 | UNTESTED  | UNTESTED  | 26accff7 |
+| hikey-bullseye              | UNTESTED      | PASSED        | PASSED #5                 | UNTESTED  | UNTESTED  | 26accff7 |
+| hikey-bookworm              | UNTESTED      | PASSED        | PASSED #5                 | UNTESTED  | UNTESTED  | 26accff7 |
+| hikey-trixie                | UNTESTED      | PASSED        | FAILED #5                 | UNTESTED  | UNTESTED  | 26accff7 |
+| nanopi-neo-buster           | UNTESTED      | PASSED        | PASSED #6                 | UNTESTED  | UNTESTED  | 26accff7 |
+| nanopi-neo-bullseye         | UNTESTED      | PASSED        | PASSED #6                 | UNTESTED  | UNTESTED  | 26accff7 |
+| nanopi-neo-bookworm         | UNTESTED      | PASSED        | PASSED #6                 | UNTESTED  | UNTESTED  | 26accff7 |
+| nanopi-neo-efi-bookworm     | UNTESTED      | PASSED        | PASSED #6                 | UNTESTED  | UNTESTED  | 26accff7 |
+| nanopi-neo-trixie           | UNTESTED      | PASSED        | PASSED #6                 | UNTESTED  | UNTESTED  | 26accff7 |
+| phyboard-mira-bullseye      | UNTESTED      | PASSED        | FAILED #7                 | UNTESTED  | UNTESTED  | 26accff7 |
+| phyboard-mira-bookworm      | UNTESTED      | PASSED        | FAILED #7                 | UNTESTED  | UNTESTED  | 26accff7 |
+| phyboard-mira-trixie        | UNTESTED      | PASSED        | FAILED #7                 | UNTESTED  | UNTESTED  | 26accff7 |
+| rpi-arm-bullseye            | UNTESTED      | PASSED        | PASSED #1                 | UNTESTED  | UNTESTED  | 26accff7 |
+| rpi-arm-bookworm            | UNTESTED      | PASSED        | PASSED #1                 | UNTESTED  | UNTESTED  | 26accff7 |
+| rpi-arm-trixie              | UNTESTED      | PASSED        | PASSED #9                 | UNTESTED  | UNTESTED  | 26accff7 |
+| rpi-arm-v7-bullseye         | UNTESTED      | PASSED        | PASSED #1                 | UNTESTED  | UNTESTED  | 26accff7 |
+| rpi-arm-v7-bookworm         | UNTESTED      | PASSED        | PASSED #1                 | UNTESTED  | UNTESTED  | 26accff7 |
+| rpi-arm-v7-trixie           | UNTESTED      | PASSED        | PASSED #1                 | UNTESTED  | UNTESTED  | 26accff7 |
+| rpi-arm-v7l-bullseye        | UNTESTED      | PASSED        | PASSED #1                 | UNTESTED  | UNTESTED  | 26accff7 |
+| rpi-arm-v7l-bookworm        | UNTESTED      | PASSED        | PASSED #1                 | UNTESTED  | UNTESTED  | 26accff7 |
+| rpi-arm-v7l-trixie          | UNTESTED      | PASSED        | PASSED #1                 | UNTESTED  | UNTESTED  | 26accff7 |
+| rpi-arm64-v8-bullseye       | UNTESTED      | PASSED        | PASSED #2                 | UNTESTED  | UNTESTED  | 26accff7 |
+| rpi-arm64-v8-bookworm       | UNTESTED      | PASSED        | PASSED #2                 | UNTESTED  | UNTESTED  | 26accff7 |
+| rpi-arm64-v8-trixie         | UNTESTED      | PASSED        | PASSED #2                 | UNTESTED  | UNTESTED  | 26accff7 |
+| rpi-arm64-v8-efi-bookworm   | UNTESTED      | PASSED        | PASSED #2                 | UNTESTED  | UNTESTED  | 26accff7 |
+| sifive-fu540-trixie         | UNTESTED      | UNTESTED      | UNTESTED                  | UNTESTED  | UNTESTED  | 26accff7 |
+| starfive-visionfive2-trixie | UNTESTED      | PASSED        | PASSED #8                 | UNTESTED  | UNTESTED  | 26accff7 |
+| stm32mp15x-trixie           | UNTESTED      | PASSED        | PASSED #10                | UNTESTED  | UNTESTED  | 26accff7 |
+
+#1: Tested on RPI3B+
+#2: Tested on RPI4B
+#3: Tested on BPI-A20
+#4: Tested on Terasic Atlas-SoC
+#5: Tested on LeMaker HiKey 2 GB
+#6: Tested on NanoPi Neo LTS 512 MB
+#7: Tested on i.MX6 Quad
+#8: Tested on StarFive VisionFive 2
+#9: Tested on RPI1B+
+#10: Tested on STM32MP157D-DK1
+
 Release v1.0
 -------------
 

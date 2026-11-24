@@ -1068,7 +1068,7 @@ The DEPLOY_DIR_IMAGE path and artifacts naming changes introduced in
 13cb77dd (included in Isar v1.0) have been reverted. Deployment paths
 and artifact names are the same as pre-v1.0.
 
-Changes in next
+Changes in v1.2
 ---------------
 
 ### No building of arch=all packages when cross building
@@ -1225,3 +1225,6 @@ the rootfs. This has been replaced by the `exclude-docs` rootfs feature. The
 
 When enabled, the package changelogs are now removed as well (copyright is still
 kept for legal reasons).
+
+Changes in next
+---------------
